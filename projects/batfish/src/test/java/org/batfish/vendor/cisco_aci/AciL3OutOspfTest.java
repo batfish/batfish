@@ -309,4 +309,114 @@ public class AciL3OutOspfTest {
         AciConversion.convertOspfNetworkType("NBMA"),
         equalTo(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
   }
+
+  // ============================================
+  // OSPF Process Conversion Tests
+  // ============================================
+
+  /** Test OSPF process creation from L3Out configuration. */
+  @Test
+  public void testOspfProcessCreation() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+
+    // Create L3Out with OSPF
+    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    l3out.setTenant("tenant1");
+
+    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    ospfConfig.setProcessId("100");
+    l3out.setOspfConfig(ospfConfig);
+
+    assertThat(l3out.getOspfConfig().getProcessId(), equalTo("100"));
+  }
+
+  /** Test OSPF area with stub type conversion. */
+  @Test
+  public void testOspfAreaStubType() {
+    AciConfiguration.OspfArea stubArea = new AciConfiguration.OspfArea();
+    stubArea.setAreaId("1");
+    stubArea.setAreaType("stub");
+
+    assertThat(stubArea.getAreaType(), equalTo("stub"));
+    assertThat(AciConversion.parseAreaId(stubArea.getAreaId()), equalTo(1L));
+  }
+
+  /** Test OSPF area with NSSA type conversion. */
+  @Test
+  public void testOspfAreaNssaType() {
+    AciConfiguration.OspfArea nssaArea = new AciConfiguration.OspfArea();
+    nssaArea.setAreaId("2");
+    nssaArea.setAreaType("nssa");
+
+    assertThat(nssaArea.getAreaType(), equalTo("nssa"));
+    assertThat(AciConversion.parseAreaId(nssaArea.getAreaId()), equalTo(2L));
+  }
+
+  /** Test OSPF interface with all settings. */
+  @Test
+  public void testOspfInterfaceFullSettings() {
+    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    ospfInterface.setName("Ethernet1/1");
+    ospfInterface.setCost(50);
+    ospfInterface.setHelloInterval(5);
+    ospfInterface.setDeadInterval(20);
+    ospfInterface.setNetworkType("broadcast");
+    ospfInterface.setPassive(false);
+
+    assertThat(ospfInterface.getName(), equalTo("Ethernet1/1"));
+    assertThat(ospfInterface.getCost(), equalTo(50));
+    assertThat(ospfInterface.getHelloInterval(), equalTo(5));
+    assertThat(ospfInterface.getDeadInterval(), equalTo(20));
+    assertThat(ospfInterface.getNetworkType(), equalTo("broadcast"));
+    assertThat(ospfInterface.getPassive(), equalTo(false));
+  }
+
+  /** Test OSPF interface with passive mode enabled. */
+  @Test
+  public void testOspfInterfacePassive() {
+    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    ospfInterface.setPassive(true);
+
+    assertThat(ospfInterface.getPassive(), equalTo(true));
+  }
+
+  /** Test multiple OSPF areas in same process. */
+  @Test
+  public void testMultipleOspfAreas() {
+    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    ospfConfig.setProcessId("1");
+
+    AciConfiguration.OspfArea area0 = new AciConfiguration.OspfArea();
+    area0.setAreaId("0.0.0.0");
+    area0.setAreaType("regular");
+
+    AciConfiguration.OspfArea area1 = new AciConfiguration.OspfArea();
+    area1.setAreaId("0.0.0.1");
+    area1.setAreaType("stub");
+
+    AciConfiguration.OspfArea area2 = new AciConfiguration.OspfArea();
+    area2.setAreaId("0.0.0.2");
+    area2.setAreaType("nssa");
+
+    ospfConfig.getAreas().put("0.0.0.0", area0);
+    ospfConfig.getAreas().put("0.0.0.1", area1);
+    ospfConfig.getAreas().put("0.0.0.2", area2);
+
+    assertThat(ospfConfig.getAreas().size(), equalTo(3));
+    assertThat(ospfConfig.getAreas(), hasKey("0.0.0.0"));
+    assertThat(ospfConfig.getAreas(), hasKey("0.0.0.1"));
+    assertThat(ospfConfig.getAreas(), hasKey("0.0.0.2"));
+  }
+
+  /** Test OSPF configuration with default area. */
+  @Test
+  public void testOspfConfigDefaultArea() {
+    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    ospfConfig.setProcessId("100");
+    ospfConfig.setAreaId("0"); // Backbone area
+
+    assertThat(ospfConfig.getAreaId(), equalTo("0"));
+    assertThat(AciConversion.parseAreaId(ospfConfig.getAreaId()), equalTo(0L));
+  }
 }

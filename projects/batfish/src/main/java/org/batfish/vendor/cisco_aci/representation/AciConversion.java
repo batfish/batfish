@@ -50,7 +50,11 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -2335,8 +2339,7 @@ public final class AciConversion {
   /**
    * Converts OSPF configuration from an L3Out to Batfish OspfProcess.
    *
-   * <p>Note: Full OSPF conversion requires additional datamodel support. This is a placeholder for
-   * future implementation.
+   * <p>Creates an OSPF process with areas and applies interface settings.
    *
    * @param ospfConfig The OSPF configuration
    * @param l3OutName The L3Out name
@@ -2354,24 +2357,198 @@ public final class AciConversion {
       Vrf vrf,
       Configuration c,
       Warnings warnings) {
-    // TODO: Implement full OSPF conversion when OspfProcess is available in datamodel
-    // This will include:
-    // - Converting OSPF areas
-    // - Converting OSPF interfaces
-    // - Converting OSPF network statements
-    // - Converting OSPF route redistribution
 
-    warnings.redFlagf(
-        "OSPF configuration in L3Out %s is not yet fully supported. OSPF areas: %s",
-        l3OutName, ospfConfig.getAreas() != null ? ospfConfig.getAreas().keySet() : "none");
+    String processId = ospfConfig.getProcessId();
+    if (processId == null || processId.isEmpty()) {
+      processId = l3OutName;
+    }
 
-    // For now, log the OSPF configuration that would be converted
+    // Infer router ID from node interfaces or use a default
+    Ip routerId = inferOspfRouterId(node, interfaces, l3OutName, warnings);
+
+    // Build areas map
+    ImmutableSortedMap.Builder<Long, OspfArea> areasBuilder = ImmutableSortedMap.naturalOrder();
+
     if (ospfConfig.getAreas() != null) {
-      for (AciConfiguration.OspfArea area : ospfConfig.getAreas().values()) {
-        warnings.redFlagf(
-            "OSPF area %s in L3Out %s: process ID %s",
-            area.getAreaId(), l3OutName, ospfConfig.getProcessId());
+      for (AciConfiguration.OspfArea aciArea : ospfConfig.getAreas().values()) {
+        Long areaNum = parseAreaId(aciArea.getAreaId());
+        if (areaNum == null) {
+          warnings.redFlagf(
+              "Invalid OSPF area ID %s in L3Out %s, skipping area", aciArea.getAreaId(), l3OutName);
+          continue;
+        }
+
+        OspfArea.Builder areaBuilder = OspfArea.builder().setNumber(areaNum);
+
+        // Set area type (stub, nssa, or regular)
+        String areaType = aciArea.getAreaType();
+        if (areaType != null) {
+          switch (areaType.toLowerCase()) {
+            case "stub":
+              areaBuilder.setStubType(StubType.STUB);
+              break;
+            case "nssa":
+              areaBuilder.setStubType(StubType.NSSA);
+              break;
+            default:
+              // Regular area - no special stub settings
+              areaBuilder.setNonStub();
+              break;
+          }
+        }
+
+        areasBuilder.put(areaNum, areaBuilder.build());
       }
+    }
+
+    // If no areas defined, create a default area 0
+    if (areasBuilder.build().isEmpty()) {
+      Long defaultArea = parseAreaId(ospfConfig.getAreaId());
+      if (defaultArea == null) {
+        defaultArea = 0L; // Default to backbone area
+      }
+      areasBuilder.put(defaultArea, OspfArea.builder().setNumber(defaultArea).build());
+    }
+
+    // Build the OSPF process
+    OspfProcess ospfProcess =
+        OspfProcess.builder()
+            .setProcessId(processId)
+            .setRouterId(routerId)
+            .setReferenceBandwidth(100.0) // 100 Mbps default reference bandwidth
+            .setAreas(areasBuilder.build())
+            .build();
+
+    // Add OSPF process to VRF
+    vrf.setOspfProcesses(ImmutableList.of(ospfProcess).stream());
+
+    // Apply OSPF interface settings to L3Out interfaces
+    applyOspfInterfaceSettings(ospfConfig, l3OutName, interfaces, processId, warnings);
+  }
+
+  /**
+   * Infers an OSPF router ID from node interfaces.
+   *
+   * @param node The fabric node
+   * @param interfaces Map of interfaces
+   * @param l3OutName The L3Out name for warning messages
+   * @param warnings Warnings container
+   * @return The inferred router ID
+   */
+  private static Ip inferOspfRouterId(
+      AciConfiguration.FabricNode node,
+      Map<String, Interface> interfaces,
+      String l3OutName,
+      Warnings warnings) {
+
+    // Try to find an interface with an IP address to use as router ID
+    for (Interface iface : interfaces.values()) {
+      if (iface.getAllAddresses().isEmpty()) {
+        continue;
+      }
+      InterfaceAddress addr = iface.getAllAddresses().iterator().next();
+      if (addr instanceof ConcreteInterfaceAddress) {
+        Ip ip = ((ConcreteInterfaceAddress) addr).getIp();
+        if (!ip.equals(Ip.ZERO)) {
+          return ip;
+        }
+      }
+    }
+
+    // Fallback: generate a pseudo-router ID based on node ID
+    String nodeId = node.getNodeId();
+    if (nodeId != null && !nodeId.isEmpty()) {
+      try {
+        int id = Integer.parseInt(nodeId.replaceAll("[^0-9]", ""));
+        // Generate a pseudo-IP in the 0.0.0.x range
+        return Ip.create(id & 0xFF);
+      } catch (NumberFormatException e) {
+        // Fall through to default
+      }
+    }
+
+    warnings.redFlagf("Could not infer OSPF router ID for L3Out %s, using 0.0.0.1", l3OutName);
+    return Ip.create(1);
+  }
+
+  /**
+   * Applies OSPF interface settings to interfaces.
+   *
+   * @param ospfConfig The OSPF configuration
+   * @param l3OutName The L3Out name
+   * @param interfaces Map of interfaces
+   * @param processId The OSPF process ID
+   * @param warnings Warnings container
+   */
+  private static void applyOspfInterfaceSettings(
+      AciConfiguration.OspfConfig ospfConfig,
+      String l3OutName,
+      Map<String, Interface> interfaces,
+      String processId,
+      Warnings warnings) {
+
+    if (ospfConfig.getOspfInterfaces() == null) {
+      return;
+    }
+
+    for (AciConfiguration.OspfInterface ospfIface : ospfConfig.getOspfInterfaces()) {
+      String ifaceName = ospfIface.getName();
+      Interface batfishIface = interfaces.get(ifaceName);
+
+      if (batfishIface == null) {
+        // Try to find interface with L3Out prefix
+        String l3OutIfaceName = "L3Out-" + l3OutName + "-" + ifaceName;
+        batfishIface = interfaces.get(l3OutIfaceName);
+      }
+
+      if (batfishIface == null) {
+        warnings.redFlagf(
+            "OSPF interface %s in L3Out %s not found in converted interfaces",
+            ifaceName, l3OutName);
+        continue;
+      }
+
+      // Determine the area for this interface
+      Long areaNum = parseAreaId(ospfConfig.getAreaId());
+      if (areaNum == null) {
+        areaNum = 0L; // Default to backbone area
+      }
+
+      // Build OSPF interface settings
+      OspfInterfaceSettings.Builder settingsBuilder =
+          OspfInterfaceSettings.builder()
+              .setEnabled(true)
+              .setProcess(processId)
+              .setAreaName(areaNum);
+
+      // Set cost if specified
+      if (ospfIface.getCost() != null) {
+        settingsBuilder.setCost(ospfIface.getCost());
+      }
+
+      // Set hello interval (default 10 seconds)
+      int helloInterval = ospfIface.getHelloInterval() != null ? ospfIface.getHelloInterval() : 10;
+      settingsBuilder.setHelloInterval(helloInterval);
+
+      // Set dead interval (default 40 seconds, typically 4x hello)
+      int deadInterval = ospfIface.getDeadInterval() != null ? ospfIface.getDeadInterval() : 40;
+      settingsBuilder.setDeadInterval(deadInterval);
+
+      // Set network type
+      OspfNetworkType networkType = convertOspfNetworkType(ospfIface.getNetworkType());
+      if (networkType != null) {
+        settingsBuilder.setNetworkType(networkType);
+      } else {
+        // Default to point-to-point for L3Out interfaces
+        settingsBuilder.setNetworkType(OspfNetworkType.POINT_TO_POINT);
+      }
+
+      // Set passive mode
+      boolean passive = ospfIface.getPassive() != null ? ospfIface.getPassive() : false;
+      settingsBuilder.setPassive(passive);
+
+      // Apply settings to interface
+      batfishIface.setOspfSettings(settingsBuilder.build());
     }
   }
 
