@@ -1103,6 +1103,63 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int bddop_ite = 14;
 
   @Override
+  public BDD onehot(BDD... bdds) {
+    if (bdds.length == 0) {
+      return makeBDD(BDDZERO);
+    }
+
+    // Extract node indices and sort by decreasing level using packed long[] for
+    // O(n log n) primitive sort without autoboxing.
+    int len = bdds.length;
+    long[] keyed = new long[len];
+    for (int i = 0; i < len; i++) {
+      int id = ((BDDImpl) bdds[i])._index;
+      int lvl = LEVEL(id);
+      keyed[i] = ((long) (Integer.MAX_VALUE - lvl) << 32) | (id & 0xFFFFFFFFL);
+    }
+    Arrays.sort(keyed);
+    int[] ids = new int[len];
+    for (int i = 0; i < len; i++) {
+      ids[i] = (int) keyed[i];
+    }
+
+    // Build the onehot BDD bottom-up using direct int-level operations,
+    // avoiding BDDImpl wrapper creation/free per intermediate step.
+    if (applycache == null) {
+      applycache = FlatCacheI_init(cachesize);
+    }
+    if (itecache == null) {
+      int iteSize = Integer.highestOneBit(cachesize - 1) << 1;
+      if (iteSize < 16) iteSize = 16;
+      itecache = new FlatCacheIte(iteSize);
+    }
+    if (multiopcache == null) {
+      multiopcache = BddCacheMultiOp_init(cachesize);
+    }
+
+    INITREF();
+    int onehot = BDDZERO;
+    int allFalse = BDDONE;
+    PUSHREF(onehot);
+    PUSHREF(allFalse);
+
+    for (int i = 0; i < len; i++) {
+      int bdd = ids[i];
+      int newOnehot = ite_rec(bdd, allFalse, onehot);
+      SETREF(0, newOnehot);
+      onehot = newOnehot;
+      // allFalse = allFalse AND NOT bdd = allFalse DIFF bdd
+      applyop = bddop_diff;
+      int newAllFalse = apply_rec(allFalse, bdd);
+      SETREF(1, newAllFalse);
+      allFalse = newAllFalse;
+    }
+
+    checkresize();
+    return makeBDD(onehot);
+  }
+
+  @Override
   public BDD andLiterals(BDD... literals) {
     if (literals.length == 0) {
       return makeBDD(BDDONE);
