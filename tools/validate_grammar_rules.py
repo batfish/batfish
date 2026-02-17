@@ -105,6 +105,7 @@ class GrammarValidator:
                 current_mode = mode_match.group(1)
                 if current_mode not in self.mode_tokens:
                     self.mode_tokens[current_mode] = []
+                in_fragment = False  # Reset fragment flag when entering a mode
                 continue
 
             # Detect parser rule (lowercase start)
