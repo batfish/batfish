@@ -709,6 +709,51 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   /**
+   * Flat int[]-based cache specialized for ITE operations. Each entry stores [f, g, h, res] in 4
+   * consecutive ints (the operation code is always bddop_ite, so it's not stored).
+   */
+  private static final class FlatCacheIte implements Serializable {
+    static final int ENTRY_SHIFT = 2; // log2(4)
+    int[] data;
+    int mask;
+
+    FlatCacheIte(int numEntries) {
+      mask = numEntries - 1;
+      data = new int[numEntries << ENTRY_SHIFT];
+      for (int i = 0; i < data.length; i += 4) {
+        data[i] = -1; // f = -1 means unused
+      }
+    }
+
+    /** Returns the cached result for key (f, g, h), or -1 if not found. */
+    int lookup(int hash, int f, int g, int h, CacheStats stats) {
+      int eBase = (hash & mask) << ENTRY_SHIFT;
+      if (data[eBase] == f && data[eBase + 1] == g && data[eBase + 2] == h) {
+        if (CACHESTATS) {
+          stats.opHit++;
+        }
+        return data[eBase + 3];
+      }
+      if (CACHESTATS) {
+        stats.opMiss++;
+      }
+      return -1;
+    }
+
+    /** Stores a result for key (f, g, h). */
+    void store(int hash, int f, int g, int h, int res, CacheStats stats) {
+      int eBase = (hash & mask) << ENTRY_SHIFT;
+      if (CACHESTATS && data[eBase] != -1) {
+        stats.opOverwrite++;
+      }
+      data[eBase] = f;
+      data[eBase + 1] = g;
+      data[eBase + 2] = h;
+      data[eBase + 3] = res;
+    }
+  }
+
+  /**
    * Flat int[]-based cache for int-result operations. Eliminates pointer dereferences by storing
    * entries as contiguous ints: [a, b, c, res] tuples.
    */
@@ -1345,6 +1390,11 @@ public class JFactory extends BDDFactory implements Serializable {
     if (applycache == null) {
       applycache = FlatCacheI_init(cachesize);
     }
+    if (itecache == null) {
+      int iteSize = Integer.highestOneBit(cachesize - 1) << 1;
+      if (iteSize < 16) iteSize = 16;
+      itecache = new FlatCacheIte(iteSize);
+    }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
     }
@@ -1385,19 +1435,10 @@ public class JFactory extends BDDFactory implements Serializable {
       return apply_rec(f, g);
     }
 
-    // ITE uses the multiop cache to be cleaned properly.
-    int[] operands = new int[] {f, g, h};
-    int hash = MULTIOPHASH(operands, bddop_ite);
-    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
-    if (entry.a == bddop_ite && Arrays.equals(operands, entry.operands)) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.b;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    // ITE uses a dedicated flat cache for best performance
+    int hash = TRIPLE(f, g, h);
+    int cached = itecache.lookup(hash, f, g, h, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL(f) == LEVEL(g)) {
       if (LEVEL(f) == LEVEL(h)) {
@@ -1445,13 +1486,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.operands = operands;
-    entry.a = bddop_ite;
-    entry.b = res;
-    entry.hash = hash;
+    itecache.store(hash, f, g, h, res, cachestats);
 
     return res;
   }
@@ -4233,12 +4268,12 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int supportMin; /* Min. used level in support calc. */
   private transient int supportMax; /* Max. used level in support calc. */
   private @Nonnull transient int[] supportSet; /* The found support set */
-  private transient FlatCacheI
-      applycache; /* Cache for apply and ite results. See note in ite_rec. */
+  private transient FlatCacheI applycache; /* Cache for apply results */
   private transient FlatCacheI quantcache; /* Cache for exist/forall results */
   private transient FlatCacheI appexcache; /* Cache for appex/appall results */
   private transient FlatCacheI replacecache; /* Cache for replace results */
   private transient FlatCacheI misccache; /* Cache for other results */
+  private transient FlatCacheIte itecache; /* Cache for ITE results */
   private transient BddCache multiopcache; /* Cache for varargs operators */
   private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
@@ -4257,6 +4292,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private void bdd_operator_reset() {
     FlatCacheI_reset(applycache);
+    FlatCacheIte_reset(itecache);
     FlatCacheI_reset(quantcache);
     FlatCacheI_reset(appexcache);
     FlatCacheI_reset(replacecache);
@@ -4268,6 +4304,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private void bdd_operator_clean() {
     Stream.<Runnable>of(
             () -> FlatCacheI_clean_ab(applycache),
+            () -> FlatCacheIte_clean(itecache),
             () -> FlatCacheI_clean_a(quantcache),
             () -> FlatCacheI_clean_ab(appexcache),
             () -> FlatCacheI_clean_ab(replacecache),
@@ -4291,6 +4328,7 @@ public class JFactory extends BDDFactory implements Serializable {
   public int setCacheSize(int newcachesize) {
     int old = cachesize;
     FlatCacheI_resize_apply(newcachesize);
+    FlatCacheIte_resize(newcachesize);
     quantcache = FlatCacheI_resize(quantcache, newcachesize);
     appexcache = FlatCacheI_resize(appexcache, newcachesize);
     replacecache = FlatCacheI_resize(replacecache, newcachesize);
@@ -4305,6 +4343,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int newcachesize = bddnodesize / cacheratio;
 
       FlatCacheI_resize_apply(newcachesize);
+      FlatCacheIte_resize(newcachesize);
       quantcache = FlatCacheI_resize(quantcache, newcachesize);
       appexcache = FlatCacheI_resize(appexcache, newcachesize);
       replacecache = FlatCacheI_resize(replacecache, newcachesize);
@@ -4488,6 +4527,35 @@ public class JFactory extends BDDFactory implements Serializable {
     newsize = Integer.highestOneBit(newsize - 1) << 1;
     if (newsize < 16) newsize = 16;
     applycache = new FlatCacheI(newsize);
+  }
+
+  private static void FlatCacheIte_reset(FlatCacheIte cache) {
+    if (cache == null) return;
+    for (int i = 0; i < cache.data.length; i += 4) {
+      cache.data[i] = -1;
+    }
+  }
+
+  private void FlatCacheIte_clean(FlatCacheIte cache) {
+    if (cache == null) return;
+    int[] data = cache.data;
+    for (int i = 0; i < data.length; i += 4) {
+      int f = data[i];
+      if (f < 0) continue;
+      if (LOW(f) == INVALID_BDD
+          || LOW(data[i + 1]) == INVALID_BDD
+          || LOW(data[i + 2]) == INVALID_BDD
+          || LOW(data[i + 3]) == INVALID_BDD) {
+        data[i] = -1;
+      }
+    }
+  }
+
+  private void FlatCacheIte_resize(int newsize) {
+    if (itecache == null) return;
+    newsize = Integer.highestOneBit(newsize - 1) << 1;
+    if (newsize < 16) newsize = 16;
+    itecache = new FlatCacheIte(newsize);
   }
 
   private static BigIntegerBddCacheData BddCache_lookupBigInteger(BddCache cache, int hash) {
