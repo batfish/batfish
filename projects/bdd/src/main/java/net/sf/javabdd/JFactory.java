@@ -934,11 +934,7 @@ public final class JFactory extends BDDFactory implements Serializable {
   }
 
   private int NODEHASH(int lvl, int l, int h) {
-    int hash = lvl + l * 1183477 + h * 1296043;
-    hash ^= (hash >>> 16);
-    hash *= 0x45d9f3b;
-    hash ^= (hash >>> 16);
-    return hash & bddnodemask;
+    return TRIPLE(lvl, l, h) & bddnodemask;
   }
 
   @Override
