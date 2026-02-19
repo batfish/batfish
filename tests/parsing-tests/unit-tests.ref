@@ -88246,27 +88246,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88274,27 +88274,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88302,27 +88302,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88330,27 +88330,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88358,19 +88358,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88378,19 +88378,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88494,27 +88494,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88522,27 +88522,27 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-3. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf-4. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine-2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88550,19 +88550,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine2. Adding fallback fabric interfaces based on role."
             }
           ]
         },
@@ -88570,19 +88570,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node leaf2. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine1. Adding fallback fabric interfaces based on role."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+              "text" : "No interfaces defined for fabric node spine2. Adding fallback fabric interfaces based on role."
             }
           ]
         }
