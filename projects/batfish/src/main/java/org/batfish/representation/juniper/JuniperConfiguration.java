@@ -3370,7 +3370,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         viStaticRoutes.add(rBuilder.setNextHop(NextHopInterface.of(nhInt)).build());
       }
       for (Ip nhIp : route.getNextHopIp()) {
-        viStaticRoutes.add(rBuilder.setNextHop(NextHopIp.of(nhIp)).build());
+        if (nhIp.equals(Ip.ZERO)) {
+          // next-hop 0.0.0.0 is not a valid next-hop IP, treat as discard.
+          viStaticRoutes.add(rBuilder.setNextHop(NextHopDiscard.instance()).build());
+        } else {
+          viStaticRoutes.add(rBuilder.setNextHop(NextHopIp.of(nhIp)).build());
+        }
       }
     }
 
