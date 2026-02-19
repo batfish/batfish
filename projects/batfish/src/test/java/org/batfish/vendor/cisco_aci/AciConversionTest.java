@@ -354,6 +354,28 @@ public class AciConversionTest {
   }
 
   @Test
+  public void testCreateEdges_prefersExplicitFabricLinks() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("explicit-fabric-links");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    config.getFabricNodes().put("101", createFabricNode("101", "spine1", "1", "spine"));
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "1", "leaf"));
+    config.setFabricLinks(
+        ImmutableList.of(
+            new AciConfiguration.FabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
+
+    var edges = AciConversion.createLayer1Edges(config);
+
+    assertThat(edges.size(), equalTo(1));
+    Layer1Edge edge = edges.iterator().next();
+    assertThat(edge.getNode1().getHostname(), equalTo("leaf1"));
+    assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/50"));
+    assertThat(edge.getNode2().getHostname(), equalTo("spine1"));
+    assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/24"));
+  }
+
+  @Test
   public void testContractAclTrafficMatching() {
     AciConfiguration aciConfig = createTestAciConfiguration();
     Warnings warnings = new Warnings(false, true, true);

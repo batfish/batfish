@@ -585,95 +585,112 @@ public final class AciConversion {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
     Map<String, String> nodeIdToHostname = computeNodeIdToHostnameMap(aciConfig, null);
 
-    // Create a basic spine-leaf topology
-    List<AciConfiguration.FabricNode> spines =
-        aciConfig.getFabricNodes().values().stream()
-            .filter(node -> node.getRole() != null && "spine".equalsIgnoreCase(node.getRole()))
-            .collect(Collectors.toList());
-
-    // Include both "leaf" and "service"/"services" nodes as leaves
-    // (service nodes are leaf switches that provide connectivity to services)
-    List<AciConfiguration.FabricNode> leaves =
-        aciConfig.getFabricNodes().values().stream()
-            .filter(
-                node ->
-                    node.getRole() != null
-                        && ("leaf".equalsIgnoreCase(node.getRole())
-                            || "services".equalsIgnoreCase(node.getRole())
-                            || "service".equalsIgnoreCase(node.getRole())))
-            .collect(Collectors.toList());
-
-    // Connect each leaf to each spine
-    int spineIndex = 0;
-    for (AciConfiguration.FabricNode leaf : leaves) {
-      String leafNodeId = leaf.getNodeId();
-      String leafHostname = leafNodeId != null ? nodeIdToHostname.get(leafNodeId) : null;
-      if (leafHostname == null) {
-        continue;
+    if (!aciConfig.getFabricLinks().isEmpty()) {
+      // Prefer explicit APIC fabricLink topology when present.
+      for (AciConfiguration.FabricLink link : aciConfig.getFabricLinks()) {
+        String node1Hostname = nodeIdToHostname.get(link.getNode1Id());
+        String node2Hostname = nodeIdToHostname.get(link.getNode2Id());
+        if (node1Hostname == null || node2Hostname == null) {
+          continue;
+        }
+        if (link.getNode1Interface() == null || link.getNode2Interface() == null) {
+          continue;
+        }
+        edges.add(
+            new Layer1Edge(
+                node1Hostname, link.getNode1Interface(), node2Hostname, link.getNode2Interface()));
       }
+    } else {
+      // Create a basic spine-leaf topology
+      List<AciConfiguration.FabricNode> spines =
+          aciConfig.getFabricNodes().values().stream()
+              .filter(node -> node.getRole() != null && "spine".equalsIgnoreCase(node.getRole()))
+              .collect(Collectors.toList());
 
-      // Get available interfaces from leaf (merge both sources)
-      // Source 1: Fabric node interfaces (l1PhysIf)
-      // Source 2: Path attachment interfaces (EPG attachments)
-      Set<String> leafInterfaces = new LinkedHashSet<>();
-      if (leaf.getInterfaces() != null) {
-        leafInterfaces.addAll(leaf.getInterfaces().keySet());
-      }
-      // Also add interfaces discovered from path attachments
-      if (aciConfig.getNodeInterfaces() != null
-          && aciConfig.getNodeInterfaces().containsKey(leafNodeId)) {
-        leafInterfaces.addAll(aciConfig.getNodeInterfaces().get(leafNodeId));
-      }
+      // Include both "leaf" and "service"/"services" nodes as leaves
+      // (service nodes are leaf switches that provide connectivity to services)
+      List<AciConfiguration.FabricNode> leaves =
+          aciConfig.getFabricNodes().values().stream()
+              .filter(
+                  node ->
+                      node.getRole() != null
+                          && ("leaf".equalsIgnoreCase(node.getRole())
+                              || "services".equalsIgnoreCase(node.getRole())
+                              || "service".equalsIgnoreCase(node.getRole())))
+              .collect(Collectors.toList());
 
-      // For each spine, use a different leaf interface to model realistic fabric connectivity
-      spineIndex = 0;
-      for (AciConfiguration.FabricNode spine : spines) {
-        String spineNodeId = spine.getNodeId();
-        String spineHostname = spineNodeId != null ? nodeIdToHostname.get(spineNodeId) : null;
-        if (spineHostname == null) {
-          spineIndex++;
+      // Connect each leaf to each spine
+      int spineIndex = 0;
+      for (AciConfiguration.FabricNode leaf : leaves) {
+        String leafNodeId = leaf.getNodeId();
+        String leafHostname = leafNodeId != null ? nodeIdToHostname.get(leafNodeId) : null;
+        if (leafHostname == null) {
           continue;
         }
 
-        // Select leaf interface - use indexed interface if available, otherwise default
-        List<String> leafIfaceList = new ArrayList<>(leafInterfaces);
-        String leafIface =
-            spineIndex < leafIfaceList.size()
-                ? leafIfaceList.get(spineIndex)
-                : "Ethernet1/" + (spineIndex + 1);
-
-        // For spine, use interfaces from fabric node (l1PhysIf) or generate default
-        String spineIface;
-        List<String> spineIfaceList = new ArrayList<>();
-        if (spine.getInterfaces() != null) {
-          spineIfaceList.addAll(spine.getInterfaces().keySet());
+        // Get available interfaces from leaf (merge both sources)
+        // Source 1: Fabric node interfaces (l1PhysIf)
+        // Source 2: Path attachment interfaces (EPG attachments)
+        Set<String> leafInterfaces = new LinkedHashSet<>();
+        if (leaf.getInterfaces() != null) {
+          leafInterfaces.addAll(leaf.getInterfaces().keySet());
         }
-        spineIface =
-            spineIndex < spineIfaceList.size()
-                ? spineIfaceList.get(spineIndex)
-                : "Ethernet1/" + (spineIndex + 1);
+        // Also add interfaces discovered from path attachments
+        if (aciConfig.getNodeInterfaces() != null
+            && aciConfig.getNodeInterfaces().containsKey(leafNodeId)) {
+          leafInterfaces.addAll(aciConfig.getNodeInterfaces().get(leafNodeId));
+        }
 
-        edges.add(new Layer1Edge(leafHostname, leafIface, spineHostname, spineIface));
-        spineIndex++;
+        // For each spine, use a different leaf interface to model realistic fabric connectivity
+        spineIndex = 0;
+        for (AciConfiguration.FabricNode spine : spines) {
+          String spineNodeId = spine.getNodeId();
+          String spineHostname = spineNodeId != null ? nodeIdToHostname.get(spineNodeId) : null;
+          if (spineHostname == null) {
+            spineIndex++;
+            continue;
+          }
+
+          // Select leaf interface - use indexed interface if available, otherwise default
+          List<String> leafIfaceList = new ArrayList<>(leafInterfaces);
+          String leafIface =
+              spineIndex < leafIfaceList.size()
+                  ? leafIfaceList.get(spineIndex)
+                  : "Ethernet1/" + (spineIndex + 1);
+
+          // For spine, use interfaces from fabric node (l1PhysIf) or generate default
+          String spineIface;
+          List<String> spineIfaceList = new ArrayList<>();
+          if (spine.getInterfaces() != null) {
+            spineIfaceList.addAll(spine.getInterfaces().keySet());
+          }
+          spineIface =
+              spineIndex < spineIfaceList.size()
+                  ? spineIfaceList.get(spineIndex)
+                  : "Ethernet1/" + (spineIndex + 1);
+
+          edges.add(new Layer1Edge(leafHostname, leafIface, spineHostname, spineIface));
+          spineIndex++;
+        }
       }
-    }
 
-    // Create VPC peer-link edges
-    for (AciConfiguration.VpcPair vpcPair : aciConfig.getVpcPairs().values()) {
-      String peer1NodeId = vpcPair.getPeer1NodeId();
-      String peer2NodeId = vpcPair.getPeer2NodeId();
+      // Create VPC peer-link edges
+      for (AciConfiguration.VpcPair vpcPair : aciConfig.getVpcPairs().values()) {
+        String peer1NodeId = vpcPair.getPeer1NodeId();
+        String peer2NodeId = vpcPair.getPeer2NodeId();
 
-      AciConfiguration.FabricNode peer1 = aciConfig.getFabricNodes().get(peer1NodeId);
-      AciConfiguration.FabricNode peer2 = aciConfig.getFabricNodes().get(peer2NodeId);
+        AciConfiguration.FabricNode peer1 = aciConfig.getFabricNodes().get(peer1NodeId);
+        AciConfiguration.FabricNode peer2 = aciConfig.getFabricNodes().get(peer2NodeId);
 
-      if (peer1 != null && peer2 != null) {
-        // VPC peer-link interface name
-        String vpcIfaceName = "port-channel1";
+        if (peer1 != null && peer2 != null) {
+          // VPC peer-link interface name
+          String vpcIfaceName = "port-channel1";
 
-        String peer1Hostname = nodeIdToHostname.get(peer1NodeId);
-        String peer2Hostname = nodeIdToHostname.get(peer2NodeId);
-        if (peer1Hostname != null && peer2Hostname != null) {
-          edges.add(new Layer1Edge(peer1Hostname, vpcIfaceName, peer2Hostname, vpcIfaceName));
+          String peer1Hostname = nodeIdToHostname.get(peer1NodeId);
+          String peer2Hostname = nodeIdToHostname.get(peer2NodeId);
+          if (peer1Hostname != null && peer2Hostname != null) {
+            edges.add(new Layer1Edge(peer1Hostname, vpcIfaceName, peer2Hostname, vpcIfaceName));
+          }
         }
       }
     }

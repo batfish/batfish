@@ -102,6 +102,7 @@ import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -427,6 +428,52 @@ public class BatfishTest {
     assertThat(
         vendorConfigurations.keySet(),
         equalTo(ImmutableSet.of(routerFile, RELPATH_AWS_CONFIGS_FILE)));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations_ciscoAciConfigsOnlySupplementalIgnored()
+      throws IOException {
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
+    String routerFile = "rtr1";
+    String fabricLinksJson =
+        "{\"totalCount\":\"1\",\"imdata\":[{\"fabricLink\":{\"attributes\":{"
+            + "\"n1\":\"201\",\"n2\":\"101\",\"s1\":\"1\",\"s2\":\"1\","
+            + "\"p1\":\"50\",\"p2\":\"24\",\"linkState\":\"ok\""
+            + "}}}]}";
+    TestrigText testrigText =
+        TestrigText.builder().setConfigurationFiles(snapshotPath, routerFile).build();
+    testrigText.setCiscoAciConfigBytes(
+        ImmutableMap.of("outputtopology_4.json", fabricLinksJson.getBytes(UTF_8)));
+
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText, _folder);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(vendorConfigurations.keySet(), equalTo(ImmutableSet.of(routerFile)));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations_ciscoAciConfigsGroupedWithSupplemental()
+      throws IOException {
+    String apicJson = "{\"polUni\":{\"children\":[]}}";
+    String fabricLinksJson =
+        "{\"totalCount\":\"1\",\"imdata\":[{\"fabricLink\":{\"attributes\":{"
+            + "\"n1\":\"201\",\"n2\":\"101\",\"s1\":\"1\",\"s2\":\"1\","
+            + "\"p1\":\"50\",\"p2\":\"24\",\"linkState\":\"ok\""
+            + "}}}]}";
+    TestrigText testrigText = TestrigText.builder().build();
+    testrigText.setCiscoAciConfigBytes(
+        ImmutableMap.of(
+            "apic.json", apicJson.getBytes(UTF_8),
+            "outputtopology_4.json", fabricLinksJson.getBytes(UTF_8)));
+
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText, _folder);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(vendorConfigurations.keySet(), equalTo(ImmutableSet.of("aci-apic")));
+    AciConfiguration aci = (AciConfiguration) vendorConfigurations.get("aci-apic");
+    assertThat(aci.getFabricLinks().size(), equalTo(1));
   }
 
   @Test

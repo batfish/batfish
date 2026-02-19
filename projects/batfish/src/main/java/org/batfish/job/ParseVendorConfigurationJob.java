@@ -13,8 +13,10 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -115,8 +117,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   private final @Nonnull Map<String, FileParseResult> _fileResults;
 
   final NetworkSnapshot _snapshot;
-
-  /** Job-level (non-file-specific) warnings */
   private final @Nonnull Warnings _warnings;
 
   public ParseVendorConfigurationJob(
@@ -324,19 +324,49 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case CISCO_ACI:
         {
-          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-          String filename = fileEntry.getKey();
-          String fileText = fileEntry.getValue();
-          try {
-            return AciConfiguration.fromFile(
-                filename, fileText, _fileResults.get(filename).getWarnings());
-          } catch (Exception e) {
-            throw new BatfishException(
-                String.format(
-                    "Failed to create ACI config from file: '%s', with error: %s",
-                    filename, e.getMessage()),
-                e);
+          AciConfiguration mergedConfig = null;
+          List<AciConfiguration.FabricLink> fabricLinks = new ArrayList<>();
+          String primaryFilename = null;
+          for (Entry<String, String> fileEntry : _fileTexts.entrySet()) {
+            String filename = fileEntry.getKey();
+            String fileText = fileEntry.getValue();
+            try {
+              if (AciConfiguration.isFabricLinksJson(fileText)) {
+                fabricLinks.addAll(AciConfiguration.parseFabricLinksJson(filename, fileText));
+                continue;
+              }
+              AciConfiguration config =
+                  AciConfiguration.fromFile(
+                      filename, fileText, _fileResults.get(filename).getWarnings());
+              if (mergedConfig == null) {
+                mergedConfig = config;
+                primaryFilename = filename;
+              } else {
+                _fileResults
+                    .get(filename)
+                    .getWarnings()
+                    .redFlagf(
+                        "Multiple APIC model files found in cisco_aci_configs; ignoring %s in favor"
+                            + " of %s",
+                        filename, primaryFilename);
+              }
+            } catch (Exception e) {
+              throw new BatfishException(
+                  String.format(
+                      "Failed to create ACI config from file: '%s', with error: %s",
+                      filename, e.getMessage()),
+                  e);
+            }
           }
+          if (mergedConfig == null) {
+            throw new BatfishException(
+                "No APIC model file found in cisco_aci_configs; expected at least one polUni"
+                    + " JSON/XML file");
+          }
+          if (!fabricLinks.isEmpty()) {
+            mergedConfig.setFabricLinks(fabricLinks);
+          }
+          return mergedConfig;
         }
 
       case CUMULUS_CONCATENATED:

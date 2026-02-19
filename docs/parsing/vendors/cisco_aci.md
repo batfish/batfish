@@ -94,6 +94,43 @@ ACI configurations can also be exported in XML format with equivalent structure:
 
 ## Parsing Flow
 
+### Snapshot Packaging and Optional `cisco_aci_configs/`
+
+Cisco ACI parsing now supports two input styles, both valid:
+
+1. **Legacy / single-file style (still supported)**
+   Place an APIC export (`polUni` JSON or XML) under `configs/` like any other network config.
+
+2. **ACI-specific style (optional)**
+   Place ACI inputs under `cisco_aci_configs/`.
+
+`cisco_aci_configs/` is **optional**. If it is not present, Batfish continues to parse ACI APIC
+files from `configs/` as before.
+
+When `cisco_aci_configs/` is present:
+
+- Batfish looks for at least one **primary APIC model file** (`polUni` JSON/XML).
+- Optional supplemental fabric topology payloads (APIC `fabricLink` export JSON) are detected and
+  merged into the ACI model as explicit fabric links.
+- If `cisco_aci_configs/` contains only supplemental `fabricLink` JSON and no primary APIC file,
+  that folder is ignored for ACI parsing (no failure).
+
+Current behavior for multiple primary APIC files in `cisco_aci_configs/`:
+
+- The first primary file is used.
+- Additional primary files are ignored with warnings.
+
+Recommended snapshot layout for enriched ACI modeling:
+
+```text
+<snapshot>/
+├── cisco_aci_configs/
+│   ├── apic.json                 # primary APIC export (polUni)
+│   └── outputtopology_4.json     # optional APIC fabricLink export
+└── configs/
+    └── ...                       # other vendors and/or legacy ACI placement
+```
+
 ### 1. Root Deserialization
 
 ```java

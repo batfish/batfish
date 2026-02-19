@@ -206,6 +206,79 @@ public final class AciConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Returns {@code true} iff the provided JSON text looks like a fabricLink export. */
+  public static boolean isFabricLinksJson(String text) {
+    try {
+      JsonNode rootNode = BatfishObjectMapper.mapper().readTree(text);
+      JsonNode imdata = rootNode.get("imdata");
+      if (imdata == null || !imdata.isArray() || imdata.isEmpty()) {
+        return false;
+      }
+      for (JsonNode item : imdata) {
+        if (!item.has("fabricLink")) {
+          return false;
+        }
+      }
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Parses APIC fabricLink export JSON into explicit Layer1 link records.
+   *
+   * <p>Expected format is the common APIC response shape with top-level {@code imdata[]} containing
+   * {@code fabricLink} objects.
+   */
+  public static @Nonnull List<FabricLink> parseFabricLinksJson(String filename, String text)
+      throws IOException {
+    JsonNode rootNode = BatfishObjectMapper.mapper().readTree(text);
+    JsonNode imdata = rootNode.get("imdata");
+    if (imdata == null || !imdata.isArray()) {
+      throw new IOException("Not a fabricLink JSON payload: " + filename);
+    }
+    List<FabricLink> links = new ArrayList<>();
+    for (JsonNode item : imdata) {
+      JsonNode fabricLinkNode = item.get("fabricLink");
+      if (fabricLinkNode == null || !fabricLinkNode.isObject()) {
+        continue;
+      }
+      JsonNode attrs = fabricLinkNode.get("attributes");
+      if (attrs == null || !attrs.isObject()) {
+        continue;
+      }
+      String node1Id = textOrNull(attrs.get("n1"));
+      String node2Id = textOrNull(attrs.get("n2"));
+      String slot1 = textOrNull(attrs.get("s1"));
+      String slot2 = textOrNull(attrs.get("s2"));
+      String port1 = textOrNull(attrs.get("p1"));
+      String port2 = textOrNull(attrs.get("p2"));
+      if (node1Id == null || node2Id == null || port1 == null || port2 == null) {
+        continue;
+      }
+      FabricLink link =
+          new FabricLink(
+              node1Id, toAciInterfaceName(slot1, port1), node2Id, toAciInterfaceName(slot2, port2));
+      link.setLinkState(textOrNull(attrs.get("linkState")));
+      links.add(link);
+    }
+    return links;
+  }
+
+  private static @Nullable String textOrNull(@Nullable JsonNode node) {
+    if (node == null || node.isNull()) {
+      return null;
+    }
+    String text = node.asText();
+    return text.isEmpty() ? null : text;
+  }
+
+  private static @Nonnull String toAciInterfaceName(@Nullable String slot, String port) {
+    String effectiveSlot = slot == null || slot.isEmpty() ? "1" : slot;
+    return String.format("Ethernet%s/%s", effectiveSlot, port);
+  }
+
   /** Extracts a hostname from the polUni structure. Uses filename-derived name if not found. */
   private static String extractHostname(AciPolUniInternal polUni, String filename) {
     if (polUni.getAttributes() != null && polUni.getAttributes().getName() != null) {
@@ -2132,6 +2205,15 @@ public final class AciConfiguration extends VendorConfiguration {
     _fabricNodes = new TreeMap<>(fabricNodes);
   }
 
+  /** Returns explicit fabric links parsed from optional fabricLink exports. */
+  public @Nonnull List<FabricLink> getFabricLinks() {
+    return _fabricLinks;
+  }
+
+  public void setFabricLinks(List<FabricLink> fabricLinks) {
+    _fabricLinks = new ArrayList<>(fabricLinks);
+  }
+
   /**
    * Returns the map of VPC pairs in the ACI fabric.
    *
@@ -2354,6 +2436,7 @@ public final class AciConfiguration extends VendorConfiguration {
     _filters = ImmutableMap.copyOf(_filters);
     _tabooContracts = ImmutableMap.copyOf(_tabooContracts);
     _fabricNodes = ImmutableMap.copyOf(_fabricNodes);
+    _fabricLinks = ImmutableList.copyOf(_fabricLinks);
     _l3Outs = ImmutableMap.copyOf(_l3Outs);
   }
 
