@@ -4320,13 +4320,7 @@ public final class JFactory extends BDDFactory implements Serializable {
 
   private void bdd_noderesize(boolean doRehash) {
     int oldsize = bddnodesize;
-    int newsize = bddnodesize;
-
-    if (increasefactor > 0) {
-      newsize += (int) (newsize * increasefactor);
-    } else {
-      newsize = newsize << 1;
-    }
+    int newsize = bddnodesize << 1;
 
     if (newsize < 0 || newsize > MAX_NODESIZE) {
       // prevent integer overflow
@@ -4342,14 +4336,14 @@ public final class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public int setNodeTableSize(int size) {
+    size = roundUpPow2(size);
     int old = bddnodesize;
     doResize(true, old, size);
     return old;
   }
 
   private void doResize(boolean doRehash, int oldsize, int newsize) {
-    newsize = Integer.highestOneBit(newsize - 1) << 1; // round up to power of 2
-    if (newsize < 16) newsize = 16;
+    assert Integer.bitCount(newsize) == 1 : "newsize must be a power of 2";
     if (newsize <= oldsize) {
       return;
     }
@@ -4394,8 +4388,7 @@ public final class JFactory extends BDDFactory implements Serializable {
       bdd_error(BDD_RUNNING);
     }
 
-    bddnodesize = Integer.highestOneBit(initnodesize - 1) << 1; // round up to power of 2
-    if (bddnodesize < 16) bddnodesize = 16;
+    bddnodesize = roundUpPow2(initnodesize);
     bddnodemask = bddnodesize - 1;
 
     bddnodes = new int[bddnodesize * __node_size];
@@ -4426,7 +4419,7 @@ public final class JFactory extends BDDFactory implements Serializable {
     bddvarnum = 0;
     gbcollectnum = 0;
     gbcclock = 0;
-    cachesize = cs;
+    cachesize = roundUpPow2(cs);
 
     bdderrorcond = 0;
 
@@ -4562,9 +4555,19 @@ public final class JFactory extends BDDFactory implements Serializable {
     BddCache_reset(countcache);
   }
 
+  /** Round up to next power of 2, clamped to [16, MAX_NODESIZE]. */
+  private static int roundUpPow2(int size) {
+    size = Integer.highestOneBit(Math.max(size, 16) - 1) << 1;
+    if (size < 0 || size > MAX_NODESIZE) {
+      return MAX_NODESIZE;
+    }
+    return size;
+  }
+
   @Override
   public int setCacheSize(int newcachesize) {
     int old = cachesize;
+    newcachesize = roundUpPow2(newcachesize);
     if (applycache != null) applycache.resize(newcachesize);
     if (itecache != null) itecache.resize(newcachesize);
     if (quantcache != null) quantcache.resize(newcachesize);
@@ -4578,7 +4581,7 @@ public final class JFactory extends BDDFactory implements Serializable {
 
   private void bdd_operator_noderesize() {
     if (cacheratio > 0) {
-      int newcachesize = bddnodesize / cacheratio;
+      int newcachesize = roundUpPow2(bddnodesize / cacheratio);
 
       if (applycache != null) applycache.resize(newcachesize);
       if (itecache != null) itecache.resize(newcachesize);
@@ -4594,41 +4597,29 @@ public final class JFactory extends BDDFactory implements Serializable {
   }
 
   private BddCache BddCacheI_init(int size) {
-    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
-    if (size < 16) size = 16;
-
     BddCache cache = new BddCache();
     cache.table = new BddCacheDataI[size];
     Arrays.parallelSetAll(cache.table, i -> new BddCacheDataI());
     cache.tablesize = size;
     cache.tablemask = size - 1;
-
     return cache;
   }
 
   private BddCache BddCacheMultiOp_init(int size) {
-    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
-    if (size < 16) size = 16;
-
     BddCache cache = new BddCache();
     cache.table = new MultiOpBddCacheData[size];
     Arrays.parallelSetAll(cache.table, i -> new MultiOpBddCacheData());
     cache.tablesize = size;
     cache.tablemask = size - 1;
-
     return cache;
   }
 
   private BddCache BddCacheBigInteger_init(int size) {
-    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
-    if (size < 16) size = 16;
-
     BddCache cache = new BddCache();
     cache.table = new BigIntegerBddCacheData[size];
     Arrays.parallelSetAll(cache.table, i -> new BigIntegerBddCacheData());
     cache.tablesize = size;
     cache.tablemask = size - 1;
-
     return cache;
   }
 
@@ -4685,9 +4676,6 @@ public final class JFactory extends BDDFactory implements Serializable {
           cache.used(),
           cache.table.length);
     }
-
-    newsize = Integer.highestOneBit(newsize - 1) << 1; // round up to power of 2
-    if (newsize < 16) newsize = 16;
 
     if (cache.table instanceof BddCacheDataI[]) {
       cache.table =
@@ -5020,18 +5008,6 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
 
     minfreenodes = mf;
-    return old;
-  }
-
-  private double increasefactor;
-
-  @Override
-  public double setIncreaseFactor(double x) {
-    if (x < 0) {
-      return bdd_error(BDD_RANGE);
-    }
-    double old = increasefactor;
-    increasefactor = x;
     return old;
   }
 
