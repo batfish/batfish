@@ -39,5 +39,7 @@ set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 4294967295
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 metric 7
 set routing-instances ri3 routing-options static route 8.0.0.0/8 next-table inet.0
+# next-hop 0.0.0.0 should be treated as discard
+set routing-options static route 14.0.0.0/8 next-hop 0.0.0.0
 #
 set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
