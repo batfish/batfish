@@ -2232,6 +2232,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testZoneUndefinedInterface() {
+    // Zone references an interface with host-inbound-traffic that doesn't exist.
+    // Should not crash during conversion.
+    parseConfig("zone-undefined-interface");
+  }
+
+  @Test
   public void testEvpnEncapsulationExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vxlan-encap");
     assertEquals(EvpnEncapsulation.VXLAN, c.getMasterLogicalSystem().getEvpn().getEncapsulation());
