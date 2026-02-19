@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import org.batfish.common.Warnings;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests for {@link AciConfiguration} error handling and malformed input. */
@@ -162,7 +163,7 @@ public class AciErrorHandlingTest {
     AciConfiguration config = AciConfiguration.fromJson("circular-ref.json", json, new Warnings());
 
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertThat(tenant.getVrfs(), hasKey("tenant1:vrf1"));
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd1"));
   }
@@ -326,7 +327,7 @@ public class AciErrorHandlingTest {
 
     // Second VRF with same name should overwrite first
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertThat(tenant.getVrfs(), hasKey("tenant1:vrf1"));
   }
 

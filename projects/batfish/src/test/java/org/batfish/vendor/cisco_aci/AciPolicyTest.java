@@ -8,6 +8,8 @@ import static org.hamcrest.Matchers.hasSize;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration} for policy objects and enforcement. */
@@ -571,10 +573,10 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("policy-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("policy-tenant");
+    Tenant tenant = config.getTenants().get("policy-tenant");
     assertThat(tenant.getContracts(), hasKey("policy-tenant:policy-contract"));
 
-    AciConfiguration.Contract contract = tenant.getContracts().get("policy-tenant:policy-contract");
+    Contract contract = tenant.getContracts().get("policy-tenant:policy-contract");
     assertThat(contract.getName(), equalTo("policy-tenant:policy-contract"));
     assertThat(contract.getScope(), equalTo("tenant"));
   }
@@ -590,7 +592,7 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("enforcement-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("enforcement-tenant");
+    Tenant tenant = config.getTenants().get("enforcement-tenant");
     assertThat(tenant.getEpgs().keySet(), hasSize(2));
     assertThat(tenant.getEpgs(), hasKey("enforcement-tenant:enforcement-app:epg-a"));
     assertThat(tenant.getEpgs(), hasKey("enforcement-tenant:enforcement-app:epg-b"));
@@ -607,11 +609,10 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("targets-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("targets-tenant");
+    Tenant tenant = config.getTenants().get("targets-tenant");
     assertThat(tenant.getContracts(), hasKey("targets-tenant:target-contract"));
 
-    AciConfiguration.Contract contract =
-        tenant.getContracts().get("targets-tenant:target-contract");
+    Contract contract = tenant.getContracts().get("targets-tenant:target-contract");
     assertThat(contract.getScope(), equalTo("global"));
   }
 
@@ -626,7 +627,7 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("scopes-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("scopes-tenant");
+    Tenant tenant = config.getTenants().get("scopes-tenant");
     assertThat(tenant.getContracts().keySet(), hasSize(3));
     assertThat(tenant.getContracts(), hasKey("scopes-tenant:tenant-scoped-contract"));
     assertThat(tenant.getContracts(), hasKey("scopes-tenant:app-scoped-contract"));
@@ -644,7 +645,7 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("priority-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("priority-tenant");
+    Tenant tenant = config.getTenants().get("priority-tenant");
     assertThat(tenant.getContracts().keySet(), hasSize(2));
     assertThat(tenant.getContracts(), hasKey("priority-tenant:high-priority-contract"));
     assertThat(tenant.getContracts(), hasKey("priority-tenant:low-priority-contract"));
@@ -661,7 +662,7 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("combo-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("combo-tenant");
+    Tenant tenant = config.getTenants().get("combo-tenant");
     assertThat(tenant.getContracts().keySet(), hasSize(2));
     assertThat(tenant.getContracts(), hasKey("combo-tenant:contract1"));
     assertThat(tenant.getContracts(), hasKey("combo-tenant:contract2"));
@@ -678,7 +679,7 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("defaults-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("defaults-tenant");
+    Tenant tenant = config.getTenants().get("defaults-tenant");
     assertThat(tenant.getVrfs(), hasKey("defaults-tenant:defaults-vrf"));
   }
 
@@ -693,11 +694,10 @@ public class AciPolicyTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("inheritance-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("inheritance-tenant");
+    Tenant tenant = config.getTenants().get("inheritance-tenant");
     assertThat(tenant.getContracts(), hasKey("inheritance-tenant:inherit-contract"));
 
-    AciConfiguration.Contract contract =
-        tenant.getContracts().get("inheritance-tenant:inherit-contract");
+    Contract contract = tenant.getContracts().get("inheritance-tenant:inherit-contract");
     assertThat(contract.getScope(), equalTo("context"));
   }
 }

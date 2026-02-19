@@ -20,6 +20,7 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciFabricLink;
 import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
@@ -146,7 +147,7 @@ public class ParseVendorConfigurationJobTest {
     AciConfiguration config = (AciConfiguration) result.getConfig();
     assertThat(config.getHostname(), equalTo("aci-apic"));
     assertThat(config.getFabricLinks().size(), equalTo(1));
-    AciConfiguration.FabricLink link = config.getFabricLinks().get(0);
+    AciFabricLink link = config.getFabricLinks().get(0);
     assertThat(link.getNode1Id(), equalTo("201"));
     assertThat(link.getNode1Interface(), equalTo("Ethernet1/50"));
     assertThat(link.getNode2Id(), equalTo("101"));

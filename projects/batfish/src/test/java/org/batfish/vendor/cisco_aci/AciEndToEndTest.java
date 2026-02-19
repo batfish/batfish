@@ -26,6 +26,12 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
+import org.batfish.vendor.cisco_aci.representation.AciManagementInfo;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /**
@@ -89,9 +95,8 @@ public class AciEndToEndTest {
     System.out.println("Number of fabric nodes: " + aciConfig.getFabricNodes().size());
 
     // Print fabric node details
-    for (Map.Entry<String, AciConfiguration.FabricNode> entry :
-        aciConfig.getFabricNodes().entrySet()) {
-      AciConfiguration.FabricNode node = entry.getValue();
+    for (Map.Entry<String, FabricNode> entry : aciConfig.getFabricNodes().entrySet()) {
+      FabricNode node = entry.getValue();
       System.out.println(
           "  - "
               + node.getName()
@@ -149,9 +154,8 @@ public class AciEndToEndTest {
     System.out.println("========================================");
     int bdCount = 0;
     int bdWithSubnets = 0;
-    for (Map.Entry<String, AciConfiguration.BridgeDomain> entry :
-        aciConfig.getBridgeDomains().entrySet()) {
-      AciConfiguration.BridgeDomain bd = entry.getValue();
+    for (Map.Entry<String, BridgeDomain> entry : aciConfig.getBridgeDomains().entrySet()) {
+      BridgeDomain bd = entry.getValue();
       System.out.println(
           "  - " + bd.getName() + " (Tenant: " + bd.getTenant() + ", VRF: " + bd.getVrf() + ")");
       if (bd.getSubnets() != null && !bd.getSubnets().isEmpty()) {
@@ -201,8 +205,8 @@ public class AciEndToEndTest {
     int epgCount = 0;
     int epgWithBd = 0;
     int epgWithContracts = 0;
-    for (Map.Entry<String, AciConfiguration.Epg> entry : aciConfig.getEpgs().entrySet()) {
-      AciConfiguration.Epg epg = entry.getValue();
+    for (Map.Entry<String, Epg> entry : aciConfig.getEpgs().entrySet()) {
+      Epg epg = entry.getValue();
       System.out.println("  - " + epg.getName() + " (Tenant: " + epg.getTenant() + ")");
       if (epg.getBridgeDomain() != null) {
         System.out.println("      BD: " + epg.getBridgeDomain());
@@ -230,8 +234,8 @@ public class AciEndToEndTest {
     System.out.println("========================================");
     int contractCount = 0;
     int contractWithSubjects = 0;
-    for (Map.Entry<String, AciConfiguration.Contract> entry : aciConfig.getContracts().entrySet()) {
-      AciConfiguration.Contract contract = entry.getValue();
+    for (Map.Entry<String, Contract> entry : aciConfig.getContracts().entrySet()) {
+      Contract contract = entry.getValue();
       System.out.println("  - " + contract.getName() + " (Tenant: " + contract.getTenant() + ")");
       if (contract.getDescription() != null && !contract.getDescription().isEmpty()) {
         System.out.println("      Description: " + contract.getDescription());
@@ -241,7 +245,7 @@ public class AciEndToEndTest {
       }
       if (contract.getSubjects() != null && !contract.getSubjects().isEmpty()) {
         System.out.println("      Subjects: " + contract.getSubjects().size());
-        for (AciConfiguration.Contract.Subject subject : contract.getSubjects()) {
+        for (Contract.Subject subject : contract.getSubjects()) {
           System.out.println(
               "        - " + subject.getName() + " (" + subject.getFilters().size() + " filters)");
         }
@@ -255,7 +259,7 @@ public class AciEndToEndTest {
     // Verify ACLs were created for contracts
     int totalAclLines = 0;
     for (Configuration config : configs.values()) {
-      for (AciConfiguration.Contract contract : aciConfig.getContracts().values()) {
+      for (Contract contract : aciConfig.getContracts().values()) {
         String aclName = AciConversion.getContractAclName(contract.getName());
         if (config.getIpAccessLists().containsKey(aclName)) {
           IpAccessList acl = config.getIpAccessLists().get(aclName);
@@ -292,8 +296,8 @@ public class AciEndToEndTest {
     System.out.println("Tenants");
     System.out.println("========================================");
     int tenantCount = 0;
-    for (Map.Entry<String, AciConfiguration.Tenant> entry : aciConfig.getTenants().entrySet()) {
-      AciConfiguration.Tenant tenant = entry.getValue();
+    for (Map.Entry<String, Tenant> entry : aciConfig.getTenants().entrySet()) {
+      Tenant tenant = entry.getValue();
       System.out.println("  - " + tenant.getName());
       System.out.println("      VRFs: " + tenant.getVrfs().size());
       System.out.println("      Bridge Domains: " + tenant.getBridgeDomains().size());
@@ -399,7 +403,7 @@ public class AciEndToEndTest {
     }
 
     // Verify all fabric nodes have corresponding configurations
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       String hostname = node.getName();
       assertNotNull("Fabric node should have a name", hostname);
       assertThat("Configuration should exist for node " + hostname, configs, hasKey(hostname));
@@ -420,7 +424,7 @@ public class AciEndToEndTest {
 
     // Check that each contract with subjects creates a properly structured ACL
     int contractsWithAcls = 0;
-    for (AciConfiguration.Contract contract : aciConfig.getContracts().values()) {
+    for (Contract contract : aciConfig.getContracts().values()) {
       if (contract.getSubjects() == null || contract.getSubjects().isEmpty()) {
         continue; // Skip contracts without subjects
       }
@@ -473,7 +477,7 @@ public class AciEndToEndTest {
     int bdWithSubnets = 0;
     int vlanInterfacesFound = 0;
 
-    for (AciConfiguration.BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
+    for (BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
       if (bd.getSubnets() != null && !bd.getSubnets().isEmpty()) {
         bdWithSubnets++;
         // Check if any configuration has a VLAN interface for this BD
@@ -529,7 +533,7 @@ public class AciEndToEndTest {
     int leafCount = 0;
     int otherCount = 0;
 
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       assertNotNull("Node should have ID", node.getNodeId());
       assertNotNull("Node should have name", node.getName());
 
@@ -572,8 +576,8 @@ public class AciEndToEndTest {
     int nodesWithMgmt = 0;
     int nodesWithoutMgmt = 0;
 
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
-      AciConfiguration.ManagementInfo mgmtInfo = node.getManagementInfo();
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
+      AciManagementInfo mgmtInfo = node.getManagementInfo();
 
       if (mgmtInfo != null && mgmtInfo.getAddress() != null) {
         nodesWithMgmt++;
@@ -646,7 +650,7 @@ public class AciEndToEndTest {
     // Count spines and leaves
     int spineCount = 0;
     int leafCount = 0;
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       String role = node.getRole();
       if ("spine".equalsIgnoreCase(role)) {
         spineCount++;
@@ -673,7 +677,7 @@ public class AciEndToEndTest {
 
     // Build hostname-to-role lookup for parsed fabric nodes.
     Map<String, String> roleByHostname = new java.util.HashMap<>();
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       if (node.getName() != null && node.getRole() != null) {
         roleByHostname.put(node.getName(), node.getRole());
       }

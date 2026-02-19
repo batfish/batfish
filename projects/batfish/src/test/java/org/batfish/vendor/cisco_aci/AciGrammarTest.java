@@ -24,6 +24,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
 import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /**
@@ -330,7 +335,7 @@ public class AciGrammarTest {
     assertThat(config.getTenants().keySet(), hasSize(1));
     assertThat(config.getTenants(), hasKey("myTenant"));
 
-    AciConfiguration.Tenant tenant = config.getTenants().get("myTenant");
+    Tenant tenant = config.getTenants().get("myTenant");
     assertThat(tenant.getName(), equalTo("myTenant"));
   }
 
@@ -343,7 +348,7 @@ public class AciGrammarTest {
     assertThat(config.getTenants().keySet(), hasSize(1));
     assertThat(config.getTenants(), hasKey("test_tenant"));
 
-    AciConfiguration.Tenant tenant = config.getTenants().get("test_tenant");
+    Tenant tenant = config.getTenants().get("test_tenant");
     assertThat(tenant.getVrfs().keySet(), hasSize(1));
     assertThat(tenant.getVrfs(), hasKey("test_tenant:test_vrf"));
 
@@ -354,7 +359,7 @@ public class AciGrammarTest {
     assertThat(config.getBridgeDomains().keySet(), hasSize(1));
     assertThat(config.getBridgeDomains(), hasKey("test_tenant:test_bd"));
 
-    AciConfiguration.BridgeDomain bd = config.getBridgeDomains().get("test_tenant:test_bd");
+    BridgeDomain bd = config.getBridgeDomains().get("test_tenant:test_bd");
     assertThat(bd.getName(), equalTo("test_tenant:test_bd"));
     assertThat(bd.getTenant(), equalTo("test_tenant"));
     assertThat(bd.getVrf(), equalTo("test_tenant:test_vrf"));
@@ -369,18 +374,18 @@ public class AciGrammarTest {
     assertThat(config.getContracts().keySet(), hasSize(1));
     assertThat(config.getContracts(), hasKey("test_tenant:web_contract"));
 
-    AciConfiguration.Contract contract = config.getContracts().get("test_tenant:web_contract");
+    Contract contract = config.getContracts().get("test_tenant:web_contract");
     assertThat(contract.getName(), equalTo("test_tenant:web_contract"));
     assertThat(contract.getTenant(), equalTo("test_tenant"));
     assertThat(contract.getDescription(), equalTo("Web traffic contract"));
     assertThat(contract.getScope(), equalTo("tenant"));
     assertThat(contract.getSubjects(), hasSize(1));
 
-    AciConfiguration.Contract.Subject subject = contract.getSubjects().get(0);
+    Contract.Subject subject = contract.getSubjects().get(0);
     assertThat(subject.getName(), equalTo("http"));
     assertThat(subject.getFilters(), hasSize(1));
 
-    AciConfiguration.Contract.Filter filter = subject.getFilters().get(0);
+    Contract.FilterRef filter = subject.getFilters().get(0);
     assertThat(filter.getName(), equalTo("http_filter"));
   }
 
@@ -393,7 +398,7 @@ public class AciGrammarTest {
     assertThat(config.getFabricNodes().keySet(), hasSize(1));
     assertThat(config.getFabricNodes(), hasKey("101"));
 
-    AciConfiguration.FabricNode node = config.getFabricNodes().get("101");
+    FabricNode node = config.getFabricNodes().get("101");
     assertThat(node.getNodeId(), equalTo("101"));
     assertThat(node.getName(), equalTo("spine1"));
     assertThat(node.getRole(), equalTo("spine"));
@@ -409,7 +414,7 @@ public class AciGrammarTest {
     assertThat(config.getEpgs().keySet(), hasSize(1));
     assertThat(config.getEpgs(), hasKey("test_tenant:web_app:web_epg"));
 
-    AciConfiguration.Epg epg = config.getEpgs().get("test_tenant:web_app:web_epg");
+    Epg epg = config.getEpgs().get("test_tenant:web_app:web_epg");
     assertThat(epg.getName(), equalTo("test_tenant:web_app:web_epg"));
     assertThat(epg.getTenant(), equalTo("test_tenant"));
     assertThat(epg.getBridgeDomain(), equalTo("test_tenant:web_bd"));
@@ -547,7 +552,7 @@ public class AciGrammarTest {
     assertThat(config.getFabricNodes().keySet(), hasSize(1));
     assertThat(config.getFabricNodes(), hasKey("spine1"));
 
-    AciConfiguration.FabricNode node = config.getFabricNodes().get("spine1");
+    FabricNode node = config.getFabricNodes().get("spine1");
     assertThat(node.getName(), equalTo("spine1"));
   }
 
@@ -610,13 +615,13 @@ public class AciGrammarTest {
     config.setHostname("test-fabric");
 
     // Create contract with TCP filter
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("web_contract");
+    Contract contract = new Contract("web_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("http_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("tcp_80");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("80"));
@@ -651,13 +656,13 @@ public class AciGrammarTest {
     config.setHostname("test-fabric");
 
     // Create contract with ICMP filter
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("icmp_contract");
+    Contract contract = new Contract("icmp_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("icmp_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("icmp_echo");
     filter.setIpProtocol("icmp");
     filter.setIcmpType("8"); // Echo request
@@ -689,13 +694,13 @@ public class AciGrammarTest {
     config.setHostname("test-fabric");
 
     // Create contract with port range filter
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("range_contract");
+    Contract contract = new Contract("range_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("range_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("tcp_range");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("8000-9000"));
@@ -723,13 +728,13 @@ public class AciGrammarTest {
     config.setHostname("test-fabric");
 
     // Create contract with protocol number (6 = TCP)
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("proto_contract");
+    Contract contract = new Contract("proto_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("proto_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("proto_6");
     filter.setIpProtocol("6");
 
@@ -756,13 +761,13 @@ public class AciGrammarTest {
     config.setHostname("test-fabric");
 
     // Create contract with source/destination IP
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("ip_contract");
+    Contract contract = new Contract("ip_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("ip_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("src_dst_filter");
     filter.setIpProtocol("ip");
     filter.setSourceAddress("10.1.1.0/24");
@@ -875,7 +880,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.Contract contract = config.getContracts().get("test_tenant:multi_contract");
+    Contract contract = config.getContracts().get("test_tenant:multi_contract");
     assertThat(contract.getSubjects(), hasSize(3));
     assertThat(contract.getSubjects().get(0).getName(), equalTo("http"));
     assertThat(contract.getSubjects().get(1).getName(), equalTo("https"));
@@ -914,8 +919,8 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.Contract contract = config.getContracts().get("test_tenant:test_contract");
-    AciConfiguration.Contract.Subject subject = contract.getSubjects().get(0);
+    Contract contract = config.getContracts().get("test_tenant:test_contract");
+    Contract.Subject subject = contract.getSubjects().get(0);
     assertThat(subject.getFilters(), hasSize(3));
     assertThat(subject.getFilters().get(0).getName(), equalTo("http"));
     assertThat(subject.getFilters().get(1).getName(), equalTo("https"));
@@ -950,13 +955,13 @@ public class AciGrammarTest {
     AciConfiguration config = new AciConfiguration();
     config.setHostname("test-fabric");
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("deny_contract");
+    Contract contract = new Contract("deny_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("deny_subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("deny_filter");
     filter.setIpProtocol("tcp");
 
@@ -987,7 +992,7 @@ public class AciGrammarTest {
     AciConfiguration config = new AciConfiguration();
     config.setHostname("test-fabric");
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("empty_contract");
+    Contract contract = new Contract("empty_contract");
     contract.setTenant("tenant1");
     contract.setSubjects(ImmutableList.of()); // Empty subjects
 
@@ -1065,7 +1070,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.BridgeDomain bd = config.getBridgeDomains().get("test_tenant:test_bd");
+    BridgeDomain bd = config.getBridgeDomains().get("test_tenant:test_bd");
     assertThat(bd, notNullValue());
     assertThat(bd.getVrf(), equalTo("test_tenant:test_vrf"));
   }
@@ -1101,7 +1106,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.Epg epg = config.getEpgs().get("test_tenant:test_app:web_epg");
+    Epg epg = config.getEpgs().get("test_tenant:test_app:web_epg");
     assertThat(epg, notNullValue());
     assertThat(epg.getProvidedContracts(), contains("test_tenant:web_contract"));
     assertThat(epg.getConsumedContracts(), contains("test_tenant:db_contract"));
@@ -1133,7 +1138,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.Contract contract = config.getContracts().get("test_tenant:global_contract");
+    Contract contract = config.getContracts().get("test_tenant:global_contract");
     assertThat(contract, notNullValue());
     assertThat(contract.getScope(), equalTo("global"));
   }
@@ -1220,7 +1225,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciConfiguration.Contract.Subject subject =
+    Contract.Subject subject =
         config.getContracts().get("test_tenant:test_contract").getSubjects().get(0);
     assertThat(subject, notNullValue());
     assertThat(subject.getName(), equalTo("test_subject"));
@@ -1243,9 +1248,9 @@ public class AciGrammarTest {
 
     // After finalize, structures should be immutable
     // ImmutableMap is a subtype of Map, check if operations that would modify throw
-    Map<String, AciConfiguration.Tenant> tenants = config.getTenants();
+    Map<String, Tenant> tenants = config.getTenants();
     try {
-      tenants.put("should_fail", new AciConfiguration.Tenant("should_fail"));
+      tenants.put("should_fail", new Tenant("should_fail"));
       fail("Should have thrown exception");
     } catch (UnsupportedOperationException e) {
       // Expected - map is now immutable

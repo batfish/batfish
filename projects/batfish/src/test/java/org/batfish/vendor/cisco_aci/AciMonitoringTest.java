@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasKey;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration} for monitoring, logging, and observability. */
@@ -494,7 +495,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("monitoring-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("monitoring-tenant");
+    Tenant tenant = config.getTenants().get("monitoring-tenant");
     assertThat(tenant.getName(), equalTo("monitoring-tenant"));
     assertThat(tenant.getVrfs(), hasKey("monitoring-tenant:monitoring-vrf"));
   }
@@ -510,7 +511,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("syslog-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("syslog-tenant");
+    Tenant tenant = config.getTenants().get("syslog-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("syslog-tenant:syslog-bd"));
   }
 
@@ -525,7 +526,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("monitor-policy-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("monitor-policy-tenant");
+    Tenant tenant = config.getTenants().get("monitor-policy-tenant");
     assertThat(tenant.getVrfs(), hasKey("monitor-policy-tenant:monitor-policy-vrf"));
   }
 
@@ -541,7 +542,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("stats-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("stats-tenant");
+    Tenant tenant = config.getTenants().get("stats-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("stats-tenant:stats-bd"));
   }
 
@@ -557,7 +558,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("logging-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("logging-tenant");
+    Tenant tenant = config.getTenants().get("logging-tenant");
     assertThat(tenant.getVrfs(), hasKey("logging-tenant:logging-vrf"));
   }
 
@@ -572,7 +573,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("health-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("health-tenant");
+    Tenant tenant = config.getTenants().get("health-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("health-tenant:health-bd"));
   }
 
@@ -587,7 +588,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("fault-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("fault-tenant");
+    Tenant tenant = config.getTenants().get("fault-tenant");
     assertThat(tenant.getVrfs(), hasKey("fault-tenant:fault-vrf"));
   }
 
@@ -602,7 +603,7 @@ public class AciMonitoringTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("profile-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("profile-tenant");
+    Tenant tenant = config.getTenants().get("profile-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("profile-tenant:profile-bd"));
   }
 }

@@ -78,6 +78,8 @@ import org.batfish.vendor.arista.grammar.AristaControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciFabricLink;
+import org.batfish.vendor.cisco_aci.representation.AciParser;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
@@ -325,19 +327,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case CISCO_ACI:
         {
           AciConfiguration mergedConfig = null;
-          List<AciConfiguration.FabricLink> fabricLinks = new ArrayList<>();
+          List<AciFabricLink> fabricLinks = new ArrayList<>();
           String primaryFilename = null;
           for (Entry<String, String> fileEntry : _fileTexts.entrySet()) {
             String filename = fileEntry.getKey();
             String fileText = fileEntry.getValue();
             try {
               if (AciConfiguration.isFabricLinksJson(fileText)) {
-                fabricLinks.addAll(AciConfiguration.parseFabricLinksJson(filename, fileText));
+                fabricLinks.addAll(AciParser.parseFabricLinksJson(filename, fileText));
                 continue;
               }
               AciConfiguration config =
-                  AciConfiguration.fromFile(
-                      filename, fileText, _fileResults.get(filename).getWarnings());
+                  AciParser.fromFile(filename, fileText, _fileResults.get(filename).getWarnings());
               if (mergedConfig == null) {
                 mergedConfig = config;
                 primaryFilename = filename;

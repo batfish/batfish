@@ -17,17 +17,13 @@ final class AciInterfaceConverter {
   private AciInterfaceConverter() {}
 
   static Map<String, Interface> convertInterfaces(
-      AciConfiguration.FabricNode node,
-      AciConfiguration aciConfig,
-      Vrf vrf,
-      Configuration c,
-      Warnings warnings) {
+      FabricNode node, AciConfiguration aciConfig, Vrf vrf, Configuration c, Warnings warnings) {
 
     Map<String, Interface> interfaces = new TreeMap<>();
 
     // Get interfaces from the fabric node (if populated)
     if (node.getInterfaces() != null) {
-      for (AciConfiguration.FabricNode.Interface fvIface : node.getInterfaces().values()) {
+      for (FabricNodeInterface fvIface : node.getInterfaces().values()) {
         String ifaceName = fvIface.getName();
         if (ifaceName == null) {
           continue;
@@ -91,10 +87,10 @@ final class AciInterfaceConverter {
             StringBuilder description = new StringBuilder();
 
             if (aciConfig.getPathAttachmentMap() != null) {
-              Map<String, AciConfiguration.PathAttachment> nodeAttachments =
+              Map<String, PathAttachment> nodeAttachments =
                   aciConfig.getPathAttachmentMap().get(nodeId);
               if (nodeAttachments != null) {
-                AciConfiguration.PathAttachment attachment = nodeAttachments.get(ifaceName);
+                PathAttachment attachment = nodeAttachments.get(ifaceName);
                 if (attachment != null) {
                   if (attachment.getDescription() != null) {
                     description.append(attachment.getDescription());
@@ -169,7 +165,7 @@ final class AciInterfaceConverter {
     }
 
     // Add management interface if out-of-band management is configured
-    AciConfiguration.ManagementInfo mgmtInfo = node.getManagementInfo();
+    AciManagementInfo mgmtInfo = node.getManagementInfo();
     if (mgmtInfo != null && mgmtInfo.getAddress() != null) {
       String mgmtIfaceName = "mgmt0";
       Interface.Builder mgmtBuilder =
@@ -217,10 +213,7 @@ final class AciInterfaceConverter {
   }
 
   private static void createFallbackFabricInterfaces(
-      AciConfiguration.FabricNode node,
-      Configuration c,
-      Vrf vrf,
-      Map<String, Interface> interfaces) {
+      FabricNode node, Configuration c, Vrf vrf, Map<String, Interface> interfaces) {
 
     String role = node.getRole();
     if (role == null) {

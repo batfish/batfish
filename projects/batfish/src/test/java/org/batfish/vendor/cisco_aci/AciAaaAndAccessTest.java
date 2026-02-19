@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasKey;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration} for authentication, authorization, and access control. */
@@ -483,7 +484,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("aaa-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("aaa-tenant");
+    Tenant tenant = config.getTenants().get("aaa-tenant");
     assertThat(tenant.getName(), equalTo("aaa-tenant"));
   }
 
@@ -498,7 +499,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("rbac-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("rbac-tenant");
+    Tenant tenant = config.getTenants().get("rbac-tenant");
     assertThat(tenant.getVrfs(), hasKey("rbac-tenant:rbac-vrf"));
   }
 
@@ -513,7 +514,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("auth-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("auth-tenant");
+    Tenant tenant = config.getTenants().get("auth-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("auth-tenant:auth-bd"));
   }
 
@@ -528,7 +529,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("role-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("role-tenant");
+    Tenant tenant = config.getTenants().get("role-tenant");
     assertThat(tenant.getVrfs(), hasKey("role-tenant:role-vrf"));
   }
 
@@ -543,7 +544,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("access-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("access-tenant");
+    Tenant tenant = config.getTenants().get("access-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("access-tenant:access-bd"));
   }
 
@@ -558,7 +559,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("audit-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("audit-tenant");
+    Tenant tenant = config.getTenants().get("audit-tenant");
     assertThat(tenant.getVrfs(), hasKey("audit-tenant:audit-vrf"));
   }
 
@@ -574,7 +575,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("cert-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("cert-tenant");
+    Tenant tenant = config.getTenants().get("cert-tenant");
     assertThat(tenant.getName(), equalTo("cert-tenant"));
   }
 
@@ -590,7 +591,7 @@ public class AciAaaAndAccessTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("local-auth-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("local-auth-tenant");
+    Tenant tenant = config.getTenants().get("local-auth-tenant");
     assertThat(tenant.getBridgeDomains(), hasKey("local-auth-tenant:local-auth-bd"));
   }
 }

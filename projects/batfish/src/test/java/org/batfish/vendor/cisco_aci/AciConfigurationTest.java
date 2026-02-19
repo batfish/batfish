@@ -11,6 +11,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration}. */
@@ -293,7 +298,7 @@ public class AciConfigurationTest {
     assertThat(config.getTenants(), hasKey("tenant1"));
     assertThat(config.getTenants(), hasKey("tenant2"));
 
-    AciConfiguration.Tenant tenant1 = config.getTenants().get("tenant1");
+    Tenant tenant1 = config.getTenants().get("tenant1");
     assertThat(tenant1.getName(), equalTo("tenant1"));
     assertThat(tenant1.getVrfs().keySet(), hasSize(1));
     assertThat(tenant1.getVrfs(), hasKey("tenant1:vrf1"));
@@ -306,7 +311,7 @@ public class AciConfigurationTest {
     assertThat(tenant1.getBridgeDomains().keySet(), hasSize(1));
     assertThat(tenant1.getBridgeDomains(), hasKey("tenant1:bd1"));
 
-    AciConfiguration.BridgeDomain bd1 = tenant1.getBridgeDomains().get("tenant1:bd1");
+    BridgeDomain bd1 = tenant1.getBridgeDomains().get("tenant1:bd1");
     assertThat(bd1.getName(), equalTo("tenant1:bd1"));
     assertThat(bd1.getTenant(), equalTo("tenant1"));
     assertThat(bd1.getVrf(), equalTo("tenant1:vrf1"));
@@ -316,7 +321,7 @@ public class AciConfigurationTest {
     assertThat(tenant1.getEpgs().keySet(), hasSize(1));
     assertThat(tenant1.getEpgs(), hasKey("tenant1:ap1:epg1"));
 
-    AciConfiguration.Epg epg1 = tenant1.getEpgs().get("tenant1:ap1:epg1");
+    Epg epg1 = tenant1.getEpgs().get("tenant1:ap1:epg1");
     assertThat(epg1.getName(), equalTo("tenant1:ap1:epg1"));
     assertThat(epg1.getTenant(), equalTo("tenant1"));
     assertThat(epg1.getBridgeDomain(), equalTo("tenant1:bd1"));
@@ -338,13 +343,13 @@ public class AciConfigurationTest {
     assertThat(config.getFabricNodes(), hasKey("1001"));
     assertThat(config.getFabricNodes(), hasKey("1002"));
 
-    AciConfiguration.FabricNode node1 = config.getFabricNodes().get("1001");
+    FabricNode node1 = config.getFabricNodes().get("1001");
     assertThat(node1.getNodeId(), equalTo("1001"));
     assertThat(node1.getName(), equalTo("spine1"));
     assertThat(node1.getRole(), equalTo("spine"));
     assertThat(node1.getPodId(), equalTo("1"));
 
-    AciConfiguration.FabricNode node2 = config.getFabricNodes().get("1002");
+    FabricNode node2 = config.getFabricNodes().get("1002");
     assertThat(node2.getNodeId(), equalTo("1002"));
     assertThat(node2.getName(), equalTo("leaf1"));
     assertThat(node2.getRole(), equalTo("leaf"));
@@ -364,7 +369,7 @@ public class AciConfigurationTest {
     assertThat(config.getContracts().keySet(), hasSize(1));
     assertThat(config.getContracts(), hasKey("tenant1:contract1"));
 
-    AciConfiguration.Contract contract1 = config.getContracts().get("tenant1:contract1");
+    Contract contract1 = config.getContracts().get("tenant1:contract1");
     assertThat(contract1.getName(), equalTo("tenant1:contract1"));
     assertThat(contract1.getTenant(), equalTo("tenant1"));
     assertThat(contract1.getDescription(), equalTo("Test Contract"));
@@ -415,12 +420,12 @@ public class AciConfigurationTest {
   public void testGetOrCreateTenant() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant1 = config.getOrCreateTenant("new-tenant");
+    Tenant tenant1 = config.getOrCreateTenant("new-tenant");
     assertThat(tenant1.getName(), equalTo("new-tenant"));
     assertThat(config.getTenants(), hasKey("new-tenant"));
 
     // Calling again should return the same instance
-    AciConfiguration.Tenant tenant1Again = config.getOrCreateTenant("new-tenant");
+    Tenant tenant1Again = config.getOrCreateTenant("new-tenant");
     assertThat(tenant1Again, equalTo(tenant1));
     assertThat(config.getTenants().keySet(), hasSize(1));
   }
@@ -445,12 +450,12 @@ public class AciConfigurationTest {
   public void testGetOrCreateBridgeDomain() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = config.getOrCreateBridgeDomain("new-bd");
+    BridgeDomain bd = config.getOrCreateBridgeDomain("new-bd");
     assertThat(bd.getName(), equalTo("new-bd"));
     assertThat(config.getBridgeDomains(), hasKey("new-bd"));
 
     // Calling again should return the same instance
-    AciConfiguration.BridgeDomain bdAgain = config.getOrCreateBridgeDomain("new-bd");
+    BridgeDomain bdAgain = config.getOrCreateBridgeDomain("new-bd");
     assertThat(bdAgain, equalTo(bd));
     assertThat(config.getBridgeDomains().keySet(), hasSize(1));
   }
@@ -460,12 +465,12 @@ public class AciConfigurationTest {
   public void testGetOrCreateEpg() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Epg epg = config.getOrCreateEpg("new-epg");
+    Epg epg = config.getOrCreateEpg("new-epg");
     assertThat(epg.getName(), equalTo("new-epg"));
     assertThat(config.getEpgs(), hasKey("new-epg"));
 
     // Calling again should return the same instance
-    AciConfiguration.Epg epgAgain = config.getOrCreateEpg("new-epg");
+    Epg epgAgain = config.getOrCreateEpg("new-epg");
     assertThat(epgAgain, equalTo(epg));
     assertThat(config.getEpgs().keySet(), hasSize(1));
   }
@@ -475,12 +480,12 @@ public class AciConfigurationTest {
   public void testGetOrCreateContract() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = config.getOrCreateContract("new-contract");
+    Contract contract = config.getOrCreateContract("new-contract");
     assertThat(contract.getName(), equalTo("new-contract"));
     assertThat(config.getContracts(), hasKey("new-contract"));
 
     // Calling again should return the same instance
-    AciConfiguration.Contract contractAgain = config.getOrCreateContract("new-contract");
+    Contract contractAgain = config.getOrCreateContract("new-contract");
     assertThat(contractAgain, equalTo(contract));
     assertThat(config.getContracts().keySet(), hasSize(1));
   }

@@ -9,9 +9,11 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciSubnetAnalyzer;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.SubnetFinding;
 import org.batfish.vendor.cisco_aci.representation.SubnetFinding.Category;
 import org.batfish.vendor.cisco_aci.representation.SubnetFinding.Severity;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests for {@link AciSubnetAnalyzer}. */
@@ -22,18 +24,18 @@ public class AciSubnetAnalyzerTest {
     AciConfiguration config = new AciConfiguration();
 
     // Create tenant with VRF
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    Tenant tenant = new Tenant("tenant1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.2.0/24"));
 
-    AciConfiguration.BridgeDomain bd3 = new AciConfiguration.BridgeDomain("bd3");
+    BridgeDomain bd3 = new BridgeDomain("bd3");
     bd3.setTenant("tenant1");
     bd3.setVrf("tenant1:vrf1");
     bd3.setSubnets(ImmutableList.of("192.168.1.0/24"));
@@ -54,15 +56,15 @@ public class AciSubnetAnalyzerTest {
     AciConfiguration config = new AciConfiguration();
 
     // Create tenant with VRF
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
     // bd2 has overlapping subnet (10.1.1.0/25 is within 10.1.1.0/24)
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/25"));
@@ -89,15 +91,15 @@ public class AciSubnetAnalyzerTest {
     AciConfiguration config = new AciConfiguration();
 
     // Create tenant with two VRFs
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
     // Same subnet in different VRF
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -126,14 +128,14 @@ public class AciSubnetAnalyzerTest {
   public void testDuplicateSubnetsDifferentBridgeDomains() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("web_bd");
+    BridgeDomain bd1 = new BridgeDomain("web_bd");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("app_bd");
+    BridgeDomain bd2 = new BridgeDomain("app_bd");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -168,14 +170,14 @@ public class AciSubnetAnalyzerTest {
   public void testBridgeDomainWithNoSubnets() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     // No subnets configured
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -199,14 +201,14 @@ public class AciSubnetAnalyzerTest {
   public void testInvalidSubnetFormat() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("invalid-subnet"));
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -229,9 +231,9 @@ public class AciSubnetAnalyzerTest {
   public void testMultipleSubnetsInSameBridgeDomain() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     // Multiple non-overlapping subnets in same BD is OK
@@ -251,22 +253,22 @@ public class AciSubnetAnalyzerTest {
   public void testComplexOverlapScenario() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
     // BD1: 10.1.0.0/16 (large range)
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.0.0/16"));
 
     // BD2: 10.1.1.0/24 (within BD1's range)
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
     // BD3: 10.2.0.0/16 (non-overlapping)
-    AciConfiguration.BridgeDomain bd3 = new AciConfiguration.BridgeDomain("bd3");
+    BridgeDomain bd3 = new BridgeDomain("bd3");
     bd3.setTenant("tenant1");
     bd3.setVrf("tenant1:vrf1");
     bd3.setSubnets(ImmutableList.of("10.2.0.0/16"));
@@ -316,15 +318,15 @@ public class AciSubnetAnalyzerTest {
   public void testBridgeDomainWithoutVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
     // Bridge domain without VRF
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf(null); // No VRF
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf(null); // No VRF
     bd2.setSubnets(ImmutableList.of("10.1.2.0/24"));
@@ -345,8 +347,8 @@ public class AciSubnetAnalyzerTest {
     AciConfiguration config = new AciConfiguration();
 
     // Tenant 1
-    AciConfiguration.Tenant tenant1 = new AciConfiguration.Tenant("tenant1");
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    Tenant tenant1 = new Tenant("tenant1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -354,8 +356,8 @@ public class AciSubnetAnalyzerTest {
     tenant1.getBridgeDomains().put("tenant1:bd1", bd1);
 
     // Tenant 2
-    AciConfiguration.Tenant tenant2 = new AciConfiguration.Tenant("tenant2");
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    Tenant tenant2 = new Tenant("tenant2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant2");
     bd2.setVrf("tenant2:vrf1");
     bd2.setSubnets(ImmutableList.of("10.1.1.0/24"));
@@ -385,9 +387,9 @@ public class AciSubnetAnalyzerTest {
   public void testVerySmallSubnets() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/31")); // Only 2 addresses

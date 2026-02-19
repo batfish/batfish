@@ -97,7 +97,7 @@ public final class AciConversion {
     Map<String, String> nodeIdToHostname = computeNodeIdToHostnameMap(aciConfig, warnings);
 
     // Process each fabric node as a separate configuration
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         warnings.redFlag("Skipping fabric node without nodeId during conversion.");
@@ -124,10 +124,7 @@ public final class AciConversion {
    * @return A Batfish Configuration for the node
    */
   private static Configuration convertNode(
-      AciConfiguration.FabricNode node,
-      AciConfiguration aciConfig,
-      String hostname,
-      Warnings warnings) {
+      FabricNode node, AciConfiguration aciConfig, String hostname, Warnings warnings) {
     // Use the actual node name from fabricNodeIdentP if available
     // Example: nodeName = "SW-DC1-Leaf-NSAB07-SET-01" from config
     String nodeId = node.getNodeId();
@@ -186,7 +183,7 @@ public final class AciConversion {
       AciConfiguration aciConfig, @Nullable Warnings warnings) {
     Map<String, String> nodeIdToHostname = new TreeMap<>();
     Set<String> usedHostnames = new HashSet<>();
-    for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (FabricNode node : aciConfig.getFabricNodes().values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         continue;
@@ -209,7 +206,7 @@ public final class AciConversion {
   }
 
   private static @Nonnull String computeNodeHostname(
-      AciConfiguration.FabricNode node, @Nullable String fabricHostname) {
+      FabricNode node, @Nullable String fabricHostname) {
     String nodeName = node.getName();
     if (nodeName != null && !nodeName.isEmpty()) {
       return nodeName;
@@ -352,7 +349,7 @@ public final class AciConversion {
     // We need to do this in two passes because a bridge domain can have multiple subnets
     Map<String, List<ConcreteInterfaceAddress>> bdSubnets = new TreeMap<>();
 
-    for (AciConfiguration.BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
+    for (BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
       String bdName = bd.getName();
 
       // Parse all subnets for this BD
@@ -378,7 +375,7 @@ public final class AciConversion {
     }
 
     // Second pass: create VLAN interfaces with collected subnets
-    for (AciConfiguration.BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
+    for (BridgeDomain bd : aciConfig.getBridgeDomains().values()) {
       String bdName = bd.getName();
       String vrfName = bd.getVrf();
 
@@ -514,7 +511,7 @@ public final class AciConversion {
    * @param warnings Warnings container
    */
   private static void createVpcPeerLinkInterface(
-      AciConfiguration.FabricNode node,
+      FabricNode node,
       AciConfiguration aciConfig,
       Map<String, Interface> interfaces,
       Vrf defaultVrf,
@@ -526,7 +523,7 @@ public final class AciConversion {
     }
 
     // Check if this node is part of any VPC pair
-    for (AciConfiguration.VpcPair vpcPair : aciConfig.getVpcPairs().values()) {
+    for (AciVpcPair vpcPair : aciConfig.getVpcPairs().values()) {
       if (nodeId.equals(vpcPair.getPeer1NodeId()) || nodeId.equals(vpcPair.getPeer2NodeId())) {
         // This node is part of a VPC pair - create peer-link interface
         String vpcIfaceName = "port-channel1";
@@ -536,7 +533,7 @@ public final class AciConversion {
                 : vpcPair.getPeer1NodeId();
 
         // Get the peer node to extract its name for description
-        AciConfiguration.FabricNode peerNode = aciConfig.getFabricNodes().get(peerNodeId);
+        FabricNode peerNode = aciConfig.getFabricNodes().get(peerNodeId);
         String peerName =
             (peerNode != null && peerNode.getName() != null && !peerNode.getName().isEmpty())
                 ? peerNode.getName()
@@ -587,7 +584,7 @@ public final class AciConversion {
 
     if (!aciConfig.getFabricLinks().isEmpty()) {
       // Prefer explicit APIC fabricLink topology when present.
-      for (AciConfiguration.FabricLink link : aciConfig.getFabricLinks()) {
+      for (AciFabricLink link : aciConfig.getFabricLinks()) {
         String node1Hostname = nodeIdToHostname.get(link.getNode1Id());
         String node2Hostname = nodeIdToHostname.get(link.getNode2Id());
         if (node1Hostname == null || node2Hostname == null) {
@@ -602,14 +599,14 @@ public final class AciConversion {
       }
     } else {
       // Create a basic spine-leaf topology
-      List<AciConfiguration.FabricNode> spines =
+      List<FabricNode> spines =
           aciConfig.getFabricNodes().values().stream()
               .filter(node -> node.getRole() != null && "spine".equalsIgnoreCase(node.getRole()))
               .collect(Collectors.toList());
 
       // Include both "leaf" and "service"/"services" nodes as leaves
       // (service nodes are leaf switches that provide connectivity to services)
-      List<AciConfiguration.FabricNode> leaves =
+      List<FabricNode> leaves =
           aciConfig.getFabricNodes().values().stream()
               .filter(
                   node ->
@@ -621,7 +618,7 @@ public final class AciConversion {
 
       // Connect each leaf to each spine
       int spineIndex = 0;
-      for (AciConfiguration.FabricNode leaf : leaves) {
+      for (FabricNode leaf : leaves) {
         String leafNodeId = leaf.getNodeId();
         String leafHostname = leafNodeId != null ? nodeIdToHostname.get(leafNodeId) : null;
         if (leafHostname == null) {
@@ -643,7 +640,7 @@ public final class AciConversion {
 
         // For each spine, use a different leaf interface to model realistic fabric connectivity
         spineIndex = 0;
-        for (AciConfiguration.FabricNode spine : spines) {
+        for (FabricNode spine : spines) {
           String spineNodeId = spine.getNodeId();
           String spineHostname = spineNodeId != null ? nodeIdToHostname.get(spineNodeId) : null;
           if (spineHostname == null) {
@@ -675,12 +672,12 @@ public final class AciConversion {
       }
 
       // Create VPC peer-link edges
-      for (AciConfiguration.VpcPair vpcPair : aciConfig.getVpcPairs().values()) {
+      for (AciVpcPair vpcPair : aciConfig.getVpcPairs().values()) {
         String peer1NodeId = vpcPair.getPeer1NodeId();
         String peer2NodeId = vpcPair.getPeer2NodeId();
 
-        AciConfiguration.FabricNode peer1 = aciConfig.getFabricNodes().get(peer1NodeId);
-        AciConfiguration.FabricNode peer2 = aciConfig.getFabricNodes().get(peer2NodeId);
+        FabricNode peer1 = aciConfig.getFabricNodes().get(peer1NodeId);
+        FabricNode peer2 = aciConfig.getFabricNodes().get(peer2NodeId);
 
         if (peer1 != null && peer2 != null) {
           // VPC peer-link interface name
@@ -718,8 +715,7 @@ public final class AciConversion {
       Map<String, String> nodeIdToHostname,
       ImmutableSet.Builder<Layer1Edge> edges) {
 
-    Map<String, AciConfiguration.InterFabricConnection> connections =
-        aciConfig.getInterFabricConnections();
+    Map<String, AciInterFabricConnection> connections = aciConfig.getInterFabricConnections();
     if (connections == null || connections.isEmpty()) {
       return;
     }
@@ -728,11 +724,10 @@ public final class AciConversion {
     Set<String> borderNodeIds = findBorderNodeIds(aciConfig);
 
     // Get list of fabric nodes for selecting representative border nodes
-    List<AciConfiguration.FabricNode> fabricNodes =
-        new ArrayList<>(aciConfig.getFabricNodes().values());
+    List<FabricNode> fabricNodes = new ArrayList<>(aciConfig.getFabricNodes().values());
 
     // Filter to get border nodes
-    List<AciConfiguration.FabricNode> borderNodes =
+    List<FabricNode> borderNodes =
         fabricNodes.stream()
             .filter(node -> borderNodeIds.contains(node.getNodeId()))
             .collect(Collectors.toList());
@@ -754,9 +749,9 @@ public final class AciConversion {
     }
 
     // Create edges for each inter-fabric connection
-    for (Map.Entry<String, AciConfiguration.InterFabricConnection> entry : connections.entrySet()) {
+    for (Map.Entry<String, AciInterFabricConnection> entry : connections.entrySet()) {
       String connectionId = entry.getKey();
-      AciConfiguration.InterFabricConnection connection = entry.getValue();
+      AciInterFabricConnection connection = entry.getValue();
 
       String fabric1 = connection.getFabric1();
       String fabric2 = connection.getFabric2();
@@ -769,8 +764,8 @@ public final class AciConversion {
 
       // Use first two available border nodes for the connection
       // In a real ACI deployment, the specific nodes would be determined by L3Out path attachments
-      AciConfiguration.FabricNode node1 = borderNodes.get(0);
-      AciConfiguration.FabricNode node2 = borderNodes.size() > 1 ? borderNodes.get(1) : node1;
+      FabricNode node1 = borderNodes.get(0);
+      FabricNode node2 = borderNodes.size() > 1 ? borderNodes.get(1) : node1;
 
       if (node1 == null || node2 == null) {
         continue;
@@ -805,10 +800,10 @@ public final class AciConversion {
     Set<String> borderNodeIds = new HashSet<>();
 
     // Check L3Out configurations for node references in path attachments
-    for (AciConfiguration.L3Out l3out : aciConfig.getL3Outs().values()) {
+    for (L3Out l3out : aciConfig.getL3Outs().values()) {
       // Check path attachments for node IDs
       if (l3out.getPathAttachments() != null) {
-        for (AciConfiguration.L3OutPathAttachment attachment : l3out.getPathAttachments()) {
+        for (PathAttachment attachment : l3out.getPathAttachments()) {
           if (attachment.getNodeId() != null) {
             borderNodeIds.add(attachment.getNodeId());
           }
@@ -818,7 +813,7 @@ public final class AciConversion {
       // If L3Out has BGP peers, mark all leaf nodes as potential border nodes
       // BGP configuration is at the L3Out level, not per-node
       if (l3out.getBgpPeers() != null && !l3out.getBgpPeers().isEmpty()) {
-        for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+        for (FabricNode node : aciConfig.getFabricNodes().values()) {
           if (node.getRole() != null
               && ("leaf".equalsIgnoreCase(node.getRole())
                   || "services".equalsIgnoreCase(node.getRole()))) {
@@ -844,7 +839,7 @@ public final class AciConversion {
    * @return A normalized interface name for the connection
    */
   private static String generateInterFabricInterfaceName(
-      String connectionId, AciConfiguration.InterFabricConnection connection) {
+      String connectionId, AciInterFabricConnection connection) {
     // Create a normalized interface name based on connection type and ID
     String connType = connection.getConnectionType();
     if (connType == null || connType.isEmpty()) {
@@ -871,9 +866,9 @@ public final class AciConversion {
    * @param aciConfigs Map of fabric names to ACI configurations
    * @return Map of connection IDs to detected inter-fabric connections
    */
-  public static Map<String, AciConfiguration.InterFabricConnection> detectInterFabricConnections(
+  public static Map<String, AciInterFabricConnection> detectInterFabricConnections(
       Map<String, AciConfiguration> aciConfigs) {
-    Map<String, AciConfiguration.InterFabricConnection> connections = new TreeMap<>();
+    Map<String, AciInterFabricConnection> connections = new TreeMap<>();
 
     // Compare each pair of fabrics
     List<String> fabrics = new ArrayList<>(aciConfigs.keySet());
@@ -909,20 +904,20 @@ public final class AciConversion {
       AciConfiguration config1,
       String fabric2,
       AciConfiguration config2,
-      Map<String, AciConfiguration.InterFabricConnection> connections) {
+      Map<String, AciInterFabricConnection> connections) {
 
     // Collect external subnets from fabric1
     Set<String> fabric1Subnets = new HashSet<>();
-    for (AciConfiguration.L3Out l3out : config1.getL3Outs().values()) {
-      for (AciConfiguration.ExternalEpg extEpg : l3out.getExternalEpgs()) {
+    for (L3Out l3out : config1.getL3Outs().values()) {
+      for (ExternalEpg extEpg : l3out.getExternalEpgs()) {
         fabric1Subnets.addAll(extEpg.getSubnets());
       }
     }
 
     // Collect external subnets from fabric2
     Set<String> fabric2Subnets = new HashSet<>();
-    for (AciConfiguration.L3Out l3out : config2.getL3Outs().values()) {
-      for (AciConfiguration.ExternalEpg extEpg : l3out.getExternalEpgs()) {
+    for (L3Out l3out : config2.getL3Outs().values()) {
+      for (ExternalEpg extEpg : l3out.getExternalEpgs()) {
         fabric2Subnets.addAll(extEpg.getSubnets());
       }
     }
@@ -933,8 +928,8 @@ public final class AciConversion {
 
     if (!sharedSubnets.isEmpty()) {
       String connectionId = fabric1 + "-" + fabric2 + "-external";
-      AciConfiguration.InterFabricConnection connection =
-          new AciConfiguration.InterFabricConnection(
+      AciInterFabricConnection connection =
+          new AciInterFabricConnection(
               fabric1, fabric2, "shared-external", "Fabrics share external subnets");
       connection.getSharedSubnets().addAll(sharedSubnets);
       connections.put(connectionId, connection);
@@ -955,13 +950,13 @@ public final class AciConversion {
       AciConfiguration config1,
       String fabric2,
       AciConfiguration config2,
-      Map<String, AciConfiguration.InterFabricConnection> connections) {
+      Map<String, AciInterFabricConnection> connections) {
 
     // Collect BGP peers from fabric1
     Set<String> fabric1BgpPeers = new HashSet<>();
-    for (AciConfiguration.L3Out l3out : config1.getL3Outs().values()) {
+    for (L3Out l3out : config1.getL3Outs().values()) {
       if (l3out.getBgpPeers() != null) {
-        for (AciConfiguration.BgpPeer peer : l3out.getBgpPeers()) {
+        for (BgpPeer peer : l3out.getBgpPeers()) {
           if (peer.getPeerAddress() != null) {
             fabric1BgpPeers.add(peer.getPeerAddress());
           }
@@ -971,9 +966,9 @@ public final class AciConversion {
 
     // Collect BGP peers from fabric2
     Set<String> fabric2BgpPeers = new HashSet<>();
-    for (AciConfiguration.L3Out l3out : config2.getL3Outs().values()) {
+    for (L3Out l3out : config2.getL3Outs().values()) {
       if (l3out.getBgpPeers() != null) {
-        for (AciConfiguration.BgpPeer peer : l3out.getBgpPeers()) {
+        for (BgpPeer peer : l3out.getBgpPeers()) {
           if (peer.getPeerAddress() != null) {
             fabric2BgpPeers.add(peer.getPeerAddress());
           }
@@ -987,9 +982,8 @@ public final class AciConversion {
 
     if (!sharedBgpPeers.isEmpty()) {
       String connectionId = fabric1 + "-" + fabric2 + "-bgp";
-      AciConfiguration.InterFabricConnection connection =
-          new AciConfiguration.InterFabricConnection(
-              fabric1, fabric2, "bgp", "Fabrics share BGP peers");
+      AciInterFabricConnection connection =
+          new AciInterFabricConnection(fabric1, fabric2, "bgp", "Fabrics share BGP peers");
       connection.getBgpPeers().addAll(sharedBgpPeers);
       connections.put(connectionId, connection);
     }

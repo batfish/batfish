@@ -47,10 +47,10 @@ final class AciContractConverter {
   }
 
   static void convertContracts(AciConfiguration aciConfig, Configuration c, Warnings warnings) {
-    for (Map.Entry<String, AciConfiguration.Contract> entry : aciConfig.getContracts().entrySet()) {
+    for (Map.Entry<String, Contract> entry : aciConfig.getContracts().entrySet()) {
       // Use the map key which contains the fully-qualified name (tenant:contract)
       String contractName = entry.getKey();
-      AciConfiguration.Contract contract = entry.getValue();
+      Contract contract = entry.getValue();
       if (contractName == null || contractName.isEmpty()) {
         continue;
       }
@@ -63,10 +63,9 @@ final class AciContractConverter {
 
   static void convertTabooContracts(
       AciConfiguration aciConfig, Configuration c, Warnings warnings) {
-    for (Map.Entry<String, AciConfiguration.TabooContract> entry :
-        aciConfig.getTabooContracts().entrySet()) {
+    for (Map.Entry<String, TabooContract> entry : aciConfig.getTabooContracts().entrySet()) {
       String tabooName = entry.getKey();
-      AciConfiguration.TabooContract taboo = entry.getValue();
+      TabooContract taboo = entry.getValue();
       if (tabooName == null || tabooName.isEmpty()) {
         continue;
       }
@@ -79,7 +78,7 @@ final class AciContractConverter {
 
   private static @Nonnull List<ExprAclLine> buildAclLinesFromSubjects(
       String contractName,
-      @Nullable List<AciConfiguration.Contract.Subject> subjects,
+      @Nullable List<Contract.Subject> subjects,
       AciConfiguration aciConfig,
       Warnings warnings) {
     ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
@@ -92,9 +91,9 @@ final class AciContractConverter {
     }
 
     if (subjects != null) {
-      for (AciConfiguration.Contract.Subject subject : subjects) {
+      for (Contract.Subject subject : subjects) {
         if (subject.getFilters() != null) {
-          for (AciConfiguration.Contract.Filter filterRef : subject.getFilters()) {
+          for (Contract.FilterRef filterRef : subject.getFilters()) {
             String filterName = filterRef.getName();
             if (filterName == null || filterName.isEmpty()) {
               lines.addAll(toAclLines(filterRef, contractName, warnings));
@@ -103,12 +102,12 @@ final class AciContractConverter {
 
             String fqFilterName =
                 (tenantName != null) ? (tenantName + ":" + filterName) : filterName;
-            AciConfiguration.Filter fullFilter = aciConfig.getFilters().get(fqFilterName);
+            FilterModel fullFilter = aciConfig.getFilters().get(fqFilterName);
 
             if (fullFilter != null
                 && fullFilter.getEntries() != null
                 && !fullFilter.getEntries().isEmpty()) {
-              for (AciConfiguration.Filter.Entry filterEntry : fullFilter.getEntries()) {
+              for (FilterModel.Entry filterEntry : fullFilter.getEntries()) {
                 List<ExprAclLine> entryLines =
                     toAclEntryLines(filterEntry, contractName, filterName, warnings);
                 lines.addAll(entryLines);
@@ -161,7 +160,7 @@ final class AciContractConverter {
    * @return List of ACL lines
    */
   private static List<ExprAclLine> toAclLines(
-      AciConfiguration.Contract.Filter filter, String contractName, Warnings warnings) {
+      Contract.FilterRef filter, String contractName, Warnings warnings) {
 
     ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
 
@@ -277,10 +276,7 @@ final class AciContractConverter {
    * @return List of ACL lines
    */
   private static List<ExprAclLine> toAclEntryLines(
-      AciConfiguration.Filter.Entry entry,
-      String contractName,
-      String filterName,
-      Warnings warnings) {
+      FilterModel.Entry entry, String contractName, String filterName, Warnings warnings) {
 
     ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
     LineAction action = LineAction.PERMIT; // Default action for filter entries
@@ -501,7 +497,7 @@ final class AciContractConverter {
       Warnings warnings) {
 
     // Process EPGs to find their interface associations
-    for (AciConfiguration.Epg epg : aciConfig.getEpgs().values()) {
+    for (Epg epg : aciConfig.getEpgs().values()) {
       String bridgeDomainName = epg.getBridgeDomain();
       String epgDisplayName = epg.getName();
       String tenantName = epg.getTenant();
@@ -510,7 +506,7 @@ final class AciContractConverter {
       // Find the bridge domain to determine VLAN
       Integer vlanId = null;
       if (bridgeDomainName != null) {
-        AciConfiguration.BridgeDomain bd = aciConfig.getBridgeDomains().get(bridgeDomainName);
+        BridgeDomain bd = aciConfig.getBridgeDomains().get(bridgeDomainName);
         if (bd != null) {
           // Generate a VLAN ID from the BD name
           vlanId = Math.abs(bd.getName().hashCode() % 4094) + 1;
@@ -518,11 +514,11 @@ final class AciContractConverter {
       }
 
       // For each interface in the fabric nodes, check if it belongs to this EPG
-      for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+      for (FabricNode node : aciConfig.getFabricNodes().values()) {
         if (node.getInterfaces() == null) {
           continue;
         }
-        for (AciConfiguration.FabricNode.Interface iface : node.getInterfaces().values()) {
+        for (FabricNodeInterface iface : node.getInterfaces().values()) {
           if (epg.getName().equals(iface.getEpg())) {
             // This interface belongs to the EPG
             Interface batfishIface = interfaces.get(iface.getName());
@@ -593,8 +589,7 @@ final class AciContractConverter {
     }
   }
 
-  static void applyEpgPolicies(
-      AciConfiguration.Epg epg, Interface iface, Configuration c, Warnings warnings) {
+  static void applyEpgPolicies(Epg epg, Interface iface, Configuration c, Warnings warnings) {
     List<String> incomingAclRefs =
         resolveContractAclRefs(
             epg.getConsumedContracts(),
@@ -766,10 +761,7 @@ final class AciContractConverter {
   }
 
   private static @Nullable AclLineMatchExpr toEtherType(
-      String etherType,
-      String contractName,
-      AciConfiguration.Contract.Filter filter,
-      Warnings warnings) {
+      String etherType, String contractName, Contract.FilterRef filter, Warnings warnings) {
     if (etherType == null) {
       warnings.redFlagf("Null etherType in contract %s filter %s", contractName, filter.getName());
       return null;
@@ -1114,7 +1106,7 @@ final class AciContractConverter {
   private static @Nonnull IntegerSpace toPortSpace(
       List<String> ports,
       String contractName,
-      AciConfiguration.Contract.Filter filter,
+      Contract.FilterRef filter,
       boolean isDestination,
       Warnings warnings) {
     IntegerSpace.Builder portSpace = IntegerSpace.builder();

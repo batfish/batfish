@@ -62,14 +62,14 @@ public class AciReachabilityAnalyzer {
     List<ReachabilityFinding> findings = new ArrayList<>();
 
     // Collect all EPGs across all tenants
-    Map<String, AciConfiguration.Epg> allEpgs = new HashMap<>();
-    for (AciConfiguration.Tenant tenant : config.getTenants().values()) {
+    Map<String, Epg> allEpgs = new HashMap<>();
+    for (Tenant tenant : config.getTenants().values()) {
       allEpgs.putAll(tenant.getEpgs());
     }
 
     // Collect all contracts across all tenants
-    Map<String, AciConfiguration.Contract> allContracts = new HashMap<>();
-    for (AciConfiguration.Tenant tenant : config.getTenants().values()) {
+    Map<String, Contract> allContracts = new HashMap<>();
+    for (Tenant tenant : config.getTenants().values()) {
       allContracts.putAll(tenant.getContracts());
     }
 
@@ -126,18 +126,15 @@ public class AciReachabilityAnalyzer {
    * @return Reachability status between the two EPGs
    */
   private static @Nonnull ReachabilityStatus canCommunicate(
-      String epg1,
-      String epg2,
-      AciConfiguration config,
-      Map<String, AciConfiguration.Epg> allEpgs) {
+      String epg1, String epg2, AciConfiguration config, Map<String, Epg> allEpgs) {
 
     // Same EPG
     if (epg1.equals(epg2)) {
       return ReachabilityStatus.SAME_EPG;
     }
 
-    AciConfiguration.Epg epg1Obj = allEpgs.get(epg1);
-    AciConfiguration.Epg epg2Obj = allEpgs.get(epg2);
+    Epg epg1Obj = allEpgs.get(epg1);
+    Epg epg2Obj = allEpgs.get(epg2);
 
     // One or both EPGs don't exist
     if (epg1Obj == null || epg2Obj == null) {
@@ -174,8 +171,7 @@ public class AciReachabilityAnalyzer {
    * @param consumerEpg The potential consumer EPG
    * @return true if provider provides a contract that consumer consumes
    */
-  private static boolean hasContractRelationship(
-      AciConfiguration.Epg providerEpg, AciConfiguration.Epg consumerEpg) {
+  private static boolean hasContractRelationship(Epg providerEpg, Epg consumerEpg) {
 
     Set<String> provided = new HashSet<>(providerEpg.getProvidedContracts());
     Set<String> consumed = new HashSet<>(consumerEpg.getConsumedContracts());
@@ -189,7 +185,7 @@ public class AciReachabilityAnalyzer {
       String epg2,
       ReachabilityStatus status,
       AciConfiguration config,
-      Map<String, AciConfiguration.Epg> allEpgs,
+      Map<String, Epg> allEpgs,
       List<ReachabilityFinding> findings) {
 
     switch (status) {
@@ -199,8 +195,8 @@ public class AciReachabilityAnalyzer {
 
       case REACHABLE:
         // Check if same-BD communication (informational)
-        AciConfiguration.Epg epg1Obj = allEpgs.get(epg1);
-        AciConfiguration.Epg epg2Obj = allEpgs.get(epg2);
+        Epg epg1Obj = allEpgs.get(epg1);
+        Epg epg2Obj = allEpgs.get(epg2);
         if (epg1Obj != null && epg2Obj != null) {
           String bd1 = epg1Obj.getBridgeDomain();
           String bd2 = epg2Obj.getBridgeDomain();
@@ -258,13 +254,13 @@ public class AciReachabilityAnalyzer {
    * @return List of findings for orphaned EPGs
    */
   private static @Nonnull List<ReachabilityFinding> findOrphanedEpgs(
-      AciConfiguration config, Map<String, AciConfiguration.Epg> allEpgs) {
+      AciConfiguration config, Map<String, Epg> allEpgs) {
 
     List<ReachabilityFinding> findings = new ArrayList<>();
 
-    for (Map.Entry<String, AciConfiguration.Epg> entry : allEpgs.entrySet()) {
+    for (Map.Entry<String, Epg> entry : allEpgs.entrySet()) {
       String epgName = entry.getKey();
-      AciConfiguration.Epg epg = entry.getValue();
+      Epg epg = entry.getValue();
 
       boolean hasProvided = !epg.getProvidedContracts().isEmpty();
       boolean hasConsumed = !epg.getConsumedContracts().isEmpty();
@@ -275,7 +271,7 @@ public class AciReachabilityAnalyzer {
         boolean hasSameBdNeighbors = false;
 
         if (bd != null) {
-          for (AciConfiguration.Epg other : allEpgs.values()) {
+          for (Epg other : allEpgs.values()) {
             if (other != epg && bd.equals(other.getBridgeDomain())) {
               hasSameBdNeighbors = true;
               break;
@@ -313,16 +309,14 @@ public class AciReachabilityAnalyzer {
    * @return List of findings for invalid contract references
    */
   private static @Nonnull List<ReachabilityFinding> findInvalidContractReferences(
-      AciConfiguration config,
-      Map<String, AciConfiguration.Epg> allEpgs,
-      Map<String, AciConfiguration.Contract> allContracts) {
+      AciConfiguration config, Map<String, Epg> allEpgs, Map<String, Contract> allContracts) {
 
     List<ReachabilityFinding> findings = new ArrayList<>();
 
     // For each EPG, check if its referenced contracts exist
-    for (Map.Entry<String, AciConfiguration.Epg> epgEntry : allEpgs.entrySet()) {
+    for (Map.Entry<String, Epg> epgEntry : allEpgs.entrySet()) {
       String epgName = epgEntry.getKey();
-      AciConfiguration.Epg epg = epgEntry.getValue();
+      Epg epg = epgEntry.getValue();
 
       // Check provided contracts
       for (String contractName : epg.getProvidedContracts()) {
@@ -371,17 +365,17 @@ public class AciReachabilityAnalyzer {
    * @return List of findings for empty contracts
    */
   private static @Nonnull List<ReachabilityFinding> findEmptyContracts(
-      Map<String, AciConfiguration.Contract> allContracts) {
+      Map<String, Contract> allContracts) {
 
     List<ReachabilityFinding> findings = new ArrayList<>();
 
-    for (Map.Entry<String, AciConfiguration.Contract> entry : allContracts.entrySet()) {
+    for (Map.Entry<String, Contract> entry : allContracts.entrySet()) {
       String contractName = entry.getKey();
-      AciConfiguration.Contract contract = entry.getValue();
+      Contract contract = entry.getValue();
 
       boolean hasFilters = false;
       if (contract.getSubjects() != null) {
-        for (AciConfiguration.Contract.Subject subject : contract.getSubjects()) {
+        for (Contract.Subject subject : contract.getSubjects()) {
           if (subject.getFilters() != null && !subject.getFilters().isEmpty()) {
             hasFilters = true;
             break;
@@ -416,13 +410,13 @@ public class AciReachabilityAnalyzer {
    * @return List of findings for EPGs without path attachments
    */
   private static @Nonnull List<ReachabilityFinding> findEpgsWithoutPaths(
-      AciConfiguration config, Map<String, AciConfiguration.Epg> allEpgs) {
+      AciConfiguration config, Map<String, Epg> allEpgs) {
 
     List<ReachabilityFinding> findings = new ArrayList<>();
 
-    for (Map.Entry<String, AciConfiguration.Epg> entry : allEpgs.entrySet()) {
+    for (Map.Entry<String, Epg> entry : allEpgs.entrySet()) {
       String epgName = entry.getKey();
-      AciConfiguration.Epg epg = entry.getValue();
+      Epg epg = entry.getValue();
 
       if (epg.getBridgeDomain() == null) {
         findings.add(

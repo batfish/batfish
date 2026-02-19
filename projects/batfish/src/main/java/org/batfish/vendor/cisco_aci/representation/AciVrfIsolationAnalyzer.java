@@ -62,7 +62,7 @@ public class AciVrfIsolationAnalyzer {
     Map<String, List<SubnetVrfPair>> subnetToVrfs = new HashMap<>();
 
     // Collect all subnets from bridge domains
-    for (AciConfiguration.BridgeDomain bd : config.getBridgeDomains().values()) {
+    for (BridgeDomain bd : config.getBridgeDomains().values()) {
       String vrf = bd.getVrf();
       if (vrf == null) {
         continue; // Skip BDs without VRF
@@ -137,13 +137,13 @@ public class AciVrfIsolationAnalyzer {
     Map<String, String> epgToVrf = new HashMap<>();
     Map<String, String> epgToTenant = new HashMap<>();
 
-    for (AciConfiguration.Epg epg : config.getEpgs().values()) {
+    for (Epg epg : config.getEpgs().values()) {
       String epgKey = epg.getTenant() + ":" + epg.getName();
 
       // Find the VRF for this EPG via its bridge domain
       if (epg.getBridgeDomain() != null) {
         String bdKey = epg.getTenant() + ":" + epg.getBridgeDomain();
-        AciConfiguration.BridgeDomain bd = config.getBridgeDomains().get(bdKey);
+        BridgeDomain bd = config.getBridgeDomains().get(bdKey);
         if (bd != null && bd.getVrf() != null) {
           epgToVrf.put(epgKey, bd.getVrf());
           epgToTenant.put(epgKey, epg.getTenant());
@@ -152,12 +152,12 @@ public class AciVrfIsolationAnalyzer {
     }
 
     // Check each contract's EPGs for cross-VRF references
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       // Find EPGs that provide or consume this contract
       Set<String> providerVrfs = new HashSet<>();
       Set<String> consumerVrfs = new HashSet<>();
 
-      for (AciConfiguration.Epg epg : config.getEpgs().values()) {
+      for (Epg epg : config.getEpgs().values()) {
         String epgKey = epg.getTenant() + ":" + epg.getName();
         String vrf = epgToVrf.get(epgKey);
 
@@ -215,14 +215,14 @@ public class AciVrfIsolationAnalyzer {
     Set<String> usedVrfs = new HashSet<>();
 
     // Check bridge domains
-    for (AciConfiguration.BridgeDomain bd : config.getBridgeDomains().values()) {
+    for (BridgeDomain bd : config.getBridgeDomains().values()) {
       if (bd.getVrf() != null) {
         usedVrfs.add(bd.getVrf());
       }
     }
 
     // Check L3Outs
-    for (AciConfiguration.L3Out l3Out : config.getL3Outs().values()) {
+    for (L3Out l3Out : config.getL3Outs().values()) {
       if (l3Out.getVrf() != null) {
         usedVrfs.add(l3Out.getVrf());
       }
@@ -262,13 +262,13 @@ public class AciVrfIsolationAnalyzer {
     // Track which bridge domains are used by EPGs in different VRFs
     Map<String, Set<String>> bdToVrfs = new HashMap<>();
 
-    for (AciConfiguration.Epg epg : config.getEpgs().values()) {
+    for (Epg epg : config.getEpgs().values()) {
       if (epg.getBridgeDomain() == null) {
         continue;
       }
 
       String bdKey = epg.getTenant() + ":" + epg.getBridgeDomain();
-      AciConfiguration.BridgeDomain bd = config.getBridgeDomains().get(bdKey);
+      BridgeDomain bd = config.getBridgeDomains().get(bdKey);
 
       if (bd != null && bd.getVrf() != null) {
         bdToVrfs.computeIfAbsent(bdKey, k -> new HashSet<>()).add(bd.getVrf());
@@ -279,7 +279,7 @@ public class AciVrfIsolationAnalyzer {
     for (Map.Entry<String, Set<String>> entry : bdToVrfs.entrySet()) {
       if (entry.getValue().size() > 1) {
         String bdKey = entry.getKey();
-        AciConfiguration.BridgeDomain bd = config.getBridgeDomains().get(bdKey);
+        BridgeDomain bd = config.getBridgeDomains().get(bdKey);
 
         if (bd != null) {
           VrfIsolationFinding finding = new VrfIsolationFinding();
@@ -316,7 +316,7 @@ public class AciVrfIsolationAnalyzer {
   static @Nonnull List<VrfIsolationFinding> checkL3OutScope(AciConfiguration config) {
     List<VrfIsolationFinding> findings = new ArrayList<>();
 
-    for (AciConfiguration.L3Out l3Out : config.getL3Outs().values()) {
+    for (L3Out l3Out : config.getL3Outs().values()) {
       if (l3Out.getVrf() == null) {
         VrfIsolationFinding finding = new VrfIsolationFinding();
         finding.setSeverity(VrfIsolationFinding.Severity.HIGH);
@@ -337,14 +337,14 @@ public class AciVrfIsolationAnalyzer {
       Set<String> internalSubnets = new HashSet<>();
 
       // Collect internal subnets for this VRF
-      for (AciConfiguration.BridgeDomain bd : config.getBridgeDomains().values()) {
+      for (BridgeDomain bd : config.getBridgeDomains().values()) {
         if (vrf.equals(bd.getVrf())) {
           internalSubnets.addAll(bd.getSubnets());
         }
       }
 
       // Check external EPG subnets
-      for (AciConfiguration.ExternalEpg extEpg : l3Out.getExternalEpgs()) {
+      for (ExternalEpg extEpg : l3Out.getExternalEpgs()) {
         for (String extSubnet : extEpg.getSubnets()) {
           // Check for overlap with internal subnets
           if (subnetsOverlap(extSubnet, internalSubnets)) {

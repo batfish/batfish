@@ -13,6 +13,12 @@ import static org.junit.Assert.fail;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.ExternalEpg;
+import org.batfish.vendor.cisco_aci.representation.L3Out;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests for {@link AciConfiguration} deserialization edge cases. */
@@ -61,7 +67,7 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config = AciConfiguration.fromJson("null-children.json", json, new Warnings());
 
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertNotNull(tenant);
     assertThat(tenant.getName(), equalTo("tenant1"));
   }
@@ -125,10 +131,10 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config = AciConfiguration.fromJson("missing-vrf.json", json, new Warnings());
 
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd1"));
 
-    AciConfiguration.BridgeDomain bd = tenant.getBridgeDomains().get("tenant1:bd1");
+    BridgeDomain bd = tenant.getBridgeDomains().get("tenant1:bd1");
     // VRF reference should be stored even if target doesn't exist
     assertNotNull(bd);
   }
@@ -211,16 +217,16 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config = AciConfiguration.fromJson("multi-bd.json", json, new Warnings());
 
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertThat(tenant.getBridgeDomains().keySet(), hasSize(3));
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd1"));
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd2"));
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd3"));
 
-    AciConfiguration.BridgeDomain bd1 = tenant.getBridgeDomains().get("tenant1:bd1");
+    BridgeDomain bd1 = tenant.getBridgeDomains().get("tenant1:bd1");
     assertThat(bd1.getSubnets(), equalTo(ImmutableList.of("10.1.1.0/24")));
 
-    AciConfiguration.BridgeDomain bd2 = tenant.getBridgeDomains().get("tenant1:bd2");
+    BridgeDomain bd2 = tenant.getBridgeDomains().get("tenant1:bd2");
     assertThat(bd2.getSubnets(), equalTo(ImmutableList.of("10.2.1.0/24")));
   }
 
@@ -290,7 +296,7 @@ public class AciConfigurationDeserializationTest {
         AciConfiguration.fromJson("multi-subject-contract.json", json, new Warnings());
 
     assertThat(config.getContracts(), hasKey("tenant1:contract1"));
-    AciConfiguration.Contract contract = config.getContracts().get("tenant1:contract1");
+    Contract contract = config.getContracts().get("tenant1:contract1");
     assertNotNull(contract);
     assertThat(contract.getSubjects().size(), equalTo(3));
   }
@@ -305,21 +311,21 @@ public class AciConfigurationDeserializationTest {
     config.setHostname("test-fabric");
 
     // Create contract with filters for different protocols
-    AciConfiguration.Contract contract = config.getOrCreateContract("tenant1:multi_proto");
+    Contract contract = config.getOrCreateContract("tenant1:multi_proto");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject tcpSubject = new AciConfiguration.Contract.Subject();
+    Contract.Subject tcpSubject = new Contract.Subject();
     tcpSubject.setName("tcp_traffic");
 
-    AciConfiguration.Contract.Filter tcpFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef tcpFilter = new Contract.FilterRef();
     tcpFilter.setName("tcp_filter");
     tcpFilter.setIpProtocol("tcp");
     tcpFilter.setDestinationPorts(ImmutableList.of("80", "443"));
 
-    AciConfiguration.Contract.Subject icmpSubject = new AciConfiguration.Contract.Subject();
+    Contract.Subject icmpSubject = new Contract.Subject();
     icmpSubject.setName("icmp_traffic");
 
-    AciConfiguration.Contract.Filter icmpFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef icmpFilter = new Contract.FilterRef();
     icmpFilter.setName("icmp_filter");
     icmpFilter.setIpProtocol("icmp");
     icmpFilter.setIcmpType("8");
@@ -332,7 +338,7 @@ public class AciConfigurationDeserializationTest {
 
     // Verify contract structure
     assertThat(config.getContracts(), hasKey("tenant1:multi_proto"));
-    AciConfiguration.Contract parsedContract = config.getContracts().get("tenant1:multi_proto");
+    Contract parsedContract = config.getContracts().get("tenant1:multi_proto");
     assertNotNull(parsedContract);
     assertThat(parsedContract.getSubjects().size(), equalTo(2));
     assertThat(
@@ -430,7 +436,7 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config = AciConfiguration.fromJson("heterogeneous.json", json, new Warnings());
 
     assertThat(config.getTenants(), hasKey("tenant1"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("tenant1");
+    Tenant tenant = config.getTenants().get("tenant1");
     assertThat(tenant.getVrfs(), hasKey("tenant1:vrf1"));
     assertThat(tenant.getBridgeDomains(), hasKey("tenant1:bd1"));
     assertThat(tenant.getEpgs(), hasKey("tenant1:app1:epg1"));
@@ -520,7 +526,7 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config =
         AciConfiguration.fromJson("epg-relationships.json", json, new Warnings());
 
-    AciConfiguration.Epg epg = config.getEpgs().get("tenant1:app1:epg1");
+    Epg epg = config.getEpgs().get("tenant1:app1:epg1");
     assertNotNull(epg);
     assertThat(epg.getProvidedContracts(), hasItems("tenant1:contract-provided"));
     assertThat(epg.getConsumedContracts(), hasItems("tenant1:contract-consumed"));
@@ -586,10 +592,10 @@ public class AciConfigurationDeserializationTest {
     AciConfiguration config =
         AciConfiguration.fromJson("external-epg-relationships.json", json, new Warnings());
 
-    AciConfiguration.L3Out l3Out = config.getL3Outs().get("infra:out1");
+    L3Out l3Out = config.getL3Outs().get("infra:out1");
     assertNotNull(l3Out);
     assertThat(l3Out.getExternalEpgs(), hasSize(1));
-    AciConfiguration.ExternalEpg extEpg = l3Out.getExternalEpgs().get(0);
+    ExternalEpg extEpg = l3Out.getExternalEpgs().get(0);
     assertThat(extEpg.getProvidedContracts(), hasItems("infra:ext-provided"));
     assertThat(extEpg.getConsumedContracts(), hasItems("infra:ext-consumed"));
     assertThat(extEpg.getProvidedContractInterfaces(), hasItems("infra:ext-cif-provided"));

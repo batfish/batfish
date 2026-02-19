@@ -39,14 +39,13 @@ public final class AciSubnetAnalyzer {
 
     // Collect all bridge domains with their subnets
     List<BridgeDomainInfo> bdInfoList = new ArrayList<>();
-    for (Entry<String, AciConfiguration.Tenant> tenantEntry : config.getTenants().entrySet()) {
+    for (Entry<String, Tenant> tenantEntry : config.getTenants().entrySet()) {
       String tenantName = tenantEntry.getKey();
-      AciConfiguration.Tenant tenant = tenantEntry.getValue();
+      Tenant tenant = tenantEntry.getValue();
 
-      for (Entry<String, AciConfiguration.BridgeDomain> bdEntry :
-          tenant.getBridgeDomains().entrySet()) {
+      for (Entry<String, BridgeDomain> bdEntry : tenant.getBridgeDomains().entrySet()) {
         String bdName = bdEntry.getKey();
-        AciConfiguration.BridgeDomain bd = bdEntry.getValue();
+        BridgeDomain bd = bdEntry.getValue();
 
         bdInfoList.add(new BridgeDomainInfo(tenantName, bdName, bd));
       }
@@ -378,7 +377,7 @@ public final class AciSubnetAnalyzer {
     final @Nullable String _vrf;
     final List<String> _subnets;
 
-    BridgeDomainInfo(String tenant, String bdName, AciConfiguration.BridgeDomain bd) {
+    BridgeDomainInfo(String tenant, String bdName, BridgeDomain bd) {
       _tenant = tenant;
       // bdName is fully qualified (tenant:bd), extract short name
       _bdName = bdName.substring(bdName.indexOf(':') + 1);

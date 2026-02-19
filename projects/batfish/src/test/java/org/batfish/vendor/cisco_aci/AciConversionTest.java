@@ -30,7 +30,21 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
+import org.batfish.vendor.cisco_aci.representation.AciFabricLink;
+import org.batfish.vendor.cisco_aci.representation.AciInterFabricConnection;
 import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
+import org.batfish.vendor.cisco_aci.representation.BgpPeer;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
+import org.batfish.vendor.cisco_aci.representation.FilterModel;
+import org.batfish.vendor.cisco_aci.representation.L2Out;
+import org.batfish.vendor.cisco_aci.representation.L3Out;
+import org.batfish.vendor.cisco_aci.representation.OspfConfig;
+import org.batfish.vendor.cisco_aci.representation.PathAttachment;
+import org.batfish.vendor.cisco_aci.representation.TabooContract;
 import org.junit.Test;
 
 /** Tests of {@link AciConversion} and ACI configuration conversion. */
@@ -45,10 +59,10 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create fabric nodes (nodeId, name, podId, role)
-    AciConfiguration.FabricNode spine1 = createFabricNode("101", "spine1", "1", "spine");
-    AciConfiguration.FabricNode spine2 = createFabricNode("102", "spine2", "1", "spine");
-    AciConfiguration.FabricNode leaf1 = createFabricNode("201", "leaf1", "2", "leaf");
-    AciConfiguration.FabricNode leaf2 = createFabricNode("202", "leaf2", "2", "leaf");
+    FabricNode spine1 = createFabricNode("101", "spine1", "1", "spine");
+    FabricNode spine2 = createFabricNode("102", "spine2", "1", "spine");
+    FabricNode leaf1 = createFabricNode("201", "leaf1", "2", "leaf");
+    FabricNode leaf2 = createFabricNode("202", "leaf2", "2", "leaf");
 
     config.getFabricNodes().put("101", spine1);
     config.getFabricNodes().put("102", spine2);
@@ -68,13 +82,13 @@ public class AciConversionTest {
     config.getVrfs().put("vrf2", vrf2);
 
     // Create bridge domains
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setVrf("vrf1");
     bd1.setTenant("tenant1");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24", "10.1.2.0/24"));
     bd1.setDescription("Bridge Domain 1");
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setVrf("vrf2");
     bd2.setTenant("tenant1");
     bd2.setSubnets(ImmutableList.of("10.2.1.0/24"));
@@ -84,19 +98,19 @@ public class AciConversionTest {
     config.getBridgeDomains().put("bd2", bd2);
 
     // Create contracts
-    AciConfiguration.Contract contract1 = new AciConfiguration.Contract("web_contract");
+    Contract contract1 = new Contract("web_contract");
     contract1.setTenant("tenant1");
     contract1.setDescription("Web traffic contract");
 
-    AciConfiguration.Contract.Subject subject1 = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject1 = new Contract.Subject();
     subject1.setName("http_subject");
 
-    AciConfiguration.Contract.Filter filter1 = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter1 = new Contract.FilterRef();
     filter1.setName("http_filter");
     filter1.setIpProtocol("tcp");
     filter1.setDestinationPorts(ImmutableList.of("80", "443"));
 
-    AciConfiguration.Contract.Filter filter2 = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter2 = new Contract.FilterRef();
     filter2.setName("https_filter");
     filter2.setIpProtocol("tcp");
     filter2.setDestinationPorts(ImmutableList.of("8443"));
@@ -107,13 +121,13 @@ public class AciConversionTest {
     config.getContracts().put("web_contract", contract1);
 
     // Create EPGs
-    AciConfiguration.Epg epg1 = new AciConfiguration.Epg("web_epg");
+    Epg epg1 = new Epg("web_epg");
     epg1.setTenant("tenant1");
     epg1.setBridgeDomain("bd1");
     epg1.setProvidedContracts(ImmutableList.of("web_contract"));
     epg1.setDescription("Web EPG");
 
-    AciConfiguration.Epg epg2 = new AciConfiguration.Epg("app_epg");
+    Epg epg2 = new Epg("app_epg");
     epg2.setTenant("tenant1");
     epg2.setBridgeDomain("bd1");
     epg2.setConsumedContracts(ImmutableList.of("web_contract"));
@@ -127,22 +141,21 @@ public class AciConversionTest {
   }
 
   /** Creates a fabric node with the given attributes. */
-  private AciConfiguration.FabricNode createFabricNode(
-      String nodeId, String name, String podId, String role) {
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+  private FabricNode createFabricNode(String nodeId, String name, String podId, String role) {
+    FabricNode node = new FabricNode();
     node.setNodeId(nodeId);
     node.setName(name);
     node.setPodId(podId);
     node.setRole(role);
 
     // Add some interfaces
-    AciConfiguration.FabricNode.Interface iface1 = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface iface1 = new FabricNodeInterface();
     iface1.setName("ethernet1/1");
     iface1.setType("ethernet");
     iface1.setEnabled(true);
     iface1.setDescription("Interface 1/1");
 
-    AciConfiguration.FabricNode.Interface iface2 = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface iface2 = new FabricNodeInterface();
     iface2.setName("ethernet1/2");
     iface2.setType("ethernet");
     iface2.setEnabled(true);
@@ -257,22 +270,21 @@ public class AciConversionTest {
     AciConfiguration aciConfig = createTestAciConfiguration();
 
     // Add different interface types
-    AciConfiguration.FabricNode node = aciConfig.getFabricNodes().get("201");
+    FabricNode node = aciConfig.getFabricNodes().get("201");
 
-    AciConfiguration.FabricNode.Interface vlanIface = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface vlanIface = new FabricNodeInterface();
     vlanIface.setName("vlan100");
     vlanIface.setType("vlan");
     vlanIface.setEnabled(true);
     node.getInterfaces().put("vlan100", vlanIface);
 
-    AciConfiguration.FabricNode.Interface loopbackIface =
-        new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface loopbackIface = new FabricNodeInterface();
     loopbackIface.setName("loopback0");
     loopbackIface.setType("loopback");
     loopbackIface.setEnabled(true);
     node.getInterfaces().put("loopback0", loopbackIface);
 
-    AciConfiguration.FabricNode.Interface poIface = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface poIface = new FabricNodeInterface();
     poIface.setName("port-channel1");
     poIface.setType("portchannel");
     poIface.setEnabled(true);
@@ -362,8 +374,7 @@ public class AciConversionTest {
     config.getFabricNodes().put("101", createFabricNode("101", "spine1", "1", "spine"));
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "1", "leaf"));
     config.setFabricLinks(
-        ImmutableList.of(
-            new AciConfiguration.FabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
+        ImmutableList.of(new AciFabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
 
     var edges = AciConversion.createLayer1Edges(config);
 
@@ -494,17 +505,17 @@ public class AciConversionTest {
     vrf.setTenant("tenant1");
     config.getVrfs().put("vrf1", vrf);
 
-    AciConfiguration.L3Out l3Out1 = new AciConfiguration.L3Out("tenant1:l3out1");
+    L3Out l3Out1 = new L3Out("tenant1:l3out1");
     l3Out1.setTenant("tenant1");
     l3Out1.setVrf("vrf1");
-    AciConfiguration.OspfConfig ospf1 = new AciConfiguration.OspfConfig();
+    OspfConfig ospf1 = new OspfConfig();
     ospf1.setProcessId("1");
     l3Out1.setOspfConfig(ospf1);
 
-    AciConfiguration.L3Out l3Out2 = new AciConfiguration.L3Out("tenant1:l3out2");
+    L3Out l3Out2 = new L3Out("tenant1:l3out2");
     l3Out2.setTenant("tenant1");
     l3Out2.setVrf("vrf1");
-    AciConfiguration.OspfConfig ospf2 = new AciConfiguration.OspfConfig();
+    OspfConfig ospf2 = new OspfConfig();
     ospf2.setProcessId("2");
     l3Out2.setOspfConfig(ospf2);
 
@@ -536,10 +547,10 @@ public class AciConversionTest {
     vrf.setTenant("tenant1");
     config.getVrfs().put("vrf1", vrf);
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("tenant1:l3out1");
+    L3Out l3Out = new L3Out("tenant1:l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("vrf1");
-    AciConfiguration.BgpPeer bgpPeer = new AciConfiguration.BgpPeer();
+    BgpPeer bgpPeer = new BgpPeer();
     bgpPeer.setPeerAddress("10.0.0.2");
     bgpPeer.setRemoteAs("65002");
     bgpPeer.setLocalAs("65001");
@@ -567,7 +578,7 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create a fabric node (nodeId, name, podId, role)
-    AciConfiguration.FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
     config.getFabricNodes().put("201", node);
 
     // Create VRF
@@ -576,15 +587,15 @@ public class AciConversionTest {
     config.getVrfs().put("shared_vrf", vrf);
 
     // Create multiple bridge domains in the same VRF
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setVrf("shared_vrf");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setVrf("shared_vrf");
     bd2.setSubnets(ImmutableList.of("10.2.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd3 = new AciConfiguration.BridgeDomain("bd3");
+    BridgeDomain bd3 = new BridgeDomain("bd3");
     bd3.setVrf("shared_vrf");
     bd3.setSubnets(ImmutableList.of("10.3.1.0/24"));
 
@@ -622,27 +633,27 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create a fabric node (nodeId, name, podId, role)
-    AciConfiguration.FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
     config.getFabricNodes().put("201", node);
 
     // Create contract with multiple subjects and filters
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("multi_filter_contract");
+    Contract contract = new Contract("multi_filter_contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject1 = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject1 = new Contract.Subject();
     subject1.setName("web_traffic");
 
-    AciConfiguration.Contract.Filter httpFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef httpFilter = new Contract.FilterRef();
     httpFilter.setName("http");
     httpFilter.setIpProtocol("tcp");
     httpFilter.setDestinationPorts(ImmutableList.of("80"));
 
-    AciConfiguration.Contract.Filter httpsFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef httpsFilter = new Contract.FilterRef();
     httpsFilter.setName("https");
     httpsFilter.setIpProtocol("tcp");
     httpsFilter.setDestinationPorts(ImmutableList.of("443"));
 
-    AciConfiguration.Contract.Filter icmpFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef icmpFilter = new Contract.FilterRef();
     icmpFilter.setName("icmp");
     icmpFilter.setIpProtocol("icmp");
 
@@ -679,10 +690,10 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:arp_contract");
+    Contract contract = new Contract("tenant1:arp_contract");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("arp_filter");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("22"));
@@ -707,10 +718,10 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:arp_contract");
+    Contract contract = new Contract("tenant1:arp_contract");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("arp_filter");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("22"));
@@ -735,9 +746,9 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciConfiguration.Filter filterModel = new AciConfiguration.Filter("tenant1:port_filter");
+    FilterModel filterModel = new FilterModel("tenant1:port_filter");
     filterModel.setTenant("tenant1");
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setName("entry1");
     entry.setProtocol("tcp");
     entry.setDestinationFromPort("unspecified");
@@ -747,10 +758,10 @@ public class AciConversionTest {
     filterModel.setEntries(ImmutableList.of(entry));
     config.getFilters().put("tenant1:port_filter", filterModel);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:test_contract");
+    Contract contract = new Contract("tenant1:test_contract");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("port_filter");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
@@ -776,10 +787,10 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:test_contract");
+    Contract contract = new Contract("tenant1:test_contract");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("tcp_any_dst");
     filter.setIpProtocol("tcp");
     // Placeholder value from upstream "unspecified" mapping.
@@ -819,10 +830,10 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:test_contract");
+    Contract contract = new Contract("tenant1:test_contract");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("tcp_any_dst");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("0-0"));
@@ -863,12 +874,12 @@ public class AciConversionTest {
     config.setHostname("epg-policy-test");
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    FabricNode node = new FabricNode();
     node.setNodeId("201");
     node.setName("leaf1");
     node.setRole("leaf");
 
-    AciConfiguration.FabricNode.Interface iface = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface iface = new FabricNodeInterface();
     iface.setName("ethernet1/10");
     iface.setType("ethernet");
     iface.setEnabled(true);
@@ -876,10 +887,10 @@ public class AciConversionTest {
     node.getInterfaces().put("ethernet1/10", iface);
     config.getFabricNodes().put("201", node);
 
-    AciConfiguration.Contract allowContract = new AciConfiguration.Contract("tenant1:web");
+    Contract allowContract = new Contract("tenant1:web");
     allowContract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("allow_http");
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("80"));
@@ -887,7 +898,7 @@ public class AciConversionTest {
     allowContract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:web", allowContract);
 
-    AciConfiguration.Epg epg = new AciConfiguration.Epg("app_epg");
+    Epg epg = new Epg("app_epg");
     epg.setTenant("tenant1");
     epg.setConsumedContracts(ImmutableList.of("tenant1:web"));
     epg.setProvidedContracts(ImmutableList.of("tenant1:web"));
@@ -911,12 +922,12 @@ public class AciConversionTest {
     config.setHostname("taboo-precedence-test");
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    FabricNode node = new FabricNode();
     node.setNodeId("201");
     node.setName("leaf1");
     node.setRole("leaf");
 
-    AciConfiguration.FabricNode.Interface iface = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface iface = new FabricNodeInterface();
     iface.setName("ethernet1/20");
     iface.setType("ethernet");
     iface.setEnabled(true);
@@ -924,10 +935,10 @@ public class AciConversionTest {
     node.getInterfaces().put("ethernet1/20", iface);
     config.getFabricNodes().put("201", node);
 
-    AciConfiguration.Contract allow443 = new AciConfiguration.Contract("tenant1:allow443");
+    Contract allow443 = new Contract("tenant1:allow443");
     allow443.setTenant("tenant1");
-    AciConfiguration.Contract.Subject allowSubject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter allowFilter = new AciConfiguration.Contract.Filter();
+    Contract.Subject allowSubject = new Contract.Subject();
+    Contract.FilterRef allowFilter = new Contract.FilterRef();
     allowFilter.setName("allow443");
     allowFilter.setIpProtocol("tcp");
     allowFilter.setDestinationPorts(ImmutableList.of("443"));
@@ -935,11 +946,10 @@ public class AciConversionTest {
     allow443.setSubjects(ImmutableList.of(allowSubject));
     config.getContracts().put("tenant1:allow443", allow443);
 
-    AciConfiguration.TabooContract taboo443 =
-        new AciConfiguration.TabooContract("tenant1:taboo443");
+    TabooContract taboo443 = new TabooContract("tenant1:taboo443");
     taboo443.setTenant("tenant1");
-    AciConfiguration.Contract.Subject tabooSubject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter tabooFilter = new AciConfiguration.Contract.Filter();
+    Contract.Subject tabooSubject = new Contract.Subject();
+    Contract.FilterRef tabooFilter = new Contract.FilterRef();
     tabooFilter.setName("taboo443");
     tabooFilter.setIpProtocol("tcp");
     tabooFilter.setDestinationPorts(ImmutableList.of("443"));
@@ -947,7 +957,7 @@ public class AciConversionTest {
     taboo443.setSubjects(ImmutableList.of(tabooSubject));
     config.getTabooContracts().put("tenant1:taboo443", taboo443);
 
-    AciConfiguration.Epg epg = new AciConfiguration.Epg("web_epg");
+    Epg epg = new Epg("web_epg");
     epg.setTenant("tenant1");
     epg.setProvidedContracts(ImmutableList.of("tenant1:allow443"));
     epg.setProtectedByTaboos(ImmutableList.of("tenant1:taboo443"));
@@ -992,7 +1002,7 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create a fabric node
-    AciConfiguration.FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
     config.getFabricNodes().put("201", node);
 
     // Create VRF
@@ -1001,13 +1011,13 @@ public class AciConversionTest {
     config.getVrfs().put("vrf1", vrf);
 
     // Create bridge domain
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setVrf("vrf1");
     bd.setTenant("tenant1");
     config.getBridgeDomains().put("bd1", bd);
 
     // Create L2Out
-    AciConfiguration.L2Out l2out = new AciConfiguration.L2Out("external_l2");
+    L2Out l2out = new L2Out("external_l2");
     l2out.setTenant("tenant1");
     l2out.setBridgeDomain("bd1");
     l2out.setEncapsulation("vlan-100");
@@ -1046,24 +1056,24 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create fabric nodes (border leafs)
-    AciConfiguration.FabricNode leaf1 = createFabricNode("201", "border-leaf1", "1", "leaf");
-    AciConfiguration.FabricNode leaf2 = createFabricNode("202", "border-leaf2", "1", "leaf");
+    FabricNode leaf1 = createFabricNode("201", "border-leaf1", "1", "leaf");
+    FabricNode leaf2 = createFabricNode("202", "border-leaf2", "1", "leaf");
     config.getFabricNodes().put("201", leaf1);
     config.getFabricNodes().put("202", leaf2);
 
     // Create L3Out with path attachment to identify border nodes
-    AciConfiguration.L3Out l3out = new AciConfiguration.L3Out("external-routes");
+    L3Out l3out = new L3Out("external-routes");
     l3out.setTenant("tenant1");
 
-    AciConfiguration.L3OutPathAttachment attachment = new AciConfiguration.L3OutPathAttachment();
+    PathAttachment attachment = new PathAttachment();
     attachment.setNodeId("201");
     l3out.getPathAttachments().add(attachment);
 
     config.getL3Outs().put("tenant1:external-routes", l3out);
 
     // Create an inter-fabric connection
-    AciConfiguration.InterFabricConnection connection =
-        new AciConfiguration.InterFabricConnection(
+    AciInterFabricConnection connection =
+        new AciInterFabricConnection(
             "fabric-dc1", "fabric-dc2", "bgp", "Inter-fabric BGP connection");
     connection.addBgpPeer("192.168.1.1");
 

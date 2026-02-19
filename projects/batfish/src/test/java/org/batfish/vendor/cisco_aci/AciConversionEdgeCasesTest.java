@@ -25,15 +25,19 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
 import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
+import org.batfish.vendor.cisco_aci.representation.L3Out;
 import org.junit.Test;
 
 /** Tests for {@link AciConversion} edge cases and error scenarios. */
 public class AciConversionEdgeCasesTest {
 
   /** Creates a basic fabric node for testing. */
-  private AciConfiguration.FabricNode createFabricNode(
-      String nodeId, String name, String podId, String role) {
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+  private FabricNode createFabricNode(String nodeId, String name, String podId, String role) {
+    FabricNode node = new FabricNode();
     node.setNodeId(nodeId);
     node.setName(name);
     node.setPodId(podId);
@@ -70,7 +74,7 @@ public class AciConversionEdgeCasesTest {
     config.setHostname("test-fabric");
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    FabricNode node = new FabricNode();
     node.setNodeId("101");
     // Name is not set
     node.setPodId("1");
@@ -97,7 +101,7 @@ public class AciConversionEdgeCasesTest {
     config.setHostname("aci-aci-dc2-ce2.json");
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    FabricNode node = new FabricNode();
     node.setNodeId("1204");
     node.setPodId("1");
     node.setRole("leaf");
@@ -121,7 +125,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create EPG without bridge domain - using getOrCreateEpg
@@ -150,11 +154,11 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create contract without subjects - using getOrCreateContract
-    AciConfiguration.Contract contract = config.getOrCreateContract("tenant1:empty-contract");
+    Contract contract = config.getOrCreateContract("tenant1:empty-contract");
     contract.setTenant("tenant1");
     contract.setDescription("Contract with no subjects");
     // Subjects list is empty by default
@@ -179,7 +183,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create VRF
@@ -187,7 +191,7 @@ public class AciConversionEdgeCasesTest {
     vrf.setTenant("tenant1");
 
     // Create L3Out without BGP - using getOrCreateL3Out
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
     l3out.setVrf("tenant1:vrf1");
     // BGP process not set
@@ -212,7 +216,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create VRF that won't be referenced
@@ -225,7 +229,7 @@ public class AciConversionEdgeCasesTest {
     usedVrf.setTenant("tenant1");
 
     // Create bridge domain using only used-vrf
-    AciConfiguration.BridgeDomain bd = config.getOrCreateBridgeDomain("tenant1:bd1");
+    BridgeDomain bd = config.getOrCreateBridgeDomain("tenant1:bd1");
     bd.setVrf("tenant1:used-vrf");
     bd.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
@@ -250,7 +254,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create VRF
@@ -258,15 +262,15 @@ public class AciConversionEdgeCasesTest {
     vrf.setTenant("tenant1");
 
     // Create multiple bridge domains in same VRF
-    AciConfiguration.BridgeDomain bd1 = config.getOrCreateBridgeDomain("tenant1:bd1");
+    BridgeDomain bd1 = config.getOrCreateBridgeDomain("tenant1:bd1");
     bd1.setVrf("tenant1:shared-vrf");
     bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd2 = config.getOrCreateBridgeDomain("tenant1:bd2");
+    BridgeDomain bd2 = config.getOrCreateBridgeDomain("tenant1:bd2");
     bd2.setVrf("tenant1:shared-vrf");
     bd2.setSubnets(ImmutableList.of("10.2.1.0/24"));
 
-    AciConfiguration.BridgeDomain bd3 = config.getOrCreateBridgeDomain("tenant1:bd3");
+    BridgeDomain bd3 = config.getOrCreateBridgeDomain("tenant1:bd3");
     bd3.setVrf("tenant1:shared-vrf");
     bd3.setSubnets(ImmutableList.of("10.3.1.0/24"));
 
@@ -301,17 +305,17 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create contract with deny action filter
-    AciConfiguration.Contract contract = config.getOrCreateContract("tenant1:deny-contract");
+    Contract contract = config.getOrCreateContract("tenant1:deny-contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("deny-subject");
 
-    AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef filter = new Contract.FilterRef();
     filter.setName("deny-filter");
     filter.setAction("deny"); // Set the action to deny
     filter.setIpProtocol("tcp");
@@ -352,25 +356,25 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create contract with both permit and deny actions
-    AciConfiguration.Contract contract = config.getOrCreateContract("tenant1:mixed-contract");
+    Contract contract = config.getOrCreateContract("tenant1:mixed-contract");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setName("mixed-subject");
 
     // Permit filter for HTTP
-    AciConfiguration.Contract.Filter permitFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef permitFilter = new Contract.FilterRef();
     permitFilter.setName("permit-http");
     permitFilter.setAction("permit");
     permitFilter.setIpProtocol("tcp");
     permitFilter.setDestinationPorts(ImmutableList.of("80"));
 
     // Deny filter for Telnet
-    AciConfiguration.Contract.Filter denyFilter = new AciConfiguration.Contract.Filter();
+    Contract.FilterRef denyFilter = new Contract.FilterRef();
     denyFilter.setName("deny-telnet");
     denyFilter.setAction("deny");
     denyFilter.setIpProtocol("tcp");
@@ -418,7 +422,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // Create empty tenant (no VRFs, BDs, EPGs, or contracts)
@@ -443,9 +447,9 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node with interface
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
 
-    AciConfiguration.FabricNode.Interface iface = new AciConfiguration.FabricNode.Interface();
+    FabricNodeInterface iface = new FabricNodeInterface();
     iface.setName("ethernet1/1");
     iface.setType("ethernet");
     iface.setEnabled(true);
@@ -477,7 +481,7 @@ public class AciConversionEdgeCasesTest {
     config.setHostname("test-fabric");
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    FabricNode node = new FabricNode();
     node.setNodeId("101");
     node.setName("node1");
     node.setPodId("1");
@@ -502,7 +506,7 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Add fabric node
-    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
     config.getFabricNodes().put("101", node);
 
     // No custom VRFs defined
@@ -529,12 +533,12 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create leaf node with no interfaces
-    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
     // No interfaces added - node is isolated
     config.getFabricNodes().put("101", leaf);
 
     // Create spine node to enable topology
-    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
     config.getFabricNodes().put("201", spine);
 
     config.finalizeStructures();
@@ -562,11 +566,11 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create spine node with no interfaces
-    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
     config.getFabricNodes().put("201", spine);
 
     // Create leaf node to enable topology
-    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
     config.getFabricNodes().put("101", leaf);
 
     config.finalizeStructures();
@@ -593,12 +597,11 @@ public class AciConversionEdgeCasesTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
 
     // Create services node with no interfaces
-    AciConfiguration.FabricNode services =
-        createFabricNode("301", "SW-DC1-Services-301", "1", "services");
+    FabricNode services = createFabricNode("301", "SW-DC1-Services-301", "1", "services");
     config.getFabricNodes().put("301", services);
 
     // Create spine node to enable topology
-    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
     config.getFabricNodes().put("201", spine);
 
     config.finalizeStructures();
@@ -625,10 +628,10 @@ public class AciConversionEdgeCasesTest {
     config.setHostname("test-fabric");
 
     // Create isolated leaf and spine nodes
-    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
     config.getFabricNodes().put("101", leaf);
 
-    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
     config.getFabricNodes().put("201", spine);
 
     config.finalizeStructures();

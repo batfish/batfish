@@ -237,7 +237,7 @@ import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciParser;
 import org.batfish.version.BatfishVersion;
 
 /** This class encapsulates the main control logic for Batfish. */
@@ -2826,7 +2826,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private static @Nonnull Map<String, String> extractAciPrimaryConfigFiles(
       Map<String, String> ciscoAciObjects) {
     return ciscoAciObjects.entrySet().stream()
-        .filter(entry -> !AciConfiguration.isFabricLinksJson(entry.getValue()))
+        .filter(entry -> !AciParser.isFabricLinksJson(entry.getValue()))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 

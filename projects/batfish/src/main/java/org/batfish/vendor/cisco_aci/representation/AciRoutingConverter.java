@@ -47,18 +47,18 @@ final class AciRoutingConverter {
   private AciRoutingConverter() {}
 
   static void convertL3Outs(
-      AciConfiguration.FabricNode node,
+      FabricNode node,
       AciConfiguration aciConfig,
       Map<String, Interface> interfaces,
       Vrf vrf,
       Configuration c,
       Warnings warnings) {
-    Map<String, AciConfiguration.L3Out> l3Outs = aciConfig.getL3Outs();
+    Map<String, L3Out> l3Outs = aciConfig.getL3Outs();
     if (l3Outs == null || l3Outs.isEmpty()) {
       return;
     }
 
-    for (AciConfiguration.L3Out l3Out : l3Outs.values()) {
+    for (L3Out l3Out : l3Outs.values()) {
       String l3OutName = l3Out.getName();
       String vrfName = l3Out.getVrf();
 
@@ -102,13 +102,13 @@ final class AciRoutingConverter {
       Vrf defaultVrf,
       Configuration c,
       Warnings warnings) {
-    Map<String, AciConfiguration.L2Out> l2Outs = aciConfig.getL2Outs();
+    Map<String, L2Out> l2Outs = aciConfig.getL2Outs();
     if (l2Outs == null || l2Outs.isEmpty()) {
       return;
     }
 
-    for (Map.Entry<String, AciConfiguration.L2Out> entry : l2Outs.entrySet()) {
-      AciConfiguration.L2Out l2Out = entry.getValue();
+    for (Map.Entry<String, L2Out> entry : l2Outs.entrySet()) {
+      L2Out l2Out = entry.getValue();
       String l2OutName = l2Out.getName();
       if (l2OutName == null || l2OutName.isEmpty()) {
         continue;
@@ -122,7 +122,7 @@ final class AciRoutingConverter {
       Vrf targetVrf = defaultVrf;
       String bdName = l2Out.getBridgeDomain();
       if (bdName != null && !bdName.isEmpty()) {
-        AciConfiguration.BridgeDomain bd = aciConfig.getBridgeDomains().get(bdName);
+        BridgeDomain bd = aciConfig.getBridgeDomains().get(bdName);
         if (bd != null && bd.getVrf() != null) {
           Vrf foundVrf = c.getVrfs().get(bd.getVrf());
           if (foundVrf != null) {
@@ -156,7 +156,7 @@ final class AciRoutingConverter {
     }
   }
 
-  private static int parseL2OutVlanId(AciConfiguration.L2Out l2Out, Warnings warnings) {
+  private static int parseL2OutVlanId(L2Out l2Out, Warnings warnings) {
     String encap = l2Out.getEncapsulation();
     if (encap == null || encap.isEmpty()) {
       return Math.abs(l2Out.getName().hashCode() % 4094) + 1;
@@ -190,14 +190,14 @@ final class AciRoutingConverter {
   }
 
   private static @Nullable BgpProcess.Builder convertBgpPeers(
-      AciConfiguration.L3Out l3Out, Vrf vrf, Warnings warnings) {
+      L3Out l3Out, Vrf vrf, Warnings warnings) {
     if (l3Out.getBgpPeers() == null || l3Out.getBgpPeers().isEmpty()) {
       return null;
     }
 
-    AciConfiguration.BgpProcess bgpProcessConfig = l3Out.getBgpProcess();
+    org.batfish.vendor.cisco_aci.representation.BgpProcess bgpProcessConfig = l3Out.getBgpProcess();
     if (bgpProcessConfig == null) {
-      bgpProcessConfig = new AciConfiguration.BgpProcess();
+      bgpProcessConfig = new org.batfish.vendor.cisco_aci.representation.BgpProcess();
     }
 
     Ip routerId = null;
@@ -239,8 +239,8 @@ final class AciRoutingConverter {
   }
 
   private static @Nullable BgpActivePeerConfig convertBgpPeer(
-      AciConfiguration.BgpPeer bgpPeer,
-      AciConfiguration.L3Out l3Out,
+      BgpPeer bgpPeer,
+      L3Out l3Out,
       Map<String, Interface> interfaces,
       Vrf vrf,
       @Nullable Long localAs,
@@ -328,11 +328,7 @@ final class AciRoutingConverter {
   }
 
   private static void addBgpPeersToProcess(
-      AciConfiguration.L3Out l3Out,
-      Map<String, Interface> interfaces,
-      Vrf vrf,
-      Configuration c,
-      Warnings warnings) {
+      L3Out l3Out, Map<String, Interface> interfaces, Vrf vrf, Configuration c, Warnings warnings) {
     if (l3Out.getBgpPeers() == null || l3Out.getBgpPeers().isEmpty()) {
       return;
     }
@@ -342,16 +338,13 @@ final class AciRoutingConverter {
       localAs = l3Out.getBgpProcess().getAs();
     }
 
-    for (AciConfiguration.BgpPeer bgpPeer : l3Out.getBgpPeers()) {
+    for (BgpPeer bgpPeer : l3Out.getBgpPeers()) {
       convertBgpPeer(bgpPeer, l3Out, interfaces, vrf, localAs, c, warnings);
     }
   }
 
   private static @Nullable Ip determineBgpLocalIp(
-      AciConfiguration.BgpPeer bgpPeer,
-      AciConfiguration.L3Out l3Out,
-      Map<String, Interface> interfaces,
-      Warnings warnings) {
+      BgpPeer bgpPeer, L3Out l3Out, Map<String, Interface> interfaces, Warnings warnings) {
     String updateSourceInterface = bgpPeer.getUpdateSourceInterface();
     if (updateSourceInterface != null) {
       Interface iface = interfaces.get(updateSourceInterface);
@@ -388,10 +381,7 @@ final class AciRoutingConverter {
   }
 
   private static @Nullable String createBgpImportPolicy(
-      AciConfiguration.BgpPeer bgpPeer,
-      AciConfiguration.L3Out l3Out,
-      Configuration c,
-      Warnings warnings) {
+      BgpPeer bgpPeer, L3Out l3Out, Configuration c, Warnings warnings) {
     String policyName =
         String.format("~BGP_IMPORT~%s~%s", l3Out.getName(), bgpPeer.getPeerAddress());
 
@@ -430,7 +420,7 @@ final class AciRoutingConverter {
   }
 
   private static @Nullable String createBgpExportPolicy(
-      AciConfiguration.BgpPeer bgpPeer, AciConfiguration.L3Out l3Out, Configuration c) {
+      BgpPeer bgpPeer, L3Out l3Out, Configuration c) {
     String policyName =
         String.format("~BGP_EXPORT~%s~%s", l3Out.getName(), bgpPeer.getPeerAddress());
 
@@ -460,12 +450,13 @@ final class AciRoutingConverter {
   }
 
   private static void convertStaticRoutes(
-      AciConfiguration.L3Out l3Out, Map<String, Interface> interfaces, Vrf vrf, Warnings warnings) {
+      L3Out l3Out, Map<String, Interface> interfaces, Vrf vrf, Warnings warnings) {
     if (l3Out.getStaticRoutes() == null || l3Out.getStaticRoutes().isEmpty()) {
       return;
     }
 
-    for (AciConfiguration.StaticRoute aciStaticRoute : l3Out.getStaticRoutes()) {
+    for (org.batfish.vendor.cisco_aci.representation.StaticRoute aciStaticRoute :
+        l3Out.getStaticRoutes()) {
       StaticRoute staticRoute = convertStaticRoute(aciStaticRoute, l3Out, interfaces, warnings);
       if (staticRoute != null) {
         vrf.getStaticRoutes().add(staticRoute);
@@ -474,8 +465,8 @@ final class AciRoutingConverter {
   }
 
   private static @Nullable StaticRoute convertStaticRoute(
-      AciConfiguration.StaticRoute aciStaticRoute,
-      AciConfiguration.L3Out l3Out,
+      org.batfish.vendor.cisco_aci.representation.StaticRoute aciStaticRoute,
+      L3Out l3Out,
       Map<String, Interface> interfaces,
       Warnings warnings) {
     String prefixStr = aciStaticRoute.getPrefix();
@@ -561,9 +552,9 @@ final class AciRoutingConverter {
   }
 
   private static void convertOspfConfig(
-      AciConfiguration.OspfConfig ospfConfig,
+      OspfConfig ospfConfig,
       String l3OutName,
-      AciConfiguration.FabricNode node,
+      FabricNode node,
       Map<String, Interface> interfaces,
       Vrf vrf,
       Warnings warnings) {
@@ -578,7 +569,8 @@ final class AciRoutingConverter {
     ImmutableSortedMap.Builder<Long, OspfArea> areasBuilder = ImmutableSortedMap.naturalOrder();
 
     if (ospfConfig.getAreas() != null) {
-      for (AciConfiguration.OspfArea aciArea : ospfConfig.getAreas().values()) {
+      for (org.batfish.vendor.cisco_aci.representation.OspfArea aciArea :
+          ospfConfig.getAreas().values()) {
         Long areaNum = parseAreaId(aciArea.getAreaId());
         if (areaNum == null) {
           warnings.redFlagf(
@@ -629,10 +621,7 @@ final class AciRoutingConverter {
   }
 
   private static Ip inferOspfRouterId(
-      AciConfiguration.FabricNode node,
-      Map<String, Interface> interfaces,
-      String l3OutName,
-      Warnings warnings) {
+      FabricNode node, Map<String, Interface> interfaces, String l3OutName, Warnings warnings) {
 
     for (Interface iface : interfaces.values()) {
       if (iface.getAllAddresses().isEmpty()) {
@@ -662,7 +651,7 @@ final class AciRoutingConverter {
   }
 
   private static void applyOspfInterfaceSettings(
-      AciConfiguration.OspfConfig ospfConfig,
+      OspfConfig ospfConfig,
       String l3OutName,
       Map<String, Interface> interfaces,
       String processId,
@@ -672,7 +661,7 @@ final class AciRoutingConverter {
       return;
     }
 
-    for (AciConfiguration.OspfInterface ospfIface : ospfConfig.getOspfInterfaces()) {
+    for (OspfInterface ospfIface : ospfConfig.getOspfInterfaces()) {
       String ifaceName = ospfIface.getName();
       Interface batfishIface = interfaces.get(ifaceName);
 
@@ -780,12 +769,12 @@ final class AciRoutingConverter {
   }
 
   private static void convertExternalEpgs(
-      AciConfiguration.L3Out l3Out, Map<String, Interface> interfaces, Vrf vrf, Warnings warnings) {
+      L3Out l3Out, Map<String, Interface> interfaces, Vrf vrf, Warnings warnings) {
     if (l3Out.getExternalEpgs() == null || l3Out.getExternalEpgs().isEmpty()) {
       return;
     }
 
-    for (AciConfiguration.ExternalEpg extEpg : l3Out.getExternalEpgs()) {
+    for (ExternalEpg extEpg : l3Out.getExternalEpgs()) {
       String epgName = extEpg.getName();
       if (epgName == null) {
         continue;

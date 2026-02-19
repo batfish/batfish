@@ -8,6 +8,8 @@ import static org.hamcrest.Matchers.hasSize;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration} for application profiles, EPGs, and deployments. */
@@ -773,7 +775,7 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("app-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("app-tenant");
+    Tenant tenant = config.getTenants().get("app-tenant");
     assertThat(tenant.getName(), equalTo("app-tenant"));
     assertThat(tenant.getEpgs().keySet(), hasSize(1));
     assertThat(tenant.getEpgs(), hasKey("app-tenant:web-app:web-frontend"));
@@ -790,13 +792,13 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("multi-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("multi-tenant");
+    Tenant tenant = config.getTenants().get("multi-tenant");
     assertThat(tenant.getEpgs().keySet(), hasSize(3));
     assertThat(tenant.getEpgs(), hasKey("multi-tenant:multi-tier-app:epg1"));
     assertThat(tenant.getEpgs(), hasKey("multi-tenant:multi-tier-app:epg2"));
     assertThat(tenant.getEpgs(), hasKey("multi-tenant:multi-tier-app:epg3"));
 
-    AciConfiguration.Epg epg1 = tenant.getEpgs().get("multi-tenant:multi-tier-app:epg1");
+    Epg epg1 = tenant.getEpgs().get("multi-tenant:multi-tier-app:epg1");
     assertThat(epg1.getDescription(), equalTo("First EPG"));
   }
 
@@ -812,7 +814,7 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("contract-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("contract-tenant");
+    Tenant tenant = config.getTenants().get("contract-tenant");
     assertThat(tenant.getEpgs().keySet(), hasSize(2));
     assertThat(tenant.getEpgs(), hasKey("contract-tenant:client-server-app:client-epg"));
     assertThat(tenant.getEpgs(), hasKey("contract-tenant:client-server-app:server-epg"));
@@ -830,15 +832,15 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("multi-bd-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("multi-bd-tenant");
+    Tenant tenant = config.getTenants().get("multi-bd-tenant");
     assertThat(tenant.getBridgeDomains().keySet(), hasSize(2));
     assertThat(tenant.getBridgeDomains(), hasKey("multi-bd-tenant:bd-web"));
     assertThat(tenant.getBridgeDomains(), hasKey("multi-bd-tenant:bd-app"));
 
-    AciConfiguration.Epg webEpg = tenant.getEpgs().get("multi-bd-tenant:app-profile:web-epg");
+    Epg webEpg = tenant.getEpgs().get("multi-bd-tenant:app-profile:web-epg");
     assertThat(webEpg.getBridgeDomain(), equalTo("multi-bd-tenant:bd-web"));
 
-    AciConfiguration.Epg appEpg = tenant.getEpgs().get("multi-bd-tenant:app-profile:app-epg");
+    Epg appEpg = tenant.getEpgs().get("multi-bd-tenant:app-profile:app-epg");
     assertThat(appEpg.getBridgeDomain(), equalTo("multi-bd-tenant:bd-app"));
   }
 
@@ -854,12 +856,11 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("naming-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("naming-tenant");
+    Tenant tenant = config.getTenants().get("naming-tenant");
     assertThat(
         tenant.getEpgs(), hasKey("naming-tenant:tier-1-app-profile-naming:web-frontend-epg-v1"));
 
-    AciConfiguration.Epg epg =
-        tenant.getEpgs().get("naming-tenant:tier-1-app-profile-naming:web-frontend-epg-v1");
+    Epg epg = tenant.getEpgs().get("naming-tenant:tier-1-app-profile-naming:web-frontend-epg-v1");
     assertThat(
         epg.getName(), equalTo("naming-tenant:tier-1-app-profile-naming:web-frontend-epg-v1"));
   }
@@ -876,12 +877,12 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("nested-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("nested-tenant");
+    Tenant tenant = config.getTenants().get("nested-tenant");
     assertThat(tenant.getEpgs().keySet(), hasSize(2));
     assertThat(tenant.getEpgs(), hasKey("nested-tenant:parent-app-profile:child-epg-1"));
     assertThat(tenant.getEpgs(), hasKey("nested-tenant:parent-app-profile:child-epg-2"));
 
-    for (AciConfiguration.Epg epg : tenant.getEpgs().values()) {
+    for (Epg epg : tenant.getEpgs().values()) {
       assertThat(epg.getBridgeDomain(), equalTo("nested-tenant:nested-bd"));
     }
   }
@@ -897,7 +898,7 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("isolation-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("isolation-tenant");
+    Tenant tenant = config.getTenants().get("isolation-tenant");
     assertThat(tenant.getEpgs().keySet(), hasSize(2));
     assertThat(tenant.getEpgs(), hasKey("isolation-tenant:isolated-app:isolated-epg-1"));
     assertThat(tenant.getEpgs(), hasKey("isolation-tenant:isolated-app:isolated-epg-2"));
@@ -914,10 +915,10 @@ public class AciApplicationProfileTest {
         AciConfiguration.fromJson("test-config.json", configText, new Warnings());
 
     assertThat(config.getTenants(), hasKey("domain-tenant"));
-    AciConfiguration.Tenant tenant = config.getTenants().get("domain-tenant");
+    Tenant tenant = config.getTenants().get("domain-tenant");
     assertThat(tenant.getEpgs(), hasKey("domain-tenant:domain-app:domain-epg"));
 
-    AciConfiguration.Epg epg = tenant.getEpgs().get("domain-tenant:domain-app:domain-epg");
+    Epg epg = tenant.getEpgs().get("domain-tenant:domain-app:domain-epg");
     assertThat(epg.getBridgeDomain(), equalTo("domain-tenant:domain-bd"));
   }
 }

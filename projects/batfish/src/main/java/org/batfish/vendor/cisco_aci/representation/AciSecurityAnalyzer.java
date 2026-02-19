@@ -55,7 +55,7 @@ public class AciSecurityAnalyzer {
     List<SecurityFinding> findings = new ArrayList<>();
 
     // Analyze each contract
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       findings.addAll(analyzeContract(contract, config));
     }
 
@@ -79,8 +79,7 @@ public class AciSecurityAnalyzer {
    * @param config The full ACI configuration (for filter lookups)
    * @return List of security findings for this contract
    */
-  private static List<SecurityFinding> analyzeContract(
-      AciConfiguration.Contract contract, AciConfiguration config) {
+  private static List<SecurityFinding> analyzeContract(Contract contract, AciConfiguration config) {
     List<SecurityFinding> findings = new ArrayList<>();
     String tenantName = contract.getTenant();
     String contractName = contract.getName();
@@ -89,7 +88,7 @@ public class AciSecurityAnalyzer {
     findings.addAll(checkMissingDenyRules(contract, tenantName, contractName));
 
     // Analyze each subject in the contract
-    for (AciConfiguration.Contract.Subject subject : contract.getSubjects()) {
+    for (Contract.Subject subject : contract.getSubjects()) {
       findings.addAll(analyzeSubject(subject, contract, tenantName, config));
     }
 
@@ -106,16 +105,13 @@ public class AciSecurityAnalyzer {
    * @return List of security findings for this subject
    */
   private static List<SecurityFinding> analyzeSubject(
-      AciConfiguration.Contract.Subject subject,
-      AciConfiguration.Contract contract,
-      String tenantName,
-      AciConfiguration config) {
+      Contract.Subject subject, Contract contract, String tenantName, AciConfiguration config) {
     List<SecurityFinding> findings = new ArrayList<>();
 
-    for (AciConfiguration.Contract.Filter filter : subject.getFilters()) {
+    for (Contract.FilterRef filter : subject.getFilters()) {
       // Get the actual filter from configuration to get entries
       String filterName = filter.getName();
-      AciConfiguration.Filter actualFilter = config.getFilters().get(filterName);
+      FilterModel actualFilter = config.getFilters().get(filterName);
 
       if (actualFilter != null) {
         findings.addAll(
@@ -150,14 +146,14 @@ public class AciSecurityAnalyzer {
    * @return List of security findings for this filter
    */
   private static List<SecurityFinding> analyzeFilter(
-      AciConfiguration.Filter filter,
+      FilterModel filter,
       String contractName,
       String tenantName,
-      java.util.Map<String, AciConfiguration.Filter> allFilters) {
+      java.util.Map<String, FilterModel> allFilters) {
     List<SecurityFinding> findings = new ArrayList<>();
     String filterName = filter.getName();
 
-    for (AciConfiguration.Filter.Entry entry : filter.getEntries()) {
+    for (FilterModel.Entry entry : filter.getEntries()) {
       String entryName = entry.getName();
 
       // Check for any-any rules
@@ -239,7 +235,7 @@ public class AciSecurityAnalyzer {
    * @return Security finding if contract has only allow rules, empty list otherwise
    */
   private static List<SecurityFinding> checkMissingDenyRules(
-      AciConfiguration.Contract contract, String tenantName, String contractName) {
+      Contract contract, String tenantName, String contractName) {
     List<SecurityFinding> findings = new ArrayList<>();
 
     // ACI contracts are deny-by-default, but having only allow rules without explicit denies
@@ -277,7 +273,7 @@ public class AciSecurityAnalyzer {
    * @return true if the entry is an any-any rule, false otherwise
    */
   @VisibleForTesting
-  static boolean isAnyAnyRule(AciConfiguration.Filter.Entry entry) {
+  static boolean isAnyAnyRule(FilterModel.Entry entry) {
     // Check if protocol is unspecified or "any"
     boolean anyProtocol = entry.getProtocol() == null || ANY_VALUES.contains(entry.getProtocol());
 
@@ -309,7 +305,7 @@ public class AciSecurityAnalyzer {
    * @return true if the entry is overly permissive, false otherwise
    */
   @VisibleForTesting
-  static boolean isOverlyPermissive(AciConfiguration.Filter.Entry entry) {
+  static boolean isOverlyPermissive(FilterModel.Entry entry) {
     // Check if both source and destination addresses are unrestricted
     boolean anyAddress =
         (entry.getSourceAddress() == null || ANY_VALUES.contains(entry.getSourceAddress()))
@@ -329,7 +325,7 @@ public class AciSecurityAnalyzer {
    * @return Description of the broad port range if found, null otherwise
    */
   @VisibleForTesting
-  static @Nullable String checkBroadPortRange(AciConfiguration.Filter.Entry entry) {
+  static @Nullable String checkBroadPortRange(FilterModel.Entry entry) {
     // Check destination port range
     if (entry.getDestinationFromPort() != null && entry.getDestinationToPort() != null) {
       try {
@@ -385,7 +381,7 @@ public class AciSecurityAnalyzer {
    * @return true if protocol is used without port restrictions, false otherwise
    */
   @VisibleForTesting
-  static boolean isUnrestrictedProtocol(AciConfiguration.Filter.Entry entry) {
+  static boolean isUnrestrictedProtocol(FilterModel.Entry entry) {
     String protocol = entry.getProtocol();
     if (protocol == null || !PROTOCOLS_REQUIRING_PORTS.contains(protocol.toLowerCase())) {
       return false;

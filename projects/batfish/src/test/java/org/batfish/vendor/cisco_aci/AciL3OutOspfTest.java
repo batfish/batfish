@@ -9,6 +9,10 @@ import static org.junit.Assert.assertNotNull;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
+import org.batfish.vendor.cisco_aci.representation.L3Out;
+import org.batfish.vendor.cisco_aci.representation.OspfArea;
+import org.batfish.vendor.cisco_aci.representation.OspfConfig;
+import org.batfish.vendor.cisco_aci.representation.OspfInterface;
 import org.junit.Test;
 
 /** Tests for {@link AciConfiguration} L3Out configuration. */
@@ -21,7 +25,7 @@ public class AciL3OutOspfTest {
     config.setHostname("test-fabric");
 
     // Create L3Out programmatically
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
     l3out.setVrf("tenant1:vrf1");
     l3out.setDescription("Test L3Out");
@@ -38,7 +42,7 @@ public class AciL3OutOspfTest {
   public void testL3OutWithBgp() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
     assertNotNull(l3out);
@@ -50,7 +54,7 @@ public class AciL3OutOspfTest {
   public void testL3OutBgpPeers() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
     assertNotNull(l3out.getBgpPeers());
@@ -62,7 +66,7 @@ public class AciL3OutOspfTest {
   public void testL3OutStaticRoutes() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
     assertNotNull(l3out.getStaticRoutes());
@@ -74,7 +78,7 @@ public class AciL3OutOspfTest {
   public void testL3OutExternalEpgs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
     assertNotNull(l3out.getExternalEpgs());
@@ -86,14 +90,14 @@ public class AciL3OutOspfTest {
   public void testL3OutOspf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
     // OSPF config is null by default
     assertThat(l3out.getOspfConfig(), equalTo(null));
 
     // Test setting OSPF configuration
-    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    OspfConfig ospfConfig = new OspfConfig();
     ospfConfig.setProcessId("100");
     l3out.setOspfConfig(ospfConfig);
 
@@ -121,7 +125,7 @@ public class AciL3OutOspfTest {
   public void testL3OutDescription() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setDescription("Test description");
 
     assertThat(l3out.getDescription(), equalTo("Test description"));
@@ -132,7 +136,7 @@ public class AciL3OutOspfTest {
   public void testL3OutVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setVrf("tenant1:vrf1");
 
     assertThat(l3out.getVrf(), equalTo("tenant1:vrf1"));
@@ -141,16 +145,16 @@ public class AciL3OutOspfTest {
   /** Test OSPF area configuration. */
   @Test
   public void testOspfAreaConfiguration() {
-    AciConfiguration.L3Out l3out = new AciConfiguration.L3Out("tenant1:l3out1");
+    L3Out l3out = new L3Out("tenant1:l3out1");
 
-    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    OspfConfig ospfConfig = new OspfConfig();
     ospfConfig.setProcessId("1");
 
-    AciConfiguration.OspfArea area0 = new AciConfiguration.OspfArea();
+    OspfArea area0 = new OspfArea();
     area0.setAreaId("0.0.0.0");
     area0.setAreaType("regular");
 
-    AciConfiguration.OspfArea area1 = new AciConfiguration.OspfArea();
+    OspfArea area1 = new OspfArea();
     area1.setAreaId("0.0.0.1");
     area1.setAreaType("stub");
 
@@ -168,7 +172,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF area with networks. */
   @Test
   public void testOspfAreaWithNetworks() {
-    AciConfiguration.OspfArea area = new AciConfiguration.OspfArea();
+    OspfArea area = new OspfArea();
     area.setAreaId("0.0.0.0");
 
     area.getNetworks().add("10.1.1.0/24");
@@ -182,7 +186,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF interface configuration. */
   @Test
   public void testOspfInterfaceConfiguration() {
-    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    OspfInterface ospfInterface = new OspfInterface();
     ospfInterface.setName("Ethernet1/1");
     ospfInterface.setCost(100);
     ospfInterface.setHelloInterval(10);
@@ -201,7 +205,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF interface with broadcast network type. */
   @Test
   public void testOspfInterfaceBroadcast() {
-    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    OspfInterface ospfInterface = new OspfInterface();
     ospfInterface.setNetworkType("broadcast");
 
     assertThat(ospfInterface.getNetworkType(), equalTo("broadcast"));
@@ -211,19 +215,19 @@ public class AciL3OutOspfTest {
   @Test
   public void testOspfAreaTypes() {
     // Test regular area
-    AciConfiguration.OspfArea regularArea = new AciConfiguration.OspfArea();
+    OspfArea regularArea = new OspfArea();
     regularArea.setAreaId("0");
     regularArea.setAreaType("regular");
     assertThat(regularArea.getAreaType(), equalTo("regular"));
 
     // Test stub area
-    AciConfiguration.OspfArea stubArea = new AciConfiguration.OspfArea();
+    OspfArea stubArea = new OspfArea();
     stubArea.setAreaId("1");
     stubArea.setAreaType("stub");
     assertThat(stubArea.getAreaType(), equalTo("stub"));
 
     // Test NSSA area
-    AciConfiguration.OspfArea nssaArea = new AciConfiguration.OspfArea();
+    OspfArea nssaArea = new OspfArea();
     nssaArea.setAreaId("2");
     nssaArea.setAreaType("nssa");
     assertThat(nssaArea.getAreaType(), equalTo("nssa"));
@@ -321,10 +325,10 @@ public class AciL3OutOspfTest {
     config.setHostname("test-fabric");
 
     // Create L3Out with OSPF
-    AciConfiguration.L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
+    L3Out l3out = config.getOrCreateL3Out("tenant1:l3out1");
     l3out.setTenant("tenant1");
 
-    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    OspfConfig ospfConfig = new OspfConfig();
     ospfConfig.setProcessId("100");
     l3out.setOspfConfig(ospfConfig);
 
@@ -334,7 +338,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF area with stub type conversion. */
   @Test
   public void testOspfAreaStubType() {
-    AciConfiguration.OspfArea stubArea = new AciConfiguration.OspfArea();
+    OspfArea stubArea = new OspfArea();
     stubArea.setAreaId("1");
     stubArea.setAreaType("stub");
 
@@ -345,7 +349,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF area with NSSA type conversion. */
   @Test
   public void testOspfAreaNssaType() {
-    AciConfiguration.OspfArea nssaArea = new AciConfiguration.OspfArea();
+    OspfArea nssaArea = new OspfArea();
     nssaArea.setAreaId("2");
     nssaArea.setAreaType("nssa");
 
@@ -356,7 +360,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF interface with all settings. */
   @Test
   public void testOspfInterfaceFullSettings() {
-    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    OspfInterface ospfInterface = new OspfInterface();
     ospfInterface.setName("Ethernet1/1");
     ospfInterface.setCost(50);
     ospfInterface.setHelloInterval(5);
@@ -375,7 +379,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF interface with passive mode enabled. */
   @Test
   public void testOspfInterfacePassive() {
-    AciConfiguration.OspfInterface ospfInterface = new AciConfiguration.OspfInterface();
+    OspfInterface ospfInterface = new OspfInterface();
     ospfInterface.setPassive(true);
 
     assertThat(ospfInterface.getPassive(), equalTo(true));
@@ -384,18 +388,18 @@ public class AciL3OutOspfTest {
   /** Test multiple OSPF areas in same process. */
   @Test
   public void testMultipleOspfAreas() {
-    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    OspfConfig ospfConfig = new OspfConfig();
     ospfConfig.setProcessId("1");
 
-    AciConfiguration.OspfArea area0 = new AciConfiguration.OspfArea();
+    OspfArea area0 = new OspfArea();
     area0.setAreaId("0.0.0.0");
     area0.setAreaType("regular");
 
-    AciConfiguration.OspfArea area1 = new AciConfiguration.OspfArea();
+    OspfArea area1 = new OspfArea();
     area1.setAreaId("0.0.0.1");
     area1.setAreaType("stub");
 
-    AciConfiguration.OspfArea area2 = new AciConfiguration.OspfArea();
+    OspfArea area2 = new OspfArea();
     area2.setAreaId("0.0.0.2");
     area2.setAreaType("nssa");
 
@@ -412,7 +416,7 @@ public class AciL3OutOspfTest {
   /** Test OSPF configuration with default area. */
   @Test
   public void testOspfConfigDefaultArea() {
-    AciConfiguration.OspfConfig ospfConfig = new AciConfiguration.OspfConfig();
+    OspfConfig ospfConfig = new OspfConfig();
     ospfConfig.setProcessId("100");
     ospfConfig.setAreaId("0"); // Backbone area
 

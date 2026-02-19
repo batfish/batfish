@@ -16,6 +16,7 @@ import org.batfish.vendor.cisco_aci.representation.AciFabricNode;
 import org.batfish.vendor.cisco_aci.representation.AciPolUni;
 import org.batfish.vendor.cisco_aci.representation.AciStructureType;
 import org.batfish.vendor.cisco_aci.representation.AciStructureUsage;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.junit.Test;
 
 /**
@@ -571,7 +572,7 @@ public class AciFabricAndStructureTest {
     assertThat("Should have 2 fabric nodes", aciConfig.getFabricNodes().size(), equalTo(2));
 
     // Check node 1208
-    AciConfiguration.FabricNode node1208 = aciConfig.getFabricNodes().get("1208");
+    FabricNode node1208 = aciConfig.getFabricNodes().get("1208");
     assertThat("Node 1208 should exist", node1208, notNullValue());
     assertThat(
         "Node 1208 should have management info", node1208.getManagementInfo(), notNullValue());
@@ -585,7 +586,7 @@ public class AciFabricAndStructureTest {
         equalTo("10.35.1.1"));
 
     // Check node 1204
-    AciConfiguration.FabricNode node1204 = aciConfig.getFabricNodes().get("1204");
+    FabricNode node1204 = aciConfig.getFabricNodes().get("1204");
     assertThat("Node 1204 should exist", node1204, notNullValue());
     assertThat(
         "Node 1204 should have management info", node1204.getManagementInfo(), notNullValue());

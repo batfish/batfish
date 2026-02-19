@@ -45,13 +45,13 @@ public final class AciContractUsageAnalyzer {
     // Build maps of contract providers and consumers
     Multimap<String, String> contractProviders = HashMultimap.create();
     Multimap<String, String> contractConsumers = HashMultimap.create();
-    Map<String, AciConfiguration.Tenant> tenantMap = new HashMap<>();
+    Map<String, Tenant> tenantMap = new HashMap<>();
 
     // Collect all contract references from EPGs
-    for (AciConfiguration.Tenant tenant : config.getTenants().values()) {
+    for (Tenant tenant : config.getTenants().values()) {
       tenantMap.put(tenant.getName(), tenant);
 
-      for (AciConfiguration.Epg epg : tenant.getEpgs().values()) {
+      for (Epg epg : tenant.getEpgs().values()) {
         for (String contractRef : epg.getProvidedContracts()) {
           contractProviders.put(contractRef, epg.getName());
         }
@@ -93,7 +93,7 @@ public final class AciContractUsageAnalyzer {
       @Nonnull AciConfiguration config, @Nonnull Multimap<String, String> contractConsumers) {
     List<ContractUsageFinding> findings = new ArrayList<>();
 
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       String fqContractName = contract.getName();
 
       if (!contractConsumers.containsKey(fqContractName)) {
@@ -126,7 +126,7 @@ public final class AciContractUsageAnalyzer {
       @Nonnull AciConfiguration config, @Nonnull Multimap<String, String> contractProviders) {
     List<ContractUsageFinding> findings = new ArrayList<>();
 
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       String fqContractName = contract.getName();
 
       if (!contractProviders.containsKey(fqContractName)) {
@@ -241,16 +241,15 @@ public final class AciContractUsageAnalyzer {
     List<ContractUsageFinding> findings = new ArrayList<>();
 
     // Group contracts by name (without tenant prefix)
-    Multimap<String, AciConfiguration.Contract> contractsByName = HashMultimap.create();
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    Multimap<String, Contract> contractsByName = HashMultimap.create();
+    for (Contract contract : config.getContracts().values()) {
       String contractName = extractContractName(contract.getName());
       contractsByName.put(contractName, contract);
     }
 
     // Find contracts with the same name in different tenants
-    for (Map.Entry<String, Collection<AciConfiguration.Contract>> entry :
-        contractsByName.asMap().entrySet()) {
-      Collection<AciConfiguration.Contract> contracts = entry.getValue();
+    for (Map.Entry<String, Collection<Contract>> entry : contractsByName.asMap().entrySet()) {
+      Collection<Contract> contracts = entry.getValue();
 
       if (contracts.size() > 1) {
         // Found duplicate names
@@ -264,7 +263,7 @@ public final class AciContractUsageAnalyzer {
           String contractName = entry.getKey();
           String tenantsList = String.join(", ", tenants);
 
-          for (AciConfiguration.Contract contract : contracts) {
+          for (Contract contract : contracts) {
             String tenantName = contract.getTenant() != null ? contract.getTenant() : "unknown";
 
             findings.add(
@@ -300,7 +299,7 @@ public final class AciContractUsageAnalyzer {
     // Build a map of filter signatures to contracts
     Map<String, Set<String>> signatureToContracts = new HashMap<>();
 
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       String signature = computeContractFilterSignature(contract);
 
       if (!signature.isEmpty()) {
@@ -354,17 +353,17 @@ public final class AciContractUsageAnalyzer {
 
     // Collect all existing filter names
     Set<String> existingFilters = new HashSet<>();
-    for (AciConfiguration.Tenant tenant : config.getTenants().values()) {
+    for (Tenant tenant : config.getTenants().values()) {
       existingFilters.addAll(tenant.getFilters().keySet());
     }
 
     // Check all contract filter references
-    for (AciConfiguration.Contract contract : config.getContracts().values()) {
+    for (Contract contract : config.getContracts().values()) {
       String tenantName = contract.getTenant() != null ? contract.getTenant() : "unknown";
       String contractName = extractContractName(contract.getName());
 
-      for (AciConfiguration.Contract.Subject subject : contract.getSubjects()) {
-        for (AciConfiguration.Contract.Filter filterRef : subject.getFilters()) {
+      for (Contract.Subject subject : contract.getSubjects()) {
+        for (Contract.FilterRef filterRef : subject.getFilters()) {
           String filterName = filterRef.getName();
 
           // Check if filter exists (with or without tenant prefix)
@@ -402,11 +401,11 @@ public final class AciContractUsageAnalyzer {
    * @return A string signature representing the contract's filter rules
    */
   @VisibleForTesting
-  static String computeContractFilterSignature(@Nonnull AciConfiguration.Contract contract) {
+  static String computeContractFilterSignature(@Nonnull Contract contract) {
     StringBuilder signature = new StringBuilder();
 
-    for (AciConfiguration.Contract.Subject subject : contract.getSubjects()) {
-      for (AciConfiguration.Contract.Filter filter : subject.getFilters()) {
+    for (Contract.Subject subject : contract.getSubjects()) {
+      for (Contract.FilterRef filter : subject.getFilters()) {
         signature.append(filter.getName());
         signature.append("|");
         signature.append(filter.getEtherType());

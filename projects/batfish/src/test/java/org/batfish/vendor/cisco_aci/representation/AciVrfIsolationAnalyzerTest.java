@@ -20,13 +20,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testAnalyzeVrfIsolationFindsSubnetOverlapAcrossVrfs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.10.10.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.10.10.0/24"));
@@ -53,29 +53,29 @@ public final class AciVrfIsolationAnalyzerTest {
     config.getVrfs().put(vrf2.getName(), vrf2);
     config.getVrfs().put(vrf3.getName(), vrf3);
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
-    AciConfiguration.Epg provider = new AciConfiguration.Epg("provider");
+    Epg provider = new Epg("provider");
     provider.setTenant("tenant1");
     provider.setBridgeDomain("bd1");
     provider.setProvidedContracts(ImmutableList.of("tenant1:c1"));
     config.getEpgs().put("tenant1:provider", provider);
 
-    AciConfiguration.Epg consumer = new AciConfiguration.Epg("consumer");
+    Epg consumer = new Epg("consumer");
     consumer.setTenant("tenant1");
     consumer.setBridgeDomain("bd2");
     consumer.setConsumedContracts(ImmutableList.of("tenant1:c1"));
     config.getEpgs().put("tenant1:consumer", consumer);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:c1", contract);
 
@@ -91,20 +91,20 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testAnalyzeVrfIsolationFindsL3OutScopeIssues() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     bd.setSubnets(ImmutableList.of("10.10.10.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
-    AciConfiguration.L3Out noVrf = new AciConfiguration.L3Out("l3out-no-vrf");
+    L3Out noVrf = new L3Out("l3out-no-vrf");
     noVrf.setTenant("tenant1");
     config.getL3Outs().put("tenant1:l3out-no-vrf", noVrf);
 
-    AciConfiguration.L3Out overlap = new AciConfiguration.L3Out("l3out-overlap");
+    L3Out overlap = new L3Out("l3out-overlap");
     overlap.setTenant("tenant1");
     overlap.setVrf("tenant1:vrf1");
-    AciConfiguration.ExternalEpg extEpg = new AciConfiguration.ExternalEpg("ext");
+    ExternalEpg extEpg = new ExternalEpg("ext");
     extEpg.setSubnets(ImmutableList.of("10.10.10.0/24"));
     overlap.setExternalEpgs(ImmutableList.of(extEpg));
     config.getL3Outs().put("tenant1:l3out-overlap", overlap);
@@ -120,13 +120,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testAnalyzeVrfIsolationNoFindingForSingleVrfSubnetReuse() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.10.10.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     bd2.setSubnets(ImmutableList.of("10.10.10.0/24"));
@@ -143,19 +143,19 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckSubnetOverlap_ThreeVrfsSameSubnet() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
-    AciConfiguration.BridgeDomain bd3 = new AciConfiguration.BridgeDomain("bd3");
+    BridgeDomain bd3 = new BridgeDomain("bd3");
     bd3.setTenant("tenant1");
     bd3.setVrf("tenant1:vrf3");
     bd3.setSubnets(ImmutableList.of("10.0.0.0/24"));
@@ -179,13 +179,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckSubnetOverlap_NoOverlap() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.0.1.0/24"));
@@ -200,13 +200,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckSubnetOverlap_BdWithoutVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf(null); // No VRF
     bd2.setSubnets(ImmutableList.of("10.0.0.0/24"));
@@ -229,29 +229,29 @@ public final class AciVrfIsolationAnalyzerTest {
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
-    AciConfiguration.Epg provider1 = new AciConfiguration.Epg("provider1");
+    Epg provider1 = new Epg("provider1");
     provider1.setTenant("tenant1");
     provider1.setBridgeDomain("bd1");
     provider1.setProvidedContracts(ImmutableList.of("tenant1:contract1"));
     config.getEpgs().put("tenant1:provider1", provider1);
 
-    AciConfiguration.Epg provider2 = new AciConfiguration.Epg("provider2");
+    Epg provider2 = new Epg("provider2");
     provider2.setTenant("tenant1");
     provider2.setBridgeDomain("bd2");
     provider2.setProvidedContracts(ImmutableList.of("tenant1:contract1"));
     config.getEpgs().put("tenant1:provider2", provider2);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:contract1");
+    Contract contract = new Contract("tenant1:contract1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:contract1", contract);
 
@@ -270,29 +270,29 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckContractVrfScope_SingleVrfNoFinding() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
-    AciConfiguration.Epg provider = new AciConfiguration.Epg("provider");
+    Epg provider = new Epg("provider");
     provider.setTenant("tenant1");
     provider.setBridgeDomain("bd1");
     provider.setProvidedContracts(ImmutableList.of("tenant1:contract1"));
     config.getEpgs().put("tenant1:provider", provider);
 
-    AciConfiguration.Epg consumer = new AciConfiguration.Epg("consumer");
+    Epg consumer = new Epg("consumer");
     consumer.setTenant("tenant1");
     consumer.setBridgeDomain("bd2");
     consumer.setConsumedContracts(ImmutableList.of("tenant1:contract1"));
     config.getEpgs().put("tenant1:consumer", consumer);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:contract1");
+    Contract contract = new Contract("tenant1:contract1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:contract1", contract);
 
@@ -305,13 +305,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckContractVrfScope_EpgWithoutBridgeDomain() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Epg epg = new AciConfiguration.Epg("epg1");
+    Epg epg = new Epg("epg1");
     epg.setTenant("tenant1");
     epg.setBridgeDomain(null); // No bridge domain
     epg.setProvidedContracts(ImmutableList.of("tenant1:contract1"));
     config.getEpgs().put("tenant1:epg1", epg);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:contract1");
+    Contract contract = new Contract("tenant1:contract1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:contract1", contract);
 
@@ -332,12 +332,12 @@ public final class AciVrfIsolationAnalyzerTest {
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("tenant1:vrf2");
     config.getL3Outs().put("tenant1:l3out1", l3Out);
@@ -362,7 +362,7 @@ public final class AciVrfIsolationAnalyzerTest {
     config.getVrfs().put(vrf3.getName(), vrf3);
 
     // Only vrf1 is used
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
@@ -385,7 +385,7 @@ public final class AciVrfIsolationAnalyzerTest {
     vrf.setTenant("tenant1");
     config.getVrfs().put(vrf.getName(), vrf);
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("tenant1:vrf1");
     config.getL3Outs().put("tenant1:l3out1", l3Out);
@@ -399,12 +399,12 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckBridgeDomainVrfIssues_BdUsedBySingleVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
-    AciConfiguration.Epg epg1 = new AciConfiguration.Epg("epg1");
+    Epg epg1 = new Epg("epg1");
     epg1.setTenant("tenant1");
     epg1.setBridgeDomain("bd1");
     config.getEpgs().put("tenant1:epg1", epg1);
@@ -418,24 +418,24 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckBridgeDomainVrfIssues_BdUsedByMultipleVrfs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
     // EPGs in different VRFs pointing to same BD name
     // This simulates a configuration error where the BD is shared across VRFs
-    AciConfiguration.Epg epg1 = new AciConfiguration.Epg("epg1");
+    Epg epg1 = new Epg("epg1");
     epg1.setTenant("tenant1");
     epg1.setBridgeDomain("bd1");
     config.getEpgs().put("tenant1:epg1", epg1);
 
-    AciConfiguration.Epg epg2 = new AciConfiguration.Epg("epg2");
+    Epg epg2 = new Epg("epg2");
     epg2.setTenant("tenant1");
     epg2.setBridgeDomain("bd2");
     config.getEpgs().put("tenant1:epg2", epg2);
@@ -450,7 +450,7 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckBridgeDomainVrfIssues_EpgWithoutBridgeDomain() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Epg epg = new AciConfiguration.Epg("epg1");
+    Epg epg = new Epg("epg1");
     epg.setTenant("tenant1");
     epg.setBridgeDomain(null);
     config.getEpgs().put("tenant1:epg1", epg);
@@ -464,17 +464,17 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckL3OutScope_L3OutWithVrfNoOverlap() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     bd.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("tenant1:vrf1");
 
-    AciConfiguration.ExternalEpg extEpg = new AciConfiguration.ExternalEpg("ext");
+    ExternalEpg extEpg = new ExternalEpg("ext");
     extEpg.setSubnets(ImmutableList.of("192.168.0.0/24"));
     l3Out.setExternalEpgs(ImmutableList.of(extEpg));
 
@@ -489,7 +489,7 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckL3OutScope_L3OutWithoutVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf(null); // No VRF
     config.getL3Outs().put("tenant1:l3out1", l3Out);
@@ -507,23 +507,23 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckL3OutScope_MultipleL3OutsMixedConfiguration() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     bd.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
     // L3Out without VRF
-    AciConfiguration.L3Out l3Out1 = new AciConfiguration.L3Out("l3out-no-vrf");
+    L3Out l3Out1 = new L3Out("l3out-no-vrf");
     l3Out1.setTenant("tenant1");
     config.getL3Outs().put("tenant1:l3out-no-vrf", l3Out1);
 
     // L3Out with overlapping subnet
-    AciConfiguration.L3Out l3Out2 = new AciConfiguration.L3Out("l3out-overlap");
+    L3Out l3Out2 = new L3Out("l3out-overlap");
     l3Out2.setTenant("tenant1");
     l3Out2.setVrf("tenant1:vrf1");
 
-    AciConfiguration.ExternalEpg extEpg = new AciConfiguration.ExternalEpg("ext");
+    ExternalEpg extEpg = new ExternalEpg("ext");
     extEpg.setSubnets(ImmutableList.of("10.0.0.0/24"));
     l3Out2.setExternalEpgs(ImmutableList.of(extEpg));
 
@@ -560,17 +560,17 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckL3OutScope_ExternalEpgWithNoSubnets() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     bd.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("tenant1:vrf1");
 
-    AciConfiguration.ExternalEpg extEpg = new AciConfiguration.ExternalEpg("ext");
+    ExternalEpg extEpg = new ExternalEpg("ext");
     extEpg.setSubnets(ImmutableList.of()); // Empty subnets
     l3Out.setExternalEpgs(ImmutableList.of(extEpg));
 
@@ -606,37 +606,37 @@ public final class AciVrfIsolationAnalyzerTest {
     config.getVrfs().put(vrf3.getName(), vrf3);
 
     // Setup bridge domains with overlapping subnets
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd2", bd2);
 
     // Setup cross-VRF contract
-    AciConfiguration.Epg provider = new AciConfiguration.Epg("provider");
+    Epg provider = new Epg("provider");
     provider.setTenant("tenant1");
     provider.setBridgeDomain("bd1");
     provider.setProvidedContracts(ImmutableList.of("tenant1:c1"));
     config.getEpgs().put("tenant1:provider", provider);
 
-    AciConfiguration.Epg consumer = new AciConfiguration.Epg("consumer");
+    Epg consumer = new Epg("consumer");
     consumer.setTenant("tenant1");
     consumer.setBridgeDomain("bd2");
     consumer.setConsumedContracts(ImmutableList.of("tenant1:c1"));
     config.getEpgs().put("tenant1:consumer", consumer);
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:c1", contract);
 
     // Setup L3Out without VRF
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     config.getL3Outs().put("tenant1:l3out1", l3Out);
 
@@ -655,13 +655,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testAnalyzeVrfIsolation_VerifyFindingFields() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.0.0.0/24"));
@@ -687,13 +687,13 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckSubnetOverlap_MultipleSubnetsPerBd() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd1 = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd1 = new BridgeDomain("bd1");
     bd1.setTenant("tenant1");
     bd1.setVrf("tenant1:vrf1");
     bd1.setSubnets(ImmutableList.of("10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd1);
 
-    AciConfiguration.BridgeDomain bd2 = new AciConfiguration.BridgeDomain("bd2");
+    BridgeDomain bd2 = new BridgeDomain("bd2");
     bd2.setTenant("tenant1");
     bd2.setVrf("tenant1:vrf2");
     bd2.setSubnets(ImmutableList.of("10.0.1.0/24", "10.0.3.0/24"));
@@ -710,7 +710,7 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckContractVrfScope_ContractWithNoEpgs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:contract1");
+    Contract contract = new Contract("tenant1:contract1");
     contract.setTenant("tenant1");
     config.getContracts().put("tenant1:contract1", contract);
 
@@ -724,18 +724,18 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckL3OutScope_DifferentVrfsNoOverlapCheck() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    BridgeDomain bd = new BridgeDomain("bd1");
     bd.setTenant("tenant1");
     bd.setVrf("tenant1:vrf1");
     bd.setSubnets(ImmutableList.of("10.0.0.0/24"));
     config.getBridgeDomains().put("tenant1:bd1", bd);
 
     // L3Out in different VRF with same subnet - should not trigger overlap
-    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("l3out1");
+    L3Out l3Out = new L3Out("l3out1");
     l3Out.setTenant("tenant1");
     l3Out.setVrf("tenant1:vrf2"); // Different VRF
 
-    AciConfiguration.ExternalEpg extEpg = new AciConfiguration.ExternalEpg("ext");
+    ExternalEpg extEpg = new ExternalEpg("ext");
     extEpg.setSubnets(ImmutableList.of("10.0.0.0/24"));
     l3Out.setExternalEpgs(ImmutableList.of(extEpg));
 

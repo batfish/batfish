@@ -19,20 +19,20 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContractsFindsAnyAnyAndBroadPortRange() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("tenant1:f1");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Filter filter = new AciConfiguration.Filter("tenant1:f1");
-    AciConfiguration.Filter.Entry anyAny = new AciConfiguration.Filter.Entry();
+    FilterModel filter = new FilterModel("tenant1:f1");
+    FilterModel.Entry anyAny = new FilterModel.Entry();
     anyAny.setName("anyAny");
 
-    AciConfiguration.Filter.Entry broadRange = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry broadRange = new FilterModel.Entry();
     broadRange.setName("broadRange");
     broadRange.setProtocol("tcp");
     broadRange.setDestinationFromPort("1");
@@ -54,10 +54,10 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContractsFindsMissingFilterReference() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter missingFilterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef missingFilterRef = new Contract.FilterRef();
     missingFilterRef.setName("tenant1:missing");
     subject.setFilters(ImmutableList.of(missingFilterRef));
     contract.setSubjects(ImmutableList.of(subject));
@@ -72,7 +72,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_AllNull() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     // All fields are null
 
     assertThat(AciSecurityAnalyzer.isAnyAnyRule(entry), equalTo(true));
@@ -80,7 +80,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_EmptyString() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("");
     entry.setSourceAddress("");
     entry.setDestinationAddress("");
@@ -90,7 +90,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_ExplicitAny() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("any");
     entry.setSourceAddress("any");
     entry.setDestinationAddress("any");
@@ -102,7 +102,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_UnspecifiedKeyword() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("unspecified");
     entry.setSourceAddress("unspecified");
     entry.setDestinationAddress("unspecified");
@@ -112,7 +112,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_ZeroValue() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("0");
     entry.setDestinationPort("0");
     entry.setSourcePort("0");
@@ -122,7 +122,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_WithSpecificProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
 
     assertThat(AciSecurityAnalyzer.isAnyAnyRule(entry), equalTo(false));
@@ -130,7 +130,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_WithSpecificSourceAddress() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setSourceAddress("10.0.0.1/32");
 
     assertThat(AciSecurityAnalyzer.isAnyAnyRule(entry), equalTo(false));
@@ -138,7 +138,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_WithSpecificDestinationAddress() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationAddress("192.168.1.0/24");
 
     assertThat(AciSecurityAnalyzer.isAnyAnyRule(entry), equalTo(false));
@@ -146,7 +146,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_WithPortRange() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("80");
     entry.setDestinationToPort("443");
 
@@ -155,7 +155,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsAnyAnyRule_WithSpecificPort() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setDestinationPort("443");
 
@@ -164,7 +164,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_AnyAddressWithProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     // Source and destination are null (any)
 
@@ -173,7 +173,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_ExplicitAnyAddressWithProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("udp");
     entry.setSourceAddress("any");
     entry.setDestinationAddress("any");
@@ -183,7 +183,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_UnspecifiedAddressWithProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setSourceAddress("unspecified");
     entry.setDestinationAddress("unspecified");
@@ -193,7 +193,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_WithSourceAddressRestriction() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setSourceAddress("10.0.0.1/32");
     // Destination is still any
@@ -203,7 +203,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_WithDestinationAddressRestriction() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setDestinationAddress("192.168.1.0/24");
     // Source is still any
@@ -213,7 +213,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_WithBothAddressRestrictions() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setSourceAddress("10.0.0.1/32");
     entry.setDestinationAddress("192.168.1.0/24");
@@ -223,7 +223,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_NoProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     // Protocol is null - should not be overly permissive (caught by any-any check)
 
     assertThat(AciSecurityAnalyzer.isOverlyPermissive(entry), equalTo(false));
@@ -231,7 +231,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsOverlyPermissive_AnyProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("any");
 
     assertThat(AciSecurityAnalyzer.isOverlyPermissive(entry), equalTo(false));
@@ -239,7 +239,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_DestinationPortRange_1to65535() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("1");
     entry.setDestinationToPort("65535");
 
@@ -251,7 +251,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_DestinationPortRange_1to59000() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("1");
     entry.setDestinationToPort("59000");
 
@@ -262,7 +262,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_DestinationPortRange_100to60000() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("100");
     entry.setDestinationToPort("60000");
 
@@ -273,7 +273,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_DestinationPortRange_80to443() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("80");
     entry.setDestinationToPort("443");
 
@@ -283,7 +283,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_SourcePortRange_1to65535() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setSourceFromPort("1");
     entry.setSourceToPort("65535");
 
@@ -295,7 +295,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_SourcePortRange_1to59000() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setSourceFromPort("1");
     entry.setSourceToPort("59000");
 
@@ -306,7 +306,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_SourcePortRange_100to60000() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setSourceFromPort("100");
     entry.setSourceToPort("60000");
 
@@ -317,7 +317,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_SourcePortRange_SmallRange() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setSourceFromPort("1024");
     entry.setSourceToPort("2048");
 
@@ -327,7 +327,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_InvalidPortNumber() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("invalid");
     entry.setDestinationToPort("65535");
 
@@ -337,7 +337,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_NoPortRange() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     // No port range specified
 
     String result = AciSecurityAnalyzer.checkBroadPortRange(entry);
@@ -346,7 +346,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_OnlyFromPort() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("80");
     // Missing ToPort
 
@@ -356,7 +356,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_OnlyToPort() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationToPort("443");
     // Missing FromPort
 
@@ -366,7 +366,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testCheckBroadPortRange_BothDestinationAndSourceBroad() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setDestinationFromPort("1");
     entry.setDestinationToPort("65535");
     entry.setSourceFromPort("1");
@@ -380,7 +380,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpNoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     // No port restrictions
 
@@ -389,7 +389,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_UdpNoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("udp");
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -397,7 +397,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpUdpNoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp-udp");
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -405,7 +405,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_Protocol6NoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("6"); // TCP protocol number
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -413,7 +413,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_Protocol17NoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("17"); // UDP protocol number
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -421,7 +421,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpWithDestinationPort() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setDestinationPort("443");
 
@@ -430,7 +430,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpWithSourcePort() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setSourcePort("22");
 
@@ -439,7 +439,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpWithDestinationRange() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setDestinationFromPort("8000");
     entry.setDestinationToPort("9000");
@@ -449,7 +449,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpWithSourceRange() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("tcp");
     entry.setSourceFromPort("1024");
     entry.setSourceToPort("65535");
@@ -459,7 +459,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_IcmpNoPorts() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("icmp");
     // ICMP doesn't require port restrictions
 
@@ -468,7 +468,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_AnyProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("any");
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(false));
@@ -476,7 +476,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_NoProtocol() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     // No protocol specified
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(false));
@@ -484,7 +484,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_TcpUpperCase() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("TCP");
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -492,7 +492,7 @@ public final class AciSecurityAnalyzerTest {
 
   @Test
   public void testIsUnrestrictedProtocol_MixedCaseTcpUdp() {
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setProtocol("Tcp-Udp");
 
     assertThat(AciSecurityAnalyzer.isUnrestrictedProtocol(entry), equalTo(true));
@@ -502,17 +502,17 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContractsFindsUnrestrictedProtocol() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("tenant1:f1");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Filter filter = new AciConfiguration.Filter("tenant1:f1");
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel filter = new FilterModel("tenant1:f1");
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setName("unrestricted");
     entry.setProtocol("tcp");
 
@@ -530,17 +530,17 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContractsFindsOverlyPermissive() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("tenant1:f1");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Filter filter = new AciConfiguration.Filter("tenant1:f1");
-    AciConfiguration.Filter.Entry entry = new AciConfiguration.Filter.Entry();
+    FilterModel filter = new FilterModel("tenant1:f1");
+    FilterModel.Entry entry = new FilterModel.Entry();
     entry.setName("overlyPermissive");
     entry.setProtocol("udp");
     entry.setSourceAddress("any");
@@ -560,20 +560,20 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContracts_SortsBySeverity() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("tenant1:f1");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Filter filter = new AciConfiguration.Filter("tenant1:f1");
-    AciConfiguration.Filter.Entry anyAny = new AciConfiguration.Filter.Entry();
+    FilterModel filter = new FilterModel("tenant1:f1");
+    FilterModel.Entry anyAny = new FilterModel.Entry();
     anyAny.setName("anyAny");
 
-    AciConfiguration.Filter.Entry unrestricted = new AciConfiguration.Filter.Entry();
+    FilterModel.Entry unrestricted = new FilterModel.Entry();
     unrestricted.setName("unrestricted");
     unrestricted.setProtocol("tcp");
 
@@ -610,31 +610,31 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContracts_MultipleSubjects() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
 
-    AciConfiguration.Contract.Subject subject1 = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef1 = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject1 = new Contract.Subject();
+    Contract.FilterRef filterRef1 = new Contract.FilterRef();
     filterRef1.setName("tenant1:f1");
     subject1.setFilters(ImmutableList.of(filterRef1));
 
-    AciConfiguration.Contract.Subject subject2 = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef2 = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject2 = new Contract.Subject();
+    Contract.FilterRef filterRef2 = new Contract.FilterRef();
     filterRef2.setName("tenant1:f2");
     subject2.setFilters(ImmutableList.of(filterRef2));
 
     contract.setSubjects(ImmutableList.of(subject1, subject2));
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Filter filter1 = new AciConfiguration.Filter("tenant1:f1");
-    AciConfiguration.Filter.Entry entry1 = new AciConfiguration.Filter.Entry();
+    FilterModel filter1 = new FilterModel("tenant1:f1");
+    FilterModel.Entry entry1 = new FilterModel.Entry();
     entry1.setName("entry1");
     entry1.setProtocol("tcp");
     filter1.setEntries(ImmutableList.of(entry1));
     config.getFilters().put("tenant1:f1", filter1);
 
-    AciConfiguration.Filter filter2 = new AciConfiguration.Filter("tenant1:f2");
-    AciConfiguration.Filter.Entry entry2 = new AciConfiguration.Filter.Entry();
+    FilterModel filter2 = new FilterModel("tenant1:f2");
+    FilterModel.Entry entry2 = new FilterModel.Entry();
     entry2.setName("entry2");
     filter2.setEntries(ImmutableList.of(entry2));
     config.getFilters().put("tenant1:f2", filter2);
@@ -661,7 +661,7 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContracts_ContractWithNoSubjects() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
     contract.setSubjects(ImmutableList.of());
     config.getContracts().put("tenant1:c1", contract);
@@ -677,9 +677,9 @@ public final class AciSecurityAnalyzerTest {
   public void testAnalyzeContracts_SubjectWithNoFilters() {
     AciConfiguration config = new AciConfiguration();
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    Contract.Subject subject = new Contract.Subject();
     subject.setFilters(ImmutableList.of());
     contract.setSubjects(ImmutableList.of(subject));
     config.getContracts().put("tenant1:c1", contract);

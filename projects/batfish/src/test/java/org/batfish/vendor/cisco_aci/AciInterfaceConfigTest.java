@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.junit.Test;
 
 /**
@@ -179,7 +180,7 @@ public class AciInterfaceConfigTest {
     assertNotNull(config.getFabricNodes());
 
     // Verify that l1PhysIf interfaces are parsed
-    AciConfiguration.FabricNode spine = config.getFabricNodes().get("101");
+    FabricNode spine = config.getFabricNodes().get("101");
     assertNotNull(spine);
     assertThat(spine.getInterfaces().size(), equalTo(2));
     assertThat(spine.getInterfaces(), hasKey("eth1/1"));

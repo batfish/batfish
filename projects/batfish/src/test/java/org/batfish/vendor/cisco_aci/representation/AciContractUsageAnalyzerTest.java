@@ -15,12 +15,12 @@ public final class AciContractUsageAnalyzerTest {
   @Test
   public void testAnalyzeContractUsageFindsOrphanedConsumerAndBrokenFilterReference() {
     AciConfiguration config = new AciConfiguration();
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.Contract contract = new AciConfiguration.Contract("tenant1:c1");
+    Contract contract = new Contract("tenant1:c1");
     contract.setTenant("tenant1");
-    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter filterRef = new AciConfiguration.Contract.Filter();
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
     filterRef.setName("missing-filter");
     subject.setFilters(ImmutableList.of(filterRef));
     contract.setSubjects(ImmutableList.of(subject));
@@ -28,7 +28,7 @@ public final class AciContractUsageAnalyzerTest {
     tenant.getContracts().put("tenant1:c1", contract);
     config.getContracts().put("tenant1:c1", contract);
 
-    AciConfiguration.Epg consumer = new AciConfiguration.Epg("epgConsumer");
+    Epg consumer = new Epg("epgConsumer");
     consumer.setTenant("tenant1");
     consumer.setConsumedContracts(ImmutableList.of("tenant1:c1"));
     tenant.getEpgs().put("tenant1:epgConsumer", consumer);
@@ -46,21 +46,21 @@ public final class AciContractUsageAnalyzerTest {
   @Test
   public void testAnalyzeContractUsageFindsRedundantContracts() {
     AciConfiguration config = new AciConfiguration();
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.Contract c1 = new AciConfiguration.Contract("tenant1:c1");
+    Contract c1 = new Contract("tenant1:c1");
     c1.setTenant("tenant1");
-    AciConfiguration.Contract.Subject s1 = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter rf1 = new AciConfiguration.Contract.Filter();
+    Contract.Subject s1 = new Contract.Subject();
+    Contract.FilterRef rf1 = new Contract.FilterRef();
     rf1.setName("f1");
     rf1.setIpProtocol("tcp");
     s1.setFilters(ImmutableList.of(rf1));
     c1.setSubjects(ImmutableList.of(s1));
 
-    AciConfiguration.Contract c2 = new AciConfiguration.Contract("tenant1:c2");
+    Contract c2 = new Contract("tenant1:c2");
     c2.setTenant("tenant1");
-    AciConfiguration.Contract.Subject s2 = new AciConfiguration.Contract.Subject();
-    AciConfiguration.Contract.Filter rf2 = new AciConfiguration.Contract.Filter();
+    Contract.Subject s2 = new Contract.Subject();
+    Contract.FilterRef rf2 = new Contract.FilterRef();
     rf2.setName("f1");
     rf2.setIpProtocol("tcp");
     s2.setFilters(ImmutableList.of(rf2));

@@ -15,14 +15,14 @@ public final class AciReachabilityAnalyzerTest {
   @Test
   public void testAnalyzeEpgReachabilityFindsNoContractAcrossBridgeDomains() {
     AciConfiguration config = new AciConfiguration();
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.Epg epg1 = new AciConfiguration.Epg("epg1");
+    Epg epg1 = new Epg("epg1");
     epg1.setTenant("tenant1");
     epg1.setBridgeDomain("tenant1:bd1");
     tenant.getEpgs().put("tenant1:epg1", epg1);
 
-    AciConfiguration.Epg epg2 = new AciConfiguration.Epg("epg2");
+    Epg epg2 = new Epg("epg2");
     epg2.setTenant("tenant1");
     epg2.setBridgeDomain("tenant1:bd2");
     tenant.getEpgs().put("tenant1:epg2", epg2);
@@ -39,9 +39,9 @@ public final class AciReachabilityAnalyzerTest {
   @Test
   public void testAnalyzeEpgReachabilityFindsInvalidContractAndMissingPath() {
     AciConfiguration config = new AciConfiguration();
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.Epg epg = new AciConfiguration.Epg("epg1");
+    Epg epg = new Epg("epg1");
     epg.setTenant("tenant1");
     epg.setProvidedContracts(ImmutableList.of("tenant1:missing-contract"));
     // No bridge domain set -> should trigger MISSING_PATH
@@ -60,19 +60,19 @@ public final class AciReachabilityAnalyzerTest {
   @Test
   public void testAnalyzeEpgReachabilityFindsSameBdAndEmptyContract() {
     AciConfiguration config = new AciConfiguration();
-    AciConfiguration.Tenant tenant = new AciConfiguration.Tenant("tenant1");
+    Tenant tenant = new Tenant("tenant1");
 
-    AciConfiguration.Epg epg1 = new AciConfiguration.Epg("epg1");
+    Epg epg1 = new Epg("epg1");
     epg1.setTenant("tenant1");
     epg1.setBridgeDomain("tenant1:bd1");
     tenant.getEpgs().put("tenant1:epg1", epg1);
 
-    AciConfiguration.Epg epg2 = new AciConfiguration.Epg("epg2");
+    Epg epg2 = new Epg("epg2");
     epg2.setTenant("tenant1");
     epg2.setBridgeDomain("tenant1:bd1");
     tenant.getEpgs().put("tenant1:epg2", epg2);
 
-    AciConfiguration.Contract empty = new AciConfiguration.Contract("tenant1:empty");
+    Contract empty = new Contract("tenant1:empty");
     empty.setTenant("tenant1");
     tenant.getContracts().put("tenant1:empty", empty);
 
