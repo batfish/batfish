@@ -18,6 +18,7 @@ then processed by an [extractor](../extraction/README.md).
 Different vendors have unique configuration formats and parsing requirements. For vendor-specific guidance, see:
 
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
+- [Huawei](vendors/huawei.md) - Huawei VRP-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
 - [ANTLR4 Tips and Tricks](antlr4_tips.md) - Practical ANTLR4 patterns, lexer rules, parser design, debugging
 
