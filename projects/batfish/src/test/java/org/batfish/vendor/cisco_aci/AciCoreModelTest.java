@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciTenant;
-import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
+import org.batfish.vendor.cisco_aci.representation.apic.AciTenant;
 import org.junit.Test;
 
 /**
@@ -87,19 +87,19 @@ public class AciCoreModelTest {
     assertThat(tenant.getAttributes().getDistinguishedName(), equalTo("uni/tn-annotated_tenant"));
   }
 
-  /** Test AciVrfModel constructor and basic operations. */
+  /** Test TenantVrf constructor and basic operations. */
   @Test
-  public void testAciVrfModel_constructor() {
-    AciVrfModel vrf = new AciVrfModel("vrf1");
+  public void testTenantVrf_constructor() {
+    TenantVrf vrf = new TenantVrf("vrf1");
     assertThat(vrf.getName(), equalTo("vrf1"));
     assertThat(vrf.getTenant(), nullValue());
     assertThat(vrf.getDescription(), nullValue());
   }
 
-  /** Test AciVrfModel setter methods. */
+  /** Test TenantVrf setter methods. */
   @Test
-  public void testAciVrfModel_setters() {
-    AciVrfModel vrf = new AciVrfModel("vrf2");
+  public void testTenantVrf_setters() {
+    TenantVrf vrf = new TenantVrf("vrf2");
     vrf.setTenant("tenant1");
     vrf.setDescription("Production VRF");
 
@@ -108,20 +108,20 @@ public class AciCoreModelTest {
     assertThat(vrf.getDescription(), equalTo("Production VRF"));
   }
 
-  /** Test AciVrfModel with null tenant. */
+  /** Test TenantVrf with null tenant. */
   @Test
-  public void testAciVrfModel_nullTenant() {
-    AciVrfModel vrf = new AciVrfModel("vrf3");
+  public void testTenantVrf_nullTenant() {
+    TenantVrf vrf = new TenantVrf("vrf3");
     vrf.setTenant(null);
 
     assertThat(vrf.getName(), equalTo("vrf3"));
     assertThat(vrf.getTenant(), nullValue());
   }
 
-  /** Test AciVrfModel with null description. */
+  /** Test TenantVrf with null description. */
   @Test
-  public void testAciVrfModel_nullDescription() {
-    AciVrfModel vrf = new AciVrfModel("vrf4");
+  public void testTenantVrf_nullDescription() {
+    TenantVrf vrf = new TenantVrf("vrf4");
     vrf.setDescription(null);
 
     assertThat(vrf.getName(), equalTo("vrf4"));
@@ -241,10 +241,10 @@ public class AciCoreModelTest {
     assertThat(tenant.getAttributes().getUserDomain(), equalTo("all"));
   }
 
-  /** Test AciVrfModel with complete configuration. */
+  /** Test TenantVrf with complete configuration. */
   @Test
-  public void testAciVrfModel_complete() {
-    AciVrfModel vrf = new AciVrfModel("production_vrf");
+  public void testTenantVrf_complete() {
+    TenantVrf vrf = new TenantVrf("production_vrf");
     vrf.setTenant("corp_tenant");
     vrf.setDescription("Production VRF with routing enabled");
 
@@ -255,8 +255,8 @@ public class AciCoreModelTest {
 
   /** Test VRF model name immutability. */
   @Test
-  public void testAciVrfModel_nameIsImmutable() {
-    AciVrfModel vrf = new AciVrfModel("immutable_name");
+  public void testTenantVrf_nameIsImmutable() {
+    TenantVrf vrf = new TenantVrf("immutable_name");
     // The name field is final and set in constructor
     assertThat(vrf.getName(), equalTo("immutable_name"));
     // There's no setName method, which is correct

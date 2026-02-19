@@ -6,7 +6,10 @@ package(default_visibility = ["//visibility:public"])
 java_library(
     name = "representation",
     srcs = glob(
-        ["*.java"],
+        [
+            "*.java",
+            "apic/*.java",
+        ],
         exclude = ["BUILD.bazel"],
     ),
     deps = [

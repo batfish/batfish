@@ -10,12 +10,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.Epg;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.Tenant;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
 import org.junit.Test;
 
 /** Tests of {@link AciConfiguration}. */
@@ -303,7 +303,7 @@ public class AciConfigurationTest {
     assertThat(tenant1.getVrfs().keySet(), hasSize(1));
     assertThat(tenant1.getVrfs(), hasKey("tenant1:vrf1"));
 
-    AciVrfModel vrf1 = tenant1.getVrfs().get("tenant1:vrf1");
+    TenantVrf vrf1 = tenant1.getVrfs().get("tenant1:vrf1");
     assertThat(vrf1.getName(), equalTo("tenant1:vrf1"));
     assertThat(vrf1.getTenant(), equalTo("tenant1"));
     assertThat(vrf1.getDescription(), equalTo("Test VRF"));
@@ -435,12 +435,12 @@ public class AciConfigurationTest {
   public void testGetOrCreateVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf = config.getOrCreateVrf("new-vrf");
+    TenantVrf vrf = config.getOrCreateVrf("new-vrf");
     assertThat(vrf.getName(), equalTo("new-vrf"));
     assertThat(config.getVrfs(), hasKey("new-vrf"));
 
     // Calling again should return the same instance
-    AciVrfModel vrfAgain = config.getOrCreateVrf("new-vrf");
+    TenantVrf vrfAgain = config.getOrCreateVrf("new-vrf");
     assertThat(vrfAgain, equalTo(vrf));
     assertThat(config.getVrfs().keySet(), hasSize(1));
   }

@@ -229,7 +229,7 @@ public class AciVrfIsolationAnalyzer {
     }
 
     // Find unused VRFs
-    for (AciVrfModel vrf : config.getVrfs().values()) {
+    for (TenantVrf vrf : config.getVrfs().values()) {
       if (!usedVrfs.contains(vrf.getName())) {
         VrfIsolationFinding finding = new VrfIsolationFinding();
         finding.setSeverity(VrfIsolationFinding.Severity.LOW);

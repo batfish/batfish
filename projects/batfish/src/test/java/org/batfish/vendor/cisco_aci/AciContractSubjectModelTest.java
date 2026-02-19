@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import org.batfish.vendor.cisco_aci.representation.AciContractSubject;
+import org.batfish.vendor.cisco_aci.representation.apic.AciContractSubject;
 import org.junit.Test;
 
 /**

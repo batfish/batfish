@@ -20,7 +20,7 @@ import java.util.TreeMap;
 public class Tenant implements Serializable {
   private final String _name;
   private Map<String, BridgeDomain> _bridgeDomains;
-  private Map<String, AciVrfModel> _vrfs;
+  private Map<String, TenantVrf> _vrfs;
   private Map<String, Epg> _epgs;
   private Map<String, Contract> _contracts;
   private Map<String, ContractInterface> _contractInterfaces;
@@ -50,11 +50,11 @@ public class Tenant implements Serializable {
     _bridgeDomains = new TreeMap<>(bridgeDomains);
   }
 
-  public Map<String, AciVrfModel> getVrfs() {
+  public Map<String, TenantVrf> getVrfs() {
     return _vrfs;
   }
 
-  public void setVrfs(Map<String, AciVrfModel> vrfs) {
+  public void setVrfs(Map<String, TenantVrf> vrfs) {
     _vrfs = new TreeMap<>(vrfs);
   }
 

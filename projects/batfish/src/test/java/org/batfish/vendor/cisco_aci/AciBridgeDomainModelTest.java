@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.vendor.cisco_aci.representation.AciBridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.apic.AciBridgeDomain;
 import org.junit.Test;
 
 /**

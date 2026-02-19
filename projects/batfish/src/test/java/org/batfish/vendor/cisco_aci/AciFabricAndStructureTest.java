@@ -9,14 +9,14 @@ import static org.hamcrest.Matchers.nullValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.Warnings;
-import org.batfish.vendor.cisco_aci.representation.AciAttributes;
-import org.batfish.vendor.cisco_aci.representation.AciBgpRouteTargetProfile;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciFabricNode;
-import org.batfish.vendor.cisco_aci.representation.AciPolUni;
 import org.batfish.vendor.cisco_aci.representation.AciStructureType;
 import org.batfish.vendor.cisco_aci.representation.AciStructureUsage;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.apic.AciAttributes;
+import org.batfish.vendor.cisco_aci.representation.apic.AciBgpRouteTargetProfile;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricNode;
+import org.batfish.vendor.cisco_aci.representation.apic.AciPolUni;
 import org.junit.Test;
 
 /**

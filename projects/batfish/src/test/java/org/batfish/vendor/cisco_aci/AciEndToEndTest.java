@@ -26,11 +26,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
-import org.batfish.vendor.cisco_aci.representation.AciManagementInfo;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.Epg;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.ManagementInfo;
 import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.junit.Test;
 
@@ -118,9 +118,9 @@ public class AciEndToEndTest {
     System.out.println("VRFs");
     System.out.println("========================================");
     int vrfCount = 0;
-    for (Map.Entry<String, ? extends org.batfish.vendor.cisco_aci.representation.AciVrfModel>
-        entry : aciConfig.getVrfs().entrySet()) {
-      org.batfish.vendor.cisco_aci.representation.AciVrfModel vrf = entry.getValue();
+    for (Map.Entry<String, ? extends org.batfish.vendor.cisco_aci.representation.TenantVrf> entry :
+        aciConfig.getVrfs().entrySet()) {
+      org.batfish.vendor.cisco_aci.representation.TenantVrf vrf = entry.getValue();
       System.out.println("  - " + vrf.getName() + " (Tenant: " + vrf.getTenant() + ")");
       if (vrf.getDescription() != null && !vrf.getDescription().isEmpty()) {
         System.out.println("      Description: " + vrf.getDescription());
@@ -139,7 +139,7 @@ public class AciEndToEndTest {
           hasKey(Configuration.DEFAULT_VRF_NAME));
 
       // Check for ACI VRFs
-      for (org.batfish.vendor.cisco_aci.representation.AciVrfModel aciVrf :
+      for (org.batfish.vendor.cisco_aci.representation.TenantVrf aciVrf :
           aciConfig.getVrfs().values()) {
         if (config.getVrfs().containsKey(aciVrf.getName())) {
           Vrf viVrf = config.getVrfs().get(aciVrf.getName());
@@ -577,7 +577,7 @@ public class AciEndToEndTest {
     int nodesWithoutMgmt = 0;
 
     for (FabricNode node : aciConfig.getFabricNodes().values()) {
-      AciManagementInfo mgmtInfo = node.getManagementInfo();
+      ManagementInfo mgmtInfo = node.getManagementInfo();
 
       if (mgmtInfo != null && mgmtInfo.getAddress() != null) {
         nodesWithMgmt++;

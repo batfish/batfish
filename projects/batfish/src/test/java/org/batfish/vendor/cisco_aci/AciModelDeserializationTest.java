@@ -11,13 +11,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciContract;
-import org.batfish.vendor.cisco_aci.representation.AciContractSubject;
-import org.batfish.vendor.cisco_aci.representation.AciEntry;
-import org.batfish.vendor.cisco_aci.representation.AciFilter;
-import org.batfish.vendor.cisco_aci.representation.AciL2Out;
-import org.batfish.vendor.cisco_aci.representation.AciL3Out;
-import org.batfish.vendor.cisco_aci.representation.AciVrf;
+import org.batfish.vendor.cisco_aci.representation.apic.AciContract;
+import org.batfish.vendor.cisco_aci.representation.apic.AciContractSubject;
+import org.batfish.vendor.cisco_aci.representation.apic.AciEntry;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFilter;
+import org.batfish.vendor.cisco_aci.representation.apic.AciL2Out;
+import org.batfish.vendor.cisco_aci.representation.apic.AciL3Out;
+import org.batfish.vendor.cisco_aci.representation.apic.AciVrf;
 import org.junit.Test;
 
 /**

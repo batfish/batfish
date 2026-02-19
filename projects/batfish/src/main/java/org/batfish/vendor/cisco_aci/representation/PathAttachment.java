@@ -20,35 +20,35 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PathAttachment implements Serializable {
-  private String tdn;
-  private String podId;
-  private String nodeId;
-  private String nodeId2; // Secondary node ID for vPC
-  private String iface;
-  private String encap;
-  private String description;
-  private String epgName;
-  private String epgTenant;
+  private String _tdn;
+  private String _podId;
+  private String _nodeId;
+  private String _nodeId2; // Secondary node ID for vPC
+  private String _iface;
+  private String _encap;
+  private String _description;
+  private String _epgName;
+  private String _epgTenant;
 
-  private String addr;
-  private String mac;
-  private String mode;
-  private String interfaceType;
+  private String _addr;
+  private String _mac;
+  private String _mode;
+  private String _interfaceType;
 
   public PathAttachment() {}
 
   public PathAttachment(String tdn) {
-    this.tdn = tdn;
+    _tdn = tdn;
     parseTdn(tdn);
   }
 
   public void setTargetDn(String tdn) {
-    this.tdn = tdn;
+    _tdn = tdn;
     parseTdn(tdn);
   }
 
   public String getTargetDn() {
-    return tdn;
+    return _tdn;
   }
 
   private void parseTdn(String tdnValue) {
@@ -66,7 +66,7 @@ public class PathAttachment implements Serializable {
       int podStart = podIdx + 5; // Skip "/pod-"
       int podEnd = tdnValue.indexOf('/', podStart);
       if (podEnd > podStart) {
-        podId = tdnValue.substring(podStart, podEnd);
+        _podId = tdnValue.substring(podStart, podEnd);
       }
     }
   }
@@ -92,10 +92,10 @@ public class PathAttachment implements Serializable {
       String nodePair = tdnValue.substring(nodeStart, slashIdx);
       String[] nodes = nodePair.split("-");
       if (nodes.length >= 1) {
-        nodeId = nodes[0];
+        _nodeId = nodes[0];
       }
       if (nodes.length >= 2) {
-        nodeId2 = nodes[1];
+        _nodeId2 = nodes[1];
       }
     }
   }
@@ -104,7 +104,7 @@ public class PathAttachment implements Serializable {
     int nodeStart = pathsIdx + 7; // Skip "/paths-"
     int slashIdx = tdnValue.indexOf('/', nodeStart);
     if (slashIdx > nodeStart) {
-      nodeId = tdnValue.substring(nodeStart, slashIdx);
+      _nodeId = tdnValue.substring(nodeStart, slashIdx);
     }
   }
 
@@ -112,10 +112,10 @@ public class PathAttachment implements Serializable {
     int nodeStart = nodeIdx + 6; // Skip "/node-"
     int slashIdx = tdnValue.indexOf('/', nodeStart);
     if (slashIdx > nodeStart) {
-      nodeId = tdnValue.substring(nodeStart, slashIdx);
+      _nodeId = tdnValue.substring(nodeStart, slashIdx);
     } else {
       // No trailing slash, take rest of string
-      nodeId = tdnValue.substring(nodeStart);
+      _nodeId = tdnValue.substring(nodeStart);
     }
   }
 
@@ -126,7 +126,7 @@ public class PathAttachment implements Serializable {
       int ifStart = pathepIdx + 9; // Skip "/pathep-["
       int ifEnd = tdnValue.indexOf(']', ifStart);
       if (ifEnd > ifStart) {
-        iface = normalizeInterfaceName(tdnValue.substring(ifStart, ifEnd));
+        _iface = normalizeInterfaceName(tdnValue.substring(ifStart, ifEnd));
       }
     }
   }
@@ -167,39 +167,39 @@ public class PathAttachment implements Serializable {
   }
 
   public @Nullable String getPodId() {
-    return podId;
+    return _podId;
   }
 
   public @Nullable String getNodeId() {
-    return nodeId;
+    return _nodeId;
   }
 
   public void setNodeId(@Nullable String nodeId) {
-    this.nodeId = nodeId;
+    _nodeId = nodeId;
   }
 
   public @Nullable String getNodeId2() {
-    return nodeId2;
+    return _nodeId2;
   }
 
   public boolean isVpc() {
-    return nodeId2 != null;
+    return _nodeId2 != null;
   }
 
   public @Nullable String getInterface() {
-    return iface;
+    return _iface;
   }
 
   public void setInterfaceName(@Nullable String iface) {
-    this.iface = iface;
+    _iface = iface;
   }
 
   public @Nullable String getEncap() {
-    return encap;
+    return _encap;
   }
 
   public void setEncapsulation(@Nullable String encap) {
-    this.encap = encap;
+    _encap = encap;
   }
 
   public void setEncap(@Nullable String encap) {
@@ -207,58 +207,58 @@ public class PathAttachment implements Serializable {
   }
 
   public @Nullable String getDescription() {
-    return description;
+    return _description;
   }
 
   public void setDescription(@Nullable String description) {
-    this.description = description;
+    _description = description;
   }
 
   public @Nullable String getEpgName() {
-    return epgName;
+    return _epgName;
   }
 
   public void setEpgName(@Nullable String epgName) {
-    this.epgName = epgName;
+    _epgName = epgName;
   }
 
   public @Nullable String getEpgTenant() {
-    return epgTenant;
+    return _epgTenant;
   }
 
   public void setEpgTenant(@Nullable String epgTenant) {
-    this.epgTenant = epgTenant;
+    _epgTenant = epgTenant;
   }
 
   public @Nullable String getAddress() {
-    return addr;
+    return _addr;
   }
 
   public void setAddress(@Nullable String addr) {
-    this.addr = addr;
+    _addr = addr;
   }
 
   public @Nullable String getMac() {
-    return mac;
+    return _mac;
   }
 
   public void setMac(@Nullable String mac) {
-    this.mac = mac;
+    _mac = mac;
   }
 
   public @Nullable String getMode() {
-    return mode;
+    return _mode;
   }
 
   public void setMode(@Nullable String mode) {
-    this.mode = mode;
+    _mode = mode;
   }
 
   public @Nullable String getInterfaceType() {
-    return interfaceType;
+    return _interfaceType;
   }
 
   public void setInterfaceType(@Nullable String interfaceType) {
-    this.interfaceType = interfaceType;
+    _interfaceType = interfaceType;
   }
 }

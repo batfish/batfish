@@ -165,7 +165,7 @@ final class AciInterfaceConverter {
     }
 
     // Add management interface if out-of-band management is configured
-    AciManagementInfo mgmtInfo = node.getManagementInfo();
+    ManagementInfo mgmtInfo = node.getManagementInfo();
     if (mgmtInfo != null && mgmtInfo.getAddress() != null) {
       String mgmtIfaceName = "mgmt0";
       Interface.Builder mgmtBuilder =

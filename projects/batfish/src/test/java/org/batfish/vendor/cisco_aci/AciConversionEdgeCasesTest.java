@@ -24,12 +24,12 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
-import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
 import org.batfish.vendor.cisco_aci.representation.L3Out;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
 import org.junit.Test;
 
 /** Tests for {@link AciConversion} edge cases and error scenarios. */
@@ -187,7 +187,7 @@ public class AciConversionEdgeCasesTest {
     config.getFabricNodes().put("101", node);
 
     // Create VRF
-    AciVrfModel vrf = config.getOrCreateVrf("tenant1:vrf1");
+    TenantVrf vrf = config.getOrCreateVrf("tenant1:vrf1");
     vrf.setTenant("tenant1");
 
     // Create L3Out without BGP - using getOrCreateL3Out
@@ -220,12 +220,12 @@ public class AciConversionEdgeCasesTest {
     config.getFabricNodes().put("101", node);
 
     // Create VRF that won't be referenced
-    AciVrfModel orphanedVrf = config.getOrCreateVrf("tenant1:orphaned-vrf");
+    TenantVrf orphanedVrf = config.getOrCreateVrf("tenant1:orphaned-vrf");
     orphanedVrf.setTenant("tenant1");
     orphanedVrf.setDescription("Orphaned VRF");
 
     // Create another VRF that will be used
-    AciVrfModel usedVrf = config.getOrCreateVrf("tenant1:used-vrf");
+    TenantVrf usedVrf = config.getOrCreateVrf("tenant1:used-vrf");
     usedVrf.setTenant("tenant1");
 
     // Create bridge domain using only used-vrf
@@ -258,7 +258,7 @@ public class AciConversionEdgeCasesTest {
     config.getFabricNodes().put("101", node);
 
     // Create VRF
-    AciVrfModel vrf = config.getOrCreateVrf("tenant1:shared-vrf");
+    TenantVrf vrf = config.getOrCreateVrf("tenant1:shared-vrf");
     vrf.setTenant("tenant1");
 
     // Create multiple bridge domains in same VRF

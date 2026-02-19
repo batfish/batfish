@@ -23,12 +23,12 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
-import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.Epg;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.Tenant;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
 import org.junit.Test;
 
 /**
@@ -352,7 +352,7 @@ public class AciGrammarTest {
     assertThat(tenant.getVrfs().keySet(), hasSize(1));
     assertThat(tenant.getVrfs(), hasKey("test_tenant:test_vrf"));
 
-    AciVrfModel vrf = tenant.getVrfs().get("test_tenant:test_vrf");
+    TenantVrf vrf = tenant.getVrfs().get("test_tenant:test_vrf");
     assertThat(vrf.getName(), equalTo("test_tenant:test_vrf"));
     assertThat(vrf.getTenant(), equalTo("test_tenant"));
 
@@ -1036,7 +1036,7 @@ public class AciGrammarTest {
 
     AciConfiguration config = AciConfiguration.fromJson("test.json", json, new Warnings());
 
-    AciVrfModel vrf = config.getVrfs().get("test_tenant:prod_vrf");
+    TenantVrf vrf = config.getVrfs().get("test_tenant:prod_vrf");
     assertThat(vrf, notNullValue());
     assertThat(vrf.getDescription(), equalTo("Production VRF for web traffic"));
   }

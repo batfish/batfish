@@ -43,11 +43,11 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testAnalyzeVrfIsolationFindsCrossVrfContractAndUnusedVrf() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf1 = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf1 = new TenantVrf("tenant1:vrf1");
     vrf1.setTenant("tenant1");
-    AciVrfModel vrf2 = new AciVrfModel("tenant1:vrf2");
+    TenantVrf vrf2 = new TenantVrf("tenant1:vrf2");
     vrf2.setTenant("tenant1");
-    AciVrfModel vrf3 = new AciVrfModel("tenant1:vrf3");
+    TenantVrf vrf3 = new TenantVrf("tenant1:vrf3");
     vrf3.setTenant("tenant1");
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
@@ -222,9 +222,9 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckContractVrfScope_MultipleProvidersDifferentVrfs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf1 = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf1 = new TenantVrf("tenant1:vrf1");
     vrf1.setTenant("tenant1");
-    AciVrfModel vrf2 = new AciVrfModel("tenant1:vrf2");
+    TenantVrf vrf2 = new TenantVrf("tenant1:vrf2");
     vrf2.setTenant("tenant1");
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
@@ -325,9 +325,9 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckUnusedVrfs_AllVrfsUsed() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf1 = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf1 = new TenantVrf("tenant1:vrf1");
     vrf1.setTenant("tenant1");
-    AciVrfModel vrf2 = new AciVrfModel("tenant1:vrf2");
+    TenantVrf vrf2 = new TenantVrf("tenant1:vrf2");
     vrf2.setTenant("tenant1");
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
@@ -351,11 +351,11 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckUnusedVrfs_MultipleUnusedVrfs() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf1 = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf1 = new TenantVrf("tenant1:vrf1");
     vrf1.setTenant("tenant1");
-    AciVrfModel vrf2 = new AciVrfModel("tenant1:vrf2");
+    TenantVrf vrf2 = new TenantVrf("tenant1:vrf2");
     vrf2.setTenant("tenant1");
-    AciVrfModel vrf3 = new AciVrfModel("tenant1:vrf3");
+    TenantVrf vrf3 = new TenantVrf("tenant1:vrf3");
     vrf3.setTenant("tenant1");
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);
@@ -381,7 +381,7 @@ public final class AciVrfIsolationAnalyzerTest {
   public void testCheckUnusedVrfs_VrfUsedByL3Out() {
     AciConfiguration config = new AciConfiguration();
 
-    AciVrfModel vrf = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf = new TenantVrf("tenant1:vrf1");
     vrf.setTenant("tenant1");
     config.getVrfs().put(vrf.getName(), vrf);
 
@@ -595,11 +595,11 @@ public final class AciVrfIsolationAnalyzerTest {
     AciConfiguration config = new AciConfiguration();
 
     // Setup VRFs
-    AciVrfModel vrf1 = new AciVrfModel("tenant1:vrf1");
+    TenantVrf vrf1 = new TenantVrf("tenant1:vrf1");
     vrf1.setTenant("tenant1");
-    AciVrfModel vrf2 = new AciVrfModel("tenant1:vrf2");
+    TenantVrf vrf2 = new TenantVrf("tenant1:vrf2");
     vrf2.setTenant("tenant1");
-    AciVrfModel vrf3 = new AciVrfModel("tenant1:vrf3");
+    TenantVrf vrf3 = new TenantVrf("tenant1:vrf3");
     vrf3.setTenant("tenant1");
     config.getVrfs().put(vrf1.getName(), vrf1);
     config.getVrfs().put(vrf2.getName(), vrf2);

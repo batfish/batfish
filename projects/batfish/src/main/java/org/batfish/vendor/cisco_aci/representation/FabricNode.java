@@ -21,7 +21,7 @@ public class FabricNode implements Serializable {
   private String _role;
   private String _podId;
   private Map<String, FabricNodeInterface> _interfaces;
-  private AciManagementInfo _managementInfo;
+  private ManagementInfo _managementInfo;
 
   public FabricNode() {
     _interfaces = new TreeMap<>();
@@ -67,11 +67,11 @@ public class FabricNode implements Serializable {
     _interfaces = new TreeMap<>(interfaces);
   }
 
-  public @Nullable AciManagementInfo getManagementInfo() {
+  public @Nullable ManagementInfo getManagementInfo() {
     return _managementInfo;
   }
 
-  public void setManagementInfo(@Nullable AciManagementInfo managementInfo) {
+  public void setManagementInfo(@Nullable ManagementInfo managementInfo) {
     _managementInfo = managementInfo;
   }
 }

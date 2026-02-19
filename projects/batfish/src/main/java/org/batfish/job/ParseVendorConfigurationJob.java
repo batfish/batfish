@@ -78,8 +78,8 @@ import org.batfish.vendor.arista.grammar.AristaControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
-import org.batfish.vendor.cisco_aci.representation.AciFabricLink;
 import org.batfish.vendor.cisco_aci.representation.AciParser;
+import org.batfish.vendor.cisco_aci.representation.FabricLink;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
@@ -327,7 +327,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case CISCO_ACI:
         {
           AciConfiguration mergedConfig = null;
-          List<AciFabricLink> fabricLinks = new ArrayList<>();
+          List<FabricLink> fabricLinks = new ArrayList<>();
           String primaryFilename = null;
           for (Entry<String, String> fileEntry : _fileTexts.entrySet()) {
             String filename = fileEntry.getKey();

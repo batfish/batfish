@@ -23,6 +23,17 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.cisco_aci.representation.apic.AciCtrlrInst;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricExplicitGEp;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricInst;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricInterface;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricNodeIdentP;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricNodeIdentPol;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricNodePEp;
+import org.batfish.vendor.cisco_aci.representation.apic.AciFabricProtPol;
+import org.batfish.vendor.cisco_aci.representation.apic.AciL1PhysIf;
+import org.batfish.vendor.cisco_aci.representation.apic.AciPolUniInternal;
+import org.batfish.vendor.cisco_aci.representation.apic.AciTenant;
 
 /**
  * Datamodel class representing a Cisco ACI fabric configuration.
@@ -144,7 +155,7 @@ public final class AciConfiguration extends VendorConfiguration {
    * <p>Expected format is the common APIC response shape with top-level {@code imdata[]} containing
    * {@code fabricLink} objects.
    */
-  public static @Nonnull List<AciFabricLink> parseFabricLinksJson(String filename, String text)
+  public static @Nonnull List<FabricLink> parseFabricLinksJson(String filename, String text)
       throws IOException {
     return AciParser.parseFabricLinksJson(filename, text);
   }
@@ -158,7 +169,7 @@ public final class AciConfiguration extends VendorConfiguration {
   private Map<String, BridgeDomain> _bridgeDomains;
 
   /** Map of VRF names to VRF configurations */
-  private Map<String, AciVrfModel> _vrfs;
+  private Map<String, TenantVrf> _vrfs;
 
   /** Map of EPG names to EPG configurations */
   private Map<String, Epg> _epgs;
@@ -182,13 +193,13 @@ public final class AciConfiguration extends VendorConfiguration {
   private Map<String, FabricNode> _fabricNodes;
 
   /** Map of VPC IDs to VPC pair configurations */
-  private Map<String, AciVpcPair> _vpcPairs;
+  private Map<String, VpcPair> _vpcPairs;
 
   /** List of explicit fabric links (from fabric_links.json) */
-  private List<AciFabricLink> _fabricLinks;
+  private List<FabricLink> _fabricLinks;
 
   /** Map of inter-fabric connection IDs to connection configurations */
-  private Map<String, AciInterFabricConnection> _interFabricConnections;
+  private Map<String, InterFabricConnection> _interFabricConnections;
 
   /** Map of (nodeId, interfaceName) to path attachment details */
   private Map<String, Map<String, org.batfish.vendor.cisco_aci.representation.PathAttachment>>
@@ -246,8 +257,7 @@ public final class AciConfiguration extends VendorConfiguration {
    * @param polUni The parsed polUni structure
    * @param warnings Warnings object for collecting parsing warnings
    */
-  void parsePolUni(
-      org.batfish.vendor.cisco_aci.representation.AciPolUniInternal polUni, Warnings warnings) {
+  void parsePolUni(AciPolUniInternal polUni, Warnings warnings) {
     if (polUni == null || polUni.getChildren() == null) {
       return;
     }
@@ -653,8 +663,8 @@ public final class AciConfiguration extends VendorConfiguration {
 
                       // If we have exactly 2 nodes, this is a VPC pair
                       if (nodeIds.size() == 2 && vpcId != null) {
-                        AciVpcPair vpcPair =
-                            new AciVpcPair(vpcId, vpcName, nodeIds.get(0), nodeIds.get(1));
+                        VpcPair vpcPair =
+                            new VpcPair(vpcId, vpcName, nodeIds.get(0), nodeIds.get(1));
                         _vpcPairs.put(vpcId, vpcPair);
                       }
                     }
@@ -769,7 +779,7 @@ public final class AciConfiguration extends VendorConfiguration {
         }
 
         // Create ManagementInfo object
-        AciManagementInfo mgmtInfo = new AciManagementInfo();
+        ManagementInfo mgmtInfo = new ManagementInfo();
         mgmtInfo.setAddress(addr);
         mgmtInfo.setGateway(gw);
         mgmtInfo.setAddress6(addr6);
@@ -804,7 +814,7 @@ public final class AciConfiguration extends VendorConfiguration {
 
     // Create VRF with fully qualified name (tenant:vrf)
     String fqVrfName = tenantName + ":" + vrfName;
-    AciVrfModel vrf = getOrCreateVrf(fqVrfName);
+    TenantVrf vrf = getOrCreateVrf(fqVrfName);
     vrf.setTenant(tenantName);
     vrf.setDescription((String) attrs.get("descr"));
 
@@ -1953,12 +1963,12 @@ public final class AciConfiguration extends VendorConfiguration {
    *
    * @return An immutable map of VRF names to VRF configurations
    */
-  public @Nonnull Map<String, AciVrfModel> getVrfs() {
+  public @Nonnull Map<String, TenantVrf> getVrfs() {
     return _vrfs;
   }
 
   @JsonProperty(PROP_VRFS)
-  public void setVrfs(Map<String, AciVrfModel> vrfs) {
+  public void setVrfs(Map<String, TenantVrf> vrfs) {
     _vrfs = new TreeMap<>(vrfs);
   }
 
@@ -2052,11 +2062,11 @@ public final class AciConfiguration extends VendorConfiguration {
   }
 
   /** Returns explicit fabric links parsed from optional fabricLink exports. */
-  public @Nonnull List<AciFabricLink> getFabricLinks() {
+  public @Nonnull List<FabricLink> getFabricLinks() {
     return _fabricLinks;
   }
 
-  public void setFabricLinks(List<AciFabricLink> fabricLinks) {
+  public void setFabricLinks(List<FabricLink> fabricLinks) {
     _fabricLinks = new ArrayList<>(fabricLinks);
   }
 
@@ -2065,11 +2075,11 @@ public final class AciConfiguration extends VendorConfiguration {
    *
    * @return An immutable map of VPC IDs to VPC pair configurations
    */
-  public @Nonnull Map<String, AciVpcPair> getVpcPairs() {
+  public @Nonnull Map<String, VpcPair> getVpcPairs() {
     return _vpcPairs;
   }
 
-  public void setVpcPairs(Map<String, AciVpcPair> vpcPairs) {
+  public void setVpcPairs(Map<String, VpcPair> vpcPairs) {
     _vpcPairs = new TreeMap<>(vpcPairs);
   }
 
@@ -2091,12 +2101,11 @@ public final class AciConfiguration extends VendorConfiguration {
    *
    * @return Map of connection IDs to inter-fabric connection configurations
    */
-  public @Nonnull Map<String, AciInterFabricConnection> getInterFabricConnections() {
+  public @Nonnull Map<String, InterFabricConnection> getInterFabricConnections() {
     return _interFabricConnections;
   }
 
-  public void setInterFabricConnections(
-      Map<String, AciInterFabricConnection> interFabricConnections) {
+  public void setInterFabricConnections(Map<String, InterFabricConnection> interFabricConnections) {
     _interFabricConnections = new TreeMap<>(interFabricConnections);
   }
 
@@ -2165,8 +2174,8 @@ public final class AciConfiguration extends VendorConfiguration {
    * @param name The VRF name
    * @return The existing or newly created VRF
    */
-  public @Nonnull AciVrfModel getOrCreateVrf(String name) {
-    return _vrfs.computeIfAbsent(name, AciVrfModel::new);
+  public @Nonnull TenantVrf getOrCreateVrf(String name) {
+    return _vrfs.computeIfAbsent(name, TenantVrf::new);
   }
 
   /**

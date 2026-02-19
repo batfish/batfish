@@ -30,21 +30,21 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
-import org.batfish.vendor.cisco_aci.representation.AciFabricLink;
-import org.batfish.vendor.cisco_aci.representation.AciInterFabricConnection;
-import org.batfish.vendor.cisco_aci.representation.AciVrfModel;
 import org.batfish.vendor.cisco_aci.representation.BgpPeer;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricLink;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
 import org.batfish.vendor.cisco_aci.representation.FilterModel;
+import org.batfish.vendor.cisco_aci.representation.InterFabricConnection;
 import org.batfish.vendor.cisco_aci.representation.L2Out;
 import org.batfish.vendor.cisco_aci.representation.L3Out;
 import org.batfish.vendor.cisco_aci.representation.OspfConfig;
 import org.batfish.vendor.cisco_aci.representation.PathAttachment;
 import org.batfish.vendor.cisco_aci.representation.TabooContract;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
 import org.junit.Test;
 
 /** Tests of {@link AciConversion} and ACI configuration conversion. */
@@ -70,11 +70,11 @@ public class AciConversionTest {
     config.getFabricNodes().put("202", leaf2);
 
     // Create VRFs
-    AciVrfModel vrf1 = new AciVrfModel("vrf1");
+    TenantVrf vrf1 = new TenantVrf("vrf1");
     vrf1.setTenant("tenant1");
     vrf1.setDescription("Test VRF 1");
 
-    AciVrfModel vrf2 = new AciVrfModel("vrf2");
+    TenantVrf vrf2 = new TenantVrf("vrf2");
     vrf2.setTenant("tenant1");
     vrf2.setDescription("Test VRF 2");
 
@@ -374,7 +374,7 @@ public class AciConversionTest {
     config.getFabricNodes().put("101", createFabricNode("101", "spine1", "1", "spine"));
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "1", "leaf"));
     config.setFabricLinks(
-        ImmutableList.of(new AciFabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
+        ImmutableList.of(new FabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
 
     var edges = AciConversion.createLayer1Edges(config);
 
@@ -501,7 +501,7 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciVrfModel vrf = new AciVrfModel("vrf1");
+    TenantVrf vrf = new TenantVrf("vrf1");
     vrf.setTenant("tenant1");
     config.getVrfs().put("vrf1", vrf);
 
@@ -543,7 +543,7 @@ public class AciConversionTest {
     config.setVendor(ConfigurationFormat.CISCO_ACI);
     config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
 
-    AciVrfModel vrf = new AciVrfModel("vrf1");
+    TenantVrf vrf = new TenantVrf("vrf1");
     vrf.setTenant("tenant1");
     config.getVrfs().put("vrf1", vrf);
 
@@ -582,7 +582,7 @@ public class AciConversionTest {
     config.getFabricNodes().put("201", node);
 
     // Create VRF
-    AciVrfModel vrf = new AciVrfModel("shared_vrf");
+    TenantVrf vrf = new TenantVrf("shared_vrf");
     vrf.setTenant("tenant1");
     config.getVrfs().put("shared_vrf", vrf);
 
@@ -1006,7 +1006,7 @@ public class AciConversionTest {
     config.getFabricNodes().put("201", node);
 
     // Create VRF
-    AciVrfModel vrf = new AciVrfModel("vrf1");
+    TenantVrf vrf = new TenantVrf("vrf1");
     vrf.setTenant("tenant1");
     config.getVrfs().put("vrf1", vrf);
 
@@ -1072,9 +1072,8 @@ public class AciConversionTest {
     config.getL3Outs().put("tenant1:external-routes", l3out);
 
     // Create an inter-fabric connection
-    AciInterFabricConnection connection =
-        new AciInterFabricConnection(
-            "fabric-dc1", "fabric-dc2", "bgp", "Inter-fabric BGP connection");
+    InterFabricConnection connection =
+        new InterFabricConnection("fabric-dc1", "fabric-dc2", "bgp", "Inter-fabric BGP connection");
     connection.addBgpPeer("192.168.1.1");
 
     config.getInterFabricConnections().put("dc1-dc2-bgp", connection);

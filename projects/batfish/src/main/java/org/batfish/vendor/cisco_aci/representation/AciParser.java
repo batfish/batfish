@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.vendor.cisco_aci.representation.apic.AciPolUniInternal;
 
 /** Parser utilities for Cisco ACI APIC exports and optional fabric-link payloads. */
 public final class AciParser {
@@ -94,14 +95,14 @@ public final class AciParser {
    * <p>Expected format is the common APIC response shape with top-level {@code imdata[]} containing
    * {@code fabricLink} objects.
    */
-  public static @Nonnull List<AciFabricLink> parseFabricLinksJson(String filename, String text)
+  public static @Nonnull List<FabricLink> parseFabricLinksJson(String filename, String text)
       throws IOException {
     JsonNode rootNode = BatfishObjectMapper.mapper().readTree(text);
     JsonNode imdata = rootNode.get("imdata");
     if (imdata == null || !imdata.isArray()) {
       throw new IOException("Not a fabricLink JSON payload: " + filename);
     }
-    List<AciFabricLink> links = new ArrayList<>();
+    List<FabricLink> links = new ArrayList<>();
     for (JsonNode item : imdata) {
       JsonNode fabricLinkNode = item.get("fabricLink");
       if (fabricLinkNode == null || !fabricLinkNode.isObject()) {
@@ -120,8 +121,8 @@ public final class AciParser {
       if (node1Id == null || node2Id == null || port1 == null || port2 == null) {
         continue;
       }
-      AciFabricLink link =
-          new AciFabricLink(
+      FabricLink link =
+          new FabricLink(
               node1Id, toAciInterfaceName(slot1, port1), node2Id, toAciInterfaceName(slot2, port2));
       link.setLinkState(textOrNull(attrs.get("linkState")));
       links.add(link);
