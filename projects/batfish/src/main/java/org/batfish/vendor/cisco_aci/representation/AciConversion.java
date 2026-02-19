@@ -2518,8 +2518,8 @@ public final class AciConversion {
             .setAreas(areasBuilder.build())
             .build();
 
-    // Add OSPF process to VRF
-    vrf.setOspfProcesses(ImmutableList.of(ospfProcess).stream());
+    // Add OSPF process to VRF without clobbering processes from other L3Outs.
+    vrf.addOspfProcess(ospfProcess);
 
     // Apply OSPF interface settings to L3Out interfaces
     applyOspfInterfaceSettings(ospfConfig, l3OutName, interfaces, processId, warnings);
@@ -3057,7 +3057,7 @@ public final class AciConversion {
 
       // Use first two available border nodes for the connection
       // In a real ACI deployment, the specific nodes would be determined by L3Out path attachments
-      AciConfiguration.FabricNode node1 = borderNodes.size() > 0 ? borderNodes.get(0) : null;
+      AciConfiguration.FabricNode node1 = borderNodes.get(0);
       AciConfiguration.FabricNode node2 = borderNodes.size() > 1 ? borderNodes.get(1) : node1;
 
       if (node1 == null || node2 == null) {

@@ -462,6 +462,48 @@ public class AciConversionTest {
   }
 
   @Test
+  public void testMultipleOspfProcessesAcrossL3Outs() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("ospf-multi-l3out");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    AciVrfModel vrf = new AciVrfModel("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    AciConfiguration.L3Out l3Out1 = new AciConfiguration.L3Out("tenant1:l3out1");
+    l3Out1.setTenant("tenant1");
+    l3Out1.setVrf("vrf1");
+    AciConfiguration.OspfConfig ospf1 = new AciConfiguration.OspfConfig();
+    ospf1.setProcessId("1");
+    l3Out1.setOspfConfig(ospf1);
+
+    AciConfiguration.L3Out l3Out2 = new AciConfiguration.L3Out("tenant1:l3out2");
+    l3Out2.setTenant("tenant1");
+    l3Out2.setVrf("vrf1");
+    AciConfiguration.OspfConfig ospf2 = new AciConfiguration.OspfConfig();
+    ospf2.setProcessId("2");
+    l3Out2.setOspfConfig(ospf2);
+
+    config.getL3Outs().put("tenant1:l3out1", l3Out1);
+    config.getL3Outs().put("tenant1:l3out2", l3Out2);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+    Vrf convertedVrf = leafConfig.getVrfs().get("vrf1");
+    assertNotNull(convertedVrf);
+    assertThat(convertedVrf.getOspfProcesses().size(), equalTo(2));
+    assertThat(convertedVrf.getOspfProcesses(), hasKey("1"));
+    assertThat(convertedVrf.getOspfProcesses(), hasKey("2"));
+  }
+
+  @Test
   public void testMultipleBridgeDomainsSameVrf() {
     AciConfiguration config = new AciConfiguration();
     config.setHostname("multi-bd-test");
