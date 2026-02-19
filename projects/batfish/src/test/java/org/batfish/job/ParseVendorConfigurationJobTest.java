@@ -152,4 +152,33 @@ public class ParseVendorConfigurationJobTest {
     assertThat(link.getNode2Id(), equalTo("101"));
     assertThat(link.getNode2Interface(), equalTo("Ethernet1/24"));
   }
+
+  @Test
+  public void testParseCiscoAciWithSupplementalFabricLinksSkipsInvalidEntries() {
+    String apicJson = "{\"polUni\":{\"children\":[]}}";
+    String mixedFabricLinksJson =
+        "{\"totalCount\":\"3\",\"imdata\":["
+            + "{\"fabricLink\":{\"attributes\":{\"n1\":\"202\",\"n2\":\"102\",\"s1\":\"1\","
+            + "\"s2\":\"1\",\"p1\":\"50\",\"p2\":\"4\",\"linkState\":\"ok\"}}},"
+            + "{\"fabricLink\":{\"attributes\":{\"n1\":\"202\",\"n2\":\"102\",\"s1\":\"1\","
+            + "\"s2\":\"1\",\"p1\":\"51\",\"linkState\":\"ok\"}}},"
+            + "{\"fabricLink\":{\"attributes\":{\"n1\":\"202\",\"s1\":\"1\",\"s2\":\"1\","
+            + "\"p1\":\"52\",\"p2\":\"5\",\"linkState\":\"ok\"}}}]}";
+
+    ParseResult result =
+        new ParseVendorConfigurationJob(
+                new Settings(),
+                new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
+                ImmutableMap.of(
+                    "apic.json", apicJson, "outputtopology_mixed.json", mixedFabricLinksJson),
+                new Warnings.Settings(false, false, false),
+                ConfigurationFormat.CISCO_ACI,
+                ImmutableMultimap.of())
+            .parse();
+
+    assertThat(result.getFailureCause(), nullValue());
+    assertThat(result.getConfig(), not(nullValue()));
+    AciConfiguration config = (AciConfiguration) result.getConfig();
+    assertThat(config.getFabricLinks().size(), equalTo(1));
+  }
 }
