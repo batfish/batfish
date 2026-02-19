@@ -4420,6 +4420,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       FirewallFilter inboundInterfaceFilter = e.getValue();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
       org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(inboundInterfaceName);
+      if (newIface == null) {
+        // undefined reference to inboundInterfaceName
+        continue;
+      }
       newZone.getInboundInterfaceFiltersNames().put(newIface.getName(), inboundInterfaceFilterName);
     }
 
