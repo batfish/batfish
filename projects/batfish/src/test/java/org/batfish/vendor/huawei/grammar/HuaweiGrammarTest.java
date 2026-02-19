@@ -588,4 +588,87 @@ public class HuaweiGrammarTest {
     assertThat(staticRoute.getNetwork(), equalTo(org.batfish.datamodel.Prefix.parse("0.0.0.0/0")));
     assertThat(staticRoute.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
   }
+
+  @Test
+  public void testRepeatedInterfaceBlocksAreMerged() {
+    String config =
+        "sysname MergeIfRouter\n"
+            + "\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " ip address 10.0.0.1 255.255.255.0\n"
+            + "return\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " description merged config\n"
+            + " shutdown\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    HuaweiInterface iface = huaweiConfig.getInterfaces().get("GigabitEthernet0/0/0");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getAddress(), notNullValue());
+    assertThat(iface.getDescription(), equalTo("merged config"));
+    assertThat(iface.getShutdown(), equalTo(true));
+  }
+
+  @Test
+  public void testRepeatedBgpBlocksPreserveExistingState() {
+    String config =
+        "sysname MergeBgpRouter\n"
+            + "\n"
+            + "bgp 65001\n"
+            + " peer 10.0.0.2 as-number 65002\n"
+            + "return\n"
+            + "bgp 65001\n"
+            + " peer 10.0.0.3 as-number 65003\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    HuaweiBgpProcess bgp = huaweiConfig.getBgpProcess();
+    assertThat(bgp, notNullValue());
+    assertThat(bgp.getAsNum(), equalTo(65001L));
+    assertThat(bgp.getPeers().size(), equalTo(2));
+    assertThat(bgp.getPeers().containsKey(Ip.parse("10.0.0.2")), equalTo(true));
+    assertThat(bgp.getPeers().containsKey(Ip.parse("10.0.0.3")), equalTo(true));
+  }
+
+  @Test
+  public void testVrfRouteDistinguisherKeyword() {
+    String config =
+        "sysname VrfRdRouter\n"
+            + "\n"
+            + "ip vpn-instance VRF_A\n"
+            + " route-distinguisher 65000:100\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    HuaweiVrf vrf = huaweiConfig.getVrfs().get("VRF_A");
+    assertThat(vrf, notNullValue());
+    assertThat(vrf.getRouteDistinguisher(), equalTo("65000:100"));
+  }
+
+  @Test
+  public void testVlanBatchParsingCompactRange() {
+    String config = "sysname VlanBatchRouter\n" + "vlan batch 10,20,30-32\n" + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    assertThat(huaweiConfig.getVlans().size(), equalTo(5));
+    assertThat(huaweiConfig.getVlans().containsKey(10), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(20), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(30), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(31), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(32), equalTo(true));
+  }
+
+  @Test
+  public void testVlanBatchParsingSpacedRange() {
+    String config = "sysname VlanBatchRouter2\n" + "vlan batch 100,200,300 - 302\n" + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    assertThat(huaweiConfig.getVlans().size(), equalTo(5));
+    assertThat(huaweiConfig.getVlans().containsKey(100), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(200), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(300), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(301), equalTo(true));
+    assertThat(huaweiConfig.getVlans().containsKey(302), equalTo(true));
+  }
 }

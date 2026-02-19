@@ -115,7 +115,9 @@ s_vlan: VLAN (vlan_batch | vlan_id) NEWLINE;
 
 vlan_batch: BATCH vlan_list;
 
-vlan_list: dec (COMMA dec)* (MINUS dec)?;
+vlan_list: vlan_item (COMMA vlan_item)*;
+
+vlan_item: dec MINUS dec | dec | word;
 
 vlan_id: dec;
 
@@ -139,7 +141,7 @@ vpn_statement
   | vs_null
   ;
 
-vs_route_distinguisher: ROUTER_ID word NEWLINE;
+vs_route_distinguisher: (ROUTE_DISTINGUISHER | ROUTER_ID) word NEWLINE;
 
 vs_null: ~(NEWLINE | RETURN) ~NEWLINE* NEWLINE;  // Don't match return statements
 

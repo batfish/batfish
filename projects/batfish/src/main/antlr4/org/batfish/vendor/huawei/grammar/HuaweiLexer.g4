@@ -21,6 +21,7 @@ OSPF: 'ospf';
 PEER: 'peer';
 PERMIT: 'permit';
 RETURN: 'return';
+ROUTE_DISTINGUISHER: 'route-distinguisher';
 ROUTE_STATIC: 'route-static';
 ROUTER_ID: 'router-id';
 RULE: 'rule';
@@ -33,11 +34,12 @@ VPN_INSTANCE: 'vpn-instance';
 // Literals
 IP_ADDRESS: F_IpAddress;
 DECIMAL: [0-9]+;
-WORD: [a-zA-Z0-9_.:/-]+;
 
 // Punctuation
 COMMA: ',';
 MINUS: '-';
+
+WORD: [a-zA-Z0-9_.:/-]+;
 
 // Whitespace and newlines
 WS: [ \t]+ -> skip;

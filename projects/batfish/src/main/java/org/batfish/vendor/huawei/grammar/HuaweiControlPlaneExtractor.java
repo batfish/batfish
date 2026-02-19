@@ -1,11 +1,11 @@
 package org.batfish.vendor.huawei.grammar;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Acls_ruleContext;
@@ -44,6 +44,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     implements ControlPlaneExtractor {
 
   private final HuaweiConfiguration _configuration;
+  private final HuaweiCombinedParser _parser;
   private final Warnings _warnings;
 
   // Current parsing context
@@ -54,6 +55,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   private HuaweiVrf _currentVrf;
 
   public HuaweiControlPlaneExtractor(String text, HuaweiCombinedParser parser, Warnings warnings) {
+    _parser = parser;
     _warnings = warnings;
     _configuration = new HuaweiConfiguration();
   }
@@ -65,7 +67,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
 
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    BatfishParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
   }
 
@@ -80,8 +82,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
-    _currentInterface = new HuaweiInterface(name);
-    _configuration.getInterfaces().put(name, _currentInterface);
+    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, HuaweiInterface::new);
   }
 
   @Override
@@ -106,13 +107,18 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitIs_ip_address(Is_ip_addressContext ctx) {
     if (_currentInterface != null) {
-      Ip addr = Ip.parse(ctx.addr.getText());
-      Ip mask = Ip.parse(ctx.mask.getText());
+      Ip addr = parseIp(ctx.addr.getText(), ctx, "interface address");
+      Ip mask = parseIp(ctx.mask.getText(), ctx, "interface mask");
+      if (addr == null || mask == null) {
+        return;
+      }
       try {
         ConcreteInterfaceAddress address = ConcreteInterfaceAddress.create(addr, mask);
         _currentInterface.setAddress(address);
       } catch (Exception e) {
-        _warnings.redFlag("Invalid IP address: " + addr + " " + mask);
+        _warnings.redFlagf(
+            "Invalid interface address at line %d: %s %s",
+            ctx.getStart().getLine(), ctx.addr.getText(), ctx.mask.getText());
       }
     }
   }
@@ -134,18 +140,33 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   // Static routes
   @Override
   public void exitSi_route_static(Si_route_staticContext ctx) {
-    Ip network = Ip.parse(ctx.dest.getText());
-    Ip mask = Ip.parse(ctx.mask.getText());
-    Ip nextHop = Ip.parse(ctx.nexthop.getText());
+    Ip network = parseIp(ctx.dest.getText(), ctx, "static route network");
+    Ip mask = parseIp(ctx.mask.getText(), ctx, "static route mask");
+    Ip nextHop = parseIp(ctx.nexthop.getText(), ctx, "static route next-hop");
+    if (network == null || mask == null || nextHop == null) {
+      return;
+    }
     _configuration.getStaticRoutes().add(new HuaweiStaticRoute(network, mask, nextHop));
   }
 
   // BGP configuration
   @Override
   public void enterS_bgp(S_bgpContext ctx) {
-    long asn = Long.parseLong(ctx.asn.getText());
-    _currentBgpProcess = new HuaweiBgpProcess(asn);
-    _configuration.setBgpProcess(_currentBgpProcess);
+    Long asn = parseLong(ctx.asn.getText(), ctx, "BGP ASN");
+    if (asn == null) {
+      _currentBgpProcess = null;
+      return;
+    }
+    HuaweiBgpProcess existing = _configuration.getBgpProcess();
+    if (existing == null) {
+      existing = new HuaweiBgpProcess(asn);
+      _configuration.setBgpProcess(existing);
+    } else if (existing.getAsNum() != asn) {
+      _warnings.redFlagf(
+          "Conflicting BGP ASN at line %d: existing %d, new %d; keeping existing",
+          ctx.getStart().getLine(), existing.getAsNum(), asn);
+    }
+    _currentBgpProcess = existing;
   }
 
   @Override
@@ -156,17 +177,26 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitBs_router_id(Bs_router_idContext ctx) {
     if (_currentBgpProcess != null) {
-      _currentBgpProcess.setRouterId(Ip.parse(ctx.id.getText()));
+      Ip routerId = parseIp(ctx.id.getText(), ctx, "BGP router-id");
+      if (routerId != null) {
+        _currentBgpProcess.setRouterId(routerId);
+      }
     }
   }
 
   @Override
   public void exitBs_peer(Bs_peerContext ctx) {
     if (_currentBgpProcess != null) {
-      Ip peerIp = Ip.parse(ctx.ip.getText());
+      Ip peerIp = parseIp(ctx.ip.getText(), ctx, "BGP peer IP");
+      if (peerIp == null) {
+        return;
+      }
       HuaweiBgpPeer peer = new HuaweiBgpPeer(peerIp);
       if (ctx.asn != null) {
-        peer.setAsNum(Long.parseLong(ctx.asn.getText()));
+        Long asn = parseLong(ctx.asn.getText(), ctx, "BGP peer ASN");
+        if (asn != null) {
+          peer.setAsNum(asn);
+        }
       }
       _currentBgpProcess.getPeers().put(peerIp, peer);
     }
@@ -175,9 +205,21 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   // OSPF configuration
   @Override
   public void enterS_ospf(S_ospfContext ctx) {
-    long processId = Long.parseLong(ctx.proc.getText());
-    _currentOspfProcess = new HuaweiOspfProcess(processId);
-    _configuration.setOspfProcess(_currentOspfProcess);
+    Long processId = parseLong(ctx.proc.getText(), ctx, "OSPF process ID");
+    if (processId == null) {
+      _currentOspfProcess = null;
+      return;
+    }
+    HuaweiOspfProcess existing = _configuration.getOspfProcess();
+    if (existing == null) {
+      existing = new HuaweiOspfProcess(processId);
+      _configuration.setOspfProcess(existing);
+    } else if (existing.getProcessId() != processId) {
+      _warnings.redFlagf(
+          "Conflicting OSPF process ID at line %d: existing %d, new %d; keeping existing",
+          ctx.getStart().getLine(), existing.getProcessId(), processId);
+    }
+    _currentOspfProcess = existing;
   }
 
   @Override
@@ -188,14 +230,20 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitOs_router_id(Os_router_idContext ctx) {
     if (_currentOspfProcess != null) {
-      _currentOspfProcess.setRouterId(Ip.parse(ctx.id.getText()));
+      Ip routerId = parseIp(ctx.id.getText(), ctx, "OSPF router-id");
+      if (routerId != null) {
+        _currentOspfProcess.setRouterId(routerId);
+      }
     }
   }
 
   @Override
   public void enterOs_area(Os_areaContext ctx) {
     if (_currentOspfProcess != null) {
-      long areaId = Long.parseLong(ctx.area_id.getText());
+      Long areaId = parseLong(ctx.area_id.getText(), ctx, "OSPF area ID");
+      if (areaId == null) {
+        return;
+      }
       _currentOspfProcess.getAreas().put(areaId, new HuaweiOspfArea(areaId));
     }
   }
@@ -204,11 +252,13 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitS_vlan(S_vlanContext ctx) {
     if (ctx.vlan_id() != null) {
-      int vlanId = Integer.parseInt(ctx.vlan_id().dec().getText());
+      Integer vlanId = parseInteger(ctx.vlan_id().dec().getText(), ctx, "VLAN ID");
+      if (vlanId == null) {
+        return;
+      }
       _configuration.getVlans().put(vlanId, new HuaweiVlan(vlanId));
     } else if (ctx.vlan_batch() != null) {
-      // TODO: Parse VLAN batch (e.g., "10,20,30-40")
-      _warnings.unimplemented("VLAN batch parsing");
+      addVlansFromBatch(ctx);
     }
   }
 
@@ -216,8 +266,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void enterS_acl(S_aclContext ctx) {
     String name = ctx.acl_name().getText();
-    _currentAcl = new HuaweiAcl(name);
-    _configuration.getAcls().put(name, _currentAcl);
+    _currentAcl = _configuration.getAcls().computeIfAbsent(name, HuaweiAcl::new);
   }
 
   @Override
@@ -228,7 +277,10 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitAcls_rule(Acls_ruleContext ctx) {
     if (_currentAcl != null) {
-      int num = Integer.parseInt(ctx.num.getText());
+      Integer num = parseInteger(ctx.num.getText(), ctx, "ACL rule number");
+      if (num == null) {
+        return;
+      }
       Action action = ctx.action.getType() == HuaweiLexer.PERMIT ? Action.PERMIT : Action.DENY;
       _currentAcl.getRules().add(new HuaweiAclRule(num, action));
     }
@@ -245,12 +297,71 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void enterSi_vpn_instance(Si_vpn_instanceContext ctx) {
     String name = ctx.name.getText();
-    _currentVrf = new HuaweiVrf(name);
-    _configuration.getVrfs().put(name, _currentVrf);
+    _currentVrf = _configuration.getVrfs().computeIfAbsent(name, HuaweiVrf::new);
   }
 
   @Override
   public void exitSi_vpn_instance(Si_vpn_instanceContext ctx) {
     _currentVrf = null;
+  }
+
+  private void addVlansFromBatch(S_vlanContext ctx) {
+    HuaweiParser.Vlan_listContext vlanList = ctx.vlan_batch().vlan_list();
+    if (vlanList.vlan_item().isEmpty()) {
+      return;
+    }
+    for (HuaweiParser.Vlan_itemContext item : vlanList.vlan_item()) {
+      String itemText = item.getText();
+      int dash = itemText.indexOf('-');
+      if (dash < 0) {
+        Integer vlanId = parseInteger(itemText, ctx, "VLAN ID");
+        if (vlanId != null) {
+          _configuration.getVlans().put(vlanId, new HuaweiVlan(vlanId));
+        }
+        continue;
+      }
+      String startText = itemText.substring(0, dash);
+      String endText = itemText.substring(dash + 1);
+      Integer start = parseInteger(startText, ctx, "VLAN range start");
+      Integer end = parseInteger(endText, ctx, "VLAN range end");
+      if (start == null || end == null) {
+        continue;
+      }
+      if (start > end) {
+        _warnings.redFlagf(
+            "Invalid VLAN batch range at line %d: %d-%d", ctx.getStart().getLine(), start, end);
+        continue;
+      }
+      for (int vlanId = start; vlanId <= end; vlanId++) {
+        _configuration.getVlans().put(vlanId, new HuaweiVlan(vlanId));
+      }
+    }
+  }
+
+  private Integer parseInteger(String text, ParserRuleContext ctx, String field) {
+    try {
+      return Integer.parseInt(text);
+    } catch (NumberFormatException e) {
+      _warnings.redFlagf("Invalid %s at line %d: %s", field, ctx.getStart().getLine(), text);
+      return null;
+    }
+  }
+
+  private Long parseLong(String text, ParserRuleContext ctx, String field) {
+    try {
+      return Long.parseLong(text);
+    } catch (NumberFormatException e) {
+      _warnings.redFlagf("Invalid %s at line %d: %s", field, ctx.getStart().getLine(), text);
+      return null;
+    }
+  }
+
+  private Ip parseIp(String text, ParserRuleContext ctx, String field) {
+    try {
+      return Ip.parse(text);
+    } catch (IllegalArgumentException e) {
+      _warnings.redFlagf("Invalid %s at line %d: %s", field, ctx.getStart().getLine(), text);
+      return null;
+    }
   }
 }
