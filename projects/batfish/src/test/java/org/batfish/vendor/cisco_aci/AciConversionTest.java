@@ -504,6 +504,41 @@ public class AciConversionTest {
   }
 
   @Test
+  public void testBgpPeersAttachedToVrfProcess() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("bgp-peer-attachment");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    AciVrfModel vrf = new AciVrfModel("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    AciConfiguration.L3Out l3Out = new AciConfiguration.L3Out("tenant1:l3out1");
+    l3Out.setTenant("tenant1");
+    l3Out.setVrf("vrf1");
+    AciConfiguration.BgpPeer bgpPeer = new AciConfiguration.BgpPeer();
+    bgpPeer.setPeerAddress("10.0.0.2");
+    bgpPeer.setRemoteAs("65002");
+    bgpPeer.setLocalAs("65001");
+    l3Out.getBgpPeers().add(bgpPeer);
+    config.getL3Outs().put("tenant1:l3out1", l3Out);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+    Vrf convertedVrf = leafConfig.getVrfs().get("vrf1");
+    assertNotNull(convertedVrf);
+    assertNotNull(convertedVrf.getBgpProcess());
+    assertThat(convertedVrf.getBgpProcess().getActiveNeighbors().size(), equalTo(1));
+    assertThat(convertedVrf.getBgpProcess().getActiveNeighbors(), hasKey(Ip.parse("10.0.0.2")));
+  }
+
+  @Test
   public void testMultipleBridgeDomainsSameVrf() {
     AciConfiguration config = new AciConfiguration();
     config.setHostname("multi-bd-test");

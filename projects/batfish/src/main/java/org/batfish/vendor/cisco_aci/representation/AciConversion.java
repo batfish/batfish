@@ -1,6 +1,8 @@
 package org.batfish.vendor.cisco_aci.representation;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1652,11 +1654,6 @@ public final class AciConversion {
       return;
     }
 
-    // Track if we've created any routing processes and which VRF should receive it
-    boolean hasBgpProcess = false;
-    BgpProcess.Builder bgpProcessBuilder = null;
-    Vrf bgpTargetVrf = null; // Track which VRF should get the BGP process
-
     // Process each L3Out
     for (AciConfiguration.L3Out l3Out : l3Outs.values()) {
       String l3OutName = l3Out.getName();
@@ -1675,15 +1672,14 @@ public final class AciConversion {
 
       // Convert BGP peers
       if (l3Out.getBgpPeers() != null && !l3Out.getBgpPeers().isEmpty()) {
-        if (!hasBgpProcess) {
-          bgpTargetVrf = targetVrf; // Remember the VRF for this L3Out
-          bgpProcessBuilder =
+        if (targetVrf.getBgpProcess() == null) {
+          BgpProcess.Builder bgpProcessBuilder =
               convertBgpPeers(l3Out, node, aciConfig, interfaces, targetVrf, c, warnings);
-          hasBgpProcess = bgpProcessBuilder != null;
-        } else {
-          // Add additional peers to existing BGP process
-          addBgpPeersToProcess(bgpProcessBuilder, l3Out, node, interfaces, targetVrf, c, warnings);
+          if (bgpProcessBuilder != null) {
+            bgpProcessBuilder.build();
+          }
         }
+        addBgpPeersToProcess(l3Out, node, interfaces, targetVrf, c, warnings);
       }
 
       // Convert static routes
@@ -1701,12 +1697,6 @@ public final class AciConversion {
       if (l3Out.getExternalEpgs() != null && !l3Out.getExternalEpgs().isEmpty()) {
         convertExternalEpgs(l3Out, node, interfaces, targetVrf, c, warnings);
       }
-    }
-
-    // Set the BGP process on the VRF if we created one
-    if (hasBgpProcess && bgpProcessBuilder != null && bgpTargetVrf != null) {
-      BgpProcess bgpProcess = bgpProcessBuilder.build();
-      bgpTargetVrf.setBgpProcess(bgpProcess);
     }
   }
 
@@ -1911,15 +1901,13 @@ public final class AciConversion {
             .setLocalAdminCost(
                 bgpProcessConfig.getVrfAdminCost() != null
                     ? bgpProcessConfig.getVrfAdminCost()
-                    : DEFAULT_LOCAL_BGP_WEIGHT);
+                    : DEFAULT_LOCAL_BGP_WEIGHT)
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
 
     // Set the VRF for the BGP process
     bgpBuilder.setVrf(vrf);
-
-    // Add each BGP peer
-    for (AciConfiguration.BgpPeer bgpPeer : l3Out.getBgpPeers()) {
-      convertBgpPeer(bgpPeer, l3Out, node, interfaces, vrf, localAs, c, warnings);
-    }
 
     return bgpBuilder;
   }
@@ -2061,7 +2049,6 @@ public final class AciConversion {
   /**
    * Adds BGP peers from an L3Out to an existing BgpProcess.Builder.
    *
-   * @param bgpProcessBuilder The existing BgpProcess.Builder
    * @param l3Out The L3Out configuration
    * @param node The fabric node
    * @param interfaces Map of existing interfaces
@@ -2070,7 +2057,6 @@ public final class AciConversion {
    * @param warnings Warnings container
    */
   private static void addBgpPeersToProcess(
-      BgpProcess.Builder bgpProcessBuilder,
       AciConfiguration.L3Out l3Out,
       AciConfiguration.FabricNode node,
       Map<String, Interface> interfaces,
