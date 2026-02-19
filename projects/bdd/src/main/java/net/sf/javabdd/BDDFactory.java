@@ -271,14 +271,6 @@ public abstract class BDDFactory {
   public abstract double setMinFreeNodes(double x);
 
   /**
-   * Set factor by which to increase node table after a garbage collection.
-   *
-   * @param x factor by which to increase node table after GC
-   * @return old value
-   */
-  public abstract double setIncreaseFactor(double x);
-
-  /**
    * Sets the cache ratio for the operator caches. When the node table grows, operator caches will
    * also grow to maintain the ratio.
    *
