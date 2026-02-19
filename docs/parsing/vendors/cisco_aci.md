@@ -54,6 +54,26 @@ ACI configurations are exported from the APIC (Application Policy Infrastructure
 | **Sonic** | `SonicControlPlaneExtractor.processNonFrrFiles()` | JSON (config_db), YAML (snmp.yml) |
 | **Traditional** | ControlPlaneExtractor with ANTLR4 | CLI text |
 
+## ACI Class Naming and Package Conventions
+
+To keep ACI parsing consistent with Batfish structured-format parser patterns, ACI classes are
+split into two layers:
+
+1. **APIC wire-format DTOs**
+   - Package: `org.batfish.vendor.cisco_aci.representation.apic`
+   - Naming: `Aci*` names that mirror APIC/MIT object names (for example `AciTenant`,
+     `AciPolUniInternal`, `AciFabricInst`).
+   - Purpose: Jackson deserialization only.
+
+2. **Normalized internal model**
+   - Package: `org.batfish.vendor.cisco_aci.representation`
+   - Naming: domain model names without `Aci` prefix (for example `Tenant`, `TenantVrf`,
+     `BridgeDomain`, `Contract`, `FabricLink`).
+   - Purpose: conversion and analysis logic.
+
+This separation avoids mixed naming styles in the same layer and makes parsing vs. modeling intent
+explicit.
+
 ## ACI JSON Structure
 
 ACI configurations have `polUni` (Policy Universe) as the root:
