@@ -1,0 +1,79 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with BD Multiple Subnets",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "Test VRF",
+                  "dn": "uni/tn-tenant1/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd1",
+                  "descr": "Bridge Domain with Multiple Subnets",
+                  "dn": "uni/tn-tenant1/BD-bd1"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.1.1/24",
+                        "descr": "Primary Subnet"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.2.1/24",
+                        "descr": "Secondary Subnet"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.3.1/24",
+                        "descr": "Tertiary Subnet"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "192.168.100.1/24",
+                        "descr": "Management Subnet"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

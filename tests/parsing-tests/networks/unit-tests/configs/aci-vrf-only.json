@@ -1,0 +1,38 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with VRF only",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "Test VRF",
+                  "dn": "uni/tn-tenant1/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf2",
+                  "descr": "Second VRF",
+                  "dn": "uni/tn-tenant1/ctx-vrf2"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
