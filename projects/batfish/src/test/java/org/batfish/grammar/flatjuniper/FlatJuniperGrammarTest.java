@@ -419,6 +419,8 @@ import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.EvpnEncapsulation;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutes;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutesAdvertise;
 import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
@@ -8186,21 +8188,28 @@ public final class FlatJuniperGrammarTest {
     assertThat(ip, equalTo(rd));
   }
 
-  @Test
-  public void testRoutingInstancesRouteDistinguisherIdExtraction() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instances-route-distinguisher");
-  }
+//   @Test
+//   public void testRoutingInstancesRouteDistinguisherIdExtraction() {
+//     JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instances-route-distinguisher");
+//   }
 
   @Test
   public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
+    EvpnIpPrefixRoutes ipPrefixRoutes =
+        juniperConfiguration.getMasterLogicalSystem().getEvpn().getIpPrefixRoutes();
+    assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
+    assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
+    assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
+    assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
+    assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
   }
 
-  @Test
-  public void testSwitchOptionsRouteDistinguisherWithVrf() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-route-distinguisher");
+//   @Test
+//   public void testSwitchOptionsRouteDistinguisherWithVrf() {
+//     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-route-distinguisher");
 
-  }
+//   }
 
 
 

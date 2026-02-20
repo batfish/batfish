@@ -1,5 +1,5 @@
 #
-set system host-name juniper-evpn-ip-prefix-routes
+set system host-name routing-instance-vrf-evpn-ip-prefix-routes
 #
 set routing-instances FOO instance-type vrf
 set routing-instances FOO protocols evpn ip-prefix-routes advertise direct-nexthop

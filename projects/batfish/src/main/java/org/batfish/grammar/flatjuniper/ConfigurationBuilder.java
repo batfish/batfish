@@ -364,6 +364,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dscp_code_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_encapsulationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_extended_vni_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_advertiseContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_encapsulationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_vniContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_multicast_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_vni_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
@@ -1020,6 +1025,8 @@ import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Evpn;
 import org.batfish.representation.juniper.EvpnEncapsulation;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutes;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutesAdvertise;
 import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
@@ -4923,6 +4930,47 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       assert ctx.CLIENT() != null;
       _currentLogicalSystem.getEvpn().setMulticastMode(MulticastModeOptions.CLIENT);
     }
+  }
+
+  @Override
+  public void exitEipr_advertise(Eipr_advertiseContext ctx) {
+    EvpnIpPrefixRoutes ipPrefixRoutes =
+        _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
+    if (ctx.DIRECT_NEXTHOP() != null) {
+      ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    } else {
+      assert ctx.GATEWAY_ADDRESS() != null;
+      ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.GATEWAY_ADDRESS);
+    }
+  }
+
+  @Override
+  public void exitEipr_encapsulation(Eipr_encapsulationContext ctx) {
+    EvpnIpPrefixRoutes ipPrefixRoutes =
+        _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
+    if (ctx.VXLAN() != null) {
+      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.VXLAN);
+    } else if (ctx.MPLS() != null) {
+      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.MPLS);
+    } else {
+      assert ctx.SRV6() != null;
+      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.SRV6);
+    }
+  }
+
+  @Override
+  public void exitEipr_export(Eipr_exportContext ctx) {
+    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setExportPolicy(toString(ctx.name));
+  }
+
+  @Override
+  public void exitEipr_import(Eipr_importContext ctx) {
+    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setImportPolicy(toString(ctx.name));
+  }
+
+  @Override
+  public void exitEipr_vni(Eipr_vniContext ctx) {
+    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setVni(toInt(ctx.vni));
   }
 
   @Override

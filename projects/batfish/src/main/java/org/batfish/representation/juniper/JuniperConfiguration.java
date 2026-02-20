@@ -2195,7 +2195,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (vxlan.getVlanId() != null) {
         number = vxlan.getVlanId();
       }
-      Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
+      Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
+      if (rdIp == null) {
+        rdIp = getInterfaceOrUnitByName("lo0.0")
+                //.map(iface -> iface.getPrimaryIp()) // Use whatever helper method Batfish provides for IP
+                .map(iface -> iface.getPrimaryAddress().getIp()) // Use primary address IP
+                .orElse(Ip.parse("127.0.0.1")); // Absolute last resort
+      }
+
       createdRd = rdIp.toString() + ":" + number;
     }
     return createdRd;

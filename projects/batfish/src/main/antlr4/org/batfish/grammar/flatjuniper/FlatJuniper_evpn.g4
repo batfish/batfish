@@ -33,6 +33,43 @@ e_duplicate_mac_detection_null
     DUPLICATE_MAC_DETECTION null_filler
 ;
 
+e_ip_prefix_routes
+:
+   IP_PREFIX_ROUTES
+   (
+      eipr_advertise
+      | eipr_encapsulation
+      | eipr_export
+      | eipr_import
+      | eipr_vni
+   )
+;
+
+eipr_advertise
+:
+   ADVERTISE (DIRECT_NEXTHOP | GATEWAY_ADDRESS)
+;
+
+eipr_encapsulation
+:
+   ENCAPSULATION (MPLS | SRV6 | VXLAN)
+;
+
+eipr_export
+:
+   EXPORT name=junos_name
+;
+
+eipr_import
+:
+   IMPORT name=junos_name
+;
+
+eipr_vni
+:
+   VNI vni=dec
+;
+
 e_multicast_mode
 :
     MULTICAST_MODE (
@@ -90,6 +127,7 @@ p_evpn
         e_default_gateway
         | e_encapsulation
         | e_extended_vni_list
+        | e_ip_prefix_routes
         | e_multicast_mode
         | e_vni_options
         | e_duplicate_mac_detection_null

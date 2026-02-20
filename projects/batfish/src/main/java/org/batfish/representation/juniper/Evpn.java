@@ -13,6 +13,7 @@ public final class Evpn implements Serializable {
   private @Nullable Boolean _extendedVniAll;
   private @Nullable IntegerSpace _extendedVniList;
   private @Nullable EvpnEncapsulation _encapsulation;
+  private @Nullable EvpnIpPrefixRoutes _ipPrefixRoutes;
 
   public @Nullable MulticastModeOptions getMulticastMode() {
     return _multicastMode;
@@ -44,5 +45,20 @@ public final class Evpn implements Serializable {
 
   public void setEncapsulation(EvpnEncapsulation encapsulation) {
     _encapsulation = encapsulation;
+  }
+
+  public @Nullable EvpnIpPrefixRoutes getIpPrefixRoutes() {
+    return _ipPrefixRoutes;
+  }
+
+  public EvpnIpPrefixRoutes getOrCreateIpPrefixRoutes() {
+    if (_ipPrefixRoutes == null) {
+      _ipPrefixRoutes = new EvpnIpPrefixRoutes();
+    }
+    return _ipPrefixRoutes;
+  }
+
+  public void setIpPrefixRoutes(EvpnIpPrefixRoutes ipPrefixRoutes) {
+    _ipPrefixRoutes = ipPrefixRoutes;
   }
 }
