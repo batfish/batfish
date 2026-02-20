@@ -30,7 +30,7 @@ public class AciFormatDetectionTest {
           }
         }
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -45,7 +45,7 @@ public class AciFormatDetectionTest {
           }
         }
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -61,7 +61,7 @@ public class AciFormatDetectionTest {
           }
         }
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -82,7 +82,7 @@ public class AciFormatDetectionTest {
           }
         }
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -95,7 +95,7 @@ public class AciFormatDetectionTest {
           </children>
         </polUni>
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -108,7 +108,7 @@ public class AciFormatDetectionTest {
           </children>
         </fvTenant>
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class AciFormatDetectionTest {
         <?xml version="1.0"?>
         <fabricNode id="1" name="spine1"/>
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class AciFormatDetectionTest {
           </children>
         </polUni>
         """;
-    assertThat(identifyConfigurationFormat(fileText), equalTo(UNKNOWN));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_ACI));
   }
 
   @Test

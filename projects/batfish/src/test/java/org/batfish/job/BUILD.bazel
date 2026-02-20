@@ -19,6 +19,7 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco",
+        "//projects/batfish/src/main/java/org/batfish/vendor/cisco_aci/representation",
         "//projects/common",
         "//projects/common/src/test/java/org/batfish/common/matchers",
         "//projects/common/src/test/java/org/batfish/datamodel:testlib",
