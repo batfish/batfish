@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="L3Out Static Test Tenant">
+    <fvCtx name="vrf1" descr="L3Out VRF"/>
+    <l3extOut name="l3out1" descr="Static Route L3Out" enforceRtctrl="export">
+      <l3extRsEctx tnFvCtxName="vrf1"/>
+      <l3extRsL3DomAtt tDn="uni/l3dom-multipod"/>
+      <l3extLNodeP name="Static-Node-Profile">
+        <l3extRsNodeL3OutAtt rtrId="10.0.0.1" rtrIdLoopBack="yes" tDn="topology/pod-1/node-201"/>
+        <l3extLIfP name="Static-Logical-Interface">
+          <l3extRsPathL3OutAtt descr="Static Route Interface" tDn="topology/pod-1/paths-201/pathep-[eth1/1]" encap="vlan-300" ifInstT="l3-port" addr="192.168.3.2/30"/>
+        </l3extLIfP>
+      </l3extLNodeP>
+      <l3extInstP name="staticRouteProfile">
+        <l3extRsPathL3OutAtt descr="Static Route"/>
+      </l3extInstP>
+      <ipRouteP name="staticRoute1" descr="Static Route 1" aggregate="0" pref="1">
+        <l3extNextHop addr="192.168.3.1" descr="Next Hop 1"/>
+      </ipRouteP>
+      <ipRouteP name="staticRoute2" descr="Static Route 2" aggregate="0" pref="1">
+        <l3extNextHop addr="192.168.3.1" descr="Next Hop 2"/>
+      </ipRouteP>
+    </l3extOut>
+  </fvTenant>
+</polUni>

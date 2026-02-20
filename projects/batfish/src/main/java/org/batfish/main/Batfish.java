@@ -237,6 +237,7 @@ import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciParser;
 import org.batfish.version.BatfishVersion;
 
 /** This class encapsulates the main control logic for Batfish. */
@@ -2615,6 +2616,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new UncheckedIOException(e);
     }
 
+    // add ACI files in the cisco_aci_configs folder
+    try (Stream<String> keys = _storage.listInputCiscoAciConfigsKeys(snapshot)) {
+      Map<String, String> ciscoAciObjects = readAllInputObjects(keys, snapshot);
+      if (!extractAciPrimaryConfigFiles(ciscoAciObjects).isEmpty()) {
+        jobs.add(
+            makeParseVendorConfigurationJob(
+                snapshot, ciscoAciObjects, ConfigurationFormat.CISCO_ACI));
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
     // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
     Collections.shuffle(jobs);
 
@@ -2721,6 +2734,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    // consider what is in the cisco_aci_configs folder
+    try (Stream<String> keys = _storage.listInputCiscoAciConfigsKeys(snapshot)) {
+      Map<String, String> ciscoAciObjects = readAllInputObjects(keys, snapshot);
+      if (!extractAciPrimaryConfigFiles(ciscoAciObjects).isEmpty()) {
+        vendorConfigurations.putAll(
+            parseVendorConfigurations(
+                snapshot,
+                ImmutableList.of(ciscoAciObjects),
+                answerElement,
+                ConfigurationFormat.CISCO_ACI));
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
 
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
@@ -2767,7 +2794,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
   }
 
-  /** Returns if any network configuration files exist under configs or sonic_configs folders. */
+  /**
+   * Returns if any network configuration files exist under configs, sonic_configs, or
+   * cisco_aci_configs folders.
+   */
   private boolean networkConfigsExist(NetworkSnapshot snapshot) {
     try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
       if (keys.findAny().isPresent()) {
@@ -2783,7 +2813,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    try (Stream<String> keys = _storage.listInputCiscoAciConfigsKeys(snapshot)) {
+      if (keys.findAny().isPresent()) {
+        return true;
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     return false;
+  }
+
+  private static @Nonnull Map<String, String> extractAciPrimaryConfigFiles(
+      Map<String, String> ciscoAciObjects) {
+    return ciscoAciObjects.entrySet().stream()
+        .filter(entry -> !AciParser.isFabricLinksJson(entry.getValue()))
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   /**

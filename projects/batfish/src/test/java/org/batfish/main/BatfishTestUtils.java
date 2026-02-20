@@ -3,6 +3,7 @@ package org.batfish.main;
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_AZURE_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
+import static org.batfish.common.BfConsts.RELPATH_CISCO_ACI_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
 import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
@@ -198,6 +199,7 @@ public class BatfishTestUtils {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
     Map<String, byte[]> azureBytes = testrigText.getAzureBytes();
     Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
+    Map<String, byte[]> ciscoAciConfigBytes = testrigText.getCiscoAciConfigBytes();
     Map<String, byte[]> checkpointMgmtBytes = testrigText.getCheckpointMgmtBytes();
     Map<String, byte[]> configurationBytes = testrigText.getConfigurationBytes();
     byte[] externalBgpAnnouncementsBytes = testrigText.getExternalBgpAnnouncementBytes();
@@ -233,6 +235,8 @@ public class BatfishTestUtils {
         azureBytes, RELPATH_AZURE_CONFIGS_DIR, storage, batfish.getSnapshot());
     writeTemporarySnapshotInputFiles(
         bgpTablesBytes, RELPATH_ENVIRONMENT_BGP_TABLES, storage, batfish.getSnapshot());
+    writeTemporarySnapshotInputFiles(
+        ciscoAciConfigBytes, RELPATH_CISCO_ACI_CONFIGS_DIR, storage, batfish.getSnapshot());
     if (externalBgpAnnouncementsBytes != null) {
       writeTemporarySnapshotInputFiles(
           ImmutableMap.of(

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="L3Out OSPF Test Tenant">
+    <fvCtx name="vrf1" descr="L3Out VRF"/>
+    <l3extOut name="l3out1" descr="OSPF L3Out" enforceRtctrl="export">
+      <l3extRsEctx tnFvCtxName="vrf1"/>
+      <l3extRsL3DomAtt tDn="uni/l3dom-multipod"/>
+      <l3extLNodeP name="OSPF-Node-Profile">
+        <l3extRsNodeL3OutAtt rtrId="10.0.0.1" rtrIdLoopBack="yes" tDn="topology/pod-1/node-201"/>
+        <l3extLIfP name="OSPF-Logical-Interface">
+          <l3extRsPathL3OutAtt descr="OSPF External Interface" tDn="topology/pod-1/paths-201/pathep-[eth1/1]" encap="vlan-200" ifInstT="l3-port" addr="192.168.2.2/30"/>
+        </l3extLIfP>
+      </l3extLNodeP>
+      <ospfIfP name="ospfIntPol">
+        <ospfRsIfP tnOspfIfPName="ospfExtIntPol"/>
+      </ospfIfP>
+    </l3extOut>
+    <ospfExtP name="ospfExtPol" descr="OSPF External Policy">
+      <ospfRouterP/>
+      <ospfAreaP ctrl="redistribute,summary"/>
+    </ospfExtP>
+    <ospfIfP name="ospfExtIntPol" descr="OSPF Interface Policy">
+      <ospfAreaP id="0"/>
+    </ospfIfP>
+  </fvTenant>
+</polUni>

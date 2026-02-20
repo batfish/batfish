@@ -1,0 +1,89 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with L3Out OSPF",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "VRF for L3Out",
+                  "dn": "uni/tn-tenant1/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "l3extOut": {
+                "attributes": {
+                  "name": "l3out1",
+                  "descr": "L3Out with OSPF",
+                  "dn": "uni/tn-tenant1/out-l3out1"
+                },
+                "children": [
+                  {
+                    "l3extRsEctx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "l3extInstP": {
+                      "attributes": {
+                        "name": "extepg1",
+                        "descr": "External EPG"
+                      },
+                      "children": [
+                        {
+                          "l3extSubnet": {
+                            "attributes": {
+                              "ip": "0.0.0.0/0"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "l3extRsPathL3OutAtt": {
+                      "attributes": {
+                        "tdn": "topology/pod-1/paths-201/pathep-[eth1/1]"
+                      }
+                    }
+                  },
+                  {
+                    "ospfExtP": {
+                      "attributes": {
+                        "name": "ospf1",
+                        "descr": "OSPF External Policy"
+                      },
+                      "children": [
+                        {
+                          "ospfIfP": {
+                            "attributes": {
+                              "name": "ospfIf1",
+                              "descr": "OSPF Interface"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

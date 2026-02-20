@@ -1593,6 +1593,28 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testInitSnapshotWithCiscoAciConfigsDirOnly() {
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+
+    _manager.initNetwork(networkName, null);
+
+    Path srcDir = _folder.getRoot().toPath().resolve(snapshotName);
+    Path ciscoAciConfig =
+        srcDir
+            .resolve(snapshotName)
+            .resolve(BfConsts.RELPATH_CISCO_ACI_CONFIGS_DIR)
+            .resolve("fabric.json");
+    ciscoAciConfig.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(ciscoAciConfig, "{\"polUni\": {\"children\": []}}");
+
+    _manager.initSnapshot(networkName, snapshotName, srcDir, Instant.now());
+
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    assertThat(_idManager.getSnapshotId(snapshotName, networkId).isPresent(), equalTo(true));
+  }
+
+  @Test
   public void testProcessAnswerRows() throws IOException {
     String columnName = "issue";
     int maxRows = 1;

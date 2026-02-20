@@ -1,0 +1,100 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with L3Out BGP",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "VRF for L3Out",
+                  "dn": "uni/tn-tenant1/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "l3extOut": {
+                "attributes": {
+                  "name": "l3out1",
+                  "descr": "L3Out with BGP",
+                  "dn": "uni/tn-tenant1/out-l3out1"
+                },
+                "children": [
+                  {
+                    "l3extRsEctx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "l3extInstP": {
+                      "attributes": {
+                        "name": "extepg1",
+                        "descr": "External EPG"
+                      },
+                      "children": [
+                        {
+                          "l3extSubnet": {
+                            "attributes": {
+                              "ip": "0.0.0.0/0"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "l3extRsPathL3OutAtt": {
+                      "attributes": {
+                        "tdn": "topology/pod-1/paths-101/pathep-[eth1/1]"
+                      }
+                    }
+                  },
+                  {
+                    "bgpExtP": {
+                      "attributes": {
+                        "name": "bgpPeerP",
+                        "descr": "BGP Peer Policy"
+                      },
+                      "children": [
+                        {
+                          "bgpPeerP": {
+                            "attributes": {
+                              "name": "peer1",
+                              "addr": "192.168.1.1",
+                              "asn": "65001"
+                            }
+                          }
+                        },
+                        {
+                          "bgpPeerP": {
+                            "attributes": {
+                              "name": "peer2",
+                              "addr": "192.168.1.2",
+                              "asn": "65002"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

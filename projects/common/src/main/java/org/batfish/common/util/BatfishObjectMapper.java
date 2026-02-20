@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -24,6 +25,8 @@ public final class BatfishObjectMapper {
 
   private static final JsonMapper IGNORE_UNKNOWN_MAPPER =
       baseMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
+
+  private static final XmlMapper XML_MAPPER = baseXmlMapper().build();
 
   private static final ObjectWriter ALWAYS_WRITER =
       baseMapper().serializationInclusion(Include.ALWAYS).build().writer();
@@ -100,6 +103,14 @@ public final class BatfishObjectMapper {
    */
   public static ObjectMapper ignoreUnknownMapper() {
     return IGNORE_UNKNOWN_MAPPER;
+  }
+
+  /**
+   * Returns a {@link XmlMapper} configured to Batfish standards for XML parsing. The XmlMapper is
+   * configured with the same modules and settings as the JSON mapper for consistent behavior.
+   */
+  public static XmlMapper xmlMapper() {
+    return XML_MAPPER;
   }
 
   /**
@@ -181,6 +192,20 @@ public final class BatfishObjectMapper {
         // This line makes Guava collections work with Jackson
         .addModule(new GuavaModule())
         // Custom (de)serialization for 3rd-party classes
+        .addModule(new BatfishThirdPartySerializationModule());
+  }
+
+  /** Configures all the default options for a Batfish {@link XmlMapper}. */
+  private static XmlMapper.Builder baseXmlMapper() {
+    return XmlMapper.builder()
+        .disable(MapperFeature.AUTO_DETECT_CREATORS)
+        .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+        .addModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .addModule(new Jdk8Module())
+        .defaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS))
+        .addModule(new GuavaModule())
         .addModule(new BatfishThirdPartySerializationModule());
   }
 }

@@ -1,0 +1,54 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with Simple Contract",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "contract1",
+                  "descr": "Simple Contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-tenant1/brc-contract1"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "subject1",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "filter1",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with Complex Contracts",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "web-contract",
+                  "descr": "Web Application Contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-tenant1/brc-web-contract"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "http-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "http-filter",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "https-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "https-filter",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "icmp-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "icmp-filter",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "db-contract",
+                  "descr": "Database Contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-tenant1/brc-db-contract"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "tcp-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "tcp-filter",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "udp-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "udp-filter",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
