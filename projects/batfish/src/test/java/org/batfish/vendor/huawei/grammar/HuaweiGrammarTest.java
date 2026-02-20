@@ -53,12 +53,11 @@ public class HuaweiGrammarTest {
     String config =
         "# Minimal config\n"
             + "sysname Router1\n"
-            + "\n"
+            + "#\n"
             + "interface GigabitEthernet0/0/0\n"
             + " description Uplink\n"
             + " ip address 192.168.1.1 255.255.255.0\n"
-            + "return\n"
-            + "\n"
+            + "#\n"
             + "return\n";
 
     HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
@@ -87,6 +86,25 @@ public class HuaweiGrammarTest {
     assertThat(huaweiConfig.getBgpProcess().getAsNum(), equalTo(65001L));
     assertThat(huaweiConfig.getBgpProcess().getRouterId().toString(), equalTo("1.1.1.1"));
     assertThat(huaweiConfig.getBgpProcess().getPeers().size(), equalTo(1));
+  }
+
+  @Test
+  public void testBgpConfigWithoutExplicitBlockExit() {
+    String config =
+        "sysname BgpRouterNoExit\n"
+            + "\n"
+            + "bgp 65001\n"
+            + " router-id 1.1.1.1\n"
+            + " peer 192.168.1.2 as-number 65002\n"
+            + "#\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " ip address 10.0.0.1 255.255.255.0\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    assertThat(huaweiConfig.getBgpProcess(), notNullValue());
+    assertThat(huaweiConfig.getBgpProcess().getAsNum(), equalTo(65001L));
+    assertThat(huaweiConfig.getBgpProcess().getPeers().size(), equalTo(1));
+    assertThat(huaweiConfig.getInterfaces().containsKey("GigabitEthernet0/0/0"), equalTo(true));
   }
 
   @Test
@@ -210,6 +228,27 @@ public class HuaweiGrammarTest {
     assertThat(huaweiConfig.getInterfaces().containsKey("GigabitEthernet0/0/0"), equalTo(true));
     assertThat(huaweiConfig.getInterfaces().containsKey("GigabitEthernet0/0/1"), equalTo(true));
     assertThat(huaweiConfig.getInterfaces().containsKey("LoopBack0"), equalTo(true));
+  }
+
+  @Test
+  public void testQuitCanTerminateBlock() {
+    String config =
+        "sysname QuitRouter\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " description First interface\n"
+            + " quit\n"
+            + "interface GigabitEthernet0/0/1\n"
+            + " description Second interface\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    assertThat(huaweiConfig.getInterfaces().size(), equalTo(2));
+    assertThat(
+        huaweiConfig.getInterfaces().get("GigabitEthernet0/0/0").getDescription(),
+        equalTo("First interface"));
+    assertThat(
+        huaweiConfig.getInterfaces().get("GigabitEthernet0/0/1").getDescription(),
+        equalTo("Second interface"));
   }
 
   @Test

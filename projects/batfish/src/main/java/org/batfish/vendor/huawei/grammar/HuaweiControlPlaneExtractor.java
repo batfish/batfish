@@ -14,7 +14,6 @@ import org.batfish.vendor.huawei.grammar.HuaweiParser.Bs_router_idContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Is_descriptionContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Is_ip_addressContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Is_shutdownContext;
-import org.batfish.vendor.huawei.grammar.HuaweiParser.Is_undo_shutdownContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Os_areaContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.Os_router_idContext;
 import org.batfish.vendor.huawei.grammar.HuaweiParser.S_aclContext;
@@ -74,7 +73,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   // System name
   @Override
   public void exitS_sysname(S_sysnameContext ctx) {
-    String hostname = ctx.hostname.getText();
+    String hostname = ctx.host_name.getText();
     _configuration.setHostname(hostname);
   }
 
@@ -126,14 +125,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitIs_shutdown(Is_shutdownContext ctx) {
     if (_currentInterface != null) {
-      _currentInterface.setShutdown(true);
-    }
-  }
-
-  @Override
-  public void exitIs_undo_shutdown(Is_undo_shutdownContext ctx) {
-    if (_currentInterface != null) {
-      _currentInterface.setShutdown(false);
+      _currentInterface.setShutdown(ctx.UNDO() == null);
     }
   }
 
@@ -252,7 +244,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitS_vlan(S_vlanContext ctx) {
     if (ctx.vlan_id() != null) {
-      Integer vlanId = parseInteger(ctx.vlan_id().dec().getText(), ctx, "VLAN ID");
+      Integer vlanId = parseInteger(ctx.vlan_id().getText(), ctx, "VLAN ID");
       if (vlanId == null) {
         return;
       }
@@ -289,7 +281,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitVs_route_distinguisher(Vs_route_distinguisherContext ctx) {
     if (_currentVrf != null) {
-      _currentVrf.setRouteDistinguisher(ctx.word().getText());
+      _currentVrf.setRouteDistinguisher(ctx.route_distinguisher().getText());
     }
   }
 
