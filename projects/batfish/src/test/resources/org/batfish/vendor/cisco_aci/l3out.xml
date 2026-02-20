@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="infra">
+    <fvCtx name="overlay-1"/>
+    <l3extOut name="l3out1" enforceRtctrl="export">
+      <l3extRsEctx tnFvCtxName="overlay-1"/>
+      <l3extRsL3DomAtt tDn="uni/l3dom-multipod"/>
+      <l3extLNodeP name="Spine-Node-Profiles">
+        <l3extRsNodeL3OutAtt rtrId="10.96.1.3" rtrIdLoopBack="yes" tDn="topology/pod-1/node-101">
+          <l3extInfraNodeP descr="Spine 101" fabricExtCtrlPeering="yes"/>
+        </l3extRsNodeL3OutAtt>
+        <l3extLIfP name="Logical-Interface-Profs">
+          <l3extRsPathL3OutAtt descr="IPN-e1/36" tDn="topology/pod-1/paths-101/pathep-[eth1/36]" encap="vlan-4" ifInstT="sub-interface" addr="10.96.1.254/30"/>
+        </l3extLIfP>
+      </l3extLNodeP>
+    </l3extOut>
+  </fvTenant>
+</polUni>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="Multiple Subnets Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvBD name="bd1" descr="BD with Multiple Subnets">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.1.1/24" descr="Primary Subnet"/>
+      <fvSubnet ip="10.0.2.1/24" descr="Secondary Subnet"/>
+      <fvSubnet ip="10.0.3.1/24" descr="Tertiary Subnet"/>
+      <fvSubnet ip="192.168.1.1/24" descr="Fourth Subnet"/>
+    </fvBD>
+    <fvAEPg name="epg1" descr="EPG on Multi-Subnet BD">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+  </fvTenant>
+</polUni>

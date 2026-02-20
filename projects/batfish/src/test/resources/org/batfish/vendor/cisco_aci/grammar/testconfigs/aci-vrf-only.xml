@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="VRF Only Tenant">
+    <fvCtx name="vrf1" descr="First VRF"/>
+    <fvCtx name="vrf2" descr="Second VRF"/>
+    <fvCtx name="vrf3" descr="Third VRF"/>
+  </fvTenant>
+  <fvTenant name="tenant2" descr="Another VRF Tenant">
+    <fvCtx name="vrf4" descr="Fourth VRF"/>
+  </fvTenant>
+</polUni>
