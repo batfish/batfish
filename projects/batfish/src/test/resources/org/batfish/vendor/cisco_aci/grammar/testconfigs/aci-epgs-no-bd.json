@@ -1,0 +1,52 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with EPGs without BD",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvAp": {
+                "attributes": {
+                  "name": "ap1",
+                  "descr": "Application Profile",
+                  "dn": "uni/tn-tenant1/ap-ap1"
+                },
+                "children": [
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg1",
+                        "descr": "EPG without BD reference",
+                        "dn": "uni/tn-tenant1/ap-ap1/epg-epg1"
+                      },
+                      "children": []
+                    }
+                  },
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg2",
+                        "descr": "Another EPG without BD reference",
+                        "dn": "uni/tn-tenant1/ap-ap1/epg-epg2"
+                      },
+                      "children": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fabricInst": {
+          "attributes": {
+            "dn": "uni/fabric"
+          },
+          "children": [
+            {
+              "fabricProtPol": {
+                "attributes": {},
+                "children": [
+                  {
+                    "fabricExplicitGEp": {
+                      "attributes": {},
+                      "children": [
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "dn": "uni/fabric/nodePEp-101",
+                              "id": "101",
+                              "name": "leaf1",
+                              "role": "leaf",
+                              "podId": "1"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
