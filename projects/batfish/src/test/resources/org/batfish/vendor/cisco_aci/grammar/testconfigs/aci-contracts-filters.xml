@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="Detailed Filters Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvBD name="bd1" descr="Test Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.0.0/24"/>
+    </fvBD>
+    <fvAEPg name="web_epg" descr="Web EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <fvAEPg name="app_epg" descr="App EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <vzBrCP name="detailed_contract" descr="Contract with Detailed Filters">
+      <vzSubj name="web_traffic" descr="Web Traffic Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="http_filter"/>
+        <vzRsSubjFiltAtt tnVzFilterName="https_filter"/>
+      </vzSubj>
+      <vzSubj name="db_traffic" descr="DB Traffic Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="mysql_filter"/>
+        <vzRsSubjFiltAtt tnVzFilterName="postgresql_filter"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzFilter name="http_filter" descr="HTTP Filter">
+      <vzEntry name="http_entry" descr="HTTP TCP Entry" etherT="ip" prot="tcp">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="80"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="https_filter" descr="HTTPS Filter">
+      <vzEntry name="https_entry" descr="HTTPS TCP Entry" etherT="ip" prot="tcp">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="443"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="mysql_filter" descr="MySQL Filter">
+      <vzEntry name="mysql_entry" descr="MySQL TCP Entry" etherT="ip" prot="tcp">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="3306"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="postgresql_filter" descr="PostgreSQL Filter">
+      <vzEntry name="postgresql_entry" descr="PostgreSQL TCP Entry" etherT="ip" prot="tcp">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="5432"/>
+      </vzEntry>
+    </vzFilter>
+    <vzRsProtProv ip="web_epg" tnVzBrCPName="detailed_contract"/>
+    <vzRsProtCons ip="app_epg" tnVzBrCPName="detailed_contract"/>
+  </fvTenant>
+</polUni>

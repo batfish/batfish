@@ -909,7 +909,7 @@ public class WorkMgr extends AbstractCoordinator {
    * Helper function to assert that the specified dir contains configs
    *
    * @throws BatfishException when specified dir does not contain network configs dir, AWS configs
-   *     dir, or a hosts dir
+   *     dir, Cisco ACI configs dir, SONiC configs dir, Azure configs dir, or a hosts dir
    */
   private static void validateSnapshotDir(Path subDir) {
     // Confirm that at least one of the config subfolders is present
@@ -918,6 +918,7 @@ public class WorkMgr extends AbstractCoordinator {
             subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR),
             subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR),
             subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR),
+            subDir.resolve(BfConsts.RELPATH_CISCO_ACI_CONFIGS_DIR),
             subDir.resolve(BfConsts.RELPATH_SONIC_CONFIGS_DIR),
             subDir.resolve(BfConsts.RELPATH_AZURE_CONFIGS_DIR));
     if (configPaths.stream().noneMatch(Files::exists)) {

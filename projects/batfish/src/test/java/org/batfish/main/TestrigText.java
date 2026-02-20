@@ -55,6 +55,7 @@ public class TestrigText {
     private Map<String, byte[]> _awsBytes;
     private Map<String, byte[]> _azureBytes;
     private Map<String, byte[]> _bgpTablesBytes;
+    private Map<String, byte[]> _ciscoAciConfigBytes;
     private Map<String, byte[]> _checkpointMgmtBytes;
     private Map<String, byte[]> _configurationBytes;
     private ConversionContext _conversionContext;
@@ -72,6 +73,7 @@ public class TestrigText {
       testrigText.setAwsBytes(_awsBytes);
       testrigText.setAzureBytes(_azureBytes);
       testrigText.setBgpTablesBytes(_bgpTablesBytes);
+      testrigText.setCiscoAciConfigBytes(_ciscoAciConfigBytes);
       testrigText.setCheckpointMgmtBytes(_checkpointMgmtBytes);
       testrigText.setConfigurationBytes(_configurationBytes);
       testrigText.setConversionContext(_conversionContext);
@@ -111,6 +113,14 @@ public class TestrigText {
 
     public Builder setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {
       _bgpTablesBytes = bgpTablesText;
+      return this;
+    }
+
+    public Builder setCiscoAciConfigFiles(
+        String testrigResourcePrefix, Iterable<String> filenames) {
+      _ciscoAciConfigBytes =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_CISCO_ACI_CONFIGS_DIR, filenames);
       return this;
     }
 
@@ -352,6 +362,7 @@ public class TestrigText {
   private Map<String, byte[]> _awsBytes;
   private Map<String, byte[]> _azureBytes;
   private Map<String, byte[]> _bgpTablesBytes;
+  private Map<String, byte[]> _ciscoAciConfigBytes;
   private Map<String, byte[]> _checkpointMgmtBytes;
   private Map<String, byte[]> _configurationBytes;
   private ConversionContext _conversionContext;
@@ -374,6 +385,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getBgpTablesBytes() {
     return _bgpTablesBytes;
+  }
+
+  public Map<String, byte[]> getCiscoAciConfigBytes() {
+    return _ciscoAciConfigBytes;
   }
 
   public Map<String, byte[]> getCheckpointMgmtBytes() {
@@ -430,6 +445,10 @@ public class TestrigText {
 
   public void setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {
     _bgpTablesBytes = bgpTablesText;
+  }
+
+  public void setCiscoAciConfigBytes(Map<String, byte[]> ciscoAciConfigBytes) {
+    _ciscoAciConfigBytes = ciscoAciConfigBytes;
   }
 
   public void setCheckpointMgmtBytes(Map<String, byte[]> checkpointMgmtBytes) {

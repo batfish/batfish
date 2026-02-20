@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fabricNodePEp id="101" name="spine1" role="spine" podId="1">
+    <fabricNodeS name="eth1/1" descr="Uplink interface" type="ethernet" status="enabled"/>
+    <fabricNodeS name="eth1/2" descr="Uplink interface" type="ethernet" status="disabled"/>
+  </fabricNodePEp>
+  <fabricNodePEp id="201" name="leaf1" role="leaf" podId="1"/>
+</polUni>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="Bridge Domain Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvBD name="bd-web" descr="Web Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.1.1/24"/>
+    </fvBD>
+    <fvBD name="bd-app" descr="App Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.2.1/24"/>
+    </fvBD>
+    <fvBD name="bd-db" descr="DB Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.3.1/24"/>
+    </fvBD>
+  </fvTenant>
+</polUni>

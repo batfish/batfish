@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvBD name="bd1" descr="Test Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.0.0/24"/>
+    </fvBD>
+    <fvAEPg name="epg1" descr="Test EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+  </fvTenant>
+  <fvTenant name="tenant2" descr="Second Test Tenant"/>
+</polUni>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni dn="uni" name="aci-fabric">
+  <fabricInst dn="uni/fabric">
+    <fabricProtPol>
+      <fabricExplicitGEp>
+        <fabricNodePEp dn="uni/fabric/nodePEp-101" id="101" name="spine1" role="spine" podId="1"/>
+      </fabricExplicitGEp>
+    </fabricProtPol>
+  </fabricInst>
+</polUni>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni dn="uni" name="aci-fabric" userdom="all">
+  <fabricInst dn="uni/fabric" name="fabric">
+    <fabricProtPol dn="uni/fabric/fabricprotPol">
+      <fabricExplicitGEp dn="uni/fabric/fabricprotPol/expgep-1">
+        <fabricNodePEp dn="uni/fabric/fabricprotPol/expgep-1/node-101" id="101" name="spine-1" role="spine" podId="1"/>
+        <fabricNodePEp dn="uni/fabric/fabricprotPol/expgep-1/node-102" id="102" name="spine-2" role="spine" podId="1"/>
+        <fabricNodePEp dn="uni/fabric/fabricprotPol/expgep-1/node-201" id="201" name="leaf-1" role="leaf" podId="2"/>
+        <fabricNodePEp dn="uni/fabric/fabricprotPol/expgep-1/node-202" id="202" name="leaf-2" role="leaf" podId="2"/>
+        <fabricNodePEp dn="uni/fabric/fabricprotPol/expgep-1/node-203" id="203" name="leaf-3" role="leaf" podId="2"/>
+      </fabricExplicitGEp>
+    </fabricProtPol>
+  </fabricInst>
+  <fvTenant dn="uni/tn-common" name="common" descr="Common tenant for shared policies">
+    <fvCtx dn="uni/tn-common/ctx-inb" name="inb" descr="In-band management VRF"/>
+    <vzBrCP dn="uni/tn-common/brc-default" name="default" descr="Default contract for common" scope="context" prio="unspecified">
+      <vzSubj name="any-any-subject" consMatchT="AtleastOne" provMatchT="AtleastOne">
+        <vzRsSubjFiltAtt action="permit" tnVzFilterName="any-any" priorityOverride="default"/>
+      </vzSubj>
+    </vzBrCP>
+  </fvTenant>
+  <fvTenant dn="uni/tn-demo" name="demo" descr="Demo application tenant">
+    <fvCtx dn="uni/tn-demo/ctx-vrf1" name="vrf1" descr="Production VRF"/>
+    <fvCtx dn="uni/tn-demo/ctx-vrf2" name="vrf2" descr="Development VRF"/>
+    <fvBD dn="uni/tn-demo/BD-bd-web" name="bd-web" descr="Web Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.1.1/24"/>
+    </fvBD>
+    <fvBD dn="uni/tn-demo/BD-bd-app" name="bd-app" descr="App Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.2.1/24"/>
+    </fvBD>
+    <fvBD dn="uni/tn-demo/BD-bd-db" name="bd-db" descr="DB Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.3.1/24"/>
+    </fvBD>
+    <fvBD dn="uni/tn-demo/BD-bd-dev" name="bd-dev" descr="Dev Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf2"/>
+      <fvSubnet ip="10.1.1.1/24"/>
+    </fvBD>
+    <fvAp dn="uni/tn-demo/ap-ap-web" name="ap-web" descr="Web Application Profile">
+      <fvAEPg dn="uni/tn-demo/ap-ap-web/epg-epg-web-frontend" name="epg-web-frontend" descr="Frontend EPG">
+        <fvRsBd tnFvBDName="bd-web"/>
+        <fvRsProv tnVzBrCPName="web-to-app"/>
+        <fvRsProv tnVzBrCPName="web-to-db"/>
+      </fvAEPg>
+      <fvAEPg dn="uni/tn-demo/ap-ap-web/epg-epg-web-backend" name="epg-web-backend" descr="Backend EPG">
+        <fvRsBd tnFvBDName="bd-app"/>
+        <fvRsIntraEpg tnVzBrCPName="app-to-web"/>
+      </fvAEPg>
+    </fvAp>
+    <fvAp dn="uni/tn-demo/ap-ap-db" name="ap-db" descr="Database Application Profile">
+      <fvAEPg dn="uni/tn-demo/ap-ap-db/epg-epg-db-primary" name="epg-db-primary" descr="Primary DB EPG">
+        <fvRsBd tnFvBDName="bd-db"/>
+        <fvRsProv tnVzBrCPName="db-to-app"/>
+      </fvAEPg>
+      <fvAEPg dn="uni/tn-demo/ap-ap-db/epg-epg-db-replica" name="epg-db-replica" descr="Replica DB EPG">
+        <fvRsBd tnFvBDName="bd-db"/>
+      </fvAEPg>
+    </fvAp>
+    <fvAp dn="uni/tn-demo/ap-ap-dev" name="ap-dev" descr="Dev Application Profile">
+      <fvAEPg dn="uni/tn-demo/ap-ap-dev/epg-epg-dev" name="epg-dev" descr="Development EPG">
+        <fvRsBd tnFvBDName="bd-dev"/>
+      </fvAEPg>
+    </fvAp>
+    <vzBrCP dn="uni/tn-demo/brc-web-to-app" name="web-to-app" descr="Web to App contract" scope="context" prio="unspecified">
+      <vzSubj name="http-subject" consMatchT="AtleastOne" provMatchT="AtleastOne">
+        <vzRsSubjFiltAtt action="permit" tnVzFilterName="http" priorityOverride="default"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzBrCP dn="uni/tn-demo/brc-web-to-db" name="web-to-db" descr="Web to DB contract" scope="context" prio="unspecified">
+      <vzSubj name="sql-subject" consMatchT="AtleastOne" provMatchT="AtleastOne">
+        <vzRsSubjFiltAtt action="permit" tnVzFilterName="sql" priorityOverride="default"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzBrCP dn="uni/tn-demo/brc-app-to-web" name="app-to-web" descr="App to Web contract" scope="context" prio="unspecified">
+      <vzSubj name="http-response-subject" consMatchT="AtleastOne" provMatchT="AtleastOne">
+        <vzRsSubjFiltAtt action="permit" tnVzFilterName="http-response" priorityOverride="default"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzBrCP dn="uni/tn-demo/brc-db-to-app" name="db-to-app" descr="DB to App contract" scope="context" prio="unspecified">
+      <vzSubj name="sql-response-subject" consMatchT="AtleastOne" provMatchT="AtleastOne">
+        <vzRsSubjFiltAtt action="permit" tnVzFilterName="sql-response" priorityOverride="default"/>
+      </vzSubj>
+    </vzBrCP>
+  </fvTenant>
+  <fvTenant dn="uni/tn-mgmt" name="mgmt" descr="Management tenant"/>
+</polUni>
