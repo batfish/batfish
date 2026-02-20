@@ -3,7 +3,7 @@ package tools.benchmarks;
 import java.util.Random;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -25,9 +25,6 @@ public class BenchmarkOrAll {
   private Random _rng;
   private BDD[] _ipBdds;
 
-  @Param({"OrigJFactory", "JFactory"})
-  public String _factoryName;
-
   @Param({"2", "4", "8", "16", "32", "64", "128", "256", "512"})
   public int _numDisjuncts;
 
@@ -40,7 +37,7 @@ public class BenchmarkOrAll {
 
   @Setup(Level.Trial)
   public void setUp() {
-    _pkt = new BDDPacket(BDDFactory.init(_factoryName, 10_000_000, 1_000_000));
+    _pkt = new BDDPacket(JFactory.init(10_000_000, 1_000_000));
     _rng = new Random();
     _ipBdds =
         IntStream.range(0, NUM_IP_BDDS)
