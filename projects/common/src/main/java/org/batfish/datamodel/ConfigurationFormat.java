@@ -24,6 +24,7 @@ public enum ConfigurationFormat {
   FLAT_VYOS("vyos"),
   FORCE10("force10"),
   FORTIOS("fortios"),
+  CISCO_FTD("cisco"),
   FOUNDRY("foundry"),
   HOST("host"),
   IBM_BNT("ibmbnt"),

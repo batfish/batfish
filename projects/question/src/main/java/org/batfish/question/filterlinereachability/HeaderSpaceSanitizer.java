@@ -55,6 +55,7 @@ public class HeaderSpaceSanitizer
   public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
     return exprAclLine.toBuilder()
         .setMatchCondition(visit(exprAclLine.getMatchCondition()))
+        .setName(exprAclLine.getName())
         .build();
   }
 

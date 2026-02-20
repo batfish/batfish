@@ -1,0 +1,40 @@
+! Cisco FTD BGP Configuration with Loopback Interface
+! Based on "Configure eBGP with Loopback Interface on Secure Firewall"
+
+hostname ftd-bgp-router
+NGFW VERSION 7.4.0
+
+interface GigabitEthernet0/0
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.1 255.255.255.0
+!
+
+interface GigabitEthernet0/1
+ nameif INSIDE
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+!
+
+interface Loopback0
+ nameif LOOPBACK0
+ security-level 0
+ ip address 10.0.0.1 255.255.255.255
+!
+
+router bgp 65001
+ bgp log-neighbor-changes
+ bgp router-id 10.0.0.1
+ neighbor 203.0.113.2 remote-as 65002
+ neighbor 203.0.113.2 description "ISP Peer"
+ neighbor 203.0.113.2 timers keepalive 10 holdtime 30
+ !
+ address-family ipv4
+  neighbor 203.0.113.2 activate
+  network 192.168.1.0 mask 255.255.255.0
+  network 10.0.0.1 mask 255.255.255.255
+  redistribute connected
+ exit-address-family
+!
+
+route OUTSIDE 0.0.0.0 0.0.0.0 203.0.113.254
