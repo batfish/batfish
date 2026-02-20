@@ -1,0 +1,30 @@
+config system global
+    set hostname "route_map_undefined_prefix"
+end
+config router prefix-list
+    edit "DEFINED_PL"
+        config rule
+            edit 1
+                set prefix 10.0.0.0/8
+            next
+        end
+    next
+end
+config router route-map
+    edit "RM_DEFINED"
+        config rule
+            edit 10
+                set action permit
+                set match-ip-address "DEFINED_PL"
+            next
+        end
+    next
+    edit "RM_UNDEFINED"
+        config rule
+            edit 10
+                set action permit
+                set match-ip-address "UNDEFINED_PL"
+            next
+        end
+    next
+end

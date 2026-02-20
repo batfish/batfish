@@ -114,6 +114,35 @@ public final class Policy implements Serializable {
     return _service;
   }
 
+  public @Nullable Boolean getNat() {
+    return _nat;
+  }
+
+  public @Nullable Boolean getIppool() {
+    return _ippool;
+  }
+
+  public @Nonnull Set<String> getPoolnames() {
+    return _poolnames;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with poolname references. */
+  public @Nonnull Set<BatfishUUID> getPoolnameUUIDs() {
+    return _poolnameUuids;
+  }
+
+  public void setNat(@Nullable Boolean nat) {
+    _nat = nat;
+  }
+
+  public void setIppool(@Nullable Boolean ippool) {
+    _ippool = ippool;
+  }
+
+  public void setPoolnames(Set<String> poolnames) {
+    _poolnames = ImmutableSet.copyOf(poolnames);
+  }
+
   public void setDstAddr(Set<String> dstAddr) {
     _dstAddr = ImmutableSet.copyOf(dstAddr);
   }
@@ -172,6 +201,8 @@ public final class Policy implements Serializable {
     _srcAddrUuids = new HashSet<>();
     _dstAddrUuids = new HashSet<>();
     _serviceUuids = new HashSet<>();
+    _poolnames = new HashSet<>();
+    _poolnameUuids = new HashSet<>();
   }
 
   private @Nonnull String _number;
@@ -191,4 +222,8 @@ public final class Policy implements Serializable {
   private @Nullable Status _status;
   private @Nullable String _comments;
   private @Nullable Action _action;
+  private @Nullable Boolean _nat;
+  private @Nullable Boolean _ippool;
+  private @Nonnull Set<String> _poolnames;
+  private final @Nonnull Set<BatfishUUID> _poolnameUuids;
 }

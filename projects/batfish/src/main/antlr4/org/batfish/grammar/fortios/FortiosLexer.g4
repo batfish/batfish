@@ -21,18 +21,6 @@ ACCPROFILE: 'accprofile' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
-ADMIN:
-  'admin'
-  {
-    if (lastTokenType() == REPLACEMSG) {
-      pushMode(M_Str);
-    } else if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
-      // ignore config system admin
-      setType(IGNORED_CONFIG_BLOCK);
-      pushMode(M_IgnoredConfigBlock);
-    }
-  }
-;
 ACCEPT: 'accept';
 ACCESS_LIST: 'access-list';
 ACTION: 'action';
@@ -45,6 +33,21 @@ ADDRESS6: 'address6' {
   }
 };
 ADDRGRP: 'addrgrp';
+ADMIN:
+  'admin'
+  {
+    if (lastTokenType() == REPLACEMSG) {
+      pushMode(M_Str);
+    } else if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+      // ignore config system admin
+      setType(IGNORED_CONFIG_BLOCK);
+      pushMode(M_IgnoredConfigBlock);
+    }
+  }
+;
+ADMINTIMEOUT: 'admintimeout' -> pushMode(M_Str);
+ADMIN_HTTPS_SSL_VERSIONS: 'admin-https-ssl-versions' -> pushMode(M_Str);
+ADMIN_SERVER_CERT: 'admin-server-cert' -> pushMode(M_Str);
 AFTER: 'after' -> pushMode(M_SingleStr);
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail' {
@@ -53,8 +56,17 @@ ALERTMAIL: 'alertmail' {
   }
 };
 ALIAS: 'alias' -> pushMode(M_Str);
+ALL: [aA][lL][lL];
 ALLOW: 'allow';
+ALLOWACCESS: 'allowaccess' -> pushMode(M_Str);
 ALLOW_ROUTING: 'allow-routing';
+ANTIVIRUS: 'antivirus' {
+  // ignore config antivirus
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 ANY: 'any';
 API_USER: 'api-user' {
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
@@ -64,6 +76,14 @@ API_USER: 'api-user' {
   }
 };
 APPEND: 'append';
+APPLICATION: 'application' {
+  // ignore config application
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+APPLICATION_LIST: 'application-list' -> pushMode(M_Str);
 AS: 'as' -> pushMode(M_Str);
 ASSOCIATED_INTERFACE: 'associated-interface' -> pushMode(M_Str);
 AUTH: 'auth' {
@@ -72,6 +92,11 @@ AUTH: 'auth' {
   }
 };
 AUTO: 'auto';
+AUTOMATION: 'automation' {
+  if (lastTokenType() == REPLACEMSG) {
+    pushMode(M_Str);
+  }
+};
 AUTOMATION_ACTION: 'automation-action' {
   // ignore config system automation-action
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
@@ -93,9 +118,21 @@ AUTOMATION_TRIGGER: 'automation-trigger' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+AUTORUN_LOG_FSCK: 'autorun-log-fsck' -> pushMode(M_Str);
+AUTO_ASIC_OFFLOAD: 'auto-asic-offload';
+AV_PROFILE: 'av-profile' -> pushMode(M_Str);
 BEFORE: 'before' -> pushMode(M_SingleStr);
+BFD: 'bfd';
 BGP: 'bgp';
 BUFFER: 'buffer' -> pushMode(M_Str);
+CACHE_TTL: 'cache-ttl';
+CASB: 'casb' {
+  // ignore config casb
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 CATEGORY: 'category' {
   // ignore config firewall service category
   if (lastTokenType() == SERVICE && secondToLastTokenType() == FIREWALL) {
@@ -111,6 +148,13 @@ COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
 COMMENTS: 'comments' -> pushMode(M_Str);
 CONFIG: 'config';
+CONSOLE: 'console' {
+  // ignore config system console
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 COUNTRY: 'country';
 CUSTOM: 'custom';
 CUSTOM_LANGUAGE: 'custom-language' {
@@ -120,22 +164,61 @@ CUSTOM_LANGUAGE: 'custom-language' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
-
+DEDICATED_MANAGEMENT_CPU: 'dedicated-management-cpu' -> pushMode(M_Str);
+DEDICATED_TO: 'dedicated-to' -> pushMode(M_Str);
 DEFAULT: 'default';
 DELETE: 'delete' -> pushMode(M_Str);
 DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
 DEVICE: 'device' -> pushMode(M_Str);
+DEVICE_IDENTIFICATION: 'device-identification' -> pushMode(M_Str);
 DISABLE: 'disable';
 DISTANCE: 'distance';
+DLP: 'dlp' {
+  // ignore config dlp
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+DNS: 'dns' {
+  // ignore config system dns
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+DNSFILTER: 'dnsfilter' {
+  // ignore config dnsfilter
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+DNSFILTER_PROFILE: 'dnsfilter-profile' -> pushMode(M_Str);
+DOS_POLICY: 'DoS-policy' {
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 DOWN: 'down';
 DST: 'dst';
 DSTADDR: 'dstaddr' -> pushMode(M_Str);
+DSTIP: 'dstip';
 DSTINTF: 'dstintf' -> pushMode(M_Str);
+DST_NAME: 'dst-name' -> pushMode(M_Str);
 DYNAMIC: 'dynamic';
 EBGP_MULTIPATH: 'ebgp-multipath';
 EDIT: 'edit' -> pushMode(M_Str);
 EMAC_VLAN: 'emac-vlan';
+EMAIL_FILTER: 'emailfilter' {
+  // ignore config emailfilter
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 EMAIL_SERVER: 'email-server' {
   // ignore config system email-server
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
@@ -145,28 +228,86 @@ EMAIL_SERVER: 'email-server' {
 };
 ENABLE: 'enable';
 END: 'end';
+ENDIP: 'endip';
+ENDPOINT_CONTROL: 'endpoint-control' {
+  // ignore config endpoint-control
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 END_IP: 'end-ip';
+ETHERNET_TYPE: 'ethernet-type' {
+  // ignore config ethernet-type
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 EXACT_MATCH: 'exact-match';
 EXCLUDE: 'exclude';
 EXCLUDE_MEMBER: 'exclude-member' -> pushMode(M_Str);
 FABRIC_OBJECT: 'fabric-object';
+FEDERATED_UPGRADE: 'federated-upgrade' {
+  // ignore config system federated-upgrade
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+FILE_FILTER: 'file-filter' {
+  // ignore config file-filter
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else {
+    pushMode(M_Str);
+  }
+};
+FILE_FILTER_PROFILE: 'file-filter-profile' -> pushMode(M_Str);
 FIREWALL: 'firewall';
+FIXED_PORT_RANGE: 'fixed-port-range';
 FOLDER: 'folder';
+FORTIGUARD: 'fortiguard' {
+  // ignore config system fortiguard
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 FORTIGUARD_WF: 'fortiguard-wf' {
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };
+FORWARD_ERROR_CORRECTION: 'forward-error-correction' -> pushMode(M_Str);
 FQDN: 'fqdn';
+FTM_PUSH: 'ftm-push' {
+  // ignore config system ftm-push
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 FTP: 'ftp' {
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };
 GATEWAY: 'gateway';
+GE: 'ge';
 GEOGRAPHY: 'geography';
 GLOBAL: 'global';
 GROUP: 'group';
+GUI_AUTO_UPGRADE_SETUP_WARNING: 'gui-auto-upgrade-setup-warning' -> pushMode(M_Str);
+GUI_LOCAL_OUT: 'gui-local-out' -> pushMode(M_Str);
+HA: 'ha' {
+  // ignore config system ha
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http' {
   if (lastTokenType() == REPLACEMSG) {
@@ -175,7 +316,11 @@ HTTP: 'http' {
 };
 IBGP_MULTIPATH: 'ibgp-multipath';
 ICAP: 'icap' {
-  if (lastTokenType() == REPLACEMSG) {
+  // ignore config icap
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };
@@ -183,17 +328,82 @@ ICMP: 'ICMP';
 ICMP6: 'ICMP6';
 ICMPCODE: 'icmpcode';
 ICMPTYPE: 'icmptype';
+IKE: 'ike' {
+  // ignore config system ike
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 INTERFACE: 'interface' -> pushMode(M_Str);
 INTERFACE_SUBNET: 'interface-subnet';
+INTERNET_SERVICE_DEFINITION: 'internet-service-definition' {
+  // ignore config firewall internet-service-definition
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 INTERNET_SERVICE_ID: 'internet-service-id' -> pushMode(M_Str);
 INTERNET_SERVICE_NAME: 'internet-service-name';
+INTERVAL: 'interval' -> pushMode(M_Str);
 INTRAZONE: 'intrazone';
 IP: 'ip';
+IPAM: 'ipam' {
+  // ignore config system ipam
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 IPMASK: 'ipmask';
+IPPOOL: 'ippool';
 IPRANGE: 'iprange';
+IPS: 'ips' {
+  // ignore config ips
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+IPS_SENSOR: 'ips-sensor' -> pushMode(M_Str);
+IP_MANAGED_BY_FORTIIPAM: 'ip-managed-by-fortiipam' -> pushMode(M_Str);
+IP_PROTOCOL: 'ip-protocol' {
+  // ignore config ip-protocol
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 IP_UPPER: 'IP';
 IPSEC: 'ipsec';
+ISIS: 'isis';
+IS_TYPE: 'is-type' -> pushMode(M_Str);
+ISIS_INTERFACE: 'isis-interface';
+CIRCUIT_TYPE: 'circuit-type' -> pushMode(M_Str);
+METRIC: 'metric';
+METRIC_LEVEL1: 'metric-level1';
+METRIC_LEVEL2: 'metric-level2';
+LLDP_TRANSMISSION: 'lldp-transmission' -> pushMode(M_Str);
+LOCAL_IN_POLICY: 'local-in-policy' {
+  // ignore config firewall local-in-policy
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 LOCATION: 'location';
+LOG: 'log' {
+  // ignore config log
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+LOGTRAFFIC: 'logtraffic';
+LOGTRAFFIC_START: 'logtraffic-start';
+LE: 'le';
+LOG_SINGLE_CPU_HIGH: 'log-single-cpu-high' -> pushMode(M_Str);
 LOOPBACK: 'loopback';
 MAC: 'mac';
 MAIL: 'mail' {
@@ -202,10 +412,21 @@ MAIL: 'mail' {
   }
 };
 MATCH_IP_ADDRESS: 'match-ip-address' -> pushMode(M_Str);
+MEDIATYPE: 'mediatype' -> pushMode(M_Str);
 MEMBER: 'member' -> pushMode(M_Str);
+MIN_RX: 'min-rx' -> pushMode(M_Str);
+MIN_TX: 'min-tx' -> pushMode(M_Str);
+MODE: 'mode' -> pushMode(M_Str);
+MONITOR_BANDWIDTH: 'monitor-bandwidth' -> pushMode(M_Str);
 MOVE: 'move' -> pushMode(M_SingleStr);
 MTU: 'mtu';
 MTU_OVERRIDE: 'mtu-override';
+MULTICAST: 'multicast' {
+  if (lastTokenType() == ROUTER && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 MULTICAST_ADDRESS: 'multicast-address' {
   // ignore config firewall multicast-address
   if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
@@ -213,14 +434,24 @@ MULTICAST_ADDRESS: 'multicast-address' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+MULTIPLIER: 'multiplier' -> pushMode(M_Str);
 NAC_QUAR: 'nac-quar' {
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };
 NAME: 'name' -> pushMode(M_Str);
+NAT: 'nat';
 NEIGHBOR: 'neighbor';
+NETFLOW: 'netflow' {
+  // ignore config system netflow
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 NETWORK: 'network';
+NET: 'net' -> pushMode(M_Str);
 NEXT: 'next';
 NP6: 'np6' {
   // ignore config system np6
@@ -229,13 +460,92 @@ NP6: 'np6' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+NPU: 'npu' {
+  // ignore config system npu
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+NP_ACCELERATION: 'np-acceleration';
+NP_QUEUES: 'np-queues' {
+  // ignore config np-queues
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+NTP: 'ntp' {
+  // ignore config system ntp
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+OBJECT_TAGGING: 'object-tagging' {
+  // ignore config system object-tagging
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+ONE_TO_ONE: 'one-to-one';
+ON_DEMAND_SNIFFER: 'on-demand-sniffer' {
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+OSPF: 'ospf' {
+  if (lastTokenType() == ROUTER && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+OVERLOAD: 'overload';
 PERMIT: 'permit';
 PHYSICAL: 'physical';
+PHYSICAL_SWITCH: 'physical-switch' {
+  // ignore config system physical-switch
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 POLICY: 'policy';
+POOLNAME: 'poolname' -> pushMode(M_Str);
+PORT_BLOCK_ALLOCATION: 'port-block-allocation';
+PREFIX_LIST: 'prefix-list';
 PREFIX: 'prefix';
+PRE_LOGIN_BANNER: 'pre-login-banner' -> pushMode(M_Str);
+PROFILE_PROTOCOL_OPTIONS: 'profile-protocol-options' {
+  // ignore config firewall profile-protocol-options
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else {
+    pushMode(M_Str);
+  }
+};
 PROTOCOL: 'protocol';
 PROTOCOL_NUMBER: 'protocol-number';
+PROXY: 'proxy';
+PROXY_ADDRESS: 'proxy-address' {
+  // ignore config firewall proxy-address
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 REDISTRIBUTE: 'redistribute' -> pushMode(M_Str);
+REDISTRIBUTE6: 'redistribute6' {
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else {
+    pushMode(M_Str);
+  }
+};
 REDUNDANT: 'redundant';
 REMOTE_AS: 'remote-as' -> pushMode(M_Str);
 RENAME: 'rename' -> pushMode(M_SingleStr);
@@ -247,15 +557,44 @@ REPLACEMSG_IMAGE: 'replacemsg-image'{
     pushMode(M_IgnoredConfigBlock);
   }
 };
+REPORT: 'report' {
+  // ignore config report
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+RIP: 'rip' {
+  if (lastTokenType() == ROUTER && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+ROLE: 'role' -> pushMode(M_Str);
 ROUTE_MAP: 'route-map';
 ROUTE_MAP_IN: 'route-map-in' -> pushMode(M_Str);
 ROUTE_MAP_OUT: 'route-map-out' -> pushMode(M_Str);
 ROUTER: 'router';
 ROUTER_ID: 'router-id';
 RULE: 'rule';
+SCHEDULE: 'schedule' {
+  // ignore config firewall schedule
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else {
+    pushMode(M_Str);
+  }
+};
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
-SDWAN: 'sdwan';
+SDWAN: 'sdwan' {
+  // ignore config system sdwan
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SECONDARY_IP: 'secondary-IP';
 SECONDARYIP: 'secondaryip';
 SELECT: 'select';
@@ -275,7 +614,35 @@ SESSION_HELPER: 'session-helper' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+SESSION_TTL: 'session-ttl' {
+  // ignore config system session-ttl
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SET: 'set';
+SETTINGS: 'settings' {
+  // ignore config system settings
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+SHAPER: 'shaper' {
+  // ignore config firewall shaper
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+SNMP: 'snmp' {
+  // ignore config system snmp
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SNMP_INDEX: 'snmp-index';
 SPAM: 'spam' {
   if (lastTokenType() == REPLACEMSG) {
@@ -283,10 +650,36 @@ SPAM: 'spam' {
   }
 };
 SPEED: 'speed';
+SPLIT_PORT_MODE: 'split-port-mode' {
+  // ignore config split-port-mode
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SRCADDR: 'srcaddr' -> pushMode(M_Str);
+SRCIP: 'srcip';
+SRC_NAME: 'src-name' -> pushMode(M_Str);
 SRCINTF: 'srcintf' -> pushMode(M_Str);
+SRC_CHECK: 'src-check' -> pushMode(M_Str);
+SSH: 'ssh' {
+  // ignore config firewall ssh
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SSLVPN: 'sslvpn' {
   if (lastTokenType() == REPLACEMSG) {
+    pushMode(M_Str);
+  }
+};
+SSL_SSH_PROFILE: 'ssl-ssh-profile' {
+  // ignore config firewall ssl-ssh-profile
+  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  } else {
     pushMode(M_Str);
   }
 };
@@ -297,6 +690,14 @@ SSO_ADMIN: 'sso-admin' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+STANDALONE_CLUSTER: 'standalone-cluster' {
+  // ignore config system standalone-cluster
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+STARTIP: 'startip';
 START_IP: 'start-ip';
 STATIC: 'static';
 STATUS: 'status';
@@ -318,8 +719,10 @@ SWITCH_CONTROLLER: 'switch-controller' {
 };
 SYSTEM: 'system';
 TAGGING: 'tagging';
+TCP_HALFCLOSE_TIMER: 'tcp-halfclose-timer' -> pushMode(M_Str);
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
+TIMEZONE: 'timezone';
 TO: 'to' -> pushMode(M_SingleStr);
 TRAFFIC_QUOTA: 'traffic-quota' {
   if (lastTokenType() == REPLACEMSG) {
@@ -328,22 +731,69 @@ TRAFFIC_QUOTA: 'traffic-quota' {
 };
 TUNNEL: 'tunnel';
 TYPE: 'type';
+UDP_IDLE_TIMER: 'udp-idle-timer' -> pushMode(M_Str);
 UDP_PORTRANGE: 'udp-portrange';
+ULL_PORT_MODE: 'ull-port-mode' -> pushMode(M_Str);
 UNSELECT: 'unselect';
 UNSET: 'unset';
 UP: 'up';
 UPDATE_SOURCE: 'update-source' -> pushMode(M_Str);
+USER: 'user' {
+  // ignore config user
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 UTM: 'utm' {
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };
+UTM_STATUS: 'utm-status';
 UUID: 'uuid' -> pushMode(M_Str);
 VDOM: 'vdom' -> pushMode(M_Str);
+VIDEO_FILTER: 'video-filter' {
+  // ignore config video-filter
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+VIRTUAL_PATCH: 'virtual-patch' {
+  // ignore config virtual-patch
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 VISIBILITY: 'visibility';
 VLAN: 'vlan';
 VLANID: 'vlanid';
+VOIP: 'voip' {
+  // ignore config voip
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+VPN: 'vpn';
+PHASE1: 'phase1';
+PHASE2: 'phase2';
+PHASE1NAME: 'phase1name' -> pushMode(M_Str);
+REMOTE_GW: 'remote-gw' -> pushMode(M_Str);
+PROPOSAL: 'proposal' -> pushMode(M_Str);
+PSKSECRET: 'psksecret' -> pushMode(M_Str);
+DHGRP: 'dhgrp' -> pushMode(M_Str);
+KEYLIFE: 'keylife';
 VRF: 'vrf';
+WAF: 'waf' {
+  // ignore config waf
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 WANOPT: 'wanopt' {
   // ignore config wanopt
   if (lastTokenType() == CONFIG) {
@@ -351,9 +801,24 @@ WANOPT: 'wanopt' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+WEBFILTER: 'webfilter' {
+  // ignore config webfilter
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
+WEBFILTER_PROFILE: 'webfilter-profile' -> pushMode(M_Str);
 WEBPROXY: 'webproxy' {
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
+  }
+};
+WEB_PROXY: 'web-proxy' {
+  // ignore config web-proxy
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
   }
 };
 WILDCARD: 'wildcard';
@@ -364,20 +829,42 @@ WILDCARD_FQDN: 'wildcard-fqdn' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+WIRELESS_CONTROLLER: 'wireless-controller' {
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 WL_MESH: 'wl-mesh';
 ZONE: 'zone';
 
 // Numeric tokens
+FIFTY_THOUSAND_AUTO: '50000auto';
+FIFTY_THOUSAND_FULL: '50000full';
+FIVE_THOUSAND_AUTO: '5000auto';
+FORTY_THOUSAND_AUTO: '40000auto';
+FORTY_THOUSAND_FULL: '40000full';
+FOUR_HUNDRED_G_AUTO: '400Gauto';
+FOUR_HUNDRED_G_FULL: '400Gfull';
+HUNDRED_AUTO: '100auto';
+HUNDRED_GAUTO: '100Gauto';
 TEN_FULL: '10full';
 TEN_HALF: '10half';
 HUNDRED_FULL: '100full';
 HUNDRED_HALF: '100half';
+TEN_THOUSAND_AUTO: '10000auto';
+THOUSAND_AUTO: '1000auto';
 THOUSAND_FULL: '1000full';
 THOUSAND_HALF: '1000half';
 TEN_THOUSAND_FULL: '10000full';
 TEN_THOUSAND_HALF: '10000half';
 HUNDRED_GFULL: '100Gfull';
 HUNDRED_GHALF: '100Ghalf';
+TWENTY_FIVE_THOUSAND_AUTO: '25000auto';
+TWENTY_FIVE_THOUSAND_FULL: '25000full';
+TWO_HUNDRED_GAUTO: '200Gauto';
+TWO_HUNDRED_GFULL: '200Gfull';
+TWO_THOUSAND_FIVE_HUNDRED_AUTO: '2500auto';
 
 // Other Tokens
 
@@ -846,6 +1333,8 @@ M_IgnoredConfigBlock_REST_OF_LINE: F_NonNewline* F_Newline -> more, mode(M_Ignor
 // We are on some line inside an ignored config block. Eat lines, push if we hit an inner stanza.
 mode M_IgnoredConfigBlockInner;
 
+M_IgnoredConfigBlockInner_CONFIG: 'config' F_NonNewline* F_Newline -> more, pushMode(M_IgnoredInteriorConfigBlockInner);
+
 M_IgnoredConfigBlockInner_EDIT: 'edit' F_NonNewline* F_Newline -> more, pushMode(M_IgnoredEditBlock);
 
 M_IgnoredConfigBlockInner_SINGLE_LINE: ('set' | 'unset') F_NonNewline* F_Newline -> more;
@@ -869,6 +1358,8 @@ M_IgnoredEditBlock_WS: F_Whitespace+ -> more;
 // Eat lines, push if we hit an inner stanza.
 // This is the same as M_IgnoredConfigBlockInner, except that the END token is also skipped.
 mode M_IgnoredInteriorConfigBlockInner;
+
+M_IgnoredInteriorConfigBlockInner_CONFIG: 'config' F_NonNewline* F_Newline -> more, pushMode(M_IgnoredInteriorConfigBlockInner);
 
 M_IgnoredInteriorConfigBlockInner_EDIT: 'edit' F_NonNewline* F_Newline -> more, pushMode(M_IgnoredEditBlock);
 

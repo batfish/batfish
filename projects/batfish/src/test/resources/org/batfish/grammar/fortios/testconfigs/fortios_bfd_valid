@@ -1,0 +1,10 @@
+config system global
+    set hostname "fortios-bfd-valid"
+end
+
+config system bfd
+    set interval 50
+    set min-rx 5000
+    set min-tx 100
+    set multiplier 50
+end
