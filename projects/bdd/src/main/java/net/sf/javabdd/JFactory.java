@@ -563,9 +563,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int offset__refcou_and_level = 0;
   private static final int offset__low = 1;
   private static final int offset__high = 2;
-  private static final int offset__hash = 3;
-  private static final int offset__next = 4;
-  private static final int __node_size = 5;
+  private static final int offset__next = 3;
+  private static final int __node_size = 4;
 
   /**
    * The maximum number of BDD nodes that can {@link #bddnodesize} can ever be measured is the
@@ -656,11 +655,11 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int HASH(int r) {
-    return bddnodes[r * __node_size + offset__hash];
+    return bddhash[r];
   }
 
   private void SETHASH(int r, int v) {
-    bddnodes[r * __node_size + offset__hash] = v;
+    bddhash[r] = v;
   }
 
   private int NEXT(int r) {
@@ -739,6 +738,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private int bddnodesize; /* Number of allocated nodes (power of 2) */
   private int bddnodemask; /* bddnodesize - 1, for fast hash masking */
   private int[] bddnodes; /* All of the bdd nodes */
+  private int[] bddhash; /* Hash table buckets (separate from nodes for cache locality) */
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
   private int bddproduced; /* Number of new nodes ever produced */
@@ -4118,8 +4118,8 @@ public class JFactory extends BDDFactory implements Serializable {
       if (HASREF(n)) {
         bdd_mark(n);
       }
-      SETHASH(n, 0);
     }
+    Arrays.fill(bddhash, 0);
 
     bddfreepos = 0;
     bddfreenum = 0;
@@ -4379,13 +4379,9 @@ public class JFactory extends BDDFactory implements Serializable {
     long resizeStartTime = System.currentTimeMillis();
 
     bddnodes = Arrays.copyOf(bddnodes, newsize * __node_size);
+    bddhash = new int[newsize]; // fresh allocation is zeroed (all hash buckets empty)
     bddnodesize = newsize;
     bddnodemask = newsize - 1;
-
-    if (doRehash) {
-      // Clear the hash of all the existing nodes.
-      IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
-    }
 
     // Initialize the new nodes in parallel
     IntStream.range(oldsize, newsize)
@@ -4425,6 +4421,7 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodemask = bddnodesize - 1;
 
     bddnodes = new int[bddnodesize * __node_size];
+    bddhash = new int[bddnodesize];
 
     bddresized = false;
 
@@ -5338,9 +5335,7 @@ public class JFactory extends BDDFactory implements Serializable {
     reorder_setLevellookup();
     bddfreepos = 0;
 
-    for (int n = bddnodesize - 1; n >= 0; n--) {
-      SETHASH(n, 0);
-    }
+    Arrays.fill(bddhash, 0);
 
     for (int n = bddnodesize - 1; n >= 2; n--) {
       if (HASREF(n)) {
