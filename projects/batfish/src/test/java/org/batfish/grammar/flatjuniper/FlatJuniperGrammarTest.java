@@ -8187,6 +8187,23 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRoutingInstancesRouteDistinguisherIdExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instances-route-distinguisher");
+  }
+
+  @Test
+  public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
+
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherWithVrf() {
+
+  }
+
+
+
+  @Test
   public void testSwitchOptionsRouteDistinguisherIpExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
     RouteDistinguisher rd =

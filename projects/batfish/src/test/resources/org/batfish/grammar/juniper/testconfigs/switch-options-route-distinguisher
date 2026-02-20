@@ -1,0 +1,8 @@
+#
+set system host-name switch-options-route-distinguisher
+#
+set switch-options vtep-source-interface lo0.0
+set switch-options route-distinguisher 172.1.1.1:1111
+set switch-options vrf-import evpn-switching
+set switch-options vrf-target target:2222:1111
+set switch-options vrf-target auto

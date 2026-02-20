@@ -1,0 +1,2 @@
+set system host-name routing-instances-route-distinguisher
+set routing-instances vrf1 route-distinguisher 1.1.1.1:1234
