@@ -1974,6 +1974,38 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Converts interface address {@link InterfaceAddress} to {@link Ip}. */
+  private @Nullable Ip interfaceAddressToIp(@Nullable InterfaceAddress address, Vsys vsys) {
+    if (address == null) {
+      return null;
+    }
+    String addressText = address.getValue();
+    // For address object references, validate they can be used as host addresses first
+    if (vsys.getAddressObjects().containsKey(addressText)) {
+      AddressObject addrObject = vsys.getAddressObjects().get(addressText);
+      if (!addrObject.isValidHostAddress()) {
+        _w.redFlagf("Address object '%s' is not a valid host address (must be /32)", addressText);
+        return null;
+      }
+    }
+    // Resolve the address (either as a reference or as a literal IP)
+    ConcreteInterfaceAddress concreteAddress =
+        interfaceAddressToConcreteInterfaceAddress(address, vsys, _w);
+    if (concreteAddress == null) {
+      // Address couldn't be resolved (undefined reference or other issue)
+      _w.redFlagf("Could not resolve address reference: %s", addressText);
+      return null;
+    }
+    // Verify the address is a host address (/32)
+    if (concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+      _w.redFlagf(
+          "Address %s has non-/32 mask %s, expected a host address",
+          address.getValue(), concreteAddress.getPrefix().getPrefixLength());
+      return null;
+    }
+    return concreteAddress.getIp();
+  }
+
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @SuppressWarnings("fallthrough")
   private @Nonnull IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
@@ -2602,13 +2634,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       assert true; // TODO figure out the default and handle separately.
     }
 
+    Vsys vsys = _virtualSystems.get(DEFAULT_VSYS_NAME);
+    Ip peerIp = interfaceAddressToIp(peer.getPeerAddress(), vsys);
+    if (peerIp == null) {
+      _w.redFlagf("Could not resolve peer-address for peer %s; disabling it", peer.getName());
+      return;
+    }
+
     BgpActivePeerConfig.Builder peerB =
         BgpActivePeerConfig.builder()
             .setBgpProcess(proc)
             .setDescription(peer.getName())
             .setGroup(pg.getName())
             .setLocalAs(localAs)
-            .setPeerAddress(peer.getPeerAddress())
+            .setPeerAddress(peerIp)
             // Multihop (as batfish VI model understands it) is always on for PAN because of
             // "number + 2" computation
             // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
@@ -2621,10 +2660,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Optional.ofNullable(peer.getLocalInterface())
           .map(_interfaces::get)
           .map(Interface::getAddress)
-          .map(
-              a ->
-                  interfaceAddressToConcreteInterfaceAddress(
-                      a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+          .map(a -> interfaceAddressToConcreteInterfaceAddress(a, vsys, _w))
           .map(ConcreteInterfaceAddress::getIp)
           .ifPresent(peerB::setLocalIp);
     }
@@ -2843,12 +2879,59 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Computes the {@link NextHop} for a static route.
+   *
+   * @param sr the static route
+   * @param routeName the route name (for warning messages)
+   * @param currentVrfName the name of the VRF containing this route
+   * @param vsys the vsys for resolving address object references
+   * @return the NextHop, or Optional.empty() if the route should be skipped
+   */
+  private Optional<NextHop> computeStaticRouteNextHop(
+      StaticRoute sr, String routeName, String currentVrfName, Vsys vsys) {
+    // Check for discard next hop
+    if (sr.getNextHopDiscard()) {
+      return Optional.of(NextHopDiscard.instance());
+    }
+
+    // Check for next-vr (VRF next hop)
+    String nextVrf = sr.getNextVr();
+    if (nextVrf != null) {
+      if (nextVrf.equals(currentVrfName)) {
+        _w.redFlagf(
+            "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
+            routeName, nextVrf);
+        return Optional.empty();
+      }
+      if (!_virtualRouters.containsKey(nextVrf)) {
+        _w.redFlagf(
+            "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+            routeName, nextVrf);
+        return Optional.empty();
+      }
+      return Optional.of(NextHopVrf.of(nextVrf));
+    }
+
+    // Resolve nexthop IP address reference (if any)
+    Ip nextHopIp = interfaceAddressToIp(sr.getNextHopIp(), vsys);
+
+    // Check if we have a valid next hop
+    if (nextHopIp == null && sr.getNextHopInterface() == null) {
+      _w.redFlagf("Cannot convert static route %s, as it has no nexthop.", routeName);
+      return Optional.empty();
+    }
+
+    return Optional.of(NextHop.legacyConverter(sr.getNextHopInterface(), nextHopIp));
+  }
+
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
     String vrfName = vr.getName();
     Vrf vrf = new Vrf(vrfName);
 
     // Static routes
+    Vsys vsys = _virtualSystems.get(DEFAULT_VSYS_NAME);
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
@@ -2858,38 +2941,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             "Cannot convert static route %s, as it does not have a destination.", e.getKey());
         continue;
       }
-      String nextVrf = sr.getNextVr();
-      if (nextVrf != null) {
-        if (nextVrf.equals(vrfName)) {
-          _w.redFlagf(
-              "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
-              e.getKey(), nextVrf);
-          continue;
-        }
-        if (!_virtualRouters.containsKey(nextVrf)) {
-          _w.redFlagf(
-              "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
-              e.getKey(), nextVrf);
-          continue;
-        }
-      }
-      if (!sr.getNextHopDiscard()
-          && nextVrf == null
-          && sr.getNextHopIp() == null
-          && sr.getNextHopInterface() == null) {
-        _w.redFlagf("Cannot convert static route %s, as it has no nexthop.", e.getKey());
+      Optional<NextHop> nextHop = computeStaticRouteNextHop(sr, e.getKey(), vrfName, vsys);
+      if (nextHop.isEmpty()) {
         continue;
       }
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
-                  .setNextHop(
-                      sr.getNextHopDiscard()
-                          ? NextHopDiscard.instance()
-                          : nextVrf != null
-                              ? NextHopVrf.of(nextVrf)
-                              : NextHop.legacyConverter(
-                                  sr.getNextHopInterface(), sr.getNextHopIp()))
+                  .setNextHop(nextHop.get())
                   .setAdministrativeCost(sr.getAdminDistance())
                   .setMetric(sr.getMetric())
                   .setNetwork(destination)
