@@ -1,0 +1,113 @@
+system {
+    host-name SPINE-01;
+    root-authentication {
+        encrypted-password "$asdasdasd"; ## SECRET-DATA
+    }
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 172.31.254.42/31;
+            }
+        }
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 172.31.254.90/31;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                dhcp {
+                    vendor-id Juniper-vmx-VM69990526B5;
+                }
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM69990526B5;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.31.255.0/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement export-underlay-lo {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter 172.31.255.0/32 exact;
+            }
+            then accept;
+        }
+    }
+}
+routing-options {
+    router-id 172.31.255.0;
+    autonomous-system 65100;
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0 {
+            managed-configuration;
+        }
+    }
+    bgp {
+        group underlay {
+            type external;
+            export export-underlay-lo;
+            local-as 65000;
+            neighbor 172.31.254.43 {
+                peer-as 65001;
+            }
+            neighbor 172.31.254.91 {
+                peer-as 65002;
+            }
+        }
+        group overlay {
+            type internal;
+            local-address 172.31.255.0;
+            family evpn {
+                signaling;
+            }
+            cluster 172.31.255.0;
+            neighbor 172.31.255.53 {
+                description LEAF;
+            }
+            neighbor 172.31.255.60 {
+                description CORE;
+            }
+        }
+    }
+}

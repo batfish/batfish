@@ -1,0 +1,153 @@
+system {
+    host-name CORE-01;
+    root-authentication {
+        encrypted-password "asdasdasd"; ## SECRET-DATA
+    }
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            tunnel-services;
+        }
+    }
+}
+interfaces {
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 172.31.254.91/31;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                dhcp {
+                    vendor-id Juniper-vmx-VM69990529F6;
+                }
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM69990529F6;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.31.255.60/32;
+            }
+        }
+        unit 100 {
+            family inet {
+                address 8.8.8.8/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement Campus-vrf-export {
+        term 1 {
+            from protocol direct;
+            then accept;
+        }
+    }
+    policy-statement Campus-vrf-import {
+        term 1 {
+            then accept;
+        }
+    }
+    policy-statement export-underlay-lo {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter 172.31.255.60/32 exact;
+            }
+            then accept;
+        }
+    }
+}
+routing-instances {
+    Campus {
+        instance-type vrf;
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 1006;
+                    import Campus-vrf-import;
+                    export Campus-vrf-export;
+                }
+            }
+        }
+        interface lo0.100;
+        route-distinguisher 172.31.255.60:1006;
+        vrf-target target:10755:1006;
+    }
+}
+routing-options {
+    router-id 172.31.255.60;
+    autonomous-system 65100;
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0 {
+            managed-configuration;
+        }
+    }
+    bgp {
+        group underlay {
+            type external;
+            export export-underlay-lo;
+            local-as 65002;
+            neighbor 172.31.254.90 {
+                peer-as 65000;
+            }
+        }
+        group overlay {
+            type internal;
+            local-address 172.31.255.60;
+            family evpn {
+                signaling;
+            }
+            neighbor 172.31.255.0 {
+                description SPINE-RR;
+            }
+        }
+    }
+    evpn {
+        encapsulation vxlan;
+        ##
+        ## Warning: value extended-vni-list ignored: unsupported platform (vmx)
+        ##
+        extended-vni-list all;
+    }
+}
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher 172.31.255.60:9999;
+    vrf-target target:10755:9999;
+}
