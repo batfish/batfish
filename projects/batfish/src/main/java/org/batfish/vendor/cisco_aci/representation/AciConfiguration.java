@@ -341,27 +341,6 @@ public final class AciConfiguration extends VendorConfiguration {
         }
       }
     }
-
-    // Some APIC exports include node identity objects without matching fabricNodePEp entries.
-    // Preserve those nodes so explicit fabric links can still resolve both endpoints.
-    synthesizeMissingFabricNodes(nodeIdToName);
-  }
-
-  private void synthesizeMissingFabricNodes(Map<String, String> nodeIdToName) {
-    for (Map.Entry<String, String> entry : nodeIdToName.entrySet()) {
-      String nodeId = entry.getKey();
-      if (nodeId == null || nodeId.isEmpty() || _fabricNodes.containsKey(nodeId)) {
-        continue;
-      }
-      FabricNode synthesizedNode = new FabricNode();
-      synthesizedNode.setNodeId(nodeId);
-      String nodeName = entry.getValue();
-      if (nodeName != null && !nodeName.isEmpty()) {
-        synthesizedNode.setName(nodeName);
-      }
-      synthesizedNode.setRole(extractRoleFromNodeName(nodeName));
-      _fabricNodes.put(nodeId, synthesizedNode);
-    }
   }
 
   /** Parses a fabricNodeIdentP to extract node name mapping. */
