@@ -82,8 +82,7 @@ public final class AciConversion {
   public static @Nonnull SortedMap<String, Configuration> toVendorIndependentConfigurations(
       AciConfiguration aciConfig, Warnings warnings) {
     ImmutableSortedMap.Builder<String, Configuration> configs = ImmutableSortedMap.naturalOrder();
-    Map<String, AciConfiguration.FabricNode> fabricNodes =
-        getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
+    Map<String, FabricNode> fabricNodes = getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
 
     // If no fabric nodes are defined, create a single configuration for the fabric
     // representing the logical ACI fabric itself
@@ -100,7 +99,7 @@ public final class AciConversion {
         computeNodeIdToHostnameMap(fabricNodes, aciConfig.getHostname(), warnings);
 
     // Process each fabric node as a separate configuration
-    for (AciConfiguration.FabricNode node : fabricNodes.values()) {
+    for (FabricNode node : fabricNodes.values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         warnings.redFlag("Skipping fabric node without nodeId during conversion.");
@@ -118,9 +117,9 @@ public final class AciConversion {
     return configs.build();
   }
 
-  private static @Nonnull Map<String, AciConfiguration.FabricNode>
-      getFabricNodesIncludingExplicitLinkEndpoints(AciConfiguration aciConfig) {
-    Map<String, AciConfiguration.FabricNode> nodes = new TreeMap<>();
+  private static @Nonnull Map<String, FabricNode> getFabricNodesIncludingExplicitLinkEndpoints(
+      AciConfiguration aciConfig) {
+    Map<String, FabricNode> nodes = new TreeMap<>();
     aciConfig
         .getFabricNodes()
         .values()
@@ -130,7 +129,7 @@ public final class AciConversion {
                 nodes.put(node.getNodeId(), node);
               }
             });
-    for (AciConfiguration.FabricLink link : aciConfig.getFabricLinks()) {
+    for (FabricLink link : aciConfig.getFabricLinks()) {
       if (link.getNode1Id() != null && !link.getNode1Id().isEmpty()) {
         nodes.computeIfAbsent(link.getNode1Id(), AciConversion::buildSyntheticFabricNode);
       }
@@ -141,8 +140,8 @@ public final class AciConversion {
     return nodes;
   }
 
-  private static @Nonnull AciConfiguration.FabricNode buildSyntheticFabricNode(String nodeId) {
-    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+  private static @Nonnull FabricNode buildSyntheticFabricNode(String nodeId) {
+    FabricNode node = new FabricNode();
     node.setNodeId(nodeId);
     return node;
   }
@@ -212,12 +211,12 @@ public final class AciConversion {
   }
 
   private static @Nonnull Map<String, String> computeNodeIdToHostnameMap(
-      Map<String, AciConfiguration.FabricNode> fabricNodes,
+      Map<String, FabricNode> fabricNodes,
       @Nullable String fabricHostname,
       @Nullable Warnings warnings) {
     Map<String, String> nodeIdToHostname = new TreeMap<>();
     Set<String> usedHostnames = new HashSet<>();
-    for (AciConfiguration.FabricNode node : fabricNodes.values()) {
+    for (FabricNode node : fabricNodes.values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         continue;
@@ -614,8 +613,7 @@ public final class AciConversion {
    */
   public static @Nonnull Set<Layer1Edge> createLayer1Edges(AciConfiguration aciConfig) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
-    Map<String, AciConfiguration.FabricNode> fabricNodes =
-        getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
+    Map<String, FabricNode> fabricNodes = getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
     Map<String, String> nodeIdToHostname =
         computeNodeIdToHostnameMap(fabricNodes, aciConfig.getHostname(), null);
 
@@ -632,7 +630,10 @@ public final class AciConversion {
         }
         edges.add(
             new Layer1Edge(
-                node1Hostname, link.getNode1Interface(), node2Hostname, link.getNode2Interface()));
+                node1Hostname,
+                normalizeExplicitFabricInterface(link.getNode1Interface()),
+                node2Hostname,
+                normalizeExplicitFabricInterface(link.getNode2Interface())));
       }
     } else {
       // Create a basic spine-leaf topology
@@ -733,6 +734,21 @@ public final class AciConversion {
     createInterFabricLayer1Edges(aciConfig, nodeIdToHostname, edges);
 
     return edges.build();
+  }
+
+  private static @Nonnull String normalizeExplicitFabricInterface(String iface) {
+    String trimmed = iface.trim();
+    if (trimmed.isEmpty()) {
+      return trimmed;
+    }
+    String lower = trimmed.toLowerCase();
+    if (lower.startsWith("eth") && !lower.startsWith("ethernet")) {
+      return "Ethernet" + trimmed.substring(3);
+    }
+    if (lower.startsWith("ethernet")) {
+      return "Ethernet" + trimmed.substring(8);
+    }
+    return trimmed;
   }
 
   /**

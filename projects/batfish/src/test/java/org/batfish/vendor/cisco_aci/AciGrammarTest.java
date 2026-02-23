@@ -14,6 +14,7 @@ import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.batfish.vendor.cisco_aci.representation.AciConversion;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
 import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricLink;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.Tenant;
 import org.batfish.vendor.cisco_aci.representation.TenantVrf;
@@ -1461,7 +1463,7 @@ public class AciGrammarTest {
   }
 
   @Test
-  public void testParseFabricLinks_apicFormat() {
+  public void testParseFabricLinks_apicFormat() throws IOException {
     String json =
         "{"
             + "\"imdata\":["
@@ -1469,10 +1471,9 @@ public class AciGrammarTest {
             + "\"n1\":\"101\",\"n2\":\"201\",\"p1\":\"3\",\"p2\":\"49\",\"s1\":\"1\",\"s2\":\"1\","
             + "\"linkState\":\"ok\"}}}"
             + "]}";
-    List<AciConfiguration.FabricLink> links =
-        AciConfiguration.parseFabricLinks("fabric_links.json", json, new Warnings());
+    List<FabricLink> links = AciConfiguration.parseFabricLinksJson("fabric_links.json", json);
     assertThat(links, hasSize(1));
-    AciConfiguration.FabricLink link = links.get(0);
+    FabricLink link = links.get(0);
     assertThat(link.getNode1Id(), equalTo("101"));
     assertThat(link.getNode2Id(), equalTo("201"));
     assertThat(link.getNode1Interface(), equalTo("Ethernet1/3"));
@@ -1484,25 +1485,25 @@ public class AciGrammarTest {
     AciConfiguration config = new AciConfiguration();
     config.setHostname("aci-test");
 
-    AciConfiguration.FabricNode spine = new AciConfiguration.FabricNode();
+    FabricNode spine = new FabricNode();
     spine.setNodeId("101");
     spine.setName("spine-1");
     spine.setRole("spine");
-    AciConfiguration.FabricNode leaf1 = new AciConfiguration.FabricNode();
+    FabricNode leaf1 = new FabricNode();
     leaf1.setNodeId("201");
     leaf1.setName("leaf-1");
     leaf1.setRole("leaf");
-    AciConfiguration.FabricNode leaf2 = new AciConfiguration.FabricNode();
+    FabricNode leaf2 = new FabricNode();
     leaf2.setNodeId("202");
     leaf2.setName("leaf-2");
     leaf2.setRole("leaf");
-    Map<String, AciConfiguration.FabricNode> nodes = new HashMap<>();
+    Map<String, FabricNode> nodes = new HashMap<>();
     nodes.put("101", spine);
     nodes.put("201", leaf1);
     nodes.put("202", leaf2);
     config.setFabricNodes(nodes);
 
-    AciConfiguration.FabricLink explicit = new AciConfiguration.FabricLink();
+    FabricLink explicit = new FabricLink();
     explicit.setNode1Id("101");
     explicit.setNode2Id("201");
     explicit.setNode1Interface("eth1/3");
@@ -1529,13 +1530,12 @@ public class AciGrammarTest {
             + " {\"attributes\": {\"id\": \"201\", \"podId\": \"1\"}}}]}}]}}]}}]}}";
 
     AciConfiguration config = AciConfiguration.fromJson("dc2.json", json, new Warnings());
-    List<AciConfiguration.FabricLink> links =
-        AciConfiguration.parseFabricLinks(
+    List<FabricLink> links =
+        AciConfiguration.parseFabricLinksJson(
             "fabric_links.json",
             "{\"imdata\":[{\"fabricLink\":{\"attributes\":{"
                 + "\"n1\":\"101\",\"n2\":\"201\",\"p1\":\"3\",\"p2\":\"49\",\"s1\":\"1\",\"s2\":\"1\""
-                + "}}}]}",
-            new Warnings());
+                + "}}}]}");
     config.setFabricLinks(links);
 
     Map<String, Configuration> viConfigs =
