@@ -3929,6 +3929,17 @@ public final class FlatJuniperGrammarTest {
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
+
+    // policy3 has a scrubbed key value: ascii-text "<SCRUBBED>"
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "policy3",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("<SCRUBBED>" + CommonUtil.salt()))),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
   }
 
   @Test
