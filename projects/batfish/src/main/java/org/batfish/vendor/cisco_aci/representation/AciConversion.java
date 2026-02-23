@@ -82,10 +82,12 @@ public final class AciConversion {
   public static @Nonnull SortedMap<String, Configuration> toVendorIndependentConfigurations(
       AciConfiguration aciConfig, Warnings warnings) {
     ImmutableSortedMap.Builder<String, Configuration> configs = ImmutableSortedMap.naturalOrder();
+    Map<String, AciConfiguration.FabricNode> fabricNodes =
+        getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
 
     // If no fabric nodes are defined, create a single configuration for the fabric
     // representing the logical ACI fabric itself
-    if (aciConfig.getFabricNodes().isEmpty()) {
+    if (fabricNodes.isEmpty()) {
       Configuration c = convertFabricConfig(aciConfig, warnings);
       configs.put(aciConfig.getHostname(), c);
       warnings.redFlag(
@@ -94,10 +96,11 @@ public final class AciConversion {
       return configs.build();
     }
 
-    Map<String, String> nodeIdToHostname = computeNodeIdToHostnameMap(aciConfig, warnings);
+    Map<String, String> nodeIdToHostname =
+        computeNodeIdToHostnameMap(fabricNodes, aciConfig.getHostname(), warnings);
 
     // Process each fabric node as a separate configuration
-    for (FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (AciConfiguration.FabricNode node : fabricNodes.values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         warnings.redFlag("Skipping fabric node without nodeId during conversion.");
@@ -113,6 +116,35 @@ public final class AciConversion {
     }
 
     return configs.build();
+  }
+
+  private static @Nonnull Map<String, AciConfiguration.FabricNode>
+      getFabricNodesIncludingExplicitLinkEndpoints(AciConfiguration aciConfig) {
+    Map<String, AciConfiguration.FabricNode> nodes = new TreeMap<>();
+    aciConfig
+        .getFabricNodes()
+        .values()
+        .forEach(
+            node -> {
+              if (node.getNodeId() != null && !node.getNodeId().isEmpty()) {
+                nodes.put(node.getNodeId(), node);
+              }
+            });
+    for (AciConfiguration.FabricLink link : aciConfig.getFabricLinks()) {
+      if (link.getNode1Id() != null && !link.getNode1Id().isEmpty()) {
+        nodes.computeIfAbsent(link.getNode1Id(), AciConversion::buildSyntheticFabricNode);
+      }
+      if (link.getNode2Id() != null && !link.getNode2Id().isEmpty()) {
+        nodes.computeIfAbsent(link.getNode2Id(), AciConversion::buildSyntheticFabricNode);
+      }
+    }
+    return nodes;
+  }
+
+  private static @Nonnull AciConfiguration.FabricNode buildSyntheticFabricNode(String nodeId) {
+    AciConfiguration.FabricNode node = new AciConfiguration.FabricNode();
+    node.setNodeId(nodeId);
+    return node;
   }
 
   /**
@@ -180,15 +212,17 @@ public final class AciConversion {
   }
 
   private static @Nonnull Map<String, String> computeNodeIdToHostnameMap(
-      AciConfiguration aciConfig, @Nullable Warnings warnings) {
+      Map<String, AciConfiguration.FabricNode> fabricNodes,
+      @Nullable String fabricHostname,
+      @Nullable Warnings warnings) {
     Map<String, String> nodeIdToHostname = new TreeMap<>();
     Set<String> usedHostnames = new HashSet<>();
-    for (FabricNode node : aciConfig.getFabricNodes().values()) {
+    for (AciConfiguration.FabricNode node : fabricNodes.values()) {
       String nodeId = node.getNodeId();
       if (nodeId == null || nodeId.isEmpty()) {
         continue;
       }
-      String baseHostname = computeNodeHostname(node, aciConfig.getHostname());
+      String baseHostname = computeNodeHostname(node, fabricHostname);
       String hostname = baseHostname;
       int suffix = 2;
       while (usedHostnames.contains(hostname)) {
@@ -580,7 +614,10 @@ public final class AciConversion {
    */
   public static @Nonnull Set<Layer1Edge> createLayer1Edges(AciConfiguration aciConfig) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
-    Map<String, String> nodeIdToHostname = computeNodeIdToHostnameMap(aciConfig, null);
+    Map<String, AciConfiguration.FabricNode> fabricNodes =
+        getFabricNodesIncludingExplicitLinkEndpoints(aciConfig);
+    Map<String, String> nodeIdToHostname =
+        computeNodeIdToHostnameMap(fabricNodes, aciConfig.getHostname(), null);
 
     if (!aciConfig.getFabricLinks().isEmpty()) {
       // Prefer explicit APIC fabricLink topology when present.

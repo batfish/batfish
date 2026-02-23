@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
@@ -1457,6 +1458,100 @@ public class AciGrammarTest {
 
     // Verify topology edges are created: 2 spines x 2 leaves = 4 edges
     assertThat(config.getLayer1Edges().size(), equalTo(4));
+  }
+
+  @Test
+  public void testParseFabricLinks_apicFormat() {
+    String json =
+        "{"
+            + "\"imdata\":["
+            + "{\"fabricLink\":{\"attributes\":{"
+            + "\"n1\":\"101\",\"n2\":\"201\",\"p1\":\"3\",\"p2\":\"49\",\"s1\":\"1\",\"s2\":\"1\","
+            + "\"linkState\":\"ok\"}}}"
+            + "]}";
+    List<AciConfiguration.FabricLink> links =
+        AciConfiguration.parseFabricLinks("fabric_links.json", json, new Warnings());
+    assertThat(links, hasSize(1));
+    AciConfiguration.FabricLink link = links.get(0);
+    assertThat(link.getNode1Id(), equalTo("101"));
+    assertThat(link.getNode2Id(), equalTo("201"));
+    assertThat(link.getNode1Interface(), equalTo("Ethernet1/3"));
+    assertThat(link.getNode2Interface(), equalTo("Ethernet1/49"));
+  }
+
+  @Test
+  public void testExplicitFabricLinksPreferredOverSynthesized() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("aci-test");
+
+    AciConfiguration.FabricNode spine = new AciConfiguration.FabricNode();
+    spine.setNodeId("101");
+    spine.setName("spine-1");
+    spine.setRole("spine");
+    AciConfiguration.FabricNode leaf1 = new AciConfiguration.FabricNode();
+    leaf1.setNodeId("201");
+    leaf1.setName("leaf-1");
+    leaf1.setRole("leaf");
+    AciConfiguration.FabricNode leaf2 = new AciConfiguration.FabricNode();
+    leaf2.setNodeId("202");
+    leaf2.setName("leaf-2");
+    leaf2.setRole("leaf");
+    Map<String, AciConfiguration.FabricNode> nodes = new HashMap<>();
+    nodes.put("101", spine);
+    nodes.put("201", leaf1);
+    nodes.put("202", leaf2);
+    config.setFabricNodes(nodes);
+
+    AciConfiguration.FabricLink explicit = new AciConfiguration.FabricLink();
+    explicit.setNode1Id("101");
+    explicit.setNode2Id("201");
+    explicit.setNode1Interface("eth1/3");
+    explicit.setNode2Interface("Ethernet1/49");
+    config.setFabricLinks(ImmutableList.of(explicit));
+
+    assertThat(config.getLayer1Edges().size(), equalTo(1));
+    org.batfish.common.topology.Layer1Edge edge = config.getLayer1Edges().iterator().next();
+    assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/3"));
+    assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/49"));
+  }
+
+  @Test
+  public void testExplicitFabricLinksSupportIdentOnlyNodes() throws IOException {
+    String json =
+        "{\"polUni\": {\"attributes\": {\"dn\": \"uni\", \"name\": \"aci-dc2\"},\"children\":"
+            + " [{\"fabricInst\": {\"attributes\": {\"dn\": \"uni/fabric\"},\"children\":"
+            + " [{\"fabricNodeIdentPol\": {\"attributes\": {\"name\": \"default\"},\"children\":"
+            + " [{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"101\", \"name\":"
+            + " \"spine-101\"}}},{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"201\","
+            + " \"name\": \"leaf-201\"}}}]}},{\"fabricProtPol\": {\"attributes\": {\"dn\":"
+            + " \"uni/fabric/fabricprotPol\"},\"children\": [{\"fabricExplicitGEp\":"
+            + " {\"attributes\": {\"id\": \"1\"},\"children\": [{\"fabricNodePEp\":"
+            + " {\"attributes\": {\"id\": \"201\", \"podId\": \"1\"}}}]}}]}}]}}]}}";
+
+    AciConfiguration config = AciConfiguration.fromJson("dc2.json", json, new Warnings());
+    List<AciConfiguration.FabricLink> links =
+        AciConfiguration.parseFabricLinks(
+            "fabric_links.json",
+            "{\"imdata\":[{\"fabricLink\":{\"attributes\":{"
+                + "\"n1\":\"101\",\"n2\":\"201\",\"p1\":\"3\",\"p2\":\"49\",\"s1\":\"1\",\"s2\":\"1\""
+                + "}}}]}",
+            new Warnings());
+    config.setFabricLinks(links);
+
+    Map<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, new Warnings());
+    assertThat(viConfigs, hasKey("aci-dc2-101"));
+    assertThat(viConfigs, hasKey("leaf-201"));
+    assertThat(viConfigs.get("aci-dc2-101").getAllInterfaces(), hasKey("Ethernet1/3"));
+    assertThat(viConfigs.get("leaf-201").getAllInterfaces(), hasKey("Ethernet1/49"));
+
+    Set<org.batfish.common.topology.Layer1Edge> layer1Edges = config.getLayer1Edges();
+    assertThat(layer1Edges.size(), equalTo(1));
+    org.batfish.common.topology.Layer1Edge edge = layer1Edges.iterator().next();
+    assertThat(edge.getNode1().getHostname(), equalTo("aci-dc2-101"));
+    assertThat(edge.getNode2().getHostname(), equalTo("leaf-201"));
+    assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/3"));
+    assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/49"));
   }
 
   /** Helper method to load test JSON resource files. */

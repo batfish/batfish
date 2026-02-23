@@ -139,6 +139,34 @@ final class AciInterfaceConverter {
       }
     }
 
+    // Ensure interfaces referenced by explicit fabric links exist on each endpoint node.
+    if (nodeId != null && !aciConfig.getFabricLinks().isEmpty()) {
+      for (FabricLink link : aciConfig.getFabricLinks()) {
+        String ifaceName = null;
+        if (nodeId.equals(link.getNode1Id()) && link.getNode1Interface() != null) {
+          ifaceName = normalizeExplicitFabricInterface(link.getNode1Interface());
+        } else if (nodeId.equals(link.getNode2Id()) && link.getNode2Interface() != null) {
+          ifaceName = normalizeExplicitFabricInterface(link.getNode2Interface());
+        }
+        if (ifaceName == null || ifaceName.isEmpty() || interfaces.containsKey(ifaceName)) {
+          continue;
+        }
+        Interface iface =
+            Interface.builder()
+                .setName(ifaceName)
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(c)
+                .setVrf(vrf)
+                .setAdminUp(true)
+                .setMtu(AciConstants.DEFAULT_MTU)
+                .setDescription("Fabric interface from explicit fabric_links sidecar")
+                .setHumanName(ifaceName)
+                .setDeclaredNames(ImmutableList.of(ifaceName))
+                .build();
+        interfaces.put(ifaceName, iface);
+      }
+    }
+
     // Add loopback interface if not present (this is the VTEP interface in ACI)
     String loopbackName = "loopback0";
     if (!interfaces.containsKey(loopbackName)) {
@@ -279,6 +307,21 @@ final class AciInterfaceConverter {
         interfaces.put(ifaceName, iface);
       }
     }
+  }
+
+  private static String normalizeExplicitFabricInterface(String iface) {
+    String trimmed = iface.trim();
+    if (trimmed.isEmpty()) {
+      return trimmed;
+    }
+    String lower = trimmed.toLowerCase();
+    if (lower.startsWith("eth") && !lower.startsWith("ethernet")) {
+      return "Ethernet" + trimmed.substring(3);
+    }
+    if (lower.startsWith("ethernet")) {
+      return "Ethernet" + trimmed.substring(8);
+    }
+    return trimmed;
   }
 
   private static boolean isFabricInterface(String ifaceName, String role) {
