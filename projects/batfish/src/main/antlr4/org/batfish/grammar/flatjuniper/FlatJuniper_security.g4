@@ -830,8 +830,8 @@ seikp_pre_shared_key
 :
    PRE_SHARED_KEY
    (
-      ASCII_TEXT key = DOUBLE_QUOTED_STRING
-      | HEXADECIMAL key = DOUBLE_QUOTED_STRING
+      ASCII_TEXT secret_string
+      | HEXADECIMAL secret_string
       | SCRUBBED
    )
 ;

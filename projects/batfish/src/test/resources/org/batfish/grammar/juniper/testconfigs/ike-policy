@@ -12,3 +12,6 @@ set security ike policy policy1 pre-shared-key ascii-text "psk1"
 #
 set security ike policy policy2 proposals proposal1
 set security ike policy policy2 pre-shared-key ascii-text "psk1"
+#
+set security ike policy policy3 proposals proposal1
+set security ike policy policy3 pre-shared-key ascii-text "<SCRUBBED>"
