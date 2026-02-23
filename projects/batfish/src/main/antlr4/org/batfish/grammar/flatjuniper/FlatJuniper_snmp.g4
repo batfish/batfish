@@ -10,7 +10,8 @@ s_snmp
 :
    SNMP
    (
-      snmp_client_list
+      apply
+      | snmp_client_list
       | snmp_community
       | snmp_filter_interfaces
       | snmp_name

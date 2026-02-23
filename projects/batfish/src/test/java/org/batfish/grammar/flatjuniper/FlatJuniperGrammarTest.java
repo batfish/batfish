@@ -4787,6 +4787,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplyGroupsAtLevels() {
+    // apply-groups should be recognized at snmp and protocols levels
+    parseConfig("apply-groups-at-levels");
+  }
+
+  @Test
   public void testJuniperApplyGroupsChain() {
     Configuration c = parseConfig("apply-groups-chain");
     assertThat(
