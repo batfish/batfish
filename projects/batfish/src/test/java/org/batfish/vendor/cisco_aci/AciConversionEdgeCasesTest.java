@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +27,7 @@ import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.FabricLink;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
 import org.batfish.vendor.cisco_aci.representation.L3Out;
@@ -640,5 +642,75 @@ public class AciConversionEdgeCasesTest {
 
     // Should have edges connecting leaf to spine
     assertFalse("Expected Layer 1 edges to be created", edges.isEmpty());
+  }
+
+  /** Test explicit fabric links synthesize endpoint nodes during VI conversion. */
+  @Test
+  public void testExplicitFabricLinksSynthesizeEndpointNodes() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("aci-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.setFabricLinks(
+        ImmutableList.of(
+            new FabricLink("101", "Ethernet1/3", "201", "Ethernet1/49"),
+            new FabricLink("201", "Ethernet1/50", "301", "Ethernet1/4")));
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    // Endpoints from fabric links should become nodes even without fabricNode APIC objects.
+    assertThat(viConfigs, aMapWithSize(3));
+    assertThat(viConfigs, hasKey("aci-fabric-101"));
+    assertThat(viConfigs, hasKey("aci-fabric-201"));
+    assertThat(viConfigs, hasKey("aci-fabric-301"));
+  }
+
+  /** Test explicit fabric links synthesize missing interfaces on endpoint nodes. */
+  @Test
+  public void testExplicitFabricLinksSynthesizeInterfaces() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("aci-dc2");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    FabricNode node101 = createFabricNode("101", "leaf-101", "1", "leaf");
+    FabricNode node201 = createFabricNode("201", "spine-201", "1", "spine");
+    config.getFabricNodes().put("101", node101);
+    config.getFabricNodes().put("201", node201);
+    config.setFabricLinks(ImmutableList.of(new FabricLink("101", "eth1/3", "201", "Eth1/49")));
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    assertThat(viConfigs.get("leaf-101").getAllInterfaces(), hasKey("Ethernet1/3"));
+    assertThat(viConfigs.get("spine-201").getAllInterfaces(), hasKey("Ethernet1/49"));
+  }
+
+  /** Test createLayer1Edges drops interface-incomplete explicit links and keeps valid ones. */
+  @Test
+  public void testCreateLayer1EdgesExplicitLinksSkipsMissingInterfaceLinks() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("aci-dc3");
+
+    FabricNode node101 = createFabricNode("101", "leaf-101", "1", "leaf");
+    FabricNode node201 = createFabricNode("201", "spine-201", "1", "spine");
+    config.getFabricNodes().put("101", node101);
+    config.getFabricNodes().put("201", node201);
+
+    FabricLink missingInterface = new FabricLink("101", null, "201", "Ethernet1/49");
+    FabricLink valid = new FabricLink("101", "eth1/3", "201", "ethernet1/49");
+    config.setFabricLinks(ImmutableList.of(missingInterface, valid));
+    config.finalizeStructures();
+
+    Set<Layer1Edge> edges = AciConversion.createLayer1Edges(config);
+    assertThat(edges, hasSize(1));
+    Layer1Edge edge = edges.iterator().next();
+    assertThat(edge.getNode1().getHostname(), equalTo("leaf-101"));
+    assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/3"));
+    assertThat(edge.getNode2().getHostname(), equalTo("spine-201"));
+    assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/49"));
   }
 }
