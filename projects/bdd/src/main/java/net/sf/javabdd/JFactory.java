@@ -571,7 +571,7 @@ public class JFactory extends BDDFactory implements Serializable {
    * The maximum number of BDD nodes that can {@link #bddnodesize} can ever be measured is the
    * largest array that can be allocated.
    */
-  private static final int MAX_NODESIZE = Integer.MAX_VALUE / __node_size;
+  private static final int MAX_NODESIZE = Integer.highestOneBit(Integer.MAX_VALUE / __node_size);
 
   private boolean HASREF(int node) {
     boolean r = (bddnodes[node * __node_size + offset__refcou_and_level] & REF_MASK) != 0;
@@ -711,6 +711,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private static class BddCache {
     BddCacheData[] table;
     int tablesize;
+    int tablemask; // tablesize - 1, for power-of-2 sized tables
 
     /**
      * Returns the number of used entries in this cache.
@@ -735,7 +736,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private boolean bddrunning; /* Flag - package initialized */
   private int bdderrorcond; /* Some error condition */
-  private int bddnodesize; /* Number of allocated nodes */
+  private int bddnodesize; /* Number of allocated nodes (power of 2) */
+  private int bddnodemask; /* bddnodesize - 1, for fast hash masking */
   private int[] bddnodes; /* All of the bdd nodes */
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
@@ -832,7 +834,11 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int NODEHASH(int lvl, int l, int h) {
-    return Math.floorMod(TRIPLE(lvl, l, h), bddnodesize);
+    int hash = lvl + l * 1183477 + h * 1296043;
+    hash ^= (hash >>> 16);
+    hash *= 0x45d9f3b;
+    hash ^= (hash >>> 16);
+    return hash & bddnodemask;
   }
 
   @Override
@@ -4358,7 +4364,8 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private void doResize(boolean doRehash, int oldsize, int newsize) {
-    newsize = bdd_prime_lte(newsize);
+    newsize = Integer.highestOneBit(newsize - 1) << 1; // round up to power of 2
+    if (newsize < 16) newsize = 16;
     if (newsize <= oldsize) {
       return;
     }
@@ -4367,6 +4374,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bddnodes = Arrays.copyOf(bddnodes, newsize * __node_size);
     bddnodesize = newsize;
+    bddnodemask = newsize - 1;
 
     if (doRehash) {
       // Clear the hash of all the existing nodes.
@@ -4406,7 +4414,9 @@ public class JFactory extends BDDFactory implements Serializable {
       bdd_error(BDD_RUNNING);
     }
 
-    bddnodesize = bdd_prime_gte(initnodesize);
+    bddnodesize = Integer.highestOneBit(initnodesize - 1) << 1; // round up to power of 2
+    if (bddnodesize < 16) bddnodesize = 16;
+    bddnodemask = bddnodesize - 1;
 
     bddnodes = new int[bddnodesize * __node_size];
 
@@ -4587,34 +4597,40 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private BddCache BddCacheI_init(int size) {
-    size = bdd_prime_gte(size);
+    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
+    if (size < 16) size = 16;
 
     BddCache cache = new BddCache();
     cache.table = new BddCacheDataI[size];
     Arrays.parallelSetAll(cache.table, i -> new BddCacheDataI());
     cache.tablesize = size;
+    cache.tablemask = size - 1;
 
     return cache;
   }
 
   private BddCache BddCacheMultiOp_init(int size) {
-    size = bdd_prime_gte(size);
+    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
+    if (size < 16) size = 16;
 
     BddCache cache = new BddCache();
     cache.table = new MultiOpBddCacheData[size];
     Arrays.parallelSetAll(cache.table, i -> new MultiOpBddCacheData());
     cache.tablesize = size;
+    cache.tablemask = size - 1;
 
     return cache;
   }
 
   private BddCache BddCacheBigInteger_init(int size) {
-    size = bdd_prime_gte(size);
+    size = Integer.highestOneBit(size - 1) << 1; // round up to power of 2
+    if (size < 16) size = 16;
 
     BddCache cache = new BddCache();
     cache.table = new BigIntegerBddCacheData[size];
     Arrays.parallelSetAll(cache.table, i -> new BigIntegerBddCacheData());
     cache.tablesize = size;
+    cache.tablemask = size - 1;
 
     return cache;
   }
@@ -4655,10 +4671,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static <T extends BddCacheData> T[] reallocateAndResize(
       T[] oldTable, int newsize, IntFunction<T[]> newTable, Supplier<T> constructor) {
+    int mask = newsize - 1;
     T[] ret = newTable.apply(newsize);
-    Arrays.stream(oldTable)
-        .parallel()
-        .forEach(entry -> ret[Math.floorMod(entry.hash, newsize)] = entry);
+    Arrays.stream(oldTable).parallel().forEach(entry -> ret[entry.hash & mask] = entry);
     IntStream.range(0, newsize)
         .parallel()
         .forEach(
@@ -4684,7 +4699,8 @@ public class JFactory extends BDDFactory implements Serializable {
           cache.table.length);
     }
 
-    newsize = bdd_prime_gte(newsize);
+    newsize = Integer.highestOneBit(newsize - 1) << 1; // round up to power of 2
+    if (newsize < 16) newsize = 16;
 
     if (cache.table instanceof BddCacheDataI[]) {
       cache.table =
@@ -4702,20 +4718,21 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     cache.tablesize = newsize;
+    cache.tablemask = newsize - 1;
 
     return 0;
   }
 
   private static BddCacheDataI BddCache_lookupI(BddCache cache, int hash) {
-    return (BddCacheDataI) cache.table[Math.floorMod(hash, cache.tablesize)];
+    return (BddCacheDataI) cache.table[hash & cache.tablemask];
   }
 
   private static BigIntegerBddCacheData BddCache_lookupBigInteger(BddCache cache, int hash) {
-    return (BigIntegerBddCacheData) cache.table[Math.floorMod(hash, cache.tablesize)];
+    return (BigIntegerBddCacheData) cache.table[hash & cache.tablemask];
   }
 
   private static MultiOpBddCacheData BddCache_lookupMultiOp(BddCache cache, int hash) {
-    return (MultiOpBddCacheData) cache.table[Math.floorMod(hash, cache.tablesize)];
+    return (MultiOpBddCacheData) cache.table[hash & cache.tablemask];
   }
 
   private void BddCache_reset(BddCache cache) {
