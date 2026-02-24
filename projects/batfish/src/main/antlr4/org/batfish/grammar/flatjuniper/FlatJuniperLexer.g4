@@ -281,7 +281,7 @@ AS_PATH_PREPEND
    'as-path-prepend' -> pushMode ( M_AsPathPrepend )
 ;
 
-ASCII_TEXT: 'ascii-text';
+ASCII_TEXT: 'ascii-text' -> pushMode(M_SecretString);
 
 ASDOT_NOTATION: 'asdot-notation';
 
@@ -908,7 +908,7 @@ HELLO_INTERVAL: 'hello-interval';
 HELLO_PADDING: 'hello-padding';
 
 HELPERS: 'helpers';
-HEXADECIMAL: 'hexadecimal';
+HEXADECIMAL: 'hexadecimal' -> pushMode(M_SecretString);
 
 HIGH: 'high';
 

@@ -7888,11 +7888,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSeikp_pre_shared_key(Seikp_pre_shared_keyContext ctx) {
-    if (ctx.ASCII_TEXT() != null || ctx.HEXADECIMAL() != null) {
-      String key = unquote(ctx.key.getText(), ctx);
-      // TODO: this 'if needed' probably should handle hexadecimal differently
-      String decodedKeyHash = decryptIfNeededAndHash(key, getLine(ctx.key));
-      _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
+    if (ctx.secret_string() != null) {
+      _currentIkePolicy.setPreSharedKeyHash(applySecret(ctx.secret_string()));
     }
   }
 
@@ -8408,6 +8405,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private @Nonnull String decryptIfNeededAndHash(@Nonnull String text, int line) {
+    // TODO: this probably should handle hexadecimal differently
     if (JuniperUtils.isJuniper9CipherText(text)) {
       return JuniperUtils.decryptAndHashJuniper9CipherText(text);
     } else {
