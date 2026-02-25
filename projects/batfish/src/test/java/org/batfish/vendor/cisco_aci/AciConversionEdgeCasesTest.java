@@ -12,6 +12,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Warnings;
@@ -25,11 +27,14 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
+import org.batfish.vendor.cisco_aci.representation.BgpPeer;
 import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
 import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.ExternalEpg;
 import org.batfish.vendor.cisco_aci.representation.FabricLink;
 import org.batfish.vendor.cisco_aci.representation.FabricNode;
 import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
+import org.batfish.vendor.cisco_aci.representation.InterFabricConnection;
 import org.batfish.vendor.cisco_aci.representation.L3Out;
 import org.batfish.vendor.cisco_aci.representation.TenantVrf;
 import org.junit.Test;
@@ -712,5 +717,80 @@ public class AciConversionEdgeCasesTest {
     assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/3"));
     assertThat(edge.getNode2().getHostname(), equalTo("spine-201"));
     assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/49"));
+  }
+
+  @Test
+  public void testDetectInterFabricConnections_sharedExternalSubnet() {
+    AciConfiguration fabric1 = createInterFabricConfig("fabric-dc1", "203.0.113.0/24", null);
+    AciConfiguration fabric2 = createInterFabricConfig("fabric-dc2", "203.0.113.0/24", null);
+    AciConfiguration fabric3 = createInterFabricConfig("fabric-dc3", "198.51.100.0/24", null);
+
+    Map<String, InterFabricConnection> connections =
+        AciConversion.detectInterFabricConnections(
+            ImmutableMap.of(
+                "fabric-dc1", fabric1,
+                "fabric-dc2", fabric2,
+                "fabric-dc3", fabric3));
+
+    assertThat(connections, hasKey("fabric-dc1-fabric-dc2-external"));
+    InterFabricConnection connection = connections.get("fabric-dc1-fabric-dc2-external");
+    assertThat(connection.getConnectionType(), equalTo("shared-external"));
+    assertThat(connection.getSharedSubnets(), hasSize(1));
+    assertThat(connection.getSharedSubnets().get(0), equalTo("203.0.113.0/24"));
+  }
+
+  @Test
+  public void testDetectInterFabricConnections_sharedBgpPeer() {
+    AciConfiguration fabric1 = createInterFabricConfig("fabric-dc1", null, "192.0.2.10");
+    AciConfiguration fabric2 = createInterFabricConfig("fabric-dc2", null, "192.0.2.10");
+
+    Map<String, InterFabricConnection> connections =
+        AciConversion.detectInterFabricConnections(
+            ImmutableMap.of("fabric-dc1", fabric1, "fabric-dc2", fabric2));
+
+    assertThat(connections, hasKey("fabric-dc1-fabric-dc2-bgp"));
+    InterFabricConnection connection = connections.get("fabric-dc1-fabric-dc2-bgp");
+    assertThat(connection.getConnectionType(), equalTo("bgp"));
+    assertThat(connection.getBgpPeers(), hasSize(1));
+    assertThat(connection.getBgpPeers().get(0), equalTo("192.0.2.10"));
+  }
+
+  @Test
+  public void testDetectInterFabricConnections_noOverlap() {
+    AciConfiguration fabric1 =
+        createInterFabricConfig("fabric-dc1", "203.0.113.0/24", "192.0.2.10");
+    AciConfiguration fabric2 =
+        createInterFabricConfig("fabric-dc2", "198.51.100.0/24", "198.51.100.10");
+
+    Map<String, InterFabricConnection> connections =
+        AciConversion.detectInterFabricConnections(
+            ImmutableMap.of("fabric-dc1", fabric1, "fabric-dc2", fabric2));
+
+    assertTrue(connections.isEmpty());
+  }
+
+  private static AciConfiguration createInterFabricConfig(
+      String hostname, String externalSubnet, String bgpPeerAddress) {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname(hostname);
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    L3Out l3Out = new L3Out(hostname + "-l3out");
+    l3Out.setTenant("tenant1");
+    l3Out.setVrf("tenant1:vrf1");
+
+    if (externalSubnet != null) {
+      ExternalEpg extEpg = new ExternalEpg("external");
+      extEpg.setSubnets(ImmutableList.of(externalSubnet));
+      l3Out.setExternalEpgs(ImmutableList.of(extEpg));
+    }
+    if (bgpPeerAddress != null) {
+      BgpPeer peer = new BgpPeer();
+      peer.setPeerAddress(bgpPeerAddress);
+      l3Out.setBgpPeers(ImmutableList.of(peer));
+    }
+
+    config.getL3Outs().put("tenant1:" + l3Out.getName(), l3Out);
+    return config;
   }
 }
