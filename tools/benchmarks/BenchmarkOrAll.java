@@ -37,7 +37,9 @@ public class BenchmarkOrAll {
 
   @Setup(Level.Trial)
   public void setUp() {
-    _pkt = new BDDPacket(JFactory.init(10_000_000, 1_000_000));
+    JFactory factory = (JFactory) JFactory.init(10_000_000, 1_000_000);
+    factory.setCollectCacheStats(true);
+    _pkt = new BDDPacket(factory);
     _rng = new Random();
     _ipBdds =
         IntStream.range(0, NUM_IP_BDDS)

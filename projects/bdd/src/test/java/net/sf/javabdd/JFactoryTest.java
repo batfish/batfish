@@ -3,8 +3,10 @@ package net.sf.javabdd;
 import static net.sf.javabdd.JFactory.toIntOperands;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -765,5 +767,186 @@ public class JFactoryTest {
     BDD expected = v1.id();
     BDD result = v0.iteWith(v1, v1);
     assertEquals(expected, result);
+  }
+
+  /** Verify that BDD node state (var, low, high) is preserved across a node table resize. */
+  @Test
+  public void testResize_nodeStatePreserved() {
+    // Use a small factory so we can easily reason about sizes.
+    JFactory factory = (JFactory) JFactory.init(16, 16);
+    factory.setVarNum(4);
+
+    BDD v0 = factory.ithVar(0);
+    BDD v1 = factory.ithVar(1);
+    BDD v2 = factory.ithVar(2);
+    BDD v3 = factory.ithVar(3);
+
+    // Build some non-trivial BDDs.
+    BDD and01 = v0.and(v1);
+    BDD xor23 = v2.xor(v3);
+    BDD complex = and01.or(xor23);
+
+    // Snapshot the logical structure before resize.
+    int and01Var = and01.var();
+    String and01Repr = and01.toReprString();
+    int xor23Var = xor23.var();
+    String xor23Repr = xor23.toReprString();
+    String complexRepr = complex.toReprString();
+
+    int oldSize = factory.getNodeTableSize();
+
+    // Force resize to a much larger table.
+    factory.setNodeTableSize(oldSize * 4);
+    assertThat(factory.getNodeTableSize(), greaterThan(oldSize));
+
+    // Verify all BDD structures are unchanged.
+    assertEquals(and01Var, and01.var());
+    assertEquals(and01Repr, and01.toReprString());
+    assertEquals(xor23Var, xor23.var());
+    assertEquals(xor23Repr, xor23.toReprString());
+    assertEquals(complexRepr, complex.toReprString());
+
+    // Verify low/high structure is preserved for ithVar nodes.
+    assertTrue(v0.low().isZero());
+    assertTrue(v0.high().isOne());
+    assertTrue(v1.low().isZero());
+    assertTrue(v1.high().isOne());
+
+    // Verify equality still works (same index means same BDD).
+    assertEquals(v0.and(v1), and01);
+    assertEquals(v2.xor(v3), xor23);
+    assertEquals(and01.or(xor23), complex);
+
+    // Verify constants.
+    assertTrue(factory.zero().isZero());
+    assertTrue(factory.one().isOne());
+  }
+
+  /** Verify that operation cache entries survive a resize and produce correct results. */
+  @Test
+  public void testResize_applyCacheHitsAfterResize() {
+    // Small factory with a cache ratio so caches resize with the node table.
+    JFactory factory = (JFactory) JFactory.init(16, 16);
+    factory.setCacheRatio(2);
+    factory.setCollectCacheStats(true);
+    factory.setVarNum(4);
+
+    BDD v0 = factory.ithVar(0);
+    BDD v1 = factory.ithVar(1);
+    BDD v2 = factory.ithVar(2);
+    BDD v3 = factory.ithVar(3);
+
+    // Compute operations to populate the apply cache.
+    BDD and01 = v0.and(v1);
+    BDD or23 = v2.or(v3);
+    BDD xor01 = v0.xor(v1);
+    BDD combined = and01.or(or23);
+
+    // Snapshot results.
+    String and01Repr = and01.toReprString();
+    String or23Repr = or23.toReprString();
+    String xor01Repr = xor01.toReprString();
+    String combinedRepr = combined.toReprString();
+
+    // Force resize.
+    factory.setNodeTableSize(factory.getNodeTableSize() * 4);
+
+    // Record opHit before recomputing.
+    long opHitBefore = factory.getCacheStats().opHit;
+
+    // Recompute the same operations. If cache entries survived, these will hit the cache.
+    assertEquals(and01Repr, v0.and(v1).toReprString());
+    assertEquals(or23Repr, v2.or(v3).toReprString());
+    assertEquals(xor01Repr, v0.xor(v1).toReprString());
+    assertEquals(combinedRepr, and01.or(or23).toReprString());
+
+    // Cache entries survived the rehash, so opHit should have increased.
+    assertThat(factory.getCacheStats().opHit, greaterThan(opHitBefore));
+
+    // Also verify that the previously returned BDDs are still equal to freshly computed ones.
+    assertEquals(and01, v0.and(v1));
+    assertEquals(or23, v2.or(v3));
+    assertEquals(xor01, v0.xor(v1));
+    assertEquals(combined, and01.or(or23));
+  }
+
+  /**
+   * Verify that BDDs remain valid when the node table grows organically (via exhausting free nodes
+   * and triggering automatic resize).
+   */
+  @Test
+  public void testResize_organicGrowth() {
+    // Create a very small factory (16 nodes, 2 reserved for 0/1 = 14 free).
+    // With 8 variables, ithVar creates nodes, and operations will exhaust the table quickly.
+    JFactory factory = (JFactory) JFactory.init(16, 16);
+    factory.setVarNum(8);
+    int initialSize = factory.getNodeTableSize();
+    assertThat(initialSize, lessThanOrEqualTo(32));
+
+    // Build enough BDDs to force at least one resize.
+    BDD[] vars = new BDD[8];
+    for (int i = 0; i < 8; i++) {
+      vars[i] = factory.ithVar(i);
+    }
+
+    // Chain ANDs: v0 & v1 & v2 & ... & v7. Each new AND creates new internal nodes.
+    BDD acc = vars[0].id();
+    for (int i = 1; i < 8; i++) {
+      BDD next = acc.and(vars[i]);
+      acc.free();
+      acc = next;
+    }
+
+    // By now the node table should have grown.
+    assertThat(factory.getNodeTableSize(), greaterThan(initialSize));
+
+    // The accumulated BDD should be equivalent to the conjunction of all variables.
+    // Verify by checking it has exactly one satisfying assignment (all true).
+    assertEquals(1.0, acc.satCount(), 0.0);
+
+    // Verify each variable is tested.
+    for (BDD v : vars) {
+      assertTrue(acc.testsVars(v));
+    }
+
+    // Build the same conjunction fresh and verify equality.
+    BDD fresh = vars[0].id();
+    for (int i = 1; i < 8; i++) {
+      BDD next = fresh.and(vars[i]);
+      fresh.free();
+      fresh = next;
+    }
+    assertEquals(acc, fresh);
+  }
+
+  /** Verify multiple sequential resizes don't corrupt BDD state. */
+  @Test
+  public void testResize_multipleResizes() {
+    JFactory factory = (JFactory) JFactory.init(16, 16);
+    factory.setVarNum(4);
+
+    BDD v0 = factory.ithVar(0);
+    BDD v1 = factory.ithVar(1);
+    BDD v2 = factory.ithVar(2);
+    BDD xor = v0.xor(v1);
+    BDD imp = v1.imp(v2);
+
+    String xorRepr = xor.toReprString();
+    String impRepr = imp.toReprString();
+
+    // Resize multiple times.
+    for (int i = 0; i < 5; i++) {
+      factory.setNodeTableSize(factory.getNodeTableSize() * 2);
+    }
+
+    // Original BDDs should be unaffected.
+    assertEquals(xorRepr, xor.toReprString());
+    assertEquals(impRepr, imp.toReprString());
+    assertEquals(xor, v0.xor(v1));
+    assertEquals(imp, v1.imp(v2));
+
+    // Operations on resized BDDs should still be correct.
+    BDD result = xor.and(imp);
+    assertEquals(v0.xor(v1).and(v1.imp(v2)).toReprString(), result.toReprString());
   }
 }
