@@ -33,8 +33,9 @@ public class BenchmarkOnehot {
 
   @Setup(Level.Trial)
   public void setUp() {
-    BDDFactory factory = JFactory.init(1_000_000, (1_000_000 + 8 - 1) / 8);
+    JFactory factory = (JFactory) JFactory.init(1_000_000, (1_000_000 + 8 - 1) / 8);
     factory.setCacheRatio(8);
+    factory.setCollectCacheStats(true);
     _factory = factory;
     int varNum = _numDisjuncts * 64;
     _factory.setVarNum(varNum);
