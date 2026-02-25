@@ -41,6 +41,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.common.collect.ImmutableList;
@@ -70,6 +72,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakConfig;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -1108,5 +1113,149 @@ public class JuniperConfigurationTest {
       iface.getAllAddresses().add(addr2);
       assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr1.getIp())));
     }
+  }
+
+  /**
+   * Test that when Juniper EVPN ip-prefix-routes with advertise direct-nexthop is configured, the
+   * conversion produces Bgpv4ToEvpnVrfLeakConfig on the default VRF and EvpnToBgpv4VrfLeakConfig
+   * on the tenant VRF.
+   */
+  @Test
+  public void testEvpnVrfLeakingDirectNexthop() {
+    JuniperConfiguration config = createConfig();
+
+    // Set up default VRF
+    Vrf defaultVrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    config._c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, defaultVrf);
+
+    // Set up tenant VRF
+    String tenantVrfName = "TENANT-VRF";
+    Vrf tenantVrf = new Vrf(tenantVrfName);
+    config._c.getVrfs().put(tenantVrfName, tenantVrf);
+
+    // Set up default routing instance
+    RoutingInstance ri = config.getMasterLogicalSystem().getDefaultRoutingInstance();
+    ri.setAs(65000L);
+    ri.setRouterId(Ip.parse("10.0.0.1"));
+
+    // Create EVPN with ip-prefix-routes advertise direct-nexthop
+    Evpn evpn = new Evpn();
+    EvpnIpPrefixRoutes ipPrefixRoutes = new EvpnIpPrefixRoutes();
+    ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.VXLAN);
+    evpn.setIpPrefixRoutes(ipPrefixRoutes);
+    config.getMasterLogicalSystem().setEvpn(evpn);
+
+    // Create a VLAN with L3 VNI
+    Vlan vlan10 = new Vlan("VLAN-10");
+    vlan10.setVniId(10010);
+    vlan10.setL3Interface("irb.10");
+    config.getMasterLogicalSystem().getNamedVlans().put("VLAN-10", vlan10);
+
+    // Create tenant routing instance with RD and AS
+    RoutingInstance tenantRi = new RoutingInstance(tenantVrfName);
+    tenantRi.setAs(65000L);
+    tenantRi.setRouteDistinguisherId(Ip.parse("10.0.0.1"));
+    config.getMasterLogicalSystem().getRoutingInstances().put(tenantVrfName, tenantRi);
+
+    // Create irb physical interface with irb.10 unit, assigned to tenant RI
+    // Interfaces must be in _masterLogicalSystem.getInterfaces() for getInterfaceOrUnitByName()
+    Interface irb = new Interface("irb");
+    Interface irbUnit = new Interface("irb.10");
+    irbUnit.setPrimaryAddress(ConcreteInterfaceAddress.parse("192.168.10.1/24"));
+    irb.getUnits().put("irb.10", irbUnit);
+    irbUnit.setParent(irb);
+    irbUnit.setRoutingInstance(tenantRi);
+    config.getMasterLogicalSystem().getInterfaces().put("irb", irb);
+
+    // Create lo0 physical interface with lo0.0 unit
+    Interface lo0 = new Interface("lo0");
+    Interface lo0unit = new Interface("lo0.0");
+    lo0unit.setPrimaryAddress(ConcreteInterfaceAddress.parse("10.0.0.1/32"));
+    lo0.getUnits().put("lo0.0", lo0unit);
+    lo0unit.setParent(lo0);
+    lo0unit.setRoutingInstance(ri);
+    config.getMasterLogicalSystem().getInterfaces().put("lo0", lo0);
+
+    // Set up switch options
+    SwitchOptions switchOptions = config.getMasterLogicalSystem().getSwitchOptions();
+    switchOptions.setVtepSourceInterface("lo0.0");
+
+    // Call convertEvpnVrfLeaking
+    config.convertEvpnVrfLeaking();
+
+    // Verify Bgpv4ToEvpnVrfLeakConfig on default VRF
+    VrfLeakConfig defaultVrfLeak = defaultVrf.getVrfLeakConfig();
+    assertNotNull("Expected VRF leak config on default VRF", defaultVrfLeak);
+    assertFalse(
+        "Expected Bgpv4ToEvpnVrfLeakConfig entries",
+        defaultVrfLeak.getBgpv4ToEvpnVrfLeakConfigs().isEmpty());
+    Bgpv4ToEvpnVrfLeakConfig bgpv4ToEvpn =
+        defaultVrfLeak.getBgpv4ToEvpnVrfLeakConfigs().get(0);
+    assertEquals(
+        "Leak config should import from tenant VRF",
+        tenantVrfName,
+        bgpv4ToEvpn.getImportFromVrf());
+    assertFalse(
+        "Leak config should have route targets",
+        bgpv4ToEvpn.getAttachRouteTargets().isEmpty());
+
+    // Verify EvpnToBgpv4VrfLeakConfig on tenant VRF
+    VrfLeakConfig tenantVrfLeak = tenantVrf.getVrfLeakConfig();
+    assertNotNull("Expected VRF leak config on tenant VRF", tenantVrfLeak);
+    assertFalse(
+        "Expected EvpnToBgpv4VrfLeakConfig entries",
+        tenantVrfLeak.getEvpnToBgpv4VrfLeakConfigs().isEmpty());
+    EvpnToBgpv4VrfLeakConfig evpnToBgpv4 =
+        tenantVrfLeak.getEvpnToBgpv4VrfLeakConfigs().get(0);
+    assertEquals(
+        "Leak config should import from default VRF",
+        Configuration.DEFAULT_VRF_NAME,
+        evpnToBgpv4.getImportFromVrf());
+    assertNotNull(
+        "Leak config should have an import policy", evpnToBgpv4.getImportPolicy());
+    // Verify the import policy was created in the configuration
+    assertNotNull(
+        "Import policy should exist in configuration routing policies",
+        config._c.getRoutingPolicies().get(evpnToBgpv4.getImportPolicy()));
+  }
+
+  /** Test that convertEvpnVrfLeaking does nothing when EVPN is not configured. */
+  @Test
+  public void testEvpnVrfLeakingNoEvpnConfig() {
+    JuniperConfiguration config = createConfig();
+
+    Vrf defaultVrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    config._c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, defaultVrf);
+
+    // No EVPN configured
+    config.convertEvpnVrfLeaking();
+
+    // Verify no VRF leak config was created
+    assertThat(defaultVrf.getVrfLeakConfig(), nullValue());
+  }
+
+  /**
+   * Test that convertEvpnVrfLeaking does nothing when EVPN ip-prefix-routes is configured without
+   * advertise direct-nexthop.
+   */
+  @Test
+  public void testEvpnVrfLeakingNoDirectNexthop() {
+    JuniperConfiguration config = createConfig();
+
+    Vrf defaultVrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    config._c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, defaultVrf);
+
+    // EVPN configured but without advertise direct-nexthop
+    Evpn evpn = new Evpn();
+    EvpnIpPrefixRoutes ipPrefixRoutes = new EvpnIpPrefixRoutes();
+    ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.GATEWAY_ADDRESS);
+    evpn.setIpPrefixRoutes(ipPrefixRoutes);
+    config.getMasterLogicalSystem().setEvpn(evpn);
+
+    config.convertEvpnVrfLeaking();
+
+    // Verify no VRF leak config was created
+    assertThat(defaultVrf.getVrfLeakConfig(), nullValue());
   }
 }
