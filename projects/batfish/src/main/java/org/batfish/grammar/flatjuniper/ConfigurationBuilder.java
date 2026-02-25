@@ -695,10 +695,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
@@ -4934,8 +4938,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEipr_advertise(Eipr_advertiseContext ctx) {
-    EvpnIpPrefixRoutes ipPrefixRoutes =
-        _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
+    EvpnIpPrefixRoutes ipPrefixRoutes = getOrCreateCurrentEvpnIpPrefixRoutes();
     if (ctx.DIRECT_NEXTHOP() != null) {
       ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
     } else {
@@ -4946,8 +4949,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEipr_encapsulation(Eipr_encapsulationContext ctx) {
-    EvpnIpPrefixRoutes ipPrefixRoutes =
-        _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
+    EvpnIpPrefixRoutes ipPrefixRoutes = getOrCreateCurrentEvpnIpPrefixRoutes();
     if (ctx.VXLAN() != null) {
       ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.VXLAN);
     } else if (ctx.MPLS() != null) {
@@ -4960,17 +4962,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEipr_export(Eipr_exportContext ctx) {
-    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setExportPolicy(toString(ctx.name));
+    getOrCreateCurrentEvpnIpPrefixRoutes().setExportPolicy(toString(ctx.name));
   }
 
   @Override
   public void exitEipr_import(Eipr_importContext ctx) {
-    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setImportPolicy(toString(ctx.name));
+    getOrCreateCurrentEvpnIpPrefixRoutes().setImportPolicy(toString(ctx.name));
   }
 
   @Override
   public void exitEipr_vni(Eipr_vniContext ctx) {
-    _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes().setVni(toInt(ctx.vni));
+    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(toInt(ctx.vni));
+  }
+
+  /**
+   * Returns the appropriate {@link EvpnIpPrefixRoutes} for the current context. When inside a
+   * named routing-instance (non-default RI), returns the per-RI EvpnIpPrefixRoutes. When in the
+   * default RI, returns the global EVPN ip-prefix-routes.
+   */
+  private @Nonnull EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes() {
+    if (_currentRoutingInstance != _currentLogicalSystem.getDefaultRoutingInstance()) {
+      return _currentRoutingInstance.getOrCreateEvpnIpPrefixRoutes();
+    }
+    return _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
   }
 
   @Override
@@ -7025,6 +7039,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
     todo(ctx);
+  }
+
+  @Override
+  public void exitRiv_community(Riv_communityContext ctx) {
+    _currentRoutingInstance.setVrfTargetCommunity(toExtendedCommunity(ctx.extended_community()));
+  }
+
+  @Override
+  public void exitRiv_export(Riv_exportContext ctx) {
+    _currentRoutingInstance.setVrfTargetExport(toExtendedCommunity(ctx.extended_community()));
+  }
+
+  @Override
+  public void exitRiv_import(Riv_importContext ctx) {
+    _currentRoutingInstance.setVrfTargetImport(toExtendedCommunity(ctx.extended_community()));
+  }
+
+  @Override
+  public void exitRi_route_distinguisher(Ri_route_distinguisherContext ctx) {
+    _currentRoutingInstance.setRouteDistinguisher(toRouteDistinguisher(ctx.route_distinguisher()));
   }
 
   @Override

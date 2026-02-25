@@ -29,6 +29,7 @@ import com.google.common.collect.Iterables;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnRoute;
@@ -50,7 +51,6 @@ import org.batfish.main.BatfishTestUtils;
 //import org.batfish.main.TestrigText;
 //import org.batfish.representation.juniper.JuniperConfiguration;
 //import org.batfish.vendor.VendorConfiguration;
-import org.batfish.vendor.arista.representation.AristaConfiguration;
 //import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasRoute;
-import static org.batfish.vendor.arista.representation.AristaConfiguration.DEFAULT_EBGP_ADMIN;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_BGP_ADMIN_DISTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -94,7 +94,7 @@ public class JuniperSnapshotDataplaneExampleTest {
         IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
         String vrf1 = "vrf1";
         String vrf2 = "vrf2";
-        Ip originatorIp = Ip.parse("12.12.12.2"); // IP of BGP route originator
+        Ip originatorIp = Ip.parse("10.1.30.1"); // router-id of vrf1's BGP process (min interface IP)
         Prefix prefix = Prefix.parse("12.12.12.0/24"); // prefix of the connected route in vrf1
 
         // The connected route that vrf1 redistributes into BGP should be a connected route in vrf1, an
@@ -124,10 +124,8 @@ public class JuniperSnapshotDataplaneExampleTest {
                 Bgpv4Route.builder()
                         .setNetwork(prefix)
                         .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
-                        .setAdmin(DEFAULT_EBGP_ADMIN)
+                        .setAdmin(DEFAULT_BGP_ADMIN_DISTANCE)
                         .setAsPath(AsPath.ofSingletonAsSets(rmAs))
-                        // REDISTRIBUTE rather than NETWORK because Arista has a combined network statement +
-                        // redistribution policy (a route can't be originated via both mechanisms)
                         .setOriginMechanism(REDISTRIBUTE)
                         .setOriginType(OriginType.IGP)
                         .setProtocol(RoutingProtocol.BGP)
@@ -135,7 +133,8 @@ public class JuniperSnapshotDataplaneExampleTest {
                         .setSrcProtocol(RoutingProtocol.CONNECTED)
                         .setReceivedFrom(ReceivedFromSelf.instance())
                         .setOriginatorIp(originatorIp)
-                        .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
+                        .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+                        .setWeight(32768)
                         .build();
         assertThat(vrf2BgpRoute, equalTo(expectedVrf2BgpRoute));
 
@@ -150,8 +149,6 @@ public class JuniperSnapshotDataplaneExampleTest {
                         .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.168.255.1"), 15004))
                         .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
                         .setAsPath(AsPath.ofSingletonAsSets(rmAs))
-                        // REDISTRIBUTE rather than NETWORK because Arista has a combined network statement +
-                        // redistribution policy (a route can't be originated via both mechanisms)
                         .setOriginMechanism(REDISTRIBUTE)
                         .setOriginType(OriginType.IGP)
                         .setProtocol(RoutingProtocol.BGP)
@@ -160,7 +157,8 @@ public class JuniperSnapshotDataplaneExampleTest {
                         .setReceivedFrom(ReceivedFromSelf.instance())
                         .setOriginatorIp(originatorIp)
                         .setVni(15004)
-                        .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
+                        .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+                        .setWeight(32768)
                         .build();
         assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));
     }

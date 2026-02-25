@@ -103,10 +103,10 @@ policy-options {
             }
             then {
                 community add COM_12345;
-                as-path-prepend "54321 54321";
+                as-path-prepend "54321";
                 accept;
             }
         }
     }
-    community COM_12345 members target:12345;
+    community COM_12345 members 0:12345;
 }

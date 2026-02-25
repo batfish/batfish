@@ -8197,7 +8197,8 @@ public final class FlatJuniperGrammarTest {
   public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
     EvpnIpPrefixRoutes ipPrefixRoutes =
-        juniperConfiguration.getMasterLogicalSystem().getEvpn().getIpPrefixRoutes();
+        juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("FOO")
+            .getEvpnIpPrefixRoutes();
     assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
     assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
     assertThat(ipPrefixRoutes.getVni(), equalTo(1011));

@@ -18,6 +18,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public class RoutingInstance implements Serializable {
 
@@ -61,6 +63,11 @@ public class RoutingInstance implements Serializable {
   private final JuniperSystem _system;
   private @Nullable Resolution _resolution;
   private @Nonnull Map<String, BridgeDomain> _bridgeDomains;
+  private @Nullable ExtendedCommunity _vrfTargetCommunity;
+  private @Nullable ExtendedCommunity _vrfTargetImport;
+  private @Nullable ExtendedCommunity _vrfTargetExport;
+  private @Nullable EvpnIpPrefixRoutes _evpnIpPrefixRoutes;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -361,6 +368,55 @@ public class RoutingInstance implements Serializable {
 
   public @Nonnull Map<String, BridgeDomain> getBridgeDomains() {
     return _bridgeDomains;
+  }
+
+  /** Returns the VRF-target community (both import and export) for this routing-instance. */
+  public @Nullable ExtendedCommunity getVrfTargetCommunity() {
+    return _vrfTargetCommunity;
+  }
+
+  public void setVrfTargetCommunity(@Nullable ExtendedCommunity vrfTargetCommunity) {
+    _vrfTargetCommunity = vrfTargetCommunity;
+  }
+
+  /** Returns the VRF-target import community override for this routing-instance. */
+  public @Nullable ExtendedCommunity getVrfTargetImport() {
+    return _vrfTargetImport;
+  }
+
+  public void setVrfTargetImport(@Nullable ExtendedCommunity vrfTargetImport) {
+    _vrfTargetImport = vrfTargetImport;
+  }
+
+  /** Returns the VRF-target export community override for this routing-instance. */
+  public @Nullable ExtendedCommunity getVrfTargetExport() {
+    return _vrfTargetExport;
+  }
+
+  public void setVrfTargetExport(@Nullable ExtendedCommunity vrfTargetExport) {
+    _vrfTargetExport = vrfTargetExport;
+  }
+
+  /** Returns the per-RI EVPN ip-prefix-routes config, or {@code null} if not set. */
+  public @Nullable EvpnIpPrefixRoutes getEvpnIpPrefixRoutes() {
+    return _evpnIpPrefixRoutes;
+  }
+
+  /** Returns the per-RI EVPN ip-prefix-routes config, creating it if necessary. */
+  public @Nonnull EvpnIpPrefixRoutes getOrCreateEvpnIpPrefixRoutes() {
+    if (_evpnIpPrefixRoutes == null) {
+      _evpnIpPrefixRoutes = new EvpnIpPrefixRoutes();
+    }
+    return _evpnIpPrefixRoutes;
+  }
+
+  /** Returns the explicit route-distinguisher configured on this routing-instance. */
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
+    return _routeDistinguisher;
+  }
+
+  public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
+    _routeDistinguisher = routeDistinguisher;
   }
 
   public @Nonnull BridgeDomain getOrAddBridgeDomain(String name) {

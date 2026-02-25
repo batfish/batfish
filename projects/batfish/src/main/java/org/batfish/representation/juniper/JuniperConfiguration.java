@@ -179,6 +179,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
@@ -201,6 +202,7 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -2434,6 +2436,248 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Weight for locally originated VRF-leaked routes, consistent with standard BGP convention. */
+  @VisibleForTesting static final int EVPN_IPR_VRF_LEAK_WEIGHT = 32768;
+
+  /**
+   * Compute the set of import RTs for a routing-instance. Uses vrf-target import if set, otherwise
+   * falls back to the bidirectional vrf-target community.
+   */
+  @VisibleForTesting
+  static @Nonnull Set<ExtendedCommunity> getImportRts(RoutingInstance ri) {
+    if (ri.getVrfTargetImport() != null) {
+      return ImmutableSet.of(ri.getVrfTargetImport());
+    }
+    if (ri.getVrfTargetCommunity() != null) {
+      return ImmutableSet.of(ri.getVrfTargetCommunity());
+    }
+    return ImmutableSet.of();
+  }
+
+  /**
+   * Compute the set of export RTs for a routing-instance. Uses vrf-target export if set, otherwise
+   * falls back to the bidirectional vrf-target community.
+   */
+  @VisibleForTesting
+  static @Nonnull Set<ExtendedCommunity> getExportRts(RoutingInstance ri) {
+    if (ri.getVrfTargetExport() != null) {
+      return ImmutableSet.of(ri.getVrfTargetExport());
+    }
+    if (ri.getVrfTargetCommunity() != null) {
+      return ImmutableSet.of(ri.getVrfTargetCommunity());
+    }
+    return ImmutableSet.of();
+  }
+
+  /** Generated redistribution policy name for EVPN ip-prefix-routes in a VRF. */
+  @VisibleForTesting
+  static @Nonnull String generatedEvpnIprRedistPolicyName(String vrfName) {
+    return String.format("~EVPN_IPR_REDISTRIBUTION:%s~", vrfName);
+  }
+
+  /** Generated deny-all redistribution policy name for VRFs without explicit redistribution. */
+  @VisibleForTesting
+  static @Nonnull String generatedEvpnIprDenyAllRedistPolicyName(String vrfName) {
+    return String.format("~EVPN_IPR_DENY_ALL_REDISTRIBUTION:%s~", vrfName);
+  }
+
+  /**
+   * Create a redistribution policy for EVPN ip-prefix-routes in a tenant VRF. The policy
+   * redistributes connected routes into BGP, optionally filtered/modified by the per-RI export
+   * policy (e.g., {@code protocols evpn ip-prefix-routes export SET_MAP}).
+   */
+  private void createEvpnIprRedistributionPolicy(
+      RoutingInstance ri, EvpnIpPrefixRoutes ipr, String policyName) {
+    ImmutableList.Builder<Statement> stmts = ImmutableList.builder();
+
+    // Set origin type to IGP for connected routes
+    stmts.add(
+        new If(
+            new MatchProtocol(RoutingProtocol.CONNECTED),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)))));
+
+    // Set weight for locally originated routes
+    stmts.add(new SetWeight(new LiteralInt(EVPN_IPR_VRF_LEAK_WEIGHT)));
+
+    // Match connected routes, optionally apply per-RI export policy
+    ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+    conditions.add(new MatchProtocol(RoutingProtocol.CONNECTED));
+    String exportPolicy = ipr.getExportPolicy();
+    if (exportPolicy != null && _c.getRoutingPolicies().containsKey(exportPolicy)) {
+      conditions.add(new CallExpr(exportPolicy));
+    }
+    stmts.add(
+        new If(
+            new Conjunction(conditions.build()),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+
+    // Default reject
+    stmts.add(Statements.ExitReject.toStaticStatement());
+
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(policyName)
+        .setStatements(stmts.build())
+        .build();
+  }
+
+  /**
+   * Set up EVPN type-5 (ip-prefix-routes) VRF leaking through the full EVPN pipeline.
+   *
+   * <p>For each routing-instance with per-RI {@code protocols evpn ip-prefix-routes} and a VNI:
+   *
+   * <ul>
+   *   <li><b>Exporters</b> (RIs with export RTs): Create a BGP process with connected
+   *       redistribution, a {@link Layer3Vni} on the tenant VRF, and a {@link
+   *       Bgpv4ToEvpnVrfLeakConfig} on the default VRF to export the tenant VRF's BGPv4 routes as
+   *       EVPN type-5.
+   *   <li><b>Importers</b> (RIs with import RTs): Create an {@link EvpnToBgpv4VrfLeakConfig} on
+   *       the importing VRF with a policy matching the import route-target, and a minimal BGP
+   *       process to hold the leaked routes.
+   * </ul>
+   *
+   * <p>This follows the same EVPN type-5 pipeline as Arista/NX-OS: tenant VRF BGPv4 →
+   * Bgpv4ToEvpnVrfLeakConfig → default VRF EVPN type-5 → EvpnToBgpv4VrfLeakConfig → importing VRF
+   * BGPv4.
+   */
+  @VisibleForTesting
+  void convertEvpnIprVrfLeaking() {
+    Map<String, RoutingInstance> routingInstances = _masterLogicalSystem.getRoutingInstances();
+    Vrf defaultVrf = _c.getDefaultVrf();
+    if (defaultVrf == null) {
+      return;
+    }
+
+    boolean hasEvpnIprLeaking = false;
+
+    // Phase 1: Set up exporters — RIs with per-RI ip-prefix-routes + VNI + export RTs
+    for (RoutingInstance ri : routingInstances.values()) {
+      EvpnIpPrefixRoutes ipr = ri.getEvpnIpPrefixRoutes();
+      if (ipr == null || ipr.getVni() == null) {
+        continue;
+      }
+      Set<ExtendedCommunity> exportRts = getExportRts(ri);
+      if (exportRts.isEmpty()) {
+        continue;
+      }
+      String vrfName = ri.getName();
+      Vrf tenantVrf = _c.getVrfs().get(vrfName);
+      if (tenantVrf == null || vrfName.equals(Configuration.DEFAULT_VRF_NAME)) {
+        continue;
+      }
+
+      hasEvpnIprLeaking = true;
+
+      // Create Layer3Vni on tenant VRF (required by dataplane for Bgpv4→EVPN leak)
+      tenantVrf.addLayer3Vni(
+          Layer3Vni.builder().setVni(ipr.getVni()).setSrcVrf(vrfName).build());
+
+      // Create BGP process with connected redistribution if not already present
+      if (tenantVrf.getBgpProcess() == null) {
+        String redistPolicyName = generatedEvpnIprRedistPolicyName(vrfName);
+        createEvpnIprRedistributionPolicy(ri, ipr, redistPolicyName);
+        BgpProcess proc =
+            bgpProcessBuilder()
+                .setRouterId(getRouterId(ri))
+                .setRedistributionPolicy(redistPolicyName)
+                .build();
+        tenantVrf.setBgpProcess(proc);
+      }
+
+      // Determine route distinguisher for the VRF
+      ExtendedCommunity exportRt = exportRts.iterator().next();
+      RouteDistinguisher rd = ri.getRouteDistinguisher();
+      if (rd == null) {
+        // Fall back to route-distinguisher-id + VNI
+        Ip rdId = ri.getRouteDistinguisherId();
+        if (rdId != null) {
+          rd = RouteDistinguisher.from(rdId, ipr.getVni());
+        }
+      }
+      if (rd == null) {
+        continue; // Cannot create leak config without RD
+      }
+
+      // Create Bgpv4ToEvpnVrfLeakConfig on default VRF
+      Bgpv4ToEvpnVrfLeakConfig leakConfig =
+          Bgpv4ToEvpnVrfLeakConfig.builder()
+              .setImportFromVrf(vrfName)
+              .setSrcVrfRouteDistinguisher(rd)
+              .setAttachRouteTargets(exportRt)
+              .build();
+      getOrInitVrfLeakConfig(defaultVrf).addBgpv4ToEvpnVrfLeakConfig(leakConfig);
+    }
+
+    // Phase 2: Set up importers — RIs with import RTs
+    for (RoutingInstance ri : routingInstances.values()) {
+      Set<ExtendedCommunity> importRts = getImportRts(ri);
+      if (importRts.isEmpty()) {
+        continue;
+      }
+      String vrfName = ri.getName();
+      Vrf tenantVrf = _c.getVrfs().get(vrfName);
+      if (tenantVrf == null || vrfName.equals(Configuration.DEFAULT_VRF_NAME)) {
+        continue;
+      }
+
+      hasEvpnIprLeaking = true;
+
+      // Create import policy matching import RTs
+      ExtendedCommunity importRt = importRts.iterator().next();
+      String importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(vrfName);
+      if (!_c.getRoutingPolicies().containsKey(importPolicyName)) {
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(importPolicyName)
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(new CommunityIs(importRt))),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+            .addStatement(Statements.ReturnFalse.toStaticStatement())
+            .build();
+      }
+
+      // Create EvpnToBgpv4VrfLeakConfig on this VRF
+      getOrInitVrfLeakConfig(tenantVrf)
+          .addEvpnToBgpv4VrfLeakConfig(
+              EvpnToBgpv4VrfLeakConfig.builder()
+                  .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
+                  .setImportPolicy(importPolicyName)
+                  .build());
+
+      // Create minimal BGP process if not present (needed to have a BGP RIB for leaked routes)
+      if (tenantVrf.getBgpProcess() == null) {
+        BgpProcess proc = bgpProcessBuilder().setRouterId(getRouterId(ri)).build();
+        tenantVrf.setBgpProcess(proc);
+      }
+    }
+
+    // Phase 3: If any EVPN ip-prefix-routes leaking was configured, switch to the Cisco-style
+    // redistribution model where routes enter the BGP RIB via a redistribution policy. This is
+    // required because the Bgpv4ToEvpn dataplane pipeline reads routes from the BGP RIB
+    // (via getRoutesToLeak()), which is only populated when exportBgpFromBgpRib is true.
+    if (hasEvpnIprLeaking) {
+      _c.setExportBgpFromBgpRib(true);
+      // Ensure every VRF with a BGP process has a redistribution policy. The assertion in
+      // BgpRoutingProcess.redistribute() requires that exportBgpFromBgpRib=true implies a
+      // non-null redistribution policy on every BGP process.
+      for (Vrf vrf : _c.getVrfs().values()) {
+        BgpProcess bgpProc = vrf.getBgpProcess();
+        if (bgpProc != null && bgpProc.getRedistributionPolicy() == null) {
+          String denyAllPolicyName = generatedEvpnIprDenyAllRedistPolicyName(vrf.getName());
+          RoutingPolicy.builder()
+              .setOwner(_c)
+              .setName(denyAllPolicyName)
+              .addStatement(Statements.ExitReject.toStaticStatement())
+              .build();
+          bgpProc.setRedistributionPolicy(denyAllPolicyName);
+        }
+      }
+    }
+  }
+
   private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
     List<VlanMember> effectiveMembers =
         !vlanMembers.isEmpty() ? vlanMembers : ImmutableList.of(DEFAULT_VLAN_MEMBER);
@@ -4176,6 +4420,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       convertResolution(ri);
     }
+
+    // Convert EVPN ip-prefix-routes cross-VRF leaking based on RT import/export.
+    // This must run after all VRFs exist and routing policies have been converted.
+    convertEvpnIprVrfLeaking();
 
     // static nats
     if (_masterLogicalSystem.getNatStatic() != null) {
