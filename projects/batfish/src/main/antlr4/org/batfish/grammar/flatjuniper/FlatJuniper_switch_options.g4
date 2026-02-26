@@ -13,6 +13,8 @@ s_switch_options
       so_interface
       | so_vtep_source_interface
       | so_route_distinguisher
+      | so_vrf_export
+      | so_vrf_import
       | so_vrf_target
       | so_vtep_source_interface
    )
@@ -56,6 +58,16 @@ sovt_export
 sovt_import
 :
    IMPORT extended_community
+;
+
+so_vrf_export
+:
+   VRF_EXPORT name = junos_name
+;
+
+so_vrf_import
+:
+   VRF_IMPORT name = junos_name
 ;
 
 so_interface

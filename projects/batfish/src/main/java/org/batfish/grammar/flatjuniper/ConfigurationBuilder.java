@@ -204,6 +204,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMM
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HOST_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
@@ -364,13 +366,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dscp_code_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_encapsulationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_extended_vni_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_multicast_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_vni_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_advertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_encapsulationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_vniContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_multicast_modeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_vni_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
@@ -943,6 +945,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcl_networkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcls_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vrf_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sovt_autoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sovt_communityContext;
@@ -3898,6 +3902,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSo_vrf_import(So_vrf_importContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, SWITCH_OPTIONS_VRF_IMPORT, getLine(ctx.name.getStart()));
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(name);
+  }
+
+  @Override
+  public void exitSo_vrf_export(So_vrf_exportContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, SWITCH_OPTIONS_VRF_EXPORT, getLine(ctx.name.getStart()));
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(name);
+  }
+
+  @Override
   public void exitSovt_community(Sovt_communityContext ctx) {
     if (ctx.extended_community() != null) {
       _currentLogicalSystem
@@ -4976,9 +4996,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   /**
-   * Returns the appropriate {@link EvpnIpPrefixRoutes} for the current context. When inside a
-   * named routing-instance (non-default RI), returns the per-RI EvpnIpPrefixRoutes. When in the
-   * default RI, returns the global EVPN ip-prefix-routes.
+   * Returns the appropriate {@link EvpnIpPrefixRoutes} for the current context. When inside a named
+   * routing-instance (non-default RI), returns the per-RI EvpnIpPrefixRoutes. When in the default
+   * RI, returns the global EVPN ip-prefix-routes.
    */
   private @Nonnull EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes() {
     if (_currentRoutingInstance != _currentLogicalSystem.getDefaultRoutingInstance()) {

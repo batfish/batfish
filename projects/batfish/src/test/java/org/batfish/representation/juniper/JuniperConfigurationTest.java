@@ -58,10 +58,12 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -74,8 +76,6 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
-import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
-import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -1121,8 +1121,8 @@ public class JuniperConfigurationTest {
 
   /**
    * Test that when Juniper EVPN ip-prefix-routes with advertise direct-nexthop is configured, the
-   * conversion produces Bgpv4ToEvpnVrfLeakConfig on the default VRF and EvpnToBgpv4VrfLeakConfig
-   * on the tenant VRF.
+   * conversion produces Bgpv4ToEvpnVrfLeakConfig on the default VRF and EvpnToBgpv4VrfLeakConfig on
+   * the tenant VRF.
    */
   @Test
   public void testEvpnVrfLeakingDirectNexthop() {
@@ -1194,15 +1194,11 @@ public class JuniperConfigurationTest {
     assertFalse(
         "Expected Bgpv4ToEvpnVrfLeakConfig entries",
         defaultVrfLeak.getBgpv4ToEvpnVrfLeakConfigs().isEmpty());
-    Bgpv4ToEvpnVrfLeakConfig bgpv4ToEvpn =
-        defaultVrfLeak.getBgpv4ToEvpnVrfLeakConfigs().get(0);
+    Bgpv4ToEvpnVrfLeakConfig bgpv4ToEvpn = defaultVrfLeak.getBgpv4ToEvpnVrfLeakConfigs().get(0);
     assertEquals(
-        "Leak config should import from tenant VRF",
-        tenantVrfName,
-        bgpv4ToEvpn.getImportFromVrf());
+        "Leak config should import from tenant VRF", tenantVrfName, bgpv4ToEvpn.getImportFromVrf());
     assertFalse(
-        "Leak config should have route targets",
-        bgpv4ToEvpn.getAttachRouteTargets().isEmpty());
+        "Leak config should have route targets", bgpv4ToEvpn.getAttachRouteTargets().isEmpty());
 
     // Verify EvpnToBgpv4VrfLeakConfig on tenant VRF
     VrfLeakConfig tenantVrfLeak = tenantVrf.getVrfLeakConfig();
@@ -1210,14 +1206,12 @@ public class JuniperConfigurationTest {
     assertFalse(
         "Expected EvpnToBgpv4VrfLeakConfig entries",
         tenantVrfLeak.getEvpnToBgpv4VrfLeakConfigs().isEmpty());
-    EvpnToBgpv4VrfLeakConfig evpnToBgpv4 =
-        tenantVrfLeak.getEvpnToBgpv4VrfLeakConfigs().get(0);
+    EvpnToBgpv4VrfLeakConfig evpnToBgpv4 = tenantVrfLeak.getEvpnToBgpv4VrfLeakConfigs().get(0);
     assertEquals(
         "Leak config should import from default VRF",
         Configuration.DEFAULT_VRF_NAME,
         evpnToBgpv4.getImportFromVrf());
-    assertNotNull(
-        "Leak config should have an import policy", evpnToBgpv4.getImportPolicy());
+    assertNotNull("Leak config should have an import policy", evpnToBgpv4.getImportPolicy());
     // Verify the import policy was created in the configuration
     assertNotNull(
         "Import policy should exist in configuration routing policies",
@@ -1267,10 +1261,8 @@ public class JuniperConfigurationTest {
 
   /**
    * Test that cross-VRF leaking works for exporters without an EVPN export policy (static RT
-   * matching). vrf1 with export RT and per-RI ip-prefix-routes (VNI) should produce:
-   * - Bgpv4ToEvpnVrfLeakConfig on default VRF
-   * - EvpnToBgpv4VrfLeakConfig on vrf2
-   * - Layer3Vni on vrf1
+   * matching). vrf1 with export RT and per-RI ip-prefix-routes (VNI) should produce: -
+   * Bgpv4ToEvpnVrfLeakConfig on default VRF - EvpnToBgpv4VrfLeakConfig on vrf2 - Layer3Vni on vrf1
    * - BgpProcess on both tenant VRFs
    */
   @Test
@@ -1387,12 +1379,12 @@ public class JuniperConfigurationTest {
     VrfLeakConfig defaultLeak = defaultVrf.getVrfLeakConfig();
     assertNotNull("default VRF should have VRF leak config", defaultLeak);
     assertThat(defaultLeak.getBgpv4ToEvpnVrfLeakConfigs(), hasSize(2));
+    config._c.getVrfs().get("vrf1").getLayer2Vnis();
 
     // vrf1's redistribution policy should exist and reference the export policy
     String redistPolicyName = JuniperConfiguration.generatedEvpnIprRedistPolicyName("vrf1");
     assertNotNull(
-        "Redistribution policy should exist",
-        config._c.getRoutingPolicies().get(redistPolicyName));
+        "Redistribution policy should exist", config._c.getRoutingPolicies().get(redistPolicyName));
 
     // Both VRFs should have BGP processes with redistribution policy
     assertNotNull("vrf1 should have BGP process", viVrf1.getBgpProcess());

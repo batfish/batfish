@@ -11,6 +11,8 @@ public class SwitchOptions implements Serializable {
   private ExtendedCommunityOrAuto _vrfTargetCommunityorAuto;
   private ExtendedCommunity _vrfTargetImport;
   private ExtendedCommunity _vrfTargetExport;
+  private String _vrfImportPolicy;
+  private String _vrfExportPolicy;
 
   public String getVtepSourceInterface() {
     return _vtepSourceInterface;
@@ -50,5 +52,21 @@ public class SwitchOptions implements Serializable {
 
   public void setVrfTargetExport(ExtendedCommunity vrfTargetExport) {
     _vrfTargetExport = vrfTargetExport;
+  }
+
+  public String getVrfImportPolicy() {
+    return _vrfImportPolicy;
+  }
+
+  public void setVrfImportPolicy(String vrfImportPolicy) {
+    _vrfImportPolicy = vrfImportPolicy;
+  }
+
+  public String getVrfExportPolicy() {
+    return _vrfExportPolicy;
+  }
+
+  public void setVrfExportPolicy(String vrfExportPolicy) {
+    _vrfExportPolicy = vrfExportPolicy;
   }
 }

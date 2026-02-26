@@ -44,7 +44,18 @@ routing-options {
     router-id 10.10.10.1;
     autonomous-system 65002;
 }
-
+policy-options {
+    policy-statement evpn-switching {
+        term layer2 {
+            from community evpn-switching;
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    community evpn-switching members target:10755:9999;
+}
 protocols {
     bgp {
         group EVPN-PEERS {

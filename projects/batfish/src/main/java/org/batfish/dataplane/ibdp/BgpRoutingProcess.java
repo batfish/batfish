@@ -867,7 +867,28 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .forEach(
             vniConfig -> {
               // TODO: shouldn't need to access _c
+              // 1. Try to get the VNI from the current VRF context
               Layer2Vni l2Vni = _c.getVrfs().get(_vrfName).getLayer2Vnis().get(vniConfig.getVni());
+
+              // 2. FALLBACK: If not found, check the Default VRF (where Junos usually stores global
+              // VNIs)
+              if (l2Vni == null) {
+                l2Vni = _c.getVrfs().get("default").getLayer2Vnis().get(vniConfig.getVni());
+              }
+
+              // 3. Safety Check / Debugging
+              if (l2Vni == null) {
+                System.out.println(
+                    "WARNING: L2 VNI "
+                        + vniConfig.getVni()
+                        + " not found in VRF "
+                        + _vrfName
+                        + " or Default VRF.");
+                return; // Skip this VNI instead of crashing with an NPE
+              }
+
+              assert l2Vni != null;
+
               assert l2Vni != null; // Invariant guaranteed by proper conversion
               if (l2Vni.getSourceAddress() == null) {
                 return;

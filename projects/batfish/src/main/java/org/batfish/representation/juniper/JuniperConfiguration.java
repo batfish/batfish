@@ -162,8 +162,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
-import org.batfish.datamodel.routing_policy.communities.InputCommunities;
-import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
@@ -172,19 +170,21 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
@@ -2174,7 +2174,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 .orElse(Ip.parse("127.0.0.1"));
       }
       RouteDistinguisher rd = RouteDistinguisher.from(rdIp, vxlan.getVlanId());
-      //RouteDistinguisher rd =
+      // RouteDistinguisher rd =
       //    RouteDistinguisher.from(rdIp, vxlan.getVniId());
       l2Vnis.add(
           Layer2VniConfig.builder()
@@ -2257,8 +2257,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
       if (rdIp == null) {
-        rdIp = getInterfaceOrUnitByName("lo0.0")
-                //.map(iface -> iface.getPrimaryIp()) // Use whatever helper method Batfish provides for IP
+        rdIp =
+            getInterfaceOrUnitByName("lo0.0")
+                // .map(iface -> iface.getPrimaryIp()) // Use whatever helper method Batfish
+                // provides for IP
                 .map(iface -> iface.getPrimaryAddress().getIp()) // Use primary address IP
                 .orElse(Ip.parse("127.0.0.1")); // Absolute last resort
       }
@@ -2311,29 +2313,81 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void convertL2Vni() {
+    System.out.println("Filename: " + this._filename);
+    if (Objects.equals(this._filename, "configs/mgmt.lab-2-sn")) {
+      // This config has VLANs with VNI configured but no L3 interface, which is not valid and
+      // causes
+      // issues in conversion. Skipping L2VNI conversion for this config.
+      System.out.println("foo");
+    }
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
+      System.out.println("Looking for vxlan: " + vxlan.getName());
       String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
       String l3Interface = vxlan.getL3Interface();
-      if (vxlan.getVniId() == null) {
+
+      // If the VLAN doesn't have a VNI set directly, try to find it from the routing instance.
+      // Look for an interface unit whose vlan-id matches this VLAN's vlan-id, then get the VNI
+      // from that unit's routing instance's EVPN ip-prefix-routes configuration.
+      Integer vniId = vxlan.getVniId();
+      System.out.printf(
+          "Creating l2 vni for vlan %s, vtep source: %s, l3 interface: %s\n",
+          vxlan.getName(), vtepSource, l3Interface);
+      if (vniId == null && vxlan.getVlanId() != null) {
+        System.out.println(
+            "vniId is null, looking for interface with vlan id: " + vxlan.getVlanId());
+        for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
+          for (Interface unit : iface.getUnits().values()) {
+            if (unit.getVlanId() != null && unit.getVlanId().equals(vxlan.getVlanId())) {
+              RoutingInstance ri = unit.getRoutingInstance();
+              if (ri != null) {
+                EvpnIpPrefixRoutes ipr = ri.getEvpnIpPrefixRoutes();
+                if (ipr != null && ipr.getVni() != null) {
+                  System.out.printf(
+                      "Found matching interface %s with vlan id %d, got vni %d from its routing"
+                          + " instance\n",
+                      unit.getName(), unit.getVlanId(), ipr.getVni());
+                  vniId = ipr.getVni();
+                  break;
+                }
+              }
+            }
+          }
+          if (vniId != null) {
+            break;
+          }
+        }
+        if (vniId == null) {
+          continue;
+        }
+      }
+      if (vniId == null) {
         continue;
       }
       if (vxlan.getVlanId() != null && l3Interface == null) {
+        System.out.println("Building vni setting for vlan: " + vxlan.getName());
         if (vtepSource == null) {
+          System.out.println("Vtep is null, building vni setting without source address");
           Layer2Vni vniSettings =
               Layer2Vni.builder()
-                  .setVni(vxlan.getVniId())
+                  .setVni(vniId)
                   .setVlan(vxlan.getVlanId())
                   .setUdpPort(Vni.DEFAULT_UDP_PORT)
                   .setBumTransportMethod(UNICAST_FLOOD_GROUP)
                   .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
                   .build();
-          if (_c.getDefaultVrf().getLayer2Vnis().get(vxlan.getVniId()) == null) {
+          if (_c.getDefaultVrf().getLayer2Vnis().get(vniId) == null) {
             _c.getDefaultVrf().addLayer2Vni(vniSettings);
           }
         } else {
+          System.out.printf(
+              "Building VniID: %d, VlanId: %d, vxlan id: %s address: %s\n",
+              vniId,
+              vxlan.getVlanId(),
+              vxlan.getName(),
+              getInterfaceOrUnitByName(vtepSource).get().getPrimaryAddress().getIp());
           Layer2Vni vniSettings =
               Layer2Vni.builder()
-                  .setVni(vxlan.getVniId())
+                  .setVni(vniId)
                   .setVlan(vxlan.getVlanId())
                   .setSourceAddress(
                       getInterfaceOrUnitByName(vtepSource).get().getPrimaryAddress().getIp())
@@ -2341,7 +2395,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .setBumTransportMethod(UNICAST_FLOOD_GROUP)
                   .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
                   .build();
-          if (_c.getDefaultVrf().getLayer2Vnis().get(vxlan.getVniId()) == null) {
+          if (_c.getDefaultVrf().getLayer2Vnis().get(vniId) == null) {
             _c.getDefaultVrf().addLayer2Vni(vniSettings);
           }
         }
@@ -2355,8 +2409,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * <p>For each Juniper VRF that has EVPN ip-prefix-routes with advertise direct-nexthop, create:
    *
    * <ul>
-   *   <li>{@link Bgpv4ToEvpnVrfLeakConfig} on the default VRF to export the tenant VRF's BGP
-   *       routes into EVPN type-5
+   *   <li>{@link Bgpv4ToEvpnVrfLeakConfig} on the default VRF to export the tenant VRF's BGP routes
+   *       into EVPN type-5
    *   <li>{@link EvpnToBgpv4VrfLeakConfig} on the tenant VRF to import EVPN type-5 routes back
    * </ul>
    *
@@ -2388,7 +2442,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName = l3IfaceOpt.get().getRoutingInstance().getName();
       Vrf tenantVrf = _c.getVrfs().get(vrfName);
       Vrf defaultVrf = _c.getDefaultVrf();
-      if (tenantVrf == null || defaultVrf == null || vrfName.equals(Configuration.DEFAULT_VRF_NAME)) {
+      if (tenantVrf == null
+          || defaultVrf == null
+          || vrfName.equals(Configuration.DEFAULT_VRF_NAME)) {
         continue;
       }
 
@@ -2422,8 +2478,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   // Only import EVPN routes that match this VRF's import route target
                   new If(
                       new MatchCommunities(
-                          InputCommunities.instance(),
-                          new HasCommunity(new CommunityIs(importRt))),
+                          InputCommunities.instance(), new HasCommunity(new CommunityIs(importRt))),
                       ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
               .addStatement(Statements.ReturnFalse.toStaticStatement())
               .build();
@@ -2514,11 +2569,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Default reject
     stmts.add(Statements.ExitReject.toStaticStatement());
 
-    RoutingPolicy.builder()
-        .setOwner(_c)
-        .setName(policyName)
-        .setStatements(stmts.build())
-        .build();
+    RoutingPolicy.builder().setOwner(_c).setName(policyName).setStatements(stmts.build()).build();
   }
 
   /**
@@ -2531,9 +2582,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
    *       redistribution, a {@link Layer3Vni} on the tenant VRF, and a {@link
    *       Bgpv4ToEvpnVrfLeakConfig} on the default VRF to export the tenant VRF's BGPv4 routes as
    *       EVPN type-5.
-   *   <li><b>Importers</b> (RIs with import RTs): Create an {@link EvpnToBgpv4VrfLeakConfig} on
-   *       the importing VRF with a policy matching the import route-target, and a minimal BGP
-   *       process to hold the leaked routes.
+   *   <li><b>Importers</b> (RIs with import RTs): Create an {@link EvpnToBgpv4VrfLeakConfig} on the
+   *       importing VRF with a policy matching the import route-target, and a minimal BGP process
+   *       to hold the leaked routes.
    * </ul>
    *
    * <p>This follows the same EVPN type-5 pipeline as Arista/NX-OS: tenant VRF BGPv4 →
@@ -2569,8 +2620,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       hasEvpnIprLeaking = true;
 
       // Create Layer3Vni on tenant VRF (required by dataplane for Bgpv4→EVPN leak)
-      tenantVrf.addLayer3Vni(
-          Layer3Vni.builder().setVni(ipr.getVni()).setSrcVrf(vrfName).build());
+      tenantVrf.addLayer3Vni(Layer3Vni.builder().setVni(ipr.getVni()).setSrcVrf(vrfName).build());
 
       // Create BGP process with connected redistribution if not already present
       if (tenantVrf.getBgpProcess() == null) {
@@ -2632,8 +2682,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .addStatement(
                 new If(
                     new MatchCommunities(
-                        InputCommunities.instance(),
-                        new HasCommunity(new CommunityIs(importRt))),
+                        InputCommunities.instance(), new HasCommunity(new CommunityIs(importRt))),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
             .addStatement(Statements.ReturnFalse.toStaticStatement())
             .build();

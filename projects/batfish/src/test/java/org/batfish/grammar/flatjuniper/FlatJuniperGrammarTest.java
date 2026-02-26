@@ -511,6 +511,7 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
+import org.batfish.representation.juniper.SwitchOptions;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -8188,16 +8189,21 @@ public final class FlatJuniperGrammarTest {
     assertThat(ip, equalTo(rd));
   }
 
-//   @Test
-//   public void testRoutingInstancesRouteDistinguisherIdExtraction() {
-//     JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instances-route-distinguisher");
-//   }
+  //   @Test
+  //   public void testRoutingInstancesRouteDistinguisherIdExtraction() {
+  //     JuniperConfiguration juniperConfiguration =
+  // parseJuniperConfig("routing-instances-route-distinguisher");
+  //   }
 
   @Test
   public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
+    JuniperConfiguration juniperConfiguration =
+        parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
     EvpnIpPrefixRoutes ipPrefixRoutes =
-        juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("FOO")
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("FOO")
             .getEvpnIpPrefixRoutes();
     assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
     assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
@@ -8206,13 +8212,14 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
   }
 
-//   @Test
-//   public void testSwitchOptionsRouteDistinguisherWithVrf() {
-//     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-route-distinguisher");
-
-//   }
-
-
+  @Test
+  public void testSwitchOptionsRouteDistinguisherWithVrf() {
+    JuniperConfiguration juniperConfiguration =
+        parseJuniperConfig("switch-options-route-distinguisher");
+    SwitchOptions switchOptions = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions();
+    assertThat(switchOptions.getVrfImportPolicy(), equalTo("evpn-switching"));
+    assertThat(switchOptions.getVrfExportPolicy(), equalTo("evpn-exporting"));
+  }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherIpExtraction() {
