@@ -37,8 +37,8 @@
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
     "jakarta.xml.bind:jakarta.xml.bind-api": 952929903,
     "junit:junit": -744267592,
-    "net.sourceforge.pmd:pmd-cli": -1925573314,
-    "net.sourceforge.pmd:pmd-java": -1021939910,
+    "net.sourceforge.pmd:pmd-cli": 572442623,
+    "net.sourceforge.pmd:pmd-java": 1476076027,
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": 1132363499,
@@ -173,14 +173,14 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": -560158028,
     "net.sf.saxon:Saxon-HE:jar:sources": 134942547,
-    "net.sourceforge.pmd:pmd-cli": -249843616,
-    "net.sourceforge.pmd:pmd-cli:jar:sources": 2123482356,
-    "net.sourceforge.pmd:pmd-core": -1939134466,
-    "net.sourceforge.pmd:pmd-core:jar:sources": -2001114834,
+    "net.sourceforge.pmd:pmd-cli": 1088682620,
+    "net.sourceforge.pmd:pmd-cli:jar:sources": -188711492,
+    "net.sourceforge.pmd:pmd-core": -710537783,
+    "net.sourceforge.pmd:pmd-core:jar:sources": -115717930,
     "net.sourceforge.pmd:pmd-designer": -1899777465,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 1263048820,
-    "net.sourceforge.pmd:pmd-java": 105458524,
-    "net.sourceforge.pmd:pmd-java:jar:sources": 1625381372,
+    "net.sourceforge.pmd:pmd-java": 1027497278,
+    "net.sourceforge.pmd:pmd-java:jar:sources": -714273782,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
     "org.antlr:antlr4:jar:complete": -609884220,
@@ -207,8 +207,8 @@
     "org.apfloat:apfloat:jar:sources": 3528551,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
-    "org.checkerframework:checker-qual": -1521111878,
-    "org.checkerframework:checker-qual:jar:sources": -705637224,
+    "org.checkerframework:checker-qual": 386068353,
+    "org.checkerframework:checker-qual:jar:sources": 177672168,
     "org.codehaus.jettison:jettison": -342403950,
     "org.codehaus.jettison:jettison:jar:sources": 1360768140,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
@@ -689,17 +689,17 @@
     },
     "net.sourceforge.pmd:pmd-cli": {
       "shasums": {
-        "jar": "aa31d13d2bc711c84e6fbcacc2b1dd6c2e3682c60720a3a049d2fa43921ddb0f",
-        "sources": "82e70d38e18743ccf065aceaabedf0a18ba27a99211ef79f7d1376bc020551cb"
+        "jar": "093fb521fbb83a716cb11d4d810278b603d3d95ec493abadbbebd233903d3aea",
+        "sources": "b9586550380414d771a5209e6a301cfda579ae3981b7f3ef2680aff82cf162a5"
       },
-      "version": "7.21.0"
+      "version": "7.22.0"
     },
     "net.sourceforge.pmd:pmd-core": {
       "shasums": {
-        "jar": "e30ab9486a47defa94ff9c58249038f8202de4423b8acb2a82178ca2bdad8d03",
-        "sources": "37bad2f09a1e1e590d875c845910646b23f0afe454598c9c7b4a19aa00d69f13"
+        "jar": "827d50df304f83ef715e65a8cef2e80fcd746c001cbf598763a6c9b49e8b7fc5",
+        "sources": "74a973fd84a3679bc2f95c9a25663f4da17eab4dc742db6e48bdb8835d42a2c3"
       },
-      "version": "7.21.0"
+      "version": "7.22.0"
     },
     "net.sourceforge.pmd:pmd-designer": {
       "shasums": {
@@ -710,10 +710,10 @@
     },
     "net.sourceforge.pmd:pmd-java": {
       "shasums": {
-        "jar": "7e9136a4bd4f11764a752e9581ae907ccf41bc0ecd2e53be27eddbbe55b8fbbd",
-        "sources": "e64ca8aacf64302f404286bc4ec625b1388733ce9b84a697b776273d86179cf7"
+        "jar": "62de40afc41d56e9efdd6a09f04635fcf6b13a50a33c28a27b88f51624a4c095",
+        "sources": "9d899b915d283d78bdca1c1cfc71103614d02ce74c2ccd5a8456b94627144332"
       },
-      "version": "7.21.0"
+      "version": "7.22.0"
     },
     "org.antlr:antlr4": {
       "shasums": {
@@ -808,10 +808,10 @@
     },
     "org.checkerframework:checker-qual": {
       "shasums": {
-        "jar": "7ca002815d92fad79e966b375c2ee7b2b4bf953024bc9a5d5e0c59df13ff5af8",
-        "sources": "8e0fc17e3ed2e60f3aea6204149a086f4a448d0275088fc199bac27a3611874b"
+        "jar": "befe4b15773dc92ccc88ecb5ab1607786a10c3b889813cb39ef21c7f5e3643dc",
+        "sources": "91f2337a803f7cc6fdc069e77a7899c2a39053c23cefc3afa3c9b7fe3cb2fa68"
       },
-      "version": "3.53.0"
+      "version": "3.53.1"
     },
     "org.codehaus.jettison:jettison": {
       "shasums": {
