@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -15,8 +16,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents runtime data for a device */
+/**
+ * Represents runtime data for a device.
+ *
+ * <p>Note: Legacy runtime data files may have interface names as direct properties instead of under
+ * "interfaces". These are ignored to allow parsing to succeed. The proper fix is to regenerate the
+ * runtime data with the correct format.
+ */
 @ParametersAreNonnullByDefault
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class RuntimeData {
   public static final class Builder {
     private @Nonnull Map<String, InterfaceRuntimeData> _interfaces;

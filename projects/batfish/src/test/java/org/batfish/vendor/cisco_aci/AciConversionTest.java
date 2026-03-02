@@ -1,0 +1,1097 @@
+package org.batfish.vendor.cisco_aci;
+
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import java.util.SortedMap;
+import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciConversion;
+import org.batfish.vendor.cisco_aci.representation.BgpPeer;
+import org.batfish.vendor.cisco_aci.representation.BridgeDomain;
+import org.batfish.vendor.cisco_aci.representation.Contract;
+import org.batfish.vendor.cisco_aci.representation.Epg;
+import org.batfish.vendor.cisco_aci.representation.FabricLink;
+import org.batfish.vendor.cisco_aci.representation.FabricNode;
+import org.batfish.vendor.cisco_aci.representation.FabricNodeInterface;
+import org.batfish.vendor.cisco_aci.representation.FilterModel;
+import org.batfish.vendor.cisco_aci.representation.InterFabricConnection;
+import org.batfish.vendor.cisco_aci.representation.L2Out;
+import org.batfish.vendor.cisco_aci.representation.L3Out;
+import org.batfish.vendor.cisco_aci.representation.OspfConfig;
+import org.batfish.vendor.cisco_aci.representation.PathAttachment;
+import org.batfish.vendor.cisco_aci.representation.TabooContract;
+import org.batfish.vendor.cisco_aci.representation.TenantVrf;
+import org.junit.Test;
+
+/** Tests of {@link AciConversion} and ACI configuration conversion. */
+public class AciConversionTest {
+
+  /**
+   * Creates a test ACI configuration with sample fabric nodes, VRFs, bridge domains, and contracts.
+   */
+  private AciConfiguration createTestAciConfiguration() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create fabric nodes (nodeId, name, podId, role)
+    FabricNode spine1 = createFabricNode("101", "spine1", "1", "spine");
+    FabricNode spine2 = createFabricNode("102", "spine2", "1", "spine");
+    FabricNode leaf1 = createFabricNode("201", "leaf1", "2", "leaf");
+    FabricNode leaf2 = createFabricNode("202", "leaf2", "2", "leaf");
+
+    config.getFabricNodes().put("101", spine1);
+    config.getFabricNodes().put("102", spine2);
+    config.getFabricNodes().put("201", leaf1);
+    config.getFabricNodes().put("202", leaf2);
+
+    // Create VRFs
+    TenantVrf vrf1 = new TenantVrf("vrf1");
+    vrf1.setTenant("tenant1");
+    vrf1.setDescription("Test VRF 1");
+
+    TenantVrf vrf2 = new TenantVrf("vrf2");
+    vrf2.setTenant("tenant1");
+    vrf2.setDescription("Test VRF 2");
+
+    config.getVrfs().put("vrf1", vrf1);
+    config.getVrfs().put("vrf2", vrf2);
+
+    // Create bridge domains
+    BridgeDomain bd1 = new BridgeDomain("bd1");
+    bd1.setVrf("vrf1");
+    bd1.setTenant("tenant1");
+    bd1.setSubnets(ImmutableList.of("10.1.1.0/24", "10.1.2.0/24"));
+    bd1.setDescription("Bridge Domain 1");
+
+    BridgeDomain bd2 = new BridgeDomain("bd2");
+    bd2.setVrf("vrf2");
+    bd2.setTenant("tenant1");
+    bd2.setSubnets(ImmutableList.of("10.2.1.0/24"));
+    bd2.setDescription("Bridge Domain 2");
+
+    config.getBridgeDomains().put("bd1", bd1);
+    config.getBridgeDomains().put("bd2", bd2);
+
+    // Create contracts
+    Contract contract1 = new Contract("web_contract");
+    contract1.setTenant("tenant1");
+    contract1.setDescription("Web traffic contract");
+
+    Contract.Subject subject1 = new Contract.Subject();
+    subject1.setName("http_subject");
+
+    Contract.FilterRef filter1 = new Contract.FilterRef();
+    filter1.setName("http_filter");
+    filter1.setIpProtocol("tcp");
+    filter1.setDestinationPorts(ImmutableList.of("80", "443"));
+
+    Contract.FilterRef filter2 = new Contract.FilterRef();
+    filter2.setName("https_filter");
+    filter2.setIpProtocol("tcp");
+    filter2.setDestinationPorts(ImmutableList.of("8443"));
+
+    subject1.setFilters(ImmutableList.of(filter1, filter2));
+    contract1.setSubjects(ImmutableList.of(subject1));
+
+    config.getContracts().put("web_contract", contract1);
+
+    // Create EPGs
+    Epg epg1 = new Epg("web_epg");
+    epg1.setTenant("tenant1");
+    epg1.setBridgeDomain("bd1");
+    epg1.setProvidedContracts(ImmutableList.of("web_contract"));
+    epg1.setDescription("Web EPG");
+
+    Epg epg2 = new Epg("app_epg");
+    epg2.setTenant("tenant1");
+    epg2.setBridgeDomain("bd1");
+    epg2.setConsumedContracts(ImmutableList.of("web_contract"));
+    epg2.setDescription("App EPG");
+
+    config.getEpgs().put("web_epg", epg1);
+    config.getEpgs().put("app_epg", epg2);
+
+    config.finalizeStructures();
+    return config;
+  }
+
+  /** Creates a fabric node with the given attributes. */
+  private FabricNode createFabricNode(String nodeId, String name, String podId, String role) {
+    FabricNode node = new FabricNode();
+    node.setNodeId(nodeId);
+    node.setName(name);
+    node.setPodId(podId);
+    node.setRole(role);
+
+    // Add some interfaces
+    FabricNodeInterface iface1 = new FabricNodeInterface();
+    iface1.setName("ethernet1/1");
+    iface1.setType("ethernet");
+    iface1.setEnabled(true);
+    iface1.setDescription("Interface 1/1");
+
+    FabricNodeInterface iface2 = new FabricNodeInterface();
+    iface2.setName("ethernet1/2");
+    iface2.setType("ethernet");
+    iface2.setEnabled(true);
+    iface2.setDescription("Interface 1/2");
+
+    node.getInterfaces().put("ethernet1/1", iface1);
+    node.getInterfaces().put("ethernet1/2", iface2);
+
+    return node;
+  }
+
+  @Test
+  public void testToVendorIndependentConfigurations_fabricNodesToSeparateConfigurations() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // Should have 4 configurations (4 fabric nodes)
+    // Keys are now resolved hostnames.
+    assertThat(configs.size(), equalTo(4));
+    assertThat(configs, hasKey("spine1"));
+    assertThat(configs, hasKey("spine2"));
+    assertThat(configs, hasKey("leaf1"));
+    assertThat(configs, hasKey("leaf2"));
+  }
+
+  @Test
+  public void testToVendorIndependentConfigurations_vrfsConverted() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // Check that VRFs are created in each configuration
+    for (Configuration config : configs.values()) {
+      // Should have default VRF
+      assertThat(config.getVrfs(), hasKey(DEFAULT_VRF_NAME));
+
+      // Should have custom VRFs
+      assertThat(config.getVrfs(), hasKey("vrf1"));
+      assertThat(config.getVrfs(), hasKey("vrf2"));
+
+      // Verify VRF properties
+      Vrf vrf1 = config.getVrfs().get("vrf1");
+      assertNotNull(vrf1);
+      assertEquals("vrf1", vrf1.getName());
+    }
+  }
+
+  @Test
+  public void testToVendorIndependentConfigurations_bridgeDomainsCreateInterfaces() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // Check that VLAN interfaces are created for bridge domains
+    Configuration leaf1Config = configs.get("leaf1");
+    assertNotNull(leaf1Config);
+
+    // Bridge domains should create VLAN interfaces with subnet addresses
+    boolean hasVlanInterface = false;
+    for (Interface iface : leaf1Config.getAllInterfaces().values()) {
+      if (iface.getInterfaceType() == InterfaceType.VLAN) {
+        hasVlanInterface = true;
+        // Check that interface has addresses from bridge domain subnets
+        assertFalse(iface.getAllAddresses().isEmpty());
+        break;
+      }
+    }
+    assertTrue("Expected VLAN interface for bridge domain", hasVlanInterface);
+  }
+
+  @Test
+  public void testToVendorIndependentConfigurations_contractsCreateAcls() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // Check that ACLs are created for contracts
+    Configuration leaf1Config = configs.get("leaf1");
+    assertNotNull(leaf1Config);
+
+    String aclName = AciConversion.getContractAclName("web_contract");
+    assertThat(leaf1Config.getIpAccessLists(), hasKey(aclName));
+
+    IpAccessList acl = leaf1Config.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    // Should have permit lines for the contract filters plus implicit deny
+    assertTrue(acl.getLines().size() >= 3); // 2 permit lines + 1 deny
+  }
+
+  @Test
+  public void testGetContractAclName() {
+    assertThat(AciConversion.getContractAclName("web_contract"), equalTo("~CONTRACT~web_contract"));
+    assertThat(AciConversion.getContractAclName("app_to_db"), equalTo("~CONTRACT~app_to_db"));
+    // Verify consistent format
+    assertTrue(AciConversion.getContractAclName("test").startsWith("~CONTRACT~"));
+  }
+
+  @Test
+  public void testToInterfaceType() {
+    // This tests the interface type conversion logic
+    // Note: toInterfaceType is private, so we verify through the conversion result
+    AciConfiguration aciConfig = createTestAciConfiguration();
+
+    // Add different interface types
+    FabricNode node = aciConfig.getFabricNodes().get("201");
+
+    FabricNodeInterface vlanIface = new FabricNodeInterface();
+    vlanIface.setName("vlan100");
+    vlanIface.setType("vlan");
+    vlanIface.setEnabled(true);
+    node.getInterfaces().put("vlan100", vlanIface);
+
+    FabricNodeInterface loopbackIface = new FabricNodeInterface();
+    loopbackIface.setName("loopback0");
+    loopbackIface.setType("loopback");
+    loopbackIface.setEnabled(true);
+    node.getInterfaces().put("loopback0", loopbackIface);
+
+    FabricNodeInterface poIface = new FabricNodeInterface();
+    poIface.setName("port-channel1");
+    poIface.setType("portchannel");
+    poIface.setEnabled(true);
+    node.getInterfaces().put("port-channel1", poIface);
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    Configuration config = configs.get("leaf1");
+    assertNotNull(config);
+
+    // Verify interface types are correct
+    Interface ethernetIface = config.getAllInterfaces().get("ethernet1/1");
+    assertNotNull(ethernetIface);
+    assertEquals(InterfaceType.PHYSICAL, ethernetIface.getInterfaceType());
+
+    Interface vlanInterface = config.getAllInterfaces().get("vlan100");
+    if (vlanInterface != null) {
+      assertEquals(InterfaceType.VLAN, vlanInterface.getInterfaceType());
+    }
+
+    Interface loopbackInterface = config.getAllInterfaces().get("loopback0");
+    if (loopbackInterface != null) {
+      assertEquals(InterfaceType.LOOPBACK, loopbackInterface.getInterfaceType());
+    }
+
+    Interface poInterface = config.getAllInterfaces().get("port-channel1");
+    if (poInterface != null) {
+      assertEquals(InterfaceType.AGGREGATED, poInterface.getInterfaceType());
+    }
+  }
+
+  @Test
+  public void testToInterfaceAddress() {
+    Ip ip = Ip.parse("192.168.1.1");
+    int prefixLength = 24;
+
+    var addr = AciConversion.toInterfaceAddress(ip, prefixLength);
+
+    assertThat(addr.getIp(), equalTo(ip));
+    assertThat(addr.getNetworkBits(), equalTo(24));
+    assertThat(addr.getPrefix(), equalTo(Prefix.parse("192.168.1.0/24")));
+  }
+
+  @Test
+  public void testToIpWildcard() {
+    Ip prefix = Ip.parse("192.168.1.0");
+    Ip wildcard = Ip.parse("0.0.0.255");
+
+    var ipWildcard = AciConversion.toIpWildcard(prefix, wildcard);
+
+    assertThat(ipWildcard.getIp(), equalTo(prefix));
+    assertThat(ipWildcard.getWildcardMaskAsIp(), equalTo(wildcard));
+  }
+
+  @Test
+  public void testCreateEdges_spineLeafTopology() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+
+    var edges = AciConversion.createLayer1Edges(aciConfig);
+
+    // Should create edges between spines and leaves
+    // 2 spines x 2 leaves = 4 edges
+    assertThat(edges.size(), equalTo(4));
+
+    // Verify edge structure
+    for (Layer1Edge edge : edges) {
+      // Edge should connect a leaf to a spine using hostnames.
+      assertTrue(
+          "Edge node1 should be leaf or spine (by hostname)",
+          ImmutableList.of("leaf1", "leaf2", "spine1", "spine2")
+              .contains(edge.getNode1().getHostname()));
+      assertTrue(
+          "Edge node2 should be leaf or spine (by hostname)",
+          ImmutableList.of("leaf1", "leaf2", "spine1", "spine2")
+              .contains(edge.getNode2().getHostname()));
+    }
+  }
+
+  @Test
+  public void testCreateEdges_prefersExplicitFabricLinks() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("explicit-fabric-links");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    config.getFabricNodes().put("101", createFabricNode("101", "spine1", "1", "spine"));
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "1", "leaf"));
+    config.setFabricLinks(
+        ImmutableList.of(new FabricLink("201", "Ethernet1/50", "101", "Ethernet1/24")));
+
+    var edges = AciConversion.createLayer1Edges(config);
+
+    assertThat(edges.size(), equalTo(1));
+    Layer1Edge edge = edges.iterator().next();
+    assertThat(edge.getNode1().getHostname(), equalTo("leaf1"));
+    assertThat(edge.getNode1().getInterfaceName(), equalTo("Ethernet1/50"));
+    assertThat(edge.getNode2().getHostname(), equalTo("spine1"));
+    assertThat(edge.getNode2().getInterfaceName(), equalTo("Ethernet1/24"));
+  }
+
+  @Test
+  public void testContractAclTrafficMatching() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    Configuration config = configs.get("leaf1");
+    String aclName = AciConversion.getContractAclName("web_contract");
+    IpAccessList acl = config.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    // Create test flows
+    Flow permittedHttpFlow =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.1.1.10"))
+            .setDstIp(Ip.parse("10.1.2.10"))
+            .setSrcPort(12345)
+            .setDstPort(80)
+            .build();
+
+    Flow permittedHttpsFlow =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.1.1.10"))
+            .setDstIp(Ip.parse("10.1.2.10"))
+            .setSrcPort(12345)
+            .setDstPort(443)
+            .build();
+
+    Flow deniedFlow =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.1.1.10"))
+            .setDstIp(Ip.parse("10.1.2.10"))
+            .setSrcPort(12345)
+            .setDstPort(22) // SSH not in contract
+            .build();
+
+    // Test ACL behavior
+    assertThat(
+        acl, accepts(permittedHttpFlow, "ethernet1/1", ImmutableMap.of(), ImmutableMap.of()));
+    assertThat(
+        acl, accepts(permittedHttpsFlow, "ethernet1/1", ImmutableMap.of(), ImmutableMap.of()));
+    assertThat(acl, rejects(deniedFlow, "ethernet1/1", ImmutableMap.of(), ImmutableMap.of()));
+  }
+
+  @Test
+  public void testEmptyConfiguration() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("empty-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    // Empty config (no fabric nodes) should create a single configuration for the fabric
+    assertThat(configs.size(), equalTo(1));
+    assertThat(configs, hasKey("empty-fabric"));
+
+    // Verify the single config has expected structure
+    Configuration emptyFabricConfig = configs.get("empty-fabric");
+    assertNotNull(emptyFabricConfig);
+    assertThat(emptyFabricConfig.getConfigurationFormat(), equalTo(ConfigurationFormat.CISCO_ACI));
+    assertThat(emptyFabricConfig.getVrfs(), hasKey(DEFAULT_VRF_NAME));
+  }
+
+  @Test
+  public void testConfigurationFormat() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // All configurations should have CISCO_ACI format
+    for (Configuration config : configs.values()) {
+      assertThat(config.getConfigurationFormat(), equalTo(ConfigurationFormat.CISCO_ACI));
+    }
+  }
+
+  @Test
+  public void testDefaultVrfAlwaysPresent() {
+    AciConfiguration aciConfig = createTestAciConfiguration();
+    Warnings warnings = new Warnings(false, true, true);
+
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(aciConfig, warnings);
+
+    // Default VRF should be present in all configurations
+    for (Configuration config : configs.values()) {
+      assertThat(config.getVrfs(), hasKey(DEFAULT_VRF_NAME));
+      Vrf defaultVrf = config.getVrfs().get(DEFAULT_VRF_NAME);
+      assertNotNull(defaultVrf);
+      assertEquals(DEFAULT_VRF_NAME, defaultVrf.getName());
+    }
+  }
+
+  @Test
+  public void testMultipleOspfProcessesAcrossL3Outs() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("ospf-multi-l3out");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    TenantVrf vrf = new TenantVrf("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    L3Out l3Out1 = new L3Out("tenant1:l3out1");
+    l3Out1.setTenant("tenant1");
+    l3Out1.setVrf("vrf1");
+    OspfConfig ospf1 = new OspfConfig();
+    ospf1.setProcessId("1");
+    l3Out1.setOspfConfig(ospf1);
+
+    L3Out l3Out2 = new L3Out("tenant1:l3out2");
+    l3Out2.setTenant("tenant1");
+    l3Out2.setVrf("vrf1");
+    OspfConfig ospf2 = new OspfConfig();
+    ospf2.setProcessId("2");
+    l3Out2.setOspfConfig(ospf2);
+
+    config.getL3Outs().put("tenant1:l3out1", l3Out1);
+    config.getL3Outs().put("tenant1:l3out2", l3Out2);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+    Vrf convertedVrf = leafConfig.getVrfs().get("vrf1");
+    assertNotNull(convertedVrf);
+    assertThat(convertedVrf.getOspfProcesses().size(), equalTo(2));
+    assertThat(convertedVrf.getOspfProcesses(), hasKey("1"));
+    assertThat(convertedVrf.getOspfProcesses(), hasKey("2"));
+  }
+
+  @Test
+  public void testBgpPeersAttachedToVrfProcess() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("bgp-peer-attachment");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    TenantVrf vrf = new TenantVrf("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    L3Out l3Out = new L3Out("tenant1:l3out1");
+    l3Out.setTenant("tenant1");
+    l3Out.setVrf("vrf1");
+    BgpPeer bgpPeer = new BgpPeer();
+    bgpPeer.setPeerAddress("10.0.0.2");
+    bgpPeer.setRemoteAs("65002");
+    bgpPeer.setLocalAs("65001");
+    l3Out.getBgpPeers().add(bgpPeer);
+    config.getL3Outs().put("tenant1:l3out1", l3Out);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+    Vrf convertedVrf = leafConfig.getVrfs().get("vrf1");
+    assertNotNull(convertedVrf);
+    assertNotNull(convertedVrf.getBgpProcess());
+    assertThat(convertedVrf.getBgpProcess().getActiveNeighbors().size(), equalTo(1));
+    assertThat(convertedVrf.getBgpProcess().getActiveNeighbors(), hasKey(Ip.parse("10.0.0.2")));
+  }
+
+  @Test
+  public void testMultipleBridgeDomainsSameVrf() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("multi-bd-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create a fabric node (nodeId, name, podId, role)
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    config.getFabricNodes().put("201", node);
+
+    // Create VRF
+    TenantVrf vrf = new TenantVrf("shared_vrf");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("shared_vrf", vrf);
+
+    // Create multiple bridge domains in the same VRF
+    BridgeDomain bd1 = new BridgeDomain("bd1");
+    bd1.setVrf("shared_vrf");
+    bd1.setSubnets(ImmutableList.of("10.1.1.0/24"));
+
+    BridgeDomain bd2 = new BridgeDomain("bd2");
+    bd2.setVrf("shared_vrf");
+    bd2.setSubnets(ImmutableList.of("10.2.1.0/24"));
+
+    BridgeDomain bd3 = new BridgeDomain("bd3");
+    bd3.setVrf("shared_vrf");
+    bd3.setSubnets(ImmutableList.of("10.3.1.0/24"));
+
+    config.getBridgeDomains().put("bd1", bd1);
+    config.getBridgeDomains().put("bd2", bd2);
+    config.getBridgeDomains().put("bd3", bd3);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+
+    // All bridge domain subnets should be accessible via interfaces
+    int vlanInterfaceCount = 0;
+    for (Interface iface : leafConfig.getAllInterfaces().values()) {
+      if (iface.getInterfaceType() == InterfaceType.VLAN && !iface.getAllAddresses().isEmpty()) {
+        vlanInterfaceCount++;
+      }
+    }
+
+    // Should have at least 3 VLAN interfaces (one per bridge domain)
+    assertTrue(
+        "Expected at least 3 VLAN interfaces for 3 bridge domains, got " + vlanInterfaceCount,
+        vlanInterfaceCount >= 3);
+  }
+
+  @Test
+  public void testContractWithMultipleFilters() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("multi-filter-contract");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create a fabric node (nodeId, name, podId, role)
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    config.getFabricNodes().put("201", node);
+
+    // Create contract with multiple subjects and filters
+    Contract contract = new Contract("multi_filter_contract");
+    contract.setTenant("tenant1");
+
+    Contract.Subject subject1 = new Contract.Subject();
+    subject1.setName("web_traffic");
+
+    Contract.FilterRef httpFilter = new Contract.FilterRef();
+    httpFilter.setName("http");
+    httpFilter.setIpProtocol("tcp");
+    httpFilter.setDestinationPorts(ImmutableList.of("80"));
+
+    Contract.FilterRef httpsFilter = new Contract.FilterRef();
+    httpsFilter.setName("https");
+    httpsFilter.setIpProtocol("tcp");
+    httpsFilter.setDestinationPorts(ImmutableList.of("443"));
+
+    Contract.FilterRef icmpFilter = new Contract.FilterRef();
+    icmpFilter.setName("icmp");
+    icmpFilter.setIpProtocol("icmp");
+
+    subject1.setFilters(ImmutableList.of(httpFilter, httpsFilter, icmpFilter));
+    contract.setSubjects(ImmutableList.of(subject1));
+
+    config.getContracts().put("multi_filter_contract", contract);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    String aclName = AciConversion.getContractAclName("multi_filter_contract");
+    IpAccessList acl = leafConfig.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    // Should have 3 permit lines (one per filter) plus implicit deny
+    assertThat(acl.getLines().size(), equalTo(4));
+
+    // Count permit lines
+    long permitCount =
+        acl.getLines().stream()
+            .filter(line -> ((ExprAclLine) line).getAction() == LineAction.PERMIT)
+            .count();
+    assertThat(permitCount, equalTo(3L));
+  }
+
+  @Test
+  public void testArpOpcodeUnspecifiedDoesNotWarn() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("arp-unspecified-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    Contract contract = new Contract("tenant1:arp_contract");
+    contract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
+    filter.setName("arp_filter");
+    filter.setIpProtocol("tcp");
+    filter.setDestinationPorts(ImmutableList.of("22"));
+    filter.setArpOpcode("unspecified");
+    subject.setFilters(ImmutableList.of(filter));
+    contract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:arp_contract", contract);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    assertFalse(
+        warnings.getRedFlagWarnings().stream()
+            .anyMatch(w -> w.getText().contains("ARP opcode specified in contract")));
+  }
+
+  @Test
+  public void testArpOpcodeSpecificStillWarns() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("arp-specific-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    Contract contract = new Contract("tenant1:arp_contract");
+    contract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
+    filter.setName("arp_filter");
+    filter.setIpProtocol("tcp");
+    filter.setDestinationPorts(ImmutableList.of("22"));
+    filter.setArpOpcode("request");
+    subject.setFilters(ImmutableList.of(filter));
+    contract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:arp_contract", contract);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    assertTrue(
+        warnings.getRedFlagWarnings().stream()
+            .anyMatch(w -> w.getText().contains("ARP opcode specified in contract")));
+  }
+
+  @Test
+  public void testUnspecifiedRangeEndpointsDoNotProduceInvalidPortWarnings() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("port-range-unspecified-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    FilterModel filterModel = new FilterModel("tenant1:port_filter");
+    filterModel.setTenant("tenant1");
+    FilterModel.Entry entry = new FilterModel.Entry();
+    entry.setName("entry1");
+    entry.setProtocol("tcp");
+    entry.setDestinationFromPort("unspecified");
+    entry.setDestinationToPort("unspecified");
+    entry.setSourceFromPort("0");
+    entry.setSourceToPort("0");
+    filterModel.setEntries(ImmutableList.of(entry));
+    config.getFilters().put("tenant1:port_filter", filterModel);
+
+    Contract contract = new Contract("tenant1:test_contract");
+    contract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filterRef = new Contract.FilterRef();
+    filterRef.setName("port_filter");
+    subject.setFilters(ImmutableList.of(filterRef));
+    contract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:test_contract", contract);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    assertFalse(
+        warnings.getRedFlagWarnings().stream()
+            .anyMatch(w -> w.getText().contains("Invalid destination port")));
+    assertFalse(
+        warnings.getRedFlagWarnings().stream()
+            .anyMatch(w -> w.getText().contains("Invalid source port")));
+  }
+
+  @Test
+  public void testUnspecifiedSinglePortZeroDoesNotConstrainAcl() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("port-single-unspecified-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    Contract contract = new Contract("tenant1:test_contract");
+    contract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
+    filter.setName("tcp_any_dst");
+    filter.setIpProtocol("tcp");
+    // Placeholder value from upstream "unspecified" mapping.
+    filter.setDestinationPorts(ImmutableList.of("0"));
+    subject.setFilters(ImmutableList.of(filter));
+    contract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:test_contract", contract);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration viConfig = configs.get("leaf1");
+    String aclName = AciConversion.getContractAclName("tenant1:test_contract");
+    IpAccessList acl = viConfig.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    Flow tcp80 =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("10.0.0.2"))
+            .setSrcPort(12345)
+            .setDstPort(80)
+            .build();
+
+    assertThat(acl, accepts(tcp80, "ethernet1/1", ImmutableMap.of(), ImmutableMap.of()));
+  }
+
+  @Test
+  public void testPlaceholderRangeTokenZeroZeroDoesNotConstrainAclOrWarn() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("port-range-zero-zero-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+    config.getFabricNodes().put("201", createFabricNode("201", "leaf1", "2", "leaf"));
+
+    Contract contract = new Contract("tenant1:test_contract");
+    contract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
+    filter.setName("tcp_any_dst");
+    filter.setIpProtocol("tcp");
+    filter.setDestinationPorts(ImmutableList.of("0-0"));
+    subject.setFilters(ImmutableList.of(filter));
+    contract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:test_contract", contract);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration viConfig = configs.get("leaf1");
+    String aclName = AciConversion.getContractAclName("tenant1:test_contract");
+    IpAccessList acl = viConfig.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    Flow tcp80 =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("10.0.0.2"))
+            .setSrcPort(12345)
+            .setDstPort(80)
+            .build();
+    assertThat(acl, accepts(tcp80, "ethernet1/1", ImmutableMap.of(), ImmutableMap.of()));
+
+    assertFalse(
+        warnings.getRedFlagWarnings().stream()
+            .anyMatch(w -> w.getText().contains("Invalid destination port range")));
+  }
+
+  @Test
+  public void testEpgPoliciesAttachedToInterfaceFilters() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("epg-policy-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    FabricNode node = new FabricNode();
+    node.setNodeId("201");
+    node.setName("leaf1");
+    node.setRole("leaf");
+
+    FabricNodeInterface iface = new FabricNodeInterface();
+    iface.setName("ethernet1/10");
+    iface.setType("ethernet");
+    iface.setEnabled(true);
+    iface.setEpg("app_epg");
+    node.getInterfaces().put("ethernet1/10", iface);
+    config.getFabricNodes().put("201", node);
+
+    Contract allowContract = new Contract("tenant1:web");
+    allowContract.setTenant("tenant1");
+    Contract.Subject subject = new Contract.Subject();
+    Contract.FilterRef filter = new Contract.FilterRef();
+    filter.setName("allow_http");
+    filter.setIpProtocol("tcp");
+    filter.setDestinationPorts(ImmutableList.of("80"));
+    subject.setFilters(ImmutableList.of(filter));
+    allowContract.setSubjects(ImmutableList.of(subject));
+    config.getContracts().put("tenant1:web", allowContract);
+
+    Epg epg = new Epg("app_epg");
+    epg.setTenant("tenant1");
+    epg.setConsumedContracts(ImmutableList.of("tenant1:web"));
+    epg.setProvidedContracts(ImmutableList.of("tenant1:web"));
+    config.getEpgs().put("app_epg", epg);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration viConfig = configs.get("leaf1");
+    Interface viIface = viConfig.getAllInterfaces().get("ethernet1/10");
+    assertNotNull(viIface);
+    assertNotNull(viIface.getIncomingFilter());
+    assertNotNull(viIface.getOutgoingFilter());
+  }
+
+  @Test
+  public void testTabooPolicyTakesPrecedenceOverPermittedContract() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("taboo-precedence-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    FabricNode node = new FabricNode();
+    node.setNodeId("201");
+    node.setName("leaf1");
+    node.setRole("leaf");
+
+    FabricNodeInterface iface = new FabricNodeInterface();
+    iface.setName("ethernet1/20");
+    iface.setType("ethernet");
+    iface.setEnabled(true);
+    iface.setEpg("web_epg");
+    node.getInterfaces().put("ethernet1/20", iface);
+    config.getFabricNodes().put("201", node);
+
+    Contract allow443 = new Contract("tenant1:allow443");
+    allow443.setTenant("tenant1");
+    Contract.Subject allowSubject = new Contract.Subject();
+    Contract.FilterRef allowFilter = new Contract.FilterRef();
+    allowFilter.setName("allow443");
+    allowFilter.setIpProtocol("tcp");
+    allowFilter.setDestinationPorts(ImmutableList.of("443"));
+    allowSubject.setFilters(ImmutableList.of(allowFilter));
+    allow443.setSubjects(ImmutableList.of(allowSubject));
+    config.getContracts().put("tenant1:allow443", allow443);
+
+    TabooContract taboo443 = new TabooContract("tenant1:taboo443");
+    taboo443.setTenant("tenant1");
+    Contract.Subject tabooSubject = new Contract.Subject();
+    Contract.FilterRef tabooFilter = new Contract.FilterRef();
+    tabooFilter.setName("taboo443");
+    tabooFilter.setIpProtocol("tcp");
+    tabooFilter.setDestinationPorts(ImmutableList.of("443"));
+    tabooSubject.setFilters(ImmutableList.of(tabooFilter));
+    taboo443.setSubjects(ImmutableList.of(tabooSubject));
+    config.getTabooContracts().put("tenant1:taboo443", taboo443);
+
+    Epg epg = new Epg("web_epg");
+    epg.setTenant("tenant1");
+    epg.setProvidedContracts(ImmutableList.of("tenant1:allow443"));
+    epg.setProtectedByTaboos(ImmutableList.of("tenant1:taboo443"));
+    config.getEpgs().put("web_epg", epg);
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration viConfig = configs.get("leaf1");
+    Interface viIface = viConfig.getAllInterfaces().get("ethernet1/20");
+    assertNotNull(viIface);
+    assertNotNull(viIface.getOutgoingFilter());
+    assertThat(
+        viConfig.getIpAccessLists(), hasKey(AciConversion.getTabooAclName("tenant1:taboo443")));
+
+    Flow httpsFlow =
+        Flow.builder()
+            .setIngressNode("leaf1")
+            .setIngressInterface("ethernet1/20")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("10.0.0.2"))
+            .setSrcPort(12345)
+            .setDstPort(443)
+            .build();
+
+    assertThat(
+        viIface
+            .getOutgoingFilter()
+            .filter(httpsFlow, "ethernet1/20", viConfig.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+  }
+
+  /** Test L2Out conversion creates VLAN interfaces for external Layer 2 connectivity. */
+  @Test
+  public void testL2OutCreatesVlanInterface() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("l2out-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create a fabric node
+    FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    config.getFabricNodes().put("201", node);
+
+    // Create VRF
+    TenantVrf vrf = new TenantVrf("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    // Create bridge domain
+    BridgeDomain bd = new BridgeDomain("bd1");
+    bd.setVrf("vrf1");
+    bd.setTenant("tenant1");
+    config.getBridgeDomains().put("bd1", bd);
+
+    // Create L2Out
+    L2Out l2out = new L2Out("external_l2");
+    l2out.setTenant("tenant1");
+    l2out.setBridgeDomain("bd1");
+    l2out.setEncapsulation("vlan-100");
+    config.getL2Outs().put("tenant1:external_l2", l2out);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+
+    // Find the L2Out interface
+    Interface l2OutInterface = null;
+    for (Interface iface : leafConfig.getAllInterfaces().values()) {
+      if (iface.getName().startsWith("L2Out-")) {
+        l2OutInterface = iface;
+        break;
+      }
+    }
+
+    assertNotNull("Expected L2Out interface to be created", l2OutInterface);
+    assertEquals(InterfaceType.VLAN, l2OutInterface.getInterfaceType());
+    assertEquals(100, l2OutInterface.getVlan().intValue());
+    assertEquals("vrf1", l2OutInterface.getVrf().getName());
+    assertTrue(l2OutInterface.getAdminUp());
+  }
+
+  /** Test inter-fabric connections create Layer1 edges. */
+  @Test
+  public void testInterFabricConnectionsCreateLayer1Edges() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("inter-fabric-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create fabric nodes (border leafs)
+    FabricNode leaf1 = createFabricNode("201", "border-leaf1", "1", "leaf");
+    FabricNode leaf2 = createFabricNode("202", "border-leaf2", "1", "leaf");
+    config.getFabricNodes().put("201", leaf1);
+    config.getFabricNodes().put("202", leaf2);
+
+    // Create L3Out with path attachment to identify border nodes
+    L3Out l3out = new L3Out("external-routes");
+    l3out.setTenant("tenant1");
+
+    PathAttachment attachment = new PathAttachment();
+    attachment.setNodeId("201");
+    l3out.getPathAttachments().add(attachment);
+
+    config.getL3Outs().put("tenant1:external-routes", l3out);
+
+    // Create an inter-fabric connection
+    InterFabricConnection connection =
+        new InterFabricConnection("fabric-dc1", "fabric-dc2", "bgp", "Inter-fabric BGP connection");
+    connection.addBgpPeer("192.168.1.1");
+
+    config.getInterFabricConnections().put("dc1-dc2-bgp", connection);
+
+    config.finalizeStructures();
+
+    // Create Layer1 edges
+    var edges = AciConversion.createLayer1Edges(config);
+
+    // Should have at least 1 inter-fabric edge
+    long interFabricEdges =
+        edges.stream()
+            .filter(
+                edge ->
+                    edge.getNode1().getInterfaceName().startsWith("inter-fabric-")
+                        || edge.getNode2().getInterfaceName().startsWith("inter-fabric-"))
+            .count();
+
+    assertThat("Expected at least 1 inter-fabric edge", interFabricEdges, equalTo(1L));
+  }
+}

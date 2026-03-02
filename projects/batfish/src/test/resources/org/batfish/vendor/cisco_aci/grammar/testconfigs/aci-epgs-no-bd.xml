@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="EPG without BD Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvAEPg name="epg1" descr="EPG without Bridge Domain"/>
+    <fvAEPg name="epg2" descr="Another EPG without BD"/>
+    <fvAEPg name="epg3" descr="Third EPG without BD"/>
+  </fvTenant>
+</polUni>

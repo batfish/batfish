@@ -48,6 +48,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",
+        "//projects/batfish/src/main/java/org/batfish/vendor/cisco_aci/representation",
         "//projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/grammar",
         "//projects/bdd",
