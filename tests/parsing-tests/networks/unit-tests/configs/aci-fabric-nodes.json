@@ -1,0 +1,81 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fabricInst": {
+          "attributes": {
+            "dn": "uni/fabric",
+            "name": "fabric"
+          },
+          "children": [
+            {
+              "fabricProtPol": {
+                "attributes": {
+                  "dn": "uni/fabric/fabricprotPol"
+                },
+                "children": [
+                  {
+                    "fabricExplicitGEp": {
+                      "attributes": {
+                        "dn": "uni/fabric/fabricprotPol/expgep-1"
+                      },
+                      "children": [
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "101",
+                              "name": "spine1",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-101"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "102",
+                              "name": "spine2",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-102"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "201",
+                              "name": "leaf1",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-201"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "202",
+                              "name": "leaf2",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-202"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

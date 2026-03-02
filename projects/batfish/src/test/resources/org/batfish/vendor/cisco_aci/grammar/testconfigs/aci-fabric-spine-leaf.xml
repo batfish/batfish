@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fabricInst>
+    <fabricProtPol>
+      <fabricExplicitGEp>
+        <fabricNodePEp id="101" name="spine1" role="spine" podId="1">
+          <fabricNodeS name="eth1/1" descr="Uplink to leaf1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/2" descr="Uplink to leaf2" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/3" descr="Uplink to leaf3" type="ethernet" status="enabled"/>
+        </fabricNodePEp>
+        <fabricNodePEp id="102" name="spine2" role="spine" podId="1">
+          <fabricNodeS name="eth1/1" descr="Uplink to leaf1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/2" descr="Uplink to leaf2" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/3" descr="Uplink to leaf3" type="ethernet" status="enabled"/>
+        </fabricNodePEp>
+        <fabricNodePEp id="201" name="leaf1" role="leaf" podId="1">
+          <fabricNodeS name="eth1/1" descr="Uplink to spine1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/2" descr="Uplink to spine2" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/3" descr="Host port 1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/4" descr="Host port 2" type="ethernet" status="disabled"/>
+        </fabricNodePEp>
+        <fabricNodePEp id="202" name="leaf2" role="leaf" podId="1">
+          <fabricNodeS name="eth1/1" descr="Uplink to spine1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/2" descr="Uplink to spine2" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/3" descr="Host port 1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/4" descr="Host port 2" type="ethernet" status="enabled"/>
+        </fabricNodePEp>
+        <fabricNodePEp id="203" name="leaf3" role="leaf" podId="2">
+          <fabricNodeS name="eth1/1" descr="Uplink to spine1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/2" descr="Uplink to spine2" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/3" descr="Host port 1" type="ethernet" status="enabled"/>
+          <fabricNodeS name="eth1/4" descr="Host port 2" type="ethernet" status="enabled"/>
+        </fabricNodePEp>
+      </fabricExplicitGEp>
+    </fabricProtPol>
+  </fabricInst>
+</polUni>

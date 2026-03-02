@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="L3Out BGP Test Tenant">
+    <fvCtx name="vrf1" descr="L3Out VRF"/>
+    <l3extOut name="l3out1" descr="BGP L3Out" enforceRtctrl="export">
+      <l3extRsEctx tnFvCtxName="vrf1"/>
+      <l3extRsL3DomAtt tDn="uni/l3dom-multipod"/>
+      <l3extLNodeP name="BGP-Node-Profile">
+        <l3extRsNodeL3OutAtt rtrId="10.0.0.1" rtrIdLoopBack="yes" tDn="topology/pod-1/node-201"/>
+        <l3extLIfP name="BGP-Logical-Interface">
+          <l3extRsPathL3OutAtt descr="BGP External Interface" tDn="topology/pod-1/paths-201/pathep-[eth1/1]" encap="vlan-100" ifInstT="l3-port" addr="192.168.1.2/30"/>
+        </l3extLIfP>
+      </l3extLNodeP>
+      <l3extRsPathL3OutAtt descr="BGP Peer Interface"/>
+    </l3extOut>
+    <bgpPeerP name="bgpPeerPol" descr="BGP Peer Policy">
+      <bgpAsnP asn="65001"/>
+    </bgpPeerP>
+    <bgpExtP name="bgpExtPol" descr="BGP External Policy">
+      <bgpAsnP asn="65002"/>
+    </bgpExtP>
+  </fvTenant>
+</polUni>

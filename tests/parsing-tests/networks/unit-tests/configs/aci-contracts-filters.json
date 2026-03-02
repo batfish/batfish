@@ -1,0 +1,227 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with Contracts and Filters",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "tcp-http-filter",
+                  "descr": "TCP HTTP Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "http",
+                        "etherT": "ip",
+                        "prot": "tcp",
+                        "dPort": "80"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "tcp-https-filter",
+                  "descr": "TCP HTTPS Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "https",
+                        "etherT": "ip",
+                        "prot": "tcp",
+                        "dPort": "443"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "tcp-ssh-filter",
+                  "descr": "TCP SSH Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "ssh",
+                        "etherT": "ip",
+                        "prot": "tcp",
+                        "dPort": "22"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "udp-dns-filter",
+                  "descr": "UDP DNS Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "dns",
+                        "etherT": "ip",
+                        "prot": "udp",
+                        "dPort": "53"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "icmp-echo-filter",
+                  "descr": "ICMP Echo Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "icmp-echo",
+                        "etherT": "ip",
+                        "prot": "icmp",
+                        "icmpv4T": "echo"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzFilter": {
+                "attributes": {
+                  "name": "any-filter",
+                  "descr": "Any Filter"
+                },
+                "children": [
+                  {
+                    "vzEntry": {
+                      "attributes": {
+                        "name": "any",
+                        "etherT": "any",
+                        "prot": "any"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "web-contract",
+                  "descr": "Web Contract with Filters",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-tenant1/brc-web-contract"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "http-https",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "tcp-http-filter"
+                            }
+                          }
+                        },
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "tcp-https-filter"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "mgmt-contract",
+                  "descr": "Management Contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-tenant1/brc-mgmt-contract"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "ssh-dns-icmp",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "tcp-ssh-filter"
+                            }
+                          }
+                        },
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "udp-dns-filter"
+                            }
+                          }
+                        },
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "icmp-echo-filter"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

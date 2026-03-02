@@ -1,0 +1,116 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fabricInst": {
+          "attributes": {
+            "dn": "uni/fabric",
+            "name": "fabric"
+          },
+          "children": [
+            {
+              "fabricProtPol": {
+                "attributes": {
+                  "dn": "uni/fabric/fabricprotPol"
+                },
+                "children": [
+                  {
+                    "fabricExplicitGEp": {
+                      "attributes": {
+                        "dn": "uni/fabric/fabricprotPol/expgep-1"
+                      },
+                      "children": [
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "101",
+                              "name": "spine-1",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-101",
+                              "serial": "FDO12345678",
+                              "model": "N9K-C9336PQ"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "102",
+                              "name": "spine-2",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-102",
+                              "serial": "FDO12345679",
+                              "model": "N9K-C9336PQ"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "201",
+                              "name": "leaf-1",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-201",
+                              "serial": "FDO22345678",
+                              "model": "N9K-C93180YC-FX"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "202",
+                              "name": "leaf-2",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-202",
+                              "serial": "FDO22345679",
+                              "model": "N9K-C93180YC-FX"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "203",
+                              "name": "leaf-3",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-203",
+                              "serial": "FDO22345680",
+                              "model": "N9K-C93180YC-FX"
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "204",
+                              "name": "leaf-4",
+                              "role": "leaf",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-204",
+                              "serial": "FDO22345681",
+                              "model": "N9K-C93180YC-FX"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
