@@ -12,3 +12,8 @@ filegroup(
     name = "log4j_config",
     srcs = ["log4j2.properties"],
 )
+
+filegroup(
+    name = "cisco_aci_resources",
+    srcs = glob(["org/batfish/vendor/cisco_aci/**"]),
+)

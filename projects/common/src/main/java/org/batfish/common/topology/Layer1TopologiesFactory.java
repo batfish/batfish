@@ -114,7 +114,8 @@ public final class Layer1TopologiesFactory {
       // No such device; already been warned on earlier.
       return INVALID_INTERFACE;
     }
-    Interface iface = c.getAllInterfaces().get(node.getInterfaceName());
+    // Use InterfaceUtil to handle interface name variations (e.g., Eth1/4 vs Ethernet1/4)
+    Interface iface = InterfaceUtil.matchingInterface(node.getInterfaceName(), c).orElse(null);
     if (iface == null) {
       if (invalidInterfaces.add(node)) {
         LOGGER.info(
@@ -126,8 +127,8 @@ public final class Layer1TopologiesFactory {
     }
     String aggregateName = iface.getChannelGroup();
     if (aggregateName == null) {
-      // Not aggregated; return as-is.
-      return node;
+      // Not aggregated; return with canonical interface name
+      return new Layer1Node(c.getHostname(), iface.getName());
     }
     Interface aggregate = c.getAllInterfaces().get(iface.getChannelGroup());
     if (aggregate == null) {
@@ -179,12 +180,16 @@ public final class Layer1TopologiesFactory {
 
   /** Returns true if the node corresponds to an existing, active interface. */
   private static boolean isActive(Layer1Node node, Map<String, Configuration> configs) {
-    return !node.equals(INVALID_INTERFACE)
-        && configs
-            .get(node.getHostname())
-            .getAllInterfaces()
-            .get(node.getInterfaceName())
-            .getActive();
+    if (node.equals(INVALID_INTERFACE)) {
+      return false;
+    }
+    Configuration c = configs.get(node.getHostname());
+    if (c == null) {
+      return false;
+    }
+    // Use InterfaceUtil to handle interface name variations
+    Interface iface = InterfaceUtil.matchingInterface(node.getInterfaceName(), c).orElse(null);
+    return iface != null && iface.getActive();
   }
 
   private Layer1TopologiesFactory() {} // prevent instantiation of utility class.

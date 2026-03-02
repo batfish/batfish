@@ -102,6 +102,7 @@ import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -427,6 +428,63 @@ public class BatfishTest {
     assertThat(
         vendorConfigurations.keySet(),
         equalTo(ImmutableSet.of(routerFile, RELPATH_AWS_CONFIGS_FILE)));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations_ciscoAciConfigsOnlySupplementalIgnored()
+      throws IOException {
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
+    String routerFile = "rtr1";
+    TestrigText testrigText =
+        TestrigText.builder()
+            .setConfigurationFiles(snapshotPath, routerFile)
+            .setCiscoAciConfigFiles(snapshotPath, ImmutableList.of("outputtopology_valid.json"))
+            .build();
+
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText, _folder);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(vendorConfigurations.keySet(), equalTo(ImmutableSet.of(routerFile)));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations_ciscoAciConfigsGroupedWithSupplemental()
+      throws IOException {
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
+    TestrigText testrigText =
+        TestrigText.builder()
+            .setCiscoAciConfigFiles(
+                snapshotPath, ImmutableList.of("apic.json", "outputtopology_valid.json"))
+            .build();
+
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText, _folder);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(vendorConfigurations.keySet(), equalTo(ImmutableSet.of("aci-fixture")));
+    AciConfiguration aci = (AciConfiguration) vendorConfigurations.get("aci-fixture");
+    assertThat(aci.getFabricLinks().size(), equalTo(2));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations_ciscoAciConfigsMixedSupplementalSkipsInvalidLinks()
+      throws IOException {
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
+    TestrigText testrigText =
+        TestrigText.builder()
+            .setCiscoAciConfigFiles(
+                snapshotPath, ImmutableList.of("apic.json", "outputtopology_mixed.json"))
+            .build();
+
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText, _folder);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(vendorConfigurations.keySet(), equalTo(ImmutableSet.of("aci-fixture")));
+    AciConfiguration aci = (AciConfiguration) vendorConfigurations.get("aci-fixture");
+    // Only one of the three records in outputtopology_mixed.json is complete.
+    assertThat(aci.getFabricLinks().size(), equalTo(1));
   }
 
   @Test

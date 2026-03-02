@@ -57,8 +57,21 @@ public final class InterfaceUtil {
    */
   private static final Set<Set<String>> CONFUSIONS =
       ImmutableSet.of(
-          ImmutableSet.of("HundredGigE", "HundredGigabitEthernet"),
-          ImmutableSet.of("TenGigE", "TenGigabitEthernet"));
+          ImmutableSet.of("Ethernet", "Eth"),
+          ImmutableSet.of("GigabitEthernet", "GigE", "Ge"),
+          ImmutableSet.of("FastEthernet", "FastEth", "Fe"),
+          ImmutableSet.of("TenGigabitEthernet", "TenGigE", "Te"),
+          ImmutableSet.of("TwentyFiveGigE", "TwentyFiveGigabitEthernet"),
+          ImmutableSet.of("FortyGigabitEthernet", "FortyGigE", "FoE"),
+          ImmutableSet.of("FiftyGigabitEthernet", "FiftyGigE"),
+          ImmutableSet.of("HundredGigE", "HundredGigabitEthernet", "Hu"),
+          ImmutableSet.of("FourHundredGigE", "FourHundredGigabitEthernet"),
+          ImmutableSet.of("port-channel", "Po"),
+          ImmutableSet.of("Loopback", "Lo"),
+          ImmutableSet.of("Vlan", "Vl"),
+          ImmutableSet.of("Tunnel", "Tu"),
+          ImmutableSet.of("Management", "Mgmt", "Ma"),
+          ImmutableSet.of("ae", "aggregate-ethernet"));
 
   private static final SetMultimap<String, String> CONFUSION_MAP = computeConfusionMap(CONFUSIONS);
 

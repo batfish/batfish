@@ -1,0 +1,79 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Tenant with Bridge Domains",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "Test VRF",
+                  "dn": "uni/tn-tenant1/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd1",
+                  "descr": "First Bridge Domain",
+                  "dn": "uni/tn-tenant1/BD-bd1"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.1.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd2",
+                  "descr": "Second Bridge Domain",
+                  "dn": "uni/tn-tenant1/BD-bd2"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.2.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

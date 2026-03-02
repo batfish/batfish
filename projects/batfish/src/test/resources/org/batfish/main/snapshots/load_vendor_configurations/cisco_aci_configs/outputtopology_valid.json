@@ -1,0 +1,33 @@
+{
+  "totalCount": "2",
+  "imdata": [
+    {
+      "fabricLink": {
+        "attributes": {
+          "dn": "topology/pod-1/lnkcnt-102/lnk-201-1-50-to-102-1-3",
+          "n1": "201",
+          "n2": "102",
+          "s1": "1",
+          "s2": "1",
+          "p1": "50",
+          "p2": "3",
+          "linkState": "ok"
+        }
+      }
+    },
+    {
+      "fabricLink": {
+        "attributes": {
+          "dn": "topology/pod-1/lnkcnt-101/lnk-201-1-49-to-101-1-3",
+          "n1": "201",
+          "n2": "101",
+          "s1": "1",
+          "s2": "1",
+          "p1": "49",
+          "p2": "3",
+          "linkState": "ok"
+        }
+      }
+    }
+  ]
+}
