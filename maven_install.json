@@ -69,7 +69,7 @@
     "org.parboiled:parboiled-core": 179926754,
     "org.parboiled:parboiled-java": 517971365,
     "org.skyscreamer:jsonassert": -898776828,
-    "org.yaml:snakeyaml": -2128220551,
+    "org.yaml:snakeyaml": 359292282,
     "repositories": -1949687017,
     "tools.profiler:async-profiler": -253339342
   },
@@ -84,7 +84,7 @@
     "com.fasterxml.jackson.core:jackson-core:jar:sources": 1597076141,
     "com.fasterxml.jackson.core:jackson-databind": -1900032447,
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": 572042403,
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": -272440709,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": -1170460245,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 1325780484,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": -1116109757,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -1768749306,
@@ -314,8 +314,8 @@
     "org.xmlresolver:xmlresolver": -2072175398,
     "org.xmlresolver:xmlresolver:jar:data": 792867476,
     "org.xmlresolver:xmlresolver:jar:sources": 294380453,
-    "org.yaml:snakeyaml": 1308413731,
-    "org.yaml:snakeyaml:jar:sources": -140059451,
+    "org.yaml:snakeyaml": 1068613154,
+    "org.yaml:snakeyaml:jar:sources": -665563845,
     "tools.profiler:async-profiler": 480463340,
     "tools.profiler:async-profiler:jar:linux-arm64": 1303725319,
     "tools.profiler:async-profiler:jar:linux-x64": -382720513,
@@ -1180,10 +1180,10 @@
     },
     "org.yaml:snakeyaml": {
       "shasums": {
-        "jar": "e6682acf1ace77508ef13649cbf4f8d09d2cf5457bdb61d25ffb6ac0233d78dd",
-        "sources": "7a7d307ca9fe1663219a60045a8e5a113a69331566f9ebbe1d3b12c6781909ac"
+        "jar": "c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85",
+        "sources": "cd719ff3e52eec48ef7c541ba4f178c2eff0f6719fd0abe4f4e44bde41138ca2"
       },
-      "version": "2.5"
+      "version": "2.6"
     },
     "tools.profiler:async-profiler": {
       "shasums": {
