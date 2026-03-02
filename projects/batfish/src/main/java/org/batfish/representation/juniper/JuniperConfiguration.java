@@ -3266,6 +3266,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromTags().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
     }
+    if (froms.getFromValidationDatabase() != null) {
+      conj.getConjuncts().add(froms.getFromValidationDatabase().toBooleanExpr(this, _c, _w));
+    }
 
     if (!subroutines.isEmpty()) {
       ConjunctionChain chain = new ConjunctionChain(subroutines);

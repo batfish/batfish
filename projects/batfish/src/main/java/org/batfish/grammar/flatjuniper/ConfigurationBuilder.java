@@ -627,6 +627,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_rtf_prefix_listCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_source_address_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_validation_databaseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_longerContext;
@@ -1147,6 +1148,7 @@ import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.PsFromRouteType;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsFromUnsupported;
+import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsFroms;
 import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
@@ -6397,6 +6399,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsf_tag2(Popsf_tag2Context ctx) {
     todo(ctx);
     _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
+  public void exitPopsf_validation_database(Popsf_validation_databaseContext ctx) {
+    PsFromValidationDatabase.State state;
+    if (ctx.VALID() != null) {
+      state = PsFromValidationDatabase.State.VALID;
+    } else if (ctx.INVALID() != null) {
+      state = PsFromValidationDatabase.State.INVALID;
+    } else {
+      assert ctx.UNKNOWN() != null;
+      state = PsFromValidationDatabase.State.UNKNOWN;
+    }
+    _currentPsTerm.getFroms().setFromValidationDatabase(new PsFromValidationDatabase(state));
   }
 
   @Override

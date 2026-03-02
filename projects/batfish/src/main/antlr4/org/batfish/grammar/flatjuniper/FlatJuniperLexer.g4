@@ -1168,6 +1168,8 @@ INTERPOLATE: 'interpolate';
 INTERVAL: 'interval';
 INVERT_MATCH: 'invert-match';
 
+INVALID: 'invalid';
+
 IP: 'ip';
 
 IP_DESTINATION_ADDRESS: 'ip-destination-address';
@@ -2980,6 +2982,8 @@ UNICAST: 'unicast';
 
 UNIT: 'unit';
 
+UNKNOWN: 'unknown';
+
 UNKNOWN_PROTOCOL: 'unknown-protocol';
 
 UNREACHABLE: 'unreachable';
@@ -3004,7 +3008,11 @@ UUID: 'uuid';
 
 V1_ONLY: 'v1-only';
 V2_ONLY: 'v2-only';
+VALID: 'valid';
+
 VALIDATION: 'validation';
+
+VALIDATION_DATABASE: 'validation-database';
 
 VERSION
 :
