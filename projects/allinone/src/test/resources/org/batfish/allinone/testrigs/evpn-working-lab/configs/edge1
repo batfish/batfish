@@ -1,0 +1,130 @@
+## Last commit: 2026-02-27 09:04:27 UTC by root
+version 23.4R2-S2.1;
+system {
+    host-name edge1;
+    root-authentication {
+        encrypted-password "$6$xQkmIDVo$Wq9G.CmX7jTm/J5oFGPTcQMwNhdi9pv4u8Bj4F9l98eUGKKu3sA2XsOY9aAnxzhX.Ii.GdHena3QyYB4TNvs60";
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$CiA8qBCH$QYE8nyY4hWzHDe9DTbhBTAbF/Zdk2l/I3/PCEBaZGS0Y2yylqLeYyC5pUfwWTIlWKD6Eb4VWsog14RyL1HXfS1";
+            }
+        }
+    }
+    services {
+        netconf {
+            ssh;
+        }
+        ssh {
+            root-login allow;
+        }
+    }
+    management-instance;
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            number-of-ports 12;
+        }
+    }
+}
+interfaces {
+    ge-0/0/1 {
+        description "to router1 - p2p link";
+        unit 0 {
+            family inet {
+                address 10.99.0.1/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        description "to client3 - LAN segment";
+        unit 0 {
+            family inet {
+                address 192.168.99.1/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.99.99.1/32;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.15/24;
+            }
+            family inet6 {
+                address 2001:db8::2/64;
+            }
+        }
+    }
+}
+routing-instances {
+    mgmt_junos {
+        routing-options {
+            rib mgmt_junos.inet6.0 {
+                static {
+                    route ::/0 next-hop 2001:db8::1;
+                }
+            }
+            static {
+                route 0.0.0.0/0 next-hop 10.0.0.2;
+            }
+        }
+    }
+}
+routing-options {
+    router-id 10.99.99.1;
+    autonomous-system 65200;
+    static {
+        route 192.168.99.0/24 discard;
+    }
+}
+policy-options {
+    policy-statement export-to-fabric {
+        term client3-network {
+            from {
+                protocol [ direct static ];
+                route-filter 192.168.99.0/24 exact;
+            }
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement import-from-fabric {
+        term accept-all {
+            then accept;
+        }
+    }
+}
+protocols {
+    bgp {
+        group fabric {
+            type external;
+            family inet {
+                unicast;
+            }
+            export export-to-fabric;
+            import import-from-fabric;
+            neighbor 10.99.0.0 {
+                description router1;
+                peer-as 65100;
+            }
+        }
+        log-updown;
+        graceful-restart;
+    }
+    lldp {
+        port-id-subtype interface-name;
+        interface all;
+    }
+}

@@ -1137,7 +1137,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
     try {
-      //_cachedDataPlanes.invalidateAll();
       return _cachedDataPlanes.get(
           snapshot,
           () -> {

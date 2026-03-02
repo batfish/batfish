@@ -2,10 +2,11 @@ load("@batfish//skylark:junit.bzl", "junit_tests")
 
 junit_tests(
     name = "tests",
-    size = "small",
+    size = "medium",
     srcs = glob(["**/*Test.java"]),
     resources = [
         "//projects/allinone/src/test/resources/org/batfish/allinone/testconfigs",
+        "//projects/allinone/src/test/resources/org/batfish/allinone/testrigs/evpn-working-lab",
         "//projects/allinone/src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability",
     ],
     deps = [

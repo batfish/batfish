@@ -1,0 +1,214 @@
+## CRB Design - Spine2 (IP underlay + EVPN route reflector only, no VXLAN)
+version 23.4R2-S2.1;
+system {
+    host-name node2-2;
+    root-authentication {
+        encrypted-password "$6$xQkmIDVo$Wq9G.CmX7jTm/J5oFGPTcQMwNhdi9pv4u8Bj4F9l98eUGKKu3sA2XsOY9aAnxzhX.Ii.GdHena3QyYB4TNvs60"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$CiA8qBCH$QYE8nyY4hWzHDe9DTbhBTAbF/Zdk2l/I3/PCEBaZGS0Y2yylqLeYyC5pUfwWTIlWKD6Eb4VWsog14RyL1HXfS1"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        netconf {
+            ssh;
+        }
+        ssh {
+            root-login allow;
+        }
+    }
+    management-instance;
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            number-of-ports 12;
+        }
+    }
+}
+interfaces {
+    ge-0/0/1 {
+        description "to node1-1 (leaf1)";
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address 172.16.254.3/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        description "to node1-2 (leaf2)";
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address 172.16.254.7/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        description "to router1 (gateway)";
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address 172.16.254.11/31;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.15/24;
+            }
+            family inet6 {
+                address 2001:db8::2/64;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.12/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement export-underlay {
+        term loopbacks {
+            from {
+                protocol [ direct bgp ];
+                route-filter 172.16.0.0/24 orlonger;
+            }
+            then accept;
+        }
+        term p2p {
+            from {
+                protocol [ direct bgp ];
+                route-filter 172.16.254.0/24 orlonger;
+            }
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement import-underlay {
+        term loopbacks {
+            from {
+                route-filter 172.16.0.0/24 orlonger;
+            }
+            then accept;
+        }
+        term p2p {
+            from {
+                route-filter 172.16.254.0/24 orlonger;
+            }
+            then accept;
+        }
+        term default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement load-balance-per-flow {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+routing-instances {
+    mgmt_junos {
+        routing-options {
+            rib mgmt_junos.inet6.0 {
+                static {
+                    route ::/0 next-hop 2001:db8::1;
+                }
+            }
+            static {
+                route 0.0.0.0/0 next-hop 10.0.0.2;
+            }
+        }
+    }
+}
+routing-options {
+    router-id 172.16.0.12;
+    autonomous-system 65012;
+    forwarding-table {
+        export load-balance-per-flow;
+        ecmp-fast-reroute;
+    }
+}
+protocols {
+    bgp {
+        group underlay {
+            type external;
+            mtu-discovery;
+            import import-underlay;
+            family inet {
+                unicast;
+            }
+            export export-underlay;
+            local-as 65012;
+            multipath {
+                multiple-as;
+            }
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+            neighbor 172.16.254.2 {
+                description node1-1;
+                peer-as 65001;
+            }
+            neighbor 172.16.254.6 {
+                description node1-2;
+                peer-as 65002;
+            }
+            neighbor 172.16.254.10 {
+                description router1;
+                peer-as 65100;
+            }
+        }
+        group overlay {
+            type internal;
+            local-address 172.16.0.12;
+            mtu-discovery;
+            family evpn {
+                signaling;
+            }
+            cluster 172.16.0.255;
+            local-as 65000;
+            multipath;
+            neighbor 172.16.0.1 {
+                description node1-1;
+            }
+            neighbor 172.16.0.2 {
+                description node1-2;
+            }
+            neighbor 172.16.0.11 {
+                description node2-1;
+            }
+            neighbor 172.16.0.100 {
+                description router1;
+            }
+            vpn-apply-export;
+        }
+        log-updown;
+        graceful-restart;
+    }
+    lldp {
+        port-id-subtype interface-name;
+        interface all;
+    }
+}
