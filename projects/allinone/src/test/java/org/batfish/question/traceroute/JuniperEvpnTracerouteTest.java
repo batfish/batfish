@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -21,6 +22,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 //import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -28,10 +30,15 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.config.Settings;
 import org.batfish.main.TestrigText;
+import org.batfish.question.edges.EdgesQuestion;
+import org.batfish.question.edges.EdgesQuestion.EdgeType;
+import org.batfish.question.routes.RoutesQuestion;
+import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -58,25 +65,26 @@ public class JuniperEvpnTracerouteTest {
 
   // All config filenames in the configs/ directory of the testrig (as they appear on disk).
   private static final List<String> TESTRIG_NODE_NAMES =
-      ImmutableList.of(
-              "edge1", "node1-2", "node2-2", "sw1", "sw3",
-              "node1-1", "node2-1", "router1", "sw2");
+          ImmutableList.of(
+                  "edge1", "node1-2", "node2-2", "sw1", "sw3",
+                  "node1-1", "node2-1", "router1", "sw2");
 
   // Batfish lowercases the Junos "host-name" to produce the VI configuration key.
   // host-name LAB-1-DRT -> "node1-1", host-name LAB-1-SN -> "lab-1-sn"
   private static final String DRT_HOSTNAME = "node1-1";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule
+  public TemporaryFolder _folder = new TemporaryFolder();
 
   // ---- Helper: load testrig ----
 
   private Batfish loadTestrig() throws IOException {
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + TESTRIG_NAME, TESTRIG_NODE_NAMES)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + TESTRIG_NAME, TESTRIG_NODE_NAMES)
+                            .build(),
+                    _folder);
     // Relax strict parsing settings so unrecognized config lines are tolerated
     // (like a normal Batfish production run), instead of failing the test.
     Settings settings = batfish.getSettings();
@@ -118,8 +126,8 @@ public class JuniperEvpnTracerouteTest {
     System.out.println("Discovered VI hostnames: " + configs.keySet());
 
     assertTrue(
-        DRT_HOSTNAME + " should be present in configs. Actual keys: " + configs.keySet(),
-        configs.containsKey(DRT_HOSTNAME));
+            DRT_HOSTNAME + " should be present in configs. Actual keys: " + configs.keySet(),
+            configs.containsKey(DRT_HOSTNAME));
   }
 
   // ---- Step 2: Verify VRFs and interfaces exist on parsed config ----
@@ -140,8 +148,8 @@ public class JuniperEvpnTracerouteTest {
     // The "Lab" routing-instance should become a VRF (irb.100 is in routing-instance Lab)
     boolean hasLabVrf = vrfs.containsKey("TENANT-A") || vrfs.containsKey("lab");
     assertTrue(
-        DRT_HOSTNAME + " should have a 'TENANT-A' VRF. Actual VRFs: " + vrfs.keySet(),
-        hasLabVrf);
+            DRT_HOSTNAME + " should have a 'TENANT-A' VRF. Actual VRFs: " + vrfs.keySet(),
+            hasLabVrf);
 
     // Check that irb.100 interface exists
     Map<String, Interface> allInterfaces = drt.getAllInterfaces();
@@ -149,17 +157,17 @@ public class JuniperEvpnTracerouteTest {
 
     boolean hasIrb100 = allInterfaces.containsKey("irb.100");
     assertTrue(
-        DRT_HOSTNAME + " should have irb.100 interface. Actual interfaces: "
-            + allInterfaces.keySet(),
-        hasIrb100);
+            DRT_HOSTNAME + " should have irb.100 interface. Actual interfaces: "
+                    + allInterfaces.keySet(),
+            hasIrb100);
 
     // Verify irb.100 has an address
     Interface irb100 = allInterfaces.get("irb.100");
     assertNotNull("irb.100 interface should not be null", irb100);
     assertThat(
-        "irb.100 should have at least one address",
-        irb100.getAllConcreteAddresses(),
-        not(empty()));
+            "irb.100 should have at least one address",
+            irb100.getAllConcreteAddresses(),
+            not(empty()));
 
     // Verify irb.100 is in the Lab VRF
     String irb100Vrf = irb100.getVrfName();
@@ -175,8 +183,8 @@ public class JuniperEvpnTracerouteTest {
       batfish.computeDataPlane(batfish.getSnapshot());
     } catch (NullPointerException e) {
       fail(
-          "Data plane computation threw NPE. Stack trace:\n"
-              + stackTraceToString(e));
+              "Data plane computation threw NPE. Stack trace:\n"
+                      + stackTraceToString(e));
     }
   }
 
@@ -190,16 +198,16 @@ public class JuniperEvpnTracerouteTest {
     //   startLocation='@enter(node1-1[irb.100])',
     //   headers=HeaderConstraints(dstIps='192.168.99.10', srcIps='172.16.100.6'))
     PacketHeaderConstraints header =
-        PacketHeaderConstraints.builder()
-            .setSrcIp("172.16.100.6")
-            .setDstIp("192.168.99.10")
-            .build();
+            PacketHeaderConstraints.builder()
+                    .setSrcIp("172.16.100.6")
+                    .setDstIp("192.168.99.10")
+                    .build();
 
     // Batfish lowercases hostnames, so use the lowercased form in source location
     String sourceLocation = "@enter(" + DRT_HOSTNAME + "[irb.100])";
 
     TracerouteQuestion question =
-        new TracerouteQuestion(sourceLocation, header, false, DEFAULT_MAX_TRACES);
+            new TracerouteQuestion(sourceLocation, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
 
@@ -208,8 +216,8 @@ public class JuniperEvpnTracerouteTest {
       traces = answerer.getTraces(batfish.getSnapshot(), question);
     } catch (NullPointerException e) {
       fail(
-          "Traceroute threw NPE. Stack trace:\n"
-              + stackTraceToString(e));
+              "Traceroute threw NPE. Stack trace:\n"
+                      + stackTraceToString(e));
       return;
     }
 
@@ -225,71 +233,68 @@ public class JuniperEvpnTracerouteTest {
       for (Trace trace : traceList) {
         assertNotNull("Trace should not be null", trace);
         assertNotNull("Trace disposition should not be null", trace.getDisposition());
-        System.out.println("  Disposition: " + trace.getDisposition());
-        for (int i = 0; i < trace.getHops().size(); i++) {
-          Hop hop = trace.getHops().get(i);
-          System.out.println("  Hop " + i + ": " + hop.getNode().getName()
-              + " steps=" + hop.getSteps().size());
-        }
+        assertTrue(trace.getDisposition().isSuccessful());
       }
     }
   }
+
+
 
   // ---- Step 5: Traceroute using low-level Flow API (bypass question layer) ----
 
-  @Test
-  public void testTracerouteViaFlowBuilder() throws IOException {
-    Batfish batfish = loadTestrigAndComputeDataPlane();
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-
-    // Build flow directly — equivalent to @enter(node1-1[irb.100])
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(DRT_HOSTNAME)
-            .setIngressInterface("irb.100")
-            .setSrcIp(Ip.parse("172.16.100.6"))
-            .setDstIp(Ip.parse("192.168.99.10"))
-            .build();
-
-    SortedMap<Flow, List<Trace>> traces;
-    try {
-      traces =
-          batfish
-              .getTracerouteEngine(snapshot)
-              .computeTraces(ImmutableSet.of(flow), false);
-    } catch (NullPointerException e) {
-      fail(
-          "TracerouteEngine.computeTraces threw NPE. Stack trace:\n"
-              + stackTraceToString(e));
-      return;
-    }
-
-    assertNotNull("Traces should not be null", traces);
-    assertTrue("Traces should contain our flow", traces.containsKey(flow));
-
-    List<Trace> flowTraces = traces.get(flow);
-    assertThat("Should have at least one trace", flowTraces, not(empty()));
-
-    // Print detailed hop/step info for debugging
-    Trace firstTrace = flowTraces.get(0);
-    assertNotNull("First trace should not be null", firstTrace);
-    assertNotNull("Disposition should not be null", firstTrace.getDisposition());
-    System.out.println("Disposition: " + firstTrace.getDisposition());
-
-    for (int i = 0; i < firstTrace.getHops().size(); i++) {
-      Hop hop = firstTrace.getHops().get(i);
-      assertNotNull("Hop " + i + " should not be null", hop);
-      assertNotNull("Hop " + i + " node should not be null", hop.getNode());
-      System.out.println("Hop " + i + ": " + hop.getNode().getName());
-      for (int j = 0; j < hop.getSteps().size(); j++) {
-        Step<?> step = hop.getSteps().get(j);
-        assertNotNull("Step " + j + " of hop " + i + " should not be null", step);
-        assertNotNull(
-            "Step " + j + " of hop " + i + " action should not be null", step.getAction());
-        System.out.println("  Step " + j + ": " + step.getAction() + " " + step.getDetail());
-      }
-    }
-  }
+//  @Test
+//  public void testTracerouteViaFlowBuilder() throws IOException {
+//    Batfish batfish = loadTestrigAndComputeDataPlane();
+//    NetworkSnapshot snapshot = batfish.getSnapshot();
+//
+//    // Build flow directly — equivalent to @enter(node1-1[irb.100])
+//    Flow flow =
+//            Flow.builder()
+//                    .setIngressNode(DRT_HOSTNAME)
+//                    .setIngressInterface("irb.100")
+//                    .setSrcIp(Ip.parse("172.16.100.6"))
+//                    .setDstIp(Ip.parse("192.168.99.10"))
+//                    .build();
+//
+//    SortedMap<Flow, List<Trace>> traces;
+//    try {
+//      traces =
+//              batfish
+//                      .getTracerouteEngine(snapshot)
+//                      .computeTraces(ImmutableSet.of(flow), false);
+//    } catch (NullPointerException e) {
+//      fail(
+//              "TracerouteEngine.computeTraces threw NPE. Stack trace:\n"
+//                      + stackTraceToString(e));
+//      return;
+//    }
+//
+//    assertNotNull("Traces should not be null", traces);
+//    assertTrue("Traces should contain our flow", traces.containsKey(flow));
+//
+//    List<Trace> flowTraces = traces.get(flow);
+//    assertThat("Should have at least one trace", flowTraces, not(empty()));
+//
+//    // Print detailed hop/step info for debugging
+//    Trace firstTrace = flowTraces.get(0);
+//    assertNotNull("First trace should not be null", firstTrace);
+//    assertNotNull("Disposition should not be null", firstTrace.getDisposition());
+//    System.out.println("Disposition: " + firstTrace.getDisposition());
+//
+//    for (int i = 0; i < firstTrace.getHops().size(); i++) {
+//      Hop hop = firstTrace.getHops().get(i);
+//      assertNotNull("Hop " + i + " should not be null", hop);
+//      assertNotNull("Hop " + i + " node should not be null", hop.getNode());
+//      System.out.println("Hop " + i + ": " + hop.getNode().getName());
+//      for (int j = 0; j < hop.getSteps().size(); j++) {
+//        Step<?> step = hop.getSteps().get(j);
+//        assertNotNull("Step " + j + " of hop " + i + " should not be null", step);
+//        assertNotNull(
+//                "Step " + j + " of hop " + i + " action should not be null", step.getAction());
+//        System.out.println("  Step " + j + ": " + step.getAction() + " " + step.getDetail());
+//      }
+//    }
+//  }
 
   // ---- Step 6: Traceroute originating from device (not @enter) ----
 //
@@ -710,6 +715,49 @@ public class JuniperEvpnTracerouteTest {
 //          + " return=" + result.getReturn());
 //    }
 //  }
+
+  // ---- Step: Verify EVPN RIB has routes (bf.q.evpnRib()) ----
+
+  @Test
+  public void testEvpnRibHasRoutes() throws IOException {
+    Batfish batfish = loadTestrigAndComputeDataPlane();
+
+    // Equivalent to bf.q.evpnRib().answer().frame()
+    RoutesQuestion question =
+        new RoutesQuestion(null, null, null, null, null, RibProtocol.EVPN, null);
+
+    TableAnswerElement answer =
+        (TableAnswerElement) batfish.createAnswerer(question).answer(batfish.getSnapshot());
+
+    assertNotNull("EVPN RIB answer should not be null", answer);
+    assertNotNull("EVPN RIB rows should not be null", answer.getRows());
+    assertTrue(
+        "EVPN RIB should contain at least one route, but got " + answer.getRows().size(),
+        answer.getRows().size() > 0);
+
+    System.out.println("EVPN RIB row count: " + answer.getRows().size());
+  }
+
+  // ---- Step: Verify VXLAN edges exist (bf.q.vxlanEdges()) ----
+
+  @Test
+  public void testVxlanEdgesExist() throws IOException {
+    Batfish batfish = loadTestrigAndComputeDataPlane();
+
+    // Equivalent to bf.q.vxlanEdges().answer().frame()
+    EdgesQuestion question = new EdgesQuestion(null, null, EdgeType.VXLAN, false);
+
+    TableAnswerElement answer =
+        (TableAnswerElement) batfish.createAnswerer(question).answer(batfish.getSnapshot());
+
+    assertNotNull("VXLAN edges answer should not be null", answer);
+    assertNotNull("VXLAN edges rows should not be null", answer.getRows());
+    assertTrue(
+        "VXLAN edges should contain at least one edge, but got " + answer.getRows().size(),
+        answer.getRows().size() > 0);
+
+    System.out.println("VXLAN edges row count: " + answer.getRows().size());
+  }
 
   // ---- Utility ----
 

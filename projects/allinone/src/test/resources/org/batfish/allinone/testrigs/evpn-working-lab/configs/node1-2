@@ -167,6 +167,50 @@ policy-options {
             load-balance per-packet;
         }
     }
+    policy-statement TENANT-A-import {
+        term from-tenant-a {
+            from community TENANT-A-RT;
+            then accept;
+        }
+        term from-tenant-b {
+            from community TENANT-B-RT;
+            then accept;
+        }
+        term default {
+            then reject;
+        }
+    }
+    policy-statement TENANT-A-export {
+        term export {
+            then {
+                community add TENANT-A-RT;
+                accept;
+            }
+        }
+    }
+    policy-statement TENANT-B-import {
+        term from-tenant-b {
+            from community TENANT-B-RT;
+            then accept;
+        }
+        term from-tenant-a {
+            from community TENANT-A-RT;
+            then accept;
+        }
+        term default {
+            then reject;
+        }
+    }
+    policy-statement TENANT-B-export {
+        term export {
+            then {
+                community add TENANT-B-RT;
+                accept;
+            }
+        }
+    }
+    community TENANT-A-RT members target:65000:10000;
+    community TENANT-B-RT members target:65000:20000;
 }
 vlans {
     VLAN100 {
@@ -220,7 +264,8 @@ routing-instances {
         interface irb.100;
         interface irb.200;
         route-distinguisher 172.16.0.2:10000;
-        vrf-target target:65000:10000;
+        vrf-import TENANT-A-import;
+        vrf-export TENANT-A-export;
         vrf-table-label;
     }
     TENANT-B {
@@ -244,7 +289,8 @@ routing-instances {
         interface irb.300;
         interface irb.400;
         route-distinguisher 172.16.0.2:20000;
-        vrf-target target:65000:20000;
+        vrf-import TENANT-B-import;
+        vrf-export TENANT-B-export;
         vrf-table-label;
     }
     mgmt_junos {

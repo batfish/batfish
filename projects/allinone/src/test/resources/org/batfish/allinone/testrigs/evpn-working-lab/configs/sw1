@@ -54,6 +54,17 @@ interfaces {
             }
         }
     }
+    ge-0/0/3 {
+        description "to client5 - access port";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members VLAN300;
+                }
+            }
+        }
+    }
     fxp0 {
         unit 0 {
             family inet {
