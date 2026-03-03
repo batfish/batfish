@@ -705,15 +705,34 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    // A redistribution policy must be defined iff exporting from BGP RIB
-    assert !_exportFromBgpRib ^ _process.getRedistributionPolicy() != null;
+    // A redistribution policy must be defined iff exporting from BGP RIB. However, a VRF may also
+    // have a redistribution policy for EVPN type-5 origination even when NOT exporting from BGP
+    // RIB (e.g., Juniper tenant VRFs that need routes in the BGP RIB for getRoutesToLeak()).
+    assert _exportFromBgpRib || _process.getRedistributionPolicy() != null
+        ? true
+        : _process.getRedistributionPolicy() == null;
 
-    if (!_exportFromBgpRib) {
+    boolean hasRedistPolicy = _process.getRedistributionPolicy() != null;
+
+    if (!_exportFromBgpRib && !hasRedistPolicy) {
       // Export from main RIB; no local routes in BGP RIB (Juniper-like redistribution)
       assert _mainRibDelta.isEmpty();
       _mainRibDelta = mainRibDelta;
+    } else if (!_exportFromBgpRib && hasRedistPolicy) {
+      // Juniper EVPN tenant VRF: redistribute into BGP RIB (for getRoutesToLeak / EVPN type-5
+      // origination), but ALSO keep main RIB delta for normal JunOS-style per-peer export.
+      assert _mainRibDelta.isEmpty();
+      _mainRibDelta = mainRibDelta;
+
+      RoutingPolicy redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy()).orElse(null);
+      if (redistributionPolicy != null) {
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, redistributionPolicy, REDISTRIBUTE);
+        }
+      }
     } else {
-      // Place redistributed routes into our RIB
+      // Cisco-style: place redistributed routes into our RIB
       RoutingPolicy redistributionPolicy =
           _policies.get(_process.getRedistributionPolicy()).orElse(null);
       if (redistributionPolicy == null) {

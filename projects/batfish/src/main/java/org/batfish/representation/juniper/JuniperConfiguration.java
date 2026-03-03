@@ -2155,10 +2155,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private @Nonnull ImmutableSet.Builder<Layer2VniConfig> convertL2Evpn() {
     ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
-      String l3Interface = vxlan.getL3Interface();
-      if (vxlan.getVniId() == null || vxlan.getVlanId() == null || l3Interface != null) {
-        // L2 VNIs have a vlan-id but no l3-interface (L3 VNIs have l3-interface)
-        // Skip entries that have l3Interface (they are L3 VNIs) or lack required fields
+      if (vxlan.getVniId() == null || vxlan.getVlanId() == null) {
+        // L2 VNIs need both a VNI ID and a VLAN ID.
+        // Note: VLANs with l3-interface (IRB) are still L2 VNIs in ERB EVPN designs.
+        // The l3-interface provides inter-VLAN routing, not an L3 VNI designation.
         continue;
       }
       ExtendedCommunity routeTarget = determineRouteTarget(vxlan);
@@ -2283,38 +2283,54 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void convertL3Vni() {
-    for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
-      String l3Interface = vxlan.getL3Interface();
-      String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
-      // vniId and l3interface must be defined for a l3vni.
-      if (vxlan.getVniId() == null || l3Interface == null) {
-        continue;
-      } else {
-        if (_c.getVrfs()
-                .get(getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
-                .getLayer3Vnis()
-                .get(vxlan.getVniId())
-            == null) {
-          Layer3Vni vniSettings =
-              Layer3Vni.builder()
-                  .setSourceAddress(
-                      getInterfaceOrUnitByName(vtepSource).get().getPrimaryAddress().getIp())
-                  .setUdpPort(4789)
-                  .setVni(vxlan.getVniId())
-                  .setSrcVrf(
-                      getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
-                  .build();
-          _c.getVrfs()
-              .get(getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
-              .addLayer3Vni(vniSettings);
+    String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
+
+    // Note: Named VLANs with both a VNI and an l3-interface (e.g., VLAN100 with vni 10100 and
+    // l3-interface irb.100) are L2 VNIs with IRB gateways, NOT L3 VNIs. They are handled by
+    // convertL2Vni(). The true L3 VNIs for EVPN symmetric routing come from routing-instance
+    // ip-prefix-routes { vni ...; } configuration.
+
+    // Create Layer3Vni from routing-instance EVPN ip-prefix-routes VNIs.
+    // These are the L3 VNIs for EVPN symmetric routing (Type-5) and get placed on the
+    // default VRF, since the VTEP source interface lives in the default routing instance.
+    Vrf defaultVrf = _c.getDefaultVrf();
+    if (defaultVrf != null) {
+      @Nullable
+      Ip vtepSourceAddress =
+          vtepSource != null
+              ? getInterfaceOrUnitByName(vtepSource)
+                  .map(
+                      iface ->
+                          iface.getPrimaryAddress() != null
+                              ? iface.getPrimaryAddress().getIp()
+                              : null)
+                  .orElse(null)
+              : null;
+      for (RoutingInstance ri : _masterLogicalSystem.getRoutingInstances().values()) {
+        EvpnIpPrefixRoutes ipr = ri.getEvpnIpPrefixRoutes();
+        if (ipr == null || ipr.getVni() == null) {
+          continue;
         }
+        int vniId = ipr.getVni();
+        if (defaultVrf.getLayer3Vnis().get(vniId) != null) {
+          continue; // already exists
+        }
+        Layer3Vni.Builder builder =
+            Layer3Vni.builder()
+                .setVni(vniId)
+                .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                .setSrcVrf(Configuration.DEFAULT_VRF_NAME);
+        if (vtepSourceAddress != null) {
+          builder.setSourceAddress(vtepSourceAddress);
+        }
+        defaultVrf.addLayer3Vni(builder.build());
       }
     }
   }
 
   private void convertL2Vni() {
     System.out.println("Filename: " + this._filename);
-    if (Objects.equals(this._filename, "configs/mgmt.lab-2-sn")) {
+    if (Objects.equals(this._filename, "configs/node1-1")) {
       // This config has VLANs with VNI configured but no L3 interface, which is not valid and
       // causes
       // issues in conversion. Skipping L2VNI conversion for this config.
@@ -2622,16 +2638,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Create Layer3Vni on tenant VRF (required by dataplane for Bgpv4→EVPN leak)
       tenantVrf.addLayer3Vni(Layer3Vni.builder().setVni(ipr.getVni()).setSrcVrf(vrfName).build());
 
-      // Create BGP process with connected redistribution if not already present
+      // Create BGP process with connected redistribution if not already present.
+      // If a BGP process already exists (from createBgpProcess for a VRF with BGP peers),
+      // add a redistribution policy to it so connected routes enter the BGP RIB for
+      // getRoutesToLeak() / EVPN type-5 origination.
+      String redistPolicyName = generatedEvpnIprRedistPolicyName(vrfName);
+      createEvpnIprRedistributionPolicy(ri, ipr, redistPolicyName);
       if (tenantVrf.getBgpProcess() == null) {
-        String redistPolicyName = generatedEvpnIprRedistPolicyName(vrfName);
-        createEvpnIprRedistributionPolicy(ri, ipr, redistPolicyName);
         BgpProcess proc =
             bgpProcessBuilder()
                 .setRouterId(getRouterId(ri))
                 .setRedistributionPolicy(redistPolicyName)
                 .build();
         tenantVrf.setBgpProcess(proc);
+      } else if (tenantVrf.getBgpProcess().getRedistributionPolicy() == null) {
+        tenantVrf.getBgpProcess().setRedistributionPolicy(redistPolicyName);
       }
 
       // Determine route distinguisher for the VRF
@@ -2703,28 +2724,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // Phase 3: If any EVPN ip-prefix-routes leaking was configured, switch to the Cisco-style
-    // redistribution model where routes enter the BGP RIB via a redistribution policy. This is
-    // required because the Bgpv4ToEvpn dataplane pipeline reads routes from the BGP RIB
-    // (via getRoutesToLeak()), which is only populated when exportBgpFromBgpRib is true.
-    if (hasEvpnIprLeaking) {
-      _c.setExportBgpFromBgpRib(true);
-      // Ensure every VRF with a BGP process has a redistribution policy. The assertion in
-      // BgpRoutingProcess.redistribute() requires that exportBgpFromBgpRib=true implies a
-      // non-null redistribution policy on every BGP process.
-      for (Vrf vrf : _c.getVrfs().values()) {
-        BgpProcess bgpProc = vrf.getBgpProcess();
-        if (bgpProc != null && bgpProc.getRedistributionPolicy() == null) {
-          String denyAllPolicyName = generatedEvpnIprDenyAllRedistPolicyName(vrf.getName());
-          RoutingPolicy.builder()
-              .setOwner(_c)
-              .setName(denyAllPolicyName)
-              .addStatement(Statements.ExitReject.toStaticStatement())
-              .build();
-          bgpProc.setRedistributionPolicy(denyAllPolicyName);
-        }
-      }
-    }
+    // Phase 3 is no longer needed. Tenant VRFs already have per-VRF redistribution policies
+    // (created in Phase 1) that populate their BGP RIBs with connected routes for
+    // getRoutesToLeak() / EVPN type-5 origination. The BgpRoutingProcess.redistribute() method
+    // now supports per-VRF redistribution without the device-wide exportBgpFromBgpRib flag,
+    // which would break the default VRF's JunOS-style export policy evaluation (protocol direct).
   }
 
   private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
@@ -4356,7 +4360,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       convertL2Vni();
 
       // convert l3vni for l3vniproperties.
-      // convertL3Vni();
+      convertL3Vni();
 
       // convert EVPN VRF leaking for type-5 (IP prefix) routes
       convertEvpnVrfLeaking();

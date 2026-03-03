@@ -264,6 +264,7 @@ routing-instances {
         interface irb.100;
         interface irb.200;
         route-distinguisher 172.16.0.2:10000;
+        vrf-target target:65000:10000;
         vrf-import TENANT-A-import;
         vrf-export TENANT-A-export;
         vrf-table-label;
@@ -289,6 +290,7 @@ routing-instances {
         interface irb.300;
         interface irb.400;
         route-distinguisher 172.16.0.2:20000;
+        vrf-target target:65000:20000;
         vrf-import TENANT-B-import;
         vrf-export TENANT-B-export;
         vrf-table-label;
