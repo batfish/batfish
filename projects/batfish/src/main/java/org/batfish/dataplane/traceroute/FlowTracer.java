@@ -1156,9 +1156,6 @@ class FlowTracer {
   void forwardOutInterface(
       Interface outgoingInterface, @Nullable Ip nextHopIp, @Nullable Ip overriddenNextHopIp) {
     // Apply preSourceNatOutgoingFilter
-    if (outgoingInterface == null) {
-      System.out.println("NPE here");;
-    }
     if (applyFilter(
             outgoingInterface.getPreTransformationOutgoingFilter(),
             PRE_TRANSFORMATION_EGRESS_FILTER)

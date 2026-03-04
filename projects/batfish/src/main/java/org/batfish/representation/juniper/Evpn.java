@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
@@ -51,14 +52,14 @@ public final class Evpn implements Serializable {
     return _ipPrefixRoutes;
   }
 
-  public EvpnIpPrefixRoutes getOrCreateIpPrefixRoutes() {
+  public @Nonnull EvpnIpPrefixRoutes getOrCreateIpPrefixRoutes() {
     if (_ipPrefixRoutes == null) {
       _ipPrefixRoutes = new EvpnIpPrefixRoutes();
     }
     return _ipPrefixRoutes;
   }
 
-  public void setIpPrefixRoutes(EvpnIpPrefixRoutes ipPrefixRoutes) {
+  public void setIpPrefixRoutes(@Nullable EvpnIpPrefixRoutes ipPrefixRoutes) {
     _ipPrefixRoutes = ipPrefixRoutes;
   }
 }

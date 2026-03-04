@@ -16,7 +16,44 @@ e_encapsulation
     ENCAPSULATION (
       VXLAN
       | MPLS
+      | SRV6
     )
+;
+
+e_ip_prefix_routes
+:
+    IP_PREFIX_ROUTES (
+        eipr_advertise
+        | eipr_encapsulation
+        | eipr_export
+        | eipr_import
+        | eipr_vni
+    )
+;
+
+eipr_advertise
+:
+    ADVERTISE (DIRECT_NEXTHOP | GATEWAY_ADDRESS)
+;
+
+eipr_encapsulation
+:
+    ENCAPSULATION (VXLAN | MPLS | SRV6)
+;
+
+eipr_export
+:
+    EXPORT name = junos_name
+;
+
+eipr_import
+:
+    IMPORT name = junos_name
+;
+
+eipr_vni
+:
+    VNI vni = dec
 ;
 
 e_extended_vni_list
@@ -31,43 +68,6 @@ e_extended_vni_list
 e_duplicate_mac_detection_null
 :
     DUPLICATE_MAC_DETECTION null_filler
-;
-
-e_ip_prefix_routes
-:
-   IP_PREFIX_ROUTES
-   (
-      eipr_advertise
-      | eipr_encapsulation
-      | eipr_export
-      | eipr_import
-      | eipr_vni
-   )
-;
-
-eipr_advertise
-:
-   ADVERTISE (DIRECT_NEXTHOP | GATEWAY_ADDRESS)
-;
-
-eipr_encapsulation
-:
-   ENCAPSULATION (MPLS | SRV6 | VXLAN)
-;
-
-eipr_export
-:
-   EXPORT name=junos_name
-;
-
-eipr_import
-:
-   IMPORT name=junos_name
-;
-
-eipr_vni
-:
-   VNI vni=dec
 ;
 
 e_multicast_mode
@@ -108,17 +108,17 @@ evovt_auto
 
 evovt_community
 :
-   extended_community
+    comm = vrf_target_community
 ;
 
 evovt_export
 :
-   EXPORT extended_community
+    EXPORT vrf_target_community
 ;
 
 evovt_import
 :
-   IMPORT extended_community
+    IMPORT vrf_target_community
 ;
 
 p_evpn

@@ -178,8 +178,6 @@ public enum JuniperStructureUsage implements StructureUsage {
   SNMP_COMMUNITY_CLIENT_LIST_NAME("snmp community client-list-name"),
   SNMP_COMMUNITY_ROUTING_INSTANCE("snmp community routing-instance"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
-  SWITCH_OPTIONS_VRF_EXPORT("switch-options vrf-export"),
-  SWITCH_OPTIONS_VRF_IMPORT("switch-options vrf-import"),
   SYSLOG_HOST_ROUTING_INSTANCE("syslog host routing-instance"),
   TACPLUS_SERVER_ROUTING_INSTANCE("tacplus-server routing-instance"),
   VLAN_INTERFACE("vlan interface"),

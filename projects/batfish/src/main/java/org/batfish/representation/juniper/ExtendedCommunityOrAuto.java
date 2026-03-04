@@ -2,20 +2,28 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
-/** Either {@code auto} or an explicit {@link ExtendedCommunity}. */
+/**
+ * Represents either an explicit {@link ExtendedCommunity} or the keyword {@code auto} for
+ * vrf-target configuration.
+ */
 public final class ExtendedCommunityOrAuto implements Serializable {
 
-  private static final ExtendedCommunityOrAuto AUTO = new ExtendedCommunityOrAuto(null);
+  private final @Nullable ExtendedCommunity _extendedCommunity;
 
-  public static ExtendedCommunityOrAuto auto() {
-    return AUTO;
+  private ExtendedCommunityOrAuto(@Nullable ExtendedCommunity extendedCommunity) {
+    _extendedCommunity = extendedCommunity;
   }
 
-  public static ExtendedCommunityOrAuto of(@Nonnull ExtendedCommunity extendedCommunity) {
+  /** Creates an instance representing the {@code auto} keyword. */
+  public static ExtendedCommunityOrAuto auto() {
+    return new ExtendedCommunityOrAuto(null);
+  }
+
+  /** Creates an instance representing an explicit extended community. */
+  public static ExtendedCommunityOrAuto of(ExtendedCommunity extendedCommunity) {
     return new ExtendedCommunityOrAuto(extendedCommunity);
   }
 
@@ -27,22 +35,14 @@ public final class ExtendedCommunityOrAuto implements Serializable {
     return _extendedCommunity;
   }
 
-  //////////////////////////////////////////
-  ///// Private implementation details /////
-  //////////////////////////////////////////
-
-  private ExtendedCommunityOrAuto(@Nullable ExtendedCommunity ec) {
-    _extendedCommunity = ec;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    } else if (!(o instanceof ExtendedCommunityOrAuto)) {
+    }
+    if (!(o instanceof ExtendedCommunityOrAuto that)) {
       return false;
     }
-    ExtendedCommunityOrAuto that = (ExtendedCommunityOrAuto) o;
     return Objects.equals(_extendedCommunity, that._extendedCommunity);
   }
 
@@ -50,6 +50,4 @@ public final class ExtendedCommunityOrAuto implements Serializable {
   public int hashCode() {
     return Objects.hashCode(_extendedCommunity);
   }
-
-  private final @Nullable ExtendedCommunity _extendedCommunity;
 }

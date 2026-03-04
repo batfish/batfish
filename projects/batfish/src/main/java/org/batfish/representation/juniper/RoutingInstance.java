@@ -57,17 +57,17 @@ public class RoutingInstance implements Serializable {
   private double _ospfReferenceBandwidth;
   private @Nullable OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
-  private Ip _routeDistinguisherId;
   private Ip _routerId;
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
   private @Nullable Resolution _resolution;
   private @Nonnull Map<String, BridgeDomain> _bridgeDomains;
+  private @Nullable EvpnIpPrefixRoutes _evpnIpPrefixRoutes;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
+  private @Nullable Ip _routeDistinguisherId;
   private @Nullable ExtendedCommunity _vrfTargetCommunity;
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
-  private @Nullable EvpnIpPrefixRoutes _evpnIpPrefixRoutes;
-  private @Nullable RouteDistinguisher _routeDistinguisher;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -236,10 +236,6 @@ public class RoutingInstance implements Serializable {
     return _routerId;
   }
 
-  public Ip getRouteDistinguisherId() {
-    return _routeDistinguisherId;
-  }
-
   public SnmpServer getSnmpServer() {
     return _snmpServer;
   }
@@ -297,10 +293,6 @@ public class RoutingInstance implements Serializable {
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
-  }
-
-  public void setRouteDistinguisherId(Ip routeDistinguisherId) {
-    _routeDistinguisherId = routeDistinguisherId;
   }
 
   public void setSnmpServer(SnmpServer snmpServer) {
@@ -370,55 +362,6 @@ public class RoutingInstance implements Serializable {
     return _bridgeDomains;
   }
 
-  /** Returns the VRF-target community (both import and export) for this routing-instance. */
-  public @Nullable ExtendedCommunity getVrfTargetCommunity() {
-    return _vrfTargetCommunity;
-  }
-
-  public void setVrfTargetCommunity(@Nullable ExtendedCommunity vrfTargetCommunity) {
-    _vrfTargetCommunity = vrfTargetCommunity;
-  }
-
-  /** Returns the VRF-target import community override for this routing-instance. */
-  public @Nullable ExtendedCommunity getVrfTargetImport() {
-    return _vrfTargetImport;
-  }
-
-  public void setVrfTargetImport(@Nullable ExtendedCommunity vrfTargetImport) {
-    _vrfTargetImport = vrfTargetImport;
-  }
-
-  /** Returns the VRF-target export community override for this routing-instance. */
-  public @Nullable ExtendedCommunity getVrfTargetExport() {
-    return _vrfTargetExport;
-  }
-
-  public void setVrfTargetExport(@Nullable ExtendedCommunity vrfTargetExport) {
-    _vrfTargetExport = vrfTargetExport;
-  }
-
-  /** Returns the per-RI EVPN ip-prefix-routes config, or {@code null} if not set. */
-  public @Nullable EvpnIpPrefixRoutes getEvpnIpPrefixRoutes() {
-    return _evpnIpPrefixRoutes;
-  }
-
-  /** Returns the per-RI EVPN ip-prefix-routes config, creating it if necessary. */
-  public @Nonnull EvpnIpPrefixRoutes getOrCreateEvpnIpPrefixRoutes() {
-    if (_evpnIpPrefixRoutes == null) {
-      _evpnIpPrefixRoutes = new EvpnIpPrefixRoutes();
-    }
-    return _evpnIpPrefixRoutes;
-  }
-
-  /** Returns the explicit route-distinguisher configured on this routing-instance. */
-  public @Nullable RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
-  }
-
-  public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
-    _routeDistinguisher = routeDistinguisher;
-  }
-
   public @Nonnull BridgeDomain getOrAddBridgeDomain(String name) {
     BridgeDomain bd = _bridgeDomains.get(name);
     if (bd == null) {
@@ -430,5 +373,60 @@ public class RoutingInstance implements Serializable {
               .build();
     }
     return bd;
+  }
+
+  public @Nullable EvpnIpPrefixRoutes getEvpnIpPrefixRoutes() {
+    return _evpnIpPrefixRoutes;
+  }
+
+  public @Nonnull EvpnIpPrefixRoutes getOrCreateEvpnIpPrefixRoutes() {
+    if (_evpnIpPrefixRoutes == null) {
+      _evpnIpPrefixRoutes = new EvpnIpPrefixRoutes();
+    }
+    return _evpnIpPrefixRoutes;
+  }
+
+  public void setEvpnIpPrefixRoutes(@Nullable EvpnIpPrefixRoutes evpnIpPrefixRoutes) {
+    _evpnIpPrefixRoutes = evpnIpPrefixRoutes;
+  }
+
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
+    return _routeDistinguisher;
+  }
+
+  public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
+    _routeDistinguisher = routeDistinguisher;
+  }
+
+  public @Nullable Ip getRouteDistinguisherId() {
+    return _routeDistinguisherId;
+  }
+
+  public void setRouteDistinguisherId(@Nullable Ip routeDistinguisherId) {
+    _routeDistinguisherId = routeDistinguisherId;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetCommunity() {
+    return _vrfTargetCommunity;
+  }
+
+  public void setVrfTargetCommunity(@Nullable ExtendedCommunity vrfTargetCommunity) {
+    _vrfTargetCommunity = vrfTargetCommunity;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetImport() {
+    return _vrfTargetImport;
+  }
+
+  public void setVrfTargetImport(@Nullable ExtendedCommunity vrfTargetImport) {
+    _vrfTargetImport = vrfTargetImport;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetExport() {
+    return _vrfTargetExport;
+  }
+
+  public void setVrfTargetExport(@Nullable ExtendedCommunity vrfTargetExport) {
+    _vrfTargetExport = vrfTargetExport;
   }
 }

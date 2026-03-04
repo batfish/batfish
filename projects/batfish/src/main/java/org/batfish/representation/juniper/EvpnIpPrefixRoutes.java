@@ -18,7 +18,7 @@ public final class EvpnIpPrefixRoutes implements Serializable {
     return _advertise;
   }
 
-  public void setAdvertise(EvpnIpPrefixRoutesAdvertise advertise) {
+  public void setAdvertise(@Nullable EvpnIpPrefixRoutesAdvertise advertise) {
     _advertise = advertise;
   }
 
@@ -26,7 +26,7 @@ public final class EvpnIpPrefixRoutes implements Serializable {
     return _encapsulation;
   }
 
-  public void setEncapsulation(EvpnEncapsulation encapsulation) {
+  public void setEncapsulation(@Nullable EvpnEncapsulation encapsulation) {
     _encapsulation = encapsulation;
   }
 
@@ -34,7 +34,7 @@ public final class EvpnIpPrefixRoutes implements Serializable {
     return _exportPolicy;
   }
 
-  public void setExportPolicy(String exportPolicy) {
+  public void setExportPolicy(@Nullable String exportPolicy) {
     _exportPolicy = exportPolicy;
   }
 
@@ -42,7 +42,7 @@ public final class EvpnIpPrefixRoutes implements Serializable {
     return _importPolicy;
   }
 
-  public void setImportPolicy(String importPolicy) {
+  public void setImportPolicy(@Nullable String importPolicy) {
     _importPolicy = importPolicy;
   }
 
@@ -50,7 +50,7 @@ public final class EvpnIpPrefixRoutes implements Serializable {
     return _vni;
   }
 
-  public void setVni(int vni) {
+  public void setVni(@Nullable Integer vni) {
     _vni = vni;
   }
 }

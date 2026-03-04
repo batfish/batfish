@@ -204,8 +204,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMM
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
-import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
-import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HOST_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
@@ -322,7 +320,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_drop_path_attributesC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_keepContext;
@@ -381,7 +378,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Exp_code_pointContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_policerContext;
@@ -999,6 +995,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vrf_target_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -2196,11 +2193,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
   }
 
-  private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, E_vni_optionsContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
-  }
-
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
@@ -2318,6 +2310,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return range;
   }
 
+  /**
+   * Parses a {@link Vrf_target_communityContext} into an {@link ExtendedCommunity}. The grammar
+   * restricts this to route-target type communities ({@code target:admin:assigned}).
+   */
+  private static @Nullable ExtendedCommunity toVrfTargetCommunity(Vrf_target_communityContext ctx) {
+    try {
+      return ExtendedCommunity.parse(ctx.getText());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
   private static RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
     if (ctx.rd_ip_address_colon_id() != null) {
       String[] rd_ip = ctx.rd_ip_address_colon_id().getText().split(":");
@@ -2332,26 +2336,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return RouteDistinguisher.from(
           toInteger(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
     }
-  }
-
-  private static @Nonnull ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
-    // Parser is not strict, need to validate parsed token is valid and won't crash
-    // The acceptable patterns / values for extended communities in a Juniper Junos
-    // operating
-    // system are as follows:
-    //
-    // 4-octet AS number: 00000000-22222222
-    // 4-octet AS number followed by 4-octet value:
-    // 00000000-22222222:11111111-44444444
-    // 16-octet value: 11111111-22222222-33333333-44444444
-    // The first two patterns are used for standard extended communities, while the
-    // third
-    // pattern is used for large extended communities.
-
-    // The AS number in an extended community can be any value between 0 and 65535.
-    // The
-    // value in an extended community can be any value between 0 and 4294967295.
-    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private @Nonnull Optional<SubRange> toSubRange(
@@ -2610,8 +2594,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private Vlan _currentNamedVlan;
 
-  private Integer _currentVni;
-
   private Zone _currentZone;
 
   private ConcreteFirewallFilter _currentZoneInboundFilter;
@@ -2653,6 +2635,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private BridgeDomain _currentBridgeDomain;
 
   private TunnelAttribute _currentTunnelAttribute;
+
+  private @Nullable Integer _currentVni;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
@@ -2726,8 +2710,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
               .addAll(_currentApplicationSet.getMembers())
               .add(new ApplicationOrApplicationSetReference(name))
               .build());
-      // only mark the structure as referenced if we know it's not a pre-defined
-      // application
+      // only mark the structure as referenced if we know it's not a pre-defined application
       _configuration.referenceStructure(
           APPLICATION_OR_APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION, line);
     }
@@ -2756,8 +2739,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
               .addAll(_currentApplicationSet.getMembers())
               .add(new ApplicationSetReference(name))
               .build());
-      // only mark the structure as referenced if we know it's not a pre-defined
-      // application-set
+      // only mark the structure as referenced if we know it's not a pre-defined application-set
       _configuration.referenceStructure(
           APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION_SET, line);
     }
@@ -3109,8 +3091,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
       _currentInterfaceOrRange.getVrrpGroups().put(vrid, currentVrrpGroup);
     } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
-      // Note that we are keeping the VRRP configuration for the first source-address
-      // we encounter
+      // Note that we are keeping the VRRP configuration for the first source-address we encounter
       // using this VRID.
       _w.fatalRedFlag(
           "Multiple inet addresses with the same VRRP VRID %d on interface '%s'",
@@ -3307,8 +3288,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       }
       if (_currentOspfSettings == null) {
         warn(ctx, "Could not find interface with ip address: " + ip);
-        // create dummy object to store what follows; this dangling object will be
-        // ignored
+        // create dummy object to store what follows; this dangling object will be ignored
         _currentOspfSettings = new OspfInterfaceSettings(Ip.ZERO);
         return;
       }
@@ -3888,6 +3868,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentSnmpServer = snmpServer;
   }
 
+  // switch-options is now fully extracted; no enterS_switch_options override needed.
+
   @Override
   public void exitSo_route_distinguisher(So_route_distinguisherContext ctx) {
     RouteDistinguisher rd = toRouteDistinguisher(ctx.route_distinguisher());
@@ -3902,50 +3884,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitSo_vrf_import(So_vrf_importContext ctx) {
-    String name = toString(ctx.name);
-    _configuration.referenceStructure(
-        POLICY_STATEMENT, name, SWITCH_OPTIONS_VRF_IMPORT, getLine(ctx.name.getStart()));
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(name);
-  }
-
-  @Override
-  public void exitSo_vrf_export(So_vrf_exportContext ctx) {
-    String name = toString(ctx.name);
-    _configuration.referenceStructure(
-        POLICY_STATEMENT, name, SWITCH_OPTIONS_VRF_EXPORT, getLine(ctx.name.getStart()));
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(name);
+  public void exitSovt_auto(Sovt_autoContext ctx) {
+    _currentLogicalSystem
+        .getOrInitSwitchOptions()
+        .setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.auto());
   }
 
   @Override
   public void exitSovt_community(Sovt_communityContext ctx) {
-    if (ctx.extended_community() != null) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
+    if (ec != null) {
       _currentLogicalSystem
           .getOrInitSwitchOptions()
-          .setVrfTargetCommunityorAuto(
-              ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.extended_community())));
+          .setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.of(ec));
     }
   }
 
   @Override
-  public void exitSovt_auto(Sovt_autoContext ctx) {
-    _currentLogicalSystem
-        .getOrInitSwitchOptions()
-        .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
-  }
-
-  @Override
   public void exitSovt_export(Sovt_exportContext ctx) {
-    _currentLogicalSystem
-        .getOrInitSwitchOptions()
-        .setVrfTargetExport(toExtendedCommunity(ctx.extended_community()));
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
+    if (ec != null) {
+      _currentLogicalSystem.getOrInitSwitchOptions().setVrfTargetExport(ec);
+    }
   }
 
   @Override
   public void exitSovt_import(Sovt_importContext ctx) {
-    _currentLogicalSystem
-        .getOrInitSwitchOptions()
-        .setVrfTargetImport(toExtendedCommunity(ctx.extended_community()));
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
+    if (ec != null) {
+      _currentLogicalSystem.getOrInitSwitchOptions().setVrfTargetImport(ec);
+    }
+  }
+
+  @Override
+  public void exitSo_vrf_export(So_vrf_exportContext ctx) {
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(toString(ctx.name));
+  }
+
+  @Override
+  public void exitSo_vrf_import(So_vrf_importContext ctx) {
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(toString(ctx.name));
   }
 
   @Override
@@ -4313,8 +4291,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
 
     /*
-     * Need to keep track of the from-zone for this filter to apply srcInterface
-     * filter to the
+     * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
      * firewallFilter
      */
     if (_currentFromZone != null) {
@@ -4502,8 +4479,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // in system services/ports hierarchy
       _currentAuthenticationOrder = _currentLine.getAaaAuthenticationLoginList();
       if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
-        // if the line already has a default authentication order, give it a new
-        // non-default one
+        // if the line already has a default authentication order, give it a new non-default one
         _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
         _currentLine.setAaaAuthenticationLoginList(_currentAuthenticationOrder);
       }
@@ -4511,8 +4487,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // in system hierarchy
       _currentAuthenticationOrder = _currentLogicalSystem.getJf().getSystemAuthenticationOrder();
       if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
-        // if system already has a default authentication order, give it a new
-        // non-default one
+        // if system already has a default authentication order, give it a new non-default one
         _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
         _currentLogicalSystem.getJf().setSystemAuthenticationOrder(_currentAuthenticationOrder);
       }
@@ -4524,8 +4499,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterSy_ports(Sy_portsContext ctx) {
     String name = toString(ctx.porttype);
-    // aux and console ports should already exist unless they've been disabled, if
-    // disabled don't
+    // aux and console ports should already exist unless they've been disabled, if disabled don't
     // add it to juniperFamily's lines
     _currentLine = firstNonNull(_currentLogicalSystem.getJf().getLines().get(name), new Line(name));
   }
@@ -4539,8 +4513,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentLogicalSystem.getJf().getLines().computeIfAbsent(name, Line::new);
     _currentLine = _currentLogicalSystem.getJf().getLines().get(name);
 
-    // if system authentication order defined, set the current line's authentication
-    // login list to
+    // if system authentication order defined, set the current line's authentication login list to
     // the system authentication order
     if (_currentLogicalSystem.getJf().getSystemAuthenticationOrder() != null
         && _currentLine.getAaaAuthenticationLoginList() == null) {
@@ -4658,8 +4631,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return Optional.of(toInteger(ctx.uint8()));
     } else {
       assert ctx.named_icmp_code() != null;
-      // NB: JunOS requires users to set both code AND type separately, so this does
-      // not affect
+      // NB: JunOS requires users to set both code AND type separately, so this does not affect
       // type.
       return toIcmpCode(messageCtx, ctx.named_icmp_code()).map(IcmpCode::getCode);
     }
@@ -4794,11 +4766,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterB_family(B_familyContext ctx) {
-    _currentBgpGroup.setEvpnAf(false);
-  }
-
-  @Override
   public void exitB_import(B_importContext ctx) {
     Policy_expressionContext expr = ctx.expr;
     _currentBgpGroup.getImportPolicies().add(toComplexPolicyStatement(expr, BGP_IMPORT_POLICY));
@@ -4919,10 +4886,62 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitE_encapsulation(E_encapsulationContext ctx) {
     if (ctx.VXLAN() != null) {
       _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.VXLAN);
+    } else if (ctx.SRV6() != null) {
+      _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.SRV6);
     } else {
       assert ctx.MPLS() != null;
       _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.MPLS);
     }
+  }
+
+  @Override
+  public void exitEipr_advertise(Eipr_advertiseContext ctx) {
+    EvpnIpPrefixRoutesAdvertise advertise =
+        ctx.DIRECT_NEXTHOP() != null
+            ? EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP
+            : EvpnIpPrefixRoutesAdvertise.GATEWAY_ADDRESS;
+    getOrCreateCurrentEvpnIpPrefixRoutes().setAdvertise(advertise);
+  }
+
+  @Override
+  public void exitEipr_encapsulation(Eipr_encapsulationContext ctx) {
+    EvpnEncapsulation encapsulation;
+    if (ctx.VXLAN() != null) {
+      encapsulation = EvpnEncapsulation.VXLAN;
+    } else if (ctx.SRV6() != null) {
+      encapsulation = EvpnEncapsulation.SRV6;
+    } else {
+      encapsulation = EvpnEncapsulation.MPLS;
+    }
+    getOrCreateCurrentEvpnIpPrefixRoutes().setEncapsulation(encapsulation);
+  }
+
+  @Override
+  public void exitEipr_export(Eipr_exportContext ctx) {
+    getOrCreateCurrentEvpnIpPrefixRoutes().setExportPolicy(toString(ctx.name));
+  }
+
+  @Override
+  public void exitEipr_import(Eipr_importContext ctx) {
+    getOrCreateCurrentEvpnIpPrefixRoutes().setImportPolicy(toString(ctx.name));
+  }
+
+  @Override
+  public void exitEipr_vni(Eipr_vniContext ctx) {
+    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(toInt(ctx.vni));
+  }
+
+  /**
+   * Returns the {@link EvpnIpPrefixRoutes} for the current context. When inside a named routing
+   * instance, returns the RI's ip-prefix-routes. Otherwise, returns the global evpn ip-prefix-
+   * routes.
+   */
+  private EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes() {
+    RoutingInstance defaultRi = _currentLogicalSystem.getDefaultRoutingInstance();
+    if (_currentRoutingInstance != defaultRi) {
+      return _currentRoutingInstance.getOrCreateEvpnIpPrefixRoutes();
+    }
+    return _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
   }
 
   @Override
@@ -4957,60 +4976,58 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitEipr_advertise(Eipr_advertiseContext ctx) {
-    EvpnIpPrefixRoutes ipPrefixRoutes = getOrCreateCurrentEvpnIpPrefixRoutes();
-    if (ctx.DIRECT_NEXTHOP() != null) {
-      ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
-    } else {
-      assert ctx.GATEWAY_ADDRESS() != null;
-      ipPrefixRoutes.setAdvertise(EvpnIpPrefixRoutesAdvertise.GATEWAY_ADDRESS);
-    }
-  }
-
-  @Override
-  public void exitEipr_encapsulation(Eipr_encapsulationContext ctx) {
-    EvpnIpPrefixRoutes ipPrefixRoutes = getOrCreateCurrentEvpnIpPrefixRoutes();
-    if (ctx.VXLAN() != null) {
-      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.VXLAN);
-    } else if (ctx.MPLS() != null) {
-      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.MPLS);
-    } else {
-      assert ctx.SRV6() != null;
-      ipPrefixRoutes.setEncapsulation(EvpnEncapsulation.SRV6);
-    }
-  }
-
-  @Override
-  public void exitEipr_export(Eipr_exportContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setExportPolicy(toString(ctx.name));
-  }
-
-  @Override
-  public void exitEipr_import(Eipr_importContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setImportPolicy(toString(ctx.name));
-  }
-
-  @Override
-  public void exitEipr_vni(Eipr_vniContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(toInt(ctx.vni));
-  }
-
-  /**
-   * Returns the appropriate {@link EvpnIpPrefixRoutes} for the current context. When inside a named
-   * routing-instance (non-default RI), returns the per-RI EvpnIpPrefixRoutes. When in the default
-   * RI, returns the global EVPN ip-prefix-routes.
-   */
-  private @Nonnull EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes() {
-    if (_currentRoutingInstance != _currentLogicalSystem.getDefaultRoutingInstance()) {
-      return _currentRoutingInstance.getOrCreateEvpnIpPrefixRoutes();
-    }
-    return _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
-  }
-
-  @Override
   public void enterE_vni_options(E_vni_optionsContext ctx) {
-    _currentVni = toInt(ctx.id);
-    _currentLogicalSystem.getVniOptions().putIfAbsent(toInt(ctx.id), new VniOptions(toInt(ctx.id)));
+    int vniId = toInt(ctx.id);
+    _currentVni = vniId;
+    _currentLogicalSystem.getVniOptions().computeIfAbsent(vniId, VniOptions::new);
+  }
+
+  @Override
+  public void exitE_vni_options(E_vni_optionsContext ctx) {
+    _currentVni = null;
+  }
+
+  @Override
+  public void exitEvovt_auto(Evovt_autoContext ctx) {
+    if (_currentVni != null) {
+      VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
+      if (vo != null) {
+        vo.setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.auto());
+      }
+    }
+  }
+
+  @Override
+  public void exitEvovt_community(Evovt_communityContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
+    if (_currentVni != null && ec != null) {
+      VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
+      if (vo != null) {
+        vo.setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.of(ec));
+      }
+    }
+  }
+
+  @Override
+  public void exitEvovt_export(Evovt_exportContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
+    if (_currentVni != null && ec != null) {
+      VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
+      if (vo != null) {
+        vo.setVrfTargetExport(ec);
+      }
+    }
+  }
+
+  @Override
+  public void exitEvovt_import(Evovt_importContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
+    if (_currentVni != null && ec != null) {
+      VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
+      if (vo != null) {
+        vo.setVrfTargetImport(ec);
+      }
+    }
   }
 
   @Override
@@ -5019,44 +5036,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
   }
 
-  @Override
-  public void exitEvovt_auto(Evovt_autoContext ctx) {
-    _currentLogicalSystem
-        .getVniOptions()
-        .get(_currentVni)
-        .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
-  }
-
-  @Override
-  public void exitEvovt_community(Evovt_communityContext ctx) {
-    if (ctx.extended_community() != null) {
-      _currentLogicalSystem
-          .getVniOptions()
-          .get(_currentVni)
-          .setVrfTargetCommunityorAuto(
-              ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.extended_community())));
-    }
-  }
-
-  @Override
-  public void exitEvovt_export(Evovt_exportContext ctx) {
-    if (ctx.extended_community() != null) {
-      _currentLogicalSystem
-          .getVniOptions()
-          .get(_currentVni)
-          .setVrfTargetExport(toExtendedCommunity(ctx.extended_community()));
-    }
-  }
-
-  @Override
-  public void exitEvovt_import(Evovt_importContext ctx) {
-    if (ctx.extended_community() != null) {
-      _currentLogicalSystem
-          .getVniOptions()
-          .get(_currentVni)
-          .setVrfTargetImport(toExtendedCommunity(ctx.extended_community()));
-    }
-  }
+  // vrf-target sub-rules (evovt_auto, evovt_community, etc.) handle extraction directly.
 
   @Override
   public void exitF_filter(F_filterContext ctx) {
@@ -6092,8 +6072,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
       }
     } else {
-      // this command can only happen for destination nat, and when port is given we
-      // need to enable
+      // this command can only happen for destination nat, and when port is given we need to enable
       // port translation
       Ip ip = toIp(ctx.ip);
       _currentNatPool.setFromAddress(ip);
@@ -6919,11 +6898,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_next_term(Popst_next_termContext ctx) {
-    // The next-term action itself is a no-op in Batfish, so we do not model this
-    // behavior.
+    // The next-term action itself is a no-op in Batfish, so we do not model this behavior.
     //
-    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement
-    // next_term replacing
+    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement next_term replacing
     // any existing flow control action.
   }
 
@@ -7062,26 +7039,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitRiv_community(Riv_communityContext ctx) {
-    _currentRoutingInstance.setVrfTargetCommunity(toExtendedCommunity(ctx.extended_community()));
-  }
-
-  @Override
-  public void exitRiv_export(Riv_exportContext ctx) {
-    _currentRoutingInstance.setVrfTargetExport(toExtendedCommunity(ctx.extended_community()));
-  }
-
-  @Override
-  public void exitRiv_import(Riv_importContext ctx) {
-    _currentRoutingInstance.setVrfTargetImport(toExtendedCommunity(ctx.extended_community()));
-  }
-
-  @Override
-  public void exitRi_route_distinguisher(Ri_route_distinguisherContext ctx) {
-    _currentRoutingInstance.setRouteDistinguisher(toRouteDistinguisher(ctx.route_distinguisher()));
-  }
-
-  @Override
   public void exitRi_vtep_source_interface(Ri_vtep_source_interfaceContext ctx) {
     String ifaceName = getInterfaceFullName(ctx.iface);
     _configuration.referenceStructure(
@@ -7090,9 +7047,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterRo_route_distinguisher_id(Ro_route_distinguisher_idContext ctx) {
-    Ip rdIp = toIp(ctx.ip_address());
-    _currentRoutingInstance.setRouteDistinguisherId(rdIp);
+  public void exitRi_route_distinguisher(Ri_route_distinguisherContext ctx) {
+    RouteDistinguisher rd = toRouteDistinguisher(ctx.route_distinguisher());
+    _currentRoutingInstance.setRouteDistinguisher(rd);
+  }
+
+  @Override
+  public void exitRiv_community(Riv_communityContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
+    if (ec != null) {
+      _currentRoutingInstance.setVrfTargetCommunity(ec);
+    }
+  }
+
+  @Override
+  public void exitRiv_export(Riv_exportContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
+    if (ec != null) {
+      _currentRoutingInstance.setVrfTargetExport(ec);
+    }
+  }
+
+  @Override
+  public void exitRiv_import(Riv_importContext ctx) {
+    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
+    if (ec != null) {
+      _currentRoutingInstance.setVrfTargetImport(ec);
+    }
+  }
+
+  @Override
+  public void exitRo_route_distinguisher_id(Ro_route_distinguisher_idContext ctx) {
+    Ip rdId = Ip.parse(ctx.addr.getText());
+    _currentRoutingInstance.setRouteDistinguisherId(rdId);
   }
 
   @Override
@@ -7108,12 +7095,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.num != null) {
       _currentRoutingInstance.setConfederation(toLong(ctx.num));
     }
-    // Note that Juniper will not allow commit with declared members unless
-    // confederation number
-    // above is eventually set, even though members can be declared separately from
-    // confederation
-    // number. So confederation members should not make it into data model when
-    // confederation number
+    // Note that Juniper will not allow commit with declared members unless confederation number
+    // above is eventually set, even though members can be declared separately from confederation
+    // number. So confederation members should not make it into data model when confederation number
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
   }
@@ -8356,8 +8340,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSepctxpm_destination_address_excluded(
       Sepctxpm_destination_address_excludedContext ctx) {
-    // This should change the meaning of the from dstIp clause to deny all that
-    // match.
+    // This should change the meaning of the from dstIp clause to deny all that match.
     todo(ctx);
   }
 
@@ -8383,8 +8366,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSepctxpm_source_address_excluded(Sepctxpm_source_address_excludedContext ctx) {
-    // This should change the meaning of the from srcIp clause to deny all that
-    // match.
+    // This should change the meaning of the from srcIp clause to deny all that match.
     todo(ctx);
   }
 
@@ -8571,8 +8553,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       for (Line line : _currentLogicalSystem.getJf().getLines().values()) {
         if (line.getAaaAuthenticationLoginList() == null
             || line.getAaaAuthenticationLoginList().isDefault()) {
-          // line has no login list or has default login list, give it the system's login
-          // list
+          // line has no login list or has default login list, give it the system's login list
           line.setAaaAuthenticationLoginList(
               new AaaAuthenticationLoginList(_currentAuthenticationOrder.getMethods(), true));
         }
@@ -8694,12 +8675,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    if (ctx.NONE() != null) {
-      _currentNamedVlan.setVlanId(null);
-    } else if (ctx.id != null) {
-      Optional<Integer> vlan = toInteger(ctx, ctx.id);
-      vlan.ifPresent(_currentNamedVlan::setVlanId);
-    }
+    Optional<Integer> vlan = toInteger(ctx, ctx.id);
+    vlan.ifPresent(_currentNamedVlan::setVlanId);
   }
 
   @Override
@@ -8830,6 +8807,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitBf_evpn(Bf_evpnContext ctx) {
+    _currentBgpGroup.setEvpnAf(true);
+  }
+
+  @Override
   public void exitBf_route_target(Bf_route_targetContext ctx) {
     todo(ctx);
   }
@@ -8850,11 +8832,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       vlanId = BridgeDomainVlanIdNumber.of(maybeNum.get());
     }
     _currentBridgeDomain.setVlanId(vlanId);
-  }
-
-  @Override
-  public void exitBf_evpn(Bf_evpnContext ctx) {
-    _currentBgpGroup.setEvpnAf(true);
   }
 
   @Override
@@ -9218,8 +9195,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
     Interface iface = interfaces.get(name);
     if (iface == null) {
-      // TODO: this is not ideal, interface should not be created here as we are not
-      // sure if the
+      // TODO: this is not ideal, interface should not be created here as we are not sure if the
       // interface was defined
       iface = new Interface(name);
       iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
@@ -9230,8 +9206,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Map<String, Interface> units = iface.getUnits();
     Interface unitIface = units.get(unitFullName);
     if (unitIface == null) {
-      // TODO: this is not ideal, interface should not be created here as we are not
-      // sure if the
+      // TODO: this is not ideal, interface should not be created here as we are not sure if the
       // interface was defined
       unitIface = new Interface(unitFullName);
       unitIface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());

@@ -1,123 +1,87 @@
 system {
     host-name evpn-type5-juniper;
 }
-
 interfaces {
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.1/32;
+            }
+        }
+    }
     ge-0/0/0 {
         unit 0 {
             family inet {
-                address 11.11.11.2/24;
+                address 10.1.0.1/24;
             }
         }
     }
-    ge-0/0/1 {
-        unit 0 {
-            family inet {
-                address 12.12.12.2/24;
-            }
-        }
-    }
-    ge-0/0/2 {
-        unit 0 {
-            family inet {
-                address 13.13.13.2/24;
-            }
-        }
-    }
-    irb {
-        unit 130 {
-            family inet {
-                address 10.1.30.1/24;
-            }
-        }
-    }
-    lo0 {
-        unit 1 {
-            family inet {
-                address 10.10.10.1/32;
-            }
-        }
-    }
-}
-
-routing-options {
-    router-id 10.10.10.1;
-    autonomous-system 65002;
 }
 policy-options {
-    policy-statement evpn-switching {
-        term layer2 {
-            from community evpn-switching;
+    policy-statement vrf1-export {
+        term 1 {
+            from protocol direct;
             then accept;
         }
-        term default-deny {
-            then reject;
+    }
+    policy-statement vrf2-import {
+        term 1 {
+            then accept;
         }
     }
-    community evpn-switching members target:10755:9999;
+}
+routing-instances {
+    vrf1 {
+        instance-type vrf;
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 1001;
+                    export vrf1-export;
+                }
+            }
+        }
+        interface ge-0/0/0.0;
+        route-distinguisher 10.0.0.1:1001;
+        vrf-target target:65000:1001;
+    }
+    vrf2 {
+        instance-type vrf;
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 1002;
+                }
+            }
+        }
+        route-distinguisher 10.0.0.1:1002;
+        vrf-target target:65000:1001;
+    }
+}
+routing-options {
+    router-id 10.0.0.1;
+    autonomous-system 65000;
 }
 protocols {
     bgp {
-        group EVPN-PEERS {
+        group overlay {
             type internal;
-            local-address 10.10.10.1;
+            local-address 10.0.0.1;
             family evpn {
                 signaling;
             }
-            # Neighbor configuration would go here
         }
     }
     evpn {
         encapsulation vxlan;
-        default-gateway no-gateway-community;
     }
 }
-
-routing-instances {
-    vrf1 {
-        instance-type vrf;
-        interface ge-0/0/1.0;
-        interface irb.130;
-        route-distinguisher 192.168.255.1:15004;
-        vrf-target export target:15004:15004;
-        vrf-table-label; # Required for L3 VXLAN termination
-        protocols {
-            evpn {
-                ip-prefix-routes {
-                    vni 15004;
-                    export SET_MAP;
-                }
-            }
-        }
-    }
-    vrf2 {
-        instance-type vrf;
-        interface ge-0/0/2.0;
-        route-distinguisher 192.168.255.2:15004;
-        vrf-target import target:15004:15004;
-        vrf-table-label;
-        protocols {
-            evpn {
-                ip-prefix-routes {
-                    vni 15005;
-                }
-            }
-        }
-    }
-}
-
-policy-options {
-    policy-statement SET_MAP {
-        term 10 {
-            from {
-                route-filter 12.12.12.0/24 exact;
-            }
-            then {
-                community add COM_12345;
-                as-path-prepend "54321";
-                accept;
-            }
-        }
-    }
-    community COM_12345 members 0:12345;
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher 10.0.0.1:9999;
+    vrf-target target:65000:9999;
 }

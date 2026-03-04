@@ -705,25 +705,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    // A redistribution policy must be defined iff exporting from BGP RIB. However, a VRF may also
-    // have a redistribution policy for EVPN type-5 origination even when NOT exporting from BGP
-    // RIB (e.g., Juniper tenant VRFs that need routes in the BGP RIB for getRoutesToLeak()).
-    assert _exportFromBgpRib || _process.getRedistributionPolicy() != null
-        ? true
-        : _process.getRedistributionPolicy() == null;
-
     boolean hasRedistPolicy = _process.getRedistributionPolicy() != null;
 
     if (!_exportFromBgpRib && !hasRedistPolicy) {
       // Export from main RIB; no local routes in BGP RIB (Juniper-like redistribution)
       assert _mainRibDelta.isEmpty();
       _mainRibDelta = mainRibDelta;
-    } else if (!_exportFromBgpRib && hasRedistPolicy) {
-      // Juniper EVPN tenant VRF: redistribute into BGP RIB (for getRoutesToLeak / EVPN type-5
-      // origination), but ALSO keep main RIB delta for normal JunOS-style per-peer export.
+    } else if (!_exportFromBgpRib) {
+      // Juniper EVPN tenant VRF: redistribute into BGP RIB for getRoutesToLeak() / EVPN type-5
+      // origination, but also keep main RIB delta for normal Junos-style per-peer export.
       assert _mainRibDelta.isEmpty();
       _mainRibDelta = mainRibDelta;
-
       RoutingPolicy redistributionPolicy =
           _policies.get(_process.getRedistributionPolicy()).orElse(null);
       if (redistributionPolicy != null) {
@@ -732,7 +724,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
       }
     } else {
-      // Cisco-style: place redistributed routes into our RIB
+      // Place redistributed routes into our RIB
       RoutingPolicy redistributionPolicy =
           _policies.get(_process.getRedistributionPolicy()).orElse(null);
       if (redistributionPolicy == null) {
@@ -886,28 +878,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .forEach(
             vniConfig -> {
               // TODO: shouldn't need to access _c
-              // 1. Try to get the VNI from the current VRF context
               Layer2Vni l2Vni = _c.getVrfs().get(_vrfName).getLayer2Vnis().get(vniConfig.getVni());
-
-              // 2. FALLBACK: If not found, check the Default VRF (where Junos usually stores global
-              // VNIs)
-              if (l2Vni == null) {
-                l2Vni = _c.getVrfs().get("default").getLayer2Vnis().get(vniConfig.getVni());
-              }
-
-              // 3. Safety Check / Debugging
-              if (l2Vni == null) {
-                System.out.println(
-                    "WARNING: L2 VNI "
-                        + vniConfig.getVni()
-                        + " not found in VRF "
-                        + _vrfName
-                        + " or Default VRF.");
-                return; // Skip this VNI instead of crashing with an NPE
-              }
-
-              assert l2Vni != null;
-
               assert l2Vni != null; // Invariant guaranteed by proper conversion
               if (l2Vni.getSourceAddress() == null) {
                 return;

@@ -1,5 +1,5 @@
 Configuration:
-  status: debug
+  status: warn
   name: YAMLConfig
   appenders:
     Console:
@@ -12,10 +12,10 @@ Configuration:
   Loggers:
     logger:
       - name: org.batfish.common.BatfishLogger
-        level: debug
+        level: warn
         additivity: true
       - name: org.batfish
-        level: debug
+        level: info
         additivity: false
         AppenderRef:
           ref: STDOUT
