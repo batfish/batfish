@@ -479,6 +479,7 @@ import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
@@ -5191,6 +5192,23 @@ public final class FlatJuniperGrammarTest {
           policy.getTerms().get("TMAX").getFroms().getFromTags(),
           contains(new PsFromTag(MAX_LOCAL_PREFERENCE)));
     }
+  }
+
+  @Test
+  public void testJuniperPolicyStatementTermFromValidationDatabaseExtraction() {
+    JuniperConfiguration c =
+        parseJuniperConfig("juniper-policy-statement-from-validation-database");
+    PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("VDB");
+    assertThat(policy.getTerms(), hasKeys("VALID", "INVALID", "UNKNOWN"));
+    assertThat(
+        policy.getTerms().get("VALID").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.VALID)));
+    assertThat(
+        policy.getTerms().get("INVALID").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.INVALID)));
+    assertThat(
+        policy.getTerms().get("UNKNOWN").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.UNKNOWN)));
   }
 
   @Test

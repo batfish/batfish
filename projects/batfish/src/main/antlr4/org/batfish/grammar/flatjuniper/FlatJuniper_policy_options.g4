@@ -202,6 +202,7 @@ pops_from
       | popsf_source_address_filter
       | popsf_tag
       | popsf_tag2
+      | popsf_validation_database
    )
 ;
 
@@ -441,6 +442,16 @@ popsf_tag
 popsf_tag2
 :
    TAG2 uint32
+;
+
+popsf_validation_database
+:
+   VALIDATION_DATABASE
+   (
+      INVALID
+      | UNKNOWN
+      | VALID
+   )
 ;
 
 popsfpl_exact

@@ -1,0 +1,7 @@
+#
+set system host-name juniper-policy-statement-from-validation-database
+#
+set policy-options policy-statement VDB term VALID from validation-database valid
+set policy-options policy-statement VDB term INVALID from validation-database invalid
+set policy-options policy-statement VDB term UNKNOWN from validation-database unknown
+#

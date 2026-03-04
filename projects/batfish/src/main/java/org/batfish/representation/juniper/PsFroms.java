@@ -38,6 +38,7 @@ public final class PsFroms implements Serializable {
   private PsFromRouteType _fromRouteType;
   private final Set<PsFromTag> _fromTags;
   private PsFromUnsupported _fromUnsupported;
+  private PsFromValidationDatabase _fromValidationDatabase;
 
   PsFroms() {
     _fromAsPaths = new LinkedHashSet<>();
@@ -260,6 +261,11 @@ public final class PsFroms implements Serializable {
     return _fromUnsupported;
   }
 
+  @VisibleForTesting
+  public @Nullable PsFromValidationDatabase getFromValidationDatabase() {
+    return _fromValidationDatabase;
+  }
+
   boolean hasAtLeastOneFrom() {
     return _atLeastOneFrom;
   }
@@ -297,5 +303,10 @@ public final class PsFroms implements Serializable {
   public void setFromUnsupported(@Nonnull PsFromUnsupported fromUnsupported) {
     _atLeastOneFrom = true;
     _fromUnsupported = fromUnsupported;
+  }
+
+  public void setFromValidationDatabase(@Nonnull PsFromValidationDatabase fromValidationDatabase) {
+    _atLeastOneFrom = true;
+    _fromValidationDatabase = fromValidationDatabase;
   }
 }
