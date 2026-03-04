@@ -2831,7 +2831,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else if (externalIface != null && externalIface.getPrimaryAddress() != null) {
       localAddress = externalIface.getPrimaryAddress().getIp();
     }
-    if (localAddress == null || !localAddress.valid()) {
+    if (localAddress == null) {
       _w.redFlagf(
           "External interface %s configured on IKE Gateway %s does not have any IP",
           externalIfaceName, ikeGateway.getName());

@@ -1093,7 +1093,7 @@ public final class FlowTracerTest {
 
     RoutingStep secondRouting = (RoutingStep) steps.get(1);
     assertThat(secondRouting.getDetail().getVrf(), equalTo(nextVrfName));
-    assertThat(secondRouting.getDetail().getRoutes().get(0).getNextHopIp(), equalTo(Ip.AUTO));
+    assertThat(secondRouting.getDetail().getRoutes().get(0).getNextHopIp(), nullValue());
     assertThat(secondRouting.getAction(), equalTo(StepAction.NULL_ROUTED));
   }
 

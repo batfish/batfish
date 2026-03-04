@@ -3,7 +3,6 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -160,7 +159,7 @@ public final class BgpRoute {
 
   private static NextHopResult ipToNextHopResult(@Nullable Ip nextHopIp) {
     NextHop nh;
-    if (nextHopIp == null || nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+    if (nextHopIp == null) {
       nh = NextHopDiscard.instance();
     } else {
       nh = NextHopIp.of(nextHopIp);

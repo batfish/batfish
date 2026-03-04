@@ -3,7 +3,6 @@ package org.batfish.grammar.f5_bigip_imish;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -621,7 +620,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(processBgpRoute(rp2, toPeer2), hasNextHopIp(equalTo(localIp)));
 
     // 192.0.2.3 without next-hop-self should leave next-hop-ip unset for dp engine to handle
-    assertThat(processBgpRoute(rp3, toPeer3), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
+    assertThat(processBgpRoute(rp3, toPeer3), hasNextHopIp(nullValue()));
   }
 
   @Test

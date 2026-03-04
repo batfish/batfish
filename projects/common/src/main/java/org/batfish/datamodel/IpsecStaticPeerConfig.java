@@ -1,11 +1,8 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents a configured static (having a specified remote peer) IPSec peer */
@@ -13,7 +10,7 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
   private static final String PROP_IKE_PHASE1_POLICY = "ikePhase1Policy";
 
-  private @Nonnull Ip _destinationAddress;
+  private @Nullable Ip _destinationAddress;
 
   private @Nullable String _ikePhase1Policy;
 
@@ -27,7 +24,7 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
       @JsonProperty(PROP_DESTINATION_ADDRESS) @Nullable Ip destinationAddress,
       @JsonProperty(PROP_IKE_PHASE1_POLICY) @Nullable String ikePhasePolicy) {
     super(ipsecPolicy, physicalInterface, policyAccessList, localAddress, tunnelInterface);
-    _destinationAddress = firstNonNull(destinationAddress, Ip.AUTO);
+    _destinationAddress = destinationAddress;
     _ikePhase1Policy = ikePhasePolicy;
   }
 

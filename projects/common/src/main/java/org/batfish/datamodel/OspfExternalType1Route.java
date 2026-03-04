@@ -29,7 +29,6 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       @JsonProperty(PROP_ADVERTISER) @Nullable String advertiser,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(prefix != null, "Missing %s", PROP_NETWORK);
-    checkArgument(nextHopIp != null, "Missing %s", PROP_NEXT_HOP_IP);
     checkArgument(admin != null, "Missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "Missing %s", PROP_METRIC);
     checkArgument(lsaMetric != null, "Missing %s", PROP_LSA_METRIC);

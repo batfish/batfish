@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -33,7 +34,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -250,7 +250,7 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
-                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasNextHopIp(nullValue()),
                       hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           exitgwRoutes,
@@ -258,7 +258,7 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
-                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasNextHopIp(nullValue()),
                       hasCommunities(ExtendedCommunity.target(65000, 10020))))));
     }
 
@@ -289,7 +289,7 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
-                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasNextHopIp(nullValue()),
                       hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           leaf1Routes,
@@ -297,7 +297,7 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
-                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasNextHopIp(nullValue()),
                       hasCommunities(ExtendedCommunity.target(65000, 10020))))));
     }
   }

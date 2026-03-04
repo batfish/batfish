@@ -88,7 +88,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -106,7 +106,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -124,7 +124,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -142,7 +142,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -340,7 +340,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -358,7 +358,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -376,7 +376,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -394,7 +394,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -412,7 +412,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -610,7 +610,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -628,7 +628,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -646,7 +646,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -664,7 +664,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -682,7 +682,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -700,7 +700,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -718,7 +718,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -880,7 +880,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -934,7 +934,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -952,7 +952,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -970,7 +970,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -988,7 +988,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -1006,7 +1006,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1024,7 +1024,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -1186,7 +1186,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1240,7 +1240,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1258,7 +1258,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -1276,7 +1276,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1294,7 +1294,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -1312,7 +1312,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1330,7 +1330,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -1456,7 +1456,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1690,7 +1690,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1708,7 +1708,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -1726,7 +1726,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1744,7 +1744,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -1798,7 +1798,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1816,7 +1816,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -1942,7 +1942,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2140,7 +2140,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2158,7 +2158,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -2176,7 +2176,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2194,7 +2194,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -2212,7 +2212,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2230,7 +2230,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -2410,7 +2410,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2446,7 +2446,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2464,7 +2464,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -2482,7 +2482,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2500,7 +2500,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -2518,7 +2518,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2536,7 +2536,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -2716,7 +2716,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2752,7 +2752,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2770,7 +2770,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -2788,7 +2788,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2806,7 +2806,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -2896,7 +2896,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2914,7 +2914,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -3040,7 +3040,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3202,7 +3202,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3220,7 +3220,7 @@
           "type" : "interface",
           "interface" : "Ethernet1"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet1",
         "Protocol" : "local",
         "Tag" : null,
@@ -3238,7 +3238,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3256,7 +3256,7 @@
           "type" : "interface",
           "interface" : "Ethernet2"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet2",
         "Protocol" : "local",
         "Tag" : null,
@@ -3382,7 +3382,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3400,7 +3400,7 @@
           "type" : "interface",
           "interface" : "Ethernet3"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Ethernet3",
         "Protocol" : "local",
         "Tag" : null,
@@ -3526,7 +3526,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,

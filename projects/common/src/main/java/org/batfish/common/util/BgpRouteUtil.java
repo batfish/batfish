@@ -13,6 +13,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** Utility functions for {@link org.batfish.datamodel.BgpRoute} and its implementations. */
 public class BgpRouteUtil {
@@ -33,20 +34,27 @@ public class BgpRouteUtil {
     assert protocol == RoutingProtocol.BGP || protocol == RoutingProtocol.IBGP;
     assert !(routeDecorator.getAbstractRoute() instanceof BgpRoute);
     AbstractRoute route = routeDecorator.getAbstractRoute();
-    return Bgpv4Route.builder()
-        .setNetwork(route.getNetwork())
-        .setAdmin(adminDistance)
-        .setOriginatorIp(routerId)
-        .setProtocol(protocol)
-        .setSrcProtocol(route.getProtocol())
-        .setOriginMechanism(originMechanism)
-        .setOriginType(OriginType.INCOMPLETE)
-        // TODO: support customization of route preference
-        .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-        .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
-        .setNextHopIp(nextHopIp)
-        .setMetric(route.getMetric())
-        .setTag(routeDecorator.getAbstractRoute().getTag());
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setNetwork(route.getNetwork())
+            .setAdmin(adminDistance)
+            .setOriginatorIp(routerId)
+            .setProtocol(protocol)
+            .setSrcProtocol(route.getProtocol())
+            .setOriginMechanism(originMechanism)
+            .setOriginType(OriginType.INCOMPLETE)
+            // TODO: support customization of route preference
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+            .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
+            .setMetric(route.getMetric())
+            .setTag(routeDecorator.getAbstractRoute().getTag());
+    // Set next hop: if null, use NextHopDiscard; otherwise use NextHopIp
+    if (nextHopIp == null) {
+      builder.setNextHop(NextHopDiscard.instance());
+    } else {
+      builder.setNextHopIp(nextHopIp);
+    }
+    return builder;
     // Let everything else default to unset/empty/etc.
   }
 }

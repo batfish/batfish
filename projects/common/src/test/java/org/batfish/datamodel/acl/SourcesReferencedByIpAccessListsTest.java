@@ -37,7 +37,7 @@ public class SourcesReferencedByIpAccessListsTest {
     assertThat(
         referencedSources(namedAcls, ORIGINATING_FROM_DEVICE),
         contains(SOURCE_ORIGINATING_FROM_DEVICE));
-    assertThat(referencedSources(namedAcls, matchDst(Ip.AUTO)), empty());
+    assertThat(referencedSources(namedAcls, matchDst(Ip.parse("1.2.3.4"))), empty());
 
     assertThat(
         referencedSources(namedAcls, matchSrcInterface("a", "b", "c")),

@@ -206,7 +206,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, null)
-            .put(COL_LOCAL_IP, Ip.AUTO)
+            .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "")
@@ -244,7 +244,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_MATCH_FOUND)
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, null)
-            .put(COL_LOCAL_IP, Ip.AUTO)
+            .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, remoteAsns.toString())
@@ -549,7 +549,7 @@ public class BgpSessionCompatibilityAnswererTest {
       configs.put(c.getHostname(), c);
 
       // Add interface to make IpOwners accurate
-      if (peer.getLocalIp() != null && peer.getLocalIp() != Ip.AUTO) {
+      if (peer.getLocalIp() != null) {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)

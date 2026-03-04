@@ -122,7 +122,7 @@ public final class NextHopInterface implements NextHop {
         "NextHopInterface cannot have unset interface. Received %s",
         interfaceName);
     checkArgument(
-        ip == null || (!ip.equals(Ip.AUTO) && !ip.equals(Ip.ZERO) && !ip.equals(Ip.MAX)),
+        ip == null || (!ip.equals(Ip.ZERO) && !ip.equals(Ip.MAX)),
         "NextHopIp must be a valid concrete IP address. Received %s",
         ip);
     _interfaceName = interfaceName;

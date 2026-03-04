@@ -72,7 +72,7 @@ public final class NextHopIp implements NextHop {
 
   private NextHopIp(Ip ip) {
     checkArgument(
-        !ip.equals(Ip.AUTO) && !ip.equals(Ip.ZERO) && !ip.equals(Ip.MAX),
+        !ip.equals(Ip.ZERO) && !ip.equals(Ip.MAX),
         "NextHopIp must be a valid concrete IP address. Received %s",
         ip);
     _ip = ip;

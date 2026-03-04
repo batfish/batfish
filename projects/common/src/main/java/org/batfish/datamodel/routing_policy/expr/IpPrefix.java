@@ -46,8 +46,11 @@ public final class IpPrefix extends PrefixExpr {
   }
 
   @Override
-  public Prefix evaluate(Environment env) {
+  public @Nullable Prefix evaluate(Environment env) {
     Ip ip = _ip.evaluate(env);
+    if (ip == null) {
+      return null;
+    }
     int prefixLength = _prefixLength.evaluate(env);
     return Prefix.create(ip, prefixLength);
   }
