@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -2217,12 +2218,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setMtu(mtu);
     }
 
-    // It is unclear which vsys is used to start the object lookup process on multi-vsys systems,
-    // since interfaces are not associated with particular vsys.
-    // Assuming default vsys is good enough for now (this is the behavior for single-vsys systems).
+    Vsys vsys = resolveVsysForInterface(iface);
     ConcreteInterfaceAddress primaryInterfaceAddress =
-        interfaceAddressToConcreteInterfaceAddress(
-            iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
+        interfaceAddressToConcreteInterfaceAddress(iface.getAddress(), vsys, _w);
     // No explicit address detected, fallback to runtime data
     if (primaryInterfaceAddress == null) {
       primaryInterfaceAddress = ifaceRuntimeData.map(InterfaceRuntimeData::getAddress).orElse(null);
@@ -2233,10 +2231,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           Streams.concat(
                   Stream.of(primaryInterfaceAddress), // added in case pulled from runtime data
                   iface.getAllAddresses().stream()
-                      .map(
-                          a ->
-                              interfaceAddressToConcreteInterfaceAddress(
-                                  a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+                      .map(a -> interfaceAddressToConcreteInterfaceAddress(a, vsys, _w))
                       .filter(Objects::nonNull))
               .filter(
                   a -> {
@@ -2591,11 +2586,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return;
     }
 
-    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc, vr));
+    Vsys vsys = resolveVsysForVirtualRouter(vr);
+    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc, vr, vsys));
   }
 
   private void convertPeer(
-      BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr) {
+      BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr, Vsys vsys) {
     if (!peer.getEnable()) {
       return;
     }
@@ -2634,7 +2630,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       assert true; // TODO figure out the default and handle separately.
     }
 
-    Vsys vsys = _virtualSystems.get(DEFAULT_VSYS_NAME);
     Ip peerIp = interfaceAddressToIp(peer.getPeerAddress(), vsys);
     if (peerIp == null) {
       _w.redFlagf("Could not resolve peer-address for peer %s; disabling it", peer.getName());
@@ -2931,7 +2926,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Vrf vrf = new Vrf(vrfName);
 
     // Static routes
-    Vsys vsys = _virtualSystems.get(DEFAULT_VSYS_NAME);
+    Vsys vsys = resolveVsysForVirtualRouter(vr);
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
@@ -2969,6 +2964,80 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     toOspfProcess(vr, vrf).ifPresent(vrf::addOspfProcess);
 
     return vrf;
+  }
+
+  private @Nonnull Vsys getDefaultVsys() {
+    return _virtualSystems.computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
+  }
+
+  private @Nullable Interface findInterfaceByName(String name) {
+    Interface iface = _interfaces.get(name);
+    if (iface != null) {
+      return iface;
+    }
+    for (Interface parent : _interfaces.values()) {
+      Interface unit = parent.getUnits().get(name);
+      if (unit != null) {
+        return unit;
+      }
+    }
+    return null;
+  }
+
+  private @Nonnull Set<Vsys> candidateVsysesForInterface(Interface iface) {
+    Set<Vsys> candidates = new HashSet<>();
+    if (iface.getZone() != null) {
+      candidates.add(iface.getZone().getVsys());
+    }
+    if (iface.getParent() != null && iface.getParent().getZone() != null) {
+      candidates.add(iface.getParent().getZone().getVsys());
+    }
+    Stream.concat(_virtualSystems.values().stream(), _sharedGateways.values().stream())
+        .filter(
+            vsys ->
+                vsys.getImportedInterfaces().contains(iface.getName())
+                    || (iface.getParent() != null
+                        && vsys.getImportedInterfaces().contains(iface.getParent().getName())))
+        .forEach(candidates::add);
+    return candidates;
+  }
+
+  private @Nonnull Vsys resolveVsysForInterface(Interface iface) {
+    Set<Vsys> candidates = candidateVsysesForInterface(iface);
+    if (candidates.size() == 1) {
+      return candidates.iterator().next();
+    }
+    if (candidates.size() > 1) {
+      _w.redFlagf(
+          "Interface %s maps to multiple VSYSes (%s); using default VSYS %s for address"
+              + " resolution.",
+          iface.getName(),
+          candidates.stream().map(Vsys::getName).sorted().collect(Collectors.joining(", ")),
+          DEFAULT_VSYS_NAME);
+    }
+    return getDefaultVsys();
+  }
+
+  private @Nonnull Vsys resolveVsysForVirtualRouter(VirtualRouter vr) {
+    Set<Vsys> candidates =
+        vr.getInterfaceNames().stream()
+            .map(this::findInterfaceByName)
+            .filter(Objects::nonNull)
+            .map(this::candidateVsysesForInterface)
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
+    if (candidates.size() == 1) {
+      return candidates.iterator().next();
+    }
+    if (candidates.size() > 1) {
+      _w.redFlagf(
+          "virtual-router %s maps to multiple VSYSes (%s); using default VSYS %s for address"
+              + " resolution.",
+          vr.getName(),
+          candidates.stream().map(Vsys::getName).sorted().collect(Collectors.joining(", ")),
+          DEFAULT_VSYS_NAME);
+    }
+    return getDefaultVsys();
   }
 
   /** Convert Palo Alto zone to vendor independent model zone */
