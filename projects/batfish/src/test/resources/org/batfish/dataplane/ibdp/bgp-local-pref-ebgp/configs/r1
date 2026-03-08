@@ -1,0 +1,17 @@
+!
+hostname r1
+!
+interface Ethernet0/1
+ ip address 3.0.0.3 255.0.0.0
+!
+interface Ethernet0/2
+ ip address 100.0.0.1 255.0.0.0
+!
+route-map RM1 permit 10
+ set local-preference 50
+!
+router bgp 400
+ network 100.0.0.0
+ neighbor 3.0.0.2 remote-as 512
+ neighbor 3.0.0.2 route-map RM1 out
+!
