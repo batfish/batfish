@@ -3007,14 +3007,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (candidates.size() == 1) {
       return candidates.iterator().next();
     }
-    if (candidates.size() > 1) {
-      _w.redFlagf(
-          "Interface %s maps to multiple VSYSes (%s); using default VSYS %s for address"
-              + " resolution.",
-          iface.getName(),
-          candidates.stream().map(Vsys::getName).sorted().collect(Collectors.joining(", ")),
-          DEFAULT_VSYS_NAME);
-    }
     return getDefaultVsys();
   }
 
@@ -3028,14 +3020,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toSet());
     if (candidates.size() == 1) {
       return candidates.iterator().next();
-    }
-    if (candidates.size() > 1) {
-      _w.redFlagf(
-          "virtual-router %s maps to multiple VSYSes (%s); using default VSYS %s for address"
-              + " resolution.",
-          vr.getName(),
-          candidates.stream().map(Vsys::getName).sorted().collect(Collectors.joining(", ")),
-          DEFAULT_VSYS_NAME);
     }
     return getDefaultVsys();
   }
