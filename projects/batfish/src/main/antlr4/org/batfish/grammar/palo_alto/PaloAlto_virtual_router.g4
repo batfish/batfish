@@ -174,7 +174,7 @@ vrrtn_discard: DISCARD;
 
 vrrtn_ip
 :
-  IP_ADDRESS_LITERAL addr = ip_address_or_slash32
+  IP_ADDRESS_LITERAL addr = interface_address_or_reference
 ;
 
 vrrtn_next_vr
