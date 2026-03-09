@@ -650,6 +650,113 @@
         }
       },
       {
+        "Structure_Type" : "access-list",
+        "Structure_Name" : "PREFILTER-OUTSIDE-IN",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_acl",
+          "lines" : [
+            20,
+            21,
+            22,
+            23
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "access-list",
+        "Structure_Name" : "OUTSIDE-IN",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_ha",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "access-list",
+        "Structure_Name" : "ACL-IN",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_objects",
+          "lines" : [
+            37
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "object network",
+        "Structure_Name" : "INSIDE-NETWORK",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_objects",
+          "lines" : [
+            25,
+            26,
+            27
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "object-group network",
+        "Structure_Name" : "INSIDE-HOSTS",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_objects",
+          "lines" : [
+            30,
+            31,
+            32,
+            33,
+            34
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "object-group service",
+        "Structure_Name" : "WEB-SERVICEStcp",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_objects",
+          "lines" : [
+            19,
+            20,
+            21,
+            22
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "access-list",
+        "Structure_Name" : "VPN-TRAFFIC",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_vpn",
+          "lines" : [
+            45
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "crypto map",
+        "Structure_Name" : "CRYPTO-MAP",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_vpn",
+          "lines" : [
+            39,
+            40,
+            41
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "tunnel-group",
+        "Structure_Name" : "REMOTE-SITE",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ftd_vpn",
+          "lines" : [
+            32,
+            33,
+            34,
+            35
+          ]
+        }
+      },
+      {
         "Structure_Type" : "extended ipv4 access-list",
         "Structure_Name" : "abc",
         "Source_Lines" : {
@@ -3762,10 +3869,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 245 results",
+      "notes" : "Found 254 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 245
+      "numResults" : 254
     }
   }
 ]

@@ -1,0 +1,37 @@
+! Cisco FTD Object Service Configuration
+! Based on "Configure FQDN Based Object for Access Control Rule"
+
+hostname ftd-objects
+NGFW VERSION 7.4.0
+
+object service HTTP-80
+ service tcp source eq 80
+!
+
+object service HTTPS-443
+ service tcp source eq https
+!
+
+object service DNS-UDP-53
+ service udp source eq domain
+!
+
+object-group service WEB-SERVICES tcp
+ service-object object HTTP-80
+ service-object object HTTPS-443
+ description "Web traffic services"
+!
+
+object network INSIDE-NETWORK
+ network 192.168.1.0 255.255.255.0
+ description "Internal network"
+!
+
+object-group network INSIDE-HOSTS
+ network-object host 192.168.1.10
+ network-object host 192.168.1.20
+ network-object host 192.168.1.30
+ description "Important internal hosts"
+!
+
+access-list ACL-IN extended permit tcp any object-group INSIDE-HOSTS object-group WEB-SERVICES

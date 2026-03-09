@@ -1,0 +1,37 @@
+! Cisco FTD OSPF Configuration
+! Based on various OSPF configuration examples
+
+hostname ftd-ospf
+NGFW VERSION 7.4.0
+
+interface GigabitEthernet0/0
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.1 255.255.255.0
+!
+
+interface GigabitEthernet0/1
+ nameif INSIDE
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+!
+
+interface GigabitEthernet0/2
+ nameif DMZ
+ security-level 50
+ ip address 172.16.1.1 255.255.255.0
+!
+
+router ospf 1
+ router-id 1.1.1.1
+ network 203.0.113.0 255.255.255.0 area 0
+ network 192.168.1.0 255.255.255.0 area 0
+ network 172.16.1.0 255.255.255.0 area 1
+ area 0 filter-list prefix AREA0-OUT out
+ area 1 filter-list prefix AREA1-IN in
+ log-adjacency-changes
+ default-information originate always
+ redistribute connected metric 1 metric-type 1 route-map CONNECTED-MAP
+!
+
+route OUTSIDE 0.0.0.0 0.0.0.0 203.0.113.254
