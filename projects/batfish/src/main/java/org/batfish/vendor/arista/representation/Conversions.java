@@ -478,7 +478,7 @@ public class Conversions {
       Configuration newConfig,
       Warnings w) {
     Ip localAddress = tunnel.getSourceAddress();
-    if (localAddress == null || !localAddress.valid()) {
+    if (localAddress == null) {
       w.redFlagf(
           "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
           tunnelIfaceName);

@@ -384,7 +384,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
@@ -6607,7 +6606,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int prefixLength = mask.numSubnetBits();
       prefix = Prefix.create(address, prefixLength);
     }
-    Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+    Ip nextHopIp = null;
     String nextHopInterface = null;
     int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
     Long tag = null;
@@ -8834,7 +8833,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRs_route(Rs_routeContext ctx) {
     if (ctx.prefix != null) {
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+      Ip nextHopIp = null;
       String nextHopInterface = null;
       if (ctx.nhip != null) {
         nextHopIp = toIp(ctx.nhip);

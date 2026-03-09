@@ -10,7 +10,6 @@ import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -3456,7 +3455,7 @@ public class AristaGrammarTest {
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP);
     Bgpv4Route.Builder outputRouteBuilder =
-        Bgpv4Route.testBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+        Bgpv4Route.testBuilder().setNextHop(NextHopDiscard.instance());
 
     Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =
@@ -3567,7 +3566,7 @@ public class AristaGrammarTest {
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
       Builder builder = Bgpv4Route.testBuilder();
       policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
-      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+      assertThat(builder.getNextHopIp(), nullValue());
     }
     {
       // 8.8.8.8 for EVPN
@@ -3583,7 +3582,7 @@ public class AristaGrammarTest {
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "7.7.7.7"));
       Builder builder = Bgpv4Route.testBuilder();
       policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
-      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+      assertThat(builder.getNextHopIp(), nullValue());
     }
     {
       // 2.2.2.2 for IPv4
@@ -3615,7 +3614,7 @@ public class AristaGrammarTest {
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.33"));
       Builder builder = Bgpv4Route.testBuilder();
       policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
-      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+      assertThat(builder.getNextHopIp(), nullValue());
     }
   }
 

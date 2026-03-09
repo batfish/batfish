@@ -1192,7 +1192,7 @@ public class CiscoXrConversions {
       Configuration newConfig,
       Warnings w) {
     Ip localAddress = tunnel.getSourceAddress();
-    if (localAddress == null || !localAddress.valid()) {
+    if (localAddress == null) {
       w.redFlagf(
           "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
           tunnelIfaceName);
@@ -1272,7 +1272,7 @@ public class CiscoXrConversions {
         Optional.ofNullable(iface.getConcreteAddress())
             .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
-    if (localAddress == null || !localAddress.valid()) {
+    if (localAddress == null) {
       w.redFlagf(
           "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName());
       return Optional.empty();

@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
@@ -12,7 +13,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.junit.Before;
@@ -37,7 +37,7 @@ public class SetNextHopTest {
     SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(Ip.ZERO)));
     OspfExternalRoute.Builder builder = OspfExternalType1Route.builder();
     expr.execute(Environment.builder(_c).setOutputRoute(builder).build());
-    assertThat(builder.getNextHopIp(), equalTo(Route.UNSET_ROUTE_NEXT_HOP_IP));
+    assertThat(builder.getNextHopIp(), nullValue());
   }
 
   @Test

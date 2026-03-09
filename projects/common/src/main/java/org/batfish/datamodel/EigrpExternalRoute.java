@@ -131,7 +131,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return builder()
         // AbstractRoute properties
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(getNextHop())
         .setAdmin(getAdministrativeCost())
         // Skip setMetric since this builder ignores it in favor of setEigrpMetric
         .setTag(getTag())

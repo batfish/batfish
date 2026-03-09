@@ -29,8 +29,6 @@ public final class FibForward implements FibAction {
   private final @Nonnull String _interfaceName;
 
   private FibForward(@Nullable Ip arpIp, String interfaceName) {
-    // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
-    assert !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(arpIp);
     _arpIp = arpIp;
     _interfaceName = interfaceName;
   }

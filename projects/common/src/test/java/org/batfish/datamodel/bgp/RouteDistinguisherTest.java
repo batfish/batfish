@@ -101,12 +101,6 @@ public class RouteDistinguisherTest {
   }
 
   @Test
-  public void testFromInvalidIpType1() {
-    _thrown.expect(IllegalArgumentException.class);
-    from(Ip.AUTO, 22);
-  }
-
-  @Test
   public void testFromInvalidIdNegativeType1() {
     _thrown.expect(IllegalArgumentException.class);
     from(Ip.parse("1.1.1.1"), -1);

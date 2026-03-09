@@ -101,12 +101,12 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   }
 
   /**
-   * Next hop IP for this route. If not known, {@link Route#UNSET_ROUTE_NEXT_HOP_IP} must be
-   * returned.
+   * Next hop IP for this route. Returns {@code null} if the next hop has no IP (e.g., discard
+   * routes, VRF hops).
    */
   @JsonProperty(PROP_NEXT_HOP_IP)
-  public final @Nonnull Ip getNextHopIp() {
-    return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
+  public final @Nullable Ip getNextHopIp() {
+    return LegacyNextHops.getNextHopIp(_nextHop).orElse(null);
   }
 
   /**

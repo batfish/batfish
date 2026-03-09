@@ -1068,7 +1068,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
-        .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
+        .filter(r -> !neighborIp.equals(r.getRoute().getNextHopIp()))
         // Overwrite area on the route before sending it out
         .map(
             r ->

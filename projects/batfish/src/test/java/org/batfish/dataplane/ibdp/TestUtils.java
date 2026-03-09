@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -27,7 +28,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.matchers.IsisRouteMatchers;
-import org.hamcrest.Matchers;
 
 public class TestUtils {
   public static <T extends AbstractRouteDecorator> void assertNoRoute(
@@ -93,7 +93,7 @@ public class TestUtils {
             allOf(
                 hasMetric(expectedCost),
                 hasProtocol(protocol),
-                hasNextHopIp(nextHopIp == null ? Matchers.any(Ip.class) : equalTo(nextHopIp)))));
+                nextHopIp == null ? anything() : hasNextHopIp(equalTo(nextHopIp)))));
   }
 
   private static List<AbstractRoute> getRoutesForPrefix(

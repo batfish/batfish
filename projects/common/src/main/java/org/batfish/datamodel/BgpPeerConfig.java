@@ -463,12 +463,7 @@ public abstract class BgpPeerConfig implements Serializable {
      * perhaps by vendor's logic (e.g., lo0) or by the dest IP of an incoming BGP connection.
      */
     public S setLocalIp(@Nullable Ip localIp) {
-      assert localIp == null || localIp.valid();
-      if (localIp != null && !localIp.valid()) {
-        _localIp = null;
-      } else {
-        _localIp = localIp;
-      }
+      _localIp = localIp;
       return getThis();
     }
 

@@ -42,10 +42,7 @@ public abstract class IpsecPeerConfig implements Serializable {
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
       @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface) {
-    checkArgument(
-        localAddress != null && localAddress.valid(),
-        "Not a valid local address: %s",
-        localAddress);
+    checkArgument(localAddress != null, "Not a valid local address: %s", localAddress);
     _ipsecPolicy = ipsecPolicy;
     _sourceInterface = firstNonNull(sourceInterface, UNSET_LOCAL_INTERFACE);
     _policyAccessList = policyAccessList;

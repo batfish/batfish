@@ -275,7 +275,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
@@ -6036,8 +6035,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           .removeIf(
               sr ->
                   Objects.equals(sr.getNextHopInterface(), nextHopIface.orElse(null))
-                      && Objects.equals(
-                          sr.getNextHopIp(), nextHopIp.orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                      && Objects.equals(sr.getNextHopIp(), nextHopIp.orElse(null))
                       && sr.getPrefix().equals(prefix.get()))) {
         warn(ctx, "No static routes matched this line, so none will be removed");
       }
@@ -6078,7 +6076,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       StaticRoute route =
           new StaticRoute(
               prefix.get(),
-              nextHopIp.orElse(Route.UNSET_ROUTE_NEXT_HOP_IP),
+              nextHopIp.orElse(null),
               nextHopInterface.orElse(null),
               distance,
               tag,

@@ -20,7 +20,7 @@ public final class ForwardedOutInterface implements ForwardingDetail {
 
   public static @Nonnull ForwardedOutInterface of(String outputInterface, Ip resolvedNextHopIp) {
     checkArgument(
-        !resolvedNextHopIp.equals(Ip.AUTO),
+        resolvedNextHopIp != null,
         "Expected concrete resolvedNextHopIp, but got %s",
         resolvedNextHopIp);
     return new ForwardedOutInterface(outputInterface, resolvedNextHopIp);

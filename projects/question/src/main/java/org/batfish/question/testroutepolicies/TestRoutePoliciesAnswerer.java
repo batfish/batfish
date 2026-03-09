@@ -39,7 +39,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.ReceivedFromSelf;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -48,6 +47,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -259,7 +259,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     if (direction == Direction.OUT) {
       // when simulating a route policy in the OUT direction, the output route's next hop IP must be
       // unset by default (checked by Environment::build)
-      outputRoute.setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP);
+      outputRoute.setNextHop(NextHopDiscard.instance());
     }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
