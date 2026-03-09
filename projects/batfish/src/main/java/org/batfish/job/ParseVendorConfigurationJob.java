@@ -77,6 +77,8 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedP
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
+import org.batfish.vendor.huawei.grammar.HuaweiCombinedParser;
+import org.batfish.vendor.huawei.grammar.HuaweiControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.SonicFileType;
 
@@ -400,6 +402,21 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   _fileResults.get(filename).getWarnings(),
                   _fileResults.get(filename).getSilentSyntax());
           parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case HUAWEI:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          HuaweiCombinedParser huaweiParser = new HuaweiCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new HuaweiControlPlaneExtractor(
+                  fileText, huaweiParser, _fileResults.get(filename).getWarnings());
+          parseFile(filename, huaweiParser, extractor);
           vc = extractor.getVendorConfiguration();
           vc.setFilename(filename);
           break;
