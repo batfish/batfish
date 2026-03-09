@@ -48,6 +48,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -115,6 +116,8 @@ import org.batfish.representation.fortios.AccessList;
 import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
+import org.batfish.representation.fortios.BatfishUUID;
+import org.batfish.representation.fortios.BfdSettings;
 import org.batfish.representation.fortios.BgpNeighbor;
 import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.BgpProcess;
@@ -126,8 +129,11 @@ import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InternetServiceName;
+import org.batfish.representation.fortios.Ippool;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
+import org.batfish.representation.fortios.PrefixList;
+import org.batfish.representation.fortios.PrefixListRule;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.SecondaryIp;
@@ -152,6 +158,13 @@ public final class FortiosGrammarTest {
     assertThat(c.getHostname(), equalTo("ignored"));
     // Valid syntax after an ignored block is parsed (and before another one)
     assertThat(c.getAddresses(), hasKeys("Extracted Address"));
+  }
+
+  @Test
+  public void testSystemGlobalIgnoredBlocks() {
+    FortiosConfiguration c = parseVendorConfig("fortios_system_ignored");
+    assertThat(c.getHostname(), equalTo("fg-ignored"));
+    assertThat(c.getAddresses(), hasKeys("addr1"));
   }
 
   @Test
@@ -1010,6 +1023,221 @@ public final class FortiosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings(),
         contains(WarningMatchers.hasText("Ignoring BGP process: No router ID configured")));
+  }
+
+  @Test
+  public void testBfdParsing() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd");
+
+    // Test global BFD settings
+    assertThat(cc.getBfdSettings().getIntervalEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMinRxEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMinTxEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMultiplierEffective(), equalTo(5));
+
+    // Test BGP neighbor BFD
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    BgpNeighbor neighbor1 = bgpProcess.getNeighbors().get(Ip.parse("10.0.0.2"));
+    assertThat(neighbor1.getBfdEffective(), equalTo(true));
+
+    BgpNeighbor neighbor2 = bgpProcess.getNeighbors().get(Ip.parse("10.0.1.2"));
+    assertThat(neighbor2.getBfdEffective(), equalTo(false));
+
+    // Test static route BFD
+    StaticRoute route1 = cc.getStaticRoutes().get("1");
+    assertThat(route1.getBfdEffective(), equalTo(true));
+
+    StaticRoute route2 = cc.getStaticRoutes().get("2");
+    assertThat(route2.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testBfdDefaultValues() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd_edge_cases");
+
+    // Global BFD with only interval set - others should use defaults
+    assertThat(cc.getBfdSettings().getIntervalEffective(), equalTo(200));
+    assertThat(cc.getBfdSettings().getMinRxEffective(), equalTo(50)); // default
+    assertThat(cc.getBfdSettings().getMinTxEffective(), equalTo(50)); // default
+    assertThat(cc.getBfdSettings().getMultiplierEffective(), equalTo(3)); // default
+
+    // BGP neighbor with BFD not set - should default to false
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    BgpNeighbor neighbor = bgpProcess.getNeighbors().get(Ip.parse("10.0.0.1"));
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Static route with BFD not set - should default to false
+    StaticRoute route = cc.getStaticRoutes().get("1");
+    assertThat(route.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testBfdMixedConfigurations() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd_mixed");
+
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
+    assertThat(neighbors.get(Ip.parse("10.0.0.1")).getBfdEffective(), equalTo(true));
+    assertThat(neighbors.get(Ip.parse("10.0.0.2")).getBfdEffective(), equalTo(false));
+    assertThat(neighbors.get(Ip.parse("10.0.0.3")).getBfdEffective(), equalTo(false));
+
+    Map<String, StaticRoute> routes = cc.getStaticRoutes();
+    assertThat(routes.get("1").getBfdEffective(), equalTo(true));
+    assertThat(routes.get("2").getBfdEffective(), equalTo(false));
+    assertThat(routes.get("3").getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testBfdValidationWarnings() throws IOException {
+    String hostname = "fortios_bfd_validation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    // Should have warnings for out-of-range BFD values
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected BFD interval in range 50-5000, but got '60000'"),
+                hasComment("Expected BFD minimum RX in range 50-5000, but got '1'"),
+                hasComment("Expected BFD minimum TX in range 50-5000, but got '999999'"),
+                hasComment("Expected BFD multiplier in range 3-50, but got '100'"))));
+  }
+
+  @Test
+  public void testBfdValidValues() {
+    FortiosConfiguration vc = parseVendorConfig("fortios_bfd_valid");
+
+    // Verify values are parsed correctly
+    assertThat(vc.getBfdSettings().getInterval(), equalTo(50));
+    assertThat(vc.getBfdSettings().getMinRx(), equalTo(5000));
+    assertThat(vc.getBfdSettings().getMinTx(), equalTo(100));
+    assertThat(vc.getBfdSettings().getMultiplier(), equalTo(50));
+  }
+
+  @Test
+  public void testBfdSettingsGettersWithNulls() {
+    // Test BfdSettings effective getters when all values are null (should use defaults)
+    BfdSettings bfdSettings = new BfdSettings();
+
+    // All getters should return defaults when values are null
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(50));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(50));
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(50));
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(3));
+
+    // Verify raw getters return null
+    assertThat(bfdSettings.getInterval(), nullValue());
+    assertThat(bfdSettings.getMinRx(), nullValue());
+    assertThat(bfdSettings.getMinTx(), nullValue());
+    assertThat(bfdSettings.getMultiplier(), nullValue());
+  }
+
+  @Test
+  public void testBfdSettingsEffectiveGetterCombinations() {
+    // Test various combinations of set and unset values
+    BfdSettings bfdSettings = new BfdSettings();
+
+    // Set only interval
+    bfdSettings.setInterval(100);
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(100));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(50)); // default
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(50)); // default
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(3)); // default
+
+    // Set all values
+    bfdSettings.setMinRx(200);
+    bfdSettings.setMinTx(300);
+    bfdSettings.setMultiplier(10);
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(100));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(200));
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(300));
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(10));
+  }
+
+  @Test
+  public void testBgpNeighborBfdEffectiveWithNull() {
+    // Test BgpNeighbor.getBfdEffective() with null value
+    BgpNeighbor neighbor = new BgpNeighbor(Ip.parse("10.0.0.1"));
+
+    // Initially null, should return false
+    assertThat(neighbor.getBfd(), nullValue());
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Set to false
+    neighbor.setBfd(false);
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Set to true
+    neighbor.setBfd(true);
+    assertThat(neighbor.getBfdEffective(), equalTo(true));
+
+    // Set back to null
+    neighbor.setBfd(null);
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testStaticRouteBfdEffectiveWithNull() {
+    // Test StaticRoute.getBfdEffective() with null value
+    StaticRoute route = new StaticRoute("1");
+
+    // Initially null, should return DEFAULT_BFD (false)
+    assertThat(route.getBfd(), nullValue());
+    assertThat(route.getBfdEffective(), equalTo(false));
+
+    // Set to false explicitly
+    route.setBfd(false);
+    assertThat(route.getBfdEffective(), equalTo(false));
+
+    // Set to true
+    route.setBfd(true);
+    assertThat(route.getBfdEffective(), equalTo(true));
+
+    // Set back to null
+    route.setBfd(null);
+    assertThat(route.getBfdEffective(), equalTo(false)); // uses DEFAULT_BFD
+  }
+
+  @Test
+  public void testIppoolGettersAndSetters() {
+    // Test Ippool getters and setters to increase coverage
+    BatfishUUID uuid = new BatfishUUID(1);
+    Ippool pool = new Ippool("test-pool", uuid);
+
+    // Test getName
+    assertThat(pool.getName(), equalTo("test-pool"));
+
+    // Test setName
+    pool.setName("new-pool");
+    assertThat(pool.getName(), equalTo("new-pool"));
+
+    // Test getBatfishUUID
+    assertThat(pool.getBatfishUUID(), equalTo(uuid));
+
+    // Test other setters/getters
+    pool.setStartip(Ip.parse("10.0.0.1"));
+    assertThat(pool.getStartip(), equalTo(Ip.parse("10.0.0.1")));
+
+    pool.setEndip(Ip.parse("10.0.0.100"));
+    assertThat(pool.getEndip(), equalTo(Ip.parse("10.0.0.100")));
+
+    pool.setAssociatedInterface("port1");
+    assertThat(pool.getAssociatedInterface(), equalTo("port1"));
+
+    pool.setType(Ippool.Type.OVERLOAD);
+    assertThat(pool.getType(), equalTo(Ippool.Type.OVERLOAD));
+
+    pool.setComments("test comments");
+    assertThat(pool.getComments(), equalTo("test comments"));
   }
 
   @Test
@@ -3129,6 +3357,277 @@ public final class FortiosGrammarTest {
     assertThat(vc.getAccessLists().get("acl_name1").getRules(), anEmptyMap());
   }
 
+  ////////////////////
+  // Prefix-list tests //
+  ////////////////////
+
+  @Test
+  public void testPrefixListExtraction() throws IOException {
+    String hostname = "prefix_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPrefixLists(), hasKeys("pl_name1", "pl_name2"));
+    PrefixList pl1 = vc.getPrefixLists().get("pl_name1");
+    PrefixList pl2 = vc.getPrefixLists().get("pl_name2");
+
+    // Check comments
+    assertThat(pl1.getComments(), equalTo("comment for pl_name1"));
+    assertNull(pl2.getComments());
+
+    // Check rules are in insert order
+    assertThat(pl1.getRules().keySet(), contains("1", "2", "3", "4"));
+    assertThat(pl2.getRules().keySet(), contains("1"));
+
+    PrefixListRule rule1 = pl1.getRules().get("1");
+    PrefixListRule rule2 = pl1.getRules().get("2");
+    PrefixListRule rule3 = pl1.getRules().get("3");
+    PrefixListRule rule4 = pl1.getRules().get("4");
+    PrefixListRule rule_pl2_1 = pl2.getRules().get("1");
+
+    // Rule 1: set prefix 10.0.0.0 255.255.0.0, set le 32
+    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+    assertThat(rule1.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule1.getLe(), equalTo(32));
+
+    // Rule 2: set prefix 192.168.0.0/24, unset ge, set le 24
+    assertThat(rule2.getPrefix(), equalTo(Prefix.parse("192.168.0.0/24")));
+    assertThat(rule2.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule2.getLe(), equalTo(24));
+
+    // Rule 3: set prefix 172.16.0.0/16, set ge 16, set le 24
+    assertThat(rule3.getPrefix(), equalTo(Prefix.parse("172.16.0.0/16")));
+    assertThat(rule3.getGe(), equalTo(16));
+    assertThat(rule3.getLe(), equalTo(24));
+
+    // Rule 4: set prefix 10.1.0.0 255.255.0.0, unset ge, unset le
+    assertThat(rule4.getPrefix(), equalTo(Prefix.parse("10.1.0.0/16")));
+    assertThat(rule4.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule4.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+
+    // Rule in pl2: set prefix 192.168.1.0 255.255.255.0 (no ge/le)
+    assertThat(rule_pl2_1.getPrefix(), equalTo(Prefix.parse("192.168.1.0/24")));
+    assertThat(rule_pl2_1.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule_pl2_1.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+  }
+
+  @Test
+  public void testPrefixListConversion() throws IOException {
+    String hostname = "prefix_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c.getRouteFilterLists(), hasKeys("pl_name1", "pl_name2"));
+    RouteFilterList pl1 = c.getRouteFilterLists().get("pl_name1");
+    RouteFilterList pl2 = c.getRouteFilterLists().get("pl_name2");
+
+    // Rule 1: 10.0.0.0/16 le 32 -> matches /16 through /32
+    assertTrue(pl1.permits(Prefix.parse("10.0.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("10.0.1.0/24")));
+    assertTrue(pl1.permits(Prefix.parse("10.0.1.128/32")));
+    assertFalse(pl1.permits(Prefix.parse("10.0.0.0/15"))); // outside range
+
+    // Rule 3: 172.16.0.0/16 ge 16 le 24 -> matches /16 through /24
+    assertTrue(pl1.permits(Prefix.parse("172.16.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("172.16.1.0/24")));
+    assertFalse(pl1.permits(Prefix.parse("172.16.1.128/25"))); // > 24
+    assertFalse(pl1.permits(Prefix.parse("172.16.0.0/15"))); // < 16
+
+    // Rule 4: 10.1.0.0/16 with no ge/le -> matches /16 through /32 (default)
+    assertTrue(pl1.permits(Prefix.parse("10.1.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("10.1.1.0/24")));
+    assertTrue(pl1.permits(Prefix.parse("10.1.1.1/32")));
+
+    // pl2: 192.168.1.0/24 with no ge/le -> matches /24 through /32
+    assertTrue(pl2.permits(Prefix.parse("192.168.1.0/24")));
+    assertTrue(pl2.permits(Prefix.parse("192.168.1.128/25")));
+    assertFalse(pl2.permits(Prefix.parse("192.168.1.0/23"))); // < 24
+  }
+
+  @Test
+  public void testPrefixListRouteMapReference() throws IOException {
+    String hostname = "prefix_list_route_map";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify prefix-lists are defined
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "PL-IN-1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "PL-OUT-1"));
+
+    // Verify route-maps reference prefix-lists
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "PL-IN-1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "PL-OUT-1", 1));
+
+    // Verify route-maps are converted to routing policies
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c.getRoutingPolicies(), hasKeys("RM-IN-1", "RM-OUT-1"));
+  }
+
+  @Test
+  public void testPrefixListEdgeCases() throws IOException {
+    String hostname = "prefix_list_edge_cases";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Valid prefix-list should be parsed correctly
+    assertThat(vc.getPrefixLists(), hasKey("pl_valid"));
+    PrefixList plValid = vc.getPrefixLists().get("pl_valid");
+    PrefixListRule validRule = plValid.getRules().get("1");
+    assertThat(validRule.getPrefix(), equalTo(Prefix.parse("10.0.0.0/8")));
+    assertThat(validRule.getGe(), equalTo(8));
+    assertThat(validRule.getLe(), equalTo(32));
+
+    // Prefix-list with ge > le (logically invalid but syntactically valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_ge_gt_le"));
+    PrefixListRule geGtLeRule = vc.getPrefixLists().get("pl_ge_gt_le").getRules().get("1");
+    assertThat(geGtLeRule.getGe(), equalTo(24));
+    assertThat(geGtLeRule.getLe(), equalTo(16));
+
+    // Prefix-list with ge=0 (minimum valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_ge_zero"));
+    PrefixListRule geZeroRule = vc.getPrefixLists().get("pl_ge_zero").getRules().get("1");
+    assertThat(geZeroRule.getGe(), equalTo(0));
+
+    // Prefix-list with le=32 (maximum valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_le_max"));
+    PrefixListRule leMaxRule = vc.getPrefixLists().get("pl_le_max").getRules().get("1");
+    assertThat(leMaxRule.getLe(), equalTo(32));
+
+    // Prefix-list with only ge set (le should be default)
+    assertThat(vc.getPrefixLists(), hasKey("pl_only_ge"));
+    PrefixListRule onlyGeRule = vc.getPrefixLists().get("pl_only_ge").getRules().get("1");
+    assertThat(onlyGeRule.getGe(), equalTo(20));
+    assertThat(onlyGeRule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+
+    // Prefix-list with only le set (ge should be default)
+    assertThat(vc.getPrefixLists(), hasKey("pl_only_le"));
+    PrefixListRule onlyLeRule = vc.getPrefixLists().get("pl_only_le").getRules().get("1");
+    assertThat(onlyLeRule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(onlyLeRule.getLe(), equalTo(24));
+
+    // Empty prefix-list (no config rule block) should exist with no rules
+    assertThat(vc.getPrefixLists(), hasKey("pl_empty"));
+    assertThat(vc.getPrefixLists().get("pl_empty").getRules().keySet(), empty());
+  }
+
+  @Test
+  public void testPrefixListRuleGeLeDefaults() {
+    // Test default values for ge/le
+    PrefixListRule rule = new PrefixListRule("1");
+    assertThat(rule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+    assertThat(rule.getPrefix(), nullValue());
+
+    // Set and unset ge
+    rule.setGe(16);
+    assertThat(rule.getGe(), equalTo(16));
+    rule.unsetGe();
+    assertThat(rule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+
+    // Set and unset le
+    rule.setLe(24);
+    assertThat(rule.getLe(), equalTo(24));
+    rule.unsetLe();
+    assertThat(rule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+  }
+
+  @Test
+  public void testIppoolValidation() throws IOException {
+    String hostname = "ippool_validation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Pool with startip/endip
+    assertThat(vc.getIppools(), hasKey("pool_start_end"));
+    Ippool poolStartEnd = vc.getIppools().get("pool_start_end");
+    assertThat(poolStartEnd.getStartip(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(poolStartEnd.getEndip(), equalTo(Ip.parse("10.0.0.100")));
+
+    // Pool with prefix/netmask (also has startip/endip for validity)
+    assertThat(vc.getIppools(), hasKey("pool_prefix_netmask"));
+    Ippool poolPrefix = vc.getIppools().get("pool_prefix_netmask");
+    assertThat(poolPrefix.getPrefixIp(), equalTo(Ip.parse("192.168.0.0")));
+    assertThat(poolPrefix.getPrefixNetmask(), equalTo(Ip.parse("255.255.255.0")));
+
+    // Pool with both (should parse both)
+    assertThat(vc.getIppools(), hasKey("pool_both"));
+    Ippool poolBoth = vc.getIppools().get("pool_both");
+    assertThat(poolBoth.getStartip(), equalTo(Ip.parse("172.16.0.1")));
+    assertThat(poolBoth.getPrefixIp(), equalTo(Ip.parse("172.16.0.0")));
+
+    // Pool with ge/le
+    assertThat(vc.getIppools(), hasKey("pool_with_ge_le"));
+    Ippool poolGeLe = vc.getIppools().get("pool_with_ge_le");
+    assertThat(poolGeLe.getGe(), equalTo(1024));
+    assertThat(poolGeLe.getLe(), equalTo(65535));
+  }
+
+  @Test
+  public void testIppoolValidationMethod() {
+    BatfishUUID uuid = new BatfishUUID(1);
+
+    // Valid with startip/endip
+    Ippool poolStartEnd = new Ippool("test", uuid);
+    poolStartEnd.setStartip(Ip.parse("10.0.0.1"));
+    poolStartEnd.setEndip(Ip.parse("10.0.0.100"));
+    assertNull(FortiosConfigurationBuilder.ippoolValid(poolStartEnd, true));
+
+    // Valid with prefix/netmask
+    Ippool poolPrefix = new Ippool("test", uuid);
+    poolPrefix.setPrefixIp(Ip.parse("192.168.0.0"));
+    poolPrefix.setPrefixNetmask(Ip.parse("255.255.255.0"));
+    assertNull(FortiosConfigurationBuilder.ippoolValid(poolPrefix, true));
+
+    // Invalid name
+    assertNotNull(FortiosConfigurationBuilder.ippoolValid(poolStartEnd, false));
+
+    // Invalid - neither startip/endip nor prefix/netmask
+    Ippool poolNeither = new Ippool("test", uuid);
+    assertNotNull(FortiosConfigurationBuilder.ippoolValid(poolNeither, true));
+  }
+
+  @Test
+  public void testRouteMapUndefinedPrefixList() throws IOException {
+    String hostname = "route_map_undefined_prefix";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Defined prefix-list should have a referrer
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "DEFINED_PL", 1));
+
+    // Undefined prefix-list reference should be flagged
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, "UNDEFINED_PL"));
+  }
+
+  @Test
+  public void testPrefixListStructureTracking() throws IOException {
+    String hostname = "prefix_list";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify prefix-lists are tracked as defined structures
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "pl_name1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "pl_name2"));
+  }
+
   ////////////////////////
   // Setup / test infra //
   ////////////////////////
@@ -3181,5 +3680,69 @@ public final class FortiosGrammarTest {
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     return SerializationUtils.clone(vendorConfiguration);
+  }
+
+  // ===================================
+  // IS-IS Tests
+  // ===================================
+
+  @Test
+  public void testIsisExtraction() throws IOException {
+    String hostname = "isis_basic";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    org.batfish.representation.fortios.IsisProcess isisProcess = vc.getIsisProcess();
+    assertNotNull("Should have IS-IS process", isisProcess);
+    assertThat(isisProcess.getNetAddress(), equalTo("49.0001.0000.0000.0001.00"));
+    assertThat(
+        isisProcess.getIsTypeEffective(),
+        equalTo(org.batfish.representation.fortios.IsisProcess.Level.LEVEL_1_2));
+
+    Map<String, org.batfish.representation.fortios.IsisInterface> interfaces =
+        isisProcess.getInterfaces();
+    assertThat(interfaces.size(), equalTo(2));
+    assertThat(interfaces, hasKey("port1"));
+    assertThat(interfaces, hasKey("port2"));
+
+    org.batfish.representation.fortios.IsisInterface port1 = interfaces.get("port1");
+    assertThat(
+        port1.getCircuitTypeEffective(),
+        equalTo(org.batfish.representation.fortios.IsisProcess.Level.LEVEL_1));
+    assertThat(port1.getMetricEffective(), equalTo(50));
+
+    org.batfish.representation.fortios.IsisInterface port2 = interfaces.get("port2");
+    assertThat(
+        port2.getCircuitTypeEffective(),
+        equalTo(org.batfish.representation.fortios.IsisProcess.Level.LEVEL_2));
+    assertThat(port2.getMetricEffective(), equalTo(100));
+  }
+
+  // ===================================
+  // IPsec VPN Tests
+  // ===================================
+
+  @Test
+  public void testIpsecExtraction() throws IOException {
+    String hostname = "ipsec_basic";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, org.batfish.representation.fortios.IpsecPhase1> phase1Configs =
+        vc.getIpsecPhase1Configs();
+    assertThat(phase1Configs.size(), equalTo(1));
+    assertThat(phase1Configs, hasKey("vpn-tunnel-1"));
+
+    org.batfish.representation.fortios.IpsecPhase1 phase1 = phase1Configs.get("vpn-tunnel-1");
+    assertThat(phase1.getInterface(), equalTo("wan1"));
+    assertThat(phase1.getRemoteGateway(), equalTo(Ip.parse("198.51.100.1")));
+    assertThat(phase1.getProposal(), equalTo("aes256-sha256"));
+    assertThat(phase1.getKeylifeEffective(), equalTo(28800));
+
+    Map<String, org.batfish.representation.fortios.IpsecPhase2> phase2Configs =
+        vc.getIpsecPhase2Configs();
+    assertThat(phase2Configs.size(), equalTo(1));
+    assertThat(phase2Configs, hasKey("vpn-tunnel-1-p2"));
+
+    org.batfish.representation.fortios.IpsecPhase2 phase2 = phase2Configs.get("vpn-tunnel-1-p2");
+    assertThat(phase2.getPhase1Name(), equalTo("vpn-tunnel-1"));
   }
 }

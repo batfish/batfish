@@ -31,10 +31,13 @@ cfsc_set_singletons:
     | cfsc_set_icmptype
     | cfsc_set_protocol
     | cfsc_set_protocol_number
+    | cfsc_set_proxy
     | cfsc_set_sctp_portrange
     | cfsc_set_tcp_portrange
     | cfsc_set_udp_portrange
     | cfsc_set_visibility
+    | cfsc_set_uuid
+    | cfsc_set_session_ttl
 ;
 
 cfsc_set_category: CATEGORY category = str newline;
@@ -56,6 +59,12 @@ cfsc_set_tcp_portrange: TCP_PORTRANGE value = service_port_ranges newline;
 cfsc_set_udp_portrange: UDP_PORTRANGE value = service_port_ranges newline;
 
 cfsc_set_visibility: VISIBILITY enable_or_disable newline;
+
+cfsc_set_uuid: UUID null_rest_of_line;
+
+cfsc_set_proxy: PROXY enable_or_disable newline;
+
+cfsc_set_session_ttl: SESSION_TTL null_rest_of_line;
 
 cfsc_unset: UNSET cfsc_unset_singletons;
 
@@ -84,11 +93,13 @@ cfsg_set: SET (cfsg_set_singletons | cfsg_set_member);
 
 cfsg_select: SELECT cfsg_set_member;
 
-cfsg_set_singletons: cfsg_set_comment | cfsg_set_null;
+cfsg_set_singletons: cfsg_set_comment | cfsg_set_uuid | cfsg_set_null;
 
 cfsg_set_comment: COMMENT comment = str newline;
 
 cfsg_set_null: COLOR null_rest_of_line;
+
+cfsg_set_uuid: UUID null_rest_of_line;
 
 cfsg_set_member: MEMBER service_names newline;
 
@@ -98,7 +109,8 @@ cfsga_member: MEMBER service_names newline;
 
 service_protocol
 :
-    ICMP
+    ALL
+    | ICMP
     | ICMP6
     | IP_UPPER
     | TCP_UDP_SCTP

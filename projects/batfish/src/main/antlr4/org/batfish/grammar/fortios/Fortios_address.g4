@@ -63,6 +63,7 @@ cfa_set_null:
         // color just controls the GUI icon color
         COLOR
         // Options for unsupported address types
+        | CACHE_TTL
         | COUNTRY
         | FQDN
         | SDN

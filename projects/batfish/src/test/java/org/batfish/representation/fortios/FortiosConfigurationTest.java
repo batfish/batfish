@@ -2,6 +2,7 @@ package org.batfish.representation.fortios;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.representation.fortios.FortiosConfiguration.convertAccessList;
+import static org.batfish.representation.fortios.FortiosConfiguration.convertPrefixList;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SubRange;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
@@ -417,6 +419,68 @@ public class FortiosConfigurationTest {
         equalTo(
             new VendorStructureId(
                 "file", FortiosStructureType.ACCESS_LIST.getDescription(), "name")));
+  }
+
+  /** Check that vendor structure id is set when prefix list is converted to route filter list */
+  @Test
+  public void testConvertPrefixList_vendorStructureId() {
+    PrefixList pl = new PrefixList("name");
+    RouteFilterList rfl = convertPrefixList(pl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", FortiosStructureType.PREFIX_LIST.getDescription(), "name")));
+  }
+
+  /** Check prefix-list conversion with ge and le values */
+  @Test
+  public void testConvertPrefixList_withGeLe() {
+    PrefixList pl = new PrefixList("test_pl");
+    PrefixListRule rule = new PrefixListRule("1");
+    rule.setPrefix(Prefix.parse("10.0.0.0/16"));
+    rule.setGe(16);
+    rule.setLe(24);
+    pl.getRules().put("1", rule);
+
+    RouteFilterList rfl = convertPrefixList(pl, "file");
+
+    assertThat(rfl.getLines().size(), equalTo(1));
+    assertThat(rfl.getLines().get(0).getLengthRange(), equalTo(new SubRange(16, 24)));
+    assertThat(
+        rfl.getLines().get(0).getIpWildcard(),
+        equalTo(IpWildcard.create(Prefix.parse("10.0.0.0/16"))));
+  }
+
+  /** Check prefix-list conversion with only le (ge defaults to prefix length) */
+  @Test
+  public void testConvertPrefixList_withOnlyLe() {
+    PrefixList pl = new PrefixList("test_pl");
+    PrefixListRule rule = new PrefixListRule("1");
+    rule.setPrefix(Prefix.parse("192.168.0.0/24"));
+    rule.setLe(32);
+    pl.getRules().put("1", rule);
+
+    RouteFilterList rfl = convertPrefixList(pl, "file");
+
+    assertThat(rfl.getLines().size(), equalTo(1));
+    // ge defaults to prefix length (24), le is 32
+    assertThat(rfl.getLines().get(0).getLengthRange(), equalTo(new SubRange(24, 32)));
+  }
+
+  /** Check prefix-list conversion with no ge/le (defaults to prefix length through 32) */
+  @Test
+  public void testConvertPrefixList_noGeLe() {
+    PrefixList pl = new PrefixList("test_pl");
+    PrefixListRule rule = new PrefixListRule("1");
+    rule.setPrefix(Prefix.parse("172.16.0.0/12"));
+    pl.getRules().put("1", rule);
+
+    RouteFilterList rfl = convertPrefixList(pl, "file");
+
+    assertThat(rfl.getLines().size(), equalTo(1));
+    // ge defaults to prefix length (12), le defaults to 32
+    assertThat(rfl.getLines().get(0).getLengthRange(), equalTo(new SubRange(12, 32)));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {

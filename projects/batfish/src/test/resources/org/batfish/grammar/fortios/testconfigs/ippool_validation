@@ -1,0 +1,25 @@
+config system global
+    set hostname "ippool_validation"
+end
+config firewall ippool
+    edit "pool_start_end"
+        set startip 10.0.0.1
+        set endip 10.0.0.100
+    next
+    edit "pool_prefix_netmask"
+        set prefix 192.168.0.0 255.255.255.0
+        set startip 0.0.0.0
+        set endip 0.0.0.0
+    next
+    edit "pool_both"
+        set startip 172.16.0.1
+        set endip 172.16.0.100
+        set prefix 172.16.0.0 255.255.255.0
+    next
+    edit "pool_with_ge_le"
+        set startip 10.1.0.1
+        set endip 10.1.0.100
+        set ge 1024
+        set le 65535
+    next
+end

@@ -1,0 +1,49 @@
+config system global
+    set hostname "prefix_list_route_map"
+end
+config router prefix-list
+    edit "PL-IN-1"
+        set comments "Inbound prefix list"
+        config rule
+            edit 1
+                set prefix 10.0.0.0 255.255.0.0
+                set le 32
+            next
+            edit 2
+                set prefix 192.168.0.0/16
+                set ge 16
+                set le 24
+            next
+        end
+    next
+    edit "PL-OUT-1"
+        set comments "Outbound prefix list"
+        config rule
+            edit 1
+                set prefix 172.16.0.0/12
+                unset ge
+                set le 32
+            next
+        end
+    next
+end
+config router route-map
+    edit "RM-IN-1"
+        set comments "Inbound route map"
+        config rule
+            edit 10
+                set action permit
+                set match-ip-address "PL-IN-1"
+            next
+        end
+    next
+    edit "RM-OUT-1"
+        set comments "Outbound route map"
+        config rule
+            edit 10
+                set action permit
+                set match-ip-address "PL-OUT-1"
+            next
+        end
+    next
+end

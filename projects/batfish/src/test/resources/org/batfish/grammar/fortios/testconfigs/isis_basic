@@ -1,0 +1,29 @@
+config system global
+    set hostname "isis_basic"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.10.10.1 255.255.255.0
+        set type physical
+    next
+    edit "port2"
+        set vdom "root"
+        set ip 11.11.11.1 255.255.255.0
+        set type physical
+    next
+end
+config router isis
+    set is-type level-1-2
+    set net "49.0001.0000.0000.0001.00"
+    config isis-interface
+        edit "port1"
+            set circuit-type level-1
+            set metric 50
+        next
+        edit "port2"
+            set circuit-type level-2
+            set metric 100
+        next
+    end
+end

@@ -1,0 +1,36 @@
+config system global
+    set hostname "prefix_list"
+end
+config router prefix-list
+    edit "pl_name1"
+        set comments "comment for pl_name1"
+        config rule
+            edit 1
+                set prefix 10.0.0.0 255.255.0.0
+                set le 32
+            next
+            edit 2
+                set prefix 192.168.0.0/24
+                unset ge
+                set le 24
+            next
+            edit 3
+                set prefix 172.16.0.0/16
+                set ge 16
+                set le 24
+            next
+            edit 4
+                set prefix 10.1.0.0 255.255.0.0
+                unset ge
+                unset le
+            next
+        end
+    next
+    edit "pl_name2"
+        config rule
+            edit 1
+                set prefix 192.168.1.0 255.255.255.0
+            next
+        end
+    next
+end
