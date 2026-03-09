@@ -85,8 +85,6 @@ public final class BgpProtocolHelper {
     builder.setProtocol(outgoingProtocol);
     builder.setSrcProtocol(routeProtocol);
 
-    // Clear a bunch of non-transitive attributes
-    builder.setWeight(0);
     if (!(route instanceof EvpnRoute<?, ?>)) {
       // These attributes are constants for EVPN routes and cannot be set
       builder.setNonRouting(false);
@@ -187,12 +185,6 @@ public final class BgpProtocolHelper {
     if (!localSessionProperties.advertiseUnchangedMed() && !routeOriginatedLocally) {
       builder.setMetric(0);
     }
-
-    // Local preference: only transitive for iBGP or within a confederation
-    builder.setLocalPreference(
-        localSessionProperties.advertiseUnchangedLocalPref()
-            ? route.getLocalPreference()
-            : DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
   }
@@ -419,6 +411,7 @@ public final class BgpProtocolHelper {
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
+        ourSessionProperties.advertiseUnchangedLocalPref(),
         af.getAddressFamilyCapabilities().getSendCommunity(),
         af.getAddressFamilyCapabilities().getSendExtendedCommunity(),
         ourSessionProperties.getConfedSessionType(),
@@ -438,6 +431,8 @@ public final class BgpProtocolHelper {
    *
    * @param routeBuilder Builder for the output (exported) route
    * @param isEbgp true for ebgp sessions
+   * @param advertiseUnchangedLocalPref whether to preserve local preference (true for iBGP and eBGP
+   *     within a confederation)
    * @param sendStandardCommunities whether to send standard communities to the neighbor
    * @param sendExtendedCommunities whether to send extended communities to the neighbor
    * @param confedSessionType type of confederation session, if any
@@ -452,6 +447,7 @@ public final class BgpProtocolHelper {
       void transformBgpRoutePostExport(
           B routeBuilder,
           boolean isEbgp,
+          boolean advertiseUnchangedLocalPref,
           boolean sendStandardCommunities,
           boolean sendExtendedCommunities,
           ConfedSessionType confedSessionType,
@@ -493,6 +489,15 @@ public final class BgpProtocolHelper {
       }
 
       routeBuilder.setAsPath(routeAsPath);
+    }
+
+    // Weight is non-transitive and not carried in BGP UPDATE messages.
+    routeBuilder.setWeight(0);
+
+    // Local preference is non-transitive: clear for eBGP sessions outside a confederation (after
+    // export policy may have set it). Within a confederation, local-pref is preserved.
+    if (!advertiseUnchangedLocalPref) {
+      routeBuilder.setLocalPreference(DEFAULT_LOCAL_PREFERENCE);
     }
 
     // Tags are non-transitive

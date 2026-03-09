@@ -1,0 +1,9 @@
+!
+hostname r2
+!
+interface Ethernet0/1
+ ip address 3.0.0.2 255.0.0.0
+!
+router bgp 512
+ neighbor 3.0.0.3 remote-as 400
+!
