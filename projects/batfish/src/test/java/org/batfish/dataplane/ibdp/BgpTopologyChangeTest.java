@@ -1,8 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Set;

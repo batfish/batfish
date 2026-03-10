@@ -33,27 +33,23 @@ public class PathConstraintsInput {
     return new PathConstraintsInput(null, null, null, null);
   }
 
-  @Nullable
   @JsonProperty(PROP_START_LOCATION)
-  public String getStartLocation() {
+  public @Nullable String getStartLocation() {
     return _startLocation;
   }
 
-  @Nullable
   @JsonProperty(PROP_END_LOCATION)
-  public String getEndLocation() {
+  public @Nullable String getEndLocation() {
     return _endLocation;
   }
 
-  @Nullable
   @JsonProperty(PROP_TRANSIT_LOCATIONS)
-  public String getTransitLocations() {
+  public @Nullable String getTransitLocations() {
     return _transitLocations;
   }
 
-  @Nullable
   @JsonProperty(PROP_FORBIDDEN_LOCATIONS)
-  public String getForbiddenLocations() {
+  public @Nullable String getForbiddenLocations() {
     return _forbiddenLocations;
   }
 

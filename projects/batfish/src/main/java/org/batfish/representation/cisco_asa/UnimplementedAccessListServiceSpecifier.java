@@ -14,9 +14,9 @@ public final class UnimplementedAccessListServiceSpecifier implements AccessList
   public static final UnimplementedAccessListServiceSpecifier INSTANCE =
       new UnimplementedAccessListServiceSpecifier();
 
-  @Nonnull
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ObjectGroup> objectGroups, Map<String, ServiceObject> serviceObjects) {
     return FalseExpr.INSTANCE;
   }
 

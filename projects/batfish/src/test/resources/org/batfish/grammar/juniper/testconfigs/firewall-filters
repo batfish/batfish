@@ -49,3 +49,5 @@ set firewall filter PARSING term PACKET_LENGTH from packet-length 100-200
 set firewall filter PARSING term PACKET_LENGTH from packet-length-except 70
 set firewall filter PARSING term PACKET_LENGTH from packet-length-except 80-90
 #
+set firewall family inet filter FILTER term IPV6 from protocol ipv6
+set firewall family inet filter FILTER term DECAPSULATE-GRE then decapsulate gre

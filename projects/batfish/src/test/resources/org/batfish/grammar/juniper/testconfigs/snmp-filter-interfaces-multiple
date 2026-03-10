@@ -1,0 +1,9 @@
+#
+
+set system host-name snmp-filter-interfaces-multiple
+
+#
+
+set snmp filter-interfaces all-internal-interfaces
+set snmp filter-interfaces interfaces ge-0/0/0
+set snmp filter-interfaces interfaces pfh*

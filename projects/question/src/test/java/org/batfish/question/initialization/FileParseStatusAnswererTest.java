@@ -4,8 +4,8 @@ import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FI
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FILE_FORMAT;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_NODES;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_PARSE_STATUS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;

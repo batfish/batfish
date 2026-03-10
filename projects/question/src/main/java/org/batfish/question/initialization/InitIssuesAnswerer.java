@@ -108,7 +108,7 @@ public class InitIssuesAnswerer extends Answerer {
         case IGNORED:
           // No issue needed for files that passed or were explicitly ignored by user
           continue;
-          // fall through
+        // fall through
         case FAILED:
         case PARTIALLY_UNRECOGNIZED:
           // Other issues are already in the table for these files (e.g. stack trace, parse warn)

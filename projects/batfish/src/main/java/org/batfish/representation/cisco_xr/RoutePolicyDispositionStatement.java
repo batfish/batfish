@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_xr;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -22,47 +21,26 @@ public final class RoutePolicyDispositionStatement extends RoutePolicyStatement 
   @Override
   public void applyTo(
       List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    switch (_dispositionType) {
-      case DONE:
-        {
-          If ifStatement =
+    Statement statement =
+        switch (_dispositionType) {
+          case DONE ->
               new If(
                   BooleanExprs.CALL_EXPR_CONTEXT,
                   ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-          statements.add(ifStatement);
-          break;
-        }
-
-      case DROP:
-        {
-          If ifStatement =
+          case DROP ->
               new If(
                   BooleanExprs.CALL_EXPR_CONTEXT,
                   ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-          statements.add(ifStatement);
-          break;
-        }
-
-      case PASS:
-        {
-          If ifStatement =
+          case PASS ->
               new If(
                   BooleanExprs.CALL_EXPR_CONTEXT,
                   ImmutableList.of(Statements.SetLocalDefaultActionAccept.toStaticStatement()),
                   ImmutableList.of(Statements.SetDefaultActionAccept.toStaticStatement()));
-          statements.add(ifStatement);
-          break;
-        }
-
-      case UNSUPPRESS_ROUTE:
-        statements.add(Statements.Unsuppress.toStaticStatement());
-        break;
-
-      default:
-        throw new BatfishException("Invalid disposition type");
-    }
+          case UNSUPPRESS_ROUTE -> Statements.Unsuppress.toStaticStatement();
+        };
+    statements.add(statement);
   }
 
   @Override

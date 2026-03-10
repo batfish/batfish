@@ -17,7 +17,10 @@ public class RoutePolicyApplyStatement extends RoutePolicyStatement {
   @Override
   public void applyTo(
       List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    statements.add(new CallStatement(_applyName));
+    if (c.getRoutingPolicies().containsKey(_applyName)) {
+      statements.add(new CallStatement(_applyName));
+    }
+    // Already warned on undefined reference, ignore
   }
 
   public String getName() {

@@ -33,6 +33,7 @@ import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_INTE
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -53,7 +54,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -1143,12 +1143,12 @@ public class FrrGrammarTest {
         "neighbor 2001:db8:85a3:0:0:8a2e:0370:7334 description ipv6-neighbor",
         "neighbor swp1 interface description interface-neighbor",
         "bgp listen range 1.2.3.0/24 peer-group PG",
-        "bgp listen range 2001:db8:85a3::/32 peer-group PG");
+        "bgp listen range 2001:db8:85a3::/48 peer-group PG");
 
     String neighborIp = bgpNeighborStructureName("1.1.1.1", "default");
-    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
-    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/32", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3::/48", "default");
     String neighborInterface = bgpNeighborStructureName("swp1", "default");
 
     assertThat(
@@ -1208,8 +1208,8 @@ public class FrrGrammarTest {
         "    neighbor 2001:100:1:31::2 route-map rm-out out",
         "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertThat(neighbors.keySet(), contains("2001:100:1:31:0:0:0:2"));
-    BgpNeighbor foo = neighbors.get("2001:100:1:31:0:0:0:2");
+    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
     assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
     assertThat(_warnings.getParseWarnings(), empty());
   }

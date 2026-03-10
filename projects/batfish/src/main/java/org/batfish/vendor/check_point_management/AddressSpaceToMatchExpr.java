@@ -86,7 +86,7 @@ public class AddressSpaceToMatchExpr {
         }
       }
       return AclLineMatchExprs.or(
-          addressGroupTraceElement(group, _matchSource), descendantObjExprs);
+          descendantObjExprs, addressGroupTraceElement(group, _matchSource));
     }
 
     @Override

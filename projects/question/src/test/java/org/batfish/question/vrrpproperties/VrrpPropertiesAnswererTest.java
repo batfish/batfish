@@ -9,9 +9,9 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PRI
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_SOURCE_ADDRESS;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_ADDRESSES;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populateRow;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,6 +26,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -77,7 +78,7 @@ public final class VrrpPropertiesAnswererTest {
 
     // active interface with VRRP group
     Interface iface1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface1")
             .setOwner(conf1)
             .setVrrpGroups(ImmutableSortedMap.of(0, group1))
@@ -86,7 +87,7 @@ public final class VrrpPropertiesAnswererTest {
 
     // inactive interface with VRRP group
     Interface iface2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface2")
             .setOwner(conf1)
             .setVrrpGroups(ImmutableSortedMap.of(0, group2))
@@ -95,7 +96,7 @@ public final class VrrpPropertiesAnswererTest {
 
     // active interface without VRRP group
     Interface iface3 =
-        Interface.builder().setName("iface3").setOwner(conf1).setAdminUp(true).build();
+        TestInterface.builder().setName("iface3").setOwner(conf1).setAdminUp(true).build();
 
     conf1
         .getAllInterfaces()
@@ -136,7 +137,7 @@ public final class VrrpPropertiesAnswererTest {
             .build();
 
     Interface iface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface")
             .setOwner(conf)
             .setVrrpGroups(ImmutableSortedMap.of(0, group))

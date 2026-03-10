@@ -52,8 +52,8 @@ public class AwsPrefixes {
 
     @JsonCreator
     private static AwsPrefix create(
-        @Nullable @JsonProperty(PROP_IP_PREFIX) Prefix prefix,
-        @Nullable @JsonProperty(PROP_SERVICE) String serviceName) {
+        @JsonProperty(PROP_IP_PREFIX) @Nullable Prefix prefix,
+        @JsonProperty(PROP_SERVICE) @Nullable String serviceName) {
       checkArgument(prefix != null, "No prefix found in JSON object for AwsPrefix");
       checkArgument(serviceName != null, "Service name not found in JSON object for AwsPrefix");
       return new AwsPrefix(prefix, serviceName);
@@ -89,7 +89,7 @@ public class AwsPrefixes {
 
   @JsonCreator
   private static AwsPrefixes create(
-      @Nullable @JsonProperty(PROP_PREFIXES) List<AwsPrefix> prefixes) {
+      @JsonProperty(PROP_PREFIXES) @Nullable List<AwsPrefix> prefixes) {
     checkArgument(prefixes != null, "List of prefixes not found in JSON object for AwsPrefixes");
     return new AwsPrefixes(prefixes);
   }

@@ -244,28 +244,23 @@ public class CheckpointNatConversions {
       NamedManagementObject service,
       Warnings warnings) {
     if (src instanceof Original || !(src instanceof NatTranslatedSource)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Hide NAT rule translated-source %s has invalid type %s and will be"
-                  + " ignored",
-              src.getName(), src.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Hide NAT rule translated-source %s has invalid type %s and will be" + " ignored",
+          src.getName(), src.getClass().getSimpleName());
       return false;
     } else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
       // unsupported for foreseeable future, so don't bother warning
       return false;
     } else if (!(dst instanceof Original || dst instanceof Host)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
-                  + " ignored",
-              dst.getName(), dst.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
+              + " ignored",
+          dst.getName(), dst.getClass().getSimpleName());
       return false;
     } else if (!(service instanceof Original)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Hide NAT rule translated-service %s has invalid type %s and will be"
-                  + " ignored",
-              service.getName(), service.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Hide NAT rule translated-service %s has invalid type %s and will be" + " ignored",
+          service.getName(), service.getClass().getSimpleName());
       return false;
     }
     return true;
@@ -285,52 +280,47 @@ public class CheckpointNatConversions {
     NamedManagementObject origDst = objects.get(natRule.getOriginalDestination());
 
     if (!(src instanceof Original || src instanceof Host || src instanceof Network)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Static NAT rule translated-source %s has unsupported type %s and will be"
-                  + " ignored",
-              src.getName(), src.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Static NAT rule translated-source %s has unsupported type %s and will be"
+              + " ignored",
+          src.getName(), src.getClass().getSimpleName());
       return false;
     } else if (!(dst instanceof Original || dst instanceof Host || dst instanceof Network)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Static NAT rule translated-destination %s has unsupported type %s and will be"
-                  + " ignored",
-              dst.getName(), dst.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Static NAT rule translated-destination %s has unsupported type %s and will be"
+              + " ignored",
+          dst.getName(), dst.getClass().getSimpleName());
       return false;
     } else if (!(service instanceof Original)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Static NAT rule cannot translate services (like %s of type %s) and will be"
-                  + " ignored",
-              service.getName(), service.getClass().getSimpleName()));
+      warnings.redFlagf(
+          "Manual Static NAT rule cannot translate services (like %s of type %s) and will be"
+              + " ignored",
+          service.getName(), service.getClass().getSimpleName());
       return false;
     }
 
     // Make sure if translation is occurring, the original and translated types line up correctly
     if (!(src instanceof Original)) {
       if (!src.getClass().equals(origSrc.getClass())) {
-        warnings.redFlag(
-            String.format(
-                "Manual Static NAT rule translated-source %s of type %s is incompatible with"
-                    + " original-source %s of type %s and will be ignored",
-                src.getName(),
-                src.getClass().getSimpleName(),
-                origSrc.getName(),
-                origSrc.getClass().getSimpleName()));
+        warnings.redFlagf(
+            "Manual Static NAT rule translated-source %s of type %s is incompatible with"
+                + " original-source %s of type %s and will be ignored",
+            src.getName(),
+            src.getClass().getSimpleName(),
+            origSrc.getName(),
+            origSrc.getClass().getSimpleName());
         return false;
       }
     }
     if (!(dst instanceof Original)) {
       if (!dst.getClass().equals(origDst.getClass())) {
-        warnings.redFlag(
-            String.format(
-                "Manual Static NAT rule translated-destination %s of type %s is incompatible with"
-                    + " original-destination %s of type %s and will be ignored",
-                dst.getName(),
-                dst.getClass().getSimpleName(),
-                origDst.getName(),
-                origDst.getClass().getSimpleName()));
+        warnings.redFlagf(
+            "Manual Static NAT rule translated-destination %s of type %s is incompatible with"
+                + " original-destination %s of type %s and will be ignored",
+            dst.getName(),
+            dst.getClass().getSimpleName(),
+            origDst.getName(),
+            origDst.getClass().getSimpleName());
         return false;
       }
     }
@@ -448,14 +438,13 @@ public class CheckpointNatConversions {
     }
     // Encountered a rule of an unexpected form. Warn and ignore
     assert false;
-    warnings.redFlag(
-        String.format(
-            "Automatic %s NAT rule %s has unexpected original source and destination types %s and"
-                + " %s, and will be ignored",
-            rule.getMethod(),
-            rule.getRuleNumber(),
-            src.getClass().getSimpleName(),
-            dst.getClass().getSimpleName()));
+    warnings.redFlagf(
+        "Automatic %s NAT rule %s has unexpected original source and destination types %s and"
+            + " %s, and will be ignored",
+        rule.getMethod(),
+        rule.getRuleNumber(),
+        src.getClass().getSimpleName(),
+        dst.getClass().getSimpleName());
     return false;
   }
 
@@ -463,20 +452,17 @@ public class CheckpointNatConversions {
     NatSettings natSettings = hasNatSettings.getNatSettings();
     assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
     if (natSettings.getHideBehind() == null) {
-      warnings.redFlag(
-          String.format(
-              "NAT settings on %s %s are invalid and will be ignored: type is HIDE, but hide-behind"
-                  + " is missing",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
+      warnings.redFlagf(
+          "NAT settings on %s %s are invalid and will be ignored: type is HIDE, but hide-behind"
+              + " is missing",
+          hasNatSettings.getClass(), hasNatSettings.getName());
       return false;
     } else if (natSettings.getHideBehind() instanceof UnhandledNatHideBehind) {
-      warnings.redFlag(
-          String.format(
-              "NAT hide-behind \"%s\" is not recognized: NAT settings on %s %s will be"
-                  + " ignored",
-              ((UnhandledNatHideBehind) natSettings.getHideBehind()).getName(),
-              hasNatSettings.getClass(),
-              hasNatSettings.getName()));
+      warnings.redFlagf(
+          "NAT hide-behind \"%s\" is not recognized: NAT settings on %s %s will be" + " ignored",
+          ((UnhandledNatHideBehind) natSettings.getHideBehind()).getName(),
+          hasNatSettings.getClass(),
+          hasNatSettings.getName());
       return false;
     }
     return true;
@@ -485,11 +471,10 @@ public class CheckpointNatConversions {
   static boolean isValidAutomaticStaticRule(HasNatSettings hasNatSettings, Warnings warnings) {
     if (!(hasNatSettings instanceof Host)) {
       // TODO Support automatic static NAT on constructs other than hosts
-      warnings.redFlag(
-          String.format(
-              "Automatic static NAT rules on non-host objects are not yet supported: NAT settings"
-                  + " on %s %s will be ignored",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
+      warnings.redFlagf(
+          "Automatic static NAT rules on non-host objects are not yet supported: NAT settings"
+              + " on %s %s will be ignored",
+          hasNatSettings.getClass(), hasNatSettings.getName());
       return false;
     } else if (((Host) hasNatSettings).getIpv4Address() == null) {
       // TODO Support IPv6

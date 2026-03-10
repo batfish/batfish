@@ -40,6 +40,12 @@ delete_line
    DELETE delete_line_tail NEWLINE
 ;
 
+replace_line
+:
+   // Replace abuses delete_line_tail since we will delete everything anyway.
+   REPLACE delete_line_tail NEWLINE
+;
+
 delete_line_tail
 :
    hierarchy_element*
@@ -79,6 +85,7 @@ flat_juniper_configuration
       | delete_line
       | insert_line
       | protect_line
+      | replace_line
       | set_line
       | newline
    )+ EOF

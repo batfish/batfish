@@ -28,7 +28,8 @@ public abstract class SymbolicRegex {
   // modify the given regex to conform to the grammar of the Automaton library that we use to
   // analyze regexes
   private @Nonnull String toAutomatonRegex(String regex) {
-    // the Automaton library does not support the character class \d
-    return regex.replace("\\d", "[0-9]");
+    // the Automaton library does not support the character class \d;
+    // the Automaton library treats ^ and $ as ordinary characters, but they shouldn't match .
+    return regex.replace("\\d", "[0-9]").replace(".", "[^^$]");
   }
 }

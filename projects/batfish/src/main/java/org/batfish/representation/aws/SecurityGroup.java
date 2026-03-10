@@ -48,13 +48,13 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static SecurityGroup create(
-      @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
-      @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId,
-      @Nullable @JsonProperty(JSON_KEY_GROUP_NAME) String groupName,
-      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) List<IpPermissions> ipPermsEgress,
-      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS) List<IpPermissions> ipPermsIngress,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+      @JsonProperty(JSON_KEY_DESCRIPTION) @Nullable String description,
+      @JsonProperty(JSON_KEY_GROUP_ID) @Nullable String groupId,
+      @JsonProperty(JSON_KEY_GROUP_NAME) @Nullable String groupName,
+      @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) @Nullable List<IpPermissions> ipPermsEgress,
+      @JsonProperty(JSON_KEY_IP_PERMISSIONS) @Nullable List<IpPermissions> ipPermsIngress,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId) {
     checkArgument(groupId != null, "Group id cannot be null for security groups");
     checkArgument(groupName != null, "Group name cannot be null for security groups");
     checkArgument(

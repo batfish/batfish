@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;

@@ -1,8 +1,8 @@
 package org.batfish.dataplane.rib;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.util.List;
@@ -15,6 +15,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
@@ -174,7 +175,8 @@ public class RibDeltaTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder routeBuilder = Bgpv4Route.testBuilder();
     routeBuilder
         .setNetwork(Ip.parse("1.1.1.1").toPrefix())
@@ -232,7 +234,8 @@ public class RibDeltaTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route r1 =
         Bgpv4Route.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
@@ -257,6 +260,6 @@ public class RibDeltaTest {
     // Test
     RibDelta.importRibDelta(rib, delta);
     // r1 remains due to different protocol
-    assertThat(rib.getRoutes(), contains(r2));
+    assertThat(rib.getUnannotatedRoutes(), contains(r2));
   }
 }

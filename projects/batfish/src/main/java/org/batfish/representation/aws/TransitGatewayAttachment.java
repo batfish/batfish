@@ -38,8 +38,8 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Association create(
-        @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
-        @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
+        @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) @Nullable String routeTableId,
+        @JsonProperty(JSON_KEY_STATE) @Nullable String state) {
       checkArgument(
           routeTableId != null, "Route table id cannot be null for transit gateway attachment");
       checkArgument(state != null, "State cannot be null for transit gateway attachment");
@@ -95,13 +95,13 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGatewayAttachment create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) String attachmentId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_OWNER_ID) String gatewayOwnerId,
-      @Nullable @JsonProperty(JSON_KEY_RESOURCE_TYPE) String resourceType,
-      @Nullable @JsonProperty(JSON_KEY_RESOURCE_ID) String resourceId,
-      @Nullable @JsonProperty(JSON_KEY_RESOURCE_OWNER_ID) String resourceOwnerId,
-      @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association) {
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) @Nullable String attachmentId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String gatewayId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_OWNER_ID) @Nullable String gatewayOwnerId,
+      @JsonProperty(JSON_KEY_RESOURCE_TYPE) @Nullable String resourceType,
+      @JsonProperty(JSON_KEY_RESOURCE_ID) @Nullable String resourceId,
+      @JsonProperty(JSON_KEY_RESOURCE_OWNER_ID) @Nullable String resourceOwnerId,
+      @JsonProperty(JSON_KEY_ASSOCIATION) @Nullable Association association) {
     checkArgument(
         attachmentId != null, "Attachment id cannot be null for transit gateway attachment");
     checkArgument(gatewayId != null, "Gateway id cannot be null for transit gateway attachment");
@@ -143,9 +143,8 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     return _association;
   }
 
-  @Nonnull
   @Override
-  public String getId() {
+  public @Nonnull String getId() {
     return _attachmentId;
   }
 

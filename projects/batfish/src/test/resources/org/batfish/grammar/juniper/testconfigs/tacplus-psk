@@ -4,3 +4,6 @@ set system host-name tacplus-psk
 set system tacplus-server 1.2.3.4 secret "psk"
 set system tacplus-server 2.3.4.5 secret "$9$czBSK87-wgoG"
 #
+set system tacplus-server 2.3.4.5 source-address 6.7.8.9
+set system tacplus-server 2.3.4.5 routing-instance RI
+#

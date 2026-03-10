@@ -1,0 +1,14 @@
+#
+set system host-name bgp-local-preference
+#
+set routing-options router-id 1.1.1.1
+set routing-options autonomous-system 1
+# Process-level default
+set protocols bgp local-preference 50
+# Group-level override
+set protocols bgp group TEST-GROUP type internal
+set protocols bgp group TEST-GROUP local-preference 100
+set protocols bgp group TEST-GROUP neighbor 1.1.1.2
+# Group that inherits from process level
+set protocols bgp group TEST-GROUP-INHERIT type internal
+set protocols bgp group TEST-GROUP-INHERIT neighbor 1.1.1.3

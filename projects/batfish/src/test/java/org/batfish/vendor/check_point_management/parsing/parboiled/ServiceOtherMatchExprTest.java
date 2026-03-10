@@ -2,8 +2,8 @@ package org.batfish.vendor.check_point_management.parsing.parboiled;
 
 import static org.batfish.vendor.check_point_management.parsing.parboiled.ServiceOtherMatchExpr.LOW_UDP_PORT;
 import static org.batfish.vendor.check_point_management.parsing.parboiled.ServiceOtherMatchExpr.parse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

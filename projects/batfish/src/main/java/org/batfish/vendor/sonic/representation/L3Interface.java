@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /**
@@ -23,11 +24,7 @@ public class L3Interface implements Serializable {
   }
 
   public void addAddress(ConcreteInterfaceAddress address, InterfaceKeyProperties properties) {
-    _addresses =
-        ImmutableMap.<ConcreteInterfaceAddress, InterfaceKeyProperties>builder()
-            .putAll(_addresses)
-            .put(address, properties)
-            .build();
+    _addresses = CollectionUtil.copyMapAndAdd(_addresses, address, properties);
   }
 
   public @Nonnull Map<ConcreteInterfaceAddress, InterfaceKeyProperties> getAddresses() {

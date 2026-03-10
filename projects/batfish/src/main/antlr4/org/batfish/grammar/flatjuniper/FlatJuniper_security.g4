@@ -123,6 +123,7 @@ ipsec_authentication_algorithm
 :
    HMAC_MD5_96
    | HMAC_SHA1_96
+   | HMAC_SHA_256_128
 ;
 
 ipsec_protocol
@@ -208,7 +209,7 @@ natp_port
 
 natp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 natp_routing_instance
@@ -253,7 +254,7 @@ rs_rule
       rsr_description
       | rsr_match
       | rsr_then
-   )
+   )?
 ;
 
 rs_zone
@@ -263,7 +264,7 @@ rs_zone
 
 rsr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 rsr_match
@@ -473,6 +474,7 @@ se_address_book
        | sead_address
        | sead_address_set
        | sead_attach
+       | sead_description
    )
 ;
 
@@ -588,8 +590,7 @@ sead_address
 :
    ADDRESS name = junos_name
    (
-      apply
-      | DESCRIPTION null_filler
+      description
       | address = ip_address
       | prefix = ip_prefix
       | RANGE_ADDRESS lower_limit = ip_address TO upper_limit = ip_address
@@ -613,6 +614,8 @@ sead_attach
    ATTACH ZONE name = junos_name
 ;
 
+sead_description: description;
+
 seada_address
 :
    ADDRESS name = junos_name
@@ -625,7 +628,7 @@ seada_address_set
 
 seada_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 sec_local
@@ -710,7 +713,30 @@ seikg_address
 
 seikg_dead_peer_detection
 :
-   DEAD_PEER_DETECTION ALWAYS_SEND?
+   DEAD_PEER_DETECTION
+   (
+      seikgdpd_always_send
+      | seikgdpd_interval
+      | seikgdpd_optimized
+      | seikgdpd_probe_idle_tunnel
+      | seikgdpd_threshold
+   )?
+;
+
+seikgdpd_always_send: ALWAYS_SEND;
+seikgdpd_interval
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-dead-peer-detection.html
+   // 2-60, default 10
+   INTERVAL secs = uint8
+;
+seikgdpd_optimized: OPTIMIZED;
+seikgdpd_probe_idle_tunnel: PROBE_IDLE_TUNNEL;
+seikgdpd_threshold
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-dead-peer-detection.html
+   // 1-5, default 5
+   THRESHOLD max_failures = uint8
 ;
 
 seikg_dynamic
@@ -754,7 +780,7 @@ seikg_no_nat_traversal
 
 seikg_version
 :
-   VERSION V1_ONLY
+   VERSION (V1_ONLY | V2_ONLY)
 ;
 
 seikg_xauth
@@ -788,7 +814,7 @@ seikgl_inet
 
 seikp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seikp_mode
@@ -802,7 +828,12 @@ seikp_mode
 
 seikp_pre_shared_key
 :
-   PRE_SHARED_KEY ASCII_TEXT key = DOUBLE_QUOTED_STRING
+   PRE_SHARED_KEY
+   (
+      ASCII_TEXT secret_string
+      | HEXADECIMAL secret_string
+      | SCRUBBED
+   )
 ;
 
 seikp_proposal_set
@@ -827,7 +858,7 @@ seikpr_authentication_method
 
 seikpr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seikpr_dh_group
@@ -903,7 +934,7 @@ seippr_authentication_algorithm
 
 seippr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seippr_encryption_algorithm
@@ -933,7 +964,7 @@ seipv_bind_interface
 
 seipv_df_bit
 :
-   DF_BIT CLEAR
+   DF_BIT (CLEAR| COPY)
 ;
 
 seipv_establish_tunnels
@@ -1123,7 +1154,7 @@ sepctx_policy
 
 sepctxp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 sepctxp_match
@@ -1722,8 +1753,7 @@ sezsa_address
 :
    ADDRESS name = junos_name
    (
-      apply
-      | address = ip_address
+      address = ip_address
       | prefix = ip_prefix
       | WILDCARD_ADDRESS ip_and_mask = ip_address_and_mask
    )

@@ -1,10 +1,12 @@
 package org.batfish.representation.cisco_asa;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ProtocolObjectGroup extends ObjectGroup {
 
@@ -19,10 +21,11 @@ public class ProtocolObjectGroup extends ObjectGroup {
     return _lines;
   }
 
-  public AclLineMatchExpr toAclLineMatchExpr() {
-    return new OrMatchExpr(
+  public AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ProtocolObjectGroup> protocolObjectGroups) {
+    return or(
         _lines.stream()
-            .map(ProtocolObjectGroupLine::toAclLineMatchExpr)
+            .map(line -> line.toAclLineMatchExpr(protocolObjectGroups))
             .collect(ImmutableSet.toImmutableSet()));
   }
 }

@@ -1,0 +1,49 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vm235",
+  "name": "vm235",
+  "type": "Microsoft.Network/networkInterfaces",
+  "location": "westeurope",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "1e8b3dda-7e4d-4a8a-a290-e01d43d69c8f",
+    "ipConfigurations": [
+      {
+        "name": "ipconfig1",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vm235/ipConfigurations/ipconfig1",
+        "etag": "W/\"cd0e1d9e-c480-418f-a35d-4235363885eb\"",
+        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "privateIPAddress": "10.0.1.5",
+          "privateIPAllocationMethod": "Dynamic",
+          "subnet": {
+            "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private"
+          },
+          "primary": true,
+          "privateIPAddressVersion": "IPv4"
+        }
+      }
+    ],
+    "dnsSettings": {
+      "dnsServers": [],
+      "appliedDnsServers": []
+    },
+    "macAddress": "60-45-BD-A1-B0-E4",
+    "enableAcceleratedNetworking": true,
+    "vnetEncryptionSupported": false,
+    "enableIPForwarding": false,
+    "disableTcpStateTracking": false,
+    "primary": true,
+    "virtualMachine": {
+      "id": "resourceGroups/test/providers/Microsoft.Compute/virtualMachines/VM2"
+    },
+    "hostedWorkloads": [],
+    "tapConfigurations": [],
+    "nicType": "Standard",
+    "allowPort25Out": false,
+    "defaultOutboundConnectivityEnabled": false,
+    "auxiliaryMode": "None",
+    "auxiliarySku": "None"
+  },
+  "kind": "Regular"
+}

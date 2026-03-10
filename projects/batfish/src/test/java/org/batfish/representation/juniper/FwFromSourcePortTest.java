@@ -1,40 +1,54 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 
-import org.batfish.datamodel.HeaderSpace;
+import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclTracer;
+import org.batfish.datamodel.trace.TraceTree;
 import org.junit.Test;
 
 /** Test for {@link FwFromSourcePort} */
 public class FwFromSourcePortTest {
+  private static void assertMatches(AclLineMatchExpr expr, Flow flow) {
+    List<TraceTree> trace =
+        AclTracer.trace(expr, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+    assertThat(trace, hasSize(1));
+    assertThat(trace.get(0).getTraceElement().getText(), containsString("Matched source-port"));
+  }
 
-  @Test
-  public void testToAclLineMatchExpr() {
-    FwFromSourcePort from = new FwFromSourcePort(new SubRange(1, 2));
-    assertEquals(
-        from.toAclLineMatchExpr(null, null, null),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
-                .setSrcPorts(new SubRange(1, 2))
-                .build(),
-            TraceElement.of("Matched source-port 1-2")));
+  private static void assertNoMatches(AclLineMatchExpr expr, Flow flow) {
+    List<TraceTree> trace =
+        AclTracer.trace(expr, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+    assertThat(trace, empty());
   }
 
   @Test
-  public void testToAclLineMatchExpr_single() {
-    FwFromSourcePort from = new FwFromSourcePort(SubRange.singleton(1));
-    assertEquals(
-        from.toAclLineMatchExpr(null, null, null),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
-                .setSrcPorts(SubRange.singleton(1))
-                .build(),
-            TraceElement.of("Matched source-port 1")));
+  public void testConversion() {
+    AclLineMatchExpr converted =
+        new FwFromSourcePort(new SubRange(1, 2)).toAclLineMatchExpr(null, null, null);
+    Flow testFlow =
+        Flow.builder()
+            .setIngressNode("c")
+            .setSrcPort(1)
+            .setDstPort(5)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.MAX)
+            .build();
+    assertMatches(converted, testFlow);
+    assertMatches(converted, testFlow.toBuilder().setIpProtocol(IpProtocol.UDP).build());
+    assertMatches(converted, testFlow.toBuilder().setIpProtocol(IpProtocol.SCTP).build());
+    assertNoMatches(converted, testFlow.toBuilder().setIpProtocol(IpProtocol.GRE).build());
+    assertMatches(converted, testFlow.toBuilder().setSrcPort(2).build());
+    assertNoMatches(converted, testFlow.toBuilder().setSrcPort(5).build());
   }
 }

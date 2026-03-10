@@ -1,0 +1,25 @@
+#
+set system host-name bmp-station
+#
+set routing-options bmp station BMP-1000 local-port 1000
+set routing-options bmp station BMP-1000 apply-groups BMP-GROUP
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring loc-rib
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring pre-policy
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring pre-policy exclude-non-feasible
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring post-policy
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring post-policy exclude-non-eligible
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring rib-out post-policy
+set groups BMP-GROUP routing-options bmp station <*> route-monitoring rib-out pre-policy
+set groups BMP-GROUP routing-options bmp station <*> hold-down
+set groups BMP-GROUP routing-options bmp station <*> hold-down 30
+set groups BMP-GROUP routing-options bmp station <*> hold-down flaps 10
+set groups BMP-GROUP routing-options bmp station <*> hold-down period 600
+set groups BMP-GROUP routing-options bmp station <*> hold-down 30 flaps 10 period 600
+set groups BMP-GROUP routing-options bmp station <*> connection-mode active
+set groups BMP-GROUP routing-options bmp station <*> connection-mode passive
+set groups BMP-GROUP routing-options bmp station <*> priority low
+set groups BMP-GROUP routing-options bmp station <*> priority medium
+set groups BMP-GROUP routing-options bmp station <*> priority high
+set groups BMP-GROUP routing-options bmp station <*> statistics-timeout 30
+set groups BMP-GROUP routing-options bmp station <*> station-address 1.0.0.0
+set groups BMP-GROUP routing-options bmp station <*> local-address 1.0.0.0

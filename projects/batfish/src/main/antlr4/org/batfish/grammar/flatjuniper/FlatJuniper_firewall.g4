@@ -9,7 +9,8 @@ options {
 f_common
 :
    f_filter
-   | f_null
+   | f_policer
+   | f_service_filter_null
 ;
 
 f_family
@@ -44,12 +45,62 @@ f_filter
    )
 ;
 
-f_null
+f_policer
 :
+   POLICER name = junos_name
    (
-      POLICER
-      | SERVICE_FILTER
-   ) null_filler
+      fp_filter_specific
+      | fp_if_exceeding
+      | fp_logical_interface_policer
+      | fp_then
+   )
+;
+
+fp_filter_specific
+:
+   FILTER_SPECIFIC
+;
+
+fp_if_exceeding
+:
+   IF_EXCEEDING
+   (
+      fpie_bandwidth_limit
+      | fpie_burst_size_limit
+   )+
+;
+
+fpie_bandwidth_limit
+:
+   BANDWIDTH_LIMIT bw_limit = bandwidth
+;
+
+fpie_burst_size_limit
+:
+   BURST_SIZE_LIMIT size = burst_size_limit
+;
+
+fp_logical_interface_policer
+:
+   LOGICAL_INTERFACE_POLICER
+;
+
+fp_then
+:
+   THEN
+   (
+      fpt_discard
+   )
+;
+
+fpt_discard
+:
+   DISCARD
+;
+
+f_service_filter_null
+:
+   SERVICE_FILTER null_filler
 ;
 
 ff_interface_specific
@@ -63,7 +114,7 @@ ff_term
    (
       fft_from
       | fft_then
-   )
+   )?
 ;
 
 fft_from
@@ -74,6 +125,7 @@ fft_from
       | fftf_destination_address
       | fftf_destination_port
       | fftf_destination_port_except
+      | fftf_destination_port_range_optimize
       | fftf_destination_prefix_list
       | fftf_dscp
       | fftf_exp
@@ -82,6 +134,7 @@ fft_from
       | fftf_forwarding_class
       | fftf_fragment_offset
       | fftf_fragment_offset_except
+      | fftf_hop_limit
       | fftf_icmp_code
       | fftf_icmp_code_except
       | fftf_icmp_type
@@ -102,13 +155,17 @@ fft_from
       | fftf_prefix_list
       | fftf_protocol
       | fftf_source_address
+      | fftf_source_class
       | fftf_source_mac_address
       | fftf_source_port
       | fftf_source_port_except
+      | fftf_source_port_range_optimize
       | fftf_source_prefix_list
       | fftf_tcp_established
       | fftf_tcp_flags
       | fftf_tcp_initial
+      | fftf_ttl
+      | fftf_ttl_except
       | fftf_vlan
    )
 ;
@@ -118,11 +175,13 @@ fft_then
    THEN
    (
       fftt_accept
+      | fftt_decapsulate
       | fftt_discard
       | fftt_loss_priority
       | fftt_next_ip
       | fftt_next_term
       | fftt_nop
+      | fftt_policer
       | fftt_port_mirror
       | fftt_reject
       | fftt_routing_instance
@@ -159,6 +218,7 @@ fftf_destination_address
 fftf_destination_port: DESTINATION_PORT port_range;
 
 fftf_destination_port_except: DESTINATION_PORT_EXCEPT port_range;
+fftf_destination_port_range_optimize: DESTINATION_PORT_RANGE_OPTIMIZE;
 
 fftf_destination_prefix_list
 :
@@ -206,6 +266,11 @@ fragment_offset
 :
   // 0-8191
   uint16
+;
+
+fftf_hop_limit
+:
+   HOP_LIMIT uint8
 ;
 
 fftf_icmp_code
@@ -279,7 +344,7 @@ fftf_learn_vlan_1p_priority
 
 fftf_next_header
 :
-   NEXT_HEADER ip_protocol
+   NEXT_HEADER (ip_protocol | DSTOPTS | FRAGMENT | ICMPV6 | ROUTING)
 ;
 
 fftf_null
@@ -316,7 +381,10 @@ fftf_prefix_list
 
 fftf_protocol
 :
-   PROTOCOL ip_protocol
+   PROTOCOL
+   (
+     ip_protocol
+   )
 ;
 
 fftf_source_address
@@ -329,6 +397,11 @@ fftf_source_address
    ) EXCEPT?
 ;
 
+fftf_source_class
+:
+   SOURCE_CLASS name = junos_name
+;
+
 fftf_source_mac_address
 :
    SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = dec
@@ -337,6 +410,7 @@ fftf_source_mac_address
 fftf_source_port: SOURCE_PORT port_range;
 
 fftf_source_port_except: SOURCE_PORT_EXCEPT port_range;
+fftf_source_port_range_optimize: SOURCE_PORT_RANGE_OPTIMIZE;
 
 fftf_source_prefix_list
 :
@@ -358,6 +432,16 @@ fftf_tcp_initial
    TCP_INITIAL
 ;
 
+fftf_ttl
+:
+   TTL uint8_range
+;
+
+fftf_ttl_except
+:
+   TTL_EXCEPT uint8_range
+;
+
 fftf_vlan
 :
    VLAN name = junos_name
@@ -366,6 +450,11 @@ fftf_vlan
 fftt_accept
 :
    ACCEPT
+;
+
+fftt_decapsulate
+:
+   DECAPSULATE GRE
 ;
 
 fftt_discard
@@ -402,10 +491,14 @@ fftt_nop
       | FORWARDING_CLASS
       | LOG
       | NEXT_IP6
-      | POLICER
       | SAMPLE
       | SYSLOG
    ) null_filler
+;
+
+fftt_policer
+:
+   POLICER name = junos_name
 ;
 
 fftt_port_mirror

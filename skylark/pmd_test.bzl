@@ -1,5 +1,7 @@
 """Test rule that executes PMD against a given library."""
 
+load("@rules_java//java/common:java_info.bzl", "JavaInfo")
+
 def _impl(ctx):
     lib = ctx.attr.lib[JavaInfo]
     if len(lib.source_jars) != 1:
@@ -7,19 +9,23 @@ def _impl(ctx):
 
     src_jar = lib.source_jars[0]
 
-    # We'd like this to be the compile-time jars only, but Bazel provides only
-    # hjar or ijar files, which screw PMD up.
-    jar_deps = lib.transitive_runtime_jars
-    full_transitive_runtime_jars = ":".join([f.short_path for f in jar_deps.to_list()])
+    # Use compile-time jars (header jars) for PMD's aux classpath.
+    # This allows for incremental rerunning of pmd tests only when headers change.
+    jar_deps = lib.transitive_compile_time_jars
+    full_transitive_compile_jars = ":".join([f.short_path for f in jar_deps.to_list()])
 
     pmd_exe_file = ctx.attr._pmd[DefaultInfo].files_to_run.executable
     ruleset = ctx.file.ruleset
     pmd_cmd_args = [
         pmd_exe_file.short_path,
+        "check",
+        "--no-cache",
+        "--no-progress",
+        "--minimum-priority MEDIUM",
         "-f text",
         "-R {}".format(ruleset.short_path),
         "-d {}".format(src_jar.short_path),
-        "-auxclasspath {}".format(full_transitive_runtime_jars),
+        "--aux-classpath {}".format(full_transitive_compile_jars),
     ]
     pmd_cmd = " ".join(pmd_cmd_args)
     script = [

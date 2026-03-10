@@ -1,9 +1,11 @@
 package org.batfish.dataplane.rib;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
@@ -48,7 +51,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.builder()
             .setNetwork(Prefix.strict("10.0.0.1/32"))
@@ -87,7 +91,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good =
@@ -160,7 +165,8 @@ public class BgpRibTest {
                 false,
                 LocalOriginationTypeTieBreaker.NO_PREFERENCE,
                 NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                ResolutionRestriction.alwaysTrue());
 
     Bgpv4Route nh1 =
         rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
@@ -191,64 +197,64 @@ public class BgpRibTest {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh1);
-      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(), contains(nh1));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
 
       rib.mergeRoute(nh2better);
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2worse).getMultipathDelta(), equalTo(RibDelta.empty()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
     }
     {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh1);
-      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(), contains(nh1));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
 
       rib.mergeRoute(nh2worse);
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
 
       assertThat(
           rib.multipathRemoveRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2better, Reason.WITHDRAW).add(nh2worse).build()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
     }
     {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh2worse);
-      assertThat(rib.getTypedRoutes(), contains(nh2worse));
+      assertThat(rib.getRoutes(), contains(nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2worse));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(), contains(nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh3best).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2better, Reason.REPLACE).add(nh3best).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh3best));
+      assertThat(rib.getRoutes(), contains(nh3best));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh3best));
 
       assertThat(
           rib.multipathRemoveRouteGetDelta(nh3best).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh3best, Reason.WITHDRAW).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(), contains(nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
     }
   }
@@ -264,7 +270,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good =
@@ -347,7 +354,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -430,7 +438,8 @@ public class BgpRibTest {
             true,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -478,7 +487,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -514,5 +524,51 @@ public class BgpRibTest {
             equalTo(Integer.signum(i - j)));
       }
     }
+  }
+
+  @Test
+  public void testArrivalOrderRemovesBackupRoutesToo() {
+    Bgpv4Rib bestPathRib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ARRIVAL_ORDER,
+            999,
+            MultipathEquivalentAsPathMatchMode.PATH_LENGTH,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
+
+    Bgpv4Route best =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setLocalPreference(1000L)
+            .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+    Bgpv4Route worse =
+        best.toBuilder()
+            .setLocalPreference(best.getLocalPreference() - 5)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
+            .build();
+
+    // SETUP, tested for setup correctly.
+    // 1. Insert best and make sure it's best.
+    bestPathRib.mergeRoute(best);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
+    // 2. Insert worse and make sure it's not best.
+    bestPathRib.mergeRoute(worse);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(2));
+
+    // TEST
+    bestPathRib.removeRoute(worse);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), hasKey(best));
   }
 }

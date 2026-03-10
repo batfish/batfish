@@ -4,7 +4,6 @@ import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
 import static org.batfish.client.Command.DEL_NETWORK;
-import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DP;
 import static org.batfish.client.Command.GET;
 import static org.batfish.client.Command.HELP;
@@ -67,10 +66,10 @@ import static org.batfish.datamodel.questions.Variable.Type.STRUCTURE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
 import static org.batfish.datamodel.questions.Variable.Type.VRF;
 import static org.batfish.datamodel.questions.Variable.Type.ZONE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,7 +123,8 @@ public final class ClientTest {
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
@@ -164,7 +164,8 @@ public final class ClientTest {
 
   @Test
   public void testDefaultCase() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
@@ -208,17 +209,6 @@ public final class ClientTest {
     _thrown.expectMessage(
         equalTo(String.format("A Batfish %s must start with \"/\"", JSON_PATH_REGEX.getName())));
     Client.validateJsonPathRegex("");
-  }
-
-  @Test
-  public void testExitInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(EXIT, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testExitValidParas() throws Exception {
-    testProcessCommandWithValidInput(EXIT, new String[] {}, "");
   }
 
   @Test
@@ -824,7 +814,8 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsNames() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -1047,7 +1038,8 @@ public final class ClientTest {
 
   private void testProcessCommandWithValidInput(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);

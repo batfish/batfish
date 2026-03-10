@@ -83,10 +83,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
       Vrf.builder().setName(DEFAULT_MGMT_VRF_NAME).setOwner(c).build();
     } else if (_configDb.getMgmtVrfs().size() > 1) {
       // warn about multiple management VRFs
-      _w.redFlag(
-          String.format(
-              "Multiple management VRFs defined.  Putting management ports in VRF '%s'",
-              getMgmtVrfName(_configDb.getMgmtVrfs())));
+      _w.redFlagf(
+          "Multiple management VRFs defined.  Putting management ports in VRF '%s'",
+          getMgmtVrfName(_configDb.getMgmtVrfs()));
     }
 
     // all ports under the PORT object are in the default VRF

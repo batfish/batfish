@@ -855,18 +855,12 @@ public class A10Conversion {
     if (enabled != null) {
       return enabled;
     }
-    switch (iface.getType()) {
-      case ETHERNET:
-        // Err on the side of enabling too many interfaces, if version num is unknown
-        return acosMajorVersion == null || acosMajorVersion <= 2;
-      case LOOPBACK:
-      case TRUNK:
-      case VE:
-        return true;
-      default:
-        assert false;
-        return true;
-    }
+    return switch (iface.getType()) {
+      case ETHERNET ->
+          // Err on the side of enabling too many interfaces, if version num is unknown
+          acosMajorVersion == null || acosMajorVersion <= 2;
+      case LOOPBACK, TRUNK, VE -> true;
+    };
   }
 
   /**

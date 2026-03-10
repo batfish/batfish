@@ -78,9 +78,8 @@ public final class AddressObject implements Serializable {
           _prefix.getIp(), _prefix.getPrefix().getPrefixLength());
     }
     // Cannot convert ambiguous address objects like ip-range objects to concrete iface address
-    w.redFlag(
-        String.format(
-            "Could not convert %s AddressObject '%s' to ConcreteInterfaceAddress.", _type, _name));
+    w.redFlagf(
+        "Could not convert %s AddressObject '%s' to ConcreteInterfaceAddress.", _type, _name);
     return null;
   }
 

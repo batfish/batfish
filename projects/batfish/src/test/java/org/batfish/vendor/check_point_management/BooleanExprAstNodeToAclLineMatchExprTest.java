@@ -15,8 +15,8 @@ import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclL
 import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclLineMatchExpr.inspectTraceElement;
 import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclLineMatchExpr.portRangeToIntegerSpace;
 import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclLineMatchExpr.unhandledInspectTraceElement;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;

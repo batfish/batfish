@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class DropAclOut implements StateExpr {
 
   public static final DropAclOut INSTANCE = new DropAclOut();
@@ -16,6 +18,7 @@ public final class DropAclOut implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

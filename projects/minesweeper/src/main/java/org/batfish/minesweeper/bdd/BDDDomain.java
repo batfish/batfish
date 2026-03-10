@@ -1,9 +1,14 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.math.IntMath;
+import java.math.RoundingMode;
 import java.util.List;
-import java.util.Objects;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.bdd.MutableBDDInteger;
 
 /**
@@ -11,16 +16,16 @@ import org.batfish.common.bdd.MutableBDDInteger;
  * dealing directly with the values. This class is similar to {@link
  * org.batfish.common.bdd.BDDFiniteDomain} but wraps a mutable BDDInteger and so supports updates.
  */
-public class BDDDomain<T> {
+public final class BDDDomain<T> {
 
-  private BDDFactory _factory;
+  private final @Nonnull BDDFactory _factory;
 
-  private List<T> _values;
+  private final @Nonnull List<T> _values;
 
-  private MutableBDDInteger _integer;
+  private @Nonnull MutableBDDInteger _integer;
 
   public BDDDomain(BDDFactory factory, List<T> values, int index) {
-    int bits = numBits(values);
+    int bits = numBits(values.size());
     _factory = factory;
     _values = values;
     _integer = MutableBDDInteger.makeFromIndex(_factory, bits, index, false);
@@ -42,30 +47,63 @@ public class BDDDomain<T> {
     _integer = other.getInteger().and(pred);
   }
 
-  private int numBits(List<T> values) {
-    int size = values.size();
-    double log = Math.log((double) size);
-    double base = Math.log((double) 2);
+  /** Returns the constraint that represents any value within the domain. */
+  public BDD getIsValidConstraint() {
+    return _values.isEmpty() ? _factory.one() : _integer.leq(_values.size() - 1);
+  }
+
+  /**
+   * Returns the number of bits used to represent a domain of the given size.
+   *
+   * @param size the number of elements in the domain
+   * @return the number of bits required
+   */
+  public static int numBits(int size) {
     if (size == 0) {
       return 0;
-    } else {
-      return (int) Math.ceil(log / base);
     }
+    return IntMath.log2(size, RoundingMode.CEILING);
   }
 
   public BDD value(T value) {
     int idx = _values.indexOf(value);
+    checkArgument(idx != -1, "%s is not in the domain %s", value, _values);
     return _integer.value(idx);
   }
 
   public T satAssignmentToValue(BDD satAssignment) {
     int idx = _integer.satAssignmentToInt(satAssignment);
+    checkArgument(
+        idx < _values.size(),
+        "The given assignment is not valid in this domain. Was it restricted to valid values?",
+        idx);
     return _values.get(idx);
   }
 
   public void setValue(T value) {
     int idx = _values.indexOf(value);
+    checkArgument(
+        idx != -1,
+        "Cannot set value that is not defined in the domain: %s is not in %s",
+        value,
+        _values);
     _integer.setValue(idx);
+  }
+
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given BDDDomain with this one. The
+   * BDDs in the given BDDDomain should all be variables.
+   *
+   * @param other the BDDDomain of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(BDDDomain<T> other, BDDPairing pairing) {
+    _integer.augmentPairing(other._integer, pairing);
+  }
+
+  /** Produces a BDD that represents the support (i.e., the set of BDD variables) of this domain. */
+  public BDD support() {
+    return _integer.support();
   }
 
   public MutableBDDInteger getInteger() {
@@ -82,7 +120,9 @@ public class BDDDomain<T> {
       return false;
     }
     BDDDomain<?> other = (BDDDomain<?>) o;
-    return Objects.equals(_integer, other._integer);
+    // Values is ignored here, because we should only be checking equality for the same input
+    // domain and bit assignment.
+    return _integer.equals(other._integer);
   }
 
   @Override

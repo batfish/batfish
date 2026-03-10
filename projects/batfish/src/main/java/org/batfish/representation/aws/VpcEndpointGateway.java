@@ -22,7 +22,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -32,7 +31,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.specifier.LocationInfo;
 
@@ -113,9 +112,7 @@ public final class VpcEndpointGateway extends VpcEndpoint {
         .setLines(
             ExprAclLine.builder()
                 .setTraceElement(PERMIT_SERVICE_IPS)
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(servicePrefixSpace).build()))
+                .setMatchCondition(AclLineMatchExprs.matchDst(servicePrefixSpace))
                 .setAction(LineAction.PERMIT)
                 .build(),
             ExprAclLine.builder()
@@ -146,9 +143,8 @@ public final class VpcEndpointGateway extends VpcEndpoint {
     return serviceName;
   }
 
-  @Nonnull
   @VisibleForTesting
-  static String humanName(Map<String, String> tags, String serviceName) {
+  static @Nonnull String humanName(Map<String, String> tags, String serviceName) {
     return tags.getOrDefault(TAG_NAME, serviceName);
   }
 

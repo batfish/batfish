@@ -14,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
@@ -22,13 +23,18 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetExprToBDD}. */
 public class CommunitySetExprToBDDTest {
@@ -39,6 +45,8 @@ public class CommunitySetExprToBDDTest {
   private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetExprToBDD _communitySetExprToBDD;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -53,7 +61,7 @@ public class CommunitySetExprToBDDTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     _configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -63,12 +71,11 @@ public class CommunitySetExprToBDDTest {
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    TransferBDD transferBDD =
-        new TransferBDD(
-            _configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(_configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _communitySetExprToBDD = new CommunitySetExprToBDD();
   }
@@ -154,6 +161,12 @@ public class CommunitySetExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
     assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
+  }
+
+  @Test
+  public void testVisitInputCommunities() {
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetExprToBDD.visitInputCommunities(InputCommunities.instance(), _arg);
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

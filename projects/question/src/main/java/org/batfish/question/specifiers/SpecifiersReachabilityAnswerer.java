@@ -35,9 +35,9 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
   private static final String[] DIFFERENTIAL_ALTERNATIVES =
       new String[] {
         "Differential Reachability"
-            + " https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.differentialReachability",
+            + " https://pybatfish.readthedocs.io/en/latest/notebooks/differentialQuestions.html#Differential-Reachability",
         "Routes (in differential mode)"
-            + " https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.routes",
+            + " https://pybatfish.readthedocs.io/en/latest/notebooks/routingTables.html#Routes",
       };
 
   @Override

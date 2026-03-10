@@ -10,12 +10,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.Community;
 
-public class StaticRoute implements Serializable {
-
+public abstract class StaticRoute<T> implements Serializable {
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
 
@@ -29,15 +26,15 @@ public class StaticRoute implements Serializable {
 
   private @Nonnull Set<String> _nextHopInterface;
 
-  private @Nonnull Set<Ip> _nextHopIp;
+  private @Nonnull Set<T> _nextHopIp;
 
   private List<String> _policies;
 
-  private Prefix _prefix;
-
   private @Nullable String _nextTable;
 
-  private @Nullable Boolean _resolve;
+  private @Nullable Boolean _install;
+
+  private @Nullable Boolean _readvertise;
 
   /**
    * Each qualified next hop will produce a separate static route using properties of the static
@@ -45,13 +42,14 @@ public class StaticRoute implements Serializable {
    */
   private Map<NextHop, QualifiedNextHop> _qualifiedNextHops;
 
+  private @Nullable Boolean _resolve;
+
   private Long _tag;
 
-  private @Nullable Boolean _noInstall;
+  private @Nullable Long _tag2;
 
-  public StaticRoute(Prefix prefix) {
+  public StaticRoute() {
     _communities = new TreeSet<>();
-    _prefix = prefix;
     _policies = new ArrayList<>();
     // default admin costs for static routes in Juniper
     _distance = DEFAULT_ADMIN_DISTANCE;
@@ -72,6 +70,14 @@ public class StaticRoute implements Serializable {
     return _drop;
   }
 
+  public @Nullable Boolean getInstall() {
+    return _install;
+  }
+
+  public void setInstall(@Nullable Boolean install) {
+    _install = install;
+  }
+
   public int getMetric() {
     return _metric;
   }
@@ -80,20 +86,12 @@ public class StaticRoute implements Serializable {
     return _nextHopInterface;
   }
 
-  public Set<Ip> getNextHopIp() {
+  public Set<T> getNextHopIp() {
     return _nextHopIp;
-  }
-
-  public @Nullable Boolean getNoInstall() {
-    return _noInstall;
   }
 
   public List<String> getPolicies() {
     return _policies;
-  }
-
-  public Prefix getPrefix() {
-    return _prefix;
   }
 
   public QualifiedNextHop getOrCreateQualifiedNextHop(NextHop nextHop) {
@@ -104,8 +102,28 @@ public class StaticRoute implements Serializable {
     return _qualifiedNextHops;
   }
 
+  public @Nullable Boolean getReadvertise() {
+    return _readvertise;
+  }
+
+  public void setReadvertise(@Nullable Boolean readvertise) {
+    _readvertise = readvertise;
+  }
+
   public Long getTag() {
     return _tag;
+  }
+
+  public void setTag(long tag) {
+    _tag = tag;
+  }
+
+  public @Nullable Long getTag2() {
+    return _tag2;
+  }
+
+  public void setTag2(@Nullable Long tag2) {
+    _tag2 = tag2;
   }
 
   public void setDistance(int distance) {
@@ -130,18 +148,10 @@ public class StaticRoute implements Serializable {
   }
 
   /** Adds a next hop IP for the route. Also clears the next table and discard property. */
-  public void addNextHopIp(Ip nextHopIp) {
+  public void addNextHopIp(T nextHopIp) {
     _nextTable = null;
     _drop = false;
     _nextHopIp.add(nextHopIp);
-  }
-
-  public void setNoInstall(@Nullable Boolean noInstall) {
-    _noInstall = noInstall;
-  }
-
-  public void setTag(long tag) {
-    _tag = tag;
   }
 
   public @Nullable Boolean getResolve() {

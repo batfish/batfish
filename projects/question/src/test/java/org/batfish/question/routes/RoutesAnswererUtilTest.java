@@ -43,8 +43,10 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.longestMatchingPrefix;
+import static org.batfish.question.routes.RoutesAnswererUtil.populateBgpRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.prefixMatches;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -54,7 +56,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;
@@ -117,12 +118,12 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrs() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
-    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
+    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50L).build();
 
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(
@@ -142,9 +143,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsTrailingNulls1() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra1, rra2, rra3), ImmutableList.of(rra1));
@@ -161,9 +162,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsTrailingNulls2() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra1), ImmutableList.of(rra1, rra2, rra3));
@@ -180,9 +181,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsLeadingNulls() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra3), ImmutableList.of(rra1, rra2, rra3));
@@ -256,8 +257,16 @@ public class RoutesAnswererUtilTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setWeight(7);
-    Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
-    Bgpv4Route unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
+    Bgpv4Route standardRoute =
+        rb.setNextHopIp(ip)
+            // ClusterList deliberately not sorted per ImmutableSet iteration order
+            .setClusterList(ImmutableSet.of(3L, 1L, 5L))
+            .build();
+    Bgpv4Route unnumRoute =
+        rb.setNextHopIp(bgpUnnumIp)
+            .setNextHopInterface("iface")
+            .setClusterList(ImmutableSet.of())
+            .build();
 
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
     bgpRouteTable.put("node", "vrf", ImmutableSet.of(standardRoute, unnumRoute));
@@ -288,7 +297,6 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
             hasColumn(COL_RECEIVED_FROM_IP, Ip.parse("3.3.3.3"), Schema.IP),
             hasColumn(COL_PATH_ID, 1, Schema.INTEGER),
-            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
             hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
             hasColumn(COL_WEIGHT, 7, Schema.INTEGER));
 
@@ -299,12 +307,17 @@ public class RoutesAnswererUtilTest {
             allOf(
                 commonMatcher,
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING)),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                // order matters
+                hasColumn(
+                    COL_CLUSTER_LIST, ImmutableList.of(1L, 3L, 5L), Schema.list(Schema.LONG))),
+
             // Route from BGP unnumbered session
             allOf(
                 commonMatcher,
                 hasColumn(COL_NEXT_HOP_IP, nullValue(), Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING))));
+                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING),
+                hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)))));
   }
 
   @Test
@@ -452,7 +465,7 @@ public class RoutesAnswererUtilTest {
   public void testBgpRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
         RouteRowAttribute.builder()
-            .setAdminDistance(200)
+            .setAdminDistance(200L)
             .setMetric(2L)
             .setOriginProtocol("bgp")
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
@@ -553,7 +566,7 @@ public class RoutesAnswererUtilTest {
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
     RouteRowAttribute attrs =
         RouteRowAttribute.builder()
-            .setAdminDistance(200)
+            .setAdminDistance(200L)
             .setNextHopInterface("nhIface")
             .setMetric(1L)
             .setTag(2L)
@@ -797,7 +810,7 @@ public class RoutesAnswererUtilTest {
                 NextHopInterface.of("e0", Ip.parse("1.1.1.2")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
-                    .setAdminDistance(10)
+                    .setAdminDistance(10L)
                     .setMetric(30L)
                     .setNextHopInterface("e0")
                     .build()),
@@ -805,7 +818,7 @@ public class RoutesAnswererUtilTest {
                 NextHopInterface.of("e0", Ip.parse("1.1.1.3")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
-                    .setAdminDistance(10)
+                    .setAdminDistance(10L)
                     .setMetric(20L)
                     .setNextHopInterface("e0")
                     .build()));
@@ -1084,11 +1097,11 @@ public class RoutesAnswererUtilTest {
     RouteRowSecondaryKey rrsk4 =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.4")), "bgp");
 
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
-    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40).build();
-    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
+    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40L).build();
+    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50L).build();
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInBase =
         ImmutableMap.<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>builder()
@@ -1151,8 +1164,8 @@ public class RoutesAnswererUtilTest {
     RouteRowSecondaryKey rrsk2 =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp");
 
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22L).build();
 
     List<DiffRoutesOutput> diffRoutesOutputs =
         getRoutesDiff(
@@ -1179,7 +1192,7 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testAbstractRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
-        RouteRowAttribute.builder().setAdminDistance(200).setMetric(2L);
+        RouteRowAttribute.builder().setAdminDistance(200L).setMetric(2L);
 
     List<List<RouteRowAttribute>> diffMatrix = new ArrayList<>();
     diffMatrix.add(Lists.newArrayList(routeRowAttrBuilder.build(), routeRowAttrBuilder.build()));
@@ -1210,7 +1223,7 @@ public class RoutesAnswererUtilTest {
         RouteRowAttribute.builder()
             .setNextHopInterface("nhIface1")
             .setMetric(1L)
-            .setAdminDistance(1)
+            .setAdminDistance(1L)
             .setTag(1L)
             .build();
     Row.RowBuilder rowBuilder = Row.builder();
@@ -1223,7 +1236,7 @@ public class RoutesAnswererUtilTest {
             Row.builder()
                 .put(COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE, "nhIface1")
                 .put(COL_BASE_PREFIX + COL_METRIC, 1L)
-                .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
+                .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1L)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
                 .build()));
   }
@@ -1488,5 +1501,21 @@ public class RoutesAnswererUtilTest {
     assertThat(longestMatchingPrefix(Prefix.parse("1.1.1.0/8"), routes), equalTo(Optional.empty()));
     assertThat(
         longestMatchingPrefix(Prefix.parse("2.1.1.0/32"), routes), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testPopulateBgpRouteAttributes() {
+    // deliberately not sorted
+    RouteRowAttribute attr =
+        RouteRowAttribute.builder().setClusterList(ImmutableSet.of(5L, 1L, 3L, 2L)).build();
+    Row.RowBuilder rb = Row.builder();
+    populateBgpRouteAttributes(rb, attr, true);
+    Row row = rb.build();
+    assertThat(
+        row,
+        hasColumn(
+            "Snapshot_" + COL_CLUSTER_LIST,
+            ImmutableList.of(1L, 2L, 3L, 5L),
+            Schema.list(Schema.LONG)));
   }
 }

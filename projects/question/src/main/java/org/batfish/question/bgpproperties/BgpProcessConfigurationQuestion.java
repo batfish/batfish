@@ -30,8 +30,8 @@ public class BgpProcessConfigurationQuestion extends Question {
 
   @JsonCreator
   private static BgpProcessConfigurationQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_PROPERTIES) @Nullable String properties) {
     return new BgpProcessConfigurationQuestion(nodes, properties);
   }
 
@@ -69,27 +69,23 @@ public class BgpProcessConfigurationQuestion extends Question {
     return "bgpProcessConfiguration";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
-  @Nullable
   @JsonProperty(PROP_PROPERTIES)
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 
-  @Nonnull
   @JsonIgnore
-  public BgpProcessPropertySpecifier getPropertySpecifier() {
+  public @Nonnull BgpProcessPropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
   }
 

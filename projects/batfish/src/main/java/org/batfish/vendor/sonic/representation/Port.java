@@ -47,11 +47,11 @@ public class Port implements Serializable {
 
   @JsonCreator
   private static @Nonnull Port create(
-      @Nullable @JsonProperty(PROP_ADMIN_STATUS) String adminStatus,
-      @Nullable @JsonProperty(PROP_ALIAS) String alias,
-      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
-      @Nullable @JsonProperty(PROP_MTU) String mtu,
-      @Nullable @JsonProperty(PROP_SPEED) String speed) {
+      @JsonProperty(PROP_ADMIN_STATUS) @Nullable String adminStatus,
+      @JsonProperty(PROP_ALIAS) @Nullable String alias,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_MTU) @Nullable String mtu,
+      @JsonProperty(PROP_SPEED) @Nullable String speed) {
     return Port.builder()
         .setAdminStatusUp(Optional.ofNullable(adminStatus).map("up"::equals).orElse(null))
         .setAlias(alias)

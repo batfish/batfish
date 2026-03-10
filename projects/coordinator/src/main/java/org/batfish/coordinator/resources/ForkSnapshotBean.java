@@ -62,17 +62,17 @@ public class ForkSnapshotBean {
 
   @JsonCreator
   private static ForkSnapshotBean create(
-      @Nullable @JsonProperty(PROP_SNAPSHOT_BASE) String baseSnapshotName,
-      @Nullable @JsonProperty(PROP_SNAPSHOT_NEW) String newSnapshotName,
-      @Nullable @JsonProperty(PROP_DEACTIVATE_INTERFACES)
+      @JsonProperty(PROP_SNAPSHOT_BASE) @Nullable String baseSnapshotName,
+      @JsonProperty(PROP_SNAPSHOT_NEW) @Nullable String newSnapshotName,
+      @JsonProperty(PROP_DEACTIVATE_INTERFACES) @Nullable
           List<NodeInterfacePair> deactivateInterfacesList,
-      @Nullable @JsonProperty(PROP_DEACTIVATE_LINKS) List<Edge> deactivateLinksList,
-      @Nullable @JsonProperty(PROP_DEACTIVATE_NODES) List<String> deactivateNodesList,
-      @Nullable @JsonProperty(PROP_RESTORE_INTERFACES)
+      @JsonProperty(PROP_DEACTIVATE_LINKS) @Nullable List<Edge> deactivateLinksList,
+      @JsonProperty(PROP_DEACTIVATE_NODES) @Nullable List<String> deactivateNodesList,
+      @JsonProperty(PROP_RESTORE_INTERFACES) @Nullable
           List<NodeInterfacePair> restoreInterfacesList,
-      @Nullable @JsonProperty(PROP_RESTORE_LINKS) List<Edge> restoreLinksList,
-      @Nullable @JsonProperty(PROP_RESTORE_NODES) List<String> restoreNodesList,
-      @Nullable @JsonProperty(PROP_ZIP_FILE) byte[] file) {
+      @JsonProperty(PROP_RESTORE_LINKS) @Nullable List<Edge> restoreLinksList,
+      @JsonProperty(PROP_RESTORE_NODES) @Nullable List<String> restoreNodesList,
+      @JsonProperty(PROP_ZIP_FILE) @Nullable byte[] file) {
     checkArgument(baseSnapshotName != null, "Base snapshot name cannot be null");
     checkArgument(newSnapshotName != null, "New snapshot name cannot be null");
     return new ForkSnapshotBean(

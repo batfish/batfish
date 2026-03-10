@@ -12,6 +12,7 @@ import static org.batfish.representation.aws.Utils.newAwsConfiguration;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -20,7 +21,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,6 +46,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineEvaluator;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -294,7 +295,7 @@ public class RegionTest {
   public void testComputeAntiSpoofingFilter() {
     Ip validSourceIp = Ip.parse("10.10.10.10");
     Interface iface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("test")
             .setAddresses(ConcreteInterfaceAddress.create(validSourceIp, Prefix.MAX_PREFIX_LENGTH))
             .build();

@@ -36,9 +36,9 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
     return getOrCreateRib(route.getRouteDistinguisher()).mergeRouteGetDelta(route);
   }
 
-  public @Nonnull Set<R> getTypedRoutes() {
+  public @Nonnull Set<R> getRoutes() {
     return _ribsByRd.values().stream()
-        .flatMap(rib -> rib.getTypedRoutes().stream())
+        .flatMap(rib -> rib.getRoutes().stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -48,7 +48,7 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
 
   public @Nonnull Set<R> getTypedBackupRoutes() {
     return _ribsByRd.values().stream()
-        .flatMap(rib -> rib.getTypedBackupRoutes().stream())
+        .flatMap(rib -> rib.getBackupRoutes().stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 

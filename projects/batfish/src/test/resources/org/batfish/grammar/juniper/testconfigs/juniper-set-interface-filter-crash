@@ -1,0 +1,7 @@
+#
+set system host-name juniper-set-interface-filter-crash
+#
+# don't crash if there is no direction provided
+set interfaces reth0 unit 10 family inet filter
+set interfaces reth0 unit 10 family ethernet-switching filter
+#

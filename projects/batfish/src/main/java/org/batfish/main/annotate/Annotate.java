@@ -1,21 +1,21 @@
 package org.batfish.main.annotate;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.datamodel.answers.ParseStatus.FAILED;
-import static org.batfish.main.CliUtils.readAllFiles;
-import static org.batfish.main.CliUtils.relativize;
-import static org.batfish.main.CliUtils.resolve;
-import static org.batfish.main.CliUtils.writeAllFiles;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.io.MoreFiles;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -57,32 +57,60 @@ public final class Annotate {
 
   private static void annotate(Path inputPath, Path outputPath, Settings settings)
       throws IOException {
-    // Get annotated text for all files in inputPath, then write them under outputPath to the same
-    // relative location.
-    writeAllFiles(
-        resolve(
-            outputPath,
-            relativize(
-                inputPath,
-                annotate(
-                    readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)),
-                    settings))));
+    // Stream through all files in inputPath, annotate each, and write to outputPath without
+    // loading all files into memory.
+    Path inputConfigsPath = inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+    Path outputConfigsPath = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+    annotateStreaming(inputConfigsPath, outputConfigsPath, settings);
   }
 
-  private static @Nonnull Map<Path, String> annotate(
-      Map<Path, String> inputData, Settings settings) {
-    // For each (path, text) in inputData, return an entry (path, annotated text).
-    Map<Path, String> outputData = new ConcurrentHashMap<>(inputData.size());
-    inputData.entrySet().parallelStream()
+  /**
+   * Stream through files, processing each without loading all into memory. Suitable for large
+   * datasets. Uses parallel processing now that StringBuilder optimization reduces per-file memory
+   * footprint. Collects paths into a List first for effective parallelization.
+   */
+  private static void annotateStreaming(Path inputBasePath, Path outputBasePath, Settings settings)
+      throws IOException {
+    List<Path> filePaths;
+    try (Stream<Path> paths = Files.walk(inputBasePath, FileVisitOption.FOLLOW_LINKS)) {
+      filePaths =
+          paths
+              .filter(Files::isRegularFile)
+              .filter(path -> !path.getFileName().toString().startsWith("."))
+              .toList();
+    }
+
+    filePaths.parallelStream()
         .forEach(
-            inputDataEntry -> {
-              Path inputFile = inputDataEntry.getKey();
-              String annotatedText = annotateText(inputFile, inputDataEntry.getValue(), settings);
+            inputFile -> {
+              LOGGER.debug("Reading: {}", inputFile);
+              String inputText;
+              try {
+                inputText = Files.readString(inputFile, UTF_8);
+                // Append newline if not present (same behavior as decodeStreamAndAppendNewline)
+                if (!inputText.endsWith("\n")) {
+                  inputText = inputText + "\n";
+                }
+              } catch (IOException e) {
+                LOGGER.error("Failed to read: {}", inputFile, e);
+                return;
+              }
+
+              String annotatedText = annotateText(inputFile, inputText, settings);
               if (annotatedText != null) {
-                outputData.put(inputFile, annotatedText);
+                // Compute output path
+                Path relativePath = inputBasePath.relativize(inputFile);
+                Path outputFile = outputBasePath.resolve(relativePath);
+                // Write the file
+                try {
+                  outputFile.getParent().toFile().mkdirs();
+                  MoreFiles.asCharSink(outputFile, UTF_8).write(annotatedText);
+                  LOGGER.debug("Written: {}", outputFile);
+                } catch (IOException e) {
+                  LOGGER.error("Failed to write: {}", outputFile, e);
+                }
               }
             });
-    return ImmutableMap.copyOf(outputData);
   }
 
   /** Return annotated input text, or {@code null} if there is an error. */

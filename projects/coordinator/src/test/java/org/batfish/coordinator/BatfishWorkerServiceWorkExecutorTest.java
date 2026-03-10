@@ -5,10 +5,10 @@ import static org.batfish.coordinator.BatfishWorkerServiceWorkExecutor.processLa
 import static org.batfish.coordinator.SubmissionResult.Type.BUSY;
 import static org.batfish.coordinator.SubmissionResult.Type.ERROR;
 import static org.batfish.coordinator.SubmissionResult.Type.SUCCESS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -131,9 +131,8 @@ public final class BatfishWorkerServiceWorkExecutorTest {
   private static final Task TEST_TASK = new Task(TaskStatus.Unknown);
   private static final BatfishWorkerService BATFISH_WORKER_SERVICE =
       new BatfishWorkerService() {
-        @Nullable
         @Override
-        public Task getTaskStatus(String taskId) {
+        public @Nullable Task getTaskStatus(String taskId) {
           return TEST_TASK;
         }
 
@@ -145,9 +144,8 @@ public final class BatfishWorkerServiceWorkExecutorTest {
 
   private static final BatfishWorkerService BATFISH_WORKER_SERVICE_RUNNABLE =
       new BatfishWorkerService() {
-        @Nullable
         @Override
-        public Task getTaskStatus(String taskId) {
+        public @Nullable Task getTaskStatus(String taskId) {
           return TEST_TASK;
         }
 

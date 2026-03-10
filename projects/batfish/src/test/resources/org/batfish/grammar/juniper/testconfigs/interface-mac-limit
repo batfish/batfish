@@ -1,0 +1,21 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name interface-mac-limit
+#
+# Test interface-mac-limit with limit value
+set switch-options interface ge-0/0/24.0 interface-mac-limit 5
+#
+# Test interface-mac-limit with packet-action shutdown
+set switch-options interface ge-0/0/24.0 interface-mac-limit packet-action shutdown
+#
+# Test interface-mac-limit with all packet-action values
+set switch-options interface ge-0/0/25.0 interface-mac-limit 10
+set switch-options interface ge-0/0/25.0 interface-mac-limit packet-action drop
+#
+set switch-options interface ge-0/0/26.0 interface-mac-limit 15
+set switch-options interface ge-0/0/26.0 interface-mac-limit packet-action drop-and-log
+#
+set switch-options interface ge-0/0/27.0 interface-mac-limit 20
+set switch-options interface ge-0/0/27.0 interface-mac-limit packet-action log
+#
+set switch-options interface ge-0/0/28.0 interface-mac-limit 25
+set switch-options interface ge-0/0/28.0 interface-mac-limit packet-action none

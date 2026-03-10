@@ -1,6 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.errorprone.annotations.FormatMethod;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.collections.PList;
@@ -18,11 +20,9 @@ public class TransferParam {
     NONE
   }
 
-  private BDDRoute _data;
-
   private int _indent;
 
-  private PList<String> _scopes;
+  private @Nonnull PList<String> _scopes;
 
   private CallContext _callContext;
 
@@ -32,12 +32,15 @@ public class TransferParam {
 
   private boolean _defaultAcceptLocal;
 
-  private SetDefaultPolicy _defaultPolicy;
+  private @Nullable SetDefaultPolicy _defaultPolicy;
+
+  private boolean _readIntermediateBgpAttributes;
+
+  private boolean _writeIntermediateBgpAttributes;
 
   private final boolean _debug;
 
-  public TransferParam(BDDRoute data, boolean debug) {
-    _data = data;
+  public TransferParam(boolean debug) {
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
     _indent = 0;
@@ -45,11 +48,12 @@ public class TransferParam {
     _defaultAccept = false;
     _defaultAcceptLocal = false;
     _defaultPolicy = null;
+    _readIntermediateBgpAttributes = false;
+    _writeIntermediateBgpAttributes = false;
     _debug = debug;
   }
 
   private TransferParam(TransferParam p) {
-    _data = p._data;
     _callContext = p._callContext;
     _chainContext = p._chainContext;
     _indent = p._indent;
@@ -57,11 +61,9 @@ public class TransferParam {
     _defaultAccept = p._defaultAccept;
     _defaultAcceptLocal = p._defaultAcceptLocal;
     _defaultPolicy = p._defaultPolicy;
+    _readIntermediateBgpAttributes = p._readIntermediateBgpAttributes;
+    _writeIntermediateBgpAttributes = p._writeIntermediateBgpAttributes;
     _debug = p._debug;
-  }
-
-  public BDDRoute getData() {
-    return _data;
   }
 
   public CallContext getCallContext() {
@@ -80,8 +82,16 @@ public class TransferParam {
     return _defaultAcceptLocal;
   }
 
-  public SetDefaultPolicy getDefaultPolicy() {
+  public @Nullable SetDefaultPolicy getDefaultPolicy() {
     return _defaultPolicy;
+  }
+
+  public boolean getReadIntermediateBgpAtttributes() {
+    return _readIntermediateBgpAttributes;
+  }
+
+  public boolean getWriteIntermediateBgpAttributes() {
+    return _writeIntermediateBgpAttributes;
   }
 
   public boolean getInitialCall() {
@@ -90,18 +100,6 @@ public class TransferParam {
 
   public String getScope() {
     return _scopes.get(0);
-  }
-
-  public TransferParam deepCopy() {
-    TransferParam ret = new TransferParam(this);
-    ret._data = ret._data.deepCopy();
-    return ret;
-  }
-
-  public TransferParam setData(BDDRoute other) {
-    TransferParam ret = new TransferParam(this);
-    ret._data = other;
-    return ret;
   }
 
   public TransferParam setCallContext(CallContext cc) {
@@ -139,6 +137,18 @@ public class TransferParam {
         .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
   }
 
+  public TransferParam setReadIntermediateBgpAttributes(boolean b) {
+    TransferParam ret = new TransferParam(this);
+    ret._readIntermediateBgpAttributes = b;
+    return ret;
+  }
+
+  public TransferParam setWriteIntermediateBgpAttributes(boolean b) {
+    TransferParam ret = new TransferParam(this);
+    ret._writeIntermediateBgpAttributes = b;
+    return ret;
+  }
+
   public TransferParam enterScope(String name) {
     TransferParam ret = new TransferParam(this);
     ret._scopes = ret._scopes.plus(name);
@@ -166,5 +176,41 @@ public class TransferParam {
       sb.append(String.format(fmt, args));
       System.out.println(sb);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof TransferParam)) {
+      return false;
+    }
+    TransferParam that = (TransferParam) o;
+    return _indent == that._indent
+        && _defaultAccept == that._defaultAccept
+        && _defaultAcceptLocal == that._defaultAcceptLocal
+        && _readIntermediateBgpAttributes == that._readIntermediateBgpAttributes
+        && _writeIntermediateBgpAttributes == that._writeIntermediateBgpAttributes
+        && _debug == that._debug
+        && _scopes.equals(that._scopes)
+        && _callContext == that._callContext
+        && _chainContext == that._chainContext
+        && Objects.equals(_defaultPolicy, that._defaultPolicy);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _indent,
+        _scopes,
+        _callContext,
+        _chainContext,
+        _defaultAccept,
+        _defaultAcceptLocal,
+        _defaultPolicy,
+        _readIntermediateBgpAttributes,
+        _writeIntermediateBgpAttributes,
+        _debug);
   }
 }

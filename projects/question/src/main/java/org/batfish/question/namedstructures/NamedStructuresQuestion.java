@@ -130,39 +130,33 @@ public class NamedStructuresQuestion extends Question {
     return "namedStructures";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
-  @Nullable
   @JsonProperty(PROP_STRUCTURE_NAMES)
-  public String getStructureNameRegex() {
+  public @Nullable String getStructureNameRegex() {
     return _structureNameRegex;
   }
 
-  @Nonnull
   @JsonIgnore
-  public Pattern getStructureNamePattern() {
+  public @Nonnull Pattern getStructureNamePattern() {
     return _structureNamePattern;
   }
 
-  @Nullable
   @JsonProperty(PROP_STRUCTURE_TYPES)
-  public String getStructureTypes() {
+  public @Nullable String getStructureTypes() {
     return _structureTypes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NamedStructurePropertySpecifier getStructureTypeSpecifier() {
+  public @Nonnull NamedStructurePropertySpecifier getStructureTypeSpecifier() {
     return _structureTypeSpecifier;
   }
 

@@ -1,0 +1,10 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name bgp-loops
+#
+set routing-options autonomous-system 12345
+set routing-options autonomous-system loops 1
+#
+set protocols bgp group G family inet unicast loops 1
+set protocols bgp group G family inet6 unicast loops 1
+set routing-instances RI protocols bgp group G family inet unicast loops 1
+#

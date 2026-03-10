@@ -53,6 +53,7 @@ public class TestrigText {
     }
 
     private Map<String, byte[]> _awsBytes;
+    private Map<String, byte[]> _azureBytes;
     private Map<String, byte[]> _bgpTablesBytes;
     private Map<String, byte[]> _checkpointMgmtBytes;
     private Map<String, byte[]> _configurationBytes;
@@ -69,6 +70,7 @@ public class TestrigText {
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
       testrigText.setAwsBytes(_awsBytes);
+      testrigText.setAzureBytes(_azureBytes);
       testrigText.setBgpTablesBytes(_bgpTablesBytes);
       testrigText.setCheckpointMgmtBytes(_checkpointMgmtBytes);
       testrigText.setConfigurationBytes(_configurationBytes);
@@ -89,9 +91,21 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setAzureBytes(Map<String, byte[]> azureText) {
+      _azureBytes = azureText;
+      return this;
+    }
+
     public Builder setAwsFiles(String testrigResourcePrefix, Iterable<String> filenames) {
       _awsBytes =
           readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_AWS_CONFIGS_DIR, filenames);
+      return this;
+    }
+
+    public Builder setAzureFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _azureBytes =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_AZURE_CONFIGS_DIR, filenames);
       return this;
     }
 
@@ -224,6 +238,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setExternalBgpAnnouncementsBytes(byte[] externalBgpAnnouncementsBytes) {
+      _externalBgpAnnouncementsBytes = externalBgpAnnouncementsBytes;
+      return this;
+    }
+
     public @Nonnull Builder setExternalBgpAnnouncements(String testrigResourcePrefix) {
       _externalBgpAnnouncementsBytes =
           readTestrigResources(
@@ -258,10 +277,23 @@ public class TestrigText {
     checkArgument(snapshotDir.toFile().exists(), "%s does not exist.", dir);
     checkArgument(snapshotDir.toFile().isDirectory(), "%s is not a directory.", dir);
 
-    // layer 1 topology
+    // layer 1 topology (check batfish/ subdirectory first, then root)
     Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    if (!l1TopologyPath.toFile().exists()) {
+      l1TopologyPath = snapshotDir.resolve("layer1_topology.json");
+    }
     if (l1TopologyPath.toFile().exists()) {
       builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
+    }
+
+    // external BGP announcements (check batfish/ subdirectory first, then root)
+    Path externalBgpAnnouncementsPath =
+        snapshotDir.resolve("batfish").resolve("external_bgp_announcements.json");
+    if (!externalBgpAnnouncementsPath.toFile().exists()) {
+      externalBgpAnnouncementsPath = snapshotDir.resolve("external_bgp_announcements.json");
+    }
+    if (externalBgpAnnouncementsPath.toFile().exists()) {
+      builder.setExternalBgpAnnouncementsBytes(Files.readAllBytes(externalBgpAnnouncementsPath));
     }
 
     // isp config
@@ -318,6 +350,7 @@ public class TestrigText {
   }
 
   private Map<String, byte[]> _awsBytes;
+  private Map<String, byte[]> _azureBytes;
   private Map<String, byte[]> _bgpTablesBytes;
   private Map<String, byte[]> _checkpointMgmtBytes;
   private Map<String, byte[]> _configurationBytes;
@@ -333,6 +366,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getAwsBytes() {
     return _awsBytes;
+  }
+
+  public Map<String, byte[]> getAzureBytes() {
+    return _azureBytes;
   }
 
   public Map<String, byte[]> getBgpTablesBytes() {
@@ -385,6 +422,10 @@ public class TestrigText {
 
   public void setAwsBytes(Map<String, byte[]> awsBytes) {
     _awsBytes = awsBytes;
+  }
+
+  public void setAzureBytes(Map<String, byte[]> azureBytes) {
+    _azureBytes = azureBytes;
   }
 
   public void setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {

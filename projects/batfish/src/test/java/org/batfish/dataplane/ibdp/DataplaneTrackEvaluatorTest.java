@@ -17,9 +17,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackReachability;
@@ -34,13 +34,13 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
         .setAdminUp(true)
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i2")
         .setOwner(c)
         .setVrf(c.getDefaultVrf())

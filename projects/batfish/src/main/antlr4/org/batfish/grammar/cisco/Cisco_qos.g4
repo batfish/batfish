@@ -560,8 +560,21 @@ ogs_group_object
 
 ogs_icmp
 :
-   ICMP NEWLINE
+   ICMP
+   (
+      ogsi_any
+      | ogsi_echo
+      | ogsi_echo_reply
+      | ogsi_time_exceeded
+      | ogsi_unreachable
+   )
 ;
+
+ogsi_any: NEWLINE;
+ogsi_echo: ECHO NEWLINE;
+ogsi_echo_reply: ECHO_REPLY NEWLINE;
+ogsi_time_exceeded: TIME_EXCEEDED NEWLINE;
+ogsi_unreachable: UNREACHABLE NEWLINE;
 
 ogs_service_object
 :

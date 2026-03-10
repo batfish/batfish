@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 
 public enum JunosApplicationSet implements ApplicationSetMember {
   JUNOS_CIFS,
@@ -60,55 +58,27 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   private ApplicationSet init() {
     ApplicationSet applicationSet = new ApplicationSet(convertToJuniperName(), true);
 
-    List<JunosApplication> applications;
-
-    switch (this) {
-      case JUNOS_CIFS:
-        {
-          applications =
+    List<JunosApplication> applications =
+        switch (this) {
+          case JUNOS_CIFS ->
               Arrays.asList(
                   JunosApplication.JUNOS_NETBIOS_SESSION, JunosApplication.JUNOS_SMB_SESSION);
-          break;
-        }
-
-      case JUNOS_MGCP:
-        {
-          applications =
+          case JUNOS_MGCP ->
               Arrays.asList(JunosApplication.JUNOS_MGCP_CA, JunosApplication.JUNOS_MGCP_UA);
-          break;
-        }
-
-      case JUNOS_MS_RPC:
-        {
-          applications =
+          case JUNOS_MS_RPC ->
               Arrays.asList(JunosApplication.JUNOS_MS_RPC_TCP, JunosApplication.JUNOS_MS_RPC_UDP);
-          break;
-        }
-
-      case JUNOS_MS_RPC_ANY:
-        {
-          applications =
+          case JUNOS_MS_RPC_ANY ->
               Arrays.asList(
                   JunosApplication.JUNOS_MS_RPC_TCP,
                   JunosApplication.JUNOS_MS_RPC_UDP,
                   JunosApplication.JUNOS_MS_RPC_UUID_ANY_TCP,
                   JunosApplication.JUNOS_MS_RPC_UUID_ANY_UDP);
-          break;
-        }
-
-      case JUNOS_MS_RPC_IIS_COM:
-        {
-          applications =
+          case JUNOS_MS_RPC_IIS_COM ->
               Arrays.asList(
                   JunosApplication.JUNOS_MS_RPC_TCP,
                   JunosApplication.JUNOS_MS_RPC_IIS_COM_1,
                   JunosApplication.JUNOS_MS_RPC_IIS_COM_ADMINBASE);
-          break;
-        }
-
-      case JUNOS_MS_RPC_MSEXCHANGE:
-        {
-          applications =
+          case JUNOS_MS_RPC_MSEXCHANGE ->
               Arrays.asList(
                   JunosApplication.JUNOS_MS_RPC_TCP,
                   JunosApplication.JUNOS_MS_RPC_UDP,
@@ -116,60 +86,30 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR,
                   JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE,
                   JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP);
-          break;
-        }
-
-      case JUNOS_MS_RPC_WMIC:
-        {
-          applications =
+          case JUNOS_MS_RPC_WMIC ->
               Arrays.asList(
                   JunosApplication.JUNOS_MS_RPC_TCP,
                   JunosApplication.JUNOS_MS_RPC_WMIC_ADMIN,
                   JunosApplication.JUNOS_MS_RPC_WMIC_ADMIN2,
                   JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN,
                   JunosApplication.JUNOS_MS_RPC_WMIC_MGMT);
-          break;
-        }
-
-      case JUNOS_ROUTING_INBOUND:
-        {
-          applications =
+          case JUNOS_ROUTING_INBOUND ->
               Arrays.asList(
                   JunosApplication.JUNOS_BGP,
                   JunosApplication.JUNOS_RIP,
                   JunosApplication.JUNOS_LDP_TCP,
                   JunosApplication.JUNOS_LDP_UDP);
-          break;
-        }
-
-      case JUNOS_STUN:
-        {
-          applications =
+          case JUNOS_STUN ->
               Arrays.asList(JunosApplication.JUNOS_STUN_TCP, JunosApplication.JUNOS_STUN_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC:
-        {
-          applications =
+          case JUNOS_SUN_RPC ->
               Arrays.asList(JunosApplication.JUNOS_SUN_RPC_TCP, JunosApplication.JUNOS_SUN_RPC_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_ANY:
-        {
-          applications =
+          case JUNOS_SUN_RPC_ANY ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
                   JunosApplication.JUNOS_SUN_RPC_ANY_TCP,
                   JunosApplication.JUNOS_SUN_RPC_ANY_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_MOUNTD:
-        {
-          applications =
+          case JUNOS_SUN_RPC_MOUNTD ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -177,12 +117,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_MOUNTD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_MOUNTD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_NFS:
-        {
-          applications =
+          case JUNOS_SUN_RPC_NFS ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -190,12 +125,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_NFS_TCP,
                   JunosApplication.JUNOS_SUN_RPC_NFS_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_NFS_ACCESS:
-        {
-          applications =
+          case JUNOS_SUN_RPC_NFS_ACCESS ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -205,12 +135,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_NFS_UDP,
                   JunosApplication.JUNOS_SUN_RPC_MOUNTD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_MOUNTD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_NLOCKMGR:
-        {
-          applications =
+          case JUNOS_SUN_RPC_NLOCKMGR ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -218,23 +143,13 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_TCP,
                   JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_PORTMAP:
-        {
-          applications =
+          case JUNOS_SUN_RPC_PORTMAP ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_TCP,
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_RQUOTAD:
-        {
-          applications =
+          case JUNOS_SUN_RPC_RQUOTAD ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -242,12 +157,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_RQUOTAD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_RQUOTAD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_RUSERD:
-        {
-          applications =
+          case JUNOS_SUN_RPC_RUSERD ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -255,12 +165,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_RUSERD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_RUSERD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_SADMIND:
-        {
-          applications =
+          case JUNOS_SUN_RPC_SADMIND ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -268,12 +173,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_SADMIND_TCP,
                   JunosApplication.JUNOS_SUN_RPC_SADMIND_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_SPRAYD:
-        {
-          applications =
+          case JUNOS_SUN_RPC_SPRAYD ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -281,12 +181,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_SPRAYD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_SPRAYD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_STATUS:
-        {
-          applications =
+          case JUNOS_SUN_RPC_STATUS ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -294,12 +189,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_STATUS_TCP,
                   JunosApplication.JUNOS_SUN_RPC_STATUS_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_WALLD:
-        {
-          applications =
+          case JUNOS_SUN_RPC_WALLD ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -307,12 +197,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_WALLD_TCP,
                   JunosApplication.JUNOS_SUN_RPC_WALLD_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_YPBIND:
-        {
-          applications =
+          case JUNOS_SUN_RPC_YPBIND ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -320,12 +205,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_YPBIND_TCP,
                   JunosApplication.JUNOS_SUN_RPC_YPBIND_UDP);
-          break;
-        }
-
-      case JUNOS_SUN_RPC_YPSERV:
-        {
-          applications =
+          case JUNOS_SUN_RPC_YPSERV ->
               Arrays.asList(
                   JunosApplication.JUNOS_SUN_RPC_TCP,
                   JunosApplication.JUNOS_SUN_RPC_UDP,
@@ -333,12 +213,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP,
                   JunosApplication.JUNOS_SUN_RPC_YPSERV_TCP,
                   JunosApplication.JUNOS_SUN_RPC_YPSERV_UDP);
-          break;
-        }
-
-      default:
-        return null;
-    }
+        };
 
     ImmutableList.Builder<ApplicationSetMemberReference> applicationSetMemberBuilder =
         ImmutableList.builder();
@@ -368,9 +243,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
     if (!hasDefinition()) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          getTraceElement(convertToJuniperName()));
+      return new FalseExpr(getTraceElement(convertToJuniperName()));
     }
     return _applicationSet.get().toAclLineMatchExpr(jc, w);
   }

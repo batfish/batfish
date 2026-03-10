@@ -22,7 +22,7 @@ public class Tacplus implements Serializable {
   }
 
   @JsonCreator
-  private static @Nonnull Tacplus create(@Nullable @JsonProperty(PROP_SRC_INTF) String srcIntf) {
+  private static @Nonnull Tacplus create(@JsonProperty(PROP_SRC_INTF) @Nullable String srcIntf) {
     return Tacplus.builder().setSrcIntf(srcIntf).build();
   }
 

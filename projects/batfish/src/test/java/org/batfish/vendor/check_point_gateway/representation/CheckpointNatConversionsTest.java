@@ -32,6 +32,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.shouldConvertAutomaticRule;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -39,7 +40,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -55,6 +55,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.Transformation;
@@ -1160,7 +1161,7 @@ public final class CheckpointNatConversionsTest {
   public void testGetOutgoingTransformations() {
     Ip ifaceIp = Ip.parse("10.10.10.1");
     Interface viIface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface")
             .setAddress(ConcreteInterfaceAddress.create(ifaceIp, 24))
             .build();

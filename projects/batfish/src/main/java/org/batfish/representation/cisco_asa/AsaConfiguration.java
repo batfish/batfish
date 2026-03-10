@@ -6,7 +6,6 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
-import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -135,10 +134,8 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -997,18 +994,16 @@ public final class AsaConfiguration extends VendorConfiguration {
     Interface commIface = _interfaces.get(_failoverCommunicationInterface);
     Interface sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
     if (commIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: communication interface %s is not present",
-              _failoverCommunicationInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: communication interface %s is not present",
+          _failoverCommunicationInterface);
       return;
     }
     if (sigIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: stateful signaling interface %s is not"
-                  + " present",
-              _failoverStatefulSignalingInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: stateful signaling interface %s is not"
+              + " present",
+          _failoverStatefulSignalingInterface);
       return;
     }
 
@@ -1496,13 +1491,100 @@ public final class AsaConfiguration extends VendorConfiguration {
         .orElse(null);
   }
 
+  // TODO: This was copied from a multi-Cisco-like-vendor version. Review and update to be specific
+  // to Cisco ASA interface naming conventions, removing patterns that don't apply to ASA.
+  private static InterfaceType computeAsaInterfaceType(String name) {
+    if (name.startsWith("Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("ATM")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Bundle-Ether")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("cmp-mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Crypto-Engine")) {
+      return InterfaceType.TUNNEL; // IPSec VPN
+    } else if (name.startsWith("Dialer")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Dot11Radio")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Embedded-Service-Engine")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("GMPLS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Ethernet")
+        || name.startsWith("FastEthernet")
+        || name.startsWith("FortyGigabitEthernet")
+        || name.startsWith("GigabitEthernet")
+        || name.startsWith("HundredGigabitEthernet")
+        || name.startsWith("HundredGigE")
+        || name.startsWith("FiftyGigE")
+        || name.startsWith("FortyGigE")
+        || name.startsWith("FourHundredGigE")
+        || name.startsWith("TenGigabitEthernet")
+        || name.startsWith("TenGigE")
+        || name.startsWith("TwentyFiveGigE")
+        || name.startsWith("TwoHundredGigE")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.LOGICAL;
+      } else {
+        return InterfaceType.PHYSICAL;
+      }
+    } else if (name.startsWith("Group-Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Loopback")) {
+      return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("Management")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("MgmtEth")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Null")) {
+      return InterfaceType.NULL;
+    } else if (name.toLowerCase().startsWith("port-channel")) {
+      if (name.contains(".")) {
+        // Subinterface of a port channel
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("POS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Redundant") && name.contains(".")) {
+      return InterfaceType.REDUNDANT_CHILD;
+    } else if (name.startsWith("Redundant")) {
+      return InterfaceType.REDUNDANT;
+    } else if (name.startsWith("Serial")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Tunnel")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-ip")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-te")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("Vlan")) {
+      return InterfaceType.VLAN;
+    } else if (name.startsWith("Vxlan")) {
+      return InterfaceType.TUNNEL;
+    } else {
+      return InterfaceType.UNKNOWN;
+    }
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Configuration c) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(c)
-            .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
+            .setType(computeAsaInterfaceType(iface.getName()))
             .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
       Integer vlan = Ints.tryParse(ifaceName.substring("vlan".length()));
@@ -1631,18 +1713,12 @@ public final class AsaConfiguration extends VendorConfiguration {
     IsisProcess isisProcess = vrf.getIsisProcess();
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
-        case LEVEL_1:
-          level1 = true;
-          break;
-        case LEVEL_1_2:
+        case LEVEL_1 -> level1 = true;
+        case LEVEL_2 -> level2 = true;
+        case LEVEL_1_2 -> {
           level1 = true;
           level2 = true;
-          break;
-        case LEVEL_2:
-          level2 = true;
-          break;
-        default:
-          throw new VendorConversionException("Invalid IS-IS level");
+        }
       }
       IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       IsisInterfaceLevelSettings levelSettings =
@@ -1743,8 +1819,7 @@ public final class AsaConfiguration extends VendorConfiguration {
             .orElse(null);
     // Bandwidth can be null for port-channels (will be calculated later).
     if (bw == null) {
-      InterfaceType ifaceType =
-          computeInterfaceType(iface.getName(), ConfigurationFormat.CISCO_ASA);
+      InterfaceType ifaceType = computeAsaInterfaceType(iface.getName());
       assert ifaceType == InterfaceType.AGGREGATED || ifaceType == InterfaceType.AGGREGATE_CHILD;
     }
     EigrpMetricValues values =
@@ -1775,7 +1850,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     // Each NAT rule specifies an outside interface or ANY_INTERFACE
     SortedSet<AsaNat> objectNats =
         nats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
+            .filter(nat -> nat.getSection() == Section.OBJECT)
             .filter(
                 nat ->
                     nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
@@ -1865,13 +1940,12 @@ public final class AsaConfiguration extends VendorConfiguration {
       lineBuilder.add(
           ExprAclLine.accepting()
               .setMatchCondition(
-                  new AndMatchExpr(
-                      ImmutableList.of(
-                          securityLevelPolicies,
-                          new PermittedByAcl(
-                              oldOutgoingFilterName,
-                              asaPermittedByOutputFilterTraceElement(
-                                  _filename, c.getIpAccessLists().get(oldOutgoingFilterName))))))
+                  and(
+                      securityLevelPolicies,
+                      new PermittedByAcl(
+                          oldOutgoingFilterName,
+                          asaPermittedByOutputFilterTraceElement(
+                              _filename, c.getIpAccessLists().get(oldOutgoingFilterName)))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
@@ -2493,16 +2567,8 @@ public final class AsaConfiguration extends VendorConfiguration {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
       switch (rmClause.getAction()) {
-        case PERMIT:
-          matchStatements.add(Statements.ReturnTrue.toStaticStatement());
-          break;
-
-        case DENY:
-          matchStatements.add(Statements.ReturnFalse.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
+        case PERMIT -> matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+        case DENY -> matchStatements.add(Statements.ReturnFalse.toStaticStatement());
       }
       if (followingClause != null) {
         ifExpr.getFalseStatements().add(followingClause);
@@ -2581,21 +2647,15 @@ public final class AsaConfiguration extends VendorConfiguration {
         }
       }
       switch (rmClause.getAction()) {
-        case PERMIT:
+        case PERMIT -> {
           if (continueStatement == null) {
             onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
           } else {
             onMatchStatements.add(Statements.SetDefaultActionAccept.toStaticStatement());
             onMatchStatements.add(new CallStatement(continueTargetPolicy.getName()));
           }
-          break;
-
-        case DENY:
-          onMatchStatements.add(Statements.ExitReject.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
+        }
+        case DENY -> onMatchStatements.add(Statements.ExitReject.toStaticStatement());
       }
       if (followingClause != null) {
         ifStatement.getFalseStatements().add(new CallStatement(followingClause.getName()));
@@ -2711,14 +2771,16 @@ public final class AsaConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _objectGroups));
+          .put(
+              saList.getName(),
+              toIpAccessList(saList.toExtendedAccessList(), _objectGroups, _serviceObjects));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = AsaConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups, _serviceObjects);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -2782,13 +2844,17 @@ public final class AsaConfiguration extends VendorConfiguration {
     _icmpTypeObjectGroups.forEach(
         (name, icmpTypeObjectGroups) ->
             c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+                .put(
+                    computeIcmpObjectGroupAclName(name),
+                    toIpAccessList(icmpTypeObjectGroups, _icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+                .put(
+                    computeProtocolObjectGroupAclName(name),
+                    toIpAccessList(protocolObjectGroup, _protocolObjectGroups)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
@@ -2949,9 +3015,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }
@@ -3458,19 +3522,11 @@ public final class AsaConfiguration extends VendorConfiguration {
                       inspectClassMapMatch ->
                           inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
                   .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap;
-          switch (matchSemantics) {
-            case MATCH_ALL:
-              matchClassMap = new AndMatchExpr(matchConditions);
-              break;
-            case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
-              break;
-            default:
-              throw new BatfishException(
-                  String.format(
-                      "Unsupported %s: %s", MatchSemantics.class.getSimpleName(), matchSemantics));
-          }
+          AclLineMatchExpr matchClassMap =
+              switch (matchSemantics) {
+                case MATCH_ALL -> and(matchConditions);
+                case MATCH_ANY -> or(matchConditions);
+              };
           IpAccessList.builder()
               .setOwner(c)
               .setName(inspectClassMapAclName)
@@ -3502,39 +3558,31 @@ public final class AsaConfiguration extends VendorConfiguration {
                     }
                     AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
                     switch (action) {
-                      case DROP:
-                        policyMapAclLines.add(
-                            ExprAclLine.rejecting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Drop if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case INSPECT:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Inspect if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case PASS:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Pass if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      default:
-                        _w.unimplemented("Unimplemented policy-map class action: " + action);
-                        return;
+                      case DROP ->
+                          policyMapAclLines.add(
+                              ExprAclLine.rejecting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Drop if matched by class-map: '%s'", inspectClassName))
+                                  .build());
+                      case INSPECT ->
+                          policyMapAclLines.add(
+                              ExprAclLine.accepting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Inspect if matched by class-map: '%s'",
+                                          inspectClassName))
+                                  .build());
+                      case PASS ->
+                          policyMapAclLines.add(
+                              ExprAclLine.accepting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Pass if matched by class-map: '%s'", inspectClassName))
+                                  .build());
                     }
                   });
           policyMapAclLines.add(
@@ -3681,9 +3729,7 @@ public final class AsaConfiguration extends VendorConfiguration {
         .setLines(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setMatchCondition(
-                        new AndMatchExpr(
-                            ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
+                    .setMatchCondition(and(matchSrcZoneInterface, permittedByPolicyMap))
                     .setName(
                         String.format(
                             "Allow traffic received on interface in zone '%s' permitted by"

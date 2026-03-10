@@ -1,4 +1,5 @@
 load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@rules_java//java:java_library.bzl", "java_library")
 
 package(
     default_testonly = True,
@@ -24,11 +25,11 @@ junit_tests(
         "**/*Test.java",
     ]),
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto/application_definitions",
+        "//projects/common",
+        "//projects/common/src/test:common_testlib",
+        "//projects/common/src/test/java/org/batfish/common/matchers",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",

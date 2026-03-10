@@ -74,8 +74,8 @@ public final class TracerouteQuestion extends Question {
     return true;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HEADER_CONSTRAINTS)
+  @Nonnull
   PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }

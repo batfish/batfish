@@ -1,0 +1,12 @@
+#
+set system host-name ipsec-bugs
+#
+set security ipsec vpn NO-GW df-bit clear
+#
+set security ipsec vpn UNDEFINED-GW ike gateway UNDEFINED
+#
+set security ike gateway GW-UNDEFINED-IFACE external-interface ge-0/0/0.0
+set security ipsec vpn UNDEFINED-IFACE ike gateway GW-UNDEFINED-IFACE
+#
+set security ike gateway GW-NO-UNIT external-interface ge-0/0/1
+set security ipsec vpn NO-UNIT ike gateway GW-NO-UNIT

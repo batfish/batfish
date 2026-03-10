@@ -31,12 +31,12 @@ public final class DifferentialReachabilityQuestion extends Question {
 
   @JsonCreator
   public DifferentialReachabilityQuestion(
-      @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
-      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
-      @Nullable @JsonProperty(PROP_INVERT_SEARCH) Boolean invertSearch,
-      @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
-      @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
+      @JsonProperty(PROP_ACTIONS) @Nullable DispositionSpecifier actions,
+      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
+      @JsonProperty(PROP_IGNORE_FILTERS) @Nullable Boolean ignoreFilters,
+      @JsonProperty(PROP_INVERT_SEARCH) @Nullable Boolean invertSearch,
+      @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces,
+      @JsonProperty(PROP_PATH_CONSTRAINTS) @Nullable PathConstraintsInput pathConstraints) {
     setDifferential(true);
     _actions = firstNonNull(actions, SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());

@@ -1,5 +1,7 @@
 # Test targets are required to depend on our junit rather than using the one provided by Bazel
 build --explicit_java_test_deps
+build --java_language_version=17
+build --tool_java_runtime_version=17
 
 # Error Prone warnings to enforce
 build --javacopt "-Xep:WildcardImport:ERROR"
@@ -9,3 +11,4 @@ build --javacopt "-Xep:RemoveUnusedImports:ERROR"
 # TODO: this does not seem to work, but passing the exact same argument on the command line
 # makes it take effect.
 coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
+

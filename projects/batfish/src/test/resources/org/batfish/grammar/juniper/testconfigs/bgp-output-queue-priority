@@ -1,0 +1,15 @@
+#
+set system host-name bgp-output-queue-priority
+#
+set policy-options policy-statement BGP-OUTPUT-QUEUING term SET-PRIORITY-16 then bgp-output-queue-priority priority 16
+#
+set protocols bgp output-queue-priority expedited update-tokens 100
+set protocols bgp output-queue-priority priority 1 update-tokens 10
+set protocols bgp output-queue-priority priority 2 update-tokens 20
+set protocols bgp output-queue-priority priority 3 update-tokens 30
+set protocols bgp output-queue-priority defaults low priority 1
+set protocols bgp output-queue-priority defaults medium priority 2
+set protocols bgp output-queue-priority defaults high priority 3
+#
+set protocols bgp family inet unicast withdraw-priority priority 2
+set protocols bgp family inet6 unicast withdraw-priority priority 2

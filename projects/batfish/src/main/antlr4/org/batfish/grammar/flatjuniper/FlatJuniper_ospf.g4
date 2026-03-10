@@ -36,6 +36,7 @@ o_common
    | o_import
    | o_no_active_backbone
    | o_null
+   | o_prefix_export_limit
    | o_reference_bandwidth
    | o_rib_group
    | o_traffic_engineering
@@ -82,6 +83,11 @@ o_null
    ) null_filler
 ;
 
+o_prefix_export_limit
+:
+    PREFIX_EXPORT_LIMIT limit = uint32
+;
+
 o_reference_bandwidth
 :
    REFERENCE_BANDWIDTH bandwidth
@@ -107,7 +113,7 @@ oa_area_range
    AREA_RANGE
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    )
    (
       apply
@@ -142,6 +148,7 @@ oa_interface
       | oai_null
       | oai_passive
       | oai_priority
+      | oai_retransmit_interval_null
       | oai_te_metric
    )
 ;
@@ -194,7 +201,10 @@ oaa_restrict
 
 oai_dead_interval
 :
-   DEAD_INTERVAL dec
+// https://www.juniper.net/documentation/us/en/software/junos/ospf/topics/topic-map/configuring-ospf-timers.html
+// By default, the routing device waits 40 seconds (four times the hello interval).
+// The range is 1 through 65,535 seconds.
+   DEAD_INTERVAL uint16
 ;
 
 oai_disable
@@ -209,7 +219,10 @@ oai_enable
 
 oai_hello_interval
 :
-   HELLO_INTERVAL dec
+// https://www.juniper.net/documentation/us/en/software/junos/ospf/topics/topic-map/configuring-ospf-timers.html
+// By default, the routing device sends hello packets every 10 seconds.
+// The range is from 1 through 255 seconds.
+   HELLO_INTERVAL uint8
 ;
 
 oai_interface_type
@@ -270,6 +283,14 @@ oai_passive
 oai_priority
 :
    PRIORITY dec
+;
+
+oai_retransmit_interval_null
+:
+// https://www.juniper.net/documentation/us/en/software/junos/ospf/topics/topic-map/configuring-ospf-timers.html
+// By default, the routing device retransmits LSAs to its neighbors every 5 seconds.
+// The range is from 1 through 65,535 seconds.
+   RETRANSMIT_INTERVAL uint16
 ;
 
 oai_te_metric

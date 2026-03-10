@@ -1,14 +1,14 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from source-prefix-list */
@@ -27,17 +27,17 @@ public final class FwFromSourcePrefixList implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderSpace(jc, w), getTraceElement());
+    return matchSrc(toIpSpace(jc, w), getTraceElement());
   }
 
   @VisibleForTesting
-  HeaderSpace toHeaderSpace(JuniperConfiguration jc, Warnings w) {
+  IpSpace toIpSpace(JuniperConfiguration jc, Warnings w) {
     PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
 
     if (pl == null) {
       w.redFlag("Reference to undefined source-prefix-list: \"" + _name + "\"");
       // match nothing
-      return HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build();
+      return EmptyIpSpace.INSTANCE;
     }
 
     IpSpace space = pl.toIpSpace();
@@ -46,7 +46,7 @@ public final class FwFromSourcePrefixList implements FwFrom {
       w.redFlagf("source-prefix-list \"%s\" is empty", _name);
     }
 
-    return HeaderSpace.builder().setSrcIps(space).build();
+    return space;
   }
 
   private TraceElement getTraceElement() {

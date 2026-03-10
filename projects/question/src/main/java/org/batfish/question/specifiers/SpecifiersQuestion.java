@@ -129,33 +129,28 @@ public final class SpecifiersQuestion extends Question {
     return "specifiers";
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
-  public String getFilterSpecifierInput() {
+  public @Nullable String getFilterSpecifierInput() {
     return _filterSpecifierInput;
   }
 
-  @Nullable
   @JsonProperty(PROP_INTERFACE_SPECIFIER_INPUT)
-  public String getInterfaceSpecifierInput() {
+  public @Nullable String getInterfaceSpecifierInput() {
     return _interfaceSpecifierInput;
   }
 
-  @Nullable
   @JsonProperty(PROP_IP_SPACE_SPECIFIER_INPUT)
-  public String getIpSpaceSpecifierInput() {
+  public @Nullable String getIpSpaceSpecifierInput() {
     return _ipSpaceSpecifierInput;
   }
 
-  @Nullable
   @JsonProperty(PROP_LOCATION_SPECIFIER_INPUT)
-  public String getLocationSpecifierInput() {
+  public @Nullable String getLocationSpecifierInput() {
     return _locationSpecifierInput;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
-  public String getNodeSpecifierInput() {
+  public @Nullable String getNodeSpecifierInput() {
     return _nodeSpecifierInput;
   }
 

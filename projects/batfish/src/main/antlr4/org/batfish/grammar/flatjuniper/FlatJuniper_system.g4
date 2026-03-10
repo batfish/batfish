@@ -61,8 +61,7 @@ sy_host_name
 
 sy_name_server
 :
-  // TODO: do better
-  NAME_SERVER hostname = junos_name SOURCE_ADDRESS ip_address
+  NAME_SERVER server = ip_address (SOURCE_ADDRESS src = ip_address)?
 ;
 
 sy_ntp
@@ -96,7 +95,7 @@ syn_server
 
 syn_source_address
 :
-   SOURCE_ADDRESS address = IP_ADDRESS
+   SOURCE_ADDRESS address = IP_ADDRESS (ROUTING_INSTANCE ri = junos_name)?
 ;
 
 syn_server_key
@@ -197,6 +196,7 @@ sys_host
    HOST hostname = junos_name
    (
       sysh_null
+      | sysh_routing_instance
    )
 ;
 
@@ -210,6 +210,8 @@ sys_null
       | USER
    ) null_filler
 ;
+
+sysh_routing_instance: ROUTING_INSTANCE ri = junos_name;
 
 sys_source_address
 :
@@ -252,29 +254,54 @@ sy_services
 :
    SERVICES
    (
-      sy_services_linetype
-      | sy_services_null
+      syserv_ftp
+      | syserv_ssh
+      | syserv_telnet
+      | syserv_null
    )
 ;
 
-sy_services_linetype
+syserv_ftp
 :
-   linetype = line_type
+   FTP
    (
       apply_groups
       | sy_authentication_order
-      | sysl_null
+      | syserv_common_null
    )?
 ;
 
-line_type
+syserv_ssh
 :
-  FTP
-  | SSH
-  | TELNET
+   SSH
+   (
+      apply_groups
+      | sy_authentication_order
+      | syserv_common_null
+      | syservs_access_disable_external_null
+      | syservs_allow_tcp_forwarding_null
+      | syservs_no_challenge_response_null
+      | syservs_no_password_authentication_null
+      | syservs_no_passwords_null
+      | syservs_no_public_keys_null
+      | syservs_no_tcp_forwarding_null
+      | syservs_root_login_null
+      | syservs_tcp_forwarding_null
+      | syservs_null
+   )?
 ;
 
-sy_services_null
+syserv_telnet
+:
+   TELNET
+   (
+      apply_groups
+      | sy_authentication_order
+      | syserv_common_null
+   )?
+;
+
+syserv_null
 :
    (
       DATABASE_REPLICATION
@@ -312,6 +339,7 @@ sy_tacplus_server
       | syt_secret
       | syt_source_address
       | syt_null
+      | syt_routing_instance
    )
 ;
 
@@ -340,29 +368,78 @@ syr_encrypted_password
    ENCRYPTED_PASSWORD password = secret_string
 ;
 
-sysl_null
+syserv_common_null
 :
+   // Options shared by SSH, FTP, and TELNET
+   (
+      CONNECTION_LIMIT
+      | RATE_LIMIT
+   ) null_filler
+;
+
+syservs_access_disable_external_null
+:
+   ACCESS_DISABLE_EXTERNAL
+;
+
+syservs_allow_tcp_forwarding_null
+:
+   ALLOW_TCP_FORWARDING
+;
+
+syservs_no_challenge_response_null
+:
+   NO_CHALLENGE_RESPONSE
+;
+
+syservs_no_password_authentication_null
+:
+   NO_PASSWORD_AUTHENTICATION
+;
+
+syservs_no_public_keys_null
+:
+   NO_PUBLIC_KEYS
+;
+
+syservs_null
+:
+   // Other SSH-only options (not yet extracted)
    (
       AUTHORIZED_KEYS_COMMAND
       | AUTHORIZED_KEYS_COMMAND_USER
       | CIPHERS
       | CLIENT_ALIVE_COUNT_MAX
       | CLIENT_ALIVE_INTERVAL
-      | CONNECTION_LIMIT
       | FINGERPRINT_HASH
       | HOSTKEY_ALGORITHM
       | KEY_EXCHANGE
       | MACS
       | MAX_PRE_AUTHENTICATION_PACKETS
       | MAX_SESSIONS_PER_CONNECTION
-      | NO_PASSWORDS
-      | NO_TCP_FORWARDING
       | PROTOCOL_VERSION
-      | RATE_LIMIT
       | REKEY
-      | ROOT_LOGIN
-      | TCP_FORWARDING
    ) null_filler
+;
+
+syservs_no_passwords_null
+:
+   NO_PASSWORDS
+;
+
+syservs_no_tcp_forwarding_null
+:
+   NO_TCP_FORWARDING
+;
+
+syservs_root_login_null
+:
+   ROOT_LOGIN null_filler
+;
+
+syservs_tcp_forwarding_null
+:
+   TCP_FORWARDING
 ;
 
 sysp_logical_system
@@ -386,6 +463,8 @@ syt_secret
   SECRET secret_string
 ;
 
+syt_routing_instance: ROUTING_INSTANCE name = junos_name;
+
 syt_source_address
 :
    SOURCE_ADDRESS address = ip_address
@@ -399,3 +478,4 @@ syt_null
       | TIMEOUT
    ) null_filler
 ;
+

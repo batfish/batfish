@@ -22,6 +22,7 @@ import org.batfish.representation.juniper.Nat.Type;
 
 /** Represents a Juniper nat rule set */
 @ParametersAreNonnullByDefault
+@SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
 public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
 
   private final NatPacketLocation _fromLocation;

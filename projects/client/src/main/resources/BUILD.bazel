@@ -1,0 +1,8 @@
+package(
+    default_visibility = ["//projects/client:__subpackages__"],
+)
+
+filegroup(
+    name = "resources",
+    srcs = glob(["**"]),
+)

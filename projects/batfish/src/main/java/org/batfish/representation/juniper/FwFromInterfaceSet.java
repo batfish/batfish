@@ -49,9 +49,7 @@ public class FwFromInterfaceSet implements FwFrom {
             .filter(configuredIfaces::contains)
             .collect(ImmutableSet.toImmutableSet());
     if (interfaces.isEmpty()) {
-      w.redFlag(
-          String.format(
-              "Interface-set %s does not contain any valid interfaces", _interfaceSetName));
+      w.redFlagf("Interface-set %s does not contain any valid interfaces", _interfaceSetName);
       return AclLineMatchExprs.FALSE;
     }
     return new MatchSrcInterface(

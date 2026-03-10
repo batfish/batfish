@@ -71,12 +71,18 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclReferencesVerifier;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
+import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -97,6 +103,7 @@ import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.RoutingPolicyReferencesVerifier;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.Transformation;
@@ -166,10 +173,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               if (key.equals(e.getKey())) {
                 return true;
               }
-              w.redFlag(
-                  String.format(
-                      "Batfish internal error: invalid entry %s -> %s named %s",
-                      e.getKey(), e.getValue(), key));
+              w.redFlagf(
+                  "Batfish internal error: invalid entry %s -> %s named %s",
+                  e.getKey(), e.getValue(), key);
               return false;
             })
         .sorted(Entry.comparingByKey(comparator)) /* ImmutableMap is insert ordered. */
@@ -354,6 +360,17 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
 
     @Override
+    public Void visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      visit(matchDestinationIp.getIps());
+      return null;
+    }
+
+    @Override
+    public Void visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+      return null;
+    }
+
+    @Override
     public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       HeaderSpace hs = matchHeaderSpace.getHeaderspace();
       if (hs == null) {
@@ -363,6 +380,22 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE));
+      return null;
+    }
+
+    @Override
+    public Void visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      visit(matchSourceIp.getIps());
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSourcePort(MatchSourcePort matchSourcePort) {
       return null;
     }
 
@@ -432,6 +465,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * org.batfish.datamodel.TraceElement}s.
    */
   @VisibleForTesting
+  @SuppressWarnings("unused") // https://github.com/batfish/batfish/issues/9267
   static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
     InvalidVendorStructureIdEraser vsidEraser =
         new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
@@ -447,15 +481,19 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * org.batfish.datamodel.TraceElement}s.
    */
   @VisibleForTesting
-  static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
+  static boolean assertVendorStructureIdsValid(
+      Configuration c, VendorConfiguration vc, Warnings w) {
     InvalidVendorStructureIdEraser eraser =
         new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
     // Erase invalid VSIDs and confirm no changes occur
     for (IpAccessList acl : c.getIpAccessLists().values()) {
       for (AclLine line : acl.getLines()) {
-        assert line.equals(eraser.visit(line));
+        if (!line.equals(eraser.visit(line))) {
+          return false;
+        }
       }
     }
+    return true;
   }
 
   /**
@@ -479,6 +517,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
     addTenantVniInterfaces(c);
+    removeUndefinedRoutingPolicyReferences(c, w);
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
@@ -487,8 +526,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
     // Make tests fail if they have invalid VSIDs
-    assertVendorStructureIdsValid(c, vc, w);
-    removeInvalidVendorStructureIds(c, vc, w);
+    assert assertVendorStructureIdsValid(c, vc, w);
+    // Too slow right now: https://github.com/batfish/batfish/issues/9267
+    // removeInvalidVendorStructureIds(c, vc, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -507,6 +547,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setInterfaces(
         verifyAndToImmutableMap(
             c.getAllInterfaces(), Interface::getName, w, InterfaceNameComparator.instance()));
+    AclReferencesVerifier.verify(c);
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
     c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
@@ -526,9 +567,20 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
     c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
     c.setZones(toImmutableMap(c.getZones()));
-    verifyAclInvariants(c, w);
+    for (Vrf v : c.getVrfs().values()) {
+      BgpProcess p = v.getBgpProcess();
+      if (p == null) {
+        continue;
+      }
+      p.setNeighbors(ImmutableMap.copyOf(p.getActiveNeighbors()));
+      p.setInterfaceNeighbors(ImmutableMap.copyOf(p.getInterfaceNeighbors()));
+      p.setPassiveNeighbors(ImmutableMap.copyOf(p.getPassiveNeighbors()));
+    }
+
+    assert verifyAclInvariants(c); // this is expensive on some devices
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
+    verifyRoutingPolicyReferences(c);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
@@ -540,15 +592,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                   .filter(name -> !c.getAllInterfaces().containsKey(name))
                   .collect(ImmutableList.toImmutableList());
           if (!undefinedInterfaces.isEmpty()) {
-            w.redFlag(
-                String.format(
-                    "Removing undefined interfaces %s from OSPF process %s area %s on node %s vrf"
-                        + " %s",
-                    undefinedInterfaces,
-                    proc.getProcessId(),
-                    area.getAreaNumber(),
-                    c.getHostname(),
-                    v.getName()));
+            w.redFlagf(
+                "Removing undefined interfaces %s from OSPF process %s area %s on node %s vrf %s",
+                undefinedInterfaces,
+                proc.getProcessId(),
+                area.getAreaNumber(),
+                c.getHostname(),
+                v.getName());
             OspfArea newArea =
                 area.toBuilder()
                     .setInterfaces(
@@ -566,6 +616,36 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         }
       }
     }
+  }
+
+  /** Remove and warn on undefined routing policy references. */
+  private static void removeUndefinedRoutingPolicyReferences(Configuration c, Warnings w) {
+    removeUndefinedBgpProcessRoutingPolicyReferences(c, w);
+  }
+
+  /** Remove and warn on undefined routing policy references within {@link BgpProcess}es. */
+  private static void removeUndefinedBgpProcessRoutingPolicyReferences(
+      Configuration c, Warnings w) {
+    c.getVrfs()
+        .forEach(
+            (vrfName, vrf) -> {
+              BgpProcess proc = vrf.getBgpProcess();
+              if (proc == null) {
+                // nothing to check
+                return;
+              }
+              // Next hop IP resolver restriction policy
+              String nextHopIpResolverRestrictionPolicyName =
+                  proc.getNextHopIpResolverRestrictionPolicy();
+              if (nextHopIpResolverRestrictionPolicyName != null
+                  && !c.getRoutingPolicies().containsKey(nextHopIpResolverRestrictionPolicyName)) {
+                proc.setNextHopIpResolverRestrictionPolicy(null);
+                w.redFlagf(
+                    "Removing reference to undefined nextHopIpResolverRestrictionPolicy '%s' in BGP"
+                        + " process for vrf '%s'",
+                    nextHopIpResolverRestrictionPolicyName, vrfName);
+              }
+            });
   }
 
   /** Remove and warn on undefined track references. */
@@ -595,10 +675,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 if (c.getTrackingGroups().containsKey(trackName)) {
                   definedTracks.add(trackName);
                 } else {
-                  w.redFlag(
-                      String.format(
-                          "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
-                          trackName, vrfName));
+                  w.redFlagf(
+                      "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
+                      trackName, vrfName);
                 }
               }
               proc.setTracks(definedTracks.build());
@@ -613,11 +692,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         String track = sr.getTrack();
         if (track != null && !c.getTrackingGroups().containsKey(track)) {
           modified = true;
-          w.redFlag(
-              String.format(
-                  "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
-                      + " '%s'",
-                  track, sr.getNetwork(), v.getName()));
+          w.redFlagf(
+              "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
+                  + " '%s'",
+              track, sr.getNetwork(), v.getName());
           routes.add(sr.toBuilder().setTrack(null).build());
         } else {
           routes.add(sr);
@@ -644,10 +722,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           if (!c.getTrackingGroups().containsKey(track)) {
             tracksModified = true;
             groupsModified = true;
-            w.redFlag(
-                String.format(
-                    "Removing reference to undefined track '%s' in HSRP group %d on '%s'",
-                    track, id, NodeInterfacePair.of(i)));
+            w.redFlagf(
+                "Removing reference to undefined track '%s' in HSRP group %d on '%s'",
+                track, id, NodeInterfacePair.of(i));
           } else {
             newActions.put(track, actionByTrack.getValue());
           }
@@ -680,10 +757,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           if (!c.getTrackingGroups().containsKey(track)) {
             tracksModified = true;
             groupsModified = true;
-            w.redFlag(
-                String.format(
-                    "Removing reference to undefined track '%s' in VRRP group %d on '%s'",
-                    track, id, NodeInterfacePair.of(i)));
+            w.redFlagf(
+                "Removing reference to undefined track '%s' in VRRP group %d on '%s'",
+                track, id, NodeInterfacePair.of(i));
           } else {
             newActions.put(track, actionByTrack.getValue());
           }
@@ -736,10 +812,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
       if (!_c.getAllInterfaces().containsKey(nextHopInterface.getInterfaceName())) {
-        _w.redFlag(
-            String.format(
-                "Removing invalid static route on node '%s' with undefined next hop interface '%s'",
-                _c.getHostname(), nextHopInterface.getInterfaceName()));
+        _w.redFlagf(
+            "Removing invalid static route on node '%s' with undefined next hop interface '%s'",
+            _c.getHostname(), nextHopInterface.getInterfaceName());
         return false;
       }
       return true;
@@ -753,10 +828,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
       if (!_c.getVrfs().containsKey(nextHopVrf.getVrfName())) {
-        _w.redFlag(
-            String.format(
-                "Removing invalid static route on node '%s' with undefined next hop vrf '%s'",
-                _c.getHostname(), nextHopVrf.getVrfName()));
+        _w.redFlagf(
+            "Removing invalid static route on node '%s' with undefined next hop vrf '%s'",
+            _c.getHostname(), nextHopVrf.getVrfName());
         return false;
       }
       return true;
@@ -768,10 +842,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
-  private static void verifyAclInvariants(Configuration c, Warnings w) {
+  private static boolean verifyAclInvariants(Configuration c) {
     if (c.getConfigurationFormat() == ConfigurationFormat.CISCO_ASA) {
       // ASA has some invariant issues.
-      return;
+      return true;
     }
     AclPacketMatchValidityChecker checker = checkerFor(c);
     for (IpAccessList acl : c.getIpAccessLists().values()) {
@@ -781,7 +855,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               String.format(
                   "Filter %s on device %s does not meet the expected packet invariants",
                   acl.getName(), c.getHostname());
-          w.redFlag(message);
           assert false : message;
         }
       } catch (Exception e) {
@@ -789,10 +862,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             String.format(
                 "Filter %s on device %s failed to convert to BDD: %s",
                 acl.getName(), c.getHostname(), Throwables.getStackTraceAsString(e));
-        w.redFlag(message);
         assert false : message;
       }
     }
+    return true;
   }
 
   private static void verifyAsPathStructures(Configuration c) {
@@ -802,6 +875,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void verifyCommunityStructures(Configuration c) {
     // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
     CommunityStructuresVerifier.verify(c);
+  }
+
+  private static void verifyRoutingPolicyReferences(Configuration c) {
+    RoutingPolicyReferencesVerifier.verify(c);
   }
 
   /**
@@ -821,11 +898,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             vrrpGroup.getVirtualAddresses().entrySet()) {
           String referencedIface = addressesByInterface.getKey();
           if (!c.getAllInterfaces().containsKey(referencedIface)) {
-            w.redFlag(
-                String.format(
-                    "Removing virtual addresses to be assigned to non-existent interface '%s' for"
-                        + " VRID %d on sync interface '%s'",
-                    referencedIface, vrid, i.getName()));
+            w.redFlagf(
+                "Removing virtual addresses to be assigned to non-existent interface '%s' for"
+                    + " VRID %d on sync interface '%s'",
+                referencedIface, vrid, i.getName());
             modified = true;
           } else {
             addressesBuilder.put(referencedIface, addressesByInterface.getValue());
@@ -851,10 +927,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       // VI invariant: switchport is true iff SwitchportMode is not NONE.
       boolean hasSwitchportMode = i.getSwitchportMode() != SwitchportMode.NONE;
       if (hasSwitchportMode != i.getSwitchport()) {
-        w.redFlag(
-            String.format(
-                "Interface %s has switchport %s but switchport mode %s",
-                name, i.getSwitchport(), i.getSwitchportMode()));
+        w.redFlagf(
+            "Interface %s has switchport %s but switchport mode %s",
+            name, i.getSwitchport(), i.getSwitchportMode());
         c.getAllInterfaces().remove(name);
         continue;
       }
@@ -876,18 +951,16 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           String aggregateName = i.getChannelGroup();
           Interface aggregate = c.getAllInterfaces().get(aggregateName);
           if (aggregate == null) {
-            w.redFlag(
-                String.format(
-                    "Interface %s is a member of undefined aggregate or or redundant interface %s",
-                    name, aggregateName));
+            w.redFlagf(
+                "Interface %s is a member of undefined aggregate or or redundant interface %s",
+                name, aggregateName);
             c.getAllInterfaces().remove(name);
             continue;
           }
           if (!i.getAllAddresses().isEmpty()) {
-            w.redFlag(
-                String.format(
-                    "Interface %s is a member of %s interface %s but it has L3 addresses",
-                    name, aggregate.getInterfaceType(), aggregateName));
+            w.redFlagf(
+                "Interface %s is a member of %s interface %s but it has L3 addresses",
+                name, aggregate.getInterfaceType(), aggregateName);
             c.getAllInterfaces().remove(name);
             continue;
           }
@@ -913,17 +986,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       String refName = dependency.getInterfaceName();
       if (!c.getAllInterfaces().containsKey(refName)) {
         if (dependency.getType() == DependencyType.BIND) {
-          w.redFlag(
-              String.format(
-                  "Interface %s has a bind dependency on missing interface %s", name, refName));
+          w.redFlagf("Interface %s has a bind dependency on missing interface %s", name, refName);
           c.getAllInterfaces().remove(name);
           return false;
         } else {
           assert dependency.getType() == DependencyType.AGGREGATE;
-          w.redFlag(
-              String.format(
-                  "Interface %s has an aggregate dependency on missing interface %s",
-                  name, refName));
+          w.redFlagf(
+              "Interface %s has an aggregate dependency on missing interface %s", name, refName);
           i.setDependencies(
               i.getDependencies().stream()
                   .filter(d -> !d.equals(dependency))
@@ -973,10 +1042,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       assert aggregate != null;
       String name = i.getName();
       if (!i.getAllAddresses().isEmpty()) {
-        w.redFlag(
-            String.format(
-                "Interface %s is a child of a member of %s interface %s but it has L3 addresses",
-                name, aggregate.getInterfaceType(), aggregateName));
+        w.redFlagf(
+            "Interface %s is a child of a member of %s interface %s but it has L3 addresses",
+            name, aggregate.getInterfaceType(), aggregateName);
         c.getAllInterfaces().remove(name);
         return false;
       }

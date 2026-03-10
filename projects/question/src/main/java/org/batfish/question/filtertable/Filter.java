@@ -246,24 +246,14 @@ public class Filter {
     }
 
     // at this point both values are non-null. IS is same as EQ, and ISNOT as NE
-    switch (_operator) {
-      case EQ:
-      case IS:
-        return compareValues(leftValue, rightValue) == 0;
-      case GE:
-        return compareValues(leftValue, rightValue) >= 0;
-      case GT:
-        return compareValues(leftValue, rightValue) > 0;
-      case LE:
-        return compareValues(leftValue, rightValue) <= 0;
-      case LT:
-        return compareValues(leftValue, rightValue) < 0;
-      case NE:
-      case ISNOT:
-        return compareValues(leftValue, rightValue) != 0;
-      default:
-        throw new BatfishException("Unhandled operator: " + _operator);
-    }
+    return switch (_operator) {
+      case EQ, IS -> compareValues(leftValue, rightValue) == 0;
+      case GE -> compareValues(leftValue, rightValue) >= 0;
+      case GT -> compareValues(leftValue, rightValue) > 0;
+      case LE -> compareValues(leftValue, rightValue) <= 0;
+      case LT -> compareValues(leftValue, rightValue) < 0;
+      case NE, ISNOT -> compareValues(leftValue, rightValue) != 0;
+    };
   }
 
   /** Extract the actual object value from the operand and row */

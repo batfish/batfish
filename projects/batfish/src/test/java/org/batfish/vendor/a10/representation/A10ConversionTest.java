@@ -546,7 +546,7 @@ public class A10ConversionTest {
   @Test
   public void testVrrpADisabledAppliesToInterface() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName("placeholder");
+        org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     // No concrete address
     assertFalse(
         vrrpADisabledAppliesToInterface(
@@ -576,7 +576,7 @@ public class A10ConversionTest {
   @Test
   public void testFindVrrpAEnabledSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName("placeholder");
+        org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     Set<Ip> peerIps = ImmutableSet.of(Ip.parse("10.10.10.11"));
     // No concrete address
     assertThat(
@@ -615,7 +615,7 @@ public class A10ConversionTest {
   @Test
   public void testFindHaSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName("placeholder");
+        org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     Ip connMirror = Ip.parse("10.10.10.11");
     // No concrete address
     assertThat(
@@ -960,7 +960,7 @@ public class A10ConversionTest {
     Map<String, org.batfish.datamodel.Interface> interfaces =
         ImmutableMap.of(
             ifaceName,
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setName(ifaceName)
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.create(interfaceAddress, 24))

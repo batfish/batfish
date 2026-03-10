@@ -2,8 +2,8 @@ package org.batfish.question.comparefilters;
 
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;

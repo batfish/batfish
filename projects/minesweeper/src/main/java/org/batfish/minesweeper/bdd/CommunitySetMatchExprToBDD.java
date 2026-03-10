@@ -1,19 +1,27 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Verify.verify;
+
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
+import net.sf.javabdd.BDDFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
@@ -23,7 +31,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 
 /**
  * Create a BDD from a {@link
@@ -36,22 +47,89 @@ import org.batfish.minesweeper.CommunityVar;
 public class CommunitySetMatchExprToBDD
     implements CommunitySetMatchExprVisitor<BDD, CommunitySetMatchExprToBDD.Arg> {
 
-  // a tuple of a TransferBDD object and a BDDRoute object, used as the argument to this visitor
-  static class Arg {
+  /** Used as the argument to this visitor provoding the information that it needs in execution. */
+  public static class Arg {
     private final @Nonnull TransferBDD _transferBDD;
+    private final @Nonnull TransferBDD.Context _transferBDDContext;
     private final @Nonnull BDDRoute _bddRoute;
 
-    Arg(TransferBDD transferBDD, BDDRoute bddRoute) {
-      _transferBDD = transferBDD;
+    public Arg(TransferBDD transferBDD, BDDRoute bddRoute, TransferBDD.Context context) {
       _bddRoute = bddRoute;
+      _transferBDD = transferBDD;
+      _transferBDDContext = context;
     }
 
-    TransferBDD getTransferBDD() {
+    public @Nonnull BDDRoute getBDDRoute() {
+      return _bddRoute;
+    }
+
+    public @Nonnull TransferBDD getTransferBDD() {
       return _transferBDD;
     }
 
-    BDDRoute getBDDRoute() {
-      return _bddRoute;
+    public @Nonnull Context getTransferBDDContext() {
+      return _transferBDDContext;
+    }
+
+    /**
+     * Resolves the named {@link AsPathMatchExpr} reference. Precondition is that undefined
+     * references have been resolved or removed, and throws a runtime exception if not.
+     */
+    public @Nonnull AsPathMatchExpr getAsPathMatchExpr(String name) {
+      AsPathMatchExpr expr = _transferBDDContext.config().getAsPathMatchExprs().get(name);
+      verify(
+          expr != null,
+          "Invalid precondition: referenced AsPathMatchExpr %s is not defined on %s",
+          name,
+          getConfiguration().getHostname());
+      return expr;
+    }
+
+    /**
+     * Resolves the named {@link CommunityMatchExpr} reference. Precondition is that undefined
+     * references have been resolved or removed, and throws a runtime exception if not.
+     */
+    public @Nonnull CommunityMatchExpr getCommunityMatchExpr(String name) {
+      CommunityMatchExpr expr = _transferBDDContext.config().getCommunityMatchExprs().get(name);
+      verify(
+          expr != null,
+          "Invalid precondition: referenced CommunityMatchExpr %s is not defined on %s",
+          name,
+          getConfiguration().getHostname());
+      return expr;
+    }
+
+    /**
+     * Resolves the named {@link CommunitySetExpr} reference. Precondition is that undefined
+     * references have been resolved or removed, and throws a runtime exception if not.
+     */
+    public @Nonnull CommunitySetExpr getCommunitySetExpr(String name) {
+      CommunitySetExpr expr = _transferBDDContext.config().getCommunitySetExprs().get(name);
+      verify(
+          expr != null,
+          "Invalid precondition: referenced CommunitySetExpr %s is not defined on %s",
+          name,
+          getConfiguration().getHostname());
+      return expr;
+    }
+
+    /**
+     * Resolves the named {@link CommunitySetMatchExpr} reference. Precondition is that undefined
+     * references have been resolved or removed, and throws a runtime exception if not.
+     */
+    public @Nonnull CommunitySetMatchExpr getCommunitySetMatchExpr(String name) {
+      CommunitySetMatchExpr expr =
+          _transferBDDContext.config().getCommunitySetMatchExprs().get(name);
+      verify(
+          expr != null,
+          "Invalid precondition: referenced CommunitySetMatchExpr %s is not defined on %s",
+          name,
+          getConfiguration().getHostname());
+      return expr;
+    }
+
+    public @Nonnull Configuration getConfiguration() {
+      return _transferBDDContext.config();
     }
   }
 
@@ -89,20 +167,13 @@ public class CommunitySetMatchExprToBDD
   public BDD visitCommunitySetMatchExprReference(
       CommunitySetMatchExprReference communitySetMatchExprReference, Arg arg) {
     String name = communitySetMatchExprReference.getName();
-    CommunitySetMatchExpr expr =
-        arg.getTransferBDD().getConfiguration().getCommunitySetMatchExprs().get(name);
-    if (expr == null) {
-      throw new BatfishException("Cannot find community set match expression: " + name);
-    }
+    CommunitySetMatchExpr expr = arg.getCommunitySetMatchExpr(name);
     return expr.accept(this, arg);
   }
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // We've already ensured in CommunitySetMatchExprVarCollector that there are no community-set
-    // regexes, so this code should be unreachable.
-    throw new IllegalStateException(
-        String.format("Unexpected community set match regex %s", communitySetMatchRegex));
+    throw new UnsupportedOperationException(communitySetMatchRegex.toString());
   }
 
   @Override
@@ -122,7 +193,10 @@ public class CommunitySetMatchExprToBDD
             .getExpr()
             .accept(
                 new CommunityMatchExprToBDD(),
-                new Arg(arg.getTransferBDD(), arg.getTransferBDD().getOriginalRoute()));
+                new Arg(
+                    arg.getTransferBDD(),
+                    arg.getTransferBDD().getOriginalRoute(),
+                    arg.getTransferBDDContext()));
 
     // then convert a constraint on individual communities to a constraint on a community set
     return toCommunitySetConstraint(matchExprBDD, arg);
@@ -130,14 +204,43 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitHasSize(HasSize hasSize, Arg arg) {
-    throw new UnsupportedOperationException();
+    if (!(hasSize.getExpr() instanceof IntComparison)) {
+      throw new UnsupportedOperationException(hasSize.toString());
+    }
+    IntComparison cmp = (IntComparison) hasSize.getExpr();
+    if (!(cmp.getExpr() instanceof LiteralInt)) {
+      throw new UnsupportedOperationException(hasSize.toString());
+    }
+    BDDFactory factory = arg.getTransferBDD().getFactory();
+    int val = ((LiteralInt) cmp.getExpr()).getValue();
+    return switch (cmp.getComparator()) {
+      case EQ ->
+          // Too hard to predict what this clause is for.
+          throw new UnsupportedOperationException(hasSize.toString());
+      case GE ->
+          // This is likely protecting against too-large community sets.
+          // Only return true if the value allows any set.
+          val <= 0 ? factory.one() : factory.zero();
+      case GT ->
+          // This is likely protecting against too-large community sets.
+          // Only return true if the value allows any set.
+          val < 0 ? factory.one() : factory.zero();
+      case LE ->
+          // This is likely protecting against too-large community sets. Return true if the value
+          // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+          val >= 64 ? factory.one() : factory.zero();
+      case LT ->
+          // This is likely protecting against too-large community sets. Return true if the value
+          // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+          val > 64 ? factory.one() : factory.zero();
+    };
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {
     TransferBDD transferBDD = arg.getTransferBDD();
     BDDRoute bddRoute = arg.getBDDRoute();
     Set<Integer> commAPs =
-        transferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
+        TransferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
     BDD[] apBDDs = bddRoute.getCommunityAtomicPredicates();
     return bddRoute
         .getFactory()
@@ -154,7 +257,16 @@ public class CommunitySetMatchExprToBDD
    * @return a community set constraint
    */
   public static BDD toCommunitySetConstraint(BDD commConstraint, Arg arg) {
-    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    TransferBDD tbdd = arg.getTransferBDD();
+    Map<BDD, List<Integer>> cache = tbdd.getCommunitySetConstraintCache();
+    List<Integer> cached = cache.get(commConstraint);
+    if (cached != null) {
+      return tbdd.getFactory().orAll(cached.stream().map(i -> aps[i]).toList());
+    }
+
+    BDD[] originalAPs = tbdd.getOriginalRoute().getCommunityAtomicPredicates();
+
     /*
      * The given community constraint is a predicate on community atomic predicates that must be
      * satisfied by *some* element of the route's community set. We can't directly treat this
@@ -174,20 +286,33 @@ public class CommunitySetMatchExprToBDD
      * the community-set constraint.
      */
 
-    // consider each atomic predicate in turn
-    IntStream satisfyingAPs =
-        IntStream.range(0, originalAPs.length)
-            .filter(
-                i -> {
-                  // check that the ith AP is compatible with the single-community constraint
-                  BDD model = commConstraint.and(originalAPs[i]).satOne();
-                  if (model.isZero()) {
-                    return false;
-                  }
-                  // if so, check that all other variables in the produced model are negated;
-                  // this implies that the ith AP on its own is sufficient to satisfy the constraint
-                  return allNegativeLiterals(model.exist(originalAPs[i]));
-                });
+    List<Integer> indexes = new ArrayList<>(aps.length);
+    BDD constraint = commConstraint.id();
+    for (int i = 0; i < originalAPs.length; i++) {
+      if (!originalAPs[i].andSat(commConstraint)) {
+        continue;
+      }
+      BDD intersection = constraint.and(originalAPs[i]);
+      BDD model = intersection.satOne().existEq(originalAPs[i]);
+      intersection.free();
+      if (model.isNor()) {
+        // Every AP mentioned is constrained to false, so originalAPs[i] satisfies the constraint.
+        indexes.add(i);
+      }
+      model.free();
+      constraint.diffEq(originalAPs[i]);
+      if (constraint.isZero()) {
+        LOGGER.debug(
+            "Reached constraint zero on iteration {} and skipping {}",
+            i,
+            originalAPs.length - i - 1);
+        constraint.free();
+        break;
+      }
+    }
+
+    LOGGER.debug("Community constraint matched {} APs", indexes.size());
+    cache.put(commConstraint.id(), indexes);
 
     // TODO: Two potential performance optimizations to consider in the future.  First, a binary
     // encoding of atomic predicates for single-community constraints, for example using the
@@ -200,25 +325,8 @@ public class CommunitySetMatchExprToBDD
      * the arg, which properly handles configuration formats like Juniper that require matching on
      * the current route rather than the original input route.
      */
-    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
-    return arg.getTransferBDD()
-        .getFactory()
-        .orAll(satisfyingAPs.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+    return arg.getTransferBDD().getFactory().orAll(indexes.stream().map(i -> aps[i]).toList());
   }
 
-  /**
-   * Checks whether all variables in the given variable assignment are negated.
-   *
-   * @param model the variable assignment
-   * @return a boolean indicating whether the check succeeded
-   */
-  static boolean allNegativeLiterals(BDD model) {
-    if (model.isZero() || model.isOne()) {
-      return true;
-    }
-    if (model.high().isZero()) {
-      return allNegativeLiterals(model.low());
-    }
-    return false;
-  }
+  private static final Logger LOGGER = LogManager.getLogger(CommunitySetMatchExprToBDD.class);
 }

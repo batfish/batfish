@@ -41,7 +41,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static CidrBlockAssociation create(
-        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix block) {
+        @JsonProperty(JSON_KEY_CIDR_BLOCK) @Nullable Prefix block) {
       checkArgument(block != null, "CIDR block cannot be null in CIDR block association");
       return new CidrBlockAssociation(block);
     }
@@ -83,10 +83,10 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static Vpc create(
-      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
+      @JsonProperty(JSON_KEY_OWNER_ID) @Nullable String ownerId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags,
+      @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET) @Nullable
           Set<CidrBlockAssociation> cidrBlockAssociations) {
     /*
      We do not parse CidrBlock. The information there also shows up CidrBlockAssociationSet

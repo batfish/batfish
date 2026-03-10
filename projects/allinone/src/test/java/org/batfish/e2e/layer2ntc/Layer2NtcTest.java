@@ -1,8 +1,8 @@
 package org.batfish.e2e.layer2ntc;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;

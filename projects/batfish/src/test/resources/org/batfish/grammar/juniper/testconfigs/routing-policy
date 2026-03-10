@@ -18,6 +18,9 @@ set policy-options policy-statement route-filter-prange term t1 then accept
 set policy-options policy-statement route-filter-through term t1 from route-filter 1.2.0.0/16 through 1.2.0.0/18
 set policy-options policy-statement route-filter-through term t1 then accept
 
+set policy-options policy-statement route-filter-through6 term t1 from route-filter 1::1/16 through 1::2/18
+set policy-options policy-statement route-filter-through6 term t1 then accept
+
 set policy-options policy-statement route-filter-addressmask term t1 from route-filter 1.2.3.4/16 address-mask 255.0.255.0
 set policy-options policy-statement route-filter-addressmask term t1 then accept
 #

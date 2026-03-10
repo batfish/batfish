@@ -47,12 +47,10 @@ public class AllInOne {
 
     String argString =
         String.format(
-            "%s -%s %s -%s %s",
+            "%s -%s %s",
             _settings.getClientArgs(),
             org.batfish.client.config.Settings.ARG_LOG_LEVEL,
-            _settings.getLogLevel(),
-            org.batfish.client.config.Settings.ARG_RUN_MODE,
-            _settings.getRunMode());
+            _settings.getLogLevel());
 
     if (_settings.getLogFile() != null) {
       argString +=

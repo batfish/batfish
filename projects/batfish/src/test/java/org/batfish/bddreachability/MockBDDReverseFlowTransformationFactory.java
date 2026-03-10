@@ -19,9 +19,8 @@ final class MockBDDReverseFlowTransformationFactory implements BDDReverseFlowTra
     _reverseFlowOutgoingTransformations = ImmutableMap.copyOf(reverseFlowOutgoingTransformations);
   }
 
-  @Nonnull
   @Override
-  public Transition reverseFlowIncomingTransformation(String hostname, String iface) {
+  public @Nonnull Transition reverseFlowIncomingTransformation(String hostname, String iface) {
     return checkNotNull(
         _reverseFlowIncomingTransformations.get(NodeInterfacePair.of(hostname, iface)),
         "Missing reverseFlowIncomingTransformations entry for %s:%s",
@@ -29,9 +28,8 @@ final class MockBDDReverseFlowTransformationFactory implements BDDReverseFlowTra
         iface);
   }
 
-  @Nonnull
   @Override
-  public Transition reverseFlowOutgoingTransformation(String hostname, String iface) {
+  public @Nonnull Transition reverseFlowOutgoingTransformation(String hostname, String iface) {
     return checkNotNull(
         _reverseFlowOutgoingTransformations.get(NodeInterfacePair.of(hostname, iface)));
   }

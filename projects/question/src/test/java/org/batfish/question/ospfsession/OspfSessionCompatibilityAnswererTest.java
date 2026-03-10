@@ -12,10 +12,10 @@ import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_VRF;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.createTableMetadata;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.getRows;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

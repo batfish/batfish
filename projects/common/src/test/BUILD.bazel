@@ -1,0 +1,73 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "common_testlib",
+    srcs = glob(
+        [
+            "**/*.java",
+        ],
+        exclude = ["**/*Test.java"],
+    ),
+    exports = [
+        "//projects/common/src/test/java/org/batfish/grammar:mock_grammar_settings",
+    ],
+    deps = [
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_configuration2",
+        "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_parboiled_parboiled_core",
+        "@maven//:org_parboiled_parboiled_java",
+    ],
+)
+
+pmd_test(
+    name = "common_testlib_pmd",
+    lib = ":common_testlib",
+)
+
+junit_tests(
+    name = "common_tests",
+    size = "small",
+    srcs = glob([
+        "java/**/*Test.java",
+    ]),
+    resources = ["//projects/common/src/test/resources"],
+    runtime_deps = [
+        "@maven//:jakarta_xml_bind_jakarta_xml_bind_api",
+    ],
+    deps = [
+        ":common_testlib",
+        "//projects/bdd",
+        "//projects/common",
+        "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
+        "//projects/common/src/test/java/org/batfish/common/bdd:matchers",
+        "//projects/common/src/test/java/org/batfish/common/matchers",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:commons_io_commons_io",
+        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_apache_commons_commons_text",
+        "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_parboiled_parboiled_core",
+    ],
+)

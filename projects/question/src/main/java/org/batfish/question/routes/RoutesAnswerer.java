@@ -128,7 +128,7 @@ public class RoutesAnswerer extends Answerer {
     List<Row> rows = new ArrayList<>();
 
     switch (question.getRib()) {
-      case BGP:
+      case BGP -> {
         rows.addAll(
             getBgpRibRoutes(
                 dp.getBgpRoutes(),
@@ -139,8 +139,8 @@ public class RoutesAnswerer extends Answerer {
                 expandedBgpRouteStatuses,
                 question.getPrefixMatchType()));
         rows.sort(BGP_COMPARATOR);
-        break;
-      case EVPN:
+      }
+      case EVPN -> {
         rows.addAll(
             getEvpnRoutes(
                 dp.getEvpnRoutes(),
@@ -151,8 +151,8 @@ public class RoutesAnswerer extends Answerer {
                 ImmutableSet.of(BEST, BACKUP),
                 question.getPrefixMatchType()));
         rows.sort(EVPN_COMPARATOR);
-        break;
-      case MAIN:
+      }
+      case MAIN -> {
         rows.addAll(
             getMainRibRoutes(
                 dp.getRibs(),
@@ -161,9 +161,7 @@ public class RoutesAnswerer extends Answerer {
                 protocolSpec,
                 question.getPrefixMatchType()));
         rows.sort(MAIN_RIB_COMPARATOR);
-        break;
-      default:
-        throw new UnsupportedOperationException("RIB type " + question.getRib());
+      }
     }
 
     answer.postProcessAnswer(_question, rows);
@@ -187,7 +185,6 @@ public class RoutesAnswerer extends Answerer {
                 new ConstantEnumSetSpecifier<>(ImmutableSet.of(BgpRouteStatus.BEST)))
             .resolve();
 
-    List<Row> rows;
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
         routesGroupedByKeyInBase;
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
@@ -196,72 +193,67 @@ public class RoutesAnswerer extends Answerer {
 
     List<DiffRoutesOutput> routesDiffRaw;
 
-    switch (question.getRib()) {
-      case BGP:
-        dp = _batfish.loadDataPlane(snapshot);
-        routesGroupedByKeyInBase =
-            groupBgpRoutes(
-                expandedBgpRouteStatuses.contains(BEST) ? dp.getBgpRoutes() : null,
-                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getBgpBackupRoutes() : null,
-                matchingNodes,
-                vrfRegex,
-                network,
-                protocolSpec);
+    List<Row> rows =
+        switch (question.getRib()) {
+          case BGP -> {
+            dp = _batfish.loadDataPlane(snapshot);
+            routesGroupedByKeyInBase =
+                groupBgpRoutes(
+                    expandedBgpRouteStatuses.contains(BEST) ? dp.getBgpRoutes() : null,
+                    expandedBgpRouteStatuses.contains(BACKUP) ? dp.getBgpBackupRoutes() : null,
+                    matchingNodes,
+                    vrfRegex,
+                    network,
+                    protocolSpec);
 
-        dp = _batfish.loadDataPlane(reference);
-        routesGroupedByKeyInDelta =
-            groupBgpRoutes(
-                expandedBgpRouteStatuses.contains(BEST) ? dp.getBgpRoutes() : null,
-                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getBgpBackupRoutes() : null,
-                matchingNodes,
-                vrfRegex,
-                network,
-                protocolSpec);
-        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw));
-        break;
+            dp = _batfish.loadDataPlane(reference);
+            routesGroupedByKeyInDelta =
+                groupBgpRoutes(
+                    expandedBgpRouteStatuses.contains(BEST) ? dp.getBgpRoutes() : null,
+                    expandedBgpRouteStatuses.contains(BACKUP) ? dp.getBgpBackupRoutes() : null,
+                    matchingNodes,
+                    vrfRegex,
+                    network,
+                    protocolSpec);
+            routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+            yield new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw));
+          }
+          case EVPN -> {
+            dp = _batfish.loadDataPlane(snapshot);
+            routesGroupedByKeyInBase =
+                groupEvpnRoutes(
+                    expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
+                    expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
+                    matchingNodes,
+                    vrfRegex,
+                    network,
+                    protocolSpec);
 
-      case EVPN:
-        dp = _batfish.loadDataPlane(snapshot);
-        routesGroupedByKeyInBase =
-            groupEvpnRoutes(
-                expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
-                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
-                matchingNodes,
-                vrfRegex,
-                network,
-                protocolSpec);
+            dp = _batfish.loadDataPlane(reference);
+            routesGroupedByKeyInDelta =
+                groupEvpnRoutes(
+                    expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
+                    expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
+                    matchingNodes,
+                    vrfRegex,
+                    network,
+                    protocolSpec);
+            routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+            yield new ArrayList<>(getEvpnRouteRowsDiff(routesDiffRaw));
+          }
+          case MAIN -> {
+            dp = _batfish.loadDataPlane(snapshot);
+            routesGroupedByKeyInBase =
+                groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
-        dp = _batfish.loadDataPlane(reference);
-        routesGroupedByKeyInDelta =
-            groupEvpnRoutes(
-                expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
-                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
-                matchingNodes,
-                vrfRegex,
-                network,
-                protocolSpec);
-        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = new ArrayList<>(getEvpnRouteRowsDiff(routesDiffRaw));
-        break;
+            dp = _batfish.loadDataPlane(reference);
+            routesGroupedByKeyInDelta =
+                groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
-      case MAIN:
-        dp = _batfish.loadDataPlane(snapshot);
-        routesGroupedByKeyInBase =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
-
-        dp = _batfish.loadDataPlane(reference);
-        routesGroupedByKeyInDelta =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
-
-        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = new ArrayList<>(getAbstractRouteRowsDiff(routesDiffRaw));
-        break;
-
-      default:
-        throw new IllegalStateException(
-            String.format("Unknown RIB protocol %s", question.getRib()));
-    }
+            routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+            yield new ArrayList<>(getAbstractRouteRowsDiff(routesDiffRaw));
+          }
+        };
 
     rows.sort(DIFF_COMPARATOR);
     diffAnswer.postProcessAnswer(_question, rows);
@@ -385,7 +377,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
-                    Schema.list(Schema.LONG),
+                    Schema.set(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
                     Boolean.TRUE))
@@ -473,7 +465,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
-                    Schema.list(Schema.LONG),
+                    Schema.set(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
                     Boolean.TRUE))
@@ -489,7 +481,6 @@ public class RoutesAnswerer extends Answerer {
                     COL_WEIGHT, Schema.INTEGER, "Route's BGP Weight", Boolean.FALSE, Boolean.TRUE));
         break;
       case MAIN:
-      default:
         columnBuilder
             .add(
                 new ColumnMetadata(
@@ -513,7 +504,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_ADMIN_DISTANCE,
-                    Schema.INTEGER,
+                    Schema.LONG,
                     "Route's Admin distance",
                     Boolean.FALSE,
                     Boolean.TRUE));
@@ -733,14 +724,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -937,14 +928,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -1051,20 +1042,18 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
-      default:
-        throw new IllegalStateException(String.format("Unknown RIB protocol %s", rib));
     }
     columnBuilder.add(
         new ColumnMetadata(

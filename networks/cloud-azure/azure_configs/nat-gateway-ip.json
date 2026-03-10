@@ -1,0 +1,19 @@
+{
+  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/publicIPAddresses/nat-ip",
+  "name": "nat-ip",
+  "type": "Microsoft.Network/publicIPAddresses",
+  "location": "westeurope",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "fa724bc0-13b0-4a4f-8f60-08a099b6a80c",
+    "ipAddress": "40.100.200.240",
+    "publicIPAddressVersion": "IPv4",
+    "publicIPAllocationMethod": "Static",
+    "idleTimeoutInMinutes": 4,
+    "ipTags": []
+  },
+  "sku": {
+    "name": "Standard",
+    "tier": "Regional"
+  }
+}

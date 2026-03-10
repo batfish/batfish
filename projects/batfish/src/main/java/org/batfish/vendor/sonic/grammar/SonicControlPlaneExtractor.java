@@ -7,7 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -125,7 +125,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
    * a file cannot be determined.
    */
   public static @Nonnull Map<SonicFileType, String> getSonicFileMap(Map<String, String> fileTexts) {
-    Map<SonicFileType, String> fileTypeMap = new HashMap<>();
+    Map<SonicFileType, String> fileTypeMap = new EnumMap<>(SonicFileType.class);
 
     // Filetype detection is based on the tail of the filename
 

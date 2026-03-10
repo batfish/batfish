@@ -5,10 +5,6 @@ import org.batfish.coordinator.QueuedWork;
 
 public interface WorkQueue extends Iterable<QueuedWork> {
 
-  enum Type {
-    memory
-  }
-
   boolean delete(QueuedWork qWork);
 
   QueuedWork deque();

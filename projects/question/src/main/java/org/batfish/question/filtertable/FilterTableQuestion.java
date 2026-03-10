@@ -39,8 +39,8 @@ public class FilterTableQuestion extends Question {
   @JsonCreator
   public FilterTableQuestion(
       @JsonProperty(PROP_INNER_QUESTION) Question innerQuestion,
-      @Nullable @JsonProperty(PROP_FILTER) Filter filter,
-      @Nullable @JsonProperty(PROP_COLUMNS) Set<String> columns) {
+      @JsonProperty(PROP_FILTER) @Nullable Filter filter,
+      @JsonProperty(PROP_COLUMNS) @Nullable Set<String> columns) {
     if (innerQuestion == null) {
       throw new IllegalArgumentException("InnerQuestion not specified for filter table");
     }

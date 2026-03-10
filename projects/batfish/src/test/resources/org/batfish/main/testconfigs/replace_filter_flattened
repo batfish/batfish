@@ -4,7 +4,7 @@ set firewall family inet filter example-filter term term-1 from source-address 1
 set firewall family inet filter example-filter term term-1 then accept
 set firewall family inet filter example-filter2 term term-1 from source-address 10.0.0.0/8
 set firewall family inet filter example-filter2 term term-1 then accept
-delete firewall family inet filter example-filter
+replace firewall family inet filter example-filter
 set firewall family inet filter example-filter term term-1 from destination-address 10.0.0.0/8
 set firewall family inet filter example-filter term term-1 then accept
 set firewall family inet filter example-filter2 term term-1 from destination-address 10.0.0.0/8

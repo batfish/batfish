@@ -49,9 +49,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.Stack;
+import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -142,6 +145,17 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link FlowTracer}. */
 public final class FlowTracerTest {
   @Rule public TemporaryFolder _temporaryFolder = new TemporaryFolder();
+
+  /** Creates an initial {@link FlowTracer} for a new traceroute. */
+  static @Nonnull FlowTracer testFlowTracer(
+      TracerouteEngineImplContext tracerouteContext,
+      String node,
+      @Nullable String ingressInterface,
+      Flow originalFlow,
+      Consumer<TraceAndReverseFlow> consumer) {
+    return initialFlowTracer(
+        tracerouteContext, node, ingressInterface, originalFlow, new LegacyTraceRecorder(consumer));
+  }
 
   private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(
       boolean fibLookup,
@@ -973,7 +987,7 @@ public final class FlowTracerTest {
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib)),
             false,
             configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    FlowTracer flowTracer = testFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
     assertThat(traces.build(), contains(hasTrace(hasDisposition(NULL_ROUTED))));
@@ -1053,7 +1067,7 @@ public final class FlowTracerTest {
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib, nextVrfName, nextFib)),
             false,
             configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    FlowTracer flowTracer = testFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
 
     // Should be delegated from srcFib to nextFib and eventually NULL_ROUTED
@@ -1152,7 +1166,7 @@ public final class FlowTracerTest {
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib, nextVrfName, nextFib)),
             false,
             configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    FlowTracer flowTracer = testFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
 
     // Should be delegated from srcFib to nextFib and eventually ACCEPTED
@@ -1244,7 +1258,7 @@ public final class FlowTracerTest {
             ImmutableMap.of(hostname, ImmutableMap.of(vrf1Name, fib1, vrf2Name, fib2)),
             false,
             configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    FlowTracer flowTracer = testFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, vrf1Name, fib1);
 
     // Should be delegated from fib1 to fib2 and then looped back to fib1
@@ -1340,7 +1354,7 @@ public final class FlowTracerTest {
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib)),
             false,
             configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    FlowTracer flowTracer = testFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
     assertThat(traces.build(), contains(hasTrace(hasDisposition(DELIVERED_TO_SUBNET))));
@@ -1419,21 +1433,21 @@ public final class FlowTracerTest {
     // 1. evaluate dstIp=ip1 on c1. Should be transformed to ip3
     {
       Flow flow = fb.setDstIp(ip1).build();
-      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      FlowTracer flowTracer = testFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
       assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip3));
     }
 
     // 2. evaluate dstIp=ip2 on c1. Should not be transformed.
     {
       Flow flow = fb.setDstIp(ip2).build();
-      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      FlowTracer flowTracer = testFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
       assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip2));
     }
 
     // 3. evaluate dstIp=ip1 after forking to c2. Should not be transformed
     {
       Flow flow = fb.setDstIp(ip1).build();
-      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      FlowTracer flowTracer = testFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
       flowTracer =
           flowTracer.forkTracer(c2, null, new ArrayList<>(), null, Configuration.DEFAULT_VRF_NAME);
       assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip1));
@@ -1442,7 +1456,7 @@ public final class FlowTracerTest {
     // 4. evaluate dstIp=ip2 after forking to c2. Should be transformed to ip3
     {
       Flow flow = fb.setDstIp(ip2).build();
-      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      FlowTracer flowTracer = testFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
       flowTracer =
           flowTracer.forkTracer(c2, null, new ArrayList<>(), null, Configuration.DEFAULT_VRF_NAME);
       assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip3));
@@ -1981,7 +1995,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer =
-        initialFlowTracer(ctxt, c1.getHostname(), null, flow, traceAndReverseFlow -> {});
+        testFlowTracer(ctxt, c1.getHostname(), null, flow, traceAndReverseFlow -> {});
 
     Ip dstIp2 = Ip.parse("2.2.2.2");
     flowTracer.applyTransformation(
@@ -2109,6 +2123,41 @@ public final class FlowTracerTest {
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
       assertThat(traces.get(0).getTrace(), hasDisposition(DELIVERED_TO_SUBNET));
+    }
+  }
+
+  /**
+   * A {@link TraceRecorder} that only records complete traces, and passes them to a {@link
+   * Consumer}.
+   */
+  public static final class LegacyTraceRecorder implements TraceRecorder {
+
+    private final Consumer<TraceAndReverseFlow> _consumer;
+
+    LegacyTraceRecorder(Consumer<TraceAndReverseFlow> consumer) {
+      _consumer = consumer;
+    }
+
+    @Override
+    public void recordTrace(List<HopInfo> hopInfos) {
+      HopInfo lastHop = hopInfos.get(hopInfos.size() - 1);
+      FlowDisposition disposition = lastHop.getDisposition();
+      checkArgument(disposition != null, "Last hop of a complete trace must have a disposition");
+      List<Hop> hops =
+          hopInfos.stream().map(HopInfo::getHop).collect(ImmutableList.toImmutableList());
+      Set<FirewallSessionTraceInfo> newSessions =
+          hopInfos.stream()
+              .map(HopInfo::getFirewallSessionTraceInfo)
+              .filter(Objects::nonNull)
+              .collect(ImmutableSet.toImmutableSet());
+      _consumer.accept(
+          new TraceAndReverseFlow(
+              new Trace(disposition, hops), lastHop.getReturnFlow(), newSessions));
+    }
+
+    @Override
+    public boolean tryRecordPartialTrace(List<HopInfo> hops) {
+      return false;
     }
   }
 }

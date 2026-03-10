@@ -1,0 +1,9 @@
+#
+set version aaa
+set system host-name risky-regexes
+#
+set policy-options community COMM_ALL members "target:123456L:.*$"
+set policy-options community COMM_RISKY_LONG_MATCHES members "8075:[1][0][0-3,5-9][0-9][0-9]$"
+set policy-options community COMM_REGEX members "^_200_5?(1-3)*\?:[^3]+$"
+set policy-options community COMM_RISKY_INTERPRETED members ":111"
+#

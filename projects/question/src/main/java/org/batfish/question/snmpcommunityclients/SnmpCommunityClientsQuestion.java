@@ -63,33 +63,30 @@ public final class SnmpCommunityClientsQuestion extends Question {
     return "snmpCommunityClients";
   }
 
-  @Nullable
   @JsonProperty(PROP_COMMUNITY)
-  public String getCommunity() {
+  public @Nullable String getCommunity() {
     return _community;
   }
 
-  @Nullable
   @JsonProperty(PROP_CLIENTS)
-  public String getClients() {
+  public @Nullable String getClients() {
     return _clients;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   IpSpaceSpecifier getClientsIpSpaceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _clients, DEFAULT_CLIENTS_IPSPACE_SPECIFIER);
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, DEFAULT_NODE_SPECIFIER);
   }

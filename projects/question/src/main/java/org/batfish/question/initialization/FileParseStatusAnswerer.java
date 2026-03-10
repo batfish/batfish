@@ -66,9 +66,8 @@ class FileParseStatusAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getRow(
+  static @Nonnull Row getRow(
       String filename,
       ParseStatus status,
       ConfigurationFormat format,

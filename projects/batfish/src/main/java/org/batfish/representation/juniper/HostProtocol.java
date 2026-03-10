@@ -1,12 +1,13 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Optional;
 import java.util.function.Supplier;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -15,7 +16,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public enum HostProtocol {
   ALL,
@@ -59,7 +59,7 @@ public enum HostProtocol {
               other.getMatchExpr().ifPresent(exprs::add);
             }
           }
-          return Optional.of(new OrMatchExpr(exprs.build(), traceElement));
+          return Optional.of(or(exprs.build(), traceElement));
         }
 
       case BFD:
@@ -209,12 +209,7 @@ public enum HostProtocol {
               HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.VRRP)).build();
           return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
-
-      default:
-        {
-          throw new BatfishException(
-              "missing definition for host-inbound-traffic protocol: \"" + name() + "\"");
-        }
     }
+    throw new IllegalStateException("Should be unreachable");
   }
 }

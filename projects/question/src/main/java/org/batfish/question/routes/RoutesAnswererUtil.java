@@ -204,19 +204,14 @@ public class RoutesAnswererUtil {
   @VisibleForTesting
   static boolean prefixMatches(
       PrefixMatchType prefixMatchType, Prefix inputNetwork, Prefix routeNetwork) {
-    switch (prefixMatchType) {
-      case EXACT:
-        return inputNetwork.equals(routeNetwork);
-      case LONGER_PREFIXES:
-        return inputNetwork.containsPrefix(routeNetwork);
-      case SHORTER_PREFIXES:
-        return routeNetwork.containsPrefix(inputNetwork);
-      case LONGEST_PREFIX_MATCH: // handled separately in the caller
-        throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
-      default:
-        throw new UnsupportedOperationException(
-            "Unimplemented prefix match type " + prefixMatchType);
-    }
+    // handled separately in the caller
+    return switch (prefixMatchType) {
+      case EXACT -> inputNetwork.equals(routeNetwork);
+      case LONGER_PREFIXES -> inputNetwork.containsPrefix(routeNetwork);
+      case SHORTER_PREFIXES -> routeNetwork.containsPrefix(inputNetwork);
+      case LONGEST_PREFIX_MATCH ->
+          throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
+    };
   }
 
   /**
@@ -456,7 +451,11 @@ public class RoutesAnswererUtil {
         .put(COL_PATH_ID, bgpv4Route.getPathId())
         .put(
             COL_CLUSTER_LIST,
-            bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
+            bgpv4Route.getClusterList().isEmpty()
+                ? null
+                : bgpv4Route.getClusterList().stream()
+                    .sorted()
+                    .collect(ImmutableList.toImmutableList()))
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .put(COL_STATUS, statuses)
         .put(
@@ -702,7 +701,7 @@ public class RoutesAnswererUtil {
       RouteRowAttribute routeRowAttributeBase,
       RouteRowAttribute routeRowAttributeReference) {
     RouteEntryPresenceStatus routeEntryPresenceStatus;
-    if (secondaryKeyStatus.equals(KeyPresenceStatus.IN_BOTH)) {
+    if (secondaryKeyStatus == KeyPresenceStatus.IN_BOTH) {
       if (routeRowAttributeBase != null && routeRowAttributeReference != null) {
         routeEntryPresenceStatus =
             routeRowAttributeBase.equals(routeRowAttributeReference)
@@ -724,7 +723,8 @@ public class RoutesAnswererUtil {
     return routeEntryPresenceStatus;
   }
 
-  private static void populateBgpRouteAttributes(
+  @VisibleForTesting
+  static void populateBgpRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     String prefix = base ? COL_BASE_PREFIX : COL_DELTA_PREFIX;
     rowBuilder
@@ -739,7 +739,11 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
         .put(
             prefix + COL_CLUSTER_LIST,
-            routeRowAttribute != null ? routeRowAttribute.getClusterList() : null)
+            routeRowAttribute == null
+                ? null
+                : routeRowAttribute.getClusterList().stream()
+                    .sorted()
+                    .collect(ImmutableList.toImmutableList()))
         .put(
             prefix + COL_COMMUNITIES,
             routeRowAttribute != null ? routeRowAttribute.getCommunities() : null)

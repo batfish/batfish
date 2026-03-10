@@ -1,14 +1,20 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -16,23 +22,35 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD} */
 public class CommunitySetMatchExprToBDDTest {
@@ -43,6 +61,8 @@ public class CommunitySetMatchExprToBDDTest {
   private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetMatchExprToBDD _communitySetMatchExprToBDD;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -57,7 +77,7 @@ public class CommunitySetMatchExprToBDDTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     _configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -67,12 +87,11 @@ public class CommunitySetMatchExprToBDDTest {
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    TransferBDD transferBDD =
-        new TransferBDD(
-            _configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(_configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _communitySetMatchExprToBDD = new CommunitySetMatchExprToBDD();
   }
@@ -96,6 +115,39 @@ public class CommunitySetMatchExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from("^20:");
 
     assertEquals(cvarToBDD(cvar1).not().and(cvarToBDD(cvar2)), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetHasSize() {
+    List<HasSize> treatFalse =
+        ImmutableList.of(
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(64))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(63))),
+            new HasSize(new IntComparison(IntComparator.GT, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.GE, new LiteralInt(5))));
+    List<HasSize> treatTrue =
+        ImmutableList.of(
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(100))),
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(65))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(64))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(500))),
+            new HasSize(new IntComparison(IntComparator.GT, new LiteralInt(-5))),
+            new HasSize(new IntComparison(IntComparator.GE, new LiteralInt(0))));
+
+    for (HasSize hs : treatFalse) {
+      assertThat(_communitySetMatchExprToBDD.visitHasSize(hs, _arg), isZero());
+    }
+    for (HasSize hs : treatTrue) {
+      assertThat(_communitySetMatchExprToBDD.visitHasSize(hs, _arg), isOne());
+    }
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            _communitySetMatchExprToBDD.visitHasSize(
+                new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(5))), _arg));
   }
 
   @Test
@@ -151,6 +203,40 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
+  public void testVisitCommunitySetMatchRegex() {
+    CommunitySetMatchRegex csmr =
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            "^65000:123 65011:12[3]$");
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg);
+  }
+
+  @Test
+  public void testVisitCommunityNot() {
+    HasCommunity hc =
+        new HasCommunity(new CommunityNot(new CommunityIs(StandardCommunity.parse("20:30"))));
+
+    BDD result = _communitySetMatchExprToBDD.visitHasCommunity(hc, _arg);
+    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
+    Set<Integer> notCommunityAps =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("20:30")));
+    BDD expected =
+        result
+            .getFactory()
+            .orAll(
+                IntStream.range(0, aps.length)
+                    .filter(i -> !notCommunityAps.contains(i))
+                    .mapToObj(i -> aps[i])
+                    .toList());
+
+    assertEquals(expected, result);
+  }
+
+  @Test
   public void testVisitCommunitySetNot() {
     CommunitySetNot csn =
         new CommunitySetNot(new HasCommunity(new CommunityIs(StandardCommunity.parse("20:30"))));
@@ -194,6 +280,13 @@ public class CommunitySetMatchExprToBDDTest {
     CommunityVar cvar = CommunityVar.from(StandardCommunity.parse("21:30"));
 
     assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitHasSize() {
+    HasSize hs = new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetMatchExprToBDD.visitHasSize(hs, _arg);
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

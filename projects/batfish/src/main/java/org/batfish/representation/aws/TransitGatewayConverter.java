@@ -93,10 +93,9 @@ public final class TransitGatewayConverter {
               result.stream()
                   .map(TransitGatewayWithMetadata::getTransitGatewayId)
                   .collect(Collectors.toSet()));
-      warnings.redFlag(
-          String.format(
-              "Could not find authoritative representation for transit gateways: %s",
-              String.join(" ", missing)));
+      warnings.redFlagf(
+          "Could not find authoritative representation for transit gateways: %s",
+          String.join(" ", missing));
     }
     return result;
   }

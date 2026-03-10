@@ -107,9 +107,8 @@ public final class BgpSessionAnswererUtils {
     return null;
   }
 
-  @Nullable
   @VisibleForTesting
-  static ConfiguredSessionStatus getLocallyBrokenStatus(
+  static @Nullable ConfiguredSessionStatus getLocallyBrokenStatus(
       BgpActivePeerConfig neighbor, SessionType sessionType) {
     if (neighbor.getLocalIp() == null) {
       if (sessionType == BgpSessionProperties.SessionType.EBGP_MULTIHOP

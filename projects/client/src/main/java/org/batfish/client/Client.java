@@ -20,8 +20,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -50,7 +48,6 @@ import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.BfCoordWorkHelper.WorkResult;
 import org.batfish.client.Command.CommandUsage;
@@ -100,18 +97,7 @@ import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReader.Option;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.UserInterruptException;
-import org.jline.reader.impl.completer.ArgumentCompleter;
-import org.jline.reader.impl.completer.NullCompleter;
-import org.jline.terminal.TerminalBuilder;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
-@SuppressWarnings({"restriction"})
 public class Client extends AbstractClient implements IClient {
 
   private static final Set<String> COMPARATORS =
@@ -126,11 +112,7 @@ public class Client extends AbstractClient implements IClient {
   private static final String DIFF_NOT_READY_MSG =
       "Cannot ask differential question without first setting reference snapshot\n";
 
-  private static final String ENV_HOME = "HOME";
-
   private static final String FLAG_FAILING_TEST = "-error";
-
-  private static final String HISTORY_FILE = ".batfishclient_history";
 
   private static final int NUM_TRIES_WARNING_THRESHOLD = 5;
 
@@ -364,6 +346,13 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case BGP_SESSION_PROPERTIES:
+        if (!value.isObject() && !value.isNull()) {
+          throw new BatfishException(
+              String.format(
+                  "Not a valid BGP session properties object: %s", expectedType.getName()));
+        }
+        break;
       case BGP_SESSION_STATUS_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
@@ -471,7 +460,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        Enum.valueOf(InterfaceType.class, value.textValue().toUpperCase());
+        InterfaceType ignored = Enum.valueOf(InterfaceType.class, value.textValue().toUpperCase());
         break;
       case INTERFACES_SPEC:
         if (!(value.isTextual())) {
@@ -733,11 +722,7 @@ public class Client extends AbstractClient implements IClient {
 
   private String _currTestrig = null;
 
-  private boolean _exit;
-
   BatfishLogger _logger;
-
-  private LineReader _reader;
 
   private Settings _settings;
 
@@ -748,51 +733,13 @@ public class Client extends AbstractClient implements IClient {
     _bfq = new TreeMap<>();
     _settings = settings;
 
-    switch (_settings.getRunMode()) {
-      case batch:
-        if (_settings.getBatchCommandFile() == null) {
-          System.err.println(
-              "org.batfish.client: Command file not specified while running in batch mode.");
-          System.err.printf(
-              "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want "
-                  + "interactive mode\n",
-              Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
-          System.exit(1);
-        }
-        _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
-        break;
-      case interactive:
-        System.err.println(
-            "This is not a supported client for Batfish. Please use pybatfish following the"
-                + " instructions in the README:"
-                + " https://github.com/batfish/batfish/#how-do-i-get-started");
-        try {
-          _reader =
-              LineReaderBuilder.builder()
-                  .terminal(TerminalBuilder.builder().build())
-                  .completer(new ArgumentCompleter(new CommandCompleter(), new NullCompleter()))
-                  .build();
-          Path historyPath = Paths.get(System.getenv(ENV_HOME), HISTORY_FILE);
-          historyPath.toFile().createNewFile();
-          _reader.setVariable(LineReader.HISTORY_FILE, historyPath.toAbsolutePath().toString());
-          _reader.unsetOpt(Option.INSERT_TAB); // supports completion with nothing entered
-
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          PrintWriter pWriter = new PrintWriter(_reader.getTerminal().output(), true);
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          OutputStream os = new WriterOutputStream(pWriter, StandardCharsets.UTF_8);
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          PrintStream ps = new PrintStream(os, true);
-          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
-        } catch (Exception e) {
-          System.err.printf("Could not initialize client: %s\n", e.getMessage());
-          e.printStackTrace();
-        }
-        break;
-      default:
-        System.err.println("org.batfish.client: Unknown run mode.");
-        System.exit(1);
+    if (_settings.getBatchCommandFile() == null) {
+      System.err.println(
+          "org.batfish.client: Command file not specified while running in batch mode.");
+      System.err.printf("Use '-%s <cmdfile>' for batch mode\n", Settings.ARG_COMMAND_FILE);
+      System.exit(1);
     }
+    _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
   }
 
   public Client(String[] args) {
@@ -1050,14 +997,6 @@ public class Client extends AbstractClient implements IClient {
     return result;
   }
 
-  private boolean exit(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.EXIT)) {
-      return false;
-    }
-    _exit = true;
-    return true;
-  }
-
   private boolean generateDataplane(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
@@ -1217,15 +1156,6 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void initHelpers() {
-    switch (_settings.getRunMode()) {
-      case batch:
-      case interactive:
-        break;
-
-      default:
-        return;
-    }
-
     _workHelper = new BfCoordWorkHelper(_logger, _settings);
 
     int numTries = 0;
@@ -1616,7 +1546,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean processCommand(String command) {
     String line = command.trim();
-    if (line.length() == 0 || line.startsWith("#")) {
+    if (line.isEmpty() || line.startsWith("#")) {
       return true;
     }
     _logger.debugf("Doing command: %s\n", line);
@@ -1650,79 +1580,39 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters)
       throws Exception {
-    switch (command) {
-      case ADD_BATFISH_OPTION:
-        return addBatfishOption(words, options, parameters);
-      case ANSWER:
-        return answer(words, outWriter, options, parameters);
-      case DEBUG_DELETE:
-        return debugDelete(outWriter, options, parameters);
-      case DEBUG_GET:
-        return debugGet(outWriter, options, parameters);
-      case DEBUG_POST:
-        return debugPost(outWriter, options, parameters);
-      case DEBUG_PUT:
-        return debugPut(outWriter, options, parameters);
-      case DEL_BATFISH_OPTION:
-        return delBatfishOption(options, parameters);
-      case DEL_NETWORK:
-        return delNetwork(options, parameters);
-      case GEN_DP:
-        return generateDataplane(outWriter, options, parameters);
-      case GET:
-        return get(words, outWriter, options, parameters);
-      case GET_POJO_TOPOLOGY:
-        return getPojoTopology(outWriter, options, parameters);
-      case HELP:
-        return help(options, parameters);
-      case INIT_REFERENCE_SNAPSHOT:
-        return initSnapshot(outWriter, options, parameters, true);
-      case INIT_NETWORK:
-        return initNetwork(options, parameters);
-      case INIT_SNAPSHOT:
-        return initSnapshot(outWriter, options, parameters, false);
-      case LOAD_QUESTIONS:
-        return loadQuestions(outWriter, options, parameters, _bfq);
-      case SET_BATFISH_LOGLEVEL:
-        return setBatfishLogLevel(options, parameters);
-      case SET_REFERENCE_SNAPSHOT:
-        return setReferenceSnapshot(options, parameters);
-      case SET_LOGLEVEL:
-        return setLogLevel(options, parameters);
-      case SET_NETWORK:
-        return setNetwork(options, parameters);
-      case SET_SNAPSHOT:
-        return setSnapshot(options, parameters);
-      case SHOW_API_KEY:
-        return showApiKey(options, parameters);
-      case SHOW_BATFISH_LOGLEVEL:
-        return showBatfishLogLevel(options, parameters);
-      case SHOW_BATFISH_OPTIONS:
-        return showBatfishOptions(options, parameters);
-      case SHOW_COORDINATOR_HOST:
-        return showCoordinatorHost(options, parameters);
-      case SHOW_REFERENCE_SNAPSHOT:
-        return showReferenceSnapshot(options, parameters);
-      case SHOW_LOGLEVEL:
-        return showLogLevel(options, parameters);
-      case SHOW_NETWORK:
-        return showNetwork(options, parameters);
-      case SHOW_SNAPSHOT:
-        return showSnapshot(options, parameters);
-      case TEST:
-        return test(options, parameters);
-      case VALIDATE_TEMPLATE:
-        return validateTemplate(words, outWriter, options, parameters);
-
-      case EXIT:
-      case QUIT:
-        return exit(options, parameters);
-
-      default:
-        _logger.errorf("Unsupported command %s\n", words[0]);
-        _logger.error("Type 'help' to see the list of valid commands\n");
-        return false;
-    }
+    return switch (command) {
+      case ADD_BATFISH_OPTION -> addBatfishOption(words, options, parameters);
+      case ANSWER -> answer(words, outWriter, options, parameters);
+      case DEBUG_DELETE -> debugDelete(outWriter, options, parameters);
+      case DEBUG_GET -> debugGet(outWriter, options, parameters);
+      case DEBUG_POST -> debugPost(outWriter, options, parameters);
+      case DEBUG_PUT -> debugPut(outWriter, options, parameters);
+      case DEL_BATFISH_OPTION -> delBatfishOption(options, parameters);
+      case DEL_NETWORK -> delNetwork(options, parameters);
+      case GEN_DP -> generateDataplane(outWriter, options, parameters);
+      case GET -> get(words, outWriter, options, parameters);
+      case GET_POJO_TOPOLOGY -> getPojoTopology(outWriter, options, parameters);
+      case HELP -> help(options, parameters);
+      case INIT_REFERENCE_SNAPSHOT -> initSnapshot(outWriter, options, parameters, true);
+      case INIT_NETWORK -> initNetwork(options, parameters);
+      case INIT_SNAPSHOT -> initSnapshot(outWriter, options, parameters, false);
+      case LOAD_QUESTIONS -> loadQuestions(outWriter, options, parameters, _bfq);
+      case SET_BATFISH_LOGLEVEL -> setBatfishLogLevel(options, parameters);
+      case SET_REFERENCE_SNAPSHOT -> setReferenceSnapshot(options, parameters);
+      case SET_LOGLEVEL -> setLogLevel(options, parameters);
+      case SET_NETWORK -> setNetwork(options, parameters);
+      case SET_SNAPSHOT -> setSnapshot(options, parameters);
+      case SHOW_API_KEY -> showApiKey(options, parameters);
+      case SHOW_BATFISH_LOGLEVEL -> showBatfishLogLevel(options, parameters);
+      case SHOW_BATFISH_OPTIONS -> showBatfishOptions(options, parameters);
+      case SHOW_COORDINATOR_HOST -> showCoordinatorHost(options, parameters);
+      case SHOW_REFERENCE_SNAPSHOT -> showReferenceSnapshot(options, parameters);
+      case SHOW_LOGLEVEL -> showLogLevel(options, parameters);
+      case SHOW_NETWORK -> showNetwork(options, parameters);
+      case SHOW_SNAPSHOT -> showSnapshot(options, parameters);
+      case TEST -> test(options, parameters);
+      case VALIDATE_TEMPLATE -> validateTemplate(words, outWriter, options, parameters);
+    };
   }
 
   private boolean debugDelete(FileWriter outWriter, List<String> options, List<String> parameters) {
@@ -1895,23 +1785,7 @@ public class Client extends AbstractClient implements IClient {
       return;
     }
 
-    switch (_settings.getRunMode()) {
-      case batch:
-        {
-          runBatchFile();
-          break;
-        }
-
-      case interactive:
-        {
-          runInteractive();
-          break;
-        }
-
-      default:
-        System.err.println("org.batfish.client: Unknown run mode.");
-        System.exit(1);
-    }
+    runBatchFile();
   }
 
   private void runBatchFile() {
@@ -1920,34 +1794,6 @@ public class Client extends AbstractClient implements IClient {
     boolean result = processCommands(commands);
     if (!result) {
       System.exit(1);
-    }
-  }
-
-  private void runInteractive() {
-    SignalHandler handler = signal -> _logger.debugf("Client: Ignoring signal: %s\n", signal);
-    Signal.handle(new Signal("INT"), handler);
-    try {
-      while (!_exit) {
-        try {
-          String rawLine = _reader.readLine("batfish> ");
-          if (rawLine == null) {
-            break;
-          }
-          processCommand(rawLine);
-        } catch (UserInterruptException e) {
-          continue;
-        }
-      }
-    } catch (EndOfFileException e) {
-      // ignored
-    } catch (Throwable t) {
-      t.printStackTrace();
-    } finally {
-      try {
-        _reader.getHistory().save();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
     }
   }
 
@@ -2088,9 +1934,8 @@ public class Client extends AbstractClient implements IClient {
    * Computes a unified diff of the input strings, returning the empty string if the {@code
    * expected} and {@code actual} are equal.
    */
-  @Nonnull
   @VisibleForTesting
-  static String getPatch(
+  static @Nonnull String getPatch(
       String expected, String actual, String expectedFileName, String actualFileName) {
     List<String> referenceLines = Arrays.asList(expected.split("\n"));
     List<String> testLines = Arrays.asList(actual.split("\n"));
@@ -2229,7 +2074,7 @@ public class Client extends AbstractClient implements IClient {
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
     if (createZip) {
-      uploadTarget = CommonUtil.createTempFile("testrig", "zip");
+      uploadTarget = createTempFile("testrig", "zip");
       zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
     }
     try {
@@ -2246,7 +2091,7 @@ public class Client extends AbstractClient implements IClient {
   private static void validateInstanceData(InstanceData instanceData) {
     String description = instanceData.getDescription();
     String q = "Question: '" + instanceData.getInstanceName() + "'";
-    if (description == null || description.length() == 0) {
+    if (description == null || description.isEmpty()) {
       throw new BatfishException(q + " is missing question description");
     }
     for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
@@ -2254,7 +2099,7 @@ public class Client extends AbstractClient implements IClient {
       Variable variable = e.getValue();
       String v = "Variable: '" + variableName + "' in " + q;
       String variableDescription = variable.getDescription();
-      if (variableDescription == null || variableDescription.length() == 0) {
+      if (variableDescription == null || variableDescription.isEmpty()) {
         throw new BatfishException(v + " is missing description");
       }
     }

@@ -1,0 +1,11 @@
+#
+set system host-name bgp-validation
+#
+set routing-options validation notification-rib inet.0
+set routing-options validation notification-rib inet6.0
+set routing-options validation group RPKI-GRP max-sessions 2
+set routing-options validation group RPKI-GRP session 1.2.3.4 refresh-time 180
+set routing-options validation group RPKI-GRP session 1.2.3.4 hold-time 360
+set routing-options validation group RPKI-GRP session 1.2.3.4 record-lifetime 3600
+set routing-options validation group RPKI-GRP session 1.2.3.4 port 567
+set routing-options validation group RPKI-GRP session 1.2.3.4 local-address 5.6.7.8

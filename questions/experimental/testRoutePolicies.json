@@ -5,6 +5,7 @@
     "policies": "${policies}",
     "inputRoutes": "${inputRoutes}",
     "direction": "${direction}",
+    "bgpSessionProperties": "${bgpSessionProperties}",
     "instance": {
         "description": "Evaluates the processing of a route by a given policy.",
         "instanceName": "testRoutePolicies",
@@ -13,7 +14,8 @@
             "nodes",
             "policies",
             "inputRoutes",
-            "direction"
+            "direction",
+            "bgpSessionProperties"
         ],
         "tags": [
             "routing"
@@ -41,6 +43,12 @@
                 "description": "The BGP route announcements to test the policy on",
                 "type": "bgpRoutes",
                 "displayName": "Input Routes"
+            },
+            "bgpSessionProperties": {
+                "description": "The BGP session properties to use when testing routes",
+                "type": "bgpSessionProperties",
+                "optional": true,
+                "displayName": "BGP Session Properties"
             }
         }
     }

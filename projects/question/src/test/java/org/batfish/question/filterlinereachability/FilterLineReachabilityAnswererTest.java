@@ -7,11 +7,11 @@ import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.getSpecifiedFilters;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.findBlockingPropsForLine;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -36,7 +36,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -44,6 +43,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -95,10 +95,11 @@ public class FilterLineReachabilityAnswererTest {
     _c1.setInterfaces(
         ImmutableSortedMap.of(
             "iface",
-            Interface.builder().setName("iface").build(),
+            TestInterface.builder().setName("iface").build(),
             "iface2",
-            Interface.builder().setName("iface2").build()));
-    _c2.setInterfaces(ImmutableSortedMap.of("iface", Interface.builder().setName("iface").build()));
+            TestInterface.builder().setName("iface2").build()));
+    _c2.setInterfaces(
+        ImmutableSortedMap.of("iface", TestInterface.builder().setName("iface").build()));
   }
 
   @Test
@@ -302,11 +303,11 @@ public class FilterLineReachabilityAnswererTest {
     _c1.setInterfaces(
         ImmutableSortedMap.of(
             "iface1",
-            Interface.builder().setName("iface").build(),
+            TestInterface.builder().setName("iface").build(),
             "iface2",
-            Interface.builder().setName("iface2").build(),
+            TestInterface.builder().setName("iface2").build(),
             "iface3",
-            Interface.builder().setName("iface2").build()));
+            TestInterface.builder().setName("iface2").build()));
 
     // acl references iface1 within and expr, iface2 within or expr, and iface3 within not expr; all
     // three should be included in referenced interfaces

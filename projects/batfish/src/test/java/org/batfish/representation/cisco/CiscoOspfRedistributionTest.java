@@ -3,9 +3,9 @@ package org.batfish.representation.cisco;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cisco.CiscoConfiguration.NOT_DEFAULT_ROUTE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import org.batfish.datamodel.ConfigurationFormat;

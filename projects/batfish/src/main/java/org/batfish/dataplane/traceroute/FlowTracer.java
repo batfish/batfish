@@ -118,7 +118,6 @@ import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
@@ -183,8 +182,7 @@ class FlowTracer {
 
       @Override
       public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
-        // guarantee type correctness
-        FibNullRoute.class.cast(_rhs);
+        FibNullRoute ignored = (FibNullRoute) _rhs;
         return 0;
       }
     }
@@ -257,17 +255,6 @@ class FlowTracer {
 
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
-
-  /** Creates an initial {@link FlowTracer} for a new traceroute. */
-  static @Nonnull FlowTracer initialFlowTracer(
-      TracerouteEngineImplContext tracerouteContext,
-      String node,
-      @Nullable String ingressInterface,
-      Flow originalFlow,
-      Consumer<TraceAndReverseFlow> consumer) {
-    return initialFlowTracer(
-        tracerouteContext, node, ingressInterface, originalFlow, new LegacyTraceRecorder(consumer));
-  }
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
   static @Nonnull FlowTracer initialFlowTracer(
@@ -1291,18 +1278,14 @@ class FlowTracer {
       Action action,
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
-    switch (action) {
-      case FORWARD_OUT_IFACE:
-        return ingressInterface != null
-            ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
-            : Accept.INSTANCE;
-      case POST_NAT_FIB_LOOKUP:
-        return PostNatFibLookup.INSTANCE;
-      case PRE_NAT_FIB_LOOKUP:
-        return PreNatFibLookup.INSTANCE;
-      default:
-        throw new UnsupportedOperationException("Unrecognized action " + action);
-    }
+    return switch (action) {
+      case FORWARD_OUT_IFACE ->
+          ingressInterface != null
+              ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
+              : Accept.INSTANCE;
+      case POST_NAT_FIB_LOOKUP -> PostNatFibLookup.INSTANCE;
+      case PRE_NAT_FIB_LOOKUP -> PreNatFibLookup.INSTANCE;
+    };
   }
 
   @VisibleForTesting

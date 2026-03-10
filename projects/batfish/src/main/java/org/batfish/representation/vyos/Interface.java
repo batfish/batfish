@@ -10,26 +10,21 @@ public class Interface implements Serializable {
 
   public static double getDefaultBandwidth(InterfaceType type) {
     // TODO: update with correct values
-    switch (type) {
-      case ETHERNET:
-      case LOOPBACK:
-      case VTI:
-        return 1E12d;
-
-      case BONDING:
-      case BRIDGE:
-      case DUMMY:
-      case INPUT:
-      case L2TPV3:
-      case OPENVPN:
-      case PSEUDO_ETHERNET:
-      case TUNNEL:
-      case VXLAN:
-      case WIRELESS:
-      case WIRELESSMODEM:
-      default:
-        throw new BatfishException("unsupported interface type");
-    }
+    return switch (type) {
+      case ETHERNET, LOOPBACK, VTI -> 1E12d;
+      case BONDING,
+          BRIDGE,
+          DUMMY,
+          INPUT,
+          L2TPV3,
+          OPENVPN,
+          PSEUDO_ETHERNET,
+          TUNNEL,
+          VXLAN,
+          WIRELESS,
+          WIRELESSMODEM ->
+          throw new BatfishException("unsupported interface type");
+    };
   }
 
   private ConcreteInterfaceAddress _address;

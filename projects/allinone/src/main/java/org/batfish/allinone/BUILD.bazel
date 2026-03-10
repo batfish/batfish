@@ -1,0 +1,25 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "allinone",
+    srcs = glob([
+        "**/*.java",
+    ]),
+    resources = ["//projects/allinone/src/main/resources"],
+    deps = [
+        "//projects/batfish",
+        "//projects/client",
+        "//projects/common",
+        "//projects/coordinator",
+        "@maven//:com_google_guava_guava",
+        "@maven//:commons_cli_commons_cli",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":allinone",
+)

@@ -1,0 +1,213 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-VM",
+  "name": "testNsg",
+  "type": "Microsoft.Network/networkSecurityGroups",
+  "location": "westeurope",
+  "tags": {},
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "",
+    "securityRules": [
+      {
+        "name": "AllowCidrBlockSSHInbound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/securityRules/AllowCidrBlockSSHInbound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "protocol": "TCP",
+          "sourcePortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "*",
+          "access": "Allow",
+          "priority": 5,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [
+            "22"
+          ],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "BlockCidrBlockHttpInbound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/securityRules/AllowCidrBlockSSHInbound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "protocol": "TCP",
+          "sourcePortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "*",
+          "access": "Deny",
+          "priority": 100,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [
+            "8080"
+          ],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "BlockCloudflareDns",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/securityRules/AllowCidrBlockSSHInbound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "protocol": "UDP",
+          "sourcePortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "1.1.1.1/32",
+          "access": "Deny",
+          "priority": 100,
+          "direction": "Outbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [
+            "53"
+          ],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      }
+    ],
+    "defaultSecurityRules": [
+      {
+        "name": "AllowVnetInBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/AllowVnetInBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Allow inbound traffic from all VMs in VNET",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "VirtualNetwork",
+          "destinationAddressPrefix": "*",
+          "access": "Allow",
+          "priority": 65000,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "AllowAzureLoadBalancerInBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/AllowAzureLoadBalancerInBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Allow inbound traffic from azure load balancer",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "AzureLoadBalancer",
+          "destinationAddressPrefix": "*",
+          "access": "Allow",
+          "priority": 65001,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "DenyAllInBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/DenyAllInBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Deny all inbound traffic",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "*",
+          "access": "Deny",
+          "priority": 65500,
+          "direction": "Inbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "AllowVnetOutBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/AllowVnetOutBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "VirtualNetwork",
+          "access": "Allow",
+          "priority": 65000,
+          "direction": "Outbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "AllowInternetOutBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/AllowInternetOutBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Allow outbound traffic from all VMs to Internet",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "Internet",
+          "access": "Allow",
+          "priority": 65001,
+          "direction": "Outbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      },
+      {
+        "name": "DenyAllOutBound",
+        "id": "resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3/defaultSecurityRules/DenyAllOutBound",
+        "etag": "W/\"3cb06d68-72a3-4311-9bce-487cf8217526\"",
+        "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "description": "Deny all outbound traffic",
+          "protocol": "*",
+          "sourcePortRange": "*",
+          "destinationPortRange": "*",
+          "sourceAddressPrefix": "*",
+          "destinationAddressPrefix": "*",
+          "access": "Deny",
+          "priority": 65500,
+          "direction": "Outbound",
+          "sourcePortRanges": [],
+          "destinationPortRanges": [],
+          "sourceAddressPrefixes": [],
+          "destinationAddressPrefixes": []
+        }
+      }
+    ]
+  }
+}

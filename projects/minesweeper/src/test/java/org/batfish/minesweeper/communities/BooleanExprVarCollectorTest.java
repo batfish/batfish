@@ -1,8 +1,8 @@
 package org.batfish.minesweeper.communities;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,6 +20,7 @@ import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -201,5 +202,12 @@ public class BooleanExprVarCollectorTest {
             .collect(ImmutableSet.toImmutableSet());
 
     assertEquals(expected, result);
+  }
+
+  @Test
+  public void testVisitCallMissingPolicy() {
+    assertThat(
+        _varCollector.visitCallExpr(new CallExpr("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
+        empty());
   }
 }

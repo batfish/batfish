@@ -21,9 +21,8 @@ public class RouteMapSetLocalPreference implements RouteMapSet {
     return _localPreference;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     return Stream.of(new SetLocalPreference(new LiteralLong(_localPreference)));
   }
 }

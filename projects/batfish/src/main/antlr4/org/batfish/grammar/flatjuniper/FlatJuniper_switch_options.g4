@@ -10,7 +10,9 @@ s_switch_options
 :
   SWITCH_OPTIONS
     (
-      so_route_distinguisher
+      so_interface
+      | so_vtep_source_interface
+      | so_route_distinguisher
       | so_vrf_target
       | so_vtep_source_interface
    )
@@ -54,4 +56,38 @@ sovt_export
 sovt_import
 :
    IMPORT extended_community
+;
+
+so_interface
+:
+  INTERFACE interface_id
+  (
+    soi_interface_mac_limit
+  )
+;
+
+soi_interface_mac_limit
+:
+  INTERFACE_MAC_LIMIT
+  (
+    soiiml_limit_null
+    | soiiml_packet_action_null
+  )
+;
+
+soiiml_limit_null
+:
+  uint16
+;
+
+soiiml_packet_action_null
+:
+  PACKET_ACTION
+  (
+    DROP
+    | DROP_AND_LOG
+    | LOG
+    | NONE
+    | SHUTDOWN
+  )
 ;

@@ -27,9 +27,8 @@ public final class ConjunctionAstNode implements BooleanExprAstNode {
     return visitor.visitConjunctionAstNode(this, arg);
   }
 
-  @Nonnull
   @Override
-  public BooleanExprAstNode and(BooleanExprAstNode conjunct) {
+  public @Nonnull BooleanExprAstNode and(BooleanExprAstNode conjunct) {
     return new ConjunctionAstNode(
         ImmutableList.<BooleanExprAstNode>builder().addAll(_conjuncts).add(conjunct).build());
   }

@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -212,6 +213,7 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
+import org.batfish.representation.azure.AzureConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
@@ -337,7 +339,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           return flattener;
         }
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         return new NopFlattener(input);
     }
@@ -529,6 +531,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     AnswerElement answerElement = null;
     BatfishException exception = null;
+    long startTime = System.nanoTime();
     try {
       if (question.getDifferential()) {
         answerElement =
@@ -537,19 +540,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement = Answerer.create(question, this).answer(getSnapshot());
       }
     } catch (Exception e) {
-      exception = new BatfishException("Failed to answer question", e);
+      exception =
+          new BatfishException(
+              String.format("Failed to answer question %s", question.getClass().getSimpleName()),
+              e);
     }
+    Duration answerTime = Duration.ofNanos(System.nanoTime() - startTime);
 
     Answer answer = new Answer();
     answer.setQuestion(question);
 
     if (exception == null) {
-      LOGGER.info("Question answered successfully");
+      LOGGER.info(
+          "Question {} answered successfully in {}",
+          question.getClass().getSimpleName(),
+          answerTime);
       // success
       answer.setStatus(AnswerStatus.SUCCESS);
       answer.addAnswerElement(answerElement);
     } else {
-      LOGGER.warn("Question execution failed", exception);
+      LOGGER.warn(
+          "Question {} execution failed in {}",
+          question.getClass().getSimpleName(),
+          answerTime,
+          exception);
       // failure
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
@@ -988,9 +1002,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _terminatingExceptionMessage;
   }
 
-  @Nonnull
   @Override
-  public TopologyProvider getTopologyProvider() {
+  public @Nonnull TopologyProvider getTopologyProvider() {
     return _topologyProvider;
   }
 
@@ -1416,6 +1429,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
         pvcae.addRedFlagWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
             new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
+      }
+    }
+    return config;
+  }
+
+  /** Parse Azure configurations for a single account (possibly with multiple regions) */
+  @VisibleForTesting
+  public static @Nonnull AzureConfiguration parseAzureConfigurations(
+      Map<String, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
+    AzureConfiguration config = new AzureConfiguration();
+    for (Entry<String, String> configFile : configurationData.entrySet()) {
+      // Using path for convenience for now to handle separators and key hierarchcially gracefully
+      Path path = Paths.get(configFile.getKey());
+
+      // Find the place in the path where "azure_configs" starts
+      int azureRootIndex = 0;
+      for (Path value : path) {
+        if (value.toString().equals(BfConsts.RELPATH_AZURE_CONFIGS_DIR)) {
+          break;
+        }
+        azureRootIndex++;
+      }
+      int pathLength = path.getNameCount();
+
+      String fileName = path.subpath(azureRootIndex, pathLength).toString();
+      pvcae.getFileMap().put(BfConsts.RELPATH_AZURE_CONFIGS_DIR, fileName);
+
+      try {
+        JsonNode json = BatfishObjectMapper.mapper().readTree(configFile.getValue());
+        config.addConfigElement(json, fileName, pvcae);
+      } catch (IOException e) {
+        pvcae.addRedFlagWarning(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(String.format("Unexpected content in Azure file %s", fileName), "Azure"));
       }
     }
     return config;
@@ -1982,21 +2029,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getNetworkObject(NetworkId networkId, String key) throws IOException {
+  public @Nonnull InputStream getNetworkObject(NetworkId networkId, String key) throws IOException {
     return _storage.loadNetworkObject(networkId, key);
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
-      throws IOException {
+  public @Nonnull InputStream getSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
     return _storage.loadSnapshotObject(networkId, snapshotId, key);
   }
 
-  @Nonnull
   @Override
   public void putSnapshotObject(
       NetworkId networkId, SnapshotId snapshotId, String key, InputStream stream)
@@ -2005,9 +2049,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+  public @Nonnull InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws IOException {
     return _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key);
   }
@@ -2072,6 +2115,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
+    LOGGER.info("Completed work.");
     return answer;
   }
 
@@ -2125,6 +2169,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new UncheckedIOException(e);
     }
 
+    if (!found) {
+      // nothing to serialize.
+      return found;
+    }
+
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     _logger.debugf("Serializing AWS");
@@ -2139,28 +2188,68 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return found;
   }
 
+  /** Returns {@code true} iff Azure configuration data is found. */
+  private boolean serializeAzureConfigs(
+      NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    _logger.info("\n*** READING AZURE CONFIGS ***\n");
+
+    AzureConfiguration azureConfiguration;
+    boolean found = false;
+    try {
+      Map<String, String> azureConfigurationData;
+      // Try to parse all accounts as one vendor configuration
+      try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
+        azureConfigurationData = readAllInputObjects(keys, snapshot);
+      }
+      found = !azureConfigurationData.isEmpty();
+      azureConfiguration = parseAzureConfigurations(azureConfigurationData, pvcae);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    if (!found) {
+      // nothing to serialize.
+      return found;
+    }
+
+    _logger.info("\n*** SERIALIZING AZURE CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    _logger.debugf("Serializing Azure");
+    try {
+      _storage.storeVendorConfigurations(
+          ImmutableMap.of(BfConsts.RELPATH_AZURE_CONFIGS_DIR, azureConfiguration), snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    _logger.debug("OK\n");
+    _logger.printElapsedTime();
+    return found;
+  }
+
   private void serializeConversionContext(
       NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    ConversionContext conversionContext = new ConversionContext();
+
     // Serialize Checkpoint management servers if present
-    LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
-    CheckpointManagementConfiguration cpMgmtConfig = null;
     try {
-      Map<String, String> cpServerData;
+      List<String> actualKeys;
       // Try to parse all accounts as one vendor configuration
       try (Stream<String> keys = _storage.listInputCheckpointManagementKeys(snapshot)) {
-        cpServerData = readAllInputObjects(keys, snapshot);
+        actualKeys = keys.collect(Collectors.toList());
       }
-      if (!cpServerData.isEmpty()) {
-        cpMgmtConfig = parseCheckpointManagementData(cpServerData, pvcae);
+      if (!actualKeys.isEmpty()) {
+        LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
+        Map<String, String> cpServerData = readAllInputObjects(actualKeys.stream(), snapshot);
+        CheckpointManagementConfiguration cpMgmtConfig =
+            parseCheckpointManagementData(cpServerData, pvcae);
+        conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
 
-    LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
-    ConversionContext conversionContext = new ConversionContext();
-    conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
     if (!conversionContext.isEmpty()) {
+      LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
       try {
         _storage.storeConversionContext(conversionContext, snapshot);
       } catch (IOException e) {
@@ -2318,8 +2407,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     LOGGER.info("Post-processing the Vendor-Independent devices");
     postProcessSnapshot(snapshot, configurations);
 
-    LOGGER.info("Computing completion metadata");
-    computeAndStoreCompletionMetadata(snapshot, configurations);
+    if (_settings.getPrecomputeAutocomplete()) {
+      LOGGER.info("Computing completion metadata");
+      computeAndStoreCompletionMetadata(snapshot, configurations);
+    }
+
+    LOGGER.info("Completed serializing snapshot data");
     return answer;
   }
 
@@ -2336,11 +2429,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
     Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
     if (!commonNodes.isEmpty()) {
-      internetWarnings.redFlag(
-          String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already"
-                  + " exist in the snapshot: %s",
-              commonNodes));
+      internetWarnings.redFlagf(
+          "Cannot add internet and ISP nodes because nodes with the following names already"
+              + " exist in the snapshot: %s",
+          commonNodes);
       return;
     }
     configurations.putAll(modeledConfigs);
@@ -2777,6 +2869,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configsFound = true;
     }
 
+    // look for Azure configs in the 'azure_configs/' subfolder of the upload
+    if (serializeAzureConfigs(snapshot, answerElement)) {
+      configsFound = true;
+    }
+
     if (!configsFound) {
       throw new BatfishException("No valid configurations found in snapshot");
     }
@@ -2900,18 +2997,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           IngressLocation loc = entry.getKey();
                           fb.setIngressNode(loc.getNode());
                           switch (loc.getType()) {
-                            case INTERFACE_LINK:
-                              fb.setIngressInterface(loc.getInterface());
-                              break;
-                            case VRF:
-                              fb.setIngressVrf(loc.getVrf());
-                              break;
-                            default:
-                              throw new BatfishException("Unknown Location Type: " + loc.getType());
+                            case INTERFACE_LINK -> fb.setIngressInterface(loc.getInterface());
+                            case VRF -> fb.setIngressVrf(loc.getVrf());
                           }
                           return fb.build();
                         }))
-        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+        .flatMap(Optional::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -3083,14 +3174,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               // set flow parameters
               flow.setIngressNode(source.getNode());
               switch (source.getType()) {
-                case VRF:
-                  flow.setIngressVrf(source.getVrf());
-                  break;
-                case INTERFACE_LINK:
-                  flow.setIngressInterface(source.getInterface());
-                  break;
-                default:
-                  throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
+                case VRF -> flow.setIngressVrf(source.getVrf());
+                case INTERFACE_LINK -> flow.setIngressInterface(source.getInterface());
               }
               return Stream.of(flow.build());
             })

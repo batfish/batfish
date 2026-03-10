@@ -100,6 +100,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * A10 Networks
 * Arista
 * AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
+* Azure (VirtualNetworks, Standard workflows, Public IPs / Nat Gateways, NSGs etc.)
 * Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
 * Check Point 
 * [Cumulus](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-cumulus-configuration-files)

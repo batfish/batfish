@@ -1,13 +1,13 @@
 package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.AbstractRoute;
@@ -28,7 +28,7 @@ import org.junit.Test;
 public class RibTest {
   @Test
   public void testCreatedEmpty() {
-    assertThat(new Rib().getRoutes(), empty());
+    assertThat(new Rib().getUnannotatedRoutes(), empty());
   }
 
   @Test

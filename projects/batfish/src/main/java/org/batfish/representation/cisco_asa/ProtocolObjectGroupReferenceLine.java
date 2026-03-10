@@ -2,8 +2,10 @@ package org.batfish.representation.cisco_asa;
 
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeProtocolObjectGroupAclName;
 
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
 public class ProtocolObjectGroupReferenceLine implements ProtocolObjectGroupLine {
@@ -19,7 +21,11 @@ public class ProtocolObjectGroupReferenceLine implements ProtocolObjectGroupLine
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ProtocolObjectGroup> protocolObjectGroups) {
+    if (!protocolObjectGroups.containsKey(_name)) {
+      return AclLineMatchExprs.FALSE;
+    }
     return new PermittedByAcl(computeProtocolObjectGroupAclName(_name));
   }
 }

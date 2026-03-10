@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class Accept implements StateExpr {
 
   public static final Accept INSTANCE = new Accept();
@@ -14,6 +16,7 @@ public final class Accept implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

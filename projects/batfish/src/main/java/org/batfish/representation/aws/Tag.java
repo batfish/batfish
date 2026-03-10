@@ -19,8 +19,8 @@ public class Tag {
 
   @JsonCreator
   private static Tag create(
-      @Nullable @JsonProperty(PROP_KEY) String key,
-      @Nullable @JsonProperty(PROP_VALUE) String value) {
+      @JsonProperty(PROP_KEY) @Nullable String key,
+      @JsonProperty(PROP_VALUE) @Nullable String value) {
     checkArgument(key != null, "Missing %s", PROP_KEY);
     checkArgument(value != null, "Missing %s", PROP_VALUE);
     return new Tag(key, value);

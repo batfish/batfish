@@ -231,24 +231,20 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       @Nullable Configuration c,
       Warnings w) {
     if (_aclName != null) {
-      switch (getAction()) {
-        case SOURCE_INSIDE:
-        case SOURCE_OUTSIDE:
-          return Optional.of(permittedByAcl(_aclName));
-        case DESTINATION_INSIDE:
+      return switch (getAction()) {
+        case SOURCE_INSIDE, SOURCE_OUTSIDE -> Optional.of(permittedByAcl(_aclName));
+        case DESTINATION_INSIDE -> {
           assert c != null; // should only be null for SOURCE_OUTSIDE rules
           Optional<IpAccessList> reverseAcl = getOrCreateReverseAcl(c);
           if (!reverseAcl.isPresent()) {
-            w.redFlag(
-                String.format(
-                    "Ignoring inside destination NAT rule with ACL %s: Cannot convert to reverse"
-                        + " ACL",
-                    _aclName));
+            w.redFlagf(
+                "Ignoring inside destination NAT rule with ACL %s: Cannot convert to reverse"
+                    + " ACL",
+                _aclName);
           }
-          return reverseAcl.map(ipAccessList -> permittedByAcl(ipAccessList.getName()));
-        default:
-          throw new IllegalStateException(String.format("Unrecognized RuleAction %s", getAction()));
-      }
+          yield reverseAcl.map(ipAccessList -> permittedByAcl(ipAccessList.getName()));
+        }
+      };
     }
     // isMalformed guarantees that _routeMap is nonnull when (iff) _aclName is null, and that it
     // references a real RouteMap

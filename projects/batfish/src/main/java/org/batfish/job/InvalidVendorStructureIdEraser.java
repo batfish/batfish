@@ -12,12 +12,18 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
+import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -152,12 +158,72 @@ public final class InvalidVendorStructureIdEraser
   }
 
   @Override
+  public AclLineMatchExpr visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    if (matchDestinationIp.getTraceElement() == null) {
+      return matchDestinationIp;
+    }
+    TraceElement te = eraseInvalid(matchDestinationIp.getTraceElement());
+    if (te.equals(matchDestinationIp.getTraceElement())) {
+      return matchDestinationIp;
+    }
+    return AclLineMatchExprs.matchDst(matchDestinationIp.getIps(), te);
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    if (matchDestinationPort.getTraceElement() == null) {
+      return matchDestinationPort;
+    }
+    TraceElement te = eraseInvalid(matchDestinationPort.getTraceElement());
+    if (te.equals(matchDestinationPort.getTraceElement())) {
+      return matchDestinationPort;
+    }
+    return AclLineMatchExprs.matchDstPort(matchDestinationPort.getPorts(), te);
+  }
+
+  @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     TraceElement te =
         matchHeaderSpace.getTraceElement() == null
             ? null
             : eraseInvalid(matchHeaderSpace.getTraceElement());
     return new MatchHeaderSpace(matchHeaderSpace.getHeaderspace(), te);
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    if (matchIpProtocol.getTraceElement() == null) {
+      return matchIpProtocol;
+    }
+    TraceElement te = eraseInvalid(matchIpProtocol.getTraceElement());
+    if (te.equals(matchIpProtocol.getTraceElement())) {
+      return matchIpProtocol;
+    }
+    return AclLineMatchExprs.matchIpProtocol(matchIpProtocol.getProtocol(), te);
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    if (matchSourceIp.getTraceElement() == null) {
+      return matchSourceIp;
+    }
+    TraceElement te = eraseInvalid(matchSourceIp.getTraceElement());
+    if (te.equals(matchSourceIp.getTraceElement())) {
+      return matchSourceIp;
+    }
+    return AclLineMatchExprs.matchSrc(matchSourceIp.getIps(), te);
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    if (matchSourcePort.getTraceElement() == null) {
+      return matchSourcePort;
+    }
+    TraceElement te = eraseInvalid(matchSourcePort.getTraceElement());
+    if (te.equals(matchSourcePort.getTraceElement())) {
+      return matchSourcePort;
+    }
+    return AclLineMatchExprs.matchSrcPort(matchSourcePort.getPorts(), te);
   }
 
   @Override

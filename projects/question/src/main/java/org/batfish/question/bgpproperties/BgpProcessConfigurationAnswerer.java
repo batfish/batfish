@@ -1,8 +1,6 @@
 package org.batfish.question.bgpproperties;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -85,7 +83,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
             _batfish.specifierContext(snapshot),
@@ -105,13 +103,13 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
    * Returns a set of rows that contain the values of all the properties denoted by {@code
    * propertySpecifier}.
    */
-  public static Multiset<Row> getProperties(
+  public static List<Row> getProperties(
       BgpProcessPropertySpecifier propertySpecifier,
       SpecifierContext ctxt,
       NodeSpecifier nodeSpecifier,
       Map<String, ColumnMetadata> columnMetadata) {
 
-    Multiset<Row> rows = HashMultiset.create();
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
 
     nodeSpecifier
         .resolve(ctxt)
@@ -159,6 +157,6 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                       });
             });
 
-    return rows;
+    return rows.build();
   }
 }

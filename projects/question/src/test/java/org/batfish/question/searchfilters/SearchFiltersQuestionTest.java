@@ -1,9 +1,10 @@
 package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
@@ -11,7 +12,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -140,7 +139,7 @@ public class SearchFiltersQuestionTest {
         and(
             matchSrc(UniverseIpSpace.INSTANCE),
             matchDst(UniverseIpSpace.INSTANCE),
-            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build())));
+            matchIpProtocols(IpProtocol.ICMP, IpProtocol.TCP)));
 
     // test (de)serialization
     question = BatfishObjectMapper.clone(question, SearchFiltersQuestion.class);
@@ -149,6 +148,6 @@ public class SearchFiltersQuestionTest {
         and(
             matchSrc(UniverseIpSpace.INSTANCE),
             matchDst(UniverseIpSpace.INSTANCE),
-            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build())));
+            matchIpProtocols(IpProtocol.ICMP, IpProtocol.TCP)));
   }
 }

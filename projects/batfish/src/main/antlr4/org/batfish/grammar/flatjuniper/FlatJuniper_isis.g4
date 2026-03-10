@@ -17,6 +17,16 @@ is_export
   EXPORT expr = policy_expression
 ;
 
+is_ignore_attached_bit
+:
+  IGNORE_ATTACHED_BIT
+;
+
+is_import
+:
+  IMPORT name = junos_name
+;
+
 is_interface
 :
   INTERFACE
@@ -76,8 +86,14 @@ is_overload
   OVERLOAD
   (
     apply
+    | iso_advertise_high_metrics
     | iso_timeout
   )
+;
+
+iso_advertise_high_metrics
+:
+  ADVERTISE_HIGH_METRICS
 ;
 
 is_reference_bandwidth
@@ -255,6 +271,8 @@ p_isis
   (
     apply
     | is_export
+    | is_ignore_attached_bit
+    | is_import
     | is_interface
     | is_level
     | is_null

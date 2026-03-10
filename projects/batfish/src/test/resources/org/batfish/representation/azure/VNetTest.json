@@ -1,0 +1,20 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/test-vnet",
+  "name": "test-vnet",
+  "type": "Microsoft.Network/virtualNetworks",
+  "location": "westeurope",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "cdea1d93-9750-411b-af9b-8b325cc8816c",
+    "addressSpace": {
+      "addressPrefixes": [
+        "10.0.0.0/16"
+      ]
+    },
+    "privateEndpointVNetPolicies": "Disabled",
+    "subnets": [
+    ],
+    "virtualNetworkPeerings": [],
+    "enableDdosProtection": false
+  }
+}

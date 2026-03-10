@@ -56,20 +56,15 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
   @VisibleForTesting
   static @Nonnull SubmissionResult processLaunchResult(
       LaunchResult lr, String taskId, BatfishWorkerService batfishWorkerService) {
-    switch (lr.getType()) {
-      case LAUNCHED:
-        return SubmissionResult.success(
-            () ->
-                Optional.ofNullable(batfishWorkerService.getTaskStatus(taskId))
-                    .orElse(Task.unknown()));
-      case BUSY:
-        return SubmissionResult.busy();
-      case ERROR:
-        return SubmissionResult.error(lr.getMessage());
-      default:
-        throw new IllegalArgumentException(
-            String.format("Invalid LaunchResult.Type: %s", lr.getType()));
-    }
+    return switch (lr.getType()) {
+      case LAUNCHED ->
+          SubmissionResult.success(
+              () ->
+                  Optional.ofNullable(batfishWorkerService.getTaskStatus(taskId))
+                      .orElse(Task.unknown()));
+      case BUSY -> SubmissionResult.busy();
+      case ERROR -> SubmissionResult.error(lr.getMessage());
+    };
   }
 
   @VisibleForTesting

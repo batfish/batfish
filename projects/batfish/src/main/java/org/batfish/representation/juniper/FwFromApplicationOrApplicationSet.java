@@ -2,12 +2,11 @@ package org.batfish.representation.juniper;
 
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 
 public final class FwFromApplicationOrApplicationSet implements FwFromApplicationSetMember {
 
@@ -45,13 +44,12 @@ public final class FwFromApplicationOrApplicationSet implements FwFromApplicatio
                 .get(_applicationOrApplicationSetName);
 
     if (application == null) {
-      w.redFlag(
-          String.format(
-              "Reference to undefined application/application-set: %s",
-              _applicationOrApplicationSetName));
+      w.redFlagf(
+          "Reference to undefined application/application-set: %s",
+          _applicationOrApplicationSetName);
 
       // match nothing
-      return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
+      return FalseExpr.INSTANCE;
     }
 
     return application.toAclLineMatchExpr(jc, w);

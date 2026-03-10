@@ -33,9 +33,9 @@ public final class FilterAnswerBean {
   @JsonCreator
   @VisibleForTesting
   static FilterAnswerBean create(
-      @Nullable @JsonProperty(PROP_SNAPSHOT) String snapshot,
-      @Nullable @JsonProperty(PROP_REFERENCE_SNAPSHOT) String referenceSnapshot,
-      @Nullable @JsonProperty(PROP_FILTER_OPTIONS) AnswerRowsOptions answerRowsOptions) {
+      @JsonProperty(PROP_SNAPSHOT) @Nullable String snapshot,
+      @JsonProperty(PROP_REFERENCE_SNAPSHOT) @Nullable String referenceSnapshot,
+      @JsonProperty(PROP_FILTER_OPTIONS) @Nullable AnswerRowsOptions answerRowsOptions) {
     checkArgument(snapshot != null, "Snapshot must be specified to fetch question answer");
     return new FilterAnswerBean(
         snapshot, referenceSnapshot, firstNonNull(answerRowsOptions, AnswerRowsOptions.NO_FILTER));

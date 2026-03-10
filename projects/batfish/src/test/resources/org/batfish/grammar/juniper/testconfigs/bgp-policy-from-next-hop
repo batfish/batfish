@@ -1,0 +1,18 @@
+#
+set system host-name bgp-policy-from-next-hop
+#
+# policy -- thing we're testing
+set policy-options policy-statement POL term t1 from next-hop 10.0.0.1
+set policy-options policy-statement POL term t1 from next-hop 10.0.0.2
+set policy-options policy-statement POL term t1 then accept
+set policy-options policy-statement POL term t2 then reject
+# Boilerplate + BGP setup with 2 neighbors
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.254/24
+set routing-options autonomous-system 65500
+set routing-options router-id 10.0.0.254
+set protocols bgp group g1 type external
+set protocols bgp group g1 peer-as 65501
+set protocols bgp group g1 neighbor 10.0.0.1
+set protocols bgp group g1 neighbor 10.0.1.1
+set protocols bgp group g1 import POL
+set protocols bgp group g1 local-address 10.9.9.9

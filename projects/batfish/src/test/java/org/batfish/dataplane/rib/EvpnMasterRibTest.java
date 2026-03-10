@@ -1,10 +1,10 @@
 package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.EvpnType5Route;
@@ -50,7 +50,7 @@ public final class EvpnMasterRibTest {
     assertThat(rib.mergeRouteGetDelta(route1), equalTo(RibDelta.adding(route1)));
     assertThat(rib.mergeRouteGetDelta(route21), equalTo(RibDelta.adding(route21)));
     assertThat(rib.mergeRouteGetDelta(route22), equalTo(RibDelta.empty()));
-    assertThat(rib.getTypedRoutes(), containsInAnyOrder(route1, route21));
+    assertThat(rib.getRoutes(), containsInAnyOrder(route1, route21));
     assertThat(rib.getTypedBackupRoutes(), containsInAnyOrder(route1, route21, route22));
   }
 
@@ -79,7 +79,7 @@ public final class EvpnMasterRibTest {
         rib.removeRouteGetDelta(route),
         equalTo(RibDelta.of(RouteAdvertisement.withdrawing(route))));
     // No routes should be present following removeal.
-    assertThat(rib.getTypedRoutes(), empty());
+    assertThat(rib.getRoutes(), empty());
     assertThat(rib.getTypedBackupRoutes(), empty());
   }
 }

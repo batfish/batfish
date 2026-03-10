@@ -2,7 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,7 +14,7 @@ import org.batfish.representation.cisco_xr.HsrpAddressFamily.Type;
 public final class HsrpInterface implements Serializable {
   public HsrpInterface(String name) {
     _name = name;
-    _addressFamilies = new HashMap<>();
+    _addressFamilies = new EnumMap<>(Type.class);
   }
 
   public @Nullable HsrpAddressFamily getAddressFamily(Type type) {

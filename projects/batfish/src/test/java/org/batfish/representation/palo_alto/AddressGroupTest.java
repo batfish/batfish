@@ -1,9 +1,9 @@
 package org.batfish.representation.palo_alto;
 
 import static org.batfish.representation.palo_alto.AddressGroup.getFilterConjuncts;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;

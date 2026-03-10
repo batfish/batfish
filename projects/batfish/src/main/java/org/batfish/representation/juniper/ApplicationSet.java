@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -9,7 +11,6 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ApplicationSet implements ApplicationSetMember, Serializable {
 
@@ -42,7 +43,7 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
-    return new OrMatchExpr(
+    return or(
         _members.stream()
             .map(ref -> ref.resolve(jc))
             .filter(Predicates.notNull())

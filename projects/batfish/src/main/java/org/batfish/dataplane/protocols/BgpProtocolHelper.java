@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -30,7 +29,6 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFrom;
@@ -48,7 +46,6 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -99,7 +96,7 @@ public final class BgpProtocolHelper {
     builder.setTag(null);
 
     // Set originatorIP
-    if (localSessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
+    if (localSessionProperties.isEbgp() || routeProtocol != RoutingProtocol.IBGP) {
       // eBGP session or not iBGP route: override the originator
       builder.setOriginatorIp(localBgpProcess.getRouterId());
     }
@@ -136,9 +133,8 @@ public final class BgpProtocolHelper {
       return null;
     }
 
-    builder.setClusterList(ImmutableSet.of());
     boolean routeOriginatedLocally = route.getReceivedFrom().equals(ReceivedFromSelf.instance());
-    if (routeProtocol.equals(RoutingProtocol.IBGP) && !localSessionProperties.isEbgp()) {
+    if (routeProtocol == RoutingProtocol.IBGP && !localSessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
@@ -151,23 +147,39 @@ public final class BgpProtocolHelper {
          */
         return null;
       }
-      builder.addClusterList(route.getClusterList());
-      if (!routeOriginatedLocally) {
-        // we are reflecting, so we need to get the clusterid associated with the
-        // remoteRoute
-        Long newClusterId = localNeighbor.getClusterId();
-        if (newClusterId != null) {
-          builder.addToClusterList(newClusterId);
-        }
-      }
-      Set<Long> localClusterIds = remoteBgpProcess.getClusterIds();
-      Set<Long> outgoingClusterList = builder.getClusterList();
-      if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
+
+      // Check for cluster loops before building the outgoing cluster list
+      Set<Long> receiverClusterIds = remoteBgpProcess.getClusterIds();
+      if (!Collections.disjoint(receiverClusterIds, route.getClusterList())) {
         /*
-         *  receiver will reject new route if it contains any of its local cluster ids
+         * Receiver will reject new route if it contains any of its cluster IDs
          */
         return null;
       }
+
+      // Start with existing cluster list
+      Set<Long> outgoingClusterList = route.getClusterList();
+
+      if (!routeOriginatedLocally) {
+        // We are reflecting, so we need to get the clusterid associated with the remoteRoute
+        // and add it to the cluster list
+        Long newClusterId = localNeighbor.getClusterId();
+        if (newClusterId != null) {
+          // Check if adding our cluster ID would create a loop
+          if (receiverClusterIds.contains(newClusterId)) {
+            return null;
+          }
+          outgoingClusterList =
+              ImmutableSet.<Long>builderWithExpectedSize(route.getClusterList().size() + 1)
+                  .addAll(route.getClusterList())
+                  .add(newClusterId)
+                  .build();
+        }
+      }
+
+      builder.setClusterList(outgoingClusterList);
+    } else {
+      builder.setClusterList(ImmutableSet.of());
     }
 
     // Outgoing metric (MED) is preserved only if advertising to IBGP peer, within a confederation,
@@ -205,7 +217,7 @@ public final class BgpProtocolHelper {
         return false;
     }
 
-    if (!route.getProtocol().equals(RoutingProtocol.IBGP)) {
+    if (route.getProtocol() != RoutingProtocol.IBGP) {
       return false;
     }
 
@@ -230,17 +242,11 @@ public final class BgpProtocolHelper {
     if (asPath.getAsSets().isEmpty()) {
       return true;
     }
-    switch (mode) {
-      case ALWAYS:
-        return true;
-      case NEVER:
-        return asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
-      case EXCEPT_FIRST:
-        return !asSets.get(0).containsAs(peerAs);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unsupported AllowsRemoteAsOutMode: %s", mode));
-    }
+    return switch (mode) {
+      case ALWAYS -> true;
+      case NEVER -> asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
+      case EXCEPT_FIRST -> !asSets.get(0).containsAs(peerAs);
+    };
   }
 
   /**
@@ -296,10 +302,8 @@ public final class BgpProtocolHelper {
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy attributePolicy,
       Ip routerId,
-      Ip nextHopIp,
+      NextHop nextHop,
       boolean nonRouting) {
-    NextHop nextHop =
-        nextHopIp.equals(Ip.AUTO) ? NextHopDiscard.instance() : NextHopIp.of(nextHopIp);
     Builder builder = convertGeneratedRouteToBgp(generatedRoute, routerId, nextHop, nonRouting);
     if (attributePolicy == null) {
       return builder.build();
@@ -317,9 +321,8 @@ public final class BgpProtocolHelper {
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
    * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
-  @Nonnull
   @VisibleForTesting
-  static Builder convertGeneratedRouteToBgp(
+  static @Nonnull Builder convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, NextHop nextHop, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
@@ -370,43 +373,6 @@ public final class BgpProtocolHelper {
     boolean accepted = attributePolicy.process(builder.build(), builder, Direction.OUT);
     assert accepted;
     return builder.build();
-  }
-
-  /**
-   * Convert a route that is neither a {@link BgpRoute} nor a {@link GeneratedRoute} to a {@link
-   * Bgpv4Route.Builder}.
-   *
-   * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
-   * routeDecorator} to the export policy
-   *
-   * <p>The builder returned will have default local preference, redistribute origin mechanism,
-   * incomplete origin type, and most other fields unset.
-   */
-  public static @Nonnull Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
-      AbstractRouteDecorator routeDecorator,
-      Ip routerId,
-      Ip nextHopIp,
-      int adminDistance,
-      RoutingProtocol protocol,
-      OriginMechanism originMechanism) {
-    assert protocol == RoutingProtocol.BGP || protocol == RoutingProtocol.IBGP;
-    assert !(routeDecorator.getAbstractRoute() instanceof BgpRoute);
-    AbstractRoute route = routeDecorator.getAbstractRoute();
-    return Bgpv4Route.builder()
-        .setNetwork(route.getNetwork())
-        .setAdmin(adminDistance)
-        .setOriginatorIp(routerId)
-        .setProtocol(protocol)
-        .setSrcProtocol(route.getProtocol())
-        .setOriginMechanism(originMechanism)
-        .setOriginType(OriginType.INCOMPLETE)
-        // TODO: support customization of route preference
-        .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-        .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
-        .setNextHopIp(nextHopIp)
-        .setMetric(route.getMetric())
-        .setTag(routeDecorator.getAbstractRoute().getTag());
-    // Let everything else default to unset/empty/etc.
   }
 
   /**
@@ -512,7 +478,7 @@ public final class BgpProtocolHelper {
 
       // Remove any confederations if propagating route outside of the confederation border
       AsPath routeAsPath = routeBuilder.getAsPath();
-      if (confedSessionType.equals(ConfedSessionType.ACROSS_CONFED_BORDER)) {
+      if (confedSessionType == ConfedSessionType.ACROSS_CONFED_BORDER) {
         routeAsPath = routeAsPath.removeConfederations();
       }
       routeAsPath =

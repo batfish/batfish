@@ -115,17 +115,15 @@ public final class PList<E> extends AbstractSequentialList<E> {
         return index - 1;
       }
 
-      @Nullable
       @Override
-      public E next() {
+      public @Nullable E next() {
         E e = _next._first;
         _next = _next._rest;
         return e;
       }
 
-      @Nullable
       @Override
-      public E previous() {
+      public @Nullable E previous() {
         System.err.println("ConsPStack.listIterator().previous() is inefficient, don't use it!");
         _next = subList(index - 1); // go from beginning...
         return _next._first;
@@ -149,9 +147,8 @@ public final class PList<E> extends AbstractSequentialList<E> {
   }
 
   //// OVERRIDDEN METHODS FROM AbstractSequentialList ////
-  @Nonnull
   @Override
-  public PList<E> subList(final int start, final int end) {
+  public @Nonnull PList<E> subList(final int start, final int end) {
     if (start < 0 || end > _size || start > end) {
       throw new IndexOutOfBoundsException();
     }

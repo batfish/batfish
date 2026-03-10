@@ -24,9 +24,8 @@ public final class RouteMapSetExcludeAsPath implements RouteMapSet {
     _asns = asns;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     List<AsExpr> asExprs =
         _asns.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
     return Stream.of(new ExcludeAsPath(new LiteralAsList(asExprs)));

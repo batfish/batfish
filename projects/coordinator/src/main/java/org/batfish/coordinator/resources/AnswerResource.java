@@ -82,8 +82,8 @@ public final class AnswerResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswer(
-      @Nullable @QueryParam("snapshot") String snapshot,
-      @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot)
+      @QueryParam("snapshot") @Nullable String snapshot,
+      @QueryParam("referenceSnapshot") @Nullable String referenceSnapshot)
       throws IOException {
     if (snapshot == null || snapshot.isEmpty()) {
       return Response.status(Status.BAD_REQUEST)

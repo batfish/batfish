@@ -1,0 +1,10 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name system-services-ssh
+#
+# Test simple SSH boolean options
+set system services ssh access-disable-external
+set system services ssh allow-tcp-forwarding
+set system services ssh no-challenge-response
+set system services ssh no-password-authentication
+set system services ssh no-passwords
+set system services ssh no-public-keys

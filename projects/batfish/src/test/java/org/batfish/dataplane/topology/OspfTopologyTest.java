@@ -1,9 +1,9 @@
 package org.batfish.dataplane.topology;
 
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.initNeighborConfigs;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

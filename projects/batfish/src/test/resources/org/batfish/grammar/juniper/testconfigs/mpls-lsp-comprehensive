@@ -1,0 +1,120 @@
+#
+# Comprehensive test for MPLS LSP grammar
+#
+
+set system host-name mpls-lsp-comprehensive
+
+# Basic LSP configurations with IPv4
+set protocols mpls label-switched-path ipv4-basic to 192.0.2.1
+
+# Basic LSP configurations with IPv6
+set protocols mpls label-switched-path ipv6-basic to 2001:db8::1
+
+# Install properties with IPv4 addresses
+set protocols mpls label-switched-path install-ipv4 to 192.0.2.2
+set protocols mpls label-switched-path install-ipv4 install 10.0.0.0/24
+
+# Install properties with IPv6 addresses
+set protocols mpls label-switched-path install-ipv6 to 2001:db8::2
+set protocols mpls label-switched-path install-ipv6 install 2001:db8:1::/64
+
+# Multiple install statements in the same group
+set protocols mpls label-switched-path multi-install to 192.0.2.3
+set protocols mpls label-switched-path multi-install install 10.0.0.0/24
+set protocols mpls label-switched-path multi-install install 10.1.0.0/24
+set protocols mpls label-switched-path multi-install install 10.2.0.0/24
+
+# Self-ping-duration
+set protocols mpls label-switched-path self-ping-with-arg to 192.0.2.4
+set protocols mpls label-switched-path self-ping-with-arg self-ping-duration 60
+
+# No-self-ping property
+set protocols mpls label-switched-path no-self-ping to 192.0.2.6
+set protocols mpls label-switched-path no-self-ping no-self-ping
+
+# No-decrement-ttl property
+set protocols mpls label-switched-path no-decrement-ttl to 192.0.2.7
+set protocols mpls label-switched-path no-decrement-ttl no-decrement-ttl
+
+# Link-protection property
+set protocols mpls label-switched-path link-protection to 192.0.2.8
+set protocols mpls label-switched-path link-protection link-protection
+
+# Combinations of multiple properties
+set protocols mpls label-switched-path multi-property to 192.0.2.9
+set protocols mpls label-switched-path multi-property install 10.0.0.0/24
+set protocols mpls label-switched-path multi-property no-decrement-ttl
+set protocols mpls label-switched-path multi-property link-protection
+set protocols mpls label-switched-path multi-property self-ping-duration 120
+
+# LSP with properties but no "to" statement
+set protocols mpls label-switched-path no-to-statement install 10.0.0.0/24
+set protocols mpls label-switched-path no-to-statement no-decrement-ttl
+set protocols mpls label-switched-path no-to-statement link-protection
+
+# Apply groups
+set groups mpls-group protocols mpls label-switched-path group-lsp to 192.0.2.10
+set groups mpls-group protocols mpls label-switched-path group-lsp install 10.10.0.0/24
+set groups mpls-group protocols mpls label-switched-path group-lsp self-ping-duration 30
+set apply-groups mpls-group
+
+# Conditional Metric Parameters
+set protocols mpls label-switched-path conditional-metric-lsp to 192.0.2.11
+set protocols mpls label-switched-path conditional-metric-lsp conditional-metric igp-metric-threshold 1000 400
+
+# Traffic Engineering Parameters
+set protocols mpls label-switched-path traffic-eng-lsp to 192.0.2.12
+set protocols mpls label-switched-path traffic-eng-lsp soft-preemption
+set protocols mpls label-switched-path traffic-eng-lsp retry-timer 75
+set protocols mpls label-switched-path traffic-eng-lsp optimize-hold-dead-delay 240
+set protocols mpls label-switched-path traffic-eng-lsp priority 6 5
+set protocols mpls label-switched-path traffic-eng-lsp random
+set protocols mpls label-switched-path traffic-eng-lsp adaptive
+set protocols mpls label-switched-path traffic-eng-lsp in-place-lsp-bandwidth-update
+
+# Admin Group Parameters
+set protocols mpls label-switched-path admin-group-lsp to 192.0.2.13
+set protocols mpls label-switched-path admin-group-lsp admin-group include-any "AVOID-GROUP"
+
+# Auto-Bandwidth Parameters
+set protocols mpls label-switched-path auto-bandwidth-lsp to 192.0.2.14
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-interval 3600
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-threshold 25
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-threshold-absolute 75m
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-threshold-activate-bandwidth 75m
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth minimum-bandwidth 100k
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth maximum-bandwidth 1g
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-threshold-overflow-limit 1
+set protocols mpls label-switched-path auto-bandwidth-lsp auto-bandwidth adjust-threshold-underflow-limit 6
+
+# Comprehensive LSP with multiple new parameters
+set protocols mpls label-switched-path comprehensive-new-lsp to 192.0.2.15
+set protocols mpls label-switched-path comprehensive-new-lsp conditional-metric igp-metric-threshold 2000 500
+set protocols mpls label-switched-path comprehensive-new-lsp soft-preemption
+set protocols mpls label-switched-path comprehensive-new-lsp retry-timer 60
+set protocols mpls label-switched-path comprehensive-new-lsp optimize-hold-dead-delay 180
+set protocols mpls label-switched-path comprehensive-new-lsp admin-group include-any "CRITICAL-PATH"
+set protocols mpls label-switched-path comprehensive-new-lsp priority 4 3
+set protocols mpls label-switched-path comprehensive-new-lsp random
+set protocols mpls label-switched-path comprehensive-new-lsp adaptive
+set protocols mpls label-switched-path comprehensive-new-lsp in-place-lsp-bandwidth-update
+set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth adjust-interval 1800
+set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth adjust-threshold 20
+set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth minimum-bandwidth 50m
+set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth maximum-bandwidth 500m
+
+# Path definitions and references
+set protocols mpls path PRI
+set protocols mpls label-switched-path path-lsp to 192.0.2.16
+set protocols mpls label-switched-path path-lsp primary PRI
+set protocols mpls label-switched-path path-lsp secondary SEC preference 8
+
+# Additional LSP parameters
+set protocols mpls label-switched-path params-lsp to 192.0.2.17
+set protocols mpls label-switched-path params-lsp bandwidth 100m
+set protocols mpls label-switched-path params-lsp cross-credibility-cspf
+set protocols mpls label-switched-path params-lsp hop-limit 3
+set protocols mpls label-switched-path params-lsp optimize-timer 65535
+set protocols mpls label-switched-path params-lsp revert-timer 900
+
+#

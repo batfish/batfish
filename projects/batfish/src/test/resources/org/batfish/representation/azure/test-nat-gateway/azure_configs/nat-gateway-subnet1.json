@@ -1,0 +1,20 @@
+{
+  "type": "Microsoft.Network/natGateways",
+  "apiVersion": "2024-05-01",
+  "id": "resourceGroup/test/providers/Microsoft.Network/natGateways/nat-gateway-subnet1",
+  "name": "nat-gateway-subnet1",
+  "location": "westeurope",
+  "properties": {
+    "publicIpAddresses": [
+      {
+        "id": "resourceGroup/test/providers/Microsoft.Network/publicIPAddresses/public-ip-address-1"
+      }
+    ],
+    "subnets": [
+      {
+        "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/default"
+      }
+    ],
+    "publicIpPrefixes": []
+  }
+}

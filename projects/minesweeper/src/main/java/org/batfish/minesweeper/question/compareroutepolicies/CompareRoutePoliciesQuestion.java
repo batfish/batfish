@@ -48,10 +48,10 @@ public final class CompareRoutePoliciesQuestion extends Question {
 
   @JsonCreator
   private static CompareRoutePoliciesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_DIRECTION) Environment.Direction direction,
-      @Nullable @JsonProperty(PROP_POLICY) String policy,
-      @Nullable @JsonProperty(PROP_REFERENCE_POLICY) String referencePolicy,
-      @Nullable @JsonProperty(PROP_NODES) String nodes) {
+      @JsonProperty(PROP_DIRECTION) @Nullable Environment.Direction direction,
+      @JsonProperty(PROP_POLICY) @Nullable String policy,
+      @JsonProperty(PROP_REFERENCE_POLICY) @Nullable String referencePolicy,
+      @JsonProperty(PROP_NODES) @Nullable String nodes) {
     return new CompareRoutePoliciesQuestion(
         firstNonNull(direction, DEFAULT_DIRECTION), policy, referencePolicy, nodes);
   }
@@ -68,27 +68,23 @@ public final class CompareRoutePoliciesQuestion extends Question {
   }
 
   @JsonIgnore
-  @Nonnull
   @Override
-  public String getName() {
+  public @Nonnull String getName() {
     return "compareRoutePolicies";
   }
 
-  @Nullable
   @JsonProperty(PROP_POLICY)
-  public String getPolicy() {
+  public @Nullable String getPolicy() {
     return _policy;
   }
 
-  @Nullable
   @JsonProperty(PROP_REFERENCE_POLICY)
-  public String getReferencePolicy() {
+  public @Nullable String getReferencePolicy() {
     return _referencePolicy;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 }

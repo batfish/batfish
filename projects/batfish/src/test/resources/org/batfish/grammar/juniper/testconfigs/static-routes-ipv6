@@ -1,0 +1,24 @@
+#
+set system host-name static-routes-ipv6
+#
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 no-retain
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 passive
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 tag 12
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 tag2 1212
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 next-hop 21f1:8:1e:8fff::11
+set routing-options rib inet6.0 static route 01f1:8:1e:8fff::10/57 qualified-next-hop ge-0/0/0.0
+#
+set routing-instances TEST-VRF routing-options rib TEST-VRF.inet6.0 static route 0ff1:8:1e:8fff::/42 discard
+set routing-instances TEST-VRF routing-options rib TEST-VRF.inet6.0 static route 0ff1:8:1e:8fff::/42 no-install
+set routing-instances TEST-VRF routing-options rib TEST-VRF.inet6.0 static route 0ff1:8:1e:8fff::/42 tag 201
+#
+set routing-instances TEST_VRF2 routing-options rib TEST_VRF2.inet6.0 static route 0ff1:8:1e:8fff::/42 tag 201
+#
+set routing-options rib inet6.0 static route 52f1:1:1e:8f1f::8 discard
+#
+set routing-options rib inet6.0 static route 3ff1:8:1e:8fff::10/89 qualified-next-hop 3ff1:8:1e:8fff::11 preference 180
+set routing-options rib inet6.0 static route 3ff1:8:1e:8fff::10/89 preference 150
+set routing-options rib inet6.0 static route 3ff1:8:1e:8fff::10/89 install
+set routing-options rib inet6.0 static route 3ff1:8:1e:8fff::10/89 metric 6
+set routing-options rib inet6.0 static route 3ff1:8:1e:8fff::10/89 resolve
+#

@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class Query implements StateExpr {
 
   public static final Query INSTANCE = new Query();
@@ -16,6 +18,7 @@ public final class Query implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

@@ -1,0 +1,20 @@
+set system host-name source-class
+
+# Policy statement with source-class assignment (definition)
+set policy-options policy-statement EXPORT-SCU term REGION-A then source-class SOURCE-CLASS-A
+set policy-options policy-statement EXPORT-SCU term REGION-B then source-class SOURCE-CLASS-B
+
+# Firewall filter with source-class matching (reference)
+set firewall family inet filter METERING term METER-A from source-class SOURCE-CLASS-A
+set firewall family inet filter METERING term METER-A then count FROM-IPv4-A
+set firewall family inet filter METERING term METER-B from source-class SOURCE-CLASS-B
+set firewall family inet filter METERING term METER-B then count FROM-IPv4-B
+# Undefined source-class reference
+set firewall family inet filter METERING term METER-UNDEF from source-class SOURCE-CLASS-UNDEFINED
+set firewall family inet filter METERING term METER-UNDEF then count FROM-IPv4-UNDEF
+set firewall family inet filter METERING term ACCEPT then accept
+
+# IPv6 filter with source-class matching
+set firewall family inet6 filter METERING-V6 term METER-A from source-class SOURCE-CLASS-A
+set firewall family inet6 filter METERING-V6 term METER-A then count FROM-IPv6-A
+set firewall family inet6 filter METERING-V6 term ACCEPT then accept

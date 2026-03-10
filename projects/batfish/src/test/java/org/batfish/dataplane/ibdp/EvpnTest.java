@@ -241,7 +241,7 @@ public class EvpnTest {
                       hasCommunities(ExtendedCommunity.target(65000, 10020))))));
       // Ensure not in main RIB
       assertThat(
-          mainRibRoutes.get(exitGw).get(vrf1).getRoutes(),
+          mainRibRoutes.get(exitGw).get(vrf1).getUnannotatedRoutes(),
           not(hasItem(hasPrefix(leaf1VtepPrefix))));
       // Locally-generated routes will have no next hop ip in the EVPN rib
       assertThat(
@@ -280,7 +280,7 @@ public class EvpnTest {
                       hasCommunities(ExtendedCommunity.target(65000, 10020))))));
       // Ensure not in main RIB
       assertThat(
-          mainRibRoutes.get(leaf1).get(vrf1).getRoutes(),
+          mainRibRoutes.get(leaf1).get(vrf1).getUnannotatedRoutes(),
           not(hasItem(hasPrefix(exitgwVtepPrefix))));
       // Locally-generated routes will have no next hop ip in the EVPN rib
       assertThat(

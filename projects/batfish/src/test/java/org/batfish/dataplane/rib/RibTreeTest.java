@@ -25,14 +25,16 @@ public final class RibTreeTest {
           @Override
           public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
             // prefer routes with lower admin cost
-            return rhs.getAdministrativeCost() - lhs.getAdministrativeCost();
+            return Long.compare(rhs.getAdministrativeCost(), lhs.getAdministrativeCost());
           }
         };
     RibTree<StaticRoute> ribTree = new RibTree<>(owner);
     RibDelta<StaticRoute> addR1 = ribTree.mergeRoute(r1);
     assertThat(addR1, equalTo(RibDelta.adding(r1)));
+    assertThat(ribTree.getNumRoutes(), equalTo(1));
     RibDelta<StaticRoute> addR2 = ribTree.mergeRoute(r2);
     assertThat(addR2, equalTo(RibDelta.adding(r2)));
+    assertThat(ribTree.getNumRoutes(), equalTo(2));
     RibDelta<StaticRoute> addR3 = ribTree.mergeRoute(r3);
     assertThat(
         addR3,
@@ -42,5 +44,6 @@ public final class RibTreeTest {
                 .remove(r2, Reason.REPLACE)
                 .add(r3)
                 .build()));
+    assertThat(ribTree.getNumRoutes(), equalTo(1));
   }
 }

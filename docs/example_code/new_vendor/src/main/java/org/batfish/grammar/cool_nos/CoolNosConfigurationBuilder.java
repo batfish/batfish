@@ -254,7 +254,7 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
   }
 
   private static @Nonnull String unquote(String text) {
-    if (text.length() == 0) {
+    if (text.isEmpty()) {
       return text;
     }
     if (text.charAt(0) != '"') {
@@ -279,8 +279,9 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _w.redFlagf(
+          "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+          line, lineText);
     }
   }
 

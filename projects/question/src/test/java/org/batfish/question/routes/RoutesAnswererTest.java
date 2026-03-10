@@ -39,6 +39,7 @@ import static org.batfish.question.routes.RoutesAnswerer.MAIN_RIB_COMPARATOR;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
@@ -47,7 +48,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -338,7 +338,7 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.STRING,
             Schema.LONG,
-            Schema.INTEGER,
+            Schema.LONG,
             Schema.LONG));
   }
 
@@ -460,8 +460,8 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.LONG,
             Schema.LONG,
-            Schema.INTEGER,
-            Schema.INTEGER,
+            Schema.LONG,
+            Schema.LONG,
             Schema.LONG,
             Schema.LONG));
   }
@@ -541,8 +541,8 @@ public class RoutesAnswererTest {
         Schema.IP,
         Schema.INTEGER,
         Schema.INTEGER,
-        Schema.list(Schema.LONG),
-        Schema.list(Schema.LONG),
+        Schema.set(Schema.LONG),
+        Schema.set(Schema.LONG),
         Schema.STRING,
         Schema.STRING,
         Schema.INTEGER,
@@ -635,8 +635,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.INTEGER,
         Schema.INTEGER,
-        Schema.list(Schema.LONG),
-        Schema.list(Schema.LONG),
+        Schema.set(Schema.LONG),
+        Schema.set(Schema.LONG),
         Schema.STRING,
         Schema.STRING,
         Schema.INTEGER,
@@ -1038,7 +1038,7 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<AbstractRoute> getRoutes() {
+    public Set<AbstractRoute> getUnannotatedRoutes() {
       return _routes.stream()
           .map(AbstractRouteDecorator::getAbstractRoute)
           .collect(ImmutableSet.toImmutableSet());
@@ -1052,12 +1052,12 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> getTypedRoutes() {
+    public Set<R> getRoutes() {
       return _routes;
     }
 
     @Override
-    public Set<R> getTypedBackupRoutes() {
+    public Set<R> getBackupRoutes() {
       throw new UnsupportedOperationException();
     }
 

@@ -1,0 +1,5 @@
+#
+set system host-name ip_address
+#
+set system name-server 1.2.3.4
+set system name-server 11.22.33.04

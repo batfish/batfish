@@ -55,7 +55,7 @@ public final class BDDVarPair implements Serializable {
   }
 
   private static int bddVarId(BDD bdd) {
-    checkArgument(bdd.high().isOne() && bdd.low().isZero(), "bdd is not a single variable");
+    checkArgument(bdd.isVar(), "bdd is not a single variable");
     return bdd.var();
   }
 }

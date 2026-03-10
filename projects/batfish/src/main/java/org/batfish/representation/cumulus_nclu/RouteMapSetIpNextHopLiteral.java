@@ -22,9 +22,9 @@ public final class RouteMapSetIpNextHopLiteral implements RouteMapSet {
     return _nextHop;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(
+      Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     return Stream.of(new SetNextHop(new IpNextHop(ImmutableList.of(_nextHop))));
   }
 }

@@ -1202,17 +1202,17 @@
       "properties" : null
     },
     {
-      "id" : "node-vpc-815775e7",
-      "model" : "AWS_VPC",
-      "name" : "vpc-815775e7",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
       "id" : "node-internet",
       "model" : "BATFISH_INTERNET",
       "name" : "internet",
       "type" : "INTERNET",
+      "properties" : null
+    },
+    {
+      "id" : "node-vpc-815775e7",
+      "model" : "AWS_VPC",
+      "name" : "vpc-815775e7",
+      "type" : "SWITCH",
       "properties" : null
     },
     {

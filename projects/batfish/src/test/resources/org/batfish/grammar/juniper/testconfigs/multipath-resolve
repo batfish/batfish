@@ -1,0 +1,4 @@
+#
+set system host-name multipath-resolve
+#
+set policy-options policy-statement POLICY_NAME term TERM_NAME then multipath-resolve

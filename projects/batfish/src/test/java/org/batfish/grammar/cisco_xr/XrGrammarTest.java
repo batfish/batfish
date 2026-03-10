@@ -21,6 +21,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasTrackingGr
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -36,6 +37,9 @@ import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasName;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
@@ -138,6 +142,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC;
 import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -156,11 +161,11 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -447,17 +452,49 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testInterfaceAclCommonExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("interface-acl-common");
+
+    // Interface with both common and interface-specific ACL
+    assertThat(c.getInterfaces(), hasKey("GigabitEthernet0/0/0/0"));
+    org.batfish.representation.cisco_xr.Interface ge0 =
+        c.getInterfaces().get("GigabitEthernet0/0/0/0");
+    assertThat(ge0.getIncomingFilterCommon(), equalTo("common-acl"));
+    assertThat(ge0.getIncomingFilter(), equalTo("interface-acl"));
+
+    // Interface with only common ACL
+    assertThat(c.getInterfaces(), hasKey("GigabitEthernet0/0/0/1"));
+    org.batfish.representation.cisco_xr.Interface ge1 =
+        c.getInterfaces().get("GigabitEthernet0/0/0/1");
+    assertThat(ge1.getIncomingFilterCommon(), equalTo("common-acl"));
+    assertThat(ge1.getIncomingFilter(), nullValue());
+
+    // Interface with only interface-specific ACL
+    assertThat(c.getInterfaces(), hasKey("GigabitEthernet0/0/0/2"));
+    org.batfish.representation.cisco_xr.Interface ge2 =
+        c.getInterfaces().get("GigabitEthernet0/0/0/2");
+    assertThat(ge2.getIncomingFilterCommon(), nullValue());
+    assertThat(ge2.getIncomingFilter(), equalTo("interface-acl"));
+  }
+
+  @Test
   public void testAclExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("acl");
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), aMapWithSize(9));
+    assertThat(acl.getLines(), aMapWithSize(11));
+    // TODO: add support for assigning next sequence number to remarks
+    assertThat(acl.getLines().get(100L).getName(), equalTo("permit tcp host 1.1.1.1 any eq 22"));
 
     assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
     Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
     // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
+    assertThat(aclv6.getLines(), hasSize(5));
+    // TODO: add support to assign next sequence number and extract sequence number from aclv6 lines
+    assertThat(
+        aclv6.getLines().get(4).getName(),
+        equalTo("permit tcp any 1111:1111:1111:1111::/64 eq 8080"));
   }
 
   @Test
@@ -466,14 +503,15 @@ public final class XrGrammarTest {
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(9));
+    assertThat(acl.getLines(), hasSize(11));
     {
       // Test reordering - (20, 30, 31, rather than 31 last)
       assertThat(acl.getLines().get(2).getName(), equalTo("31 permit ipv4 31.31.31.31/32 any"));
+      assertThat(acl.getLines().get(4).getName(), equalTo("41 permit tcp host 2.2.2.2 any eq 22"));
     }
     {
       // Test fragments.
-      AclLine fragmentLine = acl.getLines().get(8);
+      AclLine fragmentLine = acl.getLines().get(9);
       PermitAndDenyBdds bdds = _aclToBdd.toPermitAndDenyBdds(fragmentLine);
       HeaderSpace expected =
           HeaderSpace.builder()
@@ -494,6 +532,78 @@ public final class XrGrammarTest {
                   aclLineName(acl.getName(), line.getName()))),
           line.getVendorStructureId());
     }
+  }
+
+  @Test
+  public void testInterfaceAclCommonConversion() {
+    Configuration c = parseConfig("interface-acl-common");
+    String hostname = c.getHostname();
+    String ifaceName = "GigabitEthernet0/0/0/0";
+
+    // Flow matching common-acl permit (port 22) - permitted by common ACL
+    Flow commonPermit =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("1.1.1.1"))
+            .setSrcPort(50000)
+            .setDstIp(Ip.parse("2.2.2.2"))
+            .setDstPort(22)
+            .build();
+    assertThat(c, hasInterface(ifaceName, hasIncomingFilter(accepts(commonPermit, ifaceName, c))));
+
+    // ORDERING TEST: Flow from 10.1.1.1 to port 80
+    // - common-acl line 20 denies 10.1.1.1 port 80 (evaluated first)
+    // - interface-acl line 10 permits any to port 80 (never reached)
+    // If ordering is wrong, this would be permitted. Correct behavior is denied.
+    Flow orderingTest =
+        commonPermit.toBuilder().setSrcIp(Ip.parse("10.1.1.1")).setDstPort(80).build();
+    assertThat(c, hasInterface(ifaceName, hasIncomingFilter(rejects(orderingTest, ifaceName, c))));
+
+    // Flow from non-10.1.1.1 to port 80 - falls through common, permitted by interface-acl
+    Flow interfacePermit = commonPermit.toBuilder().setDstPort(80).build();
+    assertThat(
+        c, hasInterface(ifaceName, hasIncomingFilter(accepts(interfacePermit, ifaceName, c))));
+
+    // Flow to port 443 - denied by interface-acl
+    Flow interfaceDeny = commonPermit.toBuilder().setDstPort(443).build();
+    assertThat(c, hasInterface(ifaceName, hasIncomingFilter(rejects(interfaceDeny, ifaceName, c))));
+
+    // Interface with only common ACL
+    assertThat(c, hasInterface("GigabitEthernet0/0/0/1", hasIncomingFilter(hasName("common-acl"))));
+
+    // Interface with only interface-specific ACL
+    assertThat(
+        c, hasInterface("GigabitEthernet0/0/0/2", hasIncomingFilter(hasName("interface-acl"))));
+  }
+
+  @Test
+  public void testInterfaceAclCommonAbfConversion() {
+    Configuration c = parseConfig("interface-acl-common-abf");
+
+    // Chained with ABF in common ACL - should use chained packet policy
+    org.batfish.datamodel.Interface ge0 = c.getAllInterfaces().get("GigabitEthernet0/0/0/0");
+    assertThat(ge0.getPacketPolicyName(), notNullValue());
+    assertThat(ge0.getPacketPolicyName(), startsWith("~CHAINED_ABF~"));
+    assertThat(ge0.getIncomingFilter(), nullValue());
+
+    // Chained with ABF in interface ACL - should use chained packet policy
+    org.batfish.datamodel.Interface ge1 = c.getAllInterfaces().get("GigabitEthernet0/0/0/1");
+    assertThat(ge1.getPacketPolicyName(), notNullValue());
+    assertThat(ge1.getPacketPolicyName(), startsWith("~CHAINED_ABF~"));
+    assertThat(ge1.getIncomingFilter(), nullValue());
+
+    // Chained with ABF in both ACLs - should use chained packet policy
+    org.batfish.datamodel.Interface ge2 = c.getAllInterfaces().get("GigabitEthernet0/0/0/2");
+    assertThat(ge2.getPacketPolicyName(), notNullValue());
+    assertThat(ge2.getPacketPolicyName(), startsWith("~CHAINED_ABF~"));
+    assertThat(ge2.getIncomingFilter(), nullValue());
+
+    // Single ACL with ABF - should use single packet policy
+    org.batfish.datamodel.Interface ge3 = c.getAllInterfaces().get("GigabitEthernet0/0/0/3");
+    assertThat(ge3.getPacketPolicyName(), notNullValue());
+    assertThat(ge3.getPacketPolicyName(), equalTo("~ABF_POLICY_IPV4~interface-abf~"));
+    assertThat(ge3.getIncomingFilter(), nullValue());
   }
 
   @Test
@@ -553,9 +663,9 @@ public final class XrGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
-    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
-    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8::/32", "default");
 
     assertThat(
         ccae,

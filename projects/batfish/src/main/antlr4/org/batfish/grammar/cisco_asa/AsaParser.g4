@@ -3484,6 +3484,7 @@ stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
    | protocol_type_code_access_list_stanza
+   | remark_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
    | router_isis_stanza
@@ -3599,7 +3600,6 @@ stanza
    | s_no_bfd
    | s_no_enable
    | s_ntp
-   | s_null
    | s_nv
    | s_object
    | s_object_group
@@ -3668,6 +3668,8 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
+   // keep null at the end
+   | s_null
 ;
 
 statistics_null

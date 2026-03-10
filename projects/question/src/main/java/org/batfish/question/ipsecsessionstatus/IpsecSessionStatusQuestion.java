@@ -23,9 +23,9 @@ public class IpsecSessionStatusQuestion extends Question {
 
   @JsonCreator
   private static IpsecSessionStatusQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
-      @Nullable @JsonProperty(PROP_STATUS) String status) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_REMOTE_NODES) @Nullable String remoteNodes,
+      @JsonProperty(PROP_STATUS) @Nullable String status) {
     return new IpsecSessionStatusQuestion(nodes, remoteNodes, status);
   }
 
@@ -46,15 +46,13 @@ public class IpsecSessionStatusQuestion extends Question {
     return QUESTION_NAME;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public String getRemoteNodes() {
+  public @Nullable String getRemoteNodes() {
     return _remoteNodes;
   }
 

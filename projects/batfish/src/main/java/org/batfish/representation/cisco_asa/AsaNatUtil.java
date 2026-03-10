@@ -121,7 +121,7 @@ final class AsaNatUtil {
    */
   static @Nullable Boolean isIdentityObjectNat(
       AsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
-    checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
+    checkArgument(nat.getSection() == Section.OBJECT, "Only supports object NATs.");
 
     if (nat.getDynamic()) {
       return false;
@@ -159,14 +159,10 @@ final class AsaNatUtil {
   }
 
   private static AclLineMatchExpr matchField(Prefix prefix, IpField field) {
-    switch (field) {
-      case DESTINATION:
-        return matchDst(prefix);
-      case SOURCE:
-        return matchSrc(prefix);
-      default:
-        throw new BatfishException("Invalid field");
-    }
+    return switch (field) {
+      case DESTINATION -> matchDst(prefix);
+      case SOURCE -> matchSrc(prefix);
+    };
   }
 
   static Optional<Transformation.Builder> secondTransformation(
@@ -192,14 +188,10 @@ final class AsaNatUtil {
   }
 
   private static ShiftIpAddressIntoSubnet shiftIp(IpField field, Prefix subnet) {
-    switch (field) {
-      case DESTINATION:
-        return TransformationStep.shiftDestinationIp(subnet);
-      case SOURCE:
-        return TransformationStep.shiftSourceIp(subnet);
-      default:
-        throw new BatfishException("Unsupported field");
-    }
+    return switch (field) {
+      case DESTINATION -> TransformationStep.shiftDestinationIp(subnet);
+      case SOURCE -> TransformationStep.shiftSourceIp(subnet);
+    };
   }
 
   static @Nullable Transformation.Builder staticTransformation(

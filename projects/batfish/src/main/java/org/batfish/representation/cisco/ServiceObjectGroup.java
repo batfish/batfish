@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +10,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 @ParametersAreNonnullByDefault
 public class ServiceObjectGroup extends ObjectGroup {
@@ -38,7 +39,7 @@ public class ServiceObjectGroup extends ObjectGroup {
   public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
       Map<String, ServiceObject> serviceObjects,
       Map<String, ServiceObjectGroup> serviceObjectGroups) {
-    return new OrMatchExpr(
+    return or(
         _lines.stream()
             .map(line -> line.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
             .collect(ImmutableSet.toImmutableSet()));

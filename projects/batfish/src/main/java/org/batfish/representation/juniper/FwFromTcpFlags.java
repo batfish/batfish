@@ -71,7 +71,7 @@ public final class FwFromTcpFlags implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderSpace(), getTraceElement(w));
+    return new MatchHeaderSpace(toHeaderSpace(), getTraceElement());
   }
 
   @Override
@@ -83,29 +83,18 @@ public final class FwFromTcpFlags implements FwFrom {
     return HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).setTcpFlags(_tcpFlags).build();
   }
 
-  private TraceElement getTraceElement(Warnings w) {
-    String tcpFlagString;
-    switch (_commandType) {
-      case ESTABLISHED:
-        tcpFlagString = "tcp-established";
-        break;
-
-      case INITIAL:
-        tcpFlagString = "tcp-initial";
-        break;
-
-      case FLAGS: // TODO: better description
-        tcpFlagString =
-            String.join(
-                " ",
-                _tcpFlags.stream()
-                    .map(TcpFlagsMatchConditions::toString)
-                    .collect(ImmutableList.toImmutableList()));
-        break;
-      default:
-        tcpFlagString = "unknown";
-        w.redFlagf("tcp-flag %s is not recognized", _commandType.name());
-    }
+  private TraceElement getTraceElement() {
+    String tcpFlagString =
+        switch (_commandType) {
+          case ESTABLISHED -> "tcp-established";
+          case INITIAL -> "tcp-initial";
+          case FLAGS -> // TODO: better description
+              String.join(
+                  " ",
+                  _tcpFlags.stream()
+                      .map(TcpFlagsMatchConditions::toString)
+                      .collect(ImmutableList.toImmutableList()));
+        };
 
     return TraceElement.of(String.format("Matched tcp-flags %s", tcpFlagString));
   }

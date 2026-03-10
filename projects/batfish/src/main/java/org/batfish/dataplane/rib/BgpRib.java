@@ -9,8 +9,9 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NE
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_REDISTRIBUTE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.GenericRibReadOnly;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFrom;
@@ -149,50 +151,90 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         return lhs.getOriginMechanism() == REDISTRIBUTE ? 1 : -1;
       }
     }
-    int multipathCompare =
-        Comparator
-            // Prefer higher Weight (cisco only)
-            .comparing(R::getWeight)
-            // Prefer higher LocalPref
-            .thenComparing(R::getLocalPreference)
-            // NOTE: Accumulated interior gateway protocol (AIGP) is not supported
-            // Aggregates (for non-juniper devices, won't appear on Juniper)
-            .thenComparing(r -> getAggregatePreference(r.getProtocol()))
-            // AS path: prefer shorter
-            // TODO: support `bestpath as-path ignore` (both cisco, juniper)
-            .thenComparing(r -> r.getAsPath().length(), Comparator.reverseOrder())
-            // Prefer certain origin type Internal over External over Incomplete
-            .thenComparing(r -> r.getOriginType().getPreference())
-            // Prefer eBGP over iBGP
-            .thenComparing(r -> getTypeCost(r.getProtocol()))
-            /*
-             * Prefer lower Multi-Exit Discriminator (MED)
-             * TODO: better support for MED rules
-             * Most rules are currently not supported:
-             *    - normally this comparison is done only if the first AS is the same in both AS Paths
-             *    - `always-compare-med` -- overrides above
-             *    - there are additional confederation rules
-             *    - On Juniper `path-selection cisco-nondeterministic` changes behavior
-             *    - On Cisco `bgp bestpath med missing-as-worst` changes missing MED values from 0 to MAX_INT
-             */
-            .thenComparing(R::getMetric, Comparator.reverseOrder())
-            // Prefer next hop IPs with the lowest IGP metric
-            .thenComparing(this::getIgpCostToNextHopIp, Comparator.reverseOrder())
-            // Prefer lowest CLL as a proxy for IGP Metric. FRR-Only.
-            .thenComparing(this::getClusterListLength, Comparator.reverseOrder())
-            // Evaluate AS path compatibility for multipath
-            .thenComparing(this::compareRouteAsPath)
-            .compare(lhs, rhs);
-    if (multipathCompare != 0 || isMultipath()) {
-      return multipathCompare;
-    } else {
-      return this.bestPathComparator(lhs, rhs);
+
+    // Multipath comparison: inline for hotpath optimization
+    int result;
+
+    // Prefer higher Weight (cisco only)
+    result = Integer.compare(lhs.getWeight(), rhs.getWeight());
+    if (result != 0) {
+      return result;
     }
+
+    // Prefer higher LocalPref
+    result = Long.compare(lhs.getLocalPreference(), rhs.getLocalPreference());
+    if (result != 0) {
+      return result;
+    }
+
+    // NOTE: Accumulated interior gateway protocol (AIGP) is not supported
+    // Aggregates (for non-juniper devices, won't appear on Juniper)
+    result =
+        Integer.compare(
+            getAggregatePreference(lhs.getProtocol()), getAggregatePreference(rhs.getProtocol()));
+    if (result != 0) {
+      return result;
+    }
+
+    // AS path: prefer shorter (lower is better)
+    // TODO: support `bestpath as-path ignore` (both cisco, juniper)
+    result = Integer.compare(lhs.getAsPath().length(), rhs.getAsPath().length());
+    if (result != 0) {
+      return -result;
+    }
+
+    // Prefer certain origin type Internal over External over Incomplete (higher is better)
+    result =
+        Integer.compare(lhs.getOriginType().getPreference(), rhs.getOriginType().getPreference());
+    if (result != 0) {
+      return result;
+    }
+
+    // Prefer eBGP over iBGP (higher is better)
+    result = Integer.compare(getTypeCost(lhs.getProtocol()), getTypeCost(rhs.getProtocol()));
+    if (result != 0) {
+      return result;
+    }
+
+    /*
+     * Prefer lower Multi-Exit Discriminator (MED)
+     * TODO: better support for MED rules
+     * Most rules are currently not supported:
+     *    - normally this comparison is done only if the first AS is the same in both AS Paths
+     *    - `always-compare-med` -- overrides above
+     *    - there are additional confederation rules
+     *    - On Juniper `path-selection cisco-nondeterministic` changes behavior
+     *    - On Cisco `bgp bestpath med missing-as-worst` changes missing MED values from 0 to MAX_INT
+     */
+    result = Long.compare(lhs.getMetric(), rhs.getMetric());
+    if (result != 0) {
+      return -result;
+    }
+
+    // Prefer next hop IPs with the lowest IGP metric (lower is better)
+    result = Long.compare(getIgpCostToNextHopIp(lhs), getIgpCostToNextHopIp(rhs));
+    if (result != 0) {
+      return -result;
+    }
+
+    // Prefer lowest CLL as a proxy for IGP Metric. FRR-Only (lower is better)
+    result = Integer.compare(getClusterListLength(lhs), getClusterListLength(rhs));
+    if (result != 0) {
+      return -result;
+    }
+
+    // Evaluate AS path compatibility for multipath
+    result = compareRouteAsPath(lhs, rhs);
+    if (result != 0 || isMultipath()) {
+      return result;
+    }
+
+    // Continue with best path selection if tied on multipath criteria
+    return bestPathComparator(lhs, rhs);
   }
 
-  @Nonnull
   @Override
-  public RibDelta<R> mergeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> mergeRouteGetDelta(R route) {
     // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
     // Note that trackable local routes are managed elsewhere,
     // e.g. in Bgpv4Rib.{add,remove}LocalRoute
@@ -325,10 +367,12 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     return actionFn.apply(route);
   }
 
-  @Nonnull
   @Override
-  public RibDelta<R> removeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> removeRouteGetDelta(R route) {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+      _logicalArrivalTime.remove(route);
+    }
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
@@ -407,21 +451,26 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   @Override
-  protected @Nonnull Set<R> computeTypedRoutes() {
+  protected @Nonnull Set<R> computeRoutes() {
     if (!isMultipath()) {
       return getBestPathRoutes();
     }
-    Map<NextHop, Map<Prefix, SortedSet<R>>> routesByNhAndPrefix = new HashMap<>();
-    for (R route : super.computeTypedRoutes()) {
+    Map<NextHop, Map<Prefix, R>> routesByNhAndPrefix = new HashMap<>();
+    for (R route : super.computeRoutes()) {
       routesByNhAndPrefix
           .computeIfAbsent(route.getNextHop(), n -> new HashMap<>())
-          .computeIfAbsent(route.getNetwork(), p -> new TreeSet<>(this::bestPathComparator))
-          .add(route);
+          .compute(
+              route.getNetwork(),
+              (p, other) ->
+                  other == null ? route : Comparators.max(other, route, this::bestPathComparator));
     }
     return routesByNhAndPrefix.values().stream()
         .flatMap(m -> m.values().stream())
-        .map(SortedSet::last)
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  public int getNumBestPathRoutes() {
+    return _bestPaths.size();
   }
 
   public Set<R> getBestPathRoutes() {
@@ -437,32 +486,30 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       // Nothing to do; defer to best-path selection
       return 0;
     }
-    switch (_multipathEquivalentAsPathMatchMode) {
-      case EXACT_PATH:
-        return lhs.equals(rhs) ? 0 : -1;
-      case FIRST_AS:
+    return switch (_multipathEquivalentAsPathMatchMode) {
+      case EXACT_PATH -> lhs.equals(rhs) ? 0 : -1;
+      case FIRST_AS -> {
         AsSet lhsFirstAsSet = lhs.getAsSets().isEmpty() ? AsSet.empty() : lhs.getAsSets().get(0);
         AsSet rhsFirstAsSet = rhs.getAsSets().isEmpty() ? AsSet.empty() : rhs.getAsSets().get(0);
-        return lhsFirstAsSet.equals(rhsFirstAsSet) ? 0 : -1;
-      case PATH_LENGTH:
+        yield lhsFirstAsSet.equals(rhsFirstAsSet) ? 0 : -1;
+      }
+      case PATH_LENGTH -> {
         assert lhs.length() == rhs.length();
-        return 0;
-      default:
-        throw new IllegalStateException(
-            String.format(
-                "Unsupported AS PATH comparison mode: %s", _multipathEquivalentAsPathMatchMode));
-    }
+        yield 0;
+      }
+    };
   }
 
   private void selectBestPath(Prefix prefix) {
     // optimization - avoid extra computation from override of getRoutes(prefix) in this class
-    Optional<R> s = super.getRoutes(prefix).stream().max(this::bestPathComparator);
-    if (!s.isPresent()) {
+    Set<R> remainingBestPaths = super.getRoutes(prefix);
+    if (remainingBestPaths.isEmpty()) {
       // Remove best path and return
       _bestPaths.remove(prefix);
       return;
     }
-    _bestPaths.put(prefix, s.get());
+    R best = Collections.max(remainingBestPaths, this::bestPathComparator);
+    _bestPaths.put(prefix, best);
   }
 
   /**
@@ -471,40 +518,77 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   @VisibleForTesting
   int bestPathComparator(R lhs, R rhs) {
-    // Skip arrival order unless requested, only applies if both routes are eBGP.
+    int result;
+
+    // Arrival order tie-breaking (only for eBGP routes) - prefer earlier arrival (lower is better)
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER
         && lhs.getProtocol() == RoutingProtocol.BGP
         && rhs.getProtocol() == RoutingProtocol.BGP) {
-      int result =
-          Comparator.<R, Long>comparing(
-                  r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
-                  Comparator.reverseOrder())
-              .compare(lhs, rhs);
+      long lhsArrival = _logicalArrivalTime.getOrDefault(lhs, _logicalClock);
+      long rhsArrival = _logicalArrivalTime.getOrDefault(rhs, _logicalClock);
+      result = Long.compare(lhsArrival, rhsArrival);
       if (result != 0) {
-        return result;
+        return -result;
       }
     }
 
-    // Continue with remaining tie breakers
-    return
-    // Prefer lower originator router ID
-    Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
-        // Prefer lower cluster list length. Only applicable to iBGP
-        .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
-        .thenComparing(R::getReceivedFrom, BgpRib::compareReceivedFrom)
-        // Prefer no path ID, then lower path ID
-        .thenComparing(R::getPathId, Comparator.nullsLast(Comparator.reverseOrder()))
-        .compare(lhs, rhs);
+    // Prefer lower originator router ID (lower is better)
+    result = lhs.getOriginatorIp().compareTo(rhs.getOriginatorIp());
+    if (result != 0) {
+      return -result;
+    }
+
+    // Prefer lower cluster list length. Only applicable to iBGP (lower is better)
+    result = Integer.compare(lhs.getClusterList().size(), rhs.getClusterList().size());
+    if (result != 0) {
+      return -result;
+    }
+
+    // Compare ReceivedFrom
+    result = compareReceivedFrom(lhs.getReceivedFrom(), rhs.getReceivedFrom());
+    if (result != 0) {
+      return result;
+    }
+
+    // Prefer no path ID, then lower path ID (lower is better, null is lowest)
+    Integer lhsPathId = lhs.getPathId();
+    Integer rhsPathId = rhs.getPathId();
+    if (lhsPathId == null && rhsPathId == null) {
+      return 0;
+    }
+    if (lhsPathId == null) {
+      return 1; // lhs preferred (no path ID is lowest)
+    }
+    if (rhsPathId == null) {
+      return -1; // rhs preferred (no path ID is lowest)
+    }
+    result = Integer.compare(lhsPathId, rhsPathId);
+    return -result; // lower is better
   }
 
   @VisibleForTesting
   static int compareReceivedFrom(ReceivedFrom lhs, ReceivedFrom rhs) {
     // Prefer lower neighbor IP, then break tie on ReceivedFrom subtype, then on
     // ReceivedFromInterface interface if applicable, else yield a tie.
-    return Comparator.comparing(LegacyReceivedFromToIpConverter::convert, Comparator.reverseOrder())
-        .thenComparing(RECEIVED_FROM_TYPE_PREFERENCE::visit)
-        .thenComparing(BgpRib::compareReceivedFromInterface)
-        .compare(lhs, rhs);
+
+    // Compare neighbor IPs (prefer lower, so negate)
+    Ip lhsIp = LegacyReceivedFromToIpConverter.convert(lhs);
+    Ip rhsIp = LegacyReceivedFromToIpConverter.convert(rhs);
+    int result = lhsIp.compareTo(rhsIp);
+    if (result != 0) {
+      return -result;
+    }
+
+    // Compare ReceivedFrom type preference (higher is better)
+    int lhsPref = RECEIVED_FROM_TYPE_PREFERENCE.visit(lhs);
+    int rhsPref = RECEIVED_FROM_TYPE_PREFERENCE.visit(rhs);
+    result = Integer.compare(lhsPref, rhsPref);
+    if (result != 0) {
+      return result;
+    }
+
+    // Compare interface name if both are ReceivedFromInterface
+    return compareReceivedFromInterface(lhs, rhs);
   }
 
   private static final ReceivedFromVisitor<Integer> RECEIVED_FROM_TYPE_PREFERENCE =
@@ -637,5 +721,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       return 0;
     }
     return route.getClusterList().size();
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Map<R, Long> getArrivalTimeForTesting() {
+    return Collections.unmodifiableMap(_logicalArrivalTime);
   }
 }

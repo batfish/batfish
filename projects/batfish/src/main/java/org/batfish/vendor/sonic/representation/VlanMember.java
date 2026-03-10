@@ -28,7 +28,7 @@ public class VlanMember implements Serializable {
 
   @JsonCreator
   private static @Nonnull VlanMember create(
-      @Nullable @JsonProperty(PROP_TAGGING_MODE) String taggingModeStr) {
+      @JsonProperty(PROP_TAGGING_MODE) @Nullable String taggingModeStr) {
     TaggingMode taggingMode = null;
     if ("tagged".equals(taggingModeStr)) {
       taggingMode = TaggingMode.TAGGED;

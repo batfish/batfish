@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_xr;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
-import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -84,6 +83,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -139,7 +140,10 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -872,9 +876,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
         } else {
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName));
+          _w.redFlagf(
+              "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName);
         }
       }
       redistributionPolicy.addStatement(
@@ -893,10 +896,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
         } else {
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in connected -> BGP redistribution",
-                  mapName));
+          _w.redFlagf(
+              "Ignoring undefined route-policy %s in connected -> BGP redistribution", mapName);
         }
       }
       redistributionPolicy.addStatement(
@@ -1141,13 +1142,153 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
+  // TODO: This was copied from a multi-Cisco-like-vendor version. Review and update to be specific
+  // to Cisco XR interface naming conventions, removing patterns that don't apply to XR.
+  private static InterfaceType computeCiscoXrInterfaceType(String name) {
+    if (name.startsWith("Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("ATM")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Bundle-Ether")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("cmp-mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Crypto-Engine")) {
+      return InterfaceType.TUNNEL; // IPSec VPN
+    } else if (name.startsWith("Dialer")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Dot11Radio")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Embedded-Service-Engine")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("GMPLS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Ethernet")
+        || name.startsWith("FastEthernet")
+        || name.startsWith("FortyGigabitEthernet")
+        || name.startsWith("GigabitEthernet")
+        || name.startsWith("HundredGigabitEthernet")
+        || name.startsWith("HundredGigE")
+        || name.startsWith("FiftyGigE")
+        || name.startsWith("FortyGigE")
+        || name.startsWith("FourHundredGigE")
+        || name.startsWith("TenGigabitEthernet")
+        || name.startsWith("TenGigE")
+        || name.startsWith("TwentyFiveGigE")
+        || name.startsWith("TwoHundredGigE")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.LOGICAL;
+      } else {
+        return InterfaceType.PHYSICAL;
+      }
+    } else if (name.startsWith("Group-Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Loopback")) {
+      return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("Management")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("MgmtEth")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Null")) {
+      return InterfaceType.NULL;
+    } else if (name.toLowerCase().startsWith("port-channel")) {
+      if (name.contains(".")) {
+        // Subinterface of a port channel
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("POS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Redundant") && name.contains(".")) {
+      return InterfaceType.REDUNDANT_CHILD;
+    } else if (name.startsWith("Redundant")) {
+      return InterfaceType.REDUNDANT;
+    } else if (name.startsWith("Serial")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Tunnel")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-ip")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-te")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("Vlan")) {
+      return InterfaceType.VLAN;
+    } else if (name.startsWith("Vxlan")) {
+      return InterfaceType.TUNNEL;
+    } else {
+      return InterfaceType.UNKNOWN;
+    }
+  }
+
+  /**
+   * Creates a chained packet policy that evaluates policies in order. Each policy's statements are
+   * inlined in sequence.
+   *
+   * @param name the name for the chained policy
+   * @param policies the policies to chain in evaluation order
+   * @return the chained packet policy
+   */
+  private static PacketPolicy createChainedPacketPolicy(String name, List<PacketPolicy> policies) {
+    return new PacketPolicy(
+        name,
+        policies.stream()
+            .flatMap(policy -> policy.getStatements().stream())
+            .collect(ImmutableList.toImmutableList()),
+        policies.isEmpty()
+            ? new Return(new FibLookup(IngressInterfaceVrf.instance()))
+            : policies.get(policies.size() - 1).getDefaultAction());
+  }
+
+  /**
+   * Creates a chained or single ACL from a list of ACL names. Returns empty if the list is empty.
+   * If the list has one ACL, returns that ACL. If the list has multiple ACLs, creates a chained ACL
+   * that evaluates ACLs in order with fallthrough behavior.
+   *
+   * @param aclNames list of ACL names in evaluation order (must all exist in ipAccessLists)
+   * @param ipAccessLists map of available ACLs
+   * @return the ACL to use, or empty if the list is empty
+   */
+  private static Optional<IpAccessList> getOrCreateIncomingFilter(
+      List<String> aclNames, Map<String, IpAccessList> ipAccessLists) {
+    if (aclNames.isEmpty()) {
+      return Optional.empty();
+    }
+    if (aclNames.size() == 1) {
+      return Optional.of(ipAccessLists.get(aclNames.get(0)));
+    }
+
+    // Chain multiple ACLs
+    String chainedAclName = String.format("~CHAINED~%s~", String.join("~", aclNames));
+    return Optional.of(
+        ipAccessLists.computeIfAbsent(
+            chainedAclName,
+            name ->
+                IpAccessList.builder()
+                    .setName(name)
+                    .setLines(
+                        aclNames.stream()
+                            .map(ipAccessLists::get)
+                            .<AclLine>map(acl -> new AclAclLine(acl.getName(), acl.getName()))
+                            .collect(ImmutableList.toImmutableList()))
+                    .build()));
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(c)
-            .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
+            .setType(computeCiscoXrInterfaceType(iface.getName()))
             .build();
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
@@ -1286,18 +1427,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     IsisProcess isisProcess = vrf.getIsisProcess();
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
-        case LEVEL_1:
-          level1 = true;
-          break;
-        case LEVEL_1_2:
+        case LEVEL_1 -> level1 = true;
+        case LEVEL_2 -> level2 = true;
+        case LEVEL_1_2 -> {
           level1 = true;
           level2 = true;
-          break;
-        case LEVEL_2:
-          level2 = true;
-          break;
-        default:
-          throw new VendorConversionException("Invalid IS-IS level");
+        }
       }
       IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       IsisInterfaceLevelSettings levelSettings =
@@ -1314,25 +1449,43 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
 
-    String incomingFilterName = iface.getIncomingFilter();
-    if (incomingFilterName != null) {
-      Ipv4AccessList incomingFilter = _ipv4Acls.get(incomingFilterName);
-      if (incomingFilter != null) {
-        if (isIpv4AclUsedForAbf(incomingFilter)) {
-          newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingFilterName));
-        } else {
-          newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
-        }
+    List<String> incomingAclNames =
+        Stream.of(iface.getIncomingFilterCommon(), iface.getIncomingFilter())
+            .filter(Objects::nonNull)
+            .filter(_ipv4Acls::containsKey)
+            .collect(ImmutableList.toImmutableList());
+    boolean anyAbf =
+        incomingAclNames.stream().anyMatch(name -> isIpv4AclUsedForAbf(_ipv4Acls.get(name)));
+    if (anyAbf && incomingAclNames.size() > 1) {
+      // Create chained packet policy for ABF
+      String chainedPolicyName =
+          String.format("~CHAINED_ABF~%s~", String.join("~", incomingAclNames));
+      if (!c.getPacketPolicies().containsKey(chainedPolicyName)) {
+        PacketPolicy chainedPolicy =
+            createChainedPacketPolicy(
+                chainedPolicyName,
+                incomingAclNames.stream()
+                    .map(name -> c.getPacketPolicies().get(computeAbfIpv4PolicyName(name)))
+                    .filter(Objects::nonNull)
+                    .collect(ImmutableList.toImmutableList()));
+        c.getPacketPolicies().put(chainedPolicyName, chainedPolicy);
       }
+      newIface.setPacketPolicy(chainedPolicyName);
+    } else if (anyAbf) {
+      // Single ACL with ABF
+      newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingAclNames.get(0)));
+    } else {
+      // No ABF, use filter
+      getOrCreateIncomingFilter(incomingAclNames, ipAccessLists)
+          .ifPresent(newIface::setIncomingFilter);
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
       Ipv4AccessList outgoingFilter = _ipv4Acls.get(outgoingFilterName);
       if (outgoingFilter != null && isIpv4AclUsedForAbf(outgoingFilter)) {
-        _w.redFlag(
-            String.format(
-                "ACL based forwarding rule %s cannot be applied to an egress interface.",
-                outgoingFilterName));
+        _w.redFlagf(
+            "ACL based forwarding rule %s cannot be applied to an egress interface.",
+            outgoingFilterName);
       } else {
         newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
       }
@@ -1408,9 +1561,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       } else {
         // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
         // references to undefined route-policies and removal of route-policies that are in use.
-        _w.redFlag(
-            String.format(
-                "Ignoring undefined route-policy %s in OSPF redistribution", exportRouteMapName));
+        _w.redFlagf(
+            "Ignoring undefined route-policy %s in OSPF redistribution", exportRouteMapName);
       }
     }
 
@@ -2035,9 +2187,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }

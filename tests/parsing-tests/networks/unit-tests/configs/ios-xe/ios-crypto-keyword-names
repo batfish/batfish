@@ -1,0 +1,23 @@
+!
+hostname ios-crypto-keyword-names
+!
+! Test crypto commands with keyword names (variable_permissive)
+!
+crypto ca trustpool policy
+crypto ca trustpool profile
+crypto ca trustpool default
+!
+crypto pki trustpoint policy
+ enrollment selfsigned
+ revocation-check none
+!
+crypto pki trustpoint profile
+ enrollment url http://pki.example.com
+!
+crypto pki trustpoint default
+ enrollment selfsigned
+!
+interface GigabitEthernet0/0
+ ip address 10.0.0.1 255.255.255.0
+!
+end

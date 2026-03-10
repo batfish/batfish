@@ -14,9 +14,8 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public final class PsThenCommunityAdd extends PsThen {
 
-  public PsThenCommunityAdd(String name, JuniperConfiguration configuration) {
+  public PsThenCommunityAdd(String name) {
     _name = name;
-    _configuration = configuration;
   }
 
   @Override
@@ -25,11 +24,19 @@ public final class PsThenCommunityAdd extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings warnings) {
+    // undefined reference; or not converted because it contains only regexes
     if (!c.getCommunitySets().containsKey(_name)) {
-      // undefined reference; or not converted because it contains only regexes
+      if (juniperVendorConfiguration
+          .getMasterLogicalSystem()
+          .getNamedCommunities()
+          .containsKey(_name)) {
+        warnings.fatalRedFlag(
+            "'%s' community contains no non-wildcard members in an add action", _name);
+      }
       return;
     }
-    _configuration.getOrCreateNamedCommunitiesUsedForSet().add(_name);
+
+    juniperVendorConfiguration.getOrCreateNamedCommunitiesUsedForSet().add(_name);
     statements.add(
         new SetCommunities(
             CommunitySetUnion.of(InputCommunities.instance(), new CommunitySetReference(_name))));
@@ -39,6 +46,18 @@ public final class PsThenCommunityAdd extends PsThen {
     return _name;
   }
 
-  private JuniperConfiguration _configuration;
   private final String _name;
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof PsThenCommunityAdd that)) {
+      return false;
+    }
+    return _name.equals(that._name);
+  }
+
+  @Override
+  public int hashCode() {
+    return _name.hashCode();
+  }
 }

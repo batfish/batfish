@@ -1,12 +1,12 @@
 package org.batfish.bddreachability;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -133,6 +133,6 @@ public final class LastHopOutgoingInterfaceManagerTest {
     assertFalse(bdd1.isOne());
     assertFalse(bdd2.isZero());
     assertFalse(bdd2.isOne());
-    assertTrue(!bdd1.equals(bdd2));
+    assertNotEquals(bdd1, bdd2);
   }
 }

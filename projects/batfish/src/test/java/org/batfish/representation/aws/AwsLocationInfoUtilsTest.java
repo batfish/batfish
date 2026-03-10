@@ -16,6 +16,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class AwsLocationInfoUtilsTest {
   private static final Interface IFACE;
 
   static {
-    IFACE = Interface.builder().setName("i").build();
+    IFACE = TestInterface.builder().setName("i").build();
     IFACE.setAllAddresses(
         ImmutableList.of(
             ConcreteInterfaceAddress.parse("1.1.1.1/24"),

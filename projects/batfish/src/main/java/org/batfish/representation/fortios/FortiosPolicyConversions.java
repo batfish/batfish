@@ -8,7 +8,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVIC
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
@@ -29,6 +34,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,7 +49,6 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -57,10 +62,9 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.VendorStructureId;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
@@ -281,10 +285,9 @@ public final class FortiosPolicyConversions {
         line = ExprAclLine.rejecting();
         break;
       default: // TODO: Support policies with action IPSEC
-        w.redFlag(
-            String.format(
-                "Ignoring policy %s: Action %s is not supported",
-                numAndName, policy.getActionEffective()));
+        w.redFlagf(
+            "Ignoring policy %s: Action %s is not supported",
+            numAndName, policy.getActionEffective());
         return Optional.empty();
     }
 
@@ -307,20 +310,17 @@ public final class FortiosPolicyConversions {
     List<AclLineMatchExpr> srcAddrExprs =
         Sets.intersection(srcAddrs, namedIpSpaces).stream()
             .map(
-                addr -> {
-                  HeaderSpace hs =
-                      HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(hs, "Matched source address");
-                })
+                addr ->
+                    AclLineMatchExprs.matchSrc(
+                        new IpSpaceReference(addr), "Matched source address"))
             .collect(ImmutableList.toImmutableList());
 
     List<AclLineMatchExpr> dstAddrExprs =
         Sets.intersection(dstAddrs, namedIpSpaces).stream()
             .map(
                 addr -> {
-                  HeaderSpace hs =
-                      HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(hs, "Matched destination address");
+                  return AclLineMatchExprs.matchDst(
+                      new IpSpaceReference(addr), TraceElement.of("Matched destination address"));
                 })
             .collect(ImmutableList.toImmutableList());
 
@@ -334,11 +334,10 @@ public final class FortiosPolicyConversions {
           srcAddrExprs.isEmpty()
               ? "source addresses"
               : dstAddrExprs.isEmpty() ? "destination addresses" : "services";
-      w.redFlag(
-          String.format(
-              "Policy %s will not match any packets because none of its %s were successfully"
-                  + " converted",
-              numAndName, emptyField));
+      w.redFlagf(
+          "Policy %s will not match any packets because none of its %s were successfully"
+              + " converted",
+          numAndName, emptyField);
     }
     matchConjuncts.add(or(srcAddrExprs));
     matchConjuncts.add(or(dstAddrExprs));
@@ -380,7 +379,7 @@ public final class FortiosPolicyConversions {
     // Any valid service group should match *some* service group members
     assert !exprs.isEmpty();
 
-    return new OrMatchExpr(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
+    return or(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
   }
 
   private static @Nonnull AclLineMatchExpr toMatchExpr(Service service, String filename) {
@@ -390,76 +389,81 @@ public final class FortiosPolicyConversions {
       case IP:
       case TCP_UDP_SCTP:
         List<AclLineMatchExpr> exprs =
-            toHeaderSpaces(service)
-                .map(MatchHeaderSpace::new)
-                .collect(ImmutableList.toImmutableList());
+            toServiceMatchExprs(service).collect(ImmutableList.toImmutableList());
         // Any valid service should match *some* packets
         assert !exprs.isEmpty();
-        return new OrMatchExpr(exprs, traceElement);
+        return or(exprs, traceElement);
       default:
         return new FalseExpr(traceElement);
     }
   }
 
-  private static @Nonnull Stream<HeaderSpace> toHeaderSpaces(Service service) {
-    switch (service.getProtocolEffective()) {
-      case TCP_UDP_SCTP:
-        return Stream.of(
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.TCP,
-                    service.getTcpPortRangeSrcEffective(),
-                    service.getTcpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.UDP,
-                    service.getUdpPortRangeSrcEffective(),
-                    service.getUdpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.SCTP,
-                    service.getSctpPortRangeSrcEffective(),
-                    service.getSctpPortRangeDst()))
-            .filter(Objects::nonNull);
-      case ICMP:
-        return Stream.of(
-            buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
-      case IP:
+  private static @Nonnull Stream<AclLineMatchExpr> toServiceMatchExprs(Service service) {
+    return switch (service.getProtocolEffective()) {
+      case TCP_UDP_SCTP ->
+          Stream.of(
+                  buildMatchExprWithPorts(
+                      IpProtocol.TCP,
+                      service.getTcpPortRangeSrcEffective(),
+                      service.getTcpPortRangeDst()),
+                  buildMatchExprWithPorts(
+                      IpProtocol.UDP,
+                      service.getUdpPortRangeSrcEffective(),
+                      service.getUdpPortRangeDst()),
+                  buildMatchExprWithPorts(
+                      IpProtocol.SCTP,
+                      service.getSctpPortRangeSrcEffective(),
+                      service.getSctpPortRangeDst()))
+              .filter(Objects::nonNull);
+      case ICMP ->
+          Stream.of(
+              buildIcmpMatchExpr(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
+      case IP -> {
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
         int protocolNumber = service.getProtocolNumberEffective();
-        HeaderSpace.Builder hs = HeaderSpace.builder();
-        // Protocol number 0 indicates all protocols.
-        // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
-        return Stream.of(
-            protocolNumber == 0
-                ? hs.build()
-                : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
-      case ICMP6:
-        throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unrecognized service protocol %s", service.getProtocolEffective()));
-    }
+        if (protocolNumber == 0) {
+          // Protocol number 0 indicates all protocols.
+          // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
+          yield Stream.of(TRUE);
+        }
+        yield Stream.of(matchIpProtocol(protocolNumber));
+      }
+      case ICMP6 ->
+          throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
+    };
   }
 
-  /** Returns a {@link HeaderSpace} with the given ports, or null if {@code dstPorts} are null */
-  private static @Nullable HeaderSpace buildHeaderSpaceWithPorts(
+  /**
+   * Returns an {@link AclLineMatchExpr} with the given ports, or null if {@code dstPorts} are null
+   */
+  private static @Nullable AclLineMatchExpr buildMatchExprWithPorts(
       @Nonnull IpProtocol protocol,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts) {
     if (dstPorts == null) {
       return null;
     }
-    HeaderSpace.Builder headerSpace =
-        HeaderSpace.builder().setIpProtocols(protocol).setDstPorts(dstPorts.getSubRanges());
-    Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
-    return headerSpace.build();
+    List<AclLineMatchExpr> exprs = new LinkedList<>();
+    exprs.add(matchIpProtocol(protocol));
+    exprs.add(matchDstPort(dstPorts));
+    if (srcPorts != null) {
+      exprs.add(matchSrcPort(srcPorts));
+    }
+    return and(exprs);
   }
 
-  private static HeaderSpace buildIcmpHeaderSpace(
+  private static AclLineMatchExpr buildIcmpMatchExpr(
       IpProtocol icmpProtocol, @Nullable Integer icmpCode, @Nullable Integer icmpType) {
-    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(icmpProtocol);
-    Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
-    Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
-    return headerSpace.build();
+    List<AclLineMatchExpr> exprs = new LinkedList<>();
+    exprs.add(matchIpProtocol(icmpProtocol));
+    if (icmpType != null) {
+      exprs.add(matchIcmpType(icmpType));
+    }
+    if (icmpCode != null) {
+      exprs.add(matchIcmpCode(icmpCode));
+    }
+    return and(exprs);
   }
 
   public static IpSpace toIpSpace(Addrgrp a, Warnings w) {
@@ -479,10 +483,9 @@ public final class FortiosPolicyConversions {
   public static IpSpace toIpSpace(Address a, Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
     if (a.getAssociatedInterface() != null || a.getAssociatedInterfaceZone() != null) {
-      w.redFlag(
-          String.format(
-              "Address associated-interface is not yet supported and will be ignored for %s",
-              a.getName()));
+      w.redFlagf(
+          "Address associated-interface is not yet supported and will be ignored for %s",
+          a.getName());
     }
     switch (a.getTypeEffective()) {
       case IPMASK:
@@ -511,22 +514,20 @@ public final class FortiosPolicyConversions {
         Ip mask = a.getTypeSpecificFields().getIp2Effective().inverted();
         return IpWildcard.ipWithWildcardMask(ip, mask).toIpSpace();
       case INTERFACE_SUBNET:
-        // TODO test what IPs this actually includes. Docs say it will:
-        //  "automatically create an address object that matches the interface subnet"
-        //  but it's unclear because it supports both "set subnet" and "set interface".
+      // TODO test what IPs this actually includes. Docs say it will:
+      //  "automatically create an address object that matches the interface subnet"
+      //  but it's unclear because it supports both "set subnet" and "set interface".
       case DYNAMIC: // Based on SDN connectors, whose addresses aren't known statically
       case FQDN: // Based on domain names
       case GEOGRAPHY: // Based on countries
       case MAC: // Based on MAC addresses
         // Unsupported address types.
-        w.redFlag(
-            String.format(
-                "Addresses of type %s are unsupported and will be considered unmatchable.",
-                a.getType()));
+        w.redFlagf(
+            "Addresses of type %s are unsupported and will be considered unmatchable.",
+            a.getType());
         return EmptyIpSpace.INSTANCE;
-      default:
-        throw new IllegalStateException("Unrecognized address type " + a.getTypeEffective());
     }
+    throw new IllegalArgumentException("Should be unreachable");
   }
 
   public static IpSpaceMetadata toIpSpaceMetadata(Address a, String filename) {

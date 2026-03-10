@@ -111,6 +111,7 @@ i_common
 i_common_physical
 :
     apply
+    | i_damping
     | i_description
     | i_disable
     | i_ether_options
@@ -121,6 +122,47 @@ i_common_physical
     | i_null
     | i_redundant_ether_options
     | i_speed
+;
+
+i_damping
+:
+   DAMPING
+   (
+      id_enable_null
+      | id_half_life_null
+      | id_max_suppress_null
+      | id_reuse_null
+      | id_suppress_null
+   )
+;
+
+id_enable_null
+:
+   ENABLE
+;
+
+id_half_life_null
+:
+  // range 1 through 30
+   HALF_LIFE uint8
+;
+
+id_max_suppress_null
+:
+  // range 1 through 20,000
+   MAX_SUPPRESS uint16
+;
+
+id_reuse_null
+:
+  // range 1 through 20,000
+   REUSE uint16
+;
+
+id_suppress_null
+:
+  // range 1 through 20,000
+   SUPPRESS uint16
 ;
 
 i_description
@@ -173,6 +215,11 @@ i_gigether_options
    GIGETHER_OPTIONS ether_options
 ;
 
+i_input_vlan_map
+:
+   INPUT_VLAN_MAP i_vlan_action
+;
+
 i_link_mode
 :
    LINK_MODE FULL_DUPLEX
@@ -185,7 +232,9 @@ i_mac
 
 i_mtu
 :
-   MTU size = dec
+// maximum is chassis-dependent, but it ranges from 1 to about 16KB it looks like:
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/mtu-edit-interfaces-ni.html
+   MTU bytes = uint16
 ;
 
 i_native_vlan_id
@@ -212,6 +261,11 @@ i_null
       | TRAPS
       | TUNNEL
    ) null_filler
+;
+
+i_output_vlan_map
+:
+   OUTPUT_VLAN_MAP i_vlan_action
 ;
 
 i_peer_unit
@@ -245,8 +299,15 @@ i_unit
    (
       i_common
       | i_bandwidth
+      | i_input_vlan_map
+      | i_output_vlan_map
       | i_peer_unit
    )
+;
+
+i_vlan_action
+:
+   POP | POP_POP | POP_SWAP | PUSH | PUSH_PUSH | SWAP | SWAP_PUSH | SWAP_SWAP
 ;
 
 i_vlan_id
@@ -291,8 +352,14 @@ if_ethernet_switching
       | ife_interface_mode
       | ife_native_vlan_id
       | ife_port_mode
+      | ife_recovery_timeout_null
       | ife_vlan
    )
+;
+
+ife_recovery_timeout_null
+:
+   RECOVERY_TIMEOUT uint16 null_filler
 ;
 
 if_inet
@@ -301,18 +368,58 @@ if_inet
    (
       apply
       | ifi_address
+      | ifi_destination_udp_port
       | ifi_filter
       | ifi_mtu
       | ifi_no_redirects
       | ifi_null
       | ifi_rpf_check
+      | ifi_sampling_null
       | ifi_tcp_mss
    )
 ;
 
 if_inet6
 :
-   INET6 null_filler
+   INET6
+   (
+      apply
+      | ifi6_address
+      | ifi6_destination_udp_port
+      | ifi6_filter
+      | ifi6_mtu
+      | ifi6_sampling_null
+   )
+;
+
+ifi6_address
+:
+   ADDRESS
+   (
+      ipv6_address
+      | ipv6_prefix
+      | wildcard
+   )
+   (
+      ifi6a_preferred
+      | ifi6a_primary
+   )?
+;
+
+ifi6a_preferred: PREFERRED;
+ifi6a_primary: PRIMARY;
+
+ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
+
+ifi6_filter: FILTER ifi6f_input;
+
+ifi6f_input: INPUT name = junos_name;
+
+ifi6_mtu: i_mtu;
+
+ifi6_sampling_null
+:
+   SAMPLING null_filler
 ;
 
 if_iso
@@ -321,6 +428,7 @@ if_iso
    (
       apply
       | ifiso_address
+      | ifiso_destination_udp_port
       | ifiso_mtu
    )
 ;
@@ -330,6 +438,7 @@ if_mpls
    MPLS
    (
       apply
+      | ifm_destination_udp_port
       | ifm_filter
       | ifm_maximum_labels
       | ifm_mtu
@@ -394,6 +503,7 @@ ife_vlan
    VLAN MEMBERS
    (
       ALL
+      | DEFAULT
       | range
       | name = junos_name
    )
@@ -422,6 +532,8 @@ ifi_filter
    filter
 ;
 
+ifi_destination_udp_port: DESTINATION_UDP_PORT port_number;
+
 ifi_mtu
 :
    i_mtu
@@ -437,10 +549,14 @@ ifi_null
    (
       DHCP
       | POLICER
-      | SAMPLING
       | SERVICE
       | TARGETED_BROADCAST
    ) null_filler
+;
+
+ifi_sampling_null
+:
+   SAMPLING null_filler
 ;
 
 ifi_rpf_check
@@ -584,10 +700,14 @@ ifiso_address
    ADDRESS iso_address
 ;
 
+ifiso_destination_udp_port: DESTINATION_UDP_PORT port_number;
+
 ifiso_mtu
 :
    MTU dec
 ;
+
+ifm_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
 ifm_filter
 :

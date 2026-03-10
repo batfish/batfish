@@ -79,16 +79,13 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
       Schedule schedule,
       Map<String, Node> allNodes,
       TopologyContext topologyContext) {
-    switch (schedule) {
-      case ALL:
-        return new MaxParallelSchedule(allNodes);
-      case NODE_SERIALIZED:
-        return new NodeSerializedSchedule(allNodes);
-      case NODE_COLORED:
+    return switch (schedule) {
+      case ALL -> new MaxParallelSchedule(allNodes);
+      case NODE_SERIALIZED -> new NodeSerializedSchedule(allNodes);
+      case NODE_COLORED -> {
         Coloring coloring = settings.getColoringType();
-        return new NodeColoredSchedule(allNodes, coloring, topologyContext);
-      default:
-        throw new BatfishException(String.format("Unsupported ibdp schedule: %s", schedule));
-    }
+        yield new NodeColoredSchedule(allNodes, coloring, topologyContext);
+      }
+    };
   }
 }

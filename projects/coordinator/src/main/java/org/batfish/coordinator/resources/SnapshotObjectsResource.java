@@ -53,7 +53,7 @@ public final class SnapshotObjectsResource {
 
   @GET
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  @SuppressWarnings({"MustBeClosedChecker", "PMD.CloseResource"}) // Response eventually closes it.
+  @SuppressWarnings({"MustBeClosedChecker"}) // Response eventually closes it.
   public Response get(@QueryParam(QP_KEY) String key) throws IOException {
     InputStream inputStream = Main.getWorkMgr().getSnapshotObject(_network, _snapshot, key);
     if (inputStream == null) {

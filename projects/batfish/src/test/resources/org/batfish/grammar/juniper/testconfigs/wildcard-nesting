@@ -1,0 +1,8 @@
+set system host-name wildcard-nesting
+#
+set groups g interfaces <*> unit <1*> family inet address 1.0.0.1/31
+set groups g interfaces <xe-*> unit <2*> family inet address 2.0.0.1/31
+#
+# should inherit 2.0.0.1/31
+set interfaces xe-0/0/0 unit 20 apply-groups g
+#

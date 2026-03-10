@@ -1,6 +1,18 @@
 load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@rules_java//java:java_library.bzl", "java_library")
 
 package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "minesweeper_testlib",
+    srcs = ["org/batfish/minesweeper/ConfigAtomicPredicatesTestUtils.java"],
+    deps = [
+        "//projects/common",
+        "//projects/minesweeper",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+    ],
+)
 
 junit_tests(
     name = "minesweeper_tests",
@@ -13,12 +25,18 @@ junit_tests(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        ":minesweeper_testlib",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
         "//projects/bdd",
+        "//projects/common",
+        "//projects/common/src/test:common_testlib",
+        "//projects/common/src/test/java/org/batfish/common/bdd:matchers",
+        "//projects/common/src/test/java/org/batfish/common/plugin:IBatfishTestAdapter",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
         "//projects/minesweeper",
-        "//projects/question",
+        "//projects/question/src/main/java/org/batfish/question",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:dk_brics_automaton",

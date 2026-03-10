@@ -1,7 +1,7 @@
 package org.batfish.e2e.l1.asymmetric;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;

@@ -60,5 +60,6 @@ public final class ManagementPackage implements Serializable {
 
   private final @Nonnull List<AccessLayer> _accessLayers;
   private final @Nullable NatRulebase _natRulebase;
+
   private final @Nonnull Package _package;
 }

@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_asa;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -22,7 +23,8 @@ public class ProtocolObjectGroupProtocolLine implements ProtocolObjectGroupLine 
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ProtocolObjectGroup> protocolObjectGroups) {
     if (_protocol == null) {
       return TrueExpr.INSTANCE;
     }

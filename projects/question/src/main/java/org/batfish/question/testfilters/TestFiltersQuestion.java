@@ -49,28 +49,24 @@ public class TestFiltersQuestion extends Question {
     return false;
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTERS)
-  private String getFilters() {
+  private @Nullable String getFilters() {
     return _filters;
   }
 
-  @Nonnull
   @JsonIgnore
-  public FilterSpecifier getFilterSpecifier() {
+  public @Nonnull FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
         _filters, AllFiltersFilterSpecifier.INSTANCE);
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
-  @Nonnull
   @JsonProperty(PROP_HEADERS)
-  public PacketHeaderConstraints getHeaders() {
+  public @Nonnull PacketHeaderConstraints getHeaders() {
     return _headers;
   }
 
@@ -79,9 +75,8 @@ public class TestFiltersQuestion extends Question {
     return "testFilters";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
@@ -90,9 +85,8 @@ public class TestFiltersQuestion extends Question {
     return _startLocation;
   }
 
-  @Nonnull
   @JsonIgnore
-  public LocationSpecifier getStartLocationSpecifier() {
+  public @Nonnull LocationSpecifier getStartLocationSpecifier() {
     return SpecifierFactories.getLocationSpecifierOrDefault(
         _startLocation, AllInterfacesLocationSpecifier.INSTANCE);
   }

@@ -5,6 +5,8 @@ set routing-options generate defaults passive
 set routing-options generate route 1.0.0.0/8
 set routing-options generate route 2.0.0.0/8 active
 set routing-options generate route 3.0.0.0/8 passive
+set routing-options generate route 1::1/127
+set routing-options generate route 2::2
 set routing-instances ri1 instance-type virtual-router
 set routing-instances ri1 routing-options generate defaults active
 set routing-instances ri1 routing-options generate route 1.0.0.0/8

@@ -372,17 +372,16 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
      * not be necessary since the source interface requirement is relaxed. A route to
      * _insideInterface for traffic with destination matching _realSourceObject would suffice.
      */
-    if (_section.equals(Section.OBJECT)) {
+    if (_section == Section.OBJECT) {
       Boolean identity = isIdentityObjectNat(this, networkObjects, w);
       if (identity == null) {
         throw new BatfishException(
             "Failed to determine if identity NAT but created Transformation");
       }
       if (!outgoing && !identity && !_insideInterface.equals(ANY_INTERFACE)) {
-        w.redFlag(
-            String.format(
-                "Possibly incorrect forwarding behavior for destination=%s, source interface=%s",
-                ((NetworkObjectAddressSpecifier) _realSource).getName(), _outsideInterface));
+        w.redFlagf(
+            "Possibly incorrect forwarding behavior for destination=%s, source interface=%s",
+            ((NetworkObjectAddressSpecifier) _realSource).getName(), _outsideInterface);
       }
     }
 

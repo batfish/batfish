@@ -1,0 +1,81 @@
+# https://github.com/batfish/batfish/issues/6995
+config system global
+    set hostname "iface_aggregate_warn"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set type physical
+        set snmp-index 1
+    next
+    edit "port2"
+        set vdom "root"
+        set type physical
+        set snmp-index 2
+    next
+    edit "port3"
+        set vdom "root"
+        set type physical
+        set snmp-index 3
+    next
+    edit "port4"
+        set vdom "root"
+        set type physical
+        set snmp-index 4
+    next
+    edit "port5"
+        set vdom "customer1"
+        set type physical
+        set snmp-index 4
+    next
+    edit "port6"
+        set vdom "root"
+        set type physical
+        set snmp-index 5
+        # set mode static
+        set ip 192.168.1.1/24
+    next
+    edit "vlan"
+        set vdom "root"
+        set type vlan
+        set interface port3
+        set vlanid 256
+    next
+    edit "aggregate1"
+        set vdom "root"
+        set type aggregate
+        set member "port1" "port2"
+        set description "Uplink to DC switches"
+        set snmp-index 6
+    next
+    edit "redundant1"
+        set vdom "root"
+        set type redundant
+        # can't add the same interface in two different aggregate/redondante
+        set member "port1"
+    next
+    edit "aggregate2"
+        set vdom "root"
+        set type aggregate
+        # interface don't exist
+        set member "iface_undefined"
+    next
+    edit "aggregate3"
+        set vdom "root"
+        set type aggregate
+        # can't use a VLAN for aggregate and redundant
+        set member "vlan"
+    next
+    edit "redundant2"
+        set vdom "root"
+        set type redundant
+        # all members have to be in the same VDOM as the redundant/aggregate interface
+        set member "port4" "port5"
+    next
+    edit "redundant3"
+        set vdom "root"
+        set type redundant
+        # all members must not have an IP address
+        set member "port6"
+    next
+end

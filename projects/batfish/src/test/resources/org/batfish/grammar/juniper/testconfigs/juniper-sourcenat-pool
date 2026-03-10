@@ -1,3 +1,4 @@
+set system host-name juniper-sourcenat-pool
 #
 set security nat source pool POOL1 address 1.0.0.1/24 to 1.0.0.3/32
 set security nat source pool POOL2 address 1.0.0.1 to 1.0.0.3

@@ -6,8 +6,8 @@ import static org.batfish.common.util.CommonUtil.readFile;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.main.Flatten.main;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,6 +65,12 @@ public final class FlattenTest {
   @Test
   public void testReplaceFilter() throws IOException {
     assertInputOutputPair("replace_filter", "replace_filter_flattened");
+  }
+
+  @Test
+  public void testJunosReplaceOrder() throws IOException {
+    assertInputOutputPair(
+        "junos-order-sensitive-replace-before", "junos-order-sensitive-replace-flattened");
   }
 
   @Test

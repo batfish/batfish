@@ -121,10 +121,9 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _w.redFlag(
-          String.format(
-              "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
-              line, lineText));
+      _w.redFlagf(
+          "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+          line, lineText);
     }
   }
 
@@ -132,27 +131,23 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     return _configuration;
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 

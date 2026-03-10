@@ -21,9 +21,8 @@ public class RouteMapSetWeight implements RouteMapSet {
     return _weight;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     return Stream.of(new SetWeight(new LiteralInt(_weight)));
   }
 }

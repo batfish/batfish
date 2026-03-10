@@ -131,9 +131,9 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     private static UniqueIpAssignmentsQuestion create(
-        @Nullable @JsonProperty(PROP_ENABLED_IPS_ONLY) Boolean enabledIpsOnly,
-        @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
-        @Nullable @JsonProperty(PROP_NODES) String nodes) {
+        @JsonProperty(PROP_ENABLED_IPS_ONLY) @Nullable Boolean enabledIpsOnly,
+        @JsonProperty(PROP_INTERFACES) @Nullable String interfaces,
+        @JsonProperty(PROP_NODES) @Nullable String nodes) {
       return new UniqueIpAssignmentsQuestion(
           enabledIpsOnly != null && enabledIpsOnly, interfaces, nodes);
     }
@@ -160,27 +160,25 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return _enabledIpsOnly;
     }
 
-    @Nullable
     @JsonProperty(PROP_INTERFACES)
-    public String getInterfaces() {
+    public @Nullable String getInterfaces() {
       return _interfaces;
     }
 
-    @Nonnull
     @JsonIgnore
+    @Nonnull
     InterfaceSpecifier getInterfaceSpecifier() {
       return SpecifierFactories.getInterfaceSpecifierOrDefault(
           _interfaces, AllInterfacesInterfaceSpecifier.INSTANCE);
     }
 
-    @Nullable
     @JsonProperty(PROP_NODES)
-    public String getNodes() {
+    public @Nullable String getNodes() {
       return _nodes;
     }
 
-    @Nonnull
     @JsonIgnore
+    @Nonnull
     NodeSpecifier getNodeSpecifier() {
       return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }

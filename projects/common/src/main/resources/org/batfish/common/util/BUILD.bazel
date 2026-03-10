@@ -1,0 +1,5 @@
+package(
+    default_visibility = ["//projects/common:__subpackages__"],
+)
+
+exports_files(["salt"])

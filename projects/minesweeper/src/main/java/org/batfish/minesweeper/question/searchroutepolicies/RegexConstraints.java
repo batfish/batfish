@@ -67,12 +67,6 @@ public class RegexConstraints {
         .collect(ImmutableList.toImmutableList());
   }
 
-  public List<String> getAllRegexes() {
-    return _regexConstraints.stream()
-        .map(RegexConstraint::getRegex)
-        .collect(ImmutableList.toImmutableList());
-  }
-
   @Override
   public int hashCode() {
     return _regexConstraints.hashCode();

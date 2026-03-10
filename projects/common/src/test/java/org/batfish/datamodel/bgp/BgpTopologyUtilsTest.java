@@ -1,0 +1,725 @@
+package org.batfish.datamodel.bgp;
+
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.getFeasibleLocalIps;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.ValueGraph;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/** Tests of {@link BgpTopologyUtils} */
+public class BgpTopologyUtilsTest {
+
+  private static String NODE1 = "n1";
+  private static String NODE2 = "n2";
+  private static String NODE3 = "n3";
+  private static BgpProcess _node1BgpProcess = BgpProcess.testBgpProcess(Ip.parse("0.0.0.1"));
+  private static BgpProcess _node2BgpProcess = BgpProcess.testBgpProcess(Ip.parse("0.0.0.2"));
+  private static BgpProcess _node3BgpProcess = BgpProcess.testBgpProcess(Ip.parse("0.0.0.3"));
+  private static Map<String, Configuration> _configs;
+
+  /** Sets up three nodes with a BGP process on each. Tests can populate BGP processes. */
+  @BeforeClass
+  public static void setup() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Vrf vrf1 = new Vrf(DEFAULT_VRF_NAME);
+    vrf1.setBgpProcess(_node1BgpProcess);
+    Configuration c1 = cb.setHostname(NODE1).build();
+    c1.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf1));
+
+    Vrf vrf2 = new Vrf(DEFAULT_VRF_NAME);
+    vrf2.setBgpProcess(_node2BgpProcess);
+    Configuration c2 = cb.setHostname(NODE2).build();
+    c2.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf2));
+
+    Vrf vrf3 = new Vrf(DEFAULT_VRF_NAME);
+    vrf3.setBgpProcess(_node3BgpProcess);
+    Configuration c3 = cb.setHostname(NODE3).build();
+    c3.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf3));
+
+    _configs = ImmutableMap.of(NODE1, c1, NODE2, c2, NODE3, c3);
+  }
+
+  @Before
+  public void clearBgpProcesses() {
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of());
+    _node2BgpProcess.setNeighbors(ImmutableSortedMap.of());
+    _node3BgpProcess.setNeighbors(ImmutableSortedMap.of());
+    _node1BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of());
+    _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of());
+    _node3BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of());
+    _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of());
+    _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of());
+    _node3BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of());
+  }
+
+  @Test
+  public void testInitTopologyRemotePrefixNotMatchingLocalIp() {
+    // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 2.2.2.2
+    // Peer 2 on node2 with IP 2.2.2.2 is passive, with remote prefix 1.1.1.0/24
+    // Should see one session come up in BGP topology: peer 1 to peer 2
+
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(1L)
+            .setPeerAddress(ip2)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
+
+    Prefix peer2PeerPrefix = Prefix.create(ip1, 24);
+    BgpPassivePeerConfig peer2 =
+        BgpPassivePeerConfig.builder()
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setPeerPrefix(peer2PeerPrefix)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+    _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));
+
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)));
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
+    assertThat(bgpTopology.edges(), hasSize(2));
+    EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
+    assertThat(edge.source().getHostname(), equalTo(NODE1));
+    assertThat(edge.target().getHostname(), equalTo(NODE2));
+  }
+
+  @Test
+  public void testInitTopologyNoSelfLoop() {
+    // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.1
+    // Should see no sessions, and should also not crash.
+
+    Ip ip = Ip.parse("1.1.1.1");
+
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip)
+            .setLocalAs(1L)
+            .setPeerAddress(ip)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip, peer1));
+
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(ip, ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)));
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
+    assertThat(bgpTopology.edges(), empty());
+  }
+
+  @Test
+  public void testInitTopologyPeerAddressNotMatchingRemoteHost() {
+    // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.2
+    // Peer 2 on node2 with IP 1.1.1.2 is passive, able to peer with peer 1
+    // Peer 3 has the same configuration as peer 2, but on node3 with IP 1.1.1.3
+    // Should see one session come up in BGP topology: peer 1 to peer 2
+
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.2");
+    Ip ip3 = Ip.parse("1.1.1.3");
+
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(1L)
+            .setPeerAddress(ip2)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
+
+    Prefix prefixForPeer1 = Prefix.create(ip1, 24);
+    BgpPassivePeerConfig.Builder passivePeerBuilder =
+        BgpPassivePeerConfig.builder()
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setPeerPrefix(prefixForPeer1);
+
+    BgpPassivePeerConfig peer2 = passivePeerBuilder.build();
+    BgpPassivePeerConfig peer3 = passivePeerBuilder.build();
+    _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer2));
+    _node3BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer3));
+
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip3,
+            ImmutableMap.of(NODE3, ImmutableSet.of(DEFAULT_VRF_NAME)));
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
+    assertThat(bgpTopology.edges(), hasSize(2));
+    EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
+    assertThat(edge.source().getHostname(), equalTo(NODE1));
+    assertThat(edge.target().getHostname(), equalTo(NODE2));
+  }
+
+  @Test
+  public void testInitTopologyBgpUnnumberedEbgp() {
+    /*
+         AS 1          AS 2
+           N1 ---------- N2
+      Peers on N1 and N2 are compatible. Session should come up iff in the same broadcast domain.
+    */
+
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder()
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setLocalIp(Ip.parse("169.254.0.1"));
+    BgpUnnumberedPeerConfig peer1 =
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setPeerInterface(iface1)
+            .build();
+    BgpUnnumberedPeerConfig peer2 =
+        builder
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setPeerInterface(iface2)
+            .build();
+    _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
+    _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
+
+    // Shouldn't see session come up if nodes are not connected in layer 2
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(false))
+            .getGraph();
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(bgpTopology.edges(), empty());
+
+    // Should see session if they're connected
+    bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
+    BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
+    BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(
+        bgpTopology.edges(),
+        containsInAnyOrder(
+            EndpointPair.ordered(peer1Id, peer2To1Id), EndpointPair.ordered(peer2To1Id, peer1Id)));
+  }
+
+  /**
+   * For testing unnumbered links, make an L3 adjacencies that always returns the same value for
+   * checking interfaces are point to point and in the same domain.
+   */
+  @ParametersAreNonnullByDefault
+  private static class FixedL3Adjacencies implements L3Adjacencies {
+    public FixedL3Adjacencies(boolean answer) {
+      _answer = answer;
+    }
+
+    @Override
+    public boolean inSamePointToPointDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+      return _answer;
+    }
+
+    @Override
+    public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
+        NodeInterfacePair iface) {
+      throw new UnsupportedOperationException();
+    }
+
+    private final boolean _answer;
+  }
+
+  @Test
+  public void testInitTopologyBgpUnnumberedIbgp() {
+    /*
+         AS 1          AS 1
+           N1 ---------- N2
+      Peers on N1 and N2 are compatible and connected on layer 2. Session should come up.
+    */
+
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
+    BgpUnnumberedPeerConfig peer1 =
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(1L)
+            .setPeerInterface(iface1)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    BgpUnnumberedPeerConfig peer2 =
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(1L)
+            .setPeerInterface(iface2)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
+    _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
+    BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
+    BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(
+        bgpTopology.edges(),
+        containsInAnyOrder(
+            EndpointPair.ordered(peer1Id, peer2To1Id), EndpointPair.ordered(peer2To1Id, peer1Id)));
+  }
+
+  @Test
+  public void testInitTopologyIncompatibleBgpUnnumbered() {
+    /*
+         AS 1          AS 2
+           N1 ---------- N2
+      Peers on N1 and N2 are NOT compatible: N2 peer has remote AS 3 instead of 1
+    */
+
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
+    BgpUnnumberedPeerConfig peer1 =
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setPeerInterface(iface1)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    BgpUnnumberedPeerConfig peer2 =
+        builder
+            .setLocalAs(2L)
+            .setRemoteAs(3L)
+            .setPeerInterface(iface2)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
+    _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
+
+    // Shouldn't see session come up because of incompatible remote AS
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(bgpTopology.edges(), empty());
+  }
+
+  private static void assertPair(
+      @Nullable Long initiatorLocalAs,
+      @Nullable Long initiatorConfed,
+      @Nonnull LongSpace initiatorRemoteAsns,
+      @Nullable Long listenerLocalAs,
+      @Nullable Long listenerConfed,
+      @Nonnull LongSpace listenerRemoteAsns,
+      @Nullable AsPair result) {
+    assertThat(
+        computeAsPair(
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns,
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns),
+        result != null ? equalTo(result) : nullValue());
+    assertThat(
+        computeAsPair(
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns,
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns),
+        result != null ? equalTo(result.reverse()) : nullValue());
+  }
+
+  @Test
+  public void testComputeAsPair() {
+    // Misconfigured
+    assertPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS, null);
+    assertPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS, null);
+    // Direct match
+    assertPair(
+        1L,
+        null,
+        ALL_AS_NUMBERS,
+        2L,
+        null,
+        ALL_AS_NUMBERS,
+        new AsPair(1, 2, ConfedSessionType.NO_CONFED));
+    assertPair(
+        1L,
+        null,
+        LongSpace.of(2),
+        2L,
+        null,
+        LongSpace.of(1),
+        new AsPair(1, 2, ConfedSessionType.NO_CONFED));
+    // Direct but no match
+    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3), null);
+    // Direct match inside same confederation
+    assertPair(
+        1L,
+        55L,
+        LongSpace.of(2),
+        2L,
+        55L,
+        LongSpace.of(1),
+        new AsPair(1, 2, ConfedSessionType.WITHIN_CONFED));
+    // No match across confederations, but confederation match
+    assertPair(
+        1L,
+        55L,
+        LongSpace.of(56),
+        2L,
+        56L,
+        LongSpace.of(55),
+        new AsPair(55, 56, ConfedSessionType.ACROSS_CONFED_BORDER));
+    // Confed match
+    assertPair(
+        1L,
+        3L,
+        LongSpace.of(4),
+        4L,
+        null,
+        LongSpace.of(3L),
+        new AsPair(3, 4, ConfedSessionType.ACROSS_CONFED_BORDER));
+    // Confed no match
+    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
+    assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
+
+    // One peer with confed peers with non-confed peer with same AS.
+    // Per RFC 5065, a peer without confederation config is NOT part of the confederation.
+    // This should be ACROSS_CONFED_BORDER since the non-confed peer must peer with the
+    // confed ID.
+    assertPair(
+        1L,
+        3L,
+        LongSpace.of(1L),
+        1L,
+        null,
+        LongSpace.of(3L),
+        new AsPair(3, 1, ConfedSessionType.ACROSS_CONFED_BORDER));
+    // No session: non-confed peer expects member AS, but confed peer can only use confed ID
+    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), null);
+    // No session: non-confed peer doesn't have confed ID in remote ASNs
+    assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
+    assertPair(1L, 3L, LongSpace.of(3L), 1L, null, LongSpace.of(2L), null);
+
+    // Compatible when ignoring confederations, but incompatible because non-matching confederations
+    // are present
+    assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(1), null);
+  }
+
+  @Test
+  public void testComputeAsPair_issue9263() {
+    // Test case for GitHub issue #9263:
+    // R1: router bgp 3001, bgp confederation identifier 30, neighbor 4.0.0.3 remote-as 3001
+    // R2: router bgp 3001, neighbor 4.0.0.2 remote-as 30
+    // Expected: EBGP session between AS 30 and AS 3001 (ACROSS_CONFED_BORDER)
+    // Since R2 has no confederation config, it is NOT part of the confederation.
+    // R1 must use its confederation ID (30) when peering with R2.
+    assertPair(
+        3001L, // R1 (initiator): localAs (member-AS)
+        30L, // R1 (initiator): confed ID
+        LongSpace.of(3001L), // R1's remote ASNs (peering with member AS)
+        3001L, // R2 (listener): localAs
+        null, // R2 (listener): NO confederation configured
+        LongSpace.of(30L), // R2's remote ASNs (peering with confed ID)
+        new AsPair(30, 3001, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Same scenario but reversed: R2 initiates to R1
+    assertPair(
+        3001L, // R2 (initiator): localAs (NO confederation)
+        null, // R2 (initiator): NO confederation
+        LongSpace.of(30L), // R2's remote ASNs (peering with confed ID)
+        3001L, // R1 (listener): localAs (member-AS)
+        30L, // R1 (listener): confed ID
+        LongSpace.of(3001L), // R1's remote ASNs
+        new AsPair(3001, 30, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  @Test
+  public void testComputeAsPair_confederationEdgeCases() {
+    // Both peers in same confederation, different member ASes
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1002L),
+        1002L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1002, ConfedSessionType.WITHIN_CONFED));
+
+    // Both peers in different confederations - must use confed IDs
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(200L),
+        2001L,
+        200L,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Peer with confed tries to peer with non-confed peer using member AS (should fail)
+    assertPair(
+        3001L,
+        30L,
+        LongSpace.of(3001L), // Trying to peer with member AS
+        3001L,
+        null,
+        LongSpace.of(3001L), // But peer expects member AS
+        null); // No session - non-confed peer must expect confed ID
+
+    // Non-confed peer peers with multiple ASes, including confed ID
+    assertPair(
+        3001L,
+        30L,
+        LongSpace.builder().including(3001L).including(4000L).build(),
+        4000L,
+        null,
+        LongSpace.of(30L),
+        new AsPair(30, 4000, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  @Test
+  public void testComputeAsPair_confederationComprehensive() {
+    // Test all combinations of confederation configurations
+
+    // ===== Both peers in SAME confederation =====
+    // Same member AS - IBGP within same member AS
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1001, ConfedSessionType.WITHIN_CONFED));
+
+    // Different member ASes, same confed - IBGP within confederation
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1002L),
+        1002L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1002, ConfedSessionType.WITHIN_CONFED));
+
+    // ===== Both peers in DIFFERENT confederations =====
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(200L),
+        2001L,
+        200L,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // ===== One peer in confederation, other NOT =====
+    // Non-confed peer expects confed ID - should work (ACROSS_CONFED_BORDER)
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(2000L),
+        2000L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Non-confed peer expects member AS (not confed ID) - NO SESSION
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        1001L,
+        null,
+        LongSpace.of(1001L),
+        null); // No session: initiator uses confed ID externally, not member AS
+
+    // Non-confed peer expects different AS - NO SESSION
+    assertPair(
+        1001L, 100L, LongSpace.of(3000L), 2000L, null, LongSpace.of(4000L), null); // AS mismatch
+
+    // ===== Neither peer in confederation =====
+    // Standard IBGP
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(100L),
+        100L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 100, ConfedSessionType.NO_CONFED));
+
+    // Standard EBGP
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(200L),
+        200L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.NO_CONFED));
+
+    // AS mismatch
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(200L),
+        300L,
+        null,
+        LongSpace.of(100L),
+        null); // No session: AS mismatch
+
+    // ===== Edge case: member AS equals confed ID of other peer =====
+    // Peer A: localAs=100, confed=null
+    // Peer B: localAs=100, confed=200
+    // Peer A expects to peer with AS=100 (which is B's member AS)
+    // But B has confed, so B will use confed ID (200) externally
+    // Result: NO SESSION because A expects 100 but B uses 200
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(100L),
+        100L,
+        200L,
+        LongSpace.of(100L),
+        null); // No session: non-confed peer expects member AS, but confed peer uses confed ID
+
+    // ===== Edge case: ALL_AS_NUMBERS =====
+    // Confed peer with ALL_AS_NUMBERS to non-confed peer
+    assertPair(
+        1001L,
+        100L,
+        ALL_AS_NUMBERS,
+        2000L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Non-confed peer with ALL_AS_NUMBERS to confed peer
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(2000L),
+        2000L,
+        null,
+        ALL_AS_NUMBERS,
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  @Test
+  public void testGetFeasibleLocalIps_passiveCandidate() {
+    Ip ip2210 = Ip.parse("2.2.1.0");
+    Ip ip2220 = Ip.parse("2.2.2.0");
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Set<Ip> potentialLocalIps = ImmutableSet.of(ip2210, ip2220, ip2222);
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps,
+            BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("2.2.2.0/24")).build()),
+        containsInAnyOrder(ip2220, ip2222));
+  }
+
+  @Test
+  public void testGetFeasibleLocalIps_activeCandidate() {
+    Ip ip2221 = Ip.parse("2.2.2.1");
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Set<Ip> potentialLocalIps = ImmutableSet.of(ip2221, ip2222);
+
+    // Candidate has no peer address
+    assertThat(
+        getFeasibleLocalIps(potentialLocalIps, BgpActivePeerConfig.builder().build()), empty());
+
+    // Candidate has an incompatible peer address
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps,
+            BgpActivePeerConfig.builder().setPeerAddress(Ip.parse("2.2.2.3")).build()),
+        empty());
+
+    // Candidate has a compatible peer address
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps, BgpActivePeerConfig.builder().setPeerAddress(ip2222).build()),
+        contains(ip2222));
+  }
+}

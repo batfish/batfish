@@ -25,9 +25,8 @@ public final class DisjunctionAstNode implements BooleanExprAstNode {
     return visitor.visitDisjunctionAstNode(this, arg);
   }
 
-  @Nonnull
   @Override
-  public BooleanExprAstNode or(BooleanExprAstNode disjunct) {
+  public @Nonnull BooleanExprAstNode or(BooleanExprAstNode disjunct) {
     return new DisjunctionAstNode(
         ImmutableList.<BooleanExprAstNode>builder().addAll(_disjuncts).add(disjunct).build());
   }

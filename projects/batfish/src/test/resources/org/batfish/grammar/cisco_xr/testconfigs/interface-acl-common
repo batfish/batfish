@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname interface-acl-common
+!
+ipv4 access-list common-acl
+ 10 permit tcp any any eq 22
+ 20 deny tcp host 10.1.1.1 any eq 80
+!
+ipv4 access-list interface-acl
+ 10 permit tcp any any eq 80
+ 20 deny tcp any any eq 443
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 access-group common common-acl interface-acl ingress
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 access-group common common-acl ingress
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 access-group interface-acl ingress
+!

@@ -41,7 +41,7 @@ public class FilterTableAnswerer extends Answerer {
       List<ColumnMetadata> innerColumns = innerMetadata.getColumnMetadata();
 
       // check if columns mentions names that are not in the innermetadata
-      Sets.SetView<String> unknownColumns =
+      Set<String> unknownColumns =
           Sets.difference(
               question.getColumns(),
               innerColumns.stream().map(ColumnMetadata::getName).collect(Collectors.toSet()));

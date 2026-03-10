@@ -1,0 +1,7 @@
+set system host-name cos-default-classifier
+# Test that built-in "default" classifier can be imported without explicit definition
+# Reference: classifiers can import the default classifier
+# https://www.juniper.net/documentation/us/en/software/junos/cos-security-devices/topics/ref/statement/import-edit-class-of-service.html
+set class-of-service classifiers dscp CUSTOM-CLASSIFIER import default
+set class-of-service classifiers dscp CUSTOM-CLASSIFIER forwarding-class network-control loss-priority low code-points 110000
+set class-of-service interfaces ae1 unit 0 classifiers dscp default

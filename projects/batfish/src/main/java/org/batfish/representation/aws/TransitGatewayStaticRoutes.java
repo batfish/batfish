@@ -33,7 +33,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Attachment create(
-        @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) String attachmentId) {
+        @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) @Nullable String attachmentId) {
       checkArgument(attachmentId != null, "Attachment id cannot be null for transit gateway route");
 
       return new Attachment(attachmentId);
@@ -71,8 +71,8 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGatewayStaticRoutes create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
-      @Nullable @JsonProperty(JSON_KEY_ROUTES) List<TransitGatewayRoute> routes) {
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) @Nullable String routeTableId,
+      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<TransitGatewayRoute> routes) {
     checkArgument(routeTableId != null, "Route table id cannot be null for transit gateway");
     checkArgument(routes != null, "Static routes cannot be null for transit gateway");
 
@@ -93,9 +93,8 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
     return _routes;
   }
 
-  @Nonnull
   @Override
-  public String getId() {
+  public @Nonnull String getId() {
     return _routeTableId;
   }
 

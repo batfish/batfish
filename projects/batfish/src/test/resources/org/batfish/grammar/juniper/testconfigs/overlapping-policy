@@ -1,0 +1,11 @@
+#
+set version aaa
+set system host-name overlapping-policy
+#
+set policy-options community LOC1 members 1
+set policy-options community LOC2 members 2
+set policy-options community LOC3 members 3
+set policy-options policy-statement p1 term t1 then community set LOC1
+set policy-options policy-statement p1 term t1 then community set LOC2
+set policy-options policy-statement p2 term t1 then community set LOC2
+#

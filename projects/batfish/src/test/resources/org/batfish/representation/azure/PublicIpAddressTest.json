@@ -1,0 +1,21 @@
+{
+  "id": "testId",
+  "name": "testName",
+  "type": "Microsoft.Network/publicIPAddresses",
+  "location": "westeurope",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "ipAddress": "40.91.194.198",
+    "publicIPAddressVersion": "IPv4",
+    "publicIPAllocationMethod": "Static",
+    "idleTimeoutInMinutes": 4,
+    "ipTags": [],
+    "ipConfiguration": {
+      "id": "testIpConfiguration"
+    }
+  },
+  "sku": {
+    "name": "Standard",
+    "tier": "Regional"
+  }
+}

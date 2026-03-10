@@ -91,9 +91,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
   private final BDDReverseTransformationRanges _trivialReverseTransformationRanges =
       new BDDReverseTransformationRanges() {
-        @Nonnull
         @Override
-        public BDD reverseIncomingTransformationRange(
+        public @Nonnull BDD reverseIncomingTransformationRange(
             String node,
             String iface,
             @Nullable String inIface,
@@ -101,9 +100,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
           return _factory.one();
         }
 
-        @Nonnull
         @Override
-        public BDD reverseOutgoingTransformationRange(
+        public @Nonnull BDD reverseOutgoingTransformationRange(
             String node,
             String iface,
             @Nullable String inIface,

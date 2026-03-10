@@ -9,7 +9,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.authorizer.Authorizer;
-import org.batfish.coordinator.queues.WorkQueue;
 import org.batfish.datamodel.Ip;
 
 public class Settings extends BaseSettings {
@@ -28,7 +27,6 @@ public class Settings extends BaseSettings {
   private static final String ARG_PERIOD_CHECK_WORK_MS = "periodcheckworkms";
   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "periodworkerrefreshms";
   private static final String ARG_QUESTION_TEMPLATE_DIRS = "templatedirs";
-  private static final String ARG_QUEUE_TYPE = "qtype";
 
   public static final String ARG_SERVICE_NAME = "servicename";
   public static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
@@ -46,7 +44,6 @@ public class Settings extends BaseSettings {
   private Path _fileAuthorizerUsersFile;
   private long _periodAssignWorkMs;
   private List<Path> _questionTemplateDirs;
-  private WorkQueue.Type _queueType;
   private String _serviceName;
   private int _serviceWorkV2Port;
   private String _workBindHost;
@@ -87,10 +84,6 @@ public class Settings extends BaseSettings {
     return _periodAssignWorkMs;
   }
 
-  public WorkQueue.Type getQueueType() {
-    return _queueType;
-  }
-
   public String getServiceName() {
     return _serviceName;
   }
@@ -119,7 +112,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 100);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
     setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.emptyList());
-    setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
     setDefaultProperty(ARG_WORK_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_NAME, "coordinator-service");
     setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
@@ -150,8 +142,6 @@ public class Settings extends BaseSettings {
     addListOption(
         ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
 
-    addOption(ARG_QUEUE_TYPE, "queue type to use {memory}", "qtype");
-
     addOption(ARG_SERVICE_NAME, "service name", "service_name");
 
     addOption(
@@ -175,6 +165,7 @@ public class Settings extends BaseSettings {
           "poolport",
           "qcompletedwork",
           "qincompletework",
+          "qtype",
           "sslpoolkeystorefile",
           "sslpoolkeystorepassword",
           "sslpooltruststorefile",
@@ -216,7 +207,6 @@ public class Settings extends BaseSettings {
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
-    _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
     _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _workBindHost = getStringOptionValue(ARG_WORK_BIND_HOST);
     _serviceWorkV2Port = getIntegerOptionValue(ARG_SERVICE_WORK_V2_PORT);

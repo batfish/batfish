@@ -32,13 +32,13 @@ public abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static VpcEndpoint create(
-      @Nullable @JsonProperty(JSON_KEY_VPC_ENDPOINT_ID) String vpcEndpointId,
-      @Nullable @JsonProperty(JSON_KEY_SERVICE_NAME) String serviceName,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ENDPOINT_TYPE) String vpcEndpointType,
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_IDS) List<String> networkInterfaceIds,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
+      @JsonProperty(JSON_KEY_VPC_ENDPOINT_ID) @Nullable String vpcEndpointId,
+      @JsonProperty(JSON_KEY_SERVICE_NAME) @Nullable String serviceName,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_VPC_ENDPOINT_TYPE) @Nullable String vpcEndpointType,
+      @JsonProperty(JSON_KEY_NETWORK_INTERFACE_IDS) @Nullable List<String> networkInterfaceIds,
+      @JsonProperty(JSON_KEY_SUBNET_IDS) @Nullable List<String> subnetIds,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags) {
     checkNonNull(vpcEndpointId, JSON_KEY_VPC_ENDPOINT_ID, "VPC endpoint");
     checkNonNull(serviceName, JSON_KEY_SERVICE_NAME, "VPC endpoint");
     checkNonNull(vpcId, JSON_KEY_VPC_ID, "VPC endpoint");
@@ -70,9 +70,8 @@ public abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
   abstract List<Configuration> toConfigurationNodes(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings);
 
-  @Nonnull
   @Override
-  public String getId() {
+  public @Nonnull String getId() {
     return _id;
   }
 

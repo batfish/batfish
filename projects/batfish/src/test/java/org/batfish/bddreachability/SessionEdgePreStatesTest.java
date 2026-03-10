@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
@@ -22,7 +23,7 @@ public class SessionEdgePreStatesTest {
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
   private static final Interface IFACE =
-      Interface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
+      TestInterface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
 
   /** Visitor set up with hostname and interface defined above */
   private static final SessionEdgePreStates VISITOR =

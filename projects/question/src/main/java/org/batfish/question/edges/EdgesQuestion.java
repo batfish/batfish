@@ -28,10 +28,10 @@ public class EdgesQuestion extends Question {
 
   @JsonCreator
   private static EdgesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_INITIAL) Boolean initial,
-      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
-      @Nullable @JsonProperty(PROP_EDGE_TYPE) EdgeType edgeType) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_INITIAL) @Nullable Boolean initial,
+      @JsonProperty(PROP_REMOTE_NODES) @Nullable String remoteNodes,
+      @JsonProperty(PROP_EDGE_TYPE) @Nullable EdgeType edgeType) {
     return new EdgesQuestion(
         nodes,
         remoteNodes,
@@ -57,9 +57,8 @@ public class EdgesQuestion extends Question {
     return "edges";
   }
 
-  @Nonnull
   @JsonProperty(PROP_EDGE_TYPE)
-  public EdgeType getEdgeType() {
+  public @Nonnull EdgeType getEdgeType() {
     return _edgeType;
   }
 
@@ -69,27 +68,23 @@ public class EdgesQuestion extends Question {
     return _initial;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
-  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public String getRemoteNodes() {
+  public @Nullable String getRemoteNodes() {
     return _remoteNodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getRemoteNodeSpecifier() {
+  public @Nonnull NodeSpecifier getRemoteNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
         _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
   }

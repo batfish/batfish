@@ -1,9 +1,9 @@
 package org.batfish.coordinator.version;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.matchesRegex;
-import static org.junit.Assert.assertThat;
 
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;

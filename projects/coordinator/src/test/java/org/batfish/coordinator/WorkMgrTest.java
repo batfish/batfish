@@ -10,6 +10,7 @@ import static org.batfish.coordinator.WorkMgr.updateRuntimeData;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -26,7 +27,6 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import javax.ws.rs.BadRequestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -2720,6 +2721,19 @@ public final class WorkMgrTest {
     _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId());
     // After creating both network and question, questionExists should be true
     assertTrue(_manager.checkQuestionExists(network, question));
+  }
+
+  @Test
+  public void testUploadQuestionWithInvalidJson() throws IOException {
+    String network = "network";
+    String question = "question";
+    String invalidQuestionJson = "{\"invalid\": \"json\", \"missing\": \"required fields\"}";
+
+    _manager.initNetwork(network, null);
+
+    _thrown.expect(BadRequestException.class);
+    _thrown.expectMessage(containsString("Invalid question"));
+    _manager.uploadQuestion(network, question, invalidQuestionJson);
   }
 
   @Test

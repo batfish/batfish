@@ -42,22 +42,14 @@ public final class SpecifiersAnswerer extends Answerer {
     SpecifiersQuestion question = (SpecifiersQuestion) _question;
     SpecifierContext context = _batfish.specifierContext(snapshot);
 
-    switch (question.getQueryType()) {
-      case FILTER:
-        return resolveFilter(question, context);
-      case INTERFACE:
-        return resolveInterface(question, context);
-      case IP_SPACE:
-        return resolveIpSpace(question, context);
-      case IP_SPACE_OF_LOCATION:
-        return resolveIpSpaceOfLocation(question, context);
-      case LOCATION:
-        return resolveLocation(question, context);
-      case NODE:
-        return resolveNode(question, context);
-      default:
-        throw new IllegalArgumentException("Unhandled query type: " + question.getQueryType());
-    }
+    return switch (question.getQueryType()) {
+      case FILTER -> resolveFilter(question, context);
+      case INTERFACE -> resolveInterface(question, context);
+      case IP_SPACE -> resolveIpSpace(question, context);
+      case IP_SPACE_OF_LOCATION -> resolveIpSpaceOfLocation(question, context);
+      case LOCATION -> resolveLocation(question, context);
+      case NODE -> resolveNode(question, context);
+    };
   }
 
   @VisibleForTesting

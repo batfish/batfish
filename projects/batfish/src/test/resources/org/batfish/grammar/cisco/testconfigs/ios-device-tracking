@@ -1,0 +1,46 @@
+!
+! Test device-tracking policy definitions and references
+!
+hostname test-device-tracking
+!
+! Device-tracking policy definitions
+device-tracking policy BASIC_POLICY
+ no protocol udp
+ tracking enable
+!
+device-tracking policy SECURE_POLICY
+ security-level inspect
+ no protocol udp
+ tracking enable
+!
+device-tracking policy LIMIT_POLICY
+ limit address-count ipv6-per-mac 10
+ no protocol udp
+!
+device-tracking policy GLBP_POLICY
+ security-level glbp
+!
+!
+vlan 100
+ name TEST_VLAN
+!
+vlan configuration 100,200
+ device-tracking attach-policy LIMIT_POLICY
+!
+interface GigabitEthernet0/1
+ description Test interface with device-tracking
+ switchport mode access
+ device-tracking attach-policy BASIC_POLICY
+!
+interface GigabitEthernet0/2
+ description Another test interface
+ device-tracking attach-policy SECURE_POLICY
+!
+interface GigabitEthernet0/3
+ description Test undefined policy reference
+ device-tracking attach-policy UNDEFINED_POLICY
+!
+vlan configuration 300
+ device-tracking attach-policy UNDEFINED_VLAN_POLICY
+!
+end

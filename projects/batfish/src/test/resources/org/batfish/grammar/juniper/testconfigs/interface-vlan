@@ -22,6 +22,8 @@ set interfaces ge-0/8/0 unit 0 family ethernet-switching vlan members VLAN_ID_LI
 set interfaces ge-0/9/0 unit 0 family ethernet-switching interface-mode trunk
 set interfaces ge-0/9/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_SINGLETON
 set interfaces ge-0/9/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_RANGE
+set interfaces ge-0/10/0 unit 0 family ethernet-switching vlan members 5
+set interfaces ge-0/10/0 unit 0 family ethernet-switching vlan members default
 
 # vlan-id-list should be overruled by vlan-id
 set vlans VLAN_ID_TEST vlan-id-list 100

@@ -1,0 +1,16 @@
+#
+set system host-name firewall-ipv6-filters
+#
+set firewall family inet6 filter FILTER term DSTOPTS from next-header dstopts
+#
+set firewall family inet6 filter FILTER term FRAGMENT from next-header fragment
+#
+set firewall family inet6 filter FILTER term ICMPV6 from next-header icmpv6
+#
+set firewall family inet6 filter FILTER term ROUTING from next-header routing
+#
+set firewall family inet6 filter FILTER term HOP-LIMIT-COUNT from hop-limit 255
+#
+set firewall family inet6 filter FILTER term MEMBERSHIP-QUERY from icmp-type membership-query
+#
+set firewall family inet6 filter FILTER term MEMBERSHIP-REPORT from icmp-type membership-report

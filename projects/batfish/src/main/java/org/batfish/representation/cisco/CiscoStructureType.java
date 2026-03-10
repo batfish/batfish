@@ -28,6 +28,7 @@ public enum CiscoStructureType implements StructureType {
   CRYPTO_MAP_SET("crypto-map-set"),
   DEPI_CLASS("depi-class"),
   DEPI_TUNNEL("depi-tunnel"),
+  DEVICE_TRACKING_POLICY("device-tracking policy"),
   DOCSIS_POLICY("docsis-policy"),
   DOCSIS_POLICY_RULE("docsis-policy-rule"),
   EXTCOMMUNITY_LIST("extcommunity-list"),

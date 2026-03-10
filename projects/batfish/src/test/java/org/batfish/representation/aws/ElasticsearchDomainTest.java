@@ -3,6 +3,10 @@ package org.batfish.representation.aws;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
@@ -20,13 +24,13 @@ import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -51,7 +55,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -59,8 +63,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.main.Batfish;
@@ -81,14 +85,12 @@ public class ElasticsearchDomainTest {
   private String _node0Name;
   private String _node1Name;
 
-  public static final MatchHeaderSpace matchTcp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
+  public static final AclLineMatchExpr matchTcp =
+      matchIpProtocol(TCP, traceElementForProtocol(TCP));
 
-  public static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
-        traceElementForDstPorts(fromPort, toPort));
+  public static AclLineMatchExpr matchPorts(int fromPort, int toPort) {
+    return matchDstPort(
+        IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
   @Before
@@ -224,8 +226,8 @@ public class ElasticsearchDomainTest {
                 hasMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                            matchDst(
+                                UniverseIpSpace.INSTANCE,
                                 traceElementForAddress(
                                     "destination", "0.0.0.0/0", AddressType.CIDR_IP))),
                         getTraceElementForRule(null))))));
@@ -241,10 +243,8 @@ public class ElasticsearchDomainTest {
                             ImmutableList.of(
                                 matchTcp,
                                 matchPorts(45, 50),
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
-                                        .build(),
+                                matchSrc(
+                                    Ip.parse("1.2.3.4").toIpSpace(),
                                     traceElementForAddress(
                                         "source", "1.2.3.4/32", AddressType.CIDR_IP))),
                             getTraceElementForRule("Closed interval")),
@@ -255,10 +255,8 @@ public class ElasticsearchDomainTest {
                                 or(
                                     traceTextForAddress(
                                         "source", "Test-Instance-SG", AddressType.SECURITY_GROUP),
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        Ip.parse("10.193.16.105").toIpSpace(),
                                         traceElementEniPrivateIp(
                                             "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test"
                                                 + " host)")))),

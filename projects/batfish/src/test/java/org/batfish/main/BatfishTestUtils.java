@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_AZURE_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
@@ -32,7 +33,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.batfish.identifiers.IdResolver;
@@ -195,6 +196,7 @@ public class BatfishTestUtils {
   public static Batfish getBatfishFromTestrigText(TestrigText testrigText, Path tempFolder)
       throws IOException {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
+    Map<String, byte[]> azureBytes = testrigText.getAzureBytes();
     Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
     Map<String, byte[]> checkpointMgmtBytes = testrigText.getCheckpointMgmtBytes();
     Map<String, byte[]> configurationBytes = testrigText.getConfigurationBytes();
@@ -227,6 +229,8 @@ public class BatfishTestUtils {
         configurationBytes, RELPATH_CONFIGURATIONS_DIR, storage, batfish.getSnapshot());
     writeTemporarySnapshotInputFiles(
         awsBytes, RELPATH_AWS_CONFIGS_DIR, storage, batfish.getSnapshot());
+    writeTemporarySnapshotInputFiles(
+        azureBytes, RELPATH_AZURE_CONFIGS_DIR, storage, batfish.getSnapshot());
     writeTemporarySnapshotInputFiles(
         bgpTablesBytes, RELPATH_ENVIRONMENT_BGP_TABLES, storage, batfish.getSnapshot());
     if (externalBgpAnnouncementsBytes != null) {
@@ -287,7 +291,9 @@ public class BatfishTestUtils {
     for (String interfaceName : interfaceNames) {
       config
           .getAllInterfaces()
-          .put(interfaceName, Interface.builder().setName(interfaceName).setOwner(config).build());
+          .put(
+              interfaceName,
+              TestInterface.builder().setName(interfaceName).setOwner(config).build());
     }
     return config;
   }

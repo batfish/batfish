@@ -37,11 +37,11 @@ import static org.batfish.question.edges.EdgesAnswerer.layer2EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRows;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -91,6 +91,7 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
@@ -193,7 +194,7 @@ public class EdgesAnswererTest {
     _host1.setInterfaces(
         ImmutableSortedMap.of(
             "int1",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int1")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build()));
@@ -202,7 +203,7 @@ public class EdgesAnswererTest {
     _host2.setInterfaces(
         ImmutableSortedMap.of(
             "int2",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int2")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
                 .build()));
@@ -718,12 +719,12 @@ public class EdgesAnswererTest {
     host1.setInterfaces(
         ImmutableSortedMap.of(
             "int1",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int1")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build(),
             "int10",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int10")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("10.10.10.10"), 24))
                 .build()));
@@ -732,12 +733,12 @@ public class EdgesAnswererTest {
     host2.setInterfaces(
         ImmutableSortedMap.of(
             "int2",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int2")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
                 .build(),
             "int3",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int3")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 24))
                 .build()));
@@ -975,57 +976,48 @@ public class EdgesAnswererTest {
   private static final class MockTopologyProvider implements TopologyProvider {
     private Layer1Topologies _layer1Topologies = null;
 
-    @Nonnull
     @Override
-    public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+    public @Nonnull BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
+    public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+    public @Nonnull VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+    public @Nonnull IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Topology getLayer3Topology(NetworkSnapshot snapshot) {
+    public @Nonnull Topology getLayer3Topology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
       return _layer1Topologies;
     }
 
@@ -1033,39 +1025,34 @@ public class EdgesAnswererTest {
       _layer1Topologies = layer1Topologies;
     }
 
-    @Nonnull
     @Override
-    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
+    public @Nonnull L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+        NetworkSnapshot networkSnapshot) {
       return Optional.empty();
     }
 
-    @Nonnull
     @Override
-    public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+    public @Nonnull VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
+    public @Nonnull TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
   }

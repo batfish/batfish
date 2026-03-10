@@ -24,7 +24,8 @@ extra_close_brace: CLOSE_BRACE;
 
 statement
 :
-  flat_statement
+  empty_statement
+  | flat_statement
   | hierarchical_statement
 ;
 
@@ -44,9 +45,18 @@ hierarchical_statement
   )
 ;
 
+empty_statement
+:
+   (
+      MULTILINE_COMMENT
+   )*
+   SEMICOLON
+;
+
 terminator
 :
   SEMICOLON
+  | {_input.LA(1) == CLOSE_BRACKET || _input.LA(1) == CLOSE_BRACE}?
 ;
 
 word

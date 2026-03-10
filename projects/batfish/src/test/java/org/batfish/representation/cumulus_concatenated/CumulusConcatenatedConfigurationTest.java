@@ -14,6 +14,7 @@ import static org.batfish.representation.frr.FrrConfiguration.LINK_LOCAL_ADDRESS
 import static org.batfish.representation.frr.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_PORT_BANDWIDTH;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -21,7 +22,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -433,7 +433,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vc = new CumulusConcatenatedConfiguration();
     InterfacesInterface vsIface = new InterfacesInterface("iface");
     Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setOwner(c)
             .setType(InterfaceType.UNKNOWN)
@@ -453,7 +453,7 @@ public class CumulusConcatenatedConfigurationTest {
   public void testPopulateLoopbackProperties_clagVxlanAnycastIp() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface viLoopback =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setOwner(c)
             .setType(InterfaceType.UNKNOWN)
@@ -510,7 +510,7 @@ public class CumulusConcatenatedConfigurationTest {
                 c.getAllInterfaces()
                     .put(
                         iface.getName(),
-                        org.batfish.datamodel.Interface.builder()
+                        org.batfish.datamodel.TestInterface.builder()
                             .setName(iface.getName())
                             .setOwner(c)
                             .setType(InterfaceType.PHYSICAL)

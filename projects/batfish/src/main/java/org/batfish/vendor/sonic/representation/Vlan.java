@@ -39,9 +39,9 @@ public class Vlan implements Serializable {
 
   @JsonCreator
   private static @Nonnull Vlan create(
-      @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers,
-      @Nullable @JsonProperty(PROP_MEMBERS) ImmutableList<String> members,
-      @Nullable @JsonProperty(PROP_VLANID) JsonNode vlanIdInput) {
+      @JsonProperty(PROP_DHCP_SERVERS) @Nullable List<String> dhcpServers,
+      @JsonProperty(PROP_MEMBERS) @Nullable ImmutableList<String> members,
+      @JsonProperty(PROP_VLANID) @Nullable JsonNode vlanIdInput) {
     Integer vlanId = SingletonOrSingletonList.deserialize(vlanIdInput, Integer.class);
     return Vlan.builder().setDhcpServers(dhcpServers).setMembers(members).setVlanId(vlanId).build();
   }

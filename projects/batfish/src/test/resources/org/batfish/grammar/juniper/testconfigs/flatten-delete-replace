@@ -1,0 +1,9 @@
+system {
+    replace: host-name "some-device";
+}
+delete: protocols bgp;
+interfaces {
+    xe-0/0/0 {
+        delete: unit 0;
+    }
+}

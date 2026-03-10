@@ -1,9 +1,9 @@
 package org.batfish.representation.palo_alto.application_definitions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.batfish.common.util.BatfishObjectMapper;

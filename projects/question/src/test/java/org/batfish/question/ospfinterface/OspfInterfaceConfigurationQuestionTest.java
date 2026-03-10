@@ -1,7 +1,7 @@
 package org.batfish.question.ospfinterface;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;

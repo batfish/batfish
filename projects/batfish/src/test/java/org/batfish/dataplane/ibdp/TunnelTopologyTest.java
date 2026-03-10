@@ -1,9 +1,9 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;

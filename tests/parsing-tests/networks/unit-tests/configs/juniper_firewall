@@ -44,6 +44,7 @@ set firewall family inet filter blah term t4 then next-ip 1.2.3.6
 set firewall family inet6 filter blah6 term blorp6 from icmp-type packet-too-big
 set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-advertisement
 set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-solicit
+set interfaces lo0 unit 0 family inet6 filter input blah6
 #
 # Currently ignored
 set firewall family ethernet-switching filter ISP-INBOUND-L2 term ALLOW-ARP from ether-type arp

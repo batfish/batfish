@@ -3,11 +3,11 @@ package org.batfish.coordinator;
 import static org.batfish.coordinator.Main.getQuestionTemplates;
 import static org.batfish.coordinator.Main.readQuestionTemplate;
 import static org.batfish.coordinator.Main.readQuestionTemplates;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;

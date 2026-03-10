@@ -904,6 +904,8 @@ s_netservice
    )? NEWLINE
 ;
 
+remark_access_list_stanza: ACCESS_LIST name = variable_aclname REMARK null_rest_of_line;
+
 standard_access_list_additional_feature
 :
    (

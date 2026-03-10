@@ -32,6 +32,7 @@ import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -39,7 +40,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,6 +72,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -355,7 +356,7 @@ public class LoadBalancerTest {
   @Test
   public void testInstallTransformation() {
     Interface viIface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("interface")
             .setAddress(ConcreteInterfaceAddress.create(_loadBalancerIp, 24))
             .build();
@@ -417,7 +418,7 @@ public class LoadBalancerTest {
 
   @Test
   public void testInstallTransformation_noListener() {
-    Interface viIface = Interface.builder().setName("interface").build();
+    Interface viIface = TestInterface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
     _loadBalancer.installTransformations(
         viIface, ImmutableSet.of("zone1"), ImmutableList.of(), region, new Warnings());

@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Table;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -37,16 +38,16 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   /**
    * Create a provider for {@link DataplaneTrackEvaluator}s given current results for all
-   * dataplane-based tracking checks..
+   * dataplane-based tracking checks.
    */
   public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
-      Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
-      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
+      Table<String, TrackReachability, Boolean> trackReachabilityResults,
+      Table<String, TrackRoute, Boolean> trackRouteResults) {
     return configuration ->
         new DataplaneTrackEvaluator(
             configuration,
-            trackReachabilityResultsByHostname.get(configuration.getHostname()),
-            trackRouteResultsByHostname.get(configuration.getHostname()));
+            trackReachabilityResults.row(configuration.getHostname()),
+            trackRouteResults.row(configuration.getHostname()));
   }
 
   @Override

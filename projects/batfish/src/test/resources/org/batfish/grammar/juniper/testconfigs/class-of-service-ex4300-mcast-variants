@@ -1,0 +1,21 @@
+set system host-name cos-ex4300-mcast-variants
+# Test that built-in mcast-* forwarding class variants can be used without explicit definition
+# Platform: EX4300 switches
+# Reference: https://www.juniper.net/documentation/us/en/software/junos/cos-ex/topics/concept/cos-ex-series-forwarding-classes-understanding.html
+# mcast-be/ef/af/nc use same queue numbers as base classes (0/1/2/3)
+set class-of-service classifiers dscp MCAST-VARIANTS forwarding-class mcast-be loss-priority low code-points 000000
+set class-of-service classifiers dscp MCAST-VARIANTS forwarding-class mcast-ef loss-priority low code-points 101110
+set class-of-service classifiers dscp MCAST-VARIANTS forwarding-class mcast-af loss-priority low code-points 001010
+set class-of-service classifiers dscp MCAST-VARIANTS forwarding-class mcast-nc loss-priority low code-points 110000
+set class-of-service scheduler-maps MCAST-MAP forwarding-class mcast-be scheduler SCHED-BE
+set class-of-service scheduler-maps MCAST-MAP forwarding-class mcast-ef scheduler SCHED-EF
+set class-of-service scheduler-maps MCAST-MAP forwarding-class mcast-af scheduler SCHED-AF
+set class-of-service scheduler-maps MCAST-MAP forwarding-class mcast-nc scheduler SCHED-NC
+set class-of-service rewrite-rules dscp MCAST-REWRITE forwarding-class mcast-be loss-priority low code-point 000000
+set class-of-service rewrite-rules dscp MCAST-REWRITE forwarding-class mcast-ef loss-priority low code-point 101110
+set class-of-service rewrite-rules dscp MCAST-REWRITE forwarding-class mcast-af loss-priority low code-point 001010
+set class-of-service rewrite-rules dscp MCAST-REWRITE forwarding-class mcast-nc loss-priority low code-point 110000
+set class-of-service schedulers SCHED-BE transmit-rate percent 40
+set class-of-service schedulers SCHED-EF transmit-rate percent 20
+set class-of-service schedulers SCHED-AF transmit-rate percent 30
+set class-of-service schedulers SCHED-NC transmit-rate percent 10

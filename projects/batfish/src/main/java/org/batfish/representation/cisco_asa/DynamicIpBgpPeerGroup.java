@@ -23,9 +23,8 @@ public class DynamicIpBgpPeerGroup extends LeafBgpPeerGroup {
     return _prefix;
   }
 
-  @Nullable
   @Override
-  public Prefix6 getNeighborPrefix6() {
+  public @Nullable Prefix6 getNeighborPrefix6() {
     return null;
   }
 

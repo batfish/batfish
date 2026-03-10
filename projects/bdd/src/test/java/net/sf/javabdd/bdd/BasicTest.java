@@ -28,11 +28,11 @@
  */
 package net.sf.javabdd.bdd;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -93,6 +93,58 @@ public class BasicTest {
     x.free();
     y.free();
     z.free();
+  }
+
+  @Test
+  public void testIsVar() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isVar());
+    assertFalse(_factory.one().isVar());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertTrue(x.isVar());
+    assertTrue(y.isVar());
+    assertFalse(x.and(y).isVar());
+    assertFalse(x.or(y).isVar());
+    assertFalse(x.diff(y).isVar());
+    assertFalse(x.not().isVar());
+  }
+
+  @Test
+  public void testIsAnd() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isAnd());
+    assertTrue(_factory.one().isAnd());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertTrue(x.isAnd());
+    assertTrue(y.isAnd());
+    assertTrue(x.and(y).isAnd());
+    assertFalse(x.or(y).isAnd());
+    assertFalse(x.diff(y).isAnd());
+    assertFalse(x.not().isAnd());
+  }
+
+  @Test
+  public void testIsNor() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isNor());
+    assertTrue(_factory.one().isNor());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertFalse(x.isNor());
+    assertFalse(y.isNor());
+    assertFalse(x.and(y).isNor());
+    assertFalse(x.or(y).isNor());
+    assertFalse(x.diff(y).isNor());
+    assertTrue(x.not().isNor());
+    assertTrue(x.not().diff(y).isNor());
   }
 
   // Assertions that randomFullSatOne returns an assignment that is full and implies the input.
@@ -735,6 +787,65 @@ public class BasicTest {
 
     res = a.diff(b).compose(xorCD, b.var());
     assert res.equals(a.diff(xorCD));
+  }
+
+  @Test
+  public void testVeccompose() {
+    if (_factory.varNum() < 4) {
+      _factory.setVarNum(4);
+    }
+
+    BDD a = _factory.ithVar(0);
+    BDD b = _factory.ithVar(1);
+    BDD c = _factory.ithVar(2);
+    BDD d = _factory.ithVar(3);
+
+    BDD xorAB = a.xor(b);
+    BDD xorCD = c.xor(d);
+
+    BDDPairing pairing = _factory.makePair();
+
+    // create the trivial pairing that maps variable a to itself and variable b to itself
+    pairing.set(new BDD[] {a, b}, new BDD[] {a, b});
+    // applying that pairing to a leaves it unchanged since it maps to itself
+    BDD res = a.veccompose(pairing);
+    assert res.equals(a);
+
+    pairing.reset();
+    // map variable b to (a xor b) and variable c to (c xor d)
+    pairing.set(new BDD[] {b, c}, new BDD[] {xorAB, xorCD});
+    // applying that pairing to a leaves it unchanged since it's not part of the pairing's domain
+    res = a.veccompose(pairing);
+    assert res.equals(a);
+
+    // but applying that pairing to (not b) produces (not (a xor b))
+    res = b.not().veccompose(pairing);
+    assert res.equals(xorAB.not());
+
+    pairing.reset();
+    // map variable a to (a xor b) and variable b to (not (a xor b))
+    pairing.set(new BDD[] {a, b}, new BDD[] {xorAB, xorAB.not()});
+    // applying that pairing to (a and b) produces ((a xor b) and (not (a xor b))),
+    // which simplifies to false
+    res = a.and(b).veccompose(pairing);
+    assert res.equals(_factory.zero());
+
+    // applying that pairing to (a or b) produces ((a xor b) or (not (a xor b))),
+    // which simplifies to true
+    res = a.or(b).veccompose(pairing);
+    assert res.equals(_factory.one());
+
+    // applying that pairing to (a or (not b)) produces (after simplification) (a xor b)
+    res = a.or(b.not()).veccompose(pairing);
+    assert res.equals(xorAB);
+
+    pairing.reset();
+    // test simultaneous substitution of b for a and a for b
+    pairing.set(new BDD[] {a, b}, new BDD[] {b, a});
+    res = a.or(b.not()).veccompose(pairing);
+    assert res.equals(b.or(a.not()));
+
+    pairing.reset();
   }
 
   void tEnsureCapacity() {

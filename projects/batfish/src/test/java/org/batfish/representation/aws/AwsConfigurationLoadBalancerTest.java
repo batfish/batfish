@@ -5,9 +5,9 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;

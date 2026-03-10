@@ -94,7 +94,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
               elapsedTime, _logger.getHistory(), _key, _warnings, ParseStatus.UNKNOWN);
         }
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         break;
     }

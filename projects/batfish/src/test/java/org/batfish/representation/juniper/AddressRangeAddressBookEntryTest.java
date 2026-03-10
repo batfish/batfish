@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.representation.juniper.AddressRangeAddressBookEntry.rangeToWildcards;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.Ip;

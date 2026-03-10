@@ -5,9 +5,9 @@ import static org.batfish.datamodel.matchers.HopMatchers.hasAcceptingInterface;
 import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHop;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

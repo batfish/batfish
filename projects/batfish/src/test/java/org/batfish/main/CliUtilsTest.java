@@ -1,10 +1,10 @@
 package org.batfish.main;
 
 import static org.batfish.main.CliUtils.readAllFiles;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;

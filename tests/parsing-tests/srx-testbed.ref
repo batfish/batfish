@@ -255,9 +255,8 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_linetype",
-            "                linetype = (line_type*",
-            "                  SSH:'ssh')))))))",
+            "              (syserv_ssh",
+            "                SSH:'ssh'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -268,7 +267,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                WEB_MANAGEMENT:'web-management'",
             "                (null_filler*",
             "                  HTTP:'http'",
@@ -387,7 +386,8 @@
             "                (seikp_pre_shared_key",
             "                  PRE_SHARED_KEY:'pre-shared-key'",
             "                  ASCII_TEXT:'ascii-text'",
-            "                  key = DOUBLE_QUOTED_STRING:'\"$9$/E6g9tO1IcSrvfTCu1hKv-VwgJD\"')))))))",
+            "                  (secret_string*",
+            "                    SECRET_STRING:'\"$9$/E6g9tO1IcSrvfTCu1hKv-VwgJD\"'  <== mode:M_SecretString))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -2683,9 +2683,8 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_linetype",
-            "                linetype = (line_type*",
-            "                  SSH:'ssh')))))))",
+            "              (syserv_ssh",
+            "                SSH:'ssh'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -2696,7 +2695,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                WEB_MANAGEMENT:'web-management'",
             "                (null_filler*",
             "                  HTTP:'http'",
@@ -2815,7 +2814,8 @@
             "                (seikp_pre_shared_key",
             "                  PRE_SHARED_KEY:'pre-shared-key'",
             "                  ASCII_TEXT:'ascii-text'",
-            "                  key = DOUBLE_QUOTED_STRING:'\"$9$Sr8yeWLX-db20BrvLNY2DikPQn\"')))))))",
+            "                  (secret_string*",
+            "                    SECRET_STRING:'\"$9$Sr8yeWLX-db20BrvLNY2DikPQn\"'  <== mode:M_SecretString))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -4621,9 +4621,8 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_linetype",
-            "                linetype = (line_type*",
-            "                  SSH:'ssh')))))))",
+            "              (syserv_ssh",
+            "                SSH:'ssh'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -4634,7 +4633,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                WEB_MANAGEMENT:'web-management'",
             "                (null_filler*",
             "                  HTTP:'http'",
@@ -4753,7 +4752,8 @@
             "                (seikp_pre_shared_key",
             "                  PRE_SHARED_KEY:'pre-shared-key'",
             "                  ASCII_TEXT:'ascii-text'",
-            "                  key = DOUBLE_QUOTED_STRING:'\"$9$Sr8yeWLX-db20BrvLNY2DikPQn\"')))))))",
+            "                  (secret_string*",
+            "                    SECRET_STRING:'\"$9$Sr8yeWLX-db20BrvLNY2DikPQn\"'  <== mode:M_SecretString))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -6318,7 +6318,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "policy-statement" : {
@@ -6332,7 +6332,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "115-116",
               "numReferrers" : 2
             }
@@ -6534,7 +6534,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "policy-statement" : {
@@ -6544,7 +6544,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "98-99",
               "numReferrers" : 2
             }
@@ -6702,7 +6702,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "policy-statement" : {
@@ -6712,7 +6712,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "92-93",
               "numReferrers" : 2
             }
@@ -6953,7 +6953,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 115,
                 116
@@ -7290,7 +7290,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 98,
                 99
@@ -7526,7 +7526,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 92,
                 93

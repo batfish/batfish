@@ -37,6 +37,7 @@ import static org.batfish.vendor.sonic.representation.SonicConversions.convertVl
 import static org.batfish.vendor.sonic.representation.SonicConversions.getAclRulesByTableName;
 import static org.batfish.vendor.sonic.representation.SonicConversions.isSnmpTable;
 import static org.batfish.vendor.sonic.representation.SonicConversions.setInterfaceAddresses;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -46,7 +47,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -77,6 +77,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
@@ -232,7 +233,7 @@ public class SonicConversionsTest {
     ImmutableList.of("Ethernet0", "Ethernet1")
         .forEach(
             ifaceName ->
-                Interface.builder()
+                TestInterface.builder()
                     .setName("Ethernet0")
                     .setOwner(c)
                     .setVrf(vrf)
@@ -335,7 +336,7 @@ public class SonicConversionsTest {
     String ifaceName = "Ethernet0";
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
-    Interface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
+    TestInterface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
 
     String aclName = "testAcl";
     Map<String, AclTable> aclTables =
@@ -473,7 +474,7 @@ public class SonicConversionsTest {
     String ifaceName = "Ethernet0";
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
-    Interface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
+    TestInterface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
 
     String aclName = "testAcl";
     IpAccessList ipAccessList = IpAccessList.builder().setOwner(c).setName(aclName).build();
@@ -759,7 +760,7 @@ public class SonicConversionsTest {
 
   @Test
   public void testSetInterfaceAddresses() {
-    Interface.Builder ib = Interface.builder().setName("iface");
+    Interface.Builder ib = TestInterface.builder().setName("iface");
     ConcreteInterfaceAddress addr1 = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.parse("2.1.1.1/31");
 

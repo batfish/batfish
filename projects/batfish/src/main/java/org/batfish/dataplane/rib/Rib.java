@@ -56,13 +56,13 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
                   route, computeResolutionRestriction(resolutionRestriction)::test);
     }
 
-    /** Wrap resolution restriction with some whitelisting if needed. */
+    /** Wrap resolution restriction with some allow-listing if needed. */
     private @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
         computeResolutionRestriction(
             ResolutionRestriction<AnnotatedRoute<AbstractRoute>> baseResolutionRestriction) {
       if (baseResolutionRestriction
           == ResolutionRestriction.<AnnotatedRoute<AbstractRoute>>alwaysTrue()) {
-        // no need to whitelist anything, so stop here.
+        // no need to allow-list anything, so stop here.
         return baseResolutionRestriction;
       }
       return route -> {
@@ -372,7 +372,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
    * Create a new empty RIB. If {@code resolutionRestriction} is not {@code null}, then merged
    * recursive routes that are not resolvable under the provided {@code resolutionRestriction} will
    * remain inactive until they become resolvable again. Inactive routes will not be returned by
-   * {@link #getRoutes()}, {@link #getTypedRoutes()}, nor {@link #getTypedBackupRoutes()}.
+   * {@link #getRoutes()}, {@link #getRoutes(Prefix)}, nor {@link #getBackupRoutes()}.
    */
   public Rib(@Nullable ResolutionRestriction<AnnotatedRoute<AbstractRoute>> resolutionRestriction) {
     super(true);
@@ -380,13 +380,15 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         resolutionRestriction != null ? new ResolvabilityEnforcer(resolutionRestriction) : null;
   }
 
+  private static final Comparator<AbstractRoute> COMPARE_PREFERENCE =
+      Comparator.comparing(AbstractRoute::getAdministrativeCost)
+          .thenComparing(AbstractRoute::getMetric);
+
   @Override
   public int comparePreference(
       @Nonnull AnnotatedRoute<AbstractRoute> lhs, @Nonnull AnnotatedRoute<AbstractRoute> rhs) {
     // Flipped rhs & lhs because lower values are preferable.
-    return Comparator.comparing(AbstractRoute::getAdministrativeCost)
-        .thenComparing(AbstractRoute::getMetric)
-        .compare(rhs.getRoute(), lhs.getRoute());
+    return COMPARE_PREFERENCE.compare(rhs.getRoute(), lhs.getRoute());
   }
 
   @Override
@@ -399,9 +401,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         : RibDelta.empty();
   }
 
-  @Nonnull
   @Override
-  public RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
+  public @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
       AnnotatedRoute<AbstractRoute> route) {
     return !route.getRoute().getNonRouting()
         ? _resolvabilityEnforcer != null

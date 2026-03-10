@@ -150,6 +150,8 @@ ADDITIVE: 'additive';
 
 ADDRESS: 'address';
 
+ADDRESS_COUNT: 'address-count';
+
 ADDRESS_FAMILY: 'address-family';
 
 ADDRESS_HIDING: 'address-hiding';
@@ -468,6 +470,8 @@ ASYNCHRONOUS: 'asynchronous';
 
 ATTACHED_HOST: 'attached-host';
 
+ATTACH_POLICY: 'attach-policy';
+
 ATM: 'atm';
 
 ATTEMPTS: 'attempts';
@@ -491,53 +495,32 @@ AUDIT: 'audit';
 AURP: 'aurp';
 
 AUTH: 'auth';
-
 AUTH_FAILURE_BLACKLIST_TIME: 'auth-failure-blacklist-time';
-
 AUTH_PORT: 'auth-port';
-
 AUTH_PROXY: 'auth-proxy';
-
 AUTH_SERVER: 'auth-server';
-
 AUTH_TYPE: 'auth-type';
-
+AUTHBYPASS: 'authbypass';
 AUTHENTICATE: 'authenticate';
-
-AUTHENTICATION
-:
-   'authentication' -> pushMode ( M_Authentication )
-;
-
+AUTHENTICATION: 'authentication' -> pushMode ( M_Authentication );
 AUTHENTICATION_DOT1X: 'authentication-dot1x';
-
+AUTHENTICATION_FAILURE: 'authentication-failure';
 AUTHENTICATION_KEY: 'authentication-key';
-
 AUTHENTICATION_MAC: 'authentication-mac';
-
 AUTHENTICATION_PORT: 'authentication-port';
-
 AUTHENTICATION_RESTART: 'authentication-restart';
-
 AUTHENTICATION_RETRIES: 'authentication-retries';
-
 AUTHENTICATION_SERVER: 'authentication-server';
-
 AUTHENTICATION_SERVER_GROUP: 'authentication-server-group';
-
+AUTHENTICATION_SUCCESS: 'authentication-success';
 AUTHORITATIVE: 'authoritative';
-
 AUTHORIZATION: 'authorization';
-
 AUTHORIZATION_REQUIRED: 'authorization-required';
-
 AUTHORIZATION_STATUS: 'authorization-status';
-
 AUTHORIZATION_SERVER_GROUP: 'authorization-server-group';
-
 AUTHORIZE: 'authorize';
-
 AUTHORIZED: 'authorized';
+AUTHORIZING_METHOD_PRIORITY: 'authorizing-method-priority';
 
 AUTO: 'auto';
 
@@ -977,10 +960,9 @@ CLASSLESS: 'classless';
 CLEANUP: 'cleanup';
 
 CLEAR: 'clear';
-
-CLEARCASE: 'clearcase';
-
+CLEAR_AUTHENTICATED_DATA_HOSTS_ON_PORT: 'clear-authenticated-data-hosts-on-port';
 CLEAR_SESSION: 'clear-session';
+CLEARCASE: 'clearcase';
 
 CLI: 'cli';
 
@@ -1077,45 +1059,28 @@ COMPATIBLE: 'compatible';
 COMPRESSION_CONNECTIONS: 'compression-connections';
 
 CON: 'con';
-
+CONCURRENT: 'concurrent';
 CONF_LEVEL_INCR: 'conf-level-incr';
-
 CONFDCONFIG: 'confdConfig';
-
 CONFED: 'confed';
-
 CONFEDERATION: 'confederation';
-
 CONFIG: 'config';
-
 CONFIG_COMMANDS: 'config-commands';
-
 CONFIG_REGISTER: 'config-register';
-
 CONFIGURATION: 'configuration';
-
 CONFIGURE: 'configure';
-
 CONFLICT_POLICY: 'conflict-policy';
-
 CONFORM_ACTION: 'conform-action';
-
 CONGESTION_CONTROL: 'congestion-control';
-
 CONN: 'conn';
-
 CONN_HOLDDOWN: 'conn-holddown';
-
 CONNECT_RETRY: 'connect-retry';
-
 CONNECT_SOURCE: 'connect-source';
-
 CONNECTED: 'connected';
-
 CONNECTION: 'connection';
-
 CONNECTION_REUSE: 'connection-reuse';
-
+CONSENT: 'consent';
+CONSENT_EMAIL: 'consent-email';
 CONSISTENCY_CHECKER: 'consistency-checker';
 
 CONSOLE: 'console';
@@ -1256,8 +1221,10 @@ CURRENT_CONFIGURATION
    'Current configuration'
 ;
 
-CUSTOM: 'custom';
+CURRENT_METHOD_PRIORITY: 'current-method-priority';
 
+CUSTOM: 'custom';
+CUSTOM_PAGE: 'custom-page';
 CUSTOMER_ID: 'customer-id';
 
 CWR: 'cwr';
@@ -1277,11 +1244,10 @@ DAMPENING: 'dampening';
 DAMPENING_CHANGE: 'dampening-change';
 
 DAMPENING_INTERVAL: 'dampening-interval';
+DATA: 'data';
 DATA_PATTERN: 'data-pattern';
 DATA_PRIVACY: 'data-privacy';
-
 DATABASE: 'database';
-
 DATABITS: 'databits';
 
 DAYTIME: 'daytime';
@@ -1298,14 +1264,12 @@ DCBX: 'dcbx';
 
 DCE_MODE: 'dce-mode';
 
+DEACTIVATE: 'deactivate';
 DEAD_INTERVAL: 'dead-interval';
-
 DEADTIME: 'deadtime';
 
 DEBUG: 'debug';
-
 DEBUG_TRACE: 'debug-trace';
-
 DEBUGGING: 'debugging';
 
 DECAP_GROUP: 'decap-group';
@@ -1483,6 +1447,8 @@ DEVICE_ID: 'device-id';
 
 DEVICE_SENSOR: 'device-sensor';
 
+DEVICE_TRACKING: 'device-tracking';
+
 DISABLE_CONNECTED_CHECK: 'disable-connected-check';
 
 DISCRIMINATOR: 'discriminator';
@@ -1570,9 +1536,8 @@ DNS_SERVER: 'dns-server';
 DNSIX: 'dnsix';
 
 DO: 'do';
-
 DO_UNTIL_FAILURE: 'do-until-failure';
-
+DO_UNTIL_SUCCESS: 'do-until-success';
 DOCSIS_ENABLE: 'docsis-enable';
 
 DOCSIS_GROUP: 'docsis-group';
@@ -1604,32 +1569,18 @@ DONT_CAPABILITY_NEGOTIATE: 'dont-capability-negotiate';
 DOS_PROFILE: 'dos-profile';
 
 DOT: 'dot';
-
 DOT11: 'dot11';
-
+DOT11_PORT: 'dot11-port';
 DOT11A_RADIO_PROFILE: 'dot11a-radio-profile';
-
 DOT11G_RADIO_PROFILE: 'dot11g-radio-profile';
-
 DOT11K_PROFILE: 'dot11k-profile';
-
 DOT11R_PROFILE: 'dot11r-profile';
-
 DOT1P_PRIORITY: 'dot1p-priority';
-
-DOT1Q
-:
-   'dot1' [Qq]
-;
-
+DOT1Q: 'dot1' [Qq];
 DOT1Q_TUNNEL: 'dot1q-tunnel';
-
 DOT1X: 'dot1x';
-
 DOT1X_DEFAULT_ROLE: 'dot1x-default-role';
-
 DOT1X_ENABLE: 'dot1x-enable';
-
 DOT1X_SERVER_GROUP: 'dot1x-server-group';
 DOWN: 'down';
 DOWNLINK: 'downlink';
@@ -1844,6 +1795,8 @@ EPM: 'epm';
 EPP: 'epp';
 
 EQ: 'eq';
+
+ERR_DISABLE: 'err-disable';
 
 ERRDISABLE: 'errdisable';
 
@@ -2175,7 +2128,8 @@ FOR: 'for'
 };
 
 FORCE: 'force';
-
+FORCE_AUTHORIZED: 'force-authorized';
+FORCE_UNAUTHORIZED: 'force-unauthorized';
 FORCED: 'forced';
 FOREVER: 'forever';
 FORMAT: 'format';
@@ -2710,11 +2664,9 @@ INHERIT: 'inherit';
 INHERITANCE_DISABLE: 'inheritance-disable';
 
 INIT: 'init';
-
+INIT_STATE_SESSIONS: 'init-state-sessions';
 INIT_STRING: 'init-string';
-
 INIT_TECH_LIST: 'init-tech-list';
-
 INITIAL_ROLE: 'initial-role';
 
 INPUT: 'input';
@@ -2817,6 +2769,8 @@ IPV6
 
 IPV6_ADDRESS_POOL: 'ipv6-address-pool';
 IPV6_NEXTHOP: 'ipv6-nexthop';
+
+IPV6_PER_MAC: 'ipv6-per-mac';
 
 IPV6IP: 'ipv6ip';
 
@@ -2927,6 +2881,8 @@ L2: 'l2';
 
 L2_FILTER: 'l2-filter';
 
+L2_PORT: 'l2-port';
+
 L2_SRC: 'l2-src';
 
 L2PROTOCOL: 'l2protocol';
@@ -2940,6 +2896,8 @@ L2TP_CLASS: 'l2tp-class';
 L2TRANSPORT: 'l2transport';
 
 L2VPN: 'l2vpn';
+
+L3_PORT: 'l3-port';
 
 LABEL: 'label';
 
@@ -2986,6 +2944,8 @@ LEAK_MAP: 'leak-map';
 LEARNED: 'learned';
 
 LEASE: 'lease';
+
+LEGACY: 'legacy';
 
 LEVEL: 'level';
 
@@ -3317,6 +3277,8 @@ MATCH_ALL: 'match-all';
 
 MATCH_ANY: 'match-any';
 
+MATCH_FIRST: 'match-first';
+
 MATCH_MAP: 'match-map';
 
 MATCH_NONE: 'match-none';
@@ -3362,6 +3324,8 @@ MAX_RATE: 'max-rate';
 MAX_ROUTE: 'max-route';
 
 MAX_SESSIONS: 'max-sessions';
+
+MAX_HTTP_CONNS: 'max-http-conns';
 
 MAX_TX_POWER: 'max-tx-power';
 
@@ -3606,29 +3570,21 @@ MTU: 'mtu';
 
 MTU_IGNORE: 'mtu-ignore';
 
-MULTICAST: 'multicast';
-
-MULTICAST_BOUNDARY: 'multicast-boundary';
-
-MULTICAST_GROUP: 'multicast-group';
-
-MULTICAST_ROUTING: 'multicast-routing';
-
-MULTICAST_STATIC_ONLY: 'multicast-static-only';
-
-MULTILINK: 'multilink';
-
-MULTIPATH: 'multipath';
-
-MULTIPATH_RELAX: 'multipath-relax';
-
-MULTIPLIER: 'multiplier';
-
-MULTIPOINT: 'multipoint';
-
+MULTI_AUTH: 'multi-auth';
 MULTI_CONFIG: 'multi-config';
-
+MULTI_DOMAIN: 'multi-domain';
+MULTI_HOST: 'multi-host';
 MULTI_TOPOLOGY: 'multi-topology';
+MULTICAST: 'multicast';
+MULTICAST_BOUNDARY: 'multicast-boundary';
+MULTICAST_GROUP: 'multicast-group';
+MULTICAST_ROUTING: 'multicast-routing';
+MULTICAST_STATIC_ONLY: 'multicast-static-only';
+MULTILINK: 'multilink';
+MULTIPATH: 'multipath';
+MULTIPATH_RELAX: 'multipath-relax';
+MULTIPLIER: 'multiplier';
+MULTIPOINT: 'multipoint';
 
 MUST_SECURE: 'must-secure';
 
@@ -3766,6 +3722,8 @@ NEW_MODEL: 'new-model';
 
 NEW_RWHO: 'new-rwho';
 
+NEW_STYLE: 'new-style';
+
 NEWINFO: 'newinfo';
 
 NEXT_HOP: 'next-hop';
@@ -3857,6 +3815,8 @@ NON_MLAG: 'non-mlag';
 NON_SILENT: 'non-silent';
 
 NONE: 'none';
+
+NO_MATCH: 'no-match';
 
 NONEGOTIATE: 'nonegotiate';
 
@@ -4046,9 +4006,8 @@ PAN: 'pan';
 PAN_OPTIONS: 'pan-options';
 
 PARAM: 'param';
-
+PARAMETER_MAP: 'parameter-map';
 PARAMETER_PROBLEM: 'parameter-problem';
-
 PARAMETERS: 'parameters';
 
 PARENT: 'parent';
@@ -4257,6 +4216,8 @@ PORTS: 'ports';
 PORT_CHANNEL: 'port-channel';
 
 PORT_CHANNEL_PROTOCOL: 'port-channel-protocol';
+
+PORT_CONTROL: 'port-control';
 
 PORT_NAME: 'port-name';
 
@@ -4490,8 +4451,6 @@ QUEUE_LENGTH: 'queue-length';
 
 QUEUE_LIMIT: 'queue-limit';
 
-QUEUE_MONITOR: 'queue-monitor';
-
 QUEUE_SET: 'queue-set';
 
 QUEUEING: 'queueing';
@@ -4525,6 +4484,8 @@ RATE_LIMIT: 'rate-limit';
 RATE_MODE: 'rate-mode';
 
 RATE_THRESHOLDS_PROFILE: 'rate-thresholds-profile';
+
+RATELIMIT: 'ratelimit';
 
 RBACL: 'rbacl';
 
@@ -4970,6 +4931,8 @@ SECURITY: 'security';
 
 SECURITY_ASSOCIATION: 'security-association';
 
+SECURITY_LEVEL: 'security-level';
+
 SELECT: 'select';
 
 SELECTION: 'selection';
@@ -5082,6 +5045,8 @@ SET_COLOR: 'set-color';
 
 SET_OVERLOAD_BIT: 'set-overload-bit';
 
+SET_TIMER: 'set-timer';
+
 SETUP: 'setup';
 
 SEVERITY: 'severity';
@@ -5163,6 +5128,8 @@ SILENT: 'silent';
 SINGLE_CONNECTION: 'single-connection';
 
 SINGLE_HOP: 'single-hop';
+
+SINGLE_HOST: 'single-host';
 
 SINGLE_ROUTER_MODE: 'single-router-mode';
 
@@ -5831,19 +5798,13 @@ TIMING: 'timing';
 TLS_PROXY: 'tls-proxy';
 
 TM_VOQ_COLLECTION: 'tm-voq-collection';
-
+TO: 'to';
 TOKEN: 'token';
-
 TOOL: 'tool';
-
 TOP: 'top';
-
 TOPOLOGY: 'topology';
-
 TOS: 'tos';
-
 TOS_OVERWRITE: 'tos-overwrite';
-
 TRACE: 'trace';
 
 TRACEROUTE: 'traceroute';
@@ -5851,6 +5812,8 @@ TRACEROUTE: 'traceroute';
 TRACK: 'track';
 
 TRACKED: 'tracked';
+
+TRACKING: 'tracking';
 
 TRACKING_PRIORITY_INCREMENT: 'tracking-priority-increment';
 
@@ -6053,6 +6016,8 @@ UNABLE: 'Unable';
 
 UNAUTHORIZED: 'unauthorized';
 
+UNAUTHORIZE: 'unauthorize';
+
 UNAUTHORIZED_DEVICE_PROFILE: 'unauthorized-device-profile';
 
 UNICAST_ROUTING: 'unicast-routing';
@@ -6158,7 +6123,7 @@ USERPASSPHRASE: 'userpassphrase';
 
 USERS: 'users';
 
-USING: 'Using';
+USING: [Uu] 'sing';
 
 UTIL_INTERVAL: 'util-interval';
 
@@ -6249,6 +6214,8 @@ VIRTUAL: 'virtual';
 VIRTUAL_ADDRESS: 'virtual-address';
 
 VIRTUAL_AP: 'virtual-ap';
+
+VIRTUAL_IP: 'virtual-ip';
 
 VIRTUAL_REASSEMBLY: 'virtual-reassembly';
 
@@ -6394,6 +6361,8 @@ WEB_MAX_CLIENTS: 'web-max-clients';
 WEB_SERVER: 'web-server';
 
 WEBAUTH: 'webauth';
+
+WEBCONSENT: 'webconsent';
 
 WEBVPN: 'webvpn';
 

@@ -81,25 +81,17 @@ public class TransformationToTransition {
 
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
     private PrimedBDDInteger ipField(IpField ipField) {
-      switch (ipField) {
-        case DESTINATION:
-          return _bddPacket.getDstIpPrimedBDDInteger();
-        case SOURCE:
-          return _bddPacket.getSrcIpPrimedBDDInteger();
-        default:
-          throw new IllegalArgumentException("Unknown IpField: " + ipField);
-      }
+      return switch (ipField) {
+        case DESTINATION -> _bddPacket.getDstIpPrimedBDDInteger();
+        case SOURCE -> _bddPacket.getSrcIpPrimedBDDInteger();
+      };
     }
 
     private PrimedBDDInteger portField(PortField portField) {
-      switch (portField) {
-        case DESTINATION:
-          return _bddPacket.getDstPortPrimedBDDInteger();
-        case SOURCE:
-          return _bddPacket.getSrcPortPrimedBDDInteger();
-        default:
-          throw new IllegalArgumentException("Unknown PortField: " + portField);
-      }
+      return switch (portField) {
+        case DESTINATION -> _bddPacket.getDstPortPrimedBDDInteger();
+        case SOURCE -> _bddPacket.getSrcPortPrimedBDDInteger();
+      };
     }
 
     @Override

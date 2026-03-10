@@ -163,18 +163,12 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _verbose = question.getVerbose();
 
       switch (question.getHypothesis()) {
-        case SAME_DEFINITION:
-        case SAME_NAME:
+        case SAME_DEFINITION, SAME_NAME -> {
           SortedSet<NamedStructureOutlierSet<?>> outliers =
               namedStructureOutliers(snapshot, question);
           _answerElement.setNamedStructureOutliers(outliers);
-          break;
-        case SAME_SERVERS:
-          _answerElement.setServerOutliers(serverOutliers(question));
-          break;
-        default:
-          throw new BatfishException(
-              "Unexpected outlier detection hypothesis " + question.getHypothesis());
+        }
+        case SAME_SERVERS -> _answerElement.setServerOutliers(serverOutliers(question));
       }
 
       return _answerElement;

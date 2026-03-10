@@ -17,5 +17,7 @@ public interface FwThenVisitor<T> {
 
   T visitFwThenNop(FwThenNop nop);
 
+  T visitFwThenPolicer(FwThenPolicer policer);
+
   T visitThenRoutingInstance(FwThenRoutingInstance routingInstance);
 }

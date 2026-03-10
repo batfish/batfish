@@ -118,10 +118,9 @@ final class IssueAggregation {
    *
    * <p>Produces a map of {@link ParseWarningTriplet} to map of filename to lines.
    */
-  @Nonnull
   @VisibleForTesting
-  static Map<ParseWarningTriplet, Multimap<String, Integer>> aggregateDuplicateParseWarnings(
-      Map<String, Warnings> fileWarnings) {
+  static @Nonnull Map<ParseWarningTriplet, Multimap<String, Integer>>
+      aggregateDuplicateParseWarnings(Map<String, Warnings> fileWarnings) {
     Map<ParseWarningTriplet, Multimap<String, Integer>> map = new HashMap<>();
     fileWarnings.forEach(
         (filename, warnings) -> {
@@ -139,9 +138,8 @@ final class IssueAggregation {
    *
    * <p>Produces a map of {@link Warning} to nodes.
    */
-  @Nonnull
   @VisibleForTesting
-  static Map<Warning, SortedSet<String>> aggregateDuplicateWarnings(
+  static @Nonnull Map<Warning, SortedSet<String>> aggregateDuplicateWarnings(
       Map<String, Warnings> nodeToWarnings, Function<Warnings, Set<Warning>> warningFunc) {
     Map<Warning, SortedSet<String>> map = new HashMap<>();
     nodeToWarnings.forEach(
@@ -158,9 +156,8 @@ final class IssueAggregation {
    *
    * <p>Produces a map of {@link ErrorDetails} to node names.
    */
-  @Nonnull
   @VisibleForTesting
-  static Map<ErrorDetailsTriplet, SortedSet<String>> aggregateDuplicateErrors(
+  static @Nonnull Map<ErrorDetailsTriplet, SortedSet<String>> aggregateDuplicateErrors(
       Map<String, ErrorDetails> nodeToErrorDetails) {
     Map<ErrorDetailsTriplet, SortedSet<String>> map = new HashMap<>();
     nodeToErrorDetails.forEach(

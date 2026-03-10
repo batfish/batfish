@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.representation.juniper.PsFromPrefixListFilterLonger.name;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;

@@ -49,14 +49,26 @@ pocond_if_route_exists
 :
   IF_ROUTE_EXISTS
   (
-    pocondi_prefix
-    | pocondi_table
+    pocondi_address_family
+    | pocondiafi_prefix
+    | pocondiafi_prefix6
+    | pocondiafi_table
   )
 ;
 
-pocondi_prefix: prefix = ip_prefix;
+pocondiafi_prefix: prefix = ip_prefix_default_32;
 
-pocondi_table: TABLE name = junos_name;
+pocondiafi_prefix6: prefix = ipv6_prefix_default_128;
+
+pocondiafi_table: TABLE name = junos_name;
+
+pocondi_address_family: ADDRESS_FAMILY (
+    pocondiaf_inet | pocondiaf_ccc
+);
+
+pocondiaf_inet: INET (pocondiafi_prefix | pocondiafi_table);
+
+pocondiaf_ccc: CCC null_filler;
 
 po_policy_statement
 :
@@ -76,6 +88,11 @@ po_prefix_list
       | poplt_network
       | poplt_network6
    )
+;
+
+po_rtf_prefix_list
+:
+   RTF_PREFIX_LIST (name = junos_name | wildcard) portfplt_prefix
 ;
 
 po_tunnel_attribute
@@ -129,7 +146,19 @@ poplt_network
 
 poplt_network6
 :
-   network = ipv6_prefix
+   network = ipv6_prefix_default_128
+;
+
+portfplt_prefix
+:
+    prefix = rtf_prefix
+;
+
+rtf_prefix:
+    // TODO: are IP address variants valid here?
+    asn = uint32
+    COLON rt_hi = uint32 COLON rt_lo = uint32
+    FORWARD_SLASH length = uint8
 ;
 
 pops_common
@@ -151,13 +180,16 @@ pops_from
       | popsf_community
       | popsf_community_count
       | popsf_condition
+      | popsf_external
       | popsf_family
       | popsf_instance
       | popsf_interface
       | popsf_level
       | popsf_local_preference
       | popsf_metric
+      | popsf_metric2
       | popsf_neighbor
+      | popsf_next_hop
       | popsf_origin
       | popsf_policy
       | popsf_prefix_list
@@ -166,8 +198,11 @@ pops_from
       | popsf_rib
       | popsf_route_filter
       | popsf_route_type
+      | popsf_rtf_prefix_list
       | popsf_source_address_filter
       | popsf_tag
+      | popsf_tag2
+      | popsf_validation_database
    )
 ;
 
@@ -186,6 +221,7 @@ pops_to
    TO
    (
       popsto_level
+      | popsto_protocol
       | popsto_rib
    )
 ;
@@ -271,7 +307,18 @@ popsf_metric
 :
    METRIC
    (
-      metric = dec
+      // The range seems to depend on protocol, but uint32 is the highest for any of them.
+      metric = uint32
+      | apply_groups
+   )
+;
+
+popsf_metric2
+:
+   METRIC2
+   (
+      // The range seems to depend on protocol, but uint32 is the highest for any of them.
+      metric = uint32
       | apply_groups
    )
 ;
@@ -280,8 +327,17 @@ popsf_neighbor
 :
    NEIGHBOR
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      v4 = ip_address
+      | v6 = ipv6_address
+   )
+;
+
+popsf_next_hop
+:
+   NEXT_HOP
+   (
+      v4 = ip_address
+      | v6 = ipv6_address
    )
 ;
 
@@ -331,7 +387,7 @@ popsf_protocol
 
 popsf_rib
 :
-   RIB name = junos_name
+   RIB name = rib_name
 ;
 
 popsf_route_filter
@@ -339,7 +395,7 @@ popsf_route_filter
    ROUTE_FILTER
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    ) popsfrf_common then = popsfrf_then?
 ;
 
@@ -350,6 +406,23 @@ popsf_route_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+
+ospf_type
+:
+   // 1 or 2
+   uint8
+;
+
+popsf_external
+:
+   EXTERNAL (TYPE ospf_type)?
+;
+
+popsf_rtf_prefix_list
+:
+   RTF_PREFIX_LIST name = junos_name
 ;
 
 popsf_source_address_filter
@@ -364,6 +437,21 @@ popsf_source_address_filter
 popsf_tag
 :
    TAG uint32
+;
+
+popsf_tag2
+:
+   TAG2 uint32
+;
+
+popsf_validation_database
+:
+   VALIDATION_DATABASE
+   (
+      INVALID
+      | UNKNOWN
+      | VALID
+   )
 ;
 
 popsfpl_exact
@@ -431,7 +519,7 @@ popsfrf_through
    THROUGH
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    )
 ;
 
@@ -444,6 +532,8 @@ popst_accept
 :
    ACCEPT
 ;
+
+popst_aigp_originate: AIGP_ORIGINATE (distance = uint32)?;
 
 popst_as_path_expand
 :
@@ -463,6 +553,11 @@ as_path_expand_count
 popst_as_path_prepend
 :
    AS_PATH_PREPEND bgp_asn+
+;
+
+popst_bgp_output_queue_priority
+:
+  BGP_OUTPUT_QUEUE_PRIORITY bgp_priority_queue_id
 ;
 
 popst_color
@@ -486,8 +581,10 @@ popst_color2
 popst_common
 :
    popst_accept
+   | popst_aigp_originate
    | popst_as_path_expand
    | popst_as_path_prepend
+   | popst_bgp_output_queue_priority
    | popst_color
    | popst_color2
    | popst_community_add
@@ -501,11 +598,8 @@ popst_common
    | popst_install_nexthop
    | popst_local_preference
    | popst_metric
-   | popst_metric_add
-   | popst_metric_expression
-   | popst_metric_igp
    | popst_metric2
-   | popst_metric2_expression
+   | popst_multipath_resolve
    | popst_next_hop
    | popst_next_policy
    | popst_next_term
@@ -514,7 +608,9 @@ popst_common
    | popst_preference
    | popst_priority
    | popst_reject
+   | popst_source_class
    | popst_tag
+   | popst_tag2
    | popst_tunnel_attribute
 ;
 
@@ -576,34 +672,75 @@ popst_metric
 :
    METRIC
    (
-      metric = dec
+      popstm_add
+      | popstm_expression
+      | popstm_igp
+      | popstm_subtract
+      | popstm_value
       | apply_groups
    )
 ;
 
-popst_metric_add
+popstm_add
 :
-   METRIC ADD metric = dec
+   ADD metric = uint32
+;
+
+popstm_expression
+:
+   EXPRESSION metric_expression
+;
+
+popstm_igp
+:
+   IGP offset = dec?
+;
+
+popstm_subtract
+:
+   SUBTRACT metric = uint32
+;
+
+popstm_value
+:
+   metric = uint32
 ;
 
 popst_metric2
 :
-   METRIC2 metric2 = dec
+   METRIC2
+   (
+      popstm2_add
+      | popstm2_expression
+      | popstm2_subtract
+      | popstm2_value
+      | apply_groups
+   )
 ;
 
-popst_metric_expression
+popstm2_add
 :
-   METRIC EXPRESSION metric_expression
+   ADD metric2 = uint32
 ;
 
-popst_metric_igp
+popstm2_expression
 :
-   METRIC IGP offset = dec?
+   EXPRESSION metric_expression
 ;
 
-popst_metric2_expression
+popstm2_subtract
 :
-   METRIC2 EXPRESSION metric_expression
+   SUBTRACT metric2 = uint32
+;
+
+popstm2_value
+:
+   metric2 = uint32
+;
+
+popst_multipath_resolve
+:
+   MULTIPATH_RESOLVE
 ;
 
 popst_next_hop
@@ -676,7 +813,11 @@ popst_origin
 
 popst_preference
 :
-   PREFERENCE preference = dec
+   PREFERENCE
+   (
+      (ADD | SUBTRACT)? preference = uint32
+      | apply_groups
+   )
 ;
 
 popst_priority
@@ -693,9 +834,19 @@ popst_reject
    REJECT
 ;
 
+popst_source_class
+:
+   SOURCE_CLASS name = junos_name
+;
+
 popst_tag
 :
    TAG uint32
+;
+
+popst_tag2
+:
+   TAG2 uint32
 ;
 
 popst_tunnel_attribute
@@ -716,9 +867,28 @@ popsto_level
    LEVEL dec
 ;
 
+popsto_protocol
+:
+   PROTOCOL
+   (
+     ACCESS_INTERNAL
+     | AGGREGATE
+     | BGP
+     | DIRECT
+     | EVPN
+     | ISIS
+     | LDP
+     | LOCAL
+     | OSPF
+     | OSPF3
+     | RSVP
+     | STATIC
+   )
+;
+
 popsto_rib
 :
-   RIB junos_name
+   RIB rib_name
 ;
 
 s_policy_options
@@ -732,6 +902,7 @@ s_policy_options
       | po_condition
       | po_policy_statement
       | po_prefix_list
+      | po_rtf_prefix_list
       | po_tunnel_attribute
    )
 ;

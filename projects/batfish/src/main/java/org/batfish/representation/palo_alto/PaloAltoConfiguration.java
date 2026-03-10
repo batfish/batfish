@@ -11,7 +11,10 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
@@ -124,10 +127,9 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -196,6 +198,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public static final String PANORAMA_VSYS_NAME = "panorama";
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
+
+  // https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-networking-admin/ospf/configure-ospf.
+  private static final int DEFAULT_OSPF_METRIC = 10;
 
   private Configuration _c;
 
@@ -550,9 +555,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       missingItem = "destination addresses";
     }
     if (missingItem != null && fileWarnings) {
-      _w.redFlag(
-          String.format(
-              "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
+      _w.redFlagf(
+          "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem);
     }
     return missingItem == null;
   }
@@ -695,43 +699,37 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs.
-    List<MatchHeaderSpace> srcExprs =
+    List<AclLineMatchExpr> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
     assert !srcExprs.isEmpty();
     conjuncts.add(
         rule.getNegateSource()
             // TODO: for negation, only the top-level trace element survives, so we need to
             // make the negated trace element much more interesting.
-            ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
-            : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
+            ? new NotMatchExpr(or(srcExprs), matchNegatedSourceAddressTraceElement())
+            : or(srcExprs, matchSourceAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs.
-    List<MatchHeaderSpace> dstExprs =
+    List<AclLineMatchExpr> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
     assert !dstExprs.isEmpty();
     conjuncts.add(
         rule.getNegateDestination()
             // TODO: for negation, only the top-level trace element survives, so we need to
             // make the negated trace element much more interesting.
-            ? new NotMatchExpr(
-                new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
-            : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
+            ? new NotMatchExpr(or(dstExprs), matchNegatedDestinationAddressTraceElement())
+            : or(dstExprs, matchDestinationAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match protocol and ports
     IpProtocol protocol = rule.getIpProtocol();
     assert protocol != null;
     conjuncts.add(
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setIpProtocols(protocol).build(),
-            TraceElement.of("Matched protocol " + protocol.name())));
-    conjuncts.add(
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setDstPorts(rule.getPort().getSubRanges()).build(),
-            TraceElement.of("Matched port")));
+        matchIpProtocol(protocol, TraceElement.of("Matched protocol " + protocol.name())));
+    conjuncts.add(matchDstPort(rule.getPort(), TraceElement.of("Matched port")));
 
-    return new AndMatchExpr(conjuncts);
+    return and(conjuncts);
   }
 
   /**
@@ -762,10 +760,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
         childMatchExprs.add(
             new NotMatchExpr(
-                new OrMatchExpr(preceding.build(), "Matched a different override rule")));
+                or(preceding.build(), TraceElement.of("Matched a different override rule"))));
         childMatchExprs.add(ruleAcl);
         appMatchExprs.add(
-            new AndMatchExpr(
+            and(
                 childMatchExprs.build(),
                 matchApplicationOverrideRuleTraceElement(
                     rule.getName(), ruleVsys.getName(), _filename)));
@@ -773,7 +771,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       preceding.add(ruleAcl);
     }
-    return new OrMatchExpr(appMatchExprs, getTraceElementForAppReference(app, vsys).orElse(null));
+    return or(appMatchExprs, getTraceElementForAppReference(app, vsys).orElse(null));
   }
 
   /**
@@ -842,7 +840,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Collects the application-override rules from this Vsys and merges the common
    * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private List<AppOverrideRuleAndVsys> getApplicableApplicationOverrideRules(
       Vsys vsys, String fromZone, String toZone) {
     Stream<AppOverrideRuleAndVsys> pre =
@@ -1235,27 +1232,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // rule-type doc:
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
-    switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
-      case INTRAZONE:
-        return fromZoneName.equals(toZoneName);
-      case INTERZONE:
-        return !fromZoneName.equals(toZoneName);
-      case UNIVERSAL:
-        return true;
-      default:
-        warnings.redFlag(
-            String.format(
-                "Skipped unhandled rule type '%s' from zone %s to %s",
-                rule.getRuleType(), fromZoneName, toZoneName));
-        return false;
-    }
+    return switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
+      case INTRAZONE -> fromZoneName.equals(toZoneName);
+      case INTERZONE -> !fromZoneName.equals(toZoneName);
+      case UNIVERSAL -> true;
+    };
   }
 
   /**
    * Check security rules from this Vsys and pre-/post-rulebases from Panorama and warn about
    * invalid intrazone rules.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private void checkAllSecurityRuleValidity(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
@@ -1281,11 +1268,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
     if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
-      w.redFlag(
-          String.format(
-              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
-                  + " %s vs %s",
-              rule.getName(), rule.getFrom(), rule.getTo()));
+      w.redFlagf(
+          "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
+              + " %s vs %s",
+          rule.getName(), rule.getFrom(), rule.getTo());
       return false;
     }
     return true;
@@ -1294,7 +1280,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private Stream<NatRule> getAllNatRules(Vsys vsys) {
     Stream<NatRule> pre =
         _panorama == null
@@ -1596,24 +1581,24 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
-  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
+  private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
             source ->
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(ruleEndpointToIpSpace(source, vsys, w)).build(),
+                AclLineMatchExprs.matchSrc(
+                    ruleEndpointToIpSpace(source, vsys, w),
                     getRuleEndpointTraceElement(source, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
-  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
+  private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
             dest ->
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setDstIps(ruleEndpointToIpSpace(dest, vsys, w)).build(),
+                AclLineMatchExprs.matchDst(
+                    ruleEndpointToIpSpace(dest, vsys, w),
                     getRuleEndpointTraceElement(dest, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
@@ -1653,20 +1638,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs if specified.
-    List<MatchHeaderSpace> srcExprs =
+    List<AclLineMatchExpr> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), namespaceVsys, _w, _filename);
     if (!srcExprs.isEmpty()) {
       conjuncts.add(
           rule.getNegateSource()
               // TODO: for negation, only the top-level trace element survives, so we need to
               // make the negated trace element much more interesting.
-              ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
-              : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
+              ? new NotMatchExpr(or(srcExprs), matchNegatedSourceAddressTraceElement())
+              : or(srcExprs, matchSourceAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
-    List<MatchHeaderSpace> dstExprs =
+    List<AclLineMatchExpr> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(
             rule.getDestination(), namespaceVsys, _w, _filename);
     if (!dstExprs.isEmpty()) {
@@ -1674,9 +1659,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           rule.getNegateDestination()
               // TODO: for negation, only the top-level trace element survives, so we need to
               // make the negated trace element much more interesting.
-              ? new NotMatchExpr(
-                  new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
-              : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
+              ? new NotMatchExpr(or(dstExprs), matchNegatedDestinationAddressTraceElement())
+              : or(dstExprs, matchDestinationAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1686,7 +1670,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return ExprAclLine.builder()
         .setName(rule.getName())
         .setAction(rule.getAction())
-        .setMatchCondition(new AndMatchExpr(conjuncts))
+        .setMatchCondition(and(conjuncts))
         .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), ruleVsys))
         .setVendorStructureId(
             securityRuleVendorStructureId(rule.getName(), ruleVsys.getName(), _filename))
@@ -1707,7 +1691,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Common application matching for any service except deferred / application-default
     AclLineMatchExpr applicationMatchNotDefault =
-        new OrMatchExpr(matchServicesForApplications(rule, vsys, appOverrideAcls, false));
+        or(matchServicesForApplications(rule, vsys, appOverrideAcls, false));
 
     List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
     for (ServiceOrServiceGroupReference service : services) {
@@ -1724,34 +1708,30 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 computeServiceGroupMemberAclName(vsysName, serviceName),
                 matchServiceTraceElement());
 
-        serviceDisjuncts.add(
-            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
+        serviceDisjuncts.add(and(applicationMatchNotDefault, serviceMatch));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         // Any service is allowed.
         AclLineMatchExpr serviceMatch = ServiceBuiltIn.ANY.toAclLineMatchExpr();
 
-        serviceDisjuncts.add(
-            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
+        serviceDisjuncts.add(and(applicationMatchNotDefault, serviceMatch));
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         serviceDisjuncts.add(
-            new OrMatchExpr(
+            or(
                 matchServicesForApplications(rule, vsys, appOverrideAcls, true),
                 matchServiceApplicationDefaultTraceElement()));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
         AclLineMatchExpr serviceMatch = ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr();
 
-        serviceDisjuncts.add(
-            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
+        serviceDisjuncts.add(and(applicationMatchNotDefault, serviceMatch));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
         AclLineMatchExpr serviceMatch = ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr();
 
-        serviceDisjuncts.add(
-            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
+        serviceDisjuncts.add(and(applicationMatchNotDefault, serviceMatch));
       } else {
         _w.redFlagf("No matching service group/object found for: %s", serviceName);
       }
     }
-    return Optional.of(new OrMatchExpr(serviceDisjuncts));
+    return Optional.of(or(serviceDisjuncts));
   }
 
   /**
@@ -1778,7 +1758,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       ApplicationGroup group = containingVsys.getApplicationGroups().get(name);
       if (group != null) {
         return ImmutableList.of(
-            new OrMatchExpr(
+            or(
                 group
                     .getDescendantObjects(
                         containingVsys.getApplications(), containingVsys.getApplicationGroups())
@@ -1824,10 +1804,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .collect(ImmutableList.toImmutableList());
     }
     // Did not find in the right hierarchy, so stop and warn.
-    _w.redFlag(
-        String.format(
-            "Unable to identify application %s in vsys %s rule %s",
-            name, vsys.getName(), rule.getName()));
+    _w.redFlagf(
+        "Unable to identify application %s in vsys %s rule %s",
+        name, vsys.getName(), rule.getName());
     return ImmutableList.of();
   }
 
@@ -1863,7 +1842,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     AclLineMatchExpr appExpr =
-        new OrMatchExpr(
+        or(
             application.getServices().stream()
                 .map(s -> s.toMatchExpr(w))
                 .collect(ImmutableList.toImmutableList()),
@@ -1878,7 +1857,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableList.Builder<AclLineMatchExpr> conjunctions = ImmutableList.builder();
     appOverrideAclsMap.values().forEach(o -> conjunctions.add(new NotMatchExpr(o)));
     conjunctions.add(appExpr);
-    return Optional.of(new AndMatchExpr(conjunctions.build()));
+    return Optional.of(and(conjunctions.build()));
   }
 
   private List<AclLineMatchExpr> matchServicesForApplications(
@@ -1924,8 +1903,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Return the {@link Vsys} this {@link Reference} points to. Handles checking the starting Vsys,
    * shared Vsys, and Panorama Vsys if applicable.
    */
-  @Nonnull
   @SuppressWarnings("fallthrough")
+  @Nonnull
   Optional<Vsys> getVsysForReference(Reference ref, Vsys vsys) {
     if (REFERENCE_IN_VSYS.visit(ref, vsys)) {
       return Optional.of(vsys);
@@ -1935,22 +1914,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return getVsysForReference(ref, _panorama);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return getVsysForReference(ref, _shared);
         }
-        // fall-through
+      // fall-through
       case SHARED:
-      default:
         return Optional.empty();
     }
+    throw new IllegalStateException("unreachable");
   }
 
   /** Converts interface address {@code String} to {@link IpSpace} */
-  @Nullable
   @SuppressWarnings("fallthrough")
-  private ConcreteInterfaceAddress interfaceAddressToConcreteInterfaceAddress(
+  private @Nullable ConcreteInterfaceAddress interfaceAddressToConcreteInterfaceAddress(
       @Nullable InterfaceAddress address, Vsys vsys, Warnings w) {
     if (address == null) {
       return null;
@@ -1976,31 +1954,29 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return interfaceAddressToConcreteInterfaceAddress(address, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return interfaceAddressToConcreteInterfaceAddress(address, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this value, so parse the value as is
-        switch (address.getType()) {
-          case IP_ADDRESS:
-            return ConcreteInterfaceAddress.create(Ip.parse(addressText), Prefix.MAX_PREFIX_LENGTH);
-          case IP_PREFIX:
-            return ConcreteInterfaceAddress.parse(addressText);
-          case REFERENCE:
-          default:
-            // Assume warning is surfaced in undefined references or in conversion to concrete addr
-            return null;
-        }
+        return switch (address.getType()) {
+          case IP_ADDRESS ->
+              ConcreteInterfaceAddress.create(Ip.parse(addressText), Prefix.MAX_PREFIX_LENGTH);
+          case IP_PREFIX -> ConcreteInterfaceAddress.parse(addressText);
+          case REFERENCE ->
+              // Assume warning is surfaced in undefined references or in conversion to concrete
+              // addr
+              null;
+        };
     }
   }
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
-  @Nonnull
   @SuppressWarnings("fallthrough")
-  private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+  private @Nonnull IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
     // Devices use objects over constants when possible, so, check to see if there is a matching
@@ -2018,35 +1994,30 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return ruleEndpointToIpSpace(endpoint, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return ruleEndpointToIpSpace(endpoint, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return UniverseIpSpace.INSTANCE;
-          case IP_ADDRESS:
-            return Ip.parse(endpointValue).toIpSpace();
-          case IP_PREFIX:
-            return Prefix.parse(endpointValue).toIpSpace();
-          case IP_RANGE:
+        return switch (endpoint.getType()) {
+          case Any -> UniverseIpSpace.INSTANCE;
+          case IP_ADDRESS -> Ip.parse(endpointValue).toIpSpace();
+          case IP_PREFIX -> Prefix.parse(endpointValue).toIpSpace();
+          case IP_RANGE -> {
             Optional<IpSpace> ipSpace = rangeStringToIpSpace(endpointValue);
             if (ipSpace.isPresent()) {
-              return ipSpace.get();
+              yield ipSpace.get();
             }
             w.redFlag("Could not convert RuleEndpoint range to IpSpace: " + endpoint);
-            return EmptyIpSpace.INSTANCE;
-          case REFERENCE:
-            // Rely on undefined references to surface this issue (endpoint reference not defined)
-            return EmptyIpSpace.INSTANCE;
-          default:
-            w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
-            return EmptyIpSpace.INSTANCE;
-        }
+            yield EmptyIpSpace.INSTANCE;
+          }
+          case REFERENCE ->
+              // Rely on undefined references to surface this issue (endpoint reference not defined)
+              EmptyIpSpace.INSTANCE;
+        };
     }
   }
 
@@ -2084,9 +2055,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Gets the {@code TraceElement} corresponding to the specified {@link RuleEndpoint}. Returns
    * {@code null} if the endpoint cannot be resolved.
    */
-  @Nullable
   @SuppressWarnings("fallthrough")
-  private TraceElement getRuleEndpointTraceElement(
+  private @Nullable TraceElement getRuleEndpointTraceElement(
       RuleEndpoint endpoint, Vsys vsys, String filename) {
     String endpointValue = endpoint.getValue();
     String vsysName = vsys.getName();
@@ -2104,33 +2074,28 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return getRuleEndpointTraceElement(endpoint, _panorama, filename);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return getRuleEndpointTraceElement(endpoint, _shared, filename);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return matchAddressAnyTraceElement();
-          case IP_ADDRESS:
-          case IP_PREFIX:
-          case IP_RANGE:
-            return matchAddressValueTraceElement(endpointValue);
-          case REFERENCE:
-          default:
-            // Unresolved reference or unhandled type
-            return null;
-        }
+        return switch (endpoint.getType()) {
+          case Any -> matchAddressAnyTraceElement();
+          case IP_ADDRESS, IP_PREFIX, IP_RANGE -> matchAddressValueTraceElement(endpointValue);
+          case REFERENCE ->
+              // Unresolved reference or unhandled type
+              null;
+        };
     }
   }
 
   /** Converts {@link RuleEndpoint} to IP {@code RangeSet} */
-  @Nonnull
   @SuppressWarnings("fallthrough")
-  private RangeSet<Ip> ruleEndpointToIpRangeSet(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+  private @Nonnull RangeSet<Ip> ruleEndpointToIpRangeSet(
+      RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
     // Devices use objects over constants when possible, so, check to see if there is a matching
@@ -2148,68 +2113,57 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return ruleEndpointToIpRangeSet(endpoint, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return ruleEndpointToIpRangeSet(endpoint, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
-          case IP_ADDRESS:
-            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
-          case IP_PREFIX:
+        return switch (endpoint.getType()) {
+          case Any -> ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
+          case IP_ADDRESS -> ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
+          case IP_PREFIX -> {
             Prefix prefix = Prefix.parse(endpointValue);
-            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
-          case IP_RANGE:
+            yield ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+          }
+          case IP_RANGE -> {
             Optional<Range<Ip>> range = rangeStringToRange(endpointValue);
             if (range.isPresent()) {
-              return ImmutableRangeSet.of(range.get());
+              yield ImmutableRangeSet.of(range.get());
             }
             w.redFlag("Could not convert RuleEndpoint range to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-          case REFERENCE:
-            // Rely on undefined references to surface this issue (endpoint reference not defined)
-            return ImmutableRangeSet.of();
-          default:
-            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-        }
+            yield ImmutableRangeSet.of();
+          }
+          case REFERENCE ->
+              // Rely on undefined references to surface this issue (endpoint reference not defined)
+              ImmutableRangeSet.of();
+        };
     }
   }
 
   private static InterfaceType batfishInterfaceType(
-      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType, Warnings w) {
-    switch (panType) {
-      case AGGREGATED_ETHERNET:
-        return InterfaceType.AGGREGATED;
-      case PHYSICAL:
-        return InterfaceType.PHYSICAL;
-      case LAYER2:
-      case LAYER3:
+      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType) {
+    return switch (panType) {
+      case AGGREGATED_ETHERNET -> InterfaceType.AGGREGATED;
+      case PHYSICAL -> InterfaceType.PHYSICAL;
+      case LAYER2, LAYER3 -> {
         if (parentType == Interface.Type.AGGREGATED_ETHERNET) {
-          return InterfaceType.AGGREGATE_CHILD;
+          yield InterfaceType.AGGREGATE_CHILD;
         }
-        return InterfaceType.LOGICAL;
-      case LOOPBACK:
-        return InterfaceType.LOOPBACK;
-      case TUNNEL:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case TUNNEL_UNIT:
-        return InterfaceType.TUNNEL;
-      case VLAN:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case VLAN_UNIT:
-        return InterfaceType.VLAN;
-      default:
-        w.unimplemented("Unknown Palo Alto interface type " + panType);
-        return InterfaceType.UNKNOWN;
-    }
+        yield InterfaceType.LOGICAL;
+      }
+      case LOOPBACK -> InterfaceType.LOOPBACK;
+      case TUNNEL ->
+          // TODO: temporary hack until bind dependencies are removed
+          InterfaceType.LOOPBACK;
+      case TUNNEL_UNIT -> InterfaceType.TUNNEL;
+      case VLAN ->
+          // TODO: temporary hack until bind dependencies are removed
+          InterfaceType.LOOPBACK;
+      case VLAN_UNIT -> InterfaceType.VLAN;
+    };
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -2224,7 +2178,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(batfishInterfaceType(iface.getType(), parentType, _w));
+            .setType(batfishInterfaceType(iface.getType(), parentType));
 
     Integer mtu = iface.getMtu();
     if (mtu != null) {
@@ -2528,11 +2482,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (pool.isEmpty()) {
       // Can't apply a source IP translation with empty IP pool
       // TODO: Check real behavior in this scenario
-      _w.redFlag(
-          String.format(
-              "NAT rule %s of VSYS %s will not apply source translation because its source"
-                  + " translation pool is empty",
-              rule.getName(), vsys.getName()));
+      _w.redFlagf(
+          "NAT rule %s of VSYS %s will not apply source translation because its source"
+              + " translation pool is empty",
+          rule.getName(), vsys.getName());
       return ImmutableList.of();
     }
 
@@ -2555,11 +2508,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (pool.isEmpty()) {
       // Can't apply a dest IP translation with empty IP pool
       // TODO: Check real behavior in this scenario
-      _w.redFlag(
-          String.format(
-              "NAT rule %s of VSYS %s will not apply destination translation because its"
-                  + " destination translation pool is empty",
-              rule.getName(), vsys.getName()));
+      _w.redFlagf(
+          "NAT rule %s of VSYS %s will not apply destination translation because its"
+              + " destination translation pool is empty",
+          rule.getName(), vsys.getName());
       return Optional.empty();
     }
     return Optional.of(
@@ -2629,11 +2581,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       peerAs = firstNonNull(peerAs, localAs);
       // Peer AS must be unset or equal to Local AS.
       if (localAs != peerAs) {
-        _w.redFlag(
-            String.format(
-                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
-                    + " it",
-                peer.getName(), peerAs, localAs));
+        _w.redFlagf(
+            "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
+                + " it",
+            peer.getName(), peerAs, localAs);
         peerAs = localAs;
       }
     } else if (pg.getTypeAndOptions() instanceof EbgpPeerGroupType) {
@@ -2643,10 +2594,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         return;
       }
       if (peerAs == localAs) {
-        _w.redFlag(
-            String.format(
-                "eBGP peer %s must have peer-as different from local-as; disabling it",
-                peer.getName()));
+        _w.redFlagf(
+            "eBGP peer %s must have peer-as different from local-as; disabling it", peer.getName());
         return;
       }
     } else {
@@ -2835,10 +2784,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             ospfVsIface -> {
               org.batfish.datamodel.Interface viIface = viInterfaces.get(ospfVsIface.getName());
               if (viIface == null) {
-                _w.redFlag(
-                    String.format(
-                        "OSPF area %s refers a non-existent interface %s",
-                        vsAreaId, ospfVsIface.getName()));
+                _w.redFlagf(
+                    "OSPF area %s refers a non-existent interface %s",
+                    vsAreaId, ospfVsIface.getName());
                 return;
               }
               ospfIfaceNames.add(viIface.getName());
@@ -2853,11 +2801,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       long areaId,
       String processName,
       OspfInterface vsOspfIface) {
+    if (vsOspfIface.getEnable() == null) {
+      // Apparently the below assertions don't hold on at least some versions of Palo Alto
+      // See: https://github.com/batfish/batfish/issues/8876
+      return;
+    }
     // (enable = yes or no)  and (passive = yes or no should be explicitly configured
     assert vsOspfIface.getEnable() != null;
     assert vsOspfIface.getPassive() != null;
     OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
-    ospfSettings.setCost(vsOspfIface.getMetric());
+    ospfSettings.setCost(firstNonNull(vsOspfIface.getMetric(), DEFAULT_OSPF_METRIC));
     ospfSettings.setPassive(vsOspfIface.getPassive());
     ospfSettings.setEnabled(vsOspfIface.getEnable());
     ospfSettings.setAreaName(areaId);
@@ -2901,25 +2854,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // Can only construct a static route if it has a destination
       Prefix destination = sr.getDestination();
       if (destination == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        _w.redFlagf(
+            "Cannot convert static route %s, as it does not have a destination.", e.getKey());
         continue;
       }
       String nextVrf = sr.getNextVr();
       if (nextVrf != null) {
         if (nextVrf.equals(vrfName)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
-                  e.getKey(), nextVrf));
+          _w.redFlagf(
+              "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
+              e.getKey(), nextVrf);
           continue;
         }
         if (!_virtualRouters.containsKey(nextVrf)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
-                  e.getKey(), nextVrf));
+          _w.redFlagf(
+              "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+              e.getKey(), nextVrf);
           continue;
         }
       }
@@ -3112,10 +3062,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return;
     }
     if (parent == null) {
-      _w.redFlag(
-          String.format(
-              "Device-group %s cannot inherit from unknown device-group %s.",
-              deviceGroup.getName(), parentName));
+      _w.redFlagf(
+          "Device-group %s cannot inherit from unknown device-group %s.",
+          deviceGroup.getName(), parentName);
       return;
     }
 
@@ -3235,12 +3184,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (managedConfigurations.containsKey(deviceId)) {
                             // If the device already has a config associated with it, it must
                             // already be associated with another device-group (should not happen)
-                            _w.redFlag(
-                                String.format(
-                                    "Managed device '%s' cannot be associated with more than one"
-                                        + " device-group. Ignoring association with device-group"
-                                        + " '%s'.",
-                                    deviceId, deviceGroupEntry.getKey()));
+                            _w.redFlagf(
+                                "Managed device '%s' cannot be associated with more than one"
+                                    + " device-group. Ignoring association with device-group"
+                                    + " '%s'.",
+                                deviceId, deviceGroupEntry.getKey());
                           } else {
                             PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
@@ -3259,13 +3207,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                         (deviceId, vsys) -> {
                           // Create new managed config if one doesn't already exist for this device
                           if (managedConfigurations.containsKey(deviceId)) {
-                            _w.redFlag(
-                                String.format(
-                                    "Associating vsys on a managed device with different"
-                                        + " device-groups is not yet supported. Ignoring"
-                                        + " association with device-group '%s' for managed device"
-                                        + " '%s'.",
-                                    deviceGroupEntry.getKey(), deviceId));
+                            _w.redFlagf(
+                                "Associating vsys on a managed device with different"
+                                    + " device-groups is not yet supported. Ignoring"
+                                    + " association with device-group '%s' for managed device"
+                                    + " '%s'.",
+                                deviceGroupEntry.getKey(), deviceId);
                             return;
                           }
                           PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
@@ -3396,10 +3343,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.deactivate(INCOMPLETE);
-          _w.redFlag(
-              String.format(
-                  "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                  iface.getName(), nullVrf.getName()));
+          _w.redFlagf(
+              "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+              iface.getName(), nullVrf.getName());
         } else {
           // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
           // data.
@@ -3426,11 +3372,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           // Only warn if some L2/L3 data actually set.
           if (warn) {
-            _w.redFlag(
-                String.format(
-                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
-                        + " data.",
-                    iface.getName(), nullVrf.getName()));
+            _w.redFlagf(
+                "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
+                    + " data.",
+                iface.getName(), nullVrf.getName());
           }
         }
       }

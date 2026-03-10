@@ -11,18 +11,22 @@ import static org.batfish.datamodel.tracking.TrackMethods.bgpRoute;
 import static org.batfish.datamodel.tracking.TrackMethods.negated;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.datamodel.tracking.TrackMethods.route;
+import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.compareTracks;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -47,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
@@ -63,6 +68,31 @@ import org.junit.Test;
 /** Test of {@link IncrementalBdpEngine}. */
 @ParametersAreNonnullByDefault
 public final class IncrementalBdpEngineTest {
+  @Test
+  public void testCompareTracksAndLogDifference() {
+    Table<String, Integer, Boolean> hasA =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, true)
+            .put("B", 1, false)
+            .build();
+    Table<String, Integer, Boolean> hasB =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, false)
+            .put("B", 1, true)
+            .build();
+    Table<String, Integer, Boolean> hasAB =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, true)
+            .put("B", 1, true)
+            .build();
+    assertThat(compareTracks(hasA, hasA).orElse("equal"), equalTo("equal"));
+    assertThat(compareTracks(hasAB, hasA).orElse("equal"), equalTo("lost 1 including [B > 1]"));
+    assertThat(compareTracks(hasAB, hasB).orElse("equal"), equalTo("lost 1 including [A > 1]"));
+    assertThat(compareTracks(hasA, hasAB).orElse("equal"), equalTo("gained 1 including [B > 1]"));
+    assertThat(
+        compareTracks(hasA, hasB).orElse("equal"),
+        equalTo("gained 1 including [B > 1], lost 1 including [A > 1]"));
+  }
 
   @Test
   public void testEvaluateTrackRoute() {
@@ -141,13 +171,13 @@ public final class IncrementalBdpEngineTest {
             .build();
     Vrf v1 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
     Vrf v2 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
         .setVrf(v1)
         .setOwner(c1)
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i2")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24"))
         .setVrf(v2)
@@ -330,7 +360,7 @@ public final class IncrementalBdpEngineTest {
     Vrf vrrp2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(vrrp2).build();
     // h interfaces
     Interface hI1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("10.1.0.1/24"))
             .setHmm(true)
@@ -338,7 +368,7 @@ public final class IncrementalBdpEngineTest {
             .setOwner(h)
             .build();
     Interface hI2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i2")
             .setAddress(ConcreteInterfaceAddress.parse("10.2.0.1/24"))
             .setHmm(true)
@@ -347,7 +377,7 @@ public final class IncrementalBdpEngineTest {
             .build();
     // vrrp1 interfaces
     ConcreteInterfaceAddress i1HAddress = ConcreteInterfaceAddress.parse("10.1.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(i1HAddress)
         .setName("i1")
         .setVrf(vrrp1Vrf)
@@ -358,7 +388,7 @@ public final class IncrementalBdpEngineTest {
         ImmutableMap.of(
             trackIndex,
             route(vrrp1Source.getPrefix(), ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME)));
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(vrrp1Source)
         .setName("i2")
         .setVrrpGroups(
@@ -376,14 +406,14 @@ public final class IncrementalBdpEngineTest {
 
     // vrrp2 interfaces
     ConcreteInterfaceAddress i2HAddress = ConcreteInterfaceAddress.parse("10.2.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(i2HAddress)
         .setName("i1")
         .setVrf(vrrp2Vrf)
         .setOwner(vrrp2)
         .build();
     ConcreteInterfaceAddress vrrp2Source = ConcreteInterfaceAddress.parse("192.168.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(vrrp2Source)
         .setName("i2")
         .setVrrpGroups(
@@ -478,14 +508,14 @@ public final class IncrementalBdpEngineTest {
             .addVirtualAddress("i1", virtualIp)
             .setSourceAddress(r2Address)
             .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setOwner(r1)
         .setVrf(v1)
         .setAddress(r1Address)
         .setVrrpGroups(ImmutableSortedMap.of(1, g1))
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setOwner(r2)
         .setVrf(v2)

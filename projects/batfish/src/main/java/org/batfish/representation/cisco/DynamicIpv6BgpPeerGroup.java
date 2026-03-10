@@ -17,9 +17,8 @@ public class DynamicIpv6BgpPeerGroup extends LeafBgpPeerGroup {
     return _prefix6.toString();
   }
 
-  @Nullable
   @Override
-  public Prefix getNeighborPrefix() {
+  public @Nullable Prefix getNeighborPrefix() {
     return null;
   }
 

@@ -1,0 +1,4 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name juniper-bgp-family-route-target
+#
+set protocols bgp group G1 neighbor 1.2.3.4 family route-target

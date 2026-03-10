@@ -170,10 +170,8 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     if (_ptSentences != null) {
       _ptSentences
           .get()
-          .getSentences()
-          .addAll(
-              ParseTreePrettyPrinter.getParseTreeSentences(ctxt, parser, _printParseTreeLineNums)
-                  .getSentences());
+          .addAllSentences(
+              ParseTreePrettyPrinter.getParseTreeSentences(ctxt, parser, _printParseTreeLineNums));
     }
   }
 

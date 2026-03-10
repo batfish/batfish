@@ -1,9 +1,10 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.minesweeper.bdd.BDDDomain.numBits;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -15,24 +16,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
 
 /**
  * A collection of attributes describing a route advertisement, used for symbolic route analysis.
- *
- * @author Ryan Beckett
  */
-public class BDDRoute implements IDeepCopy<BDDRoute> {
+public final class BDDRoute implements IDeepCopy<BDDRoute> {
 
   /*
    * For each bit i of a route announcement we have both a BDD variable vi, which
@@ -73,18 +75,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private BDD[] _communityAtomicPredicates;
 
   /**
-   * Each AS-path regex atomic predicate (see class Graph) is allocated both a BDD variable and a
-   * BDD, as in the general encoding described above. This array maintains the BDDs. The nth BDD
-   * indicates the conditions under which the route's AS path satisfies the nth atomic predicate.
-   *
-   * <p>Since the AS-path atomic predicates are disjoint, at most one of them can be true in any
-   * concrete route. So we could use a binary encoding instead, where we use log(N) BDDs to
-   * represent N atomic predicates. See {@link org.batfish.common.bdd.BDDFiniteDomain} for an
-   * example of that encoding. If N is large, that could improve efficiency of symbolic route
-   * analysis (see {@link TransferBDD}) and of the route well-formedness constraints (see
-   * wellFormednessConstraints() below).
+   * Unlike the case for communities, where each route contains a set of communities, exactly one
+   * AS-path atomic predicate will be true for any concrete route. Therefore, we use a {@link
+   * BDDDomain}, which encodes the mutual exclusion constraint implicitly and also uses only a
+   * logarithmic number of BDD variables in the number of atomic predicates.
    */
-  private BDD[] _asPathRegexAtomicPredicates;
+  private BDDDomain<Integer> _asPathRegexAtomicPredicates;
 
   // for now we only track the cluster list's length, not its contents;
   // that is all that is needed to support matching on the length
@@ -125,26 +121,38 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * A sequence of AS numbers that is prepended to the original AS-path. The use of a fully concrete
    * value here is sufficient to accurately represent the effects of a single execution path through
    * a route map, since any single path encounters a fixed set of AS-path prepend statements. Hence
-   * this representation is sufficient to support {@link TransferBDD#computePaths(Set)}, which
-   * produces on BDDRoute per execution path. However, this representation precludes the use of a
-   * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
-   * prepend the same exact sequence of ASes to the AS-path.
+   * this representation is sufficient to support {@link TransferBDD#computePaths}, which produces
+   * one BDDRoute per execution path. However, this representation precludes the use of a BDDRoute
+   * to accurately represent the effects of multiple execution paths, unless those paths prepend the
+   * same exact sequence of ASes to the AS-path.
    */
   private @Nonnull List<Long> _prependedASes;
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   /**
-   * Contains a BDD variable for each next-hop interface name that may be encountered along the
-   * path. See {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
+   * Represents the route's optional next-hop interface name. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchInterface}.
    */
-  private final BDD[] _nextHopInterfaces;
+  private final BDDDomain<Integer> _nextHopInterfaces;
 
   /**
-   * Contains a BDD variable for each source VRF that may be encountered along the path. See {@link
+   * Represents the address of the peer in the current BGP session. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchPeerAddress}.
+   */
+  private final BDDDomain<Integer> _peerAddress;
+
+  /**
+   * Represents the optional source VRF from which the route was sent. See {@link
    * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
    */
-  private final BDD[] _sourceVrfs;
+  private final BDDDomain<Integer> _sourceVrfs;
+
+  /**
+   * Represents the optional {@link org.batfish.datamodel.bgp.TunnelEncapsulationAttribute} on the
+   * route.
+   */
+  private @Nonnull BDDTunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
 
   private MutableBDDInteger _tag;
 
@@ -178,8 +186,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
         aps.getNextHopInterfaces().size(),
+        aps.getPeerAddresses().size(),
         aps.getSourceVrfs().size(),
-        aps.getTracks().size());
+        aps.getTracks().size(),
+        aps.getTunnelEncapsulationAttributes());
   }
 
   /**
@@ -194,11 +204,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       int numCommAtomicPredicates,
       int numAsPathRegexAtomicPredicates,
       int numNextHopInterfaces,
+      int numPeerAddresses,
       int numSourceVrfs,
-      int numTracks) {
+      int numTracks,
+      List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
     _factory = factory;
 
-    int bitsToRepresentAdmin = IntMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
+    int bitsToRepresentAdmin =
+        LongMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
     // or else we need to do tricks in the BDDInteger.
     assert LongMath.isPowerOfTwo(1L + AbstractRoute.MAX_ADMIN_DISTANCE);
     int numVars = factory.varNum();
@@ -208,19 +221,33 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + bitsToRepresentAdmin
             + 6
             + numCommAtomicPredicates
-            + numAsPathRegexAtomicPredicates
-            + numNextHopInterfaces
-            + numSourceVrfs
+            + numBits(numAsPathRegexAtomicPredicates)
+            // we track one extra value for the next-hop interfaces and source VRFs, to represent
+            // "none", since these are optional parts of a route
+            + numBits(numNextHopInterfaces + 1)
+            + numBits(numSourceVrfs + 1)
+            // we track one extra value for the peer address to represent the case where the address
+            // is something other than the ones that are specifically matched upon in route policies
+            + numBits(numPeerAddresses + 1)
             + numTracks
-            + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
-            + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
-            + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
+            + BDDTunnelEncapsulationAttribute.numBitsFor(tunnelEncapsulationAttributes)
+            + numBits(OriginType.values().length)
+            + numBits(RoutingProtocol.values().length)
+            + numBits(allMetricTypes.size());
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
     _bitNames = new HashMap<>();
 
     int idx = 0;
+    // Initialize one BDD per community atomic predicate, each of which has a corresponding
+    // BDD variable
+    _communityAtomicPredicates = new BDD[numCommAtomicPredicates];
+    for (int i = 0; i < numCommAtomicPredicates; i++) {
+      _communityAtomicPredicates[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "community atomic predicate " + i);
+      idx++;
+    }
     _protocolHistory =
         new BDDDomain<>(factory, ImmutableList.copyOf(RoutingProtocol.values()), idx);
     int len = _protocolHistory.getInteger().size();
@@ -261,37 +288,42 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
-    // Initialize one BDD per community atomic predicate, each of which has a corresponding
-    // BDD variable
-    _communityAtomicPredicates = new BDD[numCommAtomicPredicates];
-    for (int i = 0; i < numCommAtomicPredicates; i++) {
-      _communityAtomicPredicates[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "community atomic predicate " + i);
-      idx++;
-    }
-    // Initialize one BDD per AS-path regex atomic predicate, each of which has a corresponding
-    // BDD variable
-    _asPathRegexAtomicPredicates = new BDD[numAsPathRegexAtomicPredicates];
-    for (int i = 0; i < numAsPathRegexAtomicPredicates; i++) {
-      _asPathRegexAtomicPredicates[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "AS-path regex atomic predicate " + i);
-      idx++;
-    }
-    // Initialize one BDD per next-hop interface name, each of which has a corresponding BDD
-    // variable
-    _nextHopInterfaces = new BDD[numNextHopInterfaces];
-    for (int i = 0; i < numNextHopInterfaces; i++) {
-      _nextHopInterfaces[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "next-hop interface " + i);
-      idx++;
-    }
-    // Initialize one BDD per source VRF, each of which has a corresponding BDD variable
-    _sourceVrfs = new BDD[numSourceVrfs];
-    for (int i = 0; i < numSourceVrfs; i++) {
-      _sourceVrfs[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "source VRF " + i);
-      idx++;
-    }
+
+    _asPathRegexAtomicPredicates =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(0, numAsPathRegexAtomicPredicates).boxed().collect(Collectors.toList()),
+            idx);
+    len = _asPathRegexAtomicPredicates.getInteger().size();
+    addBitNames("as-path atomic predicates", len, idx, false);
+    idx += len;
+
+    // we use the value -1 below to denote that an optional value is not there, or (in the case of
+    // peer addresses) that the address is something other than one of the ones being tracked
+    _nextHopInterfaces =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(-1, numNextHopInterfaces).boxed().collect(Collectors.toList()),
+            idx);
+    len = _nextHopInterfaces.getInteger().size();
+    addBitNames("next-hop interfaces", len, idx, false);
+    idx += len;
+    _sourceVrfs =
+        new BDDDomain<>(
+            factory, IntStream.range(-1, numSourceVrfs).boxed().collect(Collectors.toList()), idx);
+    len = _sourceVrfs.getInteger().size();
+    addBitNames("source VRFs", len, idx, false);
+    idx += len;
+
+    _peerAddress =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(-1, numPeerAddresses).boxed().collect(Collectors.toList()),
+            idx);
+    len = _peerAddress.getInteger().size();
+    addBitNames("peer address", len, idx, false);
+    idx += len;
+
     // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
     _tracks = new BDD[numTracks];
     for (int i = 0; i < numTracks; i++) {
@@ -299,13 +331,26 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "track " + i);
       idx++;
     }
+
+    // Tunnel encapsulation attribute is an optional singleton
+    _tunnelEncapsulationAttribute =
+        BDDTunnelEncapsulationAttribute.create(factory, idx, tunnelEncapsulationAttributes);
+    len = _tunnelEncapsulationAttribute.getNumBits();
+    addBitNames("tunnel encapsulation attributes", len, idx, false);
+    idx += len;
+
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    idx += len;
+
     _prependedASes = new ArrayList<>();
+
     // Initially there are no unsupported statements encountered
     _unsupported = false;
+
+    assert idx != 0; // unnecessary, but needed to avoid unused comment
   }
 
   /*
@@ -315,7 +360,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDDRoute other) {
     _factory = other._factory;
 
-    _asPathRegexAtomicPredicates = other._asPathRegexAtomicPredicates.clone();
+    _asPathRegexAtomicPredicates = new BDDDomain<>(other._asPathRegexAtomicPredicates);
     _clusterListLength = new MutableBDDInteger(other._clusterListLength);
     _communityAtomicPredicates = other._communityAtomicPredicates.clone();
     _prefixLength = new MutableBDDInteger(other._prefixLength);
@@ -333,9 +378,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList<>(other._prependedASes);
-    _nextHopInterfaces = other._nextHopInterfaces.clone();
-    _sourceVrfs = other._sourceVrfs.clone();
+    _nextHopInterfaces = new BDDDomain<>(other._nextHopInterfaces);
+    _peerAddress = new BDDDomain<>(other._peerAddress);
+    _sourceVrfs = new BDDDomain<>(other._sourceVrfs);
     _tracks = other._tracks.clone();
+    _tunnelEncapsulationAttribute =
+        BDDTunnelEncapsulationAttribute.copyOf(other._tunnelEncapsulationAttribute);
     _unsupported = other._unsupported;
   }
 
@@ -348,20 +396,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDD pred, BDDRoute route) {
     _factory = route._factory;
 
-    // Create fresh arrays for atomic predicates
-    BDD[] asPathAtomicPredicates = new BDD[route._asPathRegexAtomicPredicates.length];
+    // Create a fresh array for community atomic predicates
     BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
-
     // Intersect each atomic predicate with pred.
-    for (int i = 0; i < asPathAtomicPredicates.length; i++) {
-      asPathAtomicPredicates[i] = route._asPathRegexAtomicPredicates[i].and(pred);
-    }
-
     for (int i = 0; i < communityAtomicPredicates.length; i++) {
       communityAtomicPredicates[i] = route._communityAtomicPredicates[i].and(pred);
     }
 
-    _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _asPathRegexAtomicPredicates = new BDDDomain<>(pred, route._asPathRegexAtomicPredicates);
     _clusterListLength = route.getClusterListLength().and(pred);
     _communityAtomicPredicates = communityAtomicPredicates;
     _prefixLength = route._prefixLength.and(pred);
@@ -380,9 +422,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopType = route.getNextHopType();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
-    _nextHopInterfaces = route.getNextHopInterfaces();
-    _sourceVrfs = route.getSourceVrfs();
+    _nextHopInterfaces = new BDDDomain<>(pred, route._nextHopInterfaces);
+    _peerAddress = new BDDDomain<>(pred, route._peerAddress);
+    _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
+    _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
   }
 
   /*
@@ -419,22 +463,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
-  /** Produce a constraint that at most one of the given array of BDDs is true. */
-  private BDD atMostOneOf(BDD[] bdds) {
-    BDD atMostOne = _factory.one();
-    for (int i = 0; i < bdds.length; i++) {
-      for (int j = i + 1; j < bdds.length; j++) {
-        atMostOne.andWith(bdds[i].nand(bdds[j]));
-      }
-    }
-    return atMostOne;
-  }
-
   /**
-   * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
-   * This method produces constraints that well-formed BGP routes must satisfy, represented as a
-   * BDD. It is useful when the goal is to produce concrete example BGP routes from a BDDRoute, for
-   * instance.
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
+   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
+   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
    *
    * <p>Note that it does not suffice to enforce these constraints as part of symbolic route
    * analysis (see {@link TransferBDD}). That analysis computes a BDD representing the input routes
@@ -444,33 +476,67 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * obtaining models would be incorrect, because it would not ensure that the well-formedness
    * constraints hold.
    *
+   * @param onlyBGPRoutes whether to constrain the input routes to be BGP routes
    * @return the constraints
    */
-  public BDD bgpWellFormednessConstraints() {
+  public BDD wellFormednessConstraints(boolean onlyBGPRoutes) {
 
-    // the protocol should be one of the ones allowed in a BgpRoute
-    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
-    // at most one AS-path regex atomic predicate should be true, since by construction their
-    // regexes are all pairwise disjoint
-    // Note: the same constraint does not apply to community regexes because a route has a set
-    // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint = atMostOneOf(_asPathRegexAtomicPredicates);
-    // at most one source VRF should be in the environment
-    BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
-    // at most one next-hop interface name should be selected
-    BDD nextHopInterfaceConstraint = atMostOneOf(_nextHopInterfaces);
+    // The various BDD Domains should all lie in the domain (needed if the domain is not power-of-2
+    // in size).
+    BDD asPathRegexValid = _asPathRegexAtomicPredicates.getIsValidConstraint();
+    BDD nextHopInterfacesValid = _nextHopInterfaces.getIsValidConstraint();
+    BDD originTypeValid = _originType.getIsValidConstraint();
+    BDD ospfMetricValid = _ospfMetric.getIsValidConstraint();
+    BDD protocolConstraint =
+        onlyBGPRoutes ? anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory()) : _factory.one();
+    BDD peerAddressValid = _peerAddress.getIsValidConstraint();
+    BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
+    BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
+    return _factory.andAllAndFree(
+        prefLenConstraint,
+        nextHopConstraint,
+        asPathRegexValid,
+        nextHopInterfacesValid,
+        originTypeValid,
+        ospfMetricValid,
+        protocolConstraint,
+        peerAddressValid,
+        sourceVrfValid,
+        tunnelEncapValid);
+  }
 
-    return protocolConstraint
-        .andWith(prefLenConstraint)
-        .andWith(asPathConstraint)
-        .andWith(sourceVrfConstraint)
-        .andWith(nextHopConstraint)
-        .andWith(nextHopInterfaceConstraint);
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given BDDRoute with this one. The
+   * BDDs in the given BDDRoute should all be variables.
+   *
+   * @param other the BDDRoute of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(BDDRoute other, BDDPairing pairing) {
+    _asPathRegexAtomicPredicates.augmentPairing(other._asPathRegexAtomicPredicates, pairing);
+    _clusterListLength.augmentPairing(other._clusterListLength, pairing);
+    pairing.set(other._communityAtomicPredicates, _communityAtomicPredicates);
+    _prefixLength.augmentPairing(other._prefixLength, pairing);
+    _prefix.augmentPairing(other._prefix, pairing);
+    _nextHop.augmentPairing(other._nextHop, pairing);
+    _adminDist.augmentPairing(other._adminDist, pairing);
+    _med.augmentPairing(other._med, pairing);
+    _tag.augmentPairing(other._tag, pairing);
+    _weight.augmentPairing(other._weight, pairing);
+    _localPref.augmentPairing(other._localPref, pairing);
+    _protocolHistory.augmentPairing(other._protocolHistory, pairing);
+    _originType.augmentPairing(other._originType, pairing);
+    _ospfMetric.augmentPairing(other._ospfMetric, pairing);
+    _nextHopInterfaces.augmentPairing(other._nextHopInterfaces, pairing);
+    _peerAddress.augmentPairing(other._peerAddress, pairing);
+    _sourceVrfs.augmentPairing(other._sourceVrfs, pairing);
+    pairing.set(other._tracks, _tracks);
+    _tunnelEncapsulationAttribute.augmentPairing(other._tunnelEncapsulationAttribute, pairing);
   }
 
   /*
@@ -528,11 +594,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _adminDist = adminDist;
   }
 
-  public BDD[] getAsPathRegexAtomicPredicates() {
+  public BDDDomain<Integer> getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
   }
 
-  public void setAsPathRegexAtomicPredicates(BDD[] asPathRegexAtomicPredicates) {
+  public void setAsPathRegexAtomicPredicates(BDDDomain<Integer> asPathRegexAtomicPredicates) {
     _asPathRegexAtomicPredicates = asPathRegexAtomicPredicates;
   }
 
@@ -640,11 +706,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
-  public BDD[] getNextHopInterfaces() {
+  public void setTunnelEncapsulationAttribute(@Nonnull BDDTunnelEncapsulationAttribute value) {
+    _tunnelEncapsulationAttribute = value;
+  }
+
+  public BDDDomain<Integer> getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
-  public BDD[] getSourceVrfs() {
+  public BDDDomain<Integer> getPeerAddress() {
+    return _peerAddress;
+  }
+
+  public BDDDomain<Integer> getSourceVrfs() {
     return _sourceVrfs;
   }
 
@@ -654,6 +728,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public void setTracks(BDD[] tracks) {
     _tracks = tracks;
+  }
+
+  public @Nonnull BDDTunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+    return _tunnelEncapsulationAttribute;
   }
 
   public MutableBDDInteger getWeight() {
@@ -672,10 +750,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = unsupported;
   }
 
-  // BDDRoutes are mutable so in general the default pointer equality is the right thing to use;
-  // This method is used only to test the results of our symbolic route analysis.
-  @VisibleForTesting
-  boolean equalsForTesting(BDDRoute other) {
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (o == null || !(o instanceof BDDRoute)) {
+      return false;
+    }
+    BDDRoute other = (BDDRoute) o;
     return Objects.equals(_adminDist, other._adminDist)
         && Objects.equals(_ospfMetric, other._ospfMetric)
         && Objects.equals(_originType, other._originType)
@@ -691,11 +773,31 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_prefix, other._prefix)
         && Objects.equals(_prefixLength, other._prefixLength)
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
-        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
+        && Objects.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
-        && Arrays.equals(_nextHopInterfaces, other._nextHopInterfaces)
-        && Arrays.equals(_sourceVrfs, other._sourceVrfs)
+        && Objects.equals(_nextHopInterfaces, other._nextHopInterfaces)
+        && Objects.equals(_peerAddress, other._peerAddress)
+        && Objects.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
+        && _tunnelEncapsulationAttribute.equals(other._tunnelEncapsulationAttribute)
         && Objects.equals(_unsupported, other._unsupported);
+  }
+
+  @Override
+  public int hashCode() {
+    // does not include all fields, but that's okay as hash code doesn't need to be perfect.
+    return Objects.hash(
+        _adminDist,
+        _originType,
+        _med,
+        _localPref,
+        _clusterListLength,
+        _tag,
+        _weight,
+        _nextHop,
+        _prefix,
+        _prefixLength,
+        _asPathRegexAtomicPredicates,
+        _prependedASes);
   }
 }

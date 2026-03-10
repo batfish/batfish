@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,27 +54,6 @@ import org.apache.logging.log4j.Logger;
  */
 public abstract class BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(BDDFactory.class);
-
-  public static final String getProperty(String key, String def) {
-    try {
-      return System.getProperty(key, def);
-    } catch (AccessControlException ignored) {
-      return def;
-    }
-  }
-
-  /**
-   * Initializes a BDD factory with the given initial node table size and operation cache size.
-   * Tries to use the "buddy" native library; if it fails, it falls back to the "java" library.
-   *
-   * @param nodenum initial node table size
-   * @param cachesize operation cache size
-   * @return BDD factory object
-   */
-  public static BDDFactory init(int nodenum, int cachesize) {
-    String bddpackage = getProperty("bdd", "buddy");
-    return init(bddpackage, nodenum, cachesize);
-  }
 
   /**
    * Initializes a BDD factory of the given type with the given initial node table size and
@@ -293,14 +271,6 @@ public abstract class BDDFactory {
   public abstract double setMinFreeNodes(double x);
 
   /**
-   * Set factor by which to increase node table after a garbage collection.
-   *
-   * @param x factor by which to increase node table after GC
-   * @return old value
-   */
-  public abstract double setIncreaseFactor(double x);
-
-  /**
    * Sets the cache ratio for the operator caches. When the node table grows, operator caches will
    * also grow to maintain the ratio.
    *
@@ -402,6 +372,41 @@ public abstract class BDDFactory {
 
   /** Implementation of {@link #orAll(Collection)} and {@link #orAllAndFree(Collection)}. */
   protected abstract BDD orAll(Collection<BDD> bdds, boolean free);
+
+  /**
+   * Returns the condition that exactly one of the given BDDs is true.
+   *
+   * <p>If the inputs are all variables (with {@link BDD#isVar()} true, use {@link
+   * #onehotVars(BDD...)} instead.
+   */
+  public BDD onehot(BDD... bdds) {
+    if (bdds.length == 0) {
+      return zero();
+    }
+
+    // Speculative optimization: sort by decreasing level
+    BDD[] ordered = bdds.clone();
+    Arrays.sort(ordered, (b1, b2) -> b2.level() - b1.level());
+
+    BDD onehot = zero();
+    BDD allFalse = one();
+    for (BDD bdd : ordered) {
+      BDD oldhot = onehot;
+      onehot = bdd.ite(allFalse, onehot);
+      oldhot.free();
+      allFalse.diffEq(bdd);
+    }
+    allFalse.free();
+    return onehot;
+  }
+
+  /**
+   * Returns the condition that exactly one of the given variables is true.
+   *
+   * <p>Precondition: The inputs must have {@link BDD#isVar()} true and levels should be strictly
+   * increasing.
+   */
+  public abstract BDD onehotVars(BDD... variables);
 
   /**
    * Sets the node table size.
@@ -770,15 +775,15 @@ public abstract class BDDFactory {
    * @version $Id: BDDFactory.java,v 1.18 2005/10/12 10:27:08 joewhaley Exp $
    */
   public static class CacheStats {
-    public int uniqueAccess;
-    public int uniqueChain;
-    public int uniqueHit;
-    public int uniqueMiss;
-    public int uniqueTrivial;
-    public int opHit;
-    public int opMiss;
-    public int opOverwrite;
-    public int swapCount;
+    public long uniqueAccess;
+    public long uniqueChain;
+    public long uniqueHit;
+    public long uniqueMiss;
+    public long uniqueTrivial;
+    public long opHit;
+    public long opMiss;
+    public long opOverwrite;
+    public long swapCount;
 
     protected CacheStats() {}
 
@@ -797,7 +802,7 @@ public abstract class BDDFactory {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      String newLine = getProperty("line.separator", "\n");
+      String newLine = System.lineSeparator();
       sb.append(newLine);
       sb.append("Cache statistics");
       sb.append(newLine);

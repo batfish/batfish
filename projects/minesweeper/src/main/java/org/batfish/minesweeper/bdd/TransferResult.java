@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -20,6 +21,14 @@ public class TransferResult {
    * taken; and a boolean indicating whether the path ultimately accepts or rejects the announcement
    */
   private final @Nonnull TransferReturn _returnValue;
+
+  /**
+   * Intermediate BGP attributes are used by the vendor-independent model to properly encode the
+   * semantics of attribute reads and writes of various vendors. See {@link
+   * org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement} for the statements
+   * that pertain to intermediate attributes.
+   */
+  private final @Nonnull BDDRoute _intermediateBgpAttributes;
 
   /**
    * Whether the routes that go down this path should be suppressed (i.e., not announced). Route
@@ -48,24 +57,38 @@ public class TransferResult {
 
   /**
    * Construct a TransferResult from a BDDRoute. By default we use TRUE as the initial path
-   * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement. *
+   * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement.
    */
   public TransferResult(BDDRoute bddRoute) {
-    this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), false);
+    this(bddRoute, bddRoute.getFactory().one());
   }
 
-  public TransferResult(TransferReturn ret, boolean defaultVal) {
-    this(ret, defaultVal, defaultVal, defaultVal, defaultVal);
+  /**
+   * Construct a TransferResult from a BDDRoute with given input route constraints. The given
+   * BDDRoute is used as the output route that the analysis tracks, and a copy of this BDDRoute is
+   * used as the intermediate route that the analysis tracks. This uses FALSE as the initial value
+   * for having hit a return/exit/fallthrough statement.
+   */
+  public TransferResult(BDDRoute bddRoute, BDD inputRouteConstraints) {
+    this(
+        new TransferReturn(bddRoute, inputRouteConstraints, false),
+        bddRoute.deepCopy(),
+        false,
+        false,
+        false,
+        false);
   }
 
   public TransferResult(
       TransferReturn retVal,
+      BDDRoute intermediateBgpAttributes,
       boolean suppressedValue,
       boolean exitAssignedValue,
       boolean fallThroughValue,
       boolean returnAssignedValue) {
     _suppressedValue = suppressedValue;
     _returnValue = retVal;
+    _intermediateBgpAttributes = intermediateBgpAttributes;
     _exitAssignedValue = exitAssignedValue;
     _fallthroughValue = fallThroughValue;
     _returnAssignedValue = returnAssignedValue;
@@ -75,25 +98,44 @@ public class TransferResult {
     return _returnValue;
   }
 
-  public @Nonnull boolean getSuppressedValue() {
+  public @Nonnull BDDRoute getIntermediateBgpAttributes() {
+    return _intermediateBgpAttributes;
+  }
+
+  public boolean getSuppressedValue() {
     return _suppressedValue;
   }
 
-  public @Nonnull boolean getFallthroughValue() {
+  public boolean getFallthroughValue() {
     return _fallthroughValue;
   }
 
-  public @Nonnull boolean getExitAssignedValue() {
+  public boolean getExitAssignedValue() {
     return _exitAssignedValue;
   }
 
-  public @Nonnull boolean getReturnAssignedValue() {
+  public boolean getReturnAssignedValue() {
     return _returnAssignedValue;
   }
 
   public @Nonnull TransferResult setReturnValue(TransferReturn newReturn) {
     return new TransferResult(
-        newReturn, _suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        newReturn,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
+  }
+
+  public @Nonnull TransferResult setIntermediateAttributes(BDDRoute newIntermediateAttributes) {
+    return new TransferResult(
+        _returnValue,
+        newIntermediateAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setReturnValueAccepted(boolean newAccepted) {
@@ -102,31 +144,79 @@ public class TransferResult {
 
   public @Nonnull TransferResult setReturnValueBDD(BDD newBDD) {
     return setReturnValue(
-        new TransferReturn(_returnValue.getFirst(), newBDD, _returnValue.getAccepted()));
+        new TransferReturn(_returnValue.getOutputRoute(), newBDD, _returnValue.getAccepted()));
   }
 
-  public @Nonnull TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
+  public @Nonnull TransferResult setReturnValueOutputRoute(BDDRoute newOutputRoute) {
     return setReturnValue(
-        new TransferReturn(newBDDRoute, _returnValue.getSecond(), _returnValue.getAccepted()));
+        new TransferReturn(
+            newOutputRoute, _returnValue.getInputConstraints(), _returnValue.getAccepted()));
   }
 
   public @Nonnull TransferResult setSuppressedValue(boolean suppressedValue) {
     return new TransferResult(
-        _returnValue, suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setExitAssignedValue(boolean exitAssignedValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setFallthroughValue(boolean fallthroughValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, _exitAssignedValue, fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        returnAssignedValue);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof TransferResult)) {
+      return false;
+    }
+    TransferResult that = (TransferResult) o;
+    return _suppressedValue == that._suppressedValue
+        && _fallthroughValue == that._fallthroughValue
+        && _exitAssignedValue == that._exitAssignedValue
+        && _returnAssignedValue == that._returnAssignedValue
+        && Objects.equals(_returnValue, that._returnValue)
+        && Objects.equals(_intermediateBgpAttributes, that._intermediateBgpAttributes);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _fallthroughValue,
+        _exitAssignedValue,
+        _returnAssignedValue);
   }
 }

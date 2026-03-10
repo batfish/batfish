@@ -1,0 +1,20 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname bgp-redistribute
+
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.5 comment "unit 5"
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.5 ip 1.1.1.3/24
+set network virtual-router vr1 interface ethernet1/3.5
+
+set network virtual-router vr1 protocol redist-profile rdp1 filter type connect
+set network virtual-router vr1 protocol redist-profile rdp1 filter type static
+set network virtual-router vr1 protocol redist-profile rdp1 priority 1
+set network virtual-router vr1 protocol redist-profile rdp1 action redist
+
+set network virtual-router vr1 protocol bgp enable yes
+set network virtual-router vr1 protocol bgp router-id 12.12.12.12
+set network virtual-router vr1 protocol bgp local-as 12
+
+set network virtual-router vr1 protocol bgp redist-rules rdp1 address-family-identifier ipv4
+set network virtual-router vr1 protocol bgp redist-rules rdp1 route-table unicast
+set network virtual-router vr1 protocol bgp redist-rules rdp1 enable yes
+set network virtual-router vr1 protocol bgp redist-rules rdp1 set-origin igp

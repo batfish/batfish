@@ -65,9 +65,8 @@ final class VpcEndpointInterface extends VpcEndpoint {
 
     Subnet subnet = region.getSubnets().get(subnetId);
     if (subnet == null) {
-      warnings.redFlag(
-          String.format(
-              "Subnet with id %s, associated with VPC endpoint %s, not found", subnetId, _id));
+      warnings.redFlagf(
+          "Subnet with id %s, associated with VPC endpoint %s, not found", subnetId, _id);
       return cfgNode;
     }
 
@@ -80,9 +79,8 @@ final class VpcEndpointInterface extends VpcEndpoint {
                         && iface.getSubnetId().equals(subnetId))
             .findFirst();
     if (!networkInterface.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "Network interface not found for VPC endpoint %s in subnet %s", _id, subnetId));
+      warnings.redFlagf(
+          "Network interface not found for VPC endpoint %s in subnet %s", _id, subnetId);
       return cfgNode;
     }
 

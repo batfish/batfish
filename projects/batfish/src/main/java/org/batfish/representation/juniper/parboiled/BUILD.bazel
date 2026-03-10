@@ -1,8 +1,9 @@
-load("@rules_java//java:defs.bzl", "java_library")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
 
 package(default_visibility = [
     "//projects/batfish/src/main/java/org/batfish/representation/juniper:__subpackages__",
+    "//projects/batfish/src/test/java/org/batfish/representation/juniper/parboiled:__subpackages__",
 ])
 
 java_library(
@@ -12,7 +13,7 @@ java_library(
         "GroupWildcard.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_github_ben_manes_caffeine_caffeine",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

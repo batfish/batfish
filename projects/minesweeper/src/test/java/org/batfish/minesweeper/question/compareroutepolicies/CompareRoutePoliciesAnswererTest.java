@@ -45,7 +45,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopConcrete;
@@ -85,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -385,6 +385,45 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new SetTag(new LiteralLong(1)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_TAG, "0", "1")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that setting the tag to the default value is still found as a difference. */
+  @Test
+  public void testSetTagDefault() {
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(new SetTag(new LiteralLong(0)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -720,12 +759,12 @@ public class CompareRoutePoliciesAnswererTest {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
-            .addStatement(new SetAdministrativeCost(new LiteralInt(20)))
+            .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(20)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
         _policyBuilderBase
-            .addStatement(new SetAdministrativeCost(new LiteralInt(10)))
+            .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
@@ -1036,18 +1075,14 @@ public class CompareRoutePoliciesAnswererTest {
         _policyBuilderDelta
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("10.0.0.0/24"), new SubRange(32, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("10.0.0.0/24:32-32"))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy_new =
         _policyBuilderBase
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("10.0.0.0/24"), new SubRange(16, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("10.0.0.0/24:16-32"))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
@@ -1301,6 +1336,53 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /**
+   * Test that there are no differences found even when one route map has more paths than the other,
+   * due to the input conditions under which each path is traversed.
+   */
+  @Test
+  public void testNoDifferencesMultiplePaths() {
+    Community comm = StandardCommunity.parse("1:1");
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(
+                        new SetCommunities(
+                            CommunitySetUnion.of(
+                                InputCommunities.instance(),
+                                new LiteralCommunitySet(CommunitySet.of(comm)))),
+                        new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(comm)))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    assertThat(answer.getRows().getData(), Matchers.empty());
   }
 
   /** Tests multiple differences in set values. */

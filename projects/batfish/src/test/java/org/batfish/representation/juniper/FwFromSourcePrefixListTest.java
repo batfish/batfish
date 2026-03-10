@@ -6,10 +6,9 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,18 +36,14 @@ public class FwFromSourcePrefixListTest {
     FwFromSourcePrefixList fwFrom = new FwFromSourcePrefixList(BASE_PREFIX_LIST_NAME);
 
     // Apply base IP prefix to headerSpace with null IpSpace
-    assertEquals(
-        fwFrom.toHeaderSpace(_jc, _w),
-        HeaderSpace.builder().setSrcIps(BASE_IP_PREFIX.toIpSpace()).build());
+    assertEquals(fwFrom.toIpSpace(_jc, _w), BASE_IP_PREFIX.toIpSpace());
   }
 
   @Test
   public void testToHeaderSpace_notExist() {
     FwFromSourcePrefixList fwFrom = new FwFromSourcePrefixList("noName");
 
-    assertEquals(
-        fwFrom.toHeaderSpace(_jc, _w),
-        HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
+    assertEquals(fwFrom.toIpSpace(_jc, _w), EmptyIpSpace.INSTANCE);
   }
 
   @Test
@@ -57,8 +52,7 @@ public class FwFromSourcePrefixListTest {
 
     assertEquals(
         fwFrom.toAclLineMatchExpr(_jc, _c, _w),
-        new MatchHeaderSpace(
-            fwFrom.toHeaderSpace(_jc, _w),
-            TraceElement.of("Matched source-prefix-list prefixList")));
+        AclLineMatchExprs.matchSrc(
+            fwFrom.toIpSpace(_jc, _w), TraceElement.of("Matched source-prefix-list prefixList")));
   }
 }

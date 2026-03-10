@@ -5,6 +5,10 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROUPS;
@@ -14,12 +18,12 @@ import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
 import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +41,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -45,6 +50,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.IpPermissions.AddressType;
@@ -61,28 +67,25 @@ public class SecurityGroupsTest {
   private Warnings _warnings;
 
   public static String TEST_ACL = "test_acl";
-  private static final MatchHeaderSpace matchIp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build(),
+  private static final AclLineMatchExpr matchIp =
+      matchSrc(
+          Ip.parse("1.2.3.4").toIpSpace(),
           traceElementForAddress("source", "1.2.3.4/32", AddressType.CIDR_IP));
 
-  private static final MatchHeaderSpace matchUniverse =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(UniverseIpSpace.INSTANCE).build(),
+  private static final AclLineMatchExpr matchUniverse =
+      matchSrc(
+          UniverseIpSpace.INSTANCE,
           traceElementForAddress("source", "0.0.0.0/0", AddressType.CIDR_IP));
 
-  private static final MatchHeaderSpace matchTcp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
+  private static final AclLineMatchExpr matchTcp =
+      matchIpProtocol(TCP, traceElementForProtocol(TCP));
 
-  private static final MatchHeaderSpace matchIcmp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(ICMP).build(), traceElementForProtocol(ICMP));
+  private static final AclLineMatchExpr matchIcmp =
+      matchIpProtocol(ICMP, traceElementForProtocol(ICMP));
 
-  private static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
-        traceElementForDstPorts(fromPort, toPort));
+  private static AclLineMatchExpr matchPorts(int fromPort, int toPort) {
+    return matchDstPort(
+        IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
   @Before
@@ -362,10 +365,8 @@ public class SecurityGroupsTest {
                     ImmutableList.of(
                         matchTcp,
                         matchPorts(80, 80),
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstIps(Ip.parse("5.6.7.8").toIpSpace())
-                                .build(),
+                        matchDst(
+                            Ip.parse("5.6.7.8").toIpSpace(),
                             traceElementForAddress(
                                 "destination", "5.6.7.8/32", AddressType.CIDR_IP))),
                     getTraceElementForRule(outRangeDesc)))));
@@ -505,10 +506,8 @@ public class SecurityGroupsTest {
                             ImmutableList.of(
                                 matchTcp,
                                 matchPorts(22, 22),
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(Prefix.parse("2.2.2.0/24").toIpSpace())
-                                        .build(),
+                                matchSrc(
+                                    Prefix.parse("2.2.2.0/24").toIpSpace(),
                                     traceElementForAddress(
                                         "source", "2.2.2.0/24", AddressType.CIDR_IP))),
                             getTraceElementForRule(rangeDesc)))

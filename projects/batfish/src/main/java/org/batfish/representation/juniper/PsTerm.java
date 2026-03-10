@@ -1,8 +1,6 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -10,28 +8,38 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class PsTerm implements Serializable {
 
   private final @Nonnull PsFroms _froms;
+  private final @Nonnull PsTos _tos;
   private final @Nonnull String _name;
-  private final @Nonnull Set<PsThen> _thens;
+  private final @Nonnull PsThens _thens;
 
   public PsTerm(String name) {
     _froms = new PsFroms();
+    _tos = new PsTos();
     _name = name;
-    _thens = new LinkedHashSet<>();
+    _thens = new PsThens();
   }
 
   public @Nonnull PsFroms getFroms() {
     return _froms;
   }
 
+  public @Nonnull PsTos getTos() {
+    return _tos;
+  }
+
   public @Nonnull String getName() {
     return _name;
   }
 
-  public @Nonnull Set<PsThen> getThens() {
+  public @Nonnull PsThens getThens() {
     return _thens;
   }
 
   public boolean hasAtLeastOneFrom() {
     return _froms.hasAtLeastOneFrom();
+  }
+
+  public boolean hasAtLeastOneTo() {
+    return _tos.hasAtLeastOneTo();
   }
 }

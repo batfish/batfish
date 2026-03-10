@@ -1,0 +1,44 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:java_library.bzl", "java_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "recovery_testlib",
+    srcs = [
+        "NonRecoveryCombinedParser.java",
+        "RecoveryCombinedParser.java",
+        "RecoveryExtractor.java",
+    ],
+    deps = [
+        "//projects/common:parser_common",
+        "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+pmd_test(
+    name = "recovery_testlib_pmd",
+    lib = ":recovery_testlib",
+)
+
+junit_tests(
+    name = "tests",
+    srcs = glob(["*Test.java"]),
+    resources = ["//projects/common/src/test/resources/org/batfish/grammar/recovery"],
+    deps = [
+        ":recovery_testlib",
+        "//projects/common:common_lib",
+        "//projects/common:common_testlib",
+        "//projects/common:parser_common",
+        "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

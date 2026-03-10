@@ -2,6 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
@@ -28,9 +29,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
 
@@ -73,7 +72,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
                         HeaderSpace.builder().setIcmpCodes(code).build(),
                         icmpCodeTraceElement(code))));
 
-    return new AndMatchExpr(exprs.build(), serviceIcmpTraceElement(serviceIcmp));
+    return and(exprs.build(), serviceIcmpTraceElement(serviceIcmp));
   }
 
   @Override
@@ -101,11 +100,8 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
     return and(
         serviceTcpTraceElement(serviceTcp),
         matchIpProtocol(IpProtocol.TCP, ipProtocolTraceElement(IpProtocol.TCP)),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
-                .build(),
-            destPortTraceElement(portDefinition)));
+        matchDstPort(
+            portStringToIntegerSpace(portDefinition), destPortTraceElement(portDefinition)));
   }
 
   @Override
@@ -114,11 +110,8 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
     return and(
         serviceUdpTraceElement(serviceUdp),
         matchIpProtocol(IpProtocol.UDP, ipProtocolTraceElement(IpProtocol.UDP)),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
-                .build(),
-            destPortTraceElement(portDefinition)));
+        matchDstPort(
+            portStringToIntegerSpace(portDefinition), destPortTraceElement(portDefinition)));
   }
 
   @VisibleForTesting
@@ -166,7 +159,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
         descendantObjExprs.add(FalseExpr.INSTANCE);
       }
     }
-    return AclLineMatchExprs.or(serviceGroupTraceElement(group), descendantObjExprs);
+    return AclLineMatchExprs.or(descendantObjExprs, serviceGroupTraceElement(group));
   }
 
   /** Convert an entire CheckPoint port string to an {@link IntegerSpace}. */

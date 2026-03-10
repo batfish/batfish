@@ -21,10 +21,10 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
 
   @JsonCreator
   private static BgpSessionStatusQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
-      @Nullable @JsonProperty(PROP_STATUS) String status,
-      @Nullable @JsonProperty(PROP_TYPE) String type) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_REMOTE_NODES) @Nullable String remoteNodes,
+      @JsonProperty(PROP_STATUS) @Nullable String status,
+      @JsonProperty(PROP_TYPE) @Nullable String type) {
     return new BgpSessionStatusQuestion(nodes, remoteNodes, status, type);
   }
 

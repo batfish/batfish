@@ -1,7 +1,7 @@
 package org.batfish.representation.frr;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -9,7 +9,6 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
@@ -30,10 +29,8 @@ public class RouteMapSetCommunityTest {
             ImmutableList.of(
                 new SetCommunities(
                     CommunitySetUnion.of(
-                        new CommunitySetExpr[] {
-                          new CommunitySetDifference(
-                              InputCommunities.instance(), AllStandardCommunities.instance()),
-                          new LiteralCommunitySet(CommunitySet.of(communities))
-                        })))));
+                        new CommunitySetDifference(
+                            InputCommunities.instance(), AllStandardCommunities.instance()),
+                        new LiteralCommunitySet(CommunitySet.of(communities)))))));
   }
 }

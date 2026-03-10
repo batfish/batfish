@@ -63,15 +63,11 @@ public final class NodeColoredSchedule extends IbdpSchedule {
   private static VertexColoringAlgorithm<String> getColoringAlgorithmInstance(
       Coloring type, Graph<String, DefaultEdge> graph) {
     AsUndirectedGraph<String, DefaultEdge> g = new AsUndirectedGraph<>(graph);
-    switch (type) {
-      case GREEDY:
-        return new GreedyColoring<>(g);
-      case RANDOM:
-        return new RandomGreedyColoring<>(g);
-      case SATURATION:
-      default:
-        return new SaturationDegreeColoring<>(g);
-    }
+    return switch (type) {
+      case GREEDY -> new GreedyColoring<>(g);
+      case RANDOM -> new RandomGreedyColoring<>(g);
+      case SATURATION -> new SaturationDegreeColoring<>(g);
+    };
   }
 
   /**

@@ -21,9 +21,8 @@ public class RouteMapSetMetric implements RouteMapSet {
     return _metric;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     return Stream.of(new SetMetric(_metric));
   }
 }

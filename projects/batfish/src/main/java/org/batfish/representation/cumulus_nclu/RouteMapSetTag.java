@@ -20,9 +20,9 @@ public class RouteMapSetTag implements RouteMapSet {
     return _tag;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(
+      Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     return Stream.of(new SetTag(new LiteralLong(_tag)));
   }
 }

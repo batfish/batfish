@@ -18,6 +18,7 @@ import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
@@ -33,7 +34,7 @@ public class SessionScopeFibLookupSessionEdgesTest {
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
   private static final Interface IFACE =
-      Interface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
+      TestInterface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
 
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _one = _pkt.getFactory().one();

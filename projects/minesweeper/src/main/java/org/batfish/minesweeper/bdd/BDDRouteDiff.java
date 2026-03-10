@@ -19,6 +19,7 @@ public final class BDDRouteDiff {
     NEXTHOP_SET,
     TAG,
     ADMIN_DIST,
+    TUNNEL_ENCAPSULATION_ATTRIBUTE,
     WEIGHT,
     UNSUPPORTED
   }
@@ -56,6 +57,9 @@ public final class BDDRouteDiff {
     }
     if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
       result.add(DifferenceType.ADMIN_DIST);
+    }
+    if (!r1.getTunnelEncapsulationAttribute().equals(r2.getTunnelEncapsulationAttribute())) {
+      result.add(DifferenceType.TUNNEL_ENCAPSULATION_ATTRIBUTE);
     }
     if (!Objects.equals(r1.getWeight(), r2.getWeight())) {
       result.add(DifferenceType.WEIGHT);

@@ -1,5 +1,5 @@
 ####BATFISH FLATTENED JUNIPER CONFIG####
 set system host-name replace_flat_mix
 set policy-options policy-statement PS term TERM then local-preference 10
-delete policy-options policy-statement PS
+replace policy-options policy-statement PS
 set policy-options policy-statement PS term TERM then metric 20

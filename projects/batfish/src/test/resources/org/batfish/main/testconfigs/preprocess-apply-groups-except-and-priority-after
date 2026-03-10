@@ -1,0 +1,15 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set system host-name preprocess-apply-groups-except-and-priority
+set interfaces ae1 apply-groups INCLUDE1
+set interfaces ae1 apply-groups INCLUDE2
+set interfaces ae1 apply-groups EXCLUDE1
+set interfaces ae1 apply-groups EXCLUDE2
+set interfaces ae1 unit 0 apply-groups-except EXCLUDE1
+set interfaces ae1 unit 0 apply-groups-except EXCLUDE2
+set interfaces ae1 unit 0 apply-groups-except family inet filter input-list apply-groups-except EXCLUDE3
+set interfaces ae1 unit 0 family inet filter input-list i1
+set interfaces ae1 unit 0 family inet filter input-list i2
+set interfaces ae1 unit 0 family inet filter input-list i3
+set interfaces ae1 unit 0 family inet address 1.1.1.1/31
+set apply-groups INCLUDE3
+set apply-groups EXCEPT3

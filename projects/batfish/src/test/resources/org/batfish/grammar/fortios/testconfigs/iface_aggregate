@@ -1,0 +1,41 @@
+# https://github.com/batfish/batfish/issues/6995
+config system global
+    set hostname "iface_aggregate"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set type physical
+        set snmp-index 1
+    next
+    edit "port2"
+        set vdom "root"
+        set type physical
+        set snmp-index 2
+    next
+    edit "port3"
+        set vdom "root"
+        set type physical
+        set snmp-index 3
+    next
+    edit "Uplink"
+        set vdom "root"
+        set type aggregate
+        set member "port1" "port2"
+        set description "Uplink to DC switches"
+        set snmp-index 4
+    next
+    edit "redundant1"
+        set vdom "root"
+        set type redundant
+        set member "port3"
+        set snmp-index 5
+    next
+    edit "test_wan_vlan"
+        set vdom "test"
+        set ip 10.10.1.1 255.255.255.0
+        set snmp-index 6
+        set interface "Uplink"
+        set vlanid 10
+    next
+end

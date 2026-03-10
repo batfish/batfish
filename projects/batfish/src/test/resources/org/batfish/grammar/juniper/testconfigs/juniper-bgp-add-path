@@ -9,7 +9,12 @@ set routing-options router-id 10.0.0.254
 # Common BGP settings
 set protocols bgp family inet unicast add-path receive
 set protocols bgp family inet unicast add-path send
+set protocols bgp family inet unicast add-path send multipath
 set protocols bgp family inet unicast add-path send path-count 2
+set protocols bgp family inet6 unicast add-path receive
+set protocols bgp family inet6 unicast add-path send
+set protocols bgp family inet6 unicast add-path send multipath
+set protocols bgp family inet6 unicast add-path send path-count 2
 
 # BGP group g1
 set protocols bgp group g1 family inet unicast add-path send multipath

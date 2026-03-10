@@ -1,5 +1,5 @@
-load("@rules_java//java:defs.bzl", "java_plugin")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@rules_java//java:defs.bzl", "java_plugin")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,10 +11,20 @@ java_plugin(
     ],
 )
 
+java_plugin(
+    name = "auto_value_plugin",
+    generates_api = 1,
+    processor_class = "com.google.auto.value.processor.AutoValueProcessor",
+    deps = [
+        "@maven//:com_google_auto_value_auto_value",
+    ],
+)
+
 buildifier(
     name = "buildifier.check",
     exclude_patterns = [
         "./.git/*",
+        "./.bazelbsp/*",
     ],
     lint_mode = "warn",
     mode = "diff",
@@ -24,6 +34,7 @@ buildifier(
     name = "buildifier.fix",
     exclude_patterns = [
         "./.git/*",
+        "./.bazelbsp/*",
     ],
     lint_mode = "fix",
     mode = "fix",

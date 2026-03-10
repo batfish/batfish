@@ -217,21 +217,18 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return rule;
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 
@@ -253,15 +250,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       return Ip.parse(endpoint.IP_ADDRESS().getText());
     } else if (endpoint.IP_PREFIX() != null) {
       return Prefix.parse(endpoint.IP_PREFIX().getText());
-    } else if (endpoint.IPV6_ADDRESS() != null) {
-      todo(endpoint);
-    } else if (endpoint.IPV6_PREFIX() != null) {
-      todo(endpoint);
-    } else if (endpoint.name != null) {
-      todo(endpoint);
-    } else {
-      todo(endpoint);
     }
+    todo(endpoint);
     return null;
   }
 

@@ -1,0 +1,17 @@
+set system host-name junos-order-sensitive-replace-before
+set policy-options policy-statement PS term T1 then reject
+set policy-options policy-statement PS term T2 then accept
+set policy-options policy-statement PS term T3 then reject
+set policy-options policy-statement PS term T4 then accept
+# Now replace T3, it should keep its order.
+policy-options {
+    policy-statement PS {
+        replace: term T3 {
+            from community C1;
+            then {
+                metric 5;
+                accept;
+            }
+        }
+    }
+}

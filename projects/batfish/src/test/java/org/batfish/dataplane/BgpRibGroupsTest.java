@@ -3,9 +3,9 @@ package org.batfish.dataplane;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_BGP_ADMIN_DISTANCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -36,7 +36,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -105,7 +105,7 @@ public class BgpRibGroupsTest {
                 new If(
                     new MatchProtocol(RoutingProtocol.BGP),
                     ImmutableList.of(
-                        new SetAdministrativeCost(new LiteralInt(ADMIN_OVERWRITE)),
+                        new SetAdministrativeCost(new LiteralAdministrativeCost(ADMIN_OVERWRITE)),
                         Statements.ReturnTrue.toStaticStatement()))))
         .setOwner(c1)
         .build();
@@ -273,7 +273,7 @@ public class BgpRibGroupsTest {
 
     // Only 2.2.2.0/24 in VRF2
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibsForTesting().get("r1").get(VRF_2).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(VRF_2).getRoutes();
     assertThat(vrf2Routes, hasSize(1));
     assertThat(
         vrf2Routes,
@@ -296,7 +296,7 @@ public class BgpRibGroupsTest {
 
     // 3.3.3.0/24 as expected in default VRF
     Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
-        dp.getRibsForTesting().get("r1").get(Configuration.DEFAULT_VRF_NAME).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         defaultVrfRoutes,
         hasItem(

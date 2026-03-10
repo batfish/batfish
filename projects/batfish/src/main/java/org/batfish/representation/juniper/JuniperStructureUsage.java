@@ -16,16 +16,93 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_NEIGHBOR("bgp group neighbor"),
   BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self ref"),
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_FORWARDING_CLASS(
+      "class-of-service classifiers dscp forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_CODE_POINTS("class-of-service classifiers dscp code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_FORWARDING_CLASS(
+      "class-of-service classifiers dscp-ipv6 forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_CODE_POINTS(
+      "class-of-service classifiers dscp-ipv6 code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS(
+      "class-of-service classifiers exp forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_EXP_CODE_POINTS("class-of-service classifiers exp code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS(
+      "class-of-service classifiers ieee-802.1 forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_CODE_POINTS(
+      "class-of-service classifiers ieee-802.1 code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_FORWARDING_CLASS(
+      "class-of-service classifiers inet-precedence forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_CODE_POINTS(
+      "class-of-service classifiers inet-precedence code-points"),
+  CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS(
+      "class-of-service host-outbound-traffic forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS("class-of-service interfaces forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP("class-of-service interfaces scheduler-map"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP(
+      "class-of-service interfaces unit classifiers dscp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6(
+      "class-of-service interfaces unit classifiers dscp-ipv6"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_EXP(
+      "class-of-service interfaces unit classifiers exp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_IEEE_802_1(
+      "class-of-service interfaces unit classifiers ieee-802.1"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_INET_PRECEDENCE(
+      "class-of-service interfaces unit classifiers inet-precedence"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_FORWARDING_CLASS(
+      "class-of-service interfaces unit forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP(
+      "class-of-service interfaces unit rewrite-rules dscp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP_IPV6(
+      "class-of-service interfaces unit rewrite-rules dscp-ipv6"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_EXP(
+      "class-of-service interfaces unit rewrite-rules exp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_IEEE_802_1(
+      "class-of-service interfaces unit rewrite-rules ieee-802.1"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_INET_PRECEDENCE(
+      "class-of-service interfaces unit rewrite-rules inet-precedence"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_FORWARDING_CLASS(
+      "class-of-service rewrite-rules dscp forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_CODE_POINT("class-of-service rewrite-rules dscp code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_FORWARDING_CLASS(
+      "class-of-service rewrite-rules dscp-ipv6 forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_CODE_POINT(
+      "class-of-service rewrite-rules dscp-ipv6 code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS(
+      "class-of-service rewrite-rules exp forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_CODE_POINT("class-of-service rewrite-rules exp code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS(
+      "class-of-service rewrite-rules ieee-802.1 forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT(
+      "class-of-service rewrite-rules ieee-802.1 code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_FORWARDING_CLASS(
+      "class-of-service rewrite-rules inet-precedence forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_CODE_POINT(
+      "class-of-service rewrite-rules inet-precedence code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_SELF_REFERENCE(
+      "class-of-service rewrite-rules dscp self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_SELF_REFERENCE(
+      "class-of-service rewrite-rules dscp-ipv6 self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_SELF_REFERENCE(
+      "class-of-service rewrite-rules exp self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_SELF_REFERENCE(
+      "class-of-service rewrite-rules ieee-802.1 self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_SELF_REFERENCE(
+      "class-of-service rewrite-rules inet-precedence self reference"),
+  CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS(
+      "class-of-service scheduler-maps forwarding-class"),
+  CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER("class-of-service scheduler-maps scheduler"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
   FIREWALL_FILTER_DSCP("firewall filter dscp"),
+  FIREWALL_FILTER_FROM_SOURCE_CLASS("firewall filter from source-class"),
   FIREWALL_FILTER_PREFIX_LIST("firewall filter prefix-list"),
   FIREWALL_FILTER_SOURCE_PREFIX_LIST("firewall filter source prefix-list"),
   FIREWALL_FILTER_TERM_DEFINITION("firewall filter term"),
   FIREWALL_FILTER_TERM_FROM_INTERFACE("firewall filter term from interface"),
   FIREWALL_FILTER_TERM_FROM_INTERFACE_SET("firewall filter term from interface-set"),
+  FIREWALL_FILTER_THEN_POLICER("firewall filter then policer"),
   FIREWALL_FILTER_THEN_ROUTING_INSTANCE("firewall filter then routing-instance"),
   FIREWALL_INTERFACE_SET_MEMBER("firewall interface-set"),
   FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE("fowarding-options dhcp-relay group interface"),
@@ -47,8 +124,19 @@ public enum JuniperStructureUsage implements StructureUsage {
   IPSEC_VPN_IKE_GATEWAY("ipsec vpn ike gateway"),
   IPSEC_VPN_IPSEC_POLICY("ipsec vpn ipsec policy"),
   ISIS_EXPORT_POLICY("isis export"),
+  ISIS_IMPORT_POLICY("isis import"),
   ISIS_INTERFACE("isis interface"),
-  NAT_DESTINATINATION_RULE_SET_RULE_THEN("nat destination rule-set rule then pool"),
+  MPLS_INTERFACE_ADMIN_GROUP("mpls interface admin-group"),
+  MPLS_INTERFACE_SRLG("mpls interface srlg"),
+  MPLS_LSP_ADMIN_GROUP_EXCLUDE("mpls lsp admin-group exclude"),
+  MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL("mpls lsp admin-group include-all"),
+  MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY("mpls lsp admin-group include-any"),
+  MPLS_LSP_PRIMARY_PATH("mpls lsp primary path"),
+  MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE("mpls lsp secondary admin-group exclude"),
+  MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL("mpls lsp secondary admin-group include-all"),
+  MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY("mpls lsp secondary admin-group include-any"),
+  MPLS_LSP_SECONDARY_PATH("mpls lsp secondary path"),
+  NAT_DESTINATION_RULE_SET_RULE_THEN("nat destination rule-set rule then pool"),
   NAT_RULE_SET_FROM_INTERFACE("nat rule-set rule from interface"),
   NAT_RULE_SET_FROM_ROUTING_INSTANCE("nat rule-set rule from routing-instance"),
   NAT_RULE_SET_TO_INTERFACE("nat rule-set rule to interface"),
@@ -56,6 +144,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   NAT_SOURCE_RULE_SET_RULE_THEN("nat source rule-set rule then pool"),
   NAT_STATIC_RULE_SET_RULE_THEN("nat static rule-set rule then pool"),
   NTP_SERVER_ROUTING_INSTANCE("ntp server routing-instance"),
+  NTP_SOURCE_ADDRESS_ROUTING_INSTANCE("ntp source-address routing-instance"),
   OSPF_AREA_INTERFACE("ospf area interface"),
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
   POLICY_STATEMENT_FROM_AS_PATH("policy-statement from as-path"),
@@ -67,6 +156,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_POLICY("policy-statement policy"),
   POLICY_STATEMENT_PREFIX_LIST("policy-statement prefix-list"),
   POLICY_STATEMENT_PREFIX_LIST_FILTER("policy-statement prefix-list-filter"),
+  POLICY_STATEMENT_RTF_PREFIX_LIST("policy-statement rtf-prefix-list"),
   POLICY_STATEMENT_TERM_DEFINITION("policy-statement term"),
   POLICY_STATEMENT_THEN_ADD_COMMUNITY("policy-statement then add community"),
   POLICY_STATEMENT_THEN_DELETE_COMMUNITY("policy-statement then delete community"),
@@ -88,6 +178,8 @@ public enum JuniperStructureUsage implements StructureUsage {
   SNMP_COMMUNITY_CLIENT_LIST_NAME("snmp community client-list-name"),
   SNMP_COMMUNITY_ROUTING_INSTANCE("snmp community routing-instance"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
+  SYSLOG_HOST_ROUTING_INSTANCE("syslog host routing-instance"),
+  TACPLUS_SERVER_ROUTING_INSTANCE("tacplus-server routing-instance"),
   VLAN_INTERFACE("vlan interface"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");

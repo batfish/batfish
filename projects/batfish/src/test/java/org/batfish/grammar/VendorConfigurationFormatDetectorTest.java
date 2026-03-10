@@ -19,12 +19,13 @@ import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.datamodel.ConfigurationFormat.UNSUPPORTED;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,7 +36,11 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testA10() {
     String fileText =
-        "!\n" + "!version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)\n" + "hostname foo\n";
+        """
+        !
+        !version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)
+        hostname foo
+        """;
     assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
   }
 
@@ -200,6 +205,12 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
+  public void testIpTablesFalsePositives() {
+    String fileText = StringUtils.join("set system host-name test", "set FORWARD INPUT OUTPUT");
+    assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
+  }
+
+  @Test
   public void testJuniper() {
 
     /* Confirm hierarchical configs are correctly identified */
@@ -207,6 +218,10 @@ public class VendorConfigurationFormatDetectorTest {
         ImmutableList.of(
             "firewall {\n}\n",
             "policy-options {\n}\n",
+            "routing-instances {\n}\n",
+            "groups {\n}\n",
+            "apply-groups foo;\ninterfaces {\n}\n",
+            "replace: system {\n}\n",
             "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",

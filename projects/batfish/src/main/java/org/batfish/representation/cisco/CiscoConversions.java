@@ -9,6 +9,9 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
@@ -52,7 +55,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -89,7 +91,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -743,24 +744,20 @@ public class CiscoConversions {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
     if (isakmpProfile.getLocalInterfaceName().equals(INVALID_LOCAL_INTERFACE)) {
-      w.redFlag(
-          String.format(
-              "Invalid local address interface configured for ISAKMP profile %s",
-              isakmpProfileName));
+      w.redFlagf(
+          "Invalid local address interface configured for ISAKMP profile %s", isakmpProfileName);
     } else if (isakmpProfile.getKeyring() == null) {
       w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
-      w.redFlag(
-          String.format(
-              "Cannot find keyring %s for ISAKMP profile %s",
-              isakmpProfile.getKeyring(), isakmpProfileName));
+      w.redFlagf(
+          "Cannot find keyring %s for ISAKMP profile %s",
+          isakmpProfile.getKeyring(), isakmpProfileName);
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
       if (tempIkePhase1Key.getLocalInterface().equals(INVALID_LOCAL_INTERFACE)) {
-        w.redFlag(
-            String.format(
-                "Invalid local address interface configured for keyring %s",
-                isakmpProfile.getKeyring()));
+        w.redFlagf(
+            "Invalid local address interface configured for keyring %s",
+            isakmpProfile.getKeyring());
       } else if (tempIkePhase1Key.match(
           isakmpProfile.getLocalInterfaceName(), isakmpProfile.getMatchIdentity())) {
         // found a matching keyring
@@ -888,10 +885,9 @@ public class CiscoConversions {
       Warnings w) {
     Ip localAddress = tunnel.getSourceAddress();
     if (localAddress == null || !localAddress.valid()) {
-      w.redFlag(
-          String.format(
-              "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
-              tunnelIfaceName));
+      w.redFlagf(
+          "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
+          tunnelIfaceName);
       return Optional.empty();
     }
 
@@ -945,10 +941,9 @@ public class CiscoConversions {
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
       if (iface.getConcreteAddress() == null) {
-        w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
+        w.redFlagf(
+            "Interface %s with declared crypto-map %s has no ip-address",
+            iface.getName(), cryptoMapName);
         continue;
       }
       // add one IPSec peer config per interface for the crypto map entry
@@ -971,9 +966,8 @@ public class CiscoConversions {
             .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
     if (localAddress == null || !localAddress.valid()) {
-      w.redFlag(
-          String.format(
-              "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName()));
+      w.redFlagf(
+          "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName());
       return Optional.empty();
     }
 
@@ -1027,10 +1021,9 @@ public class CiscoConversions {
           ipsecPeerConfigBuilder.setPolicyAccessList(symmetricCryptoAcl);
         } else {
           // log a warning if the ACL was not made symmetrical successfully
-          w.redFlag(
-              String.format(
-                  "Cannot process the Access List for crypto map %s:%s",
-                  cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
+          w.redFlagf(
+              "Cannot process the Access List for crypto map %s:%s",
+              cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
         }
       }
     }
@@ -1238,10 +1231,9 @@ public class CiscoConversions {
       if (otherAsn == null) {
         oldConfig
             .getWarnings()
-            .redFlag(
-                String.format(
-                    "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
-                    protocol, proc.getAsn()));
+            .redFlagf(
+                "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
+                protocol, proc.getAsn());
         return null;
       }
       eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
@@ -1279,10 +1271,8 @@ public class CiscoConversions {
        */
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "Unable to redistribute %s into EIGRP proc %s - no metric",
-                  protocol, proc.getAsn()));
+          .redFlagf(
+              "Unable to redistribute %s into EIGRP proc %s - no metric", protocol, proc.getAsn());
       return null;
     }
 
@@ -1315,18 +1305,12 @@ public class CiscoConversions {
     newProcess.setNetAddress(proc.getNetAddress());
     IsisLevelSettings settings = IsisLevelSettings.builder().build();
     switch (proc.getLevel()) {
-      case LEVEL_1:
-        newProcess.setLevel1(settings);
-        break;
-      case LEVEL_1_2:
+      case LEVEL_1 -> newProcess.setLevel1(settings);
+      case LEVEL_2 -> newProcess.setLevel2(settings);
+      case LEVEL_1_2 -> {
         newProcess.setLevel1(settings);
         newProcess.setLevel2(settings);
-        break;
-      case LEVEL_2:
-        newProcess.setLevel2(settings);
-        break;
-      default:
-        throw new BatfishException("Unhandled IS-IS level.");
+      }
     }
     return newProcess.build();
   }
@@ -1385,21 +1369,19 @@ public class CiscoConversions {
       // only prefix-lists are supported in distribute-list
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
-                      + " supported in dist-lists by Batfish",
-                  vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
+          .redFlagf(
+              "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
+                  + " supported in dist-lists by Batfish",
+              vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType());
       return false;
     } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
       // if referred prefix-list is not defined, all prefixes will be allowed
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
-                      + " dist-list will allow everything",
-                  vrfName, ospfProcessId));
+          .redFlagf(
+              "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
+                  + " dist-list will allow everything",
+              vrfName, ospfProcessId);
       return false;
     }
     return true;
@@ -1473,11 +1455,10 @@ public class CiscoConversions {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
       OspfInterfaceSettings ospfSettings = iface.getOspfSettings();
       if (ospfSettings == null) {
-        w.redFlag(
-            String.format(
-                "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
-                    + " configured for OSPF.",
-                ifaceName, iface.getName()));
+        w.redFlagf(
+            "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
+                + " configured for OSPF.",
+            ifaceName, iface.getName());
       } else {
         ospfSettings.setInboundDistributeListPolicy(policyName);
       }
@@ -1547,10 +1528,9 @@ public class CiscoConversions {
         && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
       vsConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
-                  distributeList.getFilterName()));
+          .redFlagf(
+              "Extended access lists are not supported in EIGRP distribute-lists: %s",
+              distributeList.getFilterName());
       return false;
     } else {
       if (distributeList.getFilterType() == DistributeListFilterType.ROUTE_MAP) {
@@ -1558,11 +1538,10 @@ public class CiscoConversions {
           // if referred route-map is not defined, all prefixes will be allowed
           vsConfig
               .getWarnings()
-              .redFlag(
-                  String.format(
-                      "distribute-list refers an undefined route-map `%s`, it will not filter"
-                          + " anything",
-                      distributeList.getFilterName()));
+              .redFlagf(
+                  "distribute-list refers an undefined route-map `%s`, it will not filter"
+                      + " anything",
+                  distributeList.getFilterName());
           return false;
         }
       } else {
@@ -1570,11 +1549,10 @@ public class CiscoConversions {
           // if referred access-list is not defined, all prefixes will be allowed
           vsConfig
               .getWarnings()
-              .redFlag(
-                  String.format(
-                      "distribute-list refers an undefined access-list `%s`, it will not filter"
-                          + " anything",
-                      distributeList.getFilterName()));
+              .redFlagf(
+                  "distribute-list refers an undefined access-list `%s`, it will not filter"
+                      + " anything",
+                  distributeList.getFilterName());
           return false;
         }
       }
@@ -1617,12 +1595,7 @@ public class CiscoConversions {
                       .setDstIps(dstIpSpace)
                       .build());
     } else {
-      match =
-          new AndMatchExpr(
-              ImmutableList.of(
-                  matchService,
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder().setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build())));
+      match = and(matchService, matchSrc(srcIpSpace), matchDst(dstIpSpace));
     }
 
     return ExprAclLine.builder()
@@ -1725,9 +1698,8 @@ public class CiscoConversions {
       case POINT_TO_MULTIPOINT:
         return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
-        warnings.redFlag(
-            String.format(
-                "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
+        warnings.redFlagf(
+            "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString());
         return null;
     }
   }
@@ -2001,6 +1973,7 @@ public class CiscoConversions {
     private final @Nonnull Configuration _c;
 
     @Override
+    @SuppressWarnings("PMD.IdenticalConditionalBranches")
     public TrackMethod visitTrackInterface(TrackInterface trackInterface) {
       if (!_interfaceExists.test(trackInterface.getInterfaceName())) {
         return alwaysFalse();

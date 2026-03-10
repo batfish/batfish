@@ -115,6 +115,7 @@ import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_PREFIX;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_RANGE;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.REFERENCE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -140,7 +141,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -1088,6 +1088,38 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testBgpRedistributeConversion() {
+    Configuration c = parseConfig("bgp-redistribute");
+
+    // test process level common export policy
+    String bgpCommonExportPolicyName = "~BGP_COMMON_EXPORT_POLICY:vr1~";
+    RoutingPolicy bgpCommonExportPolicy = c.getRoutingPolicies().get(bgpCommonExportPolicyName);
+
+    {
+      org.batfish.datamodel.StaticRoute.Builder srb =
+          org.batfish.datamodel.StaticRoute.testBuilder()
+              .setNetwork(Prefix.parse("1.1.1.0/24"))
+              .setAdmin(5)
+              .setMetric(10L);
+
+      Bgpv4Route.Builder bgpBuilder = Bgpv4Route.testBuilder();
+      boolean accepted = bgpCommonExportPolicy.process(srb.build(), bgpBuilder, Direction.OUT);
+      assertTrue(accepted);
+    }
+
+    {
+      ConnectedRoute connectedRoute =
+          ConnectedRoute.builder()
+              .setNetwork(Prefix.parse("1.1.1.0/24"))
+              .setNextHopInterface("iface")
+              .build();
+      Bgpv4Route.Builder bgpBuilder = Bgpv4Route.testBuilder();
+      boolean accepted = bgpCommonExportPolicy.process(connectedRoute, bgpBuilder, Direction.OUT);
+      assertTrue(accepted);
+    }
+  }
+
+  @Test
   public void testOspfExtraction() {
     PaloAltoConfiguration c = parsePaloAltoConfig("ospf");
     VirtualRouter vr = c.getVirtualRouters().get("vr1");
@@ -1134,7 +1166,7 @@ public final class PaloAltoGrammarTest {
     OspfInterface ospfIface = ospfArea.getInterfaces().get(ifaceName);
     assertThat(ospfIface.getEnable(), equalTo(Boolean.FALSE));
     assertThat(ospfIface.getPassive(), equalTo(Boolean.FALSE));
-    assertThat(ospfIface.getMetric(), equalTo(10));
+    assertThat(ospfIface.getMetric(), nullValue());
     assertThat(ospfIface.getPriority(), equalTo(1));
     assertThat(ospfIface.getHelloInterval(), equalTo(10));
     assertThat(ospfIface.getDeadCounts(), equalTo(4));
@@ -1185,7 +1217,7 @@ public final class PaloAltoGrammarTest {
         equalTo(
             OspfInterfaceSettings.builder()
                 .setAreaName(1L)
-                .setCost(14)
+                .setCost(5001)
                 .setDeadInterval(8 * 15)
                 .setEnabled(true)
                 .setHelloInterval(15)
@@ -1279,6 +1311,13 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasHostname(equalTo(hostname)));
     // Confirm general config set-line extraction works
     assertThat(c.getLoggingServers(), contains("2.2.2.2"));
+  }
+
+  /** See: https://github.com/batfish/batfish/issues/8876 */
+  @Test
+  public void testGh8876() throws IOException {
+    parseConfig("gh-8876");
+    // Don't crash
   }
 
   @Test
@@ -2661,7 +2700,7 @@ public final class PaloAltoGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     // Confirm static route shows up with correct extractions
-    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123L))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(12L))))));
     assertThat(
         c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopIp(equalTo(Ip.parse("1.1.1.1")))))));
@@ -2770,7 +2809,7 @@ public final class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm static route shows up with correct defaults
-    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10L))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(10L))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.strict("0.0.0.0/0"))))));
   }

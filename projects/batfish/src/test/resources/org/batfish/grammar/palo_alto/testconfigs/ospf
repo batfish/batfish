@@ -21,7 +21,7 @@ set network virtual-router vr1 protocol ospf area 0.0.0.3 type nssa accept-summa
 # putting ethernet1/3.4 in area 0.0.0.1
 set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 enable yes
 set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 passive yes
-set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 metric 14
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 metric 5001
 set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 priority 2
 set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 hello-interval 15
 set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 dead-counts 8
@@ -35,7 +35,7 @@ set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.
 # putting ethernet1/3.5 in area 0.0.0.3
 set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 enable no
 set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 passive no
-set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 metric 10
+# default metric
 set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 priority 1
 set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 hello-interval 10
 set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 dead-counts 4

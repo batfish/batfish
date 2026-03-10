@@ -69,7 +69,7 @@ public abstract class BDD implements Serializable {
   public abstract BDDFactory getFactory();
 
   /**
-   * Returns true if this BDD is a satsifiable assignment.
+   * Returns true if this BDD is a satisfiable assignment.
    *
    * <p>A BDD is an assignment if there is exactly a single path to the {@link BDDFactory#one()}
    * BDD.
@@ -78,6 +78,9 @@ public abstract class BDD implements Serializable {
    * variable. See {@link #satOne()} and {@link #fullSatOne()}.
    */
   public abstract boolean isAssignment();
+
+  /** Returns true if this BDD is either the zero (false) or the one (true) BDD. */
+  public abstract boolean isConstant();
 
   /**
    * Returns true if this BDD is the zero (false) BDD.
@@ -92,6 +95,25 @@ public abstract class BDD implements Serializable {
    * @return true if this BDD is the one (true) BDD
    */
   public abstract boolean isOne();
+
+  /**
+   * Returns true if this BDD corresponds to a variable. That is, it tests a single bit with {@link
+   * #high()} one and {@link #low()} zero.
+   */
+  public abstract boolean isVar();
+
+  /**
+   * Returns true if this BDD corresponds to zero or more variables {@link #and(BDD) ANDed}
+   * together.
+   */
+  public abstract boolean isAnd();
+
+  /**
+   * Returns true if this BDD corresponds to zero or more variables {@link #nor(BDD) NORed}
+   * together. Expressed differently, this BDD is zero or more negated variables ({@link
+   * BDDFactory#nithVar(int)}) {@link #and(BDD) ANDed} together.
+   */
+  public abstract boolean isNor();
 
   /**
    * Gets the variable labeling the BDD.
@@ -484,6 +506,18 @@ public abstract class BDD implements Serializable {
    * @return the result of the if-then-else operator on the three BDDs
    */
   public abstract BDD ite(BDD thenBDD, BDD elseBDD);
+
+  /**
+   * Makes this BDD be the if-then-else of three BDDs. The {@code thenBDD} and {@code elseBDD}
+   * parameters are consumed, and can no longer be used.
+   *
+   * <p>Compare to bdd_ite and bdd_delref.
+   *
+   * @param thenBDD the 'then' BDD
+   * @param elseBDD the 'else' BDD
+   * @return the result of the if-then-else operator on the three BDDs
+   */
+  public abstract BDD iteWith(BDD thenBDD, BDD elseBDD);
 
   /**
    * Returns the logical 'less-than' of two BDDs, equivalent to {@code this.not().and(that)}. This

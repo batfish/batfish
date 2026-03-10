@@ -14,3 +14,8 @@ filegroup(
     name = "hybrid-cloud-aws",
     srcs = glob(["hybrid-cloud-aws/**"]),
 )
+
+filegroup(
+    name = "cloud-azure",
+    srcs = glob(["cloud-azure/**"]),
+)

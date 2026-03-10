@@ -84,7 +84,6 @@
         "configs/cisco_platform" : "CISCO_IOS",
         "configs/cisco_privilege" : "CISCO_IOS",
         "configs/cisco_qos" : "CISCO_IOS",
-        "configs/cisco_queue_monitor" : "CISCO_IOS",
         "configs/cisco_redundancy" : "CISCO_IOS",
         "configs/cisco_rip" : "CISCO_IOS",
         "configs/cisco_role" : "CISCO_IOS",
@@ -143,6 +142,7 @@
         "configs/if_tag_is" : "CISCO_IOS_XR",
         "configs/interface_exit" : "CISCO_IOS",
         "configs/interface_sdr" : "CISCO_IOS",
+        "configs/ios-xe/ios-crypto-keyword-names" : "CISCO_IOS",
         "configs/ios-xe/ios-xe-bgp-vrf" : "CISCO_IOS",
         "configs/ios_banner" : "CISCO_IOS",
         "configs/ios_banner_dos" : "CISCO_IOS",
@@ -532,9 +532,6 @@
         "cisco_qos" : [
           "configs/cisco_qos"
         ],
-        "cisco_queue_monitor" : [
-          "configs/cisco_queue_monitor"
-        ],
         "cisco_redundancy" : [
           "configs/cisco_redundancy"
         ],
@@ -715,6 +712,9 @@
         ],
         "interfacemtu" : [
           "configs/juniper-interfaces"
+        ],
+        "ios-crypto-keyword-names" : [
+          "configs/ios-xe/ios-crypto-keyword-names"
         ],
         "ios-xe-bgp-vrf" : [
           "configs/ios-xe/ios-xe-bgp-vrf"
@@ -1171,7 +1171,6 @@
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",
         "configs/cisco_qos" : "PASSED",
-        "configs/cisco_queue_monitor" : "PASSED",
         "configs/cisco_redundancy" : "PASSED",
         "configs/cisco_rip" : "PASSED",
         "configs/cisco_role" : "PASSED",
@@ -1230,6 +1229,7 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios-xe/ios-crypto-keyword-names" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",
@@ -2839,12 +2839,12 @@
             "          ip = IP_ADDRESS:'0.0.0.0')",
             "        NEWLINE:'\\n')))",
             "  (stanza*",
-            "    (s_null*",
-            "      (null_single*",
-            "        ACCESS_LIST:'access-list'",
-            "        (variable_aclname*",
-            "          OUTSIDE:'outside')",
-            "        REMARK:'remark'",
+            "    (remark_access_list_stanza*",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname*",
+            "        OUTSIDE:'outside')",
+            "      REMARK:'remark'",
+            "      (null_rest_of_line*",
             "        M_REMARK_REMARK:' some-remark with multiple words and 1 or 2 numbers'  <== mode:M_REMARK",
             "        NEWLINE:'\\n'  <== mode:M_REMARK)))",
             "  (stanza*",
@@ -8121,7 +8121,7 @@
             "          (cqer_null*",
             "            MONITORING_BASICS:'monitoring-basics'",
             "            (null_rest_of_line*",
-            "              VARIABLE:'legacy'",
+            "              LEGACY:'legacy'",
             "              VARIABLE:'docsis11'",
             "              NEWLINE:'\\n'))",
             "          (cqer_null*",
@@ -15702,14 +15702,6 @@
             "                DIALER:'dialer'",
             "                NEWLINE:'\\n'))))",
             "        (if_inner*",
-            "          (if_null_block*",
-            "            QUEUE_MONITOR:'queue-monitor'",
-            "            LENGTH:'length'",
-            "            VARIABLE:'thresholds'",
-            "            UINT8:'12'",
-            "            UINT8:'1'",
-            "            NEWLINE:'\\n'))",
-            "        (if_inner*",
             "          (if_null_single*",
             "            REDUNDANCY:'redundancy'",
             "            VARIABLE:'rii'",
@@ -20116,7 +20108,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Traffic'",
             "          VARIABLE:'rate'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLFilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20173,7 +20165,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Interface'",
             "          VARIABLE:'Tunnel9'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLfilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20181,7 +20173,7 @@
             "          VARIABLE:'shutdown.'",
             "          VARIABLE:'It'",
             "          VARIABLE:'needs'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'be'",
             "          VARIABLE:'manually'",
             "          VARIABLE:'unshut.'",
@@ -20199,7 +20191,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Tunnel9\\'",
             "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLfilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20207,7 +20199,7 @@
             "          VARIABLE:'shutdown.'",
             "          VARIABLE:'It'",
             "          VARIABLE:'needs'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'be'",
             "          VARIABLE:'manually'",
             "          VARIABLE:'unshut.'",
@@ -21191,7 +21183,7 @@
             "          UINT8:'7'",
             "          UINT8:'8'",
             "          UINT8:'9'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          PRIORITY:'priority'",
             "          UINT8:'0'",
             "          VARIABLE:'drop-precedence'",
@@ -21209,7 +21201,7 @@
             "          UINT8:'3'",
             "          UINT8:'4'",
             "          UINT8:'7'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          PRIORITY:'priority'",
             "          UINT8:'0'",
             "          NEWLINE:'\\n'))))",
@@ -21327,7 +21319,7 @@
             "            UINT8:'0'",
             "            COLON:':'",
             "            DEC:'00'",
-            "            VARIABLE:'to'",
+            "            TO:'to'",
             "            UINT8:'23'",
             "            COLON:':'",
             "            UINT8:'59'",
@@ -24756,7 +24748,7 @@
             "            UINT8:'20')",
             "          AUTHENTICATE:'authenticate'",
             "          (null_rest_of_line*",
-            "            VARIABLE:'using'",
+            "            USING:'using'",
             "            DOT1X:'dot1x'",
             "            PRIORITY:'priority'",
             "            UINT8:'10'",
@@ -24764,8 +24756,8 @@
             "      (pm_event*",
             "        EVENT:'event'",
             "        (null_rest_of_line*",
-            "          VARIABLE:'authentication-failure'",
-            "          VARIABLE:'match-first'",
+            "          AUTHENTICATION_FAILURE:'authentication-failure'",
+            "          MATCH_FIRST:'match-first'",
             "          NEWLINE:'\\n')",
             "        (pm_event_class",
             "          (dec*",
@@ -24812,7 +24804,7 @@
             "            UINT8:'40')",
             "          AUTHENTICATE:'authenticate'",
             "          (null_rest_of_line*",
-            "            VARIABLE:'using'",
+            "            USING:'using'",
             "            MAB:'mab'",
             "            PRIORITY:'priority'",
             "            UINT8:'10'",
@@ -24908,7 +24900,7 @@
             "          UINT8:'10'",
             "          COMMA:','",
             "          UINT8:'12'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'14'",
             "          NEWLINE:'\\n'))",
             "      (table_map_null*",
@@ -24916,65 +24908,8 @@
             "        (null_rest_of_line*",
             "          FROM:'from'",
             "          UINT8:'0'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'8'",
-            "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/cisco_queue_monitor" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza*",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_queue_monitor'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'global-buffer'",
-            "          VARIABLE:'thresholds'",
-            "          UINT16:'16384'",
-            "          UINT16:'512'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'global-buffer'",
-            "          LOG:'log'",
-            "          UINT8:'60'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          LOG:'log'",
-            "          UINT8:'60'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'update-interval'",
-            "          UINT32:'5000000'",
             "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
@@ -25458,7 +25393,7 @@
             "      (rm_stanza*",
             "        (match_rm_stanza*",
             "          MATCH:'match'",
-            "          (match_ip_route_source_rm_stanza*",
+            "          (match_ip_route_source_rm_stanza",
             "            IP:'ip'",
             "            ROUTE_SOURCE:'route-source'",
             "            src = (dec*",
@@ -28425,104 +28360,108 @@
             "      VARIABLE:'cisco_vlan'",
             "      NEWLINE:'\\n'))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_no*",
             "      NO:'no'",
-            "      VLAN:'vlan'",
-            "      (dec*",
-            "        UINT8:'1')",
-            "      (null_rest_of_line*",
-            "        NEWLINE:'\\n')))",
+            "      (no_vlan*",
+            "        VLAN:'vlan'",
+            "        (no_vlan_numbered*",
+            "          (dec*",
+            "            UINT8:'1')",
+            "          (null_rest_of_line*",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_vlan*",
             "      VLAN:'vlan'",
-            "      (dec*",
-            "        UINT8:'2')",
-            "      (null_rest_of_line*",
-            "        NEWLINE:'\\n')",
-            "      (vlan_null*",
-            "        NAME:'name'",
+            "      (vlan_numbered*",
+            "        (dec*",
+            "          UINT8:'2')",
             "        (null_rest_of_line*",
-            "          VARIABLE:'myfavoritevlan'  <== mode:M_Name",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TRUNK:'trunk'",
-            "        (null_rest_of_line*",
-            "          GROUP:'group'",
-            "          VARIABLE:'elephants'",
-            "          NEWLINE:'\\n'))))",
+            "          NEWLINE:'\\n')",
+            "        (vlan_null*",
+            "          NAME:'name'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'myfavoritevlan'  <== mode:M_Name",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TRUNK:'trunk'",
+            "          (null_rest_of_line*",
+            "            GROUP:'group'",
+            "            VARIABLE:'elephants'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_vlan*",
             "      VLAN:'vlan'",
-            "      (dec*",
-            "        UINT16:'396')",
-            "      (null_rest_of_line*",
-            "        NAME:'name'",
-            "        VARIABLE:'grgrgrgrgr'  <== mode:M_Name",
-            "        NEWLINE:'\\n')",
-            "      (vlan_null*",
-            "        MTU:'mtu'",
+            "      (vlan_numbered*",
+            "        (dec*",
+            "          UINT16:'396')",
             "        (null_rest_of_line*",
-            "          UINT16:'5000'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TAGGED:'tagged'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'ethe'",
-            "          UINT8:'1'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'2'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TB_VLAN1:'tb-vlan1'",
-            "        (null_rest_of_line*",
-            "          UINT16:'1002'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TB_VLAN2:'tb-vlan2'",
-            "        (null_rest_of_line*",
-            "          UINT16:'1003'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        STATE:'state'",
-            "        (null_rest_of_line*",
-            "          ACTIVE:'active'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        PRIORITY:'priority'",
-            "        (null_rest_of_line*",
-            "          UINT8:'2'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        BRIDGE:'bridge'",
-            "        (null_rest_of_line*",
-            "          UINT8:'1'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        STP:'stp'",
-            "        (null_rest_of_line*",
-            "          TYPE:'type'",
-            "          VARIABLE:'ieee'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        PRIORITY:'priority'",
-            "        (null_rest_of_line*",
-            "          FORCE:'force'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        ROUTER_INTERFACE:'router-interface'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'ve'",
-            "          UINT16:'396'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        SHUTDOWN:'shutdown'",
-            "        (null_rest_of_line*",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        NO:'no'",
-            "        SPANNING_TREE:'spanning-tree'",
-            "        (null_rest_of_line*",
-            "          NEWLINE:'\\n'))))",
+            "          NAME:'name'",
+            "          VARIABLE:'grgrgrgrgr'  <== mode:M_Name",
+            "          NEWLINE:'\\n')",
+            "        (vlan_null*",
+            "          MTU:'mtu'",
+            "          (null_rest_of_line*",
+            "            UINT16:'5000'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TAGGED:'tagged'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'ethe'",
+            "            UINT8:'1'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'2'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TB_VLAN1:'tb-vlan1'",
+            "          (null_rest_of_line*",
+            "            UINT16:'1002'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TB_VLAN2:'tb-vlan2'",
+            "          (null_rest_of_line*",
+            "            UINT16:'1003'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          STATE:'state'",
+            "          (null_rest_of_line*",
+            "            ACTIVE:'active'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          PRIORITY:'priority'",
+            "          (null_rest_of_line*",
+            "            UINT8:'2'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          BRIDGE:'bridge'",
+            "          (null_rest_of_line*",
+            "            UINT8:'1'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          STP:'stp'",
+            "          (null_rest_of_line*",
+            "            TYPE:'type'",
+            "            VARIABLE:'ieee'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          PRIORITY:'priority'",
+            "          (null_rest_of_line*",
+            "            FORCE:'force'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          ROUTER_INTERFACE:'router-interface'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'ve'",
+            "            UINT16:'396'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          SHUTDOWN:'shutdown'",
+            "          (null_rest_of_line*",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          NO:'no'",
+            "          SPANNING_TREE:'spanning-tree'",
+            "          (null_rest_of_line*",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_block*",
@@ -28543,90 +28482,91 @@
             "          NATIVE:'native'",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_vlan*",
             "      VLAN:'vlan'",
-            "      (dec*",
-            "        UINT16:'1054')",
-            "      (null_rest_of_line*",
-            "        NAME:'name'",
-            "        VARIABLE:'fuiwehguiowhgoiuw'  <== mode:M_Name",
-            "        NEWLINE:'\\n')",
-            "      (vlan_null*",
-            "        NAME:'name'",
+            "      (vlan_numbered*",
+            "        (dec*",
+            "          UINT16:'1054')",
             "        (null_rest_of_line*",
-            "          VARIABLE:'SysEng.Fusion'  <== mode:M_Name",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        BACKUPCRF:'backupcrf'",
-            "        (null_rest_of_line*",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        MEDIA:'media'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'fddi'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        PARENT:'parent'",
-            "        (null_rest_of_line*",
-            "          UINT16:'1005'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        PRIVATE_VLAN:'private-vlan'",
-            "        (null_rest_of_line*",
-            "          COMMUNITY:'community'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        REMOTE_SPAN:'remote-span'",
-            "        (null_rest_of_line*",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TAGGED:'tagged'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'ethe'",
-            "          UINT8:'5'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'1'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        TAGGED:'tagged'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'ethe'",
-            "          UINT8:'15'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'2'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        NO:'no'",
-            "        UNTAGGED:'untagged'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'e'",
-            "          UINT8:'1'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'1'",
-            "          VARIABLE:'e'",
-            "          UINT8:'5'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'2'",
-            "          VARIABLE:'to'",
-            "          UINT8:'5'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'7'",
-            "          VARIABLE:'e'",
-            "          UINT8:'6'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'1'",
-            "          VARIABLE:'to'",
-            "          UINT8:'6'",
-            "          FORWARD_SLASH:'/'",
-            "          UINT8:'2'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        NO:'no'",
-            "        MULTICAST:'multicast'",
-            "        (null_rest_of_line*",
-            "          PASSIVE:'passive'",
-            "          NEWLINE:'\\n'))))",
+            "          NAME:'name'",
+            "          VARIABLE:'fuiwehguiowhgoiuw'  <== mode:M_Name",
+            "          NEWLINE:'\\n')",
+            "        (vlan_null*",
+            "          NAME:'name'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'SysEng.Fusion'  <== mode:M_Name",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          BACKUPCRF:'backupcrf'",
+            "          (null_rest_of_line*",
+            "            ENABLE:'enable'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          MEDIA:'media'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'fddi'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          PARENT:'parent'",
+            "          (null_rest_of_line*",
+            "            UINT16:'1005'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          PRIVATE_VLAN:'private-vlan'",
+            "          (null_rest_of_line*",
+            "            COMMUNITY:'community'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          REMOTE_SPAN:'remote-span'",
+            "          (null_rest_of_line*",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TAGGED:'tagged'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'ethe'",
+            "            UINT8:'5'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'1'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          TAGGED:'tagged'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'ethe'",
+            "            UINT8:'15'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'2'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          NO:'no'",
+            "          UNTAGGED:'untagged'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'e'",
+            "            UINT8:'1'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'1'",
+            "            VARIABLE:'e'",
+            "            UINT8:'5'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'2'",
+            "            TO:'to'",
+            "            UINT8:'5'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'7'",
+            "            VARIABLE:'e'",
+            "            UINT8:'6'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'1'",
+            "            TO:'to'",
+            "            UINT8:'6'",
+            "            FORWARD_SLASH:'/'",
+            "            UINT8:'2'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          NO:'no'",
+            "          MULTICAST:'multicast'",
+            "          (null_rest_of_line*",
+            "            PASSIVE:'passive'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_block*",
@@ -28634,41 +28574,43 @@
             "        (null_rest_of_line*",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_vlan*",
             "      VLAN:'vlan'",
-            "      ACCESS_MAP:'access-map'",
-            "      (null_rest_of_line*",
-            "        VARIABLE:'aaaaaaaaaaaaaa'",
-            "        NEWLINE:'\\n')",
-            "      (vlan_null*",
-            "        MATCH:'match'",
+            "      (vlan_access_map*",
+            "        ACCESS_MAP:'access-map'",
             "        (null_rest_of_line*",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          VARIABLE:'bbbbbbbbbbb'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        ACTION:'action'",
-            "        (null_rest_of_line*",
-            "          FORWARD:'forward'",
-            "          NEWLINE:'\\n'))",
-            "      (vlan_null*",
-            "        STATISTICS:'statistics'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'per-entry'",
-            "          NEWLINE:'\\n'))))",
+            "          VARIABLE:'aaaaaaaaaaaaaa'",
+            "          NEWLINE:'\\n')",
+            "        (vlan_null*",
+            "          MATCH:'match'",
+            "          (null_rest_of_line*",
+            "            IP:'ip'",
+            "            ADDRESS:'address'",
+            "            VARIABLE:'bbbbbbbbbbb'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          ACTION:'action'",
+            "          (null_rest_of_line*",
+            "            FORWARD:'forward'",
+            "            NEWLINE:'\\n'))",
+            "        (vlan_null*",
+            "          STATISTICS:'statistics'",
+            "          (null_rest_of_line*",
+            "            VARIABLE:'per-entry'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
-            "    (s_vlan_cisco*",
+            "    (s_vlan*",
             "      VLAN:'vlan'",
-            "      (dec*",
-            "        UINT8:'10')",
-            "      (null_rest_of_line*",
-            "        NEWLINE:'\\n')",
-            "      (vlan_vn_segment*",
-            "        VN_SEGMENT:'vn-segment'",
-            "        vni = (dec*",
-            "          UINT16:'10010')",
-            "        NEWLINE:'\\n')))",
+            "      (vlan_numbered*",
+            "        (dec*",
+            "          UINT8:'10')",
+            "        (null_rest_of_line*",
+            "          NEWLINE:'\\n')",
+            "        (vlan_vn_segment*",
+            "          VN_SEGMENT:'vn-segment'",
+            "          vni = (dec*",
+            "            UINT16:'10010')",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -28789,7 +28731,7 @@
             "        (null_rest_of_line*",
             "          VARIABLE:'1'  <== mode:M_Alias",
             "          UINT16:'5003'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT16:'5002'",
             "          NEWLINE:'\\n'))",
             "      (cmf_null*",
@@ -29316,14 +29258,14 @@
             "            ALLOW_CONNECTIONS:'allow-connections'",
             "            (null_rest_of_line*",
             "              H323:'h323'",
-            "              VARIABLE:'to'",
+            "              TO:'to'",
             "              H323:'h323'",
             "              NEWLINE:'\\n'))",
             "          (voice_service_voip_null*",
             "            ALLOW_CONNECTIONS:'allow-connections'",
             "            (null_rest_of_line*",
             "              SIP:'sip'",
-            "              VARIABLE:'to'",
+            "              TO:'to'",
             "              SIP:'sip'",
             "              NEWLINE:'\\n'))",
             "          (voice_service_voip_null*",
@@ -40344,9 +40286,8 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_linetype",
-            "                linetype = (line_type*",
-            "                  SSH:'ssh')))))))",
+            "              (syserv_ssh",
+            "                SSH:'ssh'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -40357,7 +40298,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                NETCONF:'netconf'",
             "                (null_filler*",
             "                  SSH:'ssh')))))))",
@@ -40693,7 +40634,7 @@
             "            ROUTING_OPTIONS:'routing-options'",
             "            (ro_static",
             "              STATIC:'static'",
-            "              (ros_route",
+            "              (ros_route4",
             "                ROUTE:'route'",
             "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.40.40.0/24')",
@@ -42263,6 +42204,125 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios-xe/ios-crypto-keyword-names" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza*",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios-crypto-keyword-names'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            POLICY:'policy')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            PROFILE:'profile')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            DEFAULT:'default')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            POLICY:'policy')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              VARIABLE:'selfsigned'",
+            "              NEWLINE:'\\n'))",
+            "          (cpkit_null*",
+            "            REVOCATION_CHECK:'revocation-check'",
+            "            (null_rest_of_line*",
+            "              NONE:'none'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            PROFILE:'profile')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              URL:'url'",
+            "              HTTP:'http'",
+            "              COLON:':'",
+            "              VARIABLE:'//pki.example.com'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            DEFAULT:'default')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              VARIABLE:'selfsigned'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_interface*",
+            "      INTERFACE:'interface'",
+            "      (s_interface_definition",
+            "        iname = (interface_name*",
+            "          name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "          DEC:'0'  <== mode:M_Interface",
+            "          FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "          (range*",
+            "            (subrange*",
+            "              low = (dec*",
+            "                DEC:'0'  <== mode:M_Interface))))",
+            "        NEWLINE:'\\n'  <== mode:M_Interface",
+            "        (if_inner*",
+            "          (if_ip_address",
+            "            IP:'ip'",
+            "            ADDRESS:'address'",
+            "            ip = IP_ADDRESS:'10.0.0.1'",
+            "            subnet = IP_ADDRESS:'255.255.255.0'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza*",
+            "    (s_null*",
+            "      (null_single*",
+            "        END:'end'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios-xe/ios-xe-bgp-vrf" : {
           "sentences" : [
             "(cisco_configuration",
@@ -43269,7 +43329,7 @@
             "      (template_null*",
             "        ACCESS_SESSION:'access-session'",
             "        (null_rest_of_line*",
-            "          VARIABLE:'port-control'",
+            "          PORT_CONTROL:'port-control'",
             "          AUTO:'auto'",
             "          NEWLINE:'\\n'))",
             "      (template_null*",
@@ -43541,21 +43601,24 @@
             "        ACCESS_LIST:'access-list'",
             "        name = (access_list_name*",
             "          WORD:'DENY_ALL'  <== mode:M_Word)",
-            "        NEWLINE:'\\n'",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'5')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            IPV4:'ipv4')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ICMP_OFF:'icmp-off')",
-            "          NEWLINE:'\\n'))))",
+            "        (ipv4_access_list_block*",
+            "          NEWLINE:'\\n'",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'5'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                IPV4:'ipv4')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ICMP_OFF:'icmp-off'))",
+            "            NEWLINE:'\\n')))))",
             "  (statement*",
             "    (s_ipv4*",
             "      IPV4:'ipv4'",
@@ -43563,623 +43626,712 @@
             "        ACCESS_LIST:'access-list'",
             "        name = (access_list_name*",
             "          WORD:'ICMP'  <== mode:M_Word)",
-            "        NEWLINE:'\\n'",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'10')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ADMINISTRATIVELY_PROHIBITED:'administratively-prohibited')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'20')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ALTERNATE_ADDRESS:'alternate-address')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'30')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            CONVERSION_ERROR:'conversion-error')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'40')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            DOD_HOST_PROHIBITED:'dod-host-prohibited')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'50')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            DOD_NET_PROHIBITED:'dod-net-prohibited')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'60')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ECHO:'echo')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'70')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ECHO_REPLY:'echo-reply')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'80')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            GENERAL_PARAMETER_PROBLEM:'general-parameter-problem')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'90')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_ISOLATED:'host-isolated')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'100')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_PRECEDENCE_UNREACHABLE:'host-precedence-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'110')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_REDIRECT:'host-redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'120')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_TOS_REDIRECT:'host-tos-redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'130')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_TOS_UNREACHABLE:'host-tos-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'140')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_UNKNOWN:'host-unknown')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'150')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            HOST_UNREACHABLE:'host-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'160')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            INFORMATION_REPLY:'information-reply')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'170')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            INFORMATION_REQUEST:'information-request')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'180')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            MASK_REPLY:'mask-reply')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'190')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            MASK_REQUEST:'mask-request')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'200')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            MOBILE_REDIRECT:'mobile-redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'210')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NET_REDIRECT:'net-redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'220')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NET_TOS_REDIRECT:'net-tos-redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'230')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NET_TOS_UNREACHABLE:'net-tos-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'240')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NET_UNREACHABLE:'net-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT8:'250')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NETWORK_UNKNOWN:'network-unknown')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'260')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            NO_ROOM_FOR_OPTION:'no-room-for-option')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'270')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            OPTION_MISSING:'option-missing')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'280')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            PACKET_TOO_BIG:'packet-too-big')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'290')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            PARAMETER_PROBLEM:'parameter-problem')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'300')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            PORT_UNREACHABLE:'port-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'310')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            PRECEDENCE_UNREACHABLE:'precedence-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'320')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            PROTOCOL_UNREACHABLE:'protocol-unreachable')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'330')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            REASSEMBLY_TIMEOUT:'reassembly-timeout')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'340')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            REDIRECT:'redirect')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'350')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ROUTER_ADVERTISEMENT:'router-advertisement')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'360')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            ROUTER_SOLICITATION:'router-solicitation')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'370')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            SOURCE_QUENCH:'source-quench')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'380')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            SOURCE_ROUTE_FAILED:'source-route-failed')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'390')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            TIME_EXCEEDED:'time-exceeded')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'400')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            TIMESTAMP_REPLY:'timestamp-reply')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'410')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            TIMESTAMP_REQUEST:'timestamp-request')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'420')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            TRACEROUTE:'traceroute')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'430')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            TTL_EXCEEDED:'ttl-exceeded')",
-            "          NEWLINE:'\\n')",
-            "        (extended_access_list_tail",
-            "          num = (uint_legacy*",
-            "            UINT16:'440')",
-            "          ala = (access_list_action*",
-            "            DENY:'deny')",
-            "          prot = (protocol*",
-            "            ICMP:'icmp')",
-            "          srcipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          dstipr = (access_list_ip_range*",
-            "            ANY:'any')",
-            "          (extended_access_list_additional_feature*",
-            "            UNREACHABLE:'unreachable')",
-            "          NEWLINE:'\\n'))))",
+            "        (ipv4_access_list_block*",
+            "          NEWLINE:'\\n'",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'10'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ADMINISTRATIVELY_PROHIBITED:'administratively-prohibited'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'20'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ALTERNATE_ADDRESS:'alternate-address'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'30'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                CONVERSION_ERROR:'conversion-error'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'40'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                DOD_HOST_PROHIBITED:'dod-host-prohibited'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'50'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                DOD_NET_PROHIBITED:'dod-net-prohibited'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'60'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ECHO:'echo'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'70'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ECHO_REPLY:'echo-reply'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'80'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                GENERAL_PARAMETER_PROBLEM:'general-parameter-problem'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'90'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_ISOLATED:'host-isolated'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'100'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_PRECEDENCE_UNREACHABLE:'host-precedence-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'110'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_REDIRECT:'host-redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'120'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_TOS_REDIRECT:'host-tos-redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'130'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_TOS_UNREACHABLE:'host-tos-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'140'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_UNKNOWN:'host-unknown'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'150'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                HOST_UNREACHABLE:'host-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'160'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                INFORMATION_REPLY:'information-reply'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'170'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                INFORMATION_REQUEST:'information-request'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'180'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                MASK_REPLY:'mask-reply'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'190'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                MASK_REQUEST:'mask-request'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'200'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                MOBILE_REDIRECT:'mobile-redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'210'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NET_REDIRECT:'net-redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'220'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NET_TOS_REDIRECT:'net-tos-redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'230'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NET_TOS_UNREACHABLE:'net-tos-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'240'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NET_UNREACHABLE:'net-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT8:'250'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NETWORK_UNKNOWN:'network-unknown'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'260'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                NO_ROOM_FOR_OPTION:'no-room-for-option'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'270'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                OPTION_MISSING:'option-missing'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'280'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                PACKET_TOO_BIG:'packet-too-big'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'290'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                PARAMETER_PROBLEM:'parameter-problem'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'300'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                PORT_UNREACHABLE:'port-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'310'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                PRECEDENCE_UNREACHABLE:'precedence-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'320'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                PROTOCOL_UNREACHABLE:'protocol-unreachable'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'330'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                REASSEMBLY_TIMEOUT:'reassembly-timeout'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'340'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                REDIRECT:'redirect'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'350'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ROUTER_ADVERTISEMENT:'router-advertisement'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'360'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                ROUTER_SOLICITATION:'router-solicitation'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'370'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                SOURCE_QUENCH:'source-quench'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'380'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                SOURCE_ROUTE_FAILED:'source-route-failed'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'390'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                TIME_EXCEEDED:'time-exceeded'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'400'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                TIMESTAMP_REPLY:'timestamp-reply'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'410'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                TIMESTAMP_REQUEST:'timestamp-request'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'420'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                TRACEROUTE:'traceroute'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'430'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                TTL_EXCEEDED:'ttl-exceeded'))",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_block_tail*",
+            "            (extended_access_list_tail",
+            "              (sequence_number*",
+            "                (uint32*",
+            "                  UINT16:'440'))",
+            "              ala = (access_list_action*",
+            "                DENY:'deny')",
+            "              prot = (protocol*",
+            "                ICMP:'icmp')",
+            "              srcipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              dstipr = (access_list_ip_range*",
+            "                ANY:'any')",
+            "              (extended_access_list_additional_feature*",
+            "                UNREACHABLE:'unreachable'))",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -49221,7 +49373,7 @@
             "                      (i_common_physical*",
             "                        (i_mtu",
             "                          MTU:'mtu'",
-            "                          size = (dec*",
+            "                          bytes = (uint16*",
             "                            UINT16:'9300'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49252,7 +49404,7 @@
             "                            (ifi_mtu*",
             "                              (i_mtu",
             "                                MTU:'mtu'",
-            "                                size = (dec*",
+            "                                bytes = (uint16*",
             "                                  UINT16:'9000')))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49650,12 +49802,12 @@
             "            PROTOCOLS:'protocols'",
             "            (p_bgp",
             "              BGP:'bgp'",
-            "              (b_common*",
-            "                (b_drop_path_attributes*",
-            "                  DROP_PATH_ATTRIBUTES:'drop-path-attributes'",
-            "                  attr = (dec*",
-            "                    UINT8:'128'))))))))",
-            "    NEWLINE:'\\n')",
+            "              (b_drop_path_attributes",
+            "                DROP_PATH_ATTRIBUTES:'drop-path-attributes'",
+            "                attr = (uint8_range*",
+            "                  start = (uint8*",
+            "                    UINT8:'128'  <== mode:M_SubRange))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_SubRange)",
             "  (set_line*",
             "    SET:'set'",
             "    (set_line_tail*",
@@ -49724,7 +49876,7 @@
             "                      UNICAST:'unicast'",
             "                      (bfiu_loops",
             "                        LOOPS:'loops'",
-            "                        count = (dec*",
+            "                        count = (uint8*",
             "                          UINT8:'2')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49813,7 +49965,7 @@
             "                        UNICAST:'unicast'",
             "                        (bfiu_loops",
             "                          LOOPS:'loops'",
-            "                          count = (dec*",
+            "                          count = (uint8*",
             "                            UINT8:'2'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49872,9 +50024,9 @@
             "                    IP_ADDRESS:'3.4.5.6')",
             "                  (b_common*",
             "                    (b_description",
-            "                      (description*",
-            "                        DESCRIPTION:'description'",
-            "                        text = M_Description_DESCRIPTION:'bippety'  <== mode:M_Description))))))))))",
+            "                      DESCRIPTION:'description'",
+            "                      text = (bgp_description_text*",
+            "                        M_Description_DESCRIPTION:'bippety'  <== mode:M_Description))))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -49927,7 +50079,7 @@
             "                          UNICAST:'unicast'",
             "                          (bfiu_loops",
             "                            LOOPS:'loops'",
-            "                            count = (dec*",
+            "                            count = (uint8*",
             "                              UINT8:'3')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -50091,9 +50243,9 @@
             "                    IPV6_ADDRESS:'dead:beef::1')",
             "                  (b_common*",
             "                    (b_description",
-            "                      (description*",
-            "                        DESCRIPTION:'description'",
-            "                        text = M_Description_DESCRIPTION:'boppety'  <== mode:M_Description))))))))))",
+            "                      DESCRIPTION:'description'",
+            "                      text = (bgp_description_text*",
+            "                        M_Description_DESCRIPTION:'boppety'  <== mode:M_Description))))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -50251,9 +50403,9 @@
             "                    IP_ADDRESS:'1.2.3.5')",
             "                  (b_common*",
             "                    (b_description",
-            "                      (description*",
-            "                        DESCRIPTION:'description'",
-            "                        text = M_Description_DESCRIPTION:'boo'  <== mode:M_Description))))))))))",
+            "                      DESCRIPTION:'description'",
+            "                      text = (bgp_description_text*",
+            "                        M_Description_DESCRIPTION:'boo'  <== mode:M_Description))))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -50433,9 +50585,9 @@
             "                    IPV6_ADDRESS:'beef:dead::2')",
             "                  (b_common*",
             "                    (b_description",
-            "                      (description*",
-            "                        DESCRIPTION:'description'",
-            "                        text = M_Description_DESCRIPTION:'foo'  <== mode:M_Description))))))))))",
+            "                      DESCRIPTION:'description'",
+            "                      text = (bgp_description_text*",
+            "                        M_Description_DESCRIPTION:'foo'  <== mode:M_Description))))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -50502,7 +50654,7 @@
             "              (b_common*",
             "                (b_path_selection*",
             "                  PATH_SELECTION:'path-selection'",
-            "                  (bps_external_router_id*",
+            "                  (bps_external_router_id",
             "                    EXTERNAL_ROUTER_ID:'external-router-id'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
@@ -52337,7 +52489,7 @@
             "                      (fftt_routing_instance",
             "                        ROUTING_INSTANCE:'routing-instance'",
             "                        name = (junos_name*",
-            "                          NAME:'OTHER_INSTANCE'  <== mode:M_Name)))))))))))",
+            "                          NAME:'OTHER_INSTANCE'  <== mode:M_RoutingInstanceName)))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -52473,6 +52625,32 @@
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp6_only_type*",
             "                          NEIGHBOR_SOLICIT:'neighbor-solicit'  <== mode:M_IcmpCodeOrType)))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_interfaces*",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id*",
+            "                INTERFACE_ID:'lo0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = (dec*",
+            "                  UINT8:'0')",
+            "                (i_common*",
+            "                  (i_family*",
+            "                    FAMILY:'family'",
+            "                    (if_inet6*",
+            "                      INET6:'inet6'",
+            "                      (ifi6_filter*",
+            "                        FILTER:'filter'",
+            "                        (ifi6f_input",
+            "                          INPUT:'input'  <== mode:M_Filter",
+            "                          name = (junos_name*",
+            "                            NAME:'blah6'  <== mode:M_Filter))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -53071,8 +53249,9 @@
             "                SERVER_GROUP:'server-group'",
             "                name = (junos_name*",
             "                  NAME:'dhcpgrp'  <== mode:M_Name)",
-            "                address = (ip_address*",
-            "                  IP_ADDRESS:'1.2.3.4')))))))",
+            "                (fods_address",
+            "                  address = (ip_address*",
+            "                    IP_ADDRESS:'1.2.3.4'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -53087,8 +53266,9 @@
             "                SERVER_GROUP:'server-group'",
             "                name = (junos_name*",
             "                  NAME:'dhcpgrp'  <== mode:M_Name)",
-            "                address = (ip_address*",
-            "                  IP_ADDRESS:'2.3.4.5')))))))",
+            "                (fods_address",
+            "                  address = (ip_address*",
+            "                    IP_ADDRESS:'2.3.4.5'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -53103,8 +53283,9 @@
             "                SERVER_GROUP:'server-group'",
             "                name = (junos_name*",
             "                  NAME:'test2'  <== mode:M_Name)",
-            "                address = (ip_address*",
-            "                  IP_ADDRESS:'3.4.5.6')))))))",
+            "                (fods_address",
+            "                  address = (ip_address*",
+            "                    IP_ADDRESS:'3.4.5.6'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -53333,7 +53514,7 @@
             "                      IP_ADDRESS:'6.6.6.6'  <== mode:M_NameOrIp",
             "                      ROUTING_INSTANCE:'routing-instance'",
             "                      ri = (junos_name*",
-            "                        NAME:'TEST_VRF_100'  <== mode:M_Name))))))))))",
+            "                        NAME:'TEST_VRF_100'  <== mode:M_RoutingInstanceName))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -53356,7 +53537,7 @@
             "                      IP_ADDRESS:'7.7.7.7'  <== mode:M_NameOrIp",
             "                      ROUTING_INSTANCE:'routing-instance'",
             "                      ri = (junos_name*",
-            "                        NAME:'TEST_VRF_103'  <== mode:M_Name))))))))))",
+            "                        NAME:'TEST_VRF_103'  <== mode:M_RoutingInstanceName))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -54041,7 +54222,7 @@
             "            (fo_null*",
             "              STORM_CONTROL_PROFILES:'storm-control-profiles'",
             "              (null_filler*",
-            "                UNRECOGNIZED_WORD:'default'",
+            "                DEFAULT:'default'",
             "                ALL:'all'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -55662,7 +55843,7 @@
             "                (syn_server_routing_instance",
             "                  ROUTING_INSTANCE:'routing-instance'",
             "                  name = (junos_name*",
-            "                    NAME:'MGMT'  <== mode:M_Name))))))))",
+            "                    NAME:'MGMT'  <== mode:M_RoutingInstanceName))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -55673,7 +55854,7 @@
             "            SYSTEM:'system'",
             "            (sy_ntp*",
             "              NTP:'ntp'",
-            "              (syn_source_address*",
+            "              (syn_source_address",
             "                SOURCE_ADDRESS:'source-address'",
             "                address = IP_ADDRESS:'2.3.4.5'))))))",
             "    NEWLINE:'\\n')",
@@ -55868,7 +56049,7 @@
             "                (o_null*",
             "                  SPF_OPTIONS:'spf-options'",
             "                  (null_filler*",
-            "                    UNRECOGNIZED_WORD:'delay'",
+            "                    DELAY:'delay'",
             "                    UINT8:'50'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -55945,7 +56126,7 @@
             "                    IP_ADDRESS:'0.1.2.3')",
             "                  (oa_area_range",
             "                    AREA_RANGE:'area-range'",
-            "                    (ipv6_prefix*",
+            "                    prefix6 = (ipv6_prefix_default_128*",
             "                      IPV6_PREFIX:'dead:beef::/56')",
             "                    (oaa_override_metric",
             "                      OVERRIDE_METRIC:'override-metric'",
@@ -56781,8 +56962,9 @@
             "                    FROM:'from'",
             "                    (popsf_rib",
             "                      RIB:'rib'",
-            "                      name = (junos_name*",
-            "                        NAME:'inet6.0'  <== mode:M_Name))))))))))",
+            "                      name = (rib_name*",
+            "                        (inet6_rib_name*",
+            "                          INET6_RIB_NAME:'inet6.0'  <== mode:M_RibName)))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57012,10 +57194,11 @@
             "                  (pops_then*",
             "                    THEN:'then'",
             "                    (popst_common*",
-            "                      (popst_metric",
+            "                      (popst_metric*",
             "                        METRIC:'metric'",
-            "                        metric = (dec*",
-            "                          UINT8:'10')))))))))))",
+            "                        (popstm_value",
+            "                          metric = (uint32*",
+            "                            UINT8:'10'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57036,11 +57219,12 @@
             "                  (pops_then*",
             "                    THEN:'then'",
             "                    (popst_common*",
-            "                      (popst_metric_add",
+            "                      (popst_metric*",
             "                        METRIC:'metric'",
-            "                        ADD:'add'",
-            "                        metric = (dec*",
-            "                          UINT8:'20')))))))))))",
+            "                        (popstm_add",
+            "                          ADD:'add'",
+            "                          metric = (uint32*",
+            "                            UINT8:'20'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57255,7 +57439,7 @@
             "                    (popst_common*",
             "                      (popst_preference",
             "                        PREFERENCE:'preference'",
-            "                        preference = (dec*",
+            "                        preference = (uint32*",
             "                          UINT8:'100')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -57412,8 +57596,9 @@
             "                SERVER_GROUP:'server-group'",
             "                name = (junos_name*",
             "                  NAME:'site-dhcp'  <== mode:M_Name)",
-            "                address = (ip_address*",
-            "                  IP_ADDRESS:'1.2.3.4')))))))",
+            "                (fods_address",
+            "                  address = (ip_address*",
+            "                    IP_ADDRESS:'1.2.3.4'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -58369,7 +58554,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1234::/48')",
             "                      (popsfrf_common*",
             "                        (popsfrf_exact",
@@ -58395,7 +58580,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1235::/58')",
             "                      (popsfrf_common*",
             "                        (popsfrf_longer",
@@ -58421,7 +58606,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1236::/68')",
             "                      (popsfrf_common*",
             "                        (popsfrf_orlonger",
@@ -58447,7 +58632,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1237::/78')",
             "                      (popsfrf_common*",
             "                        (popsfrf_upto",
@@ -58476,7 +58661,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1238::/88')",
             "                      (popsfrf_common*",
             "                        (popsfrf_prefix_length_range",
@@ -58509,12 +58694,12 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1239::/98')",
             "                      (popsfrf_common*",
             "                        (popsfrf_through",
             "                          THROUGH:'through'",
-            "                          (ipv6_prefix*",
+            "                          prefix6 = (ipv6_prefix_default_128*",
             "                            IPV6_PREFIX:'2001:db8:1239::/109'))))))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
@@ -58895,7 +59080,139 @@
             "                    (popst_common*",
             "                      (popst_accept",
             "                        ACCEPT:'accept'))))))))))",
-            "    NEWLINE:'\\n\\n')",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      BGP:'bgp')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_route_type",
+            "                      ROUTE_TYPE:'route-type'",
+            "                      INTERNAL:'internal')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      BGP:'bgp')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_route_type",
+            "                      ROUTE_TYPE:'route-type'",
+            "                      EXTERNAL:'external')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -58929,9 +59246,9 @@
             "                ADDRESS:'address'",
             "                name = (junos_name*",
             "                  NAME:'ADDRESS'  <== mode:M_Name)",
-            "                DESCRIPTION:'description'",
-            "                (null_filler*",
-            "                  M_Description_DESCRIPTION:'\"ADDRESS description\"'  <== mode:M_Description)))))))",
+            "                (description*",
+            "                  DESCRIPTION:'description'",
+            "                  text = M_Description_DESCRIPTION:'\"ADDRESS description\"'  <== mode:M_Description)))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -58949,9 +59266,9 @@
             "                name = (junos_name*",
             "                  NAME:'ASET'  <== mode:M_Name)",
             "                (seada_description*",
-            "                  DESCRIPTION:'description'",
-            "                  (null_filler*",
-            "                    M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
+            "                  (description*",
+            "                    DESCRIPTION:'description'",
+            "                    text = M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -58969,9 +59286,9 @@
             "                name = (junos_name*",
             "                  NAME:'ASET'  <== mode:M_Name)",
             "                (seada_description*",
-            "                  DESCRIPTION:'description'",
-            "                  (null_filler*",
-            "                    M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
+            "                  (description*",
+            "                    DESCRIPTION:'description'",
+            "                    text = M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -59006,9 +59323,9 @@
             "                name = (junos_name*",
             "                  NAME:'ASET'  <== mode:M_Name)",
             "                (seada_description*",
-            "                  DESCRIPTION:'description'",
-            "                  (null_filler*",
-            "                    M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
+            "                  (description*",
+            "                    DESCRIPTION:'description'",
+            "                    text = M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -59024,9 +59341,9 @@
             "                name = (junos_name*",
             "                  NAME:'PROPOSAL'  <== mode:M_Name)",
             "                (seikpr_description*",
-            "                  DESCRIPTION:'description'",
-            "                  (null_filler*",
-            "                    M_Description_DESCRIPTION:'\"IKE proposal\"'  <== mode:M_Description))))))))",
+            "                  (description*",
+            "                    DESCRIPTION:'description'",
+            "                    text = M_Description_DESCRIPTION:'\"IKE proposal\"'  <== mode:M_Description))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -59112,9 +59429,9 @@
             "                  name = (junos_name*",
             "                    NAME:'123-4'  <== mode:M_Name)",
             "                  (sepctxp_description*",
-            "                    DESCRIPTION:'description'",
-            "                    (null_filler*",
-            "                      M_Description_DESCRIPTION:'\"123-4 description\"'  <== mode:M_Description)))))))))",
+            "                    (description*",
+            "                      DESCRIPTION:'description'",
+            "                      text = M_Description_DESCRIPTION:'\"123-4 description\"'  <== mode:M_Description)))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
             "  (set_line*",
             "    SET:'set'",
@@ -59470,8 +59787,10 @@
             "            SNMP:'snmp'",
             "            (snmp_filter_interfaces*",
             "              FILTER_INTERFACES:'filter-interfaces'",
-            "              INTERFACES:'interfaces'",
-            "              DOUBLE_QUOTED_STRING:'\"^lc|^pf|^lo0\\.1638\"'  <== mode:M_Interface)))))",
+            "              (snmpfi_interfaces_null*",
+            "                INTERFACES:'interfaces'",
+            "                wc = (interface_wildcard*",
+            "                  INTERFACE_WILDCARD:'\"^lc|^pf|^lo0\\.1638\"'  <== mode:M_InterfaceIdOrInterfaceWildcard)))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -59596,7 +59915,7 @@
             "              (snmptg_null*",
             "                CATEGORIES:'categories'",
             "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'routing')))))))",
+            "                  ROUTING:'routing')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -59743,7 +60062,7 @@
             "                UNRECOGNIZED_WORD:'myviewname1'",
             "                UNRECOGNIZED_WORD:'oid'",
             "                UNRECOGNIZED_WORD:'myoidname1'",
-            "                UNRECOGNIZED_WORD:'exclude'))))))",
+            "                EXCLUDE:'exclude'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -61407,7 +61726,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                DHCP:'dhcp'",
             "                (null_filler*",
             "                  TRACEOPTIONS:'traceoptions'",
@@ -61423,7 +61742,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                DHCP:'dhcp'",
             "                (null_filler*",
             "                  POOL:'pool'",
@@ -61443,13 +61762,13 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                DHCP:'dhcp'",
             "                (null_filler*",
             "                  POOL:'pool'",
             "                  NAME:'1.2.8.0/26'  <== mode:M_Name",
             "                  NAME_SERVER:'name-server'",
-            "                  NAME:'1.2.6.1'  <== mode:M_Name)))))))",
+            "                  IP_ADDRESS:'1.2.6.1')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -61460,7 +61779,7 @@
             "            SYSTEM:'system'",
             "            (sy_services*",
             "              SERVICES:'services'",
-            "              (sy_services_null*",
+            "              (syserv_null*",
             "                DHCP:'dhcp'",
             "                (null_filler*",
             "                  POOL:'pool'",
@@ -62209,7 +62528,7 @@
             "                (snmpcls_routing_instance",
             "                  ROUTING_INSTANCE:'routing-instance'",
             "                  name = (junos_name*",
-            "                    NAME:'INTERNAL'  <== mode:M_Name)",
+            "                    NAME:'INTERNAL'  <== mode:M_RoutingInstanceName)",
             "                  (snmpclsri_common*",
             "                    (snmpc_client_list_name",
             "                      CLIENT_LIST_NAME:'client-list-name'",
@@ -62227,7 +62546,7 @@
             "              TRAP_OPTIONS:'trap-options'",
             "              (null_filler*",
             "                ROUTING_INSTANCE:'routing-instance'",
-            "                NAME:'INTERNAL'  <== mode:M_Name",
+            "                NAME:'INTERNAL'  <== mode:M_RoutingInstanceName",
             "                SOURCE_ADDRESS:'source-address'",
             "                UNRECOGNIZED_WORD:'lo0'))))))",
             "    NEWLINE:'\\n')",
@@ -62325,7 +62644,7 @@
             "              (snmptg_null*",
             "                CATEGORIES:'categories'",
             "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'routing')))))))",
+            "                  ROUTING:'routing')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -62437,7 +62756,7 @@
             "              (snmptg_null*",
             "                ROUTING_INSTANCE:'routing-instance'",
             "                (null_filler*",
-            "                  NAME:'INTERNAL'  <== mode:M_Name)))))))",
+            "                  NAME:'INTERNAL'  <== mode:M_RoutingInstanceName)))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -69982,13 +70301,13 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 277,
+              "Line" : 276,
               "Parser_Context" : "[if_zone_member if_inner s_interface_definition s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 308,
+              "Line" : 307,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface_definition s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -70126,6 +70445,12 @@
         },
         "configs/cisco_route_map" : {
           "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 25,
+              "Parser_Context" : "[match_ip_route_source_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
+              "Text" : "ip route-source 124"
+            },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 33,
@@ -71064,6 +71389,16 @@
             }
           ]
         },
+        "configs/juniper_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 46,
+              "Parser_Context" : "[bps_external_router_id b_path_selection b_common p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "external-router-id"
+            }
+          ]
+        },
         "configs/juniper_bgp_authentication" : {
           "Red flags" : [
             {
@@ -71077,6 +71412,16 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Unencrypted key stored at line: 4"
+            }
+          ]
+        },
+        "configs/juniper_extended_community" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ allows longer matches such as 18075:10000",
+              "Line" : 6,
+              "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
             }
           ]
         },
@@ -71108,49 +71453,49 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 50,
+              "Line" : 51,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options any"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 52,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options loose-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 52,
+              "Line" : 53,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options route-record"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 54,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options router-alert"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 55,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options security"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 56,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options stream-id"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 56,
+              "Line" : 57,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options strict-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 58,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
             }
@@ -71214,61 +71559,99 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family evpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mdt"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 8,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 11,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 15,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family route-target"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family traffic-engineering"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 20,
+              "Parser_Context" : "[popsf_rib pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "rib inet6.0"
+            },
+            {
+              "Comment" : "RISK: Overwriting existing then as-path-prepend",
+              "Line" : 23,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend 123.456"
+            },
+            {
+              "Comment" : "RISK: Overwriting existing then as-path-prepend",
+              "Line" : 24,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 789"
+            },
+            {
+              "Comment" : "RISK: Overwriting existing then as-path-prepend",
+              "Line" : 25,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 123.1 789"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 32,
               "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family evpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mdt"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family route-target"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
             }
           ]
         },
@@ -71279,16 +71662,6 @@
               "Line" : 4,
               "Parser_Context" : "[roi_rib_group ro_interface_routes s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "rib-group inet6 interface-routes-rib"
-            }
-          ]
-        },
-        "configs/juniper_routing_options" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "policy AGGREGATE_ROUTE_POLICY"
             }
           ]
         },
@@ -71452,7 +71825,6 @@
         "cisco_platform" : "PASSED",
         "cisco_privilege" : "PASSED",
         "cisco_qos" : "PASSED",
-        "cisco_queue_monitor" : "PASSED",
         "cisco_redundancy" : "PASSED",
         "cisco_rip" : "PASSED",
         "cisco_role" : "PASSED",
@@ -71513,6 +71885,7 @@
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
+        "ios-crypto-keyword-names" : "PASSED",
         "ios-xe-bgp-vrf" : "PASSED",
         "ios_banner" : "PASSED",
         "ios_banner_dos" : "PASSED",
@@ -72553,99 +72926,99 @@
           },
           "interface" : {
             "Async1" : {
-              "definitionLines" : "280",
+              "definitionLines" : "279",
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
-              "definitionLines" : "282",
+              "definitionLines" : "281",
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
-              "definitionLines" : "284",
+              "definitionLines" : "283",
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
-              "definitionLines" : "286",
+              "definitionLines" : "285",
               "numReferrers" : 1
             },
             "Ethernet0" : {
-              "definitionLines" : "7-278",
+              "definitionLines" : "7-277",
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
-              "definitionLines" : "288",
+              "definitionLines" : "287",
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
-              "definitionLines" : "336-337",
+              "definitionLines" : "335-336",
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
-              "definitionLines" : "290-292",
+              "definitionLines" : "289-291",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : "294-295",
+              "definitionLines" : "293-294",
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
-              "definitionLines" : "297",
+              "definitionLines" : "296",
               "numReferrers" : 1
             },
             "Null0" : {
-              "definitionLines" : "299",
+              "definitionLines" : "298",
               "numReferrers" : 1
             },
             "Tunnel0" : {
-              "definitionLines" : "303-313",
+              "definitionLines" : "302-312",
               "numReferrers" : 1
             },
             "Vlan1" : {
-              "definitionLines" : "316",
+              "definitionLines" : "315",
               "numReferrers" : 1
             },
             "Vlan1005" : {
-              "definitionLines" : "322",
+              "definitionLines" : "321",
               "numReferrers" : 1
             },
             "Vlan1006" : {
-              "definitionLines" : "324",
+              "definitionLines" : "323",
               "numReferrers" : 1
             },
             "Vlan111" : {
-              "definitionLines" : "314",
+              "definitionLines" : "313",
               "numReferrers" : 1
             },
             "Vlan1234" : {
-              "definitionLines" : "326",
+              "definitionLines" : "325",
               "numReferrers" : 1
             },
             "Vlan2" : {
-              "definitionLines" : "318",
+              "definitionLines" : "317",
               "numReferrers" : 1
             },
             "Vlan3" : {
-              "definitionLines" : "320",
+              "definitionLines" : "319",
               "numReferrers" : 1
             },
             "Vlan4094" : {
-              "definitionLines" : "328",
+              "definitionLines" : "327",
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : "330",
+              "definitionLines" : "329",
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
-              "definitionLines" : "334",
+              "definitionLines" : "333",
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
-              "definitionLines" : "332",
+              "definitionLines" : "331",
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
-              "definitionLines" : "301",
+              "definitionLines" : "300",
               "numReferrers" : 1
             }
           }
@@ -72885,7 +73258,6 @@
             }
           }
         },
-        "configs/cisco_queue_monitor" : { },
         "configs/cisco_redundancy" : { },
         "configs/cisco_rip" : { },
         "configs/cisco_role" : { },
@@ -73936,23 +74308,23 @@
             }
           },
           "policy-statement term" : {
-            "export-loopback lo0" : {
+            "export-loopback term lo0" : {
               "definitionLines" : "162-165",
               "numReferrers" : 2
             },
-            "fabric fabric" : {
+            "fabric term fabric" : {
               "definitionLines" : "168-174",
               "numReferrers" : 3
             },
-            "fabric vni-100" : {
+            "fabric term vni-100" : {
               "definitionLines" : "175-178",
               "numReferrers" : 2
             },
-            "fabric vni-101" : {
+            "fabric term vni-101" : {
               "definitionLines" : "179-182",
               "numReferrers" : 2
             },
-            "lbpp 1" : {
+            "lbpp term 1" : {
               "definitionLines" : "185-189",
               "numReferrers" : 1
             }
@@ -74012,6 +74384,14 @@
             }
           }
         },
+        "configs/ios-xe/ios-crypto-keyword-names" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "definitionLines" : "20-21",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/ios-xe/ios-xe-bgp-vrf" : {
           "interface" : {
             "FastEthernet1/1" : {
@@ -74032,7 +74412,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1 (VRF default)" : {
+            "1::1 (VRF default)" : {
               "definitionLines" : "6",
               "numReferrers" : 1
             }
@@ -74584,13 +74964,21 @@
         "configs/isr_voip" : { },
         "configs/juniper-interfaces" : {
           "interface" : {
-            "xe-0/0/0" : {
-              "definitionLines" : "4",
+            "node1::xe-0/0/0:0" : {
+              "definitionLines" : "8-9",
               "numReferrers" : 2
             },
-            "xe-0/0/0:0" : {
-              "definitionLines" : "4-5,15",
+            "node1:xe-0/0/0" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            },
+            "xe-0/0/0" : {
+              "definitionLines" : "4,10,13",
               "numReferrers" : 4
+            },
+            "xe-0/0/0:0" : {
+              "definitionLines" : "4-5,11-12,15",
+              "numReferrers" : 6
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : "5,15",
@@ -74706,11 +75094,11 @@
               "definitionLines" : "16-17",
               "numReferrers" : 2
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead::2 (VRF default)" : {
               "definitionLines" : "42",
               "numReferrers" : 1
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef::1 (VRF default)" : {
               "definitionLines" : "25",
               "numReferrers" : 1
             }
@@ -74845,17 +75233,19 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall family inet6 filter" : {
+            "blah6" : {
+              "definitionLines" : "44-46",
+              "numReferrers" : 1
+            }
+          },
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
-              "definitionLines" : "49",
+              "definitionLines" : "50",
               "numReferrers" : 0
             },
             "blah" : {
               "definitionLines" : "5-28,30,32,35-36,38,40,42",
-              "numReferrers" : 0
-            },
-            "blah6" : {
-              "definitionLines" : "44-46",
               "numReferrers" : 0
             },
             "f1" : {
@@ -74863,13 +75253,13 @@
               "numReferrers" : 0
             },
             "ip_options" : {
-              "definitionLines" : "50-57",
+              "definitionLines" : "51-58",
               "numReferrers" : 0
             }
           },
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
-              "definitionLines" : "49",
+              "definitionLines" : "50",
               "numReferrers" : 1
             },
             "blah blorp" : {
@@ -74905,8 +75295,18 @@
               "numReferrers" : 1
             },
             "ip_options t1" : {
-              "definitionLines" : "50-57",
+              "definitionLines" : "51-58",
               "numReferrers" : 8
+            }
+          },
+          "interface" : {
+            "lo0" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
             }
           },
           "routing-instance" : {
@@ -75204,7 +75604,7 @@
           "as-path-group" : {
             "AS_PATH_GROUP" : {
               "definitionLines" : "46-47",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "as-path-group as-path" : {
@@ -75224,11 +75624,11 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME AS_PATH" : {
+            "POLICY-NAME term AS_PATH" : {
               "definitionLines" : "40-41",
               "numReferrers" : 2
             },
-            "POLICY-NAME TERM" : {
+            "POLICY-NAME term TERM" : {
               "definitionLines" : "4-39",
               "numReferrers" : 36
             }
@@ -75314,11 +75714,11 @@
           "rib-group" : {
             "bgp-rib-group" : {
               "definitionLines" : "11-12",
-              "numReferrers" : 0
+              "numReferrers" : 12
             },
             "interface-routes-rib" : {
               "definitionLines" : "5-9",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "routing-instance" : {
@@ -75344,11 +75744,11 @@
             }
           },
           "policy-statement term" : {
-            "route-filter-test-v4 t1" : {
+            "route-filter-test-v4 term t1" : {
               "definitionLines" : "4-9",
               "numReferrers" : 6
             },
-            "route-filter-test-v6 t1" : {
+            "route-filter-test-v6 term t1" : {
               "definitionLines" : "11-16",
               "numReferrers" : 6
             }
@@ -75381,16 +75781,24 @@
           },
           "policy-statement" : {
             "POLICY-NAME" : {
-              "definitionLines" : "7-10",
+              "definitionLines" : "7-10,12-17",
               "numReferrers" : 0
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME TERM1" : {
+            "POLICY-NAME term EXTERNAL" : {
+              "definitionLines" : "15-17",
+              "numReferrers" : 3
+            },
+            "POLICY-NAME term INTERNAL" : {
+              "definitionLines" : "12-14",
+              "numReferrers" : 3
+            },
+            "POLICY-NAME term TERM1" : {
               "definitionLines" : "7-8",
               "numReferrers" : 2
             },
-            "POLICY-NAME TERM2" : {
+            "POLICY-NAME term TERM2" : {
               "definitionLines" : "9-10",
               "numReferrers" : 2
             }
@@ -76856,9 +77264,6 @@
         "configs/cisco_qos" : [
           "cisco_qos"
         ],
-        "configs/cisco_queue_monitor" : [
-          "cisco_queue_monitor"
-        ],
         "configs/cisco_redundancy" : [
           "cisco_redundancy"
         ],
@@ -77032,6 +77437,9 @@
         ],
         "configs/interface_sdr" : [
           "interface_sdr"
+        ],
+        "configs/ios-xe/ios-crypto-keyword-names" : [
+          "ios-crypto-keyword-names"
         ],
         "configs/ios-xe/ios-xe-bgp-vrf" : [
           "ios-xe-bgp-vrf"
@@ -78729,27 +79137,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                280
+                279
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                282
+                281
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                311
+                310
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                284
+                283
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                286
+                285
               ]
             },
             "Ethernet0" : {
@@ -78757,102 +79165,102 @@
                 7
               ],
               "tunnel source" : [
-                312
+                311
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                288
+                287
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                336
+                335
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                290
+                289
               ]
             },
             "Loopback0" : {
               "interface" : [
-                294
+                293
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                297
+                296
               ]
             },
             "Null0" : {
               "interface" : [
-                299
+                298
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                303
+                302
               ]
             },
             "Vlan1" : {
               "interface" : [
-                316
+                315
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                322
+                321
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                324
+                323
               ]
             },
             "Vlan111" : {
               "interface" : [
-                314
+                313
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                326
+                325
               ]
             },
             "Vlan2" : {
               "interface" : [
-                318
+                317
               ]
             },
             "Vlan3" : {
               "interface" : [
-                320
+                319
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                328
+                327
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                330
+                329
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                334
+                333
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                332
+                331
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                301
+                300
               ]
             }
           },
@@ -78893,8 +79301,8 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                208,
-                209
+                207,
+                208
               ]
             }
           },
@@ -78913,14 +79321,14 @@
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                277
+                276
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                278
+                277
               ]
             }
           }
@@ -80861,27 +81269,27 @@
             }
           },
           "policy-statement term" : {
-            "export-loopback lo0" : {
+            "export-loopback term lo0" : {
               "policy-statement term" : [
                 162
               ]
             },
-            "fabric fabric" : {
+            "fabric term fabric" : {
               "policy-statement term" : [
                 168
               ]
             },
-            "fabric vni-100" : {
+            "fabric term vni-100" : {
               "policy-statement term" : [
                 175
               ]
             },
-            "fabric vni-101" : {
+            "fabric term vni-101" : {
               "policy-statement term" : [
                 179
               ]
             },
-            "lbpp 1" : {
+            "lbpp term 1" : {
               "policy-statement term" : [
                 185
               ]
@@ -80942,6 +81350,15 @@
             }
           }
         },
+        "configs/ios-xe/ios-crypto-keyword-names" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                20
+              ]
+            }
+          }
+        },
         "configs/ios-xe/ios-xe-bgp-vrf" : {
           "interface" : {
             "FastEthernet1/1" : {
@@ -80953,7 +81370,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1 (VRF default)" : {
+            "1::1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 6
               ]
@@ -81809,15 +82226,30 @@
         },
         "configs/juniper-interfaces" : {
           "interface" : {
+            "node1::xe-0/0/0:0" : {
+              "interface" : [
+                8,
+                9
+              ]
+            },
+            "node1:xe-0/0/0" : {
+              "interface" : [
+                7
+              ]
+            },
             "xe-0/0/0" : {
               "interface" : [
-                4
+                4,
+                10,
+                13
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
                 4,
                 5,
+                11,
+                12,
                 15
               ]
             },
@@ -81938,12 +82370,12 @@
                 17
               ]
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead::2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 42
               ]
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef::1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 25
               ]
@@ -82087,10 +82519,17 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall family inet6 filter" : {
+            "blah6" : {
+              "interface firewall filter" : [
+                47
+              ]
+            }
+          },
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
               "firewall filter term" : [
-                49
+                50
               ]
             },
             "blah blorp" : {
@@ -82162,14 +82601,26 @@
             },
             "ip_options t1" : {
               "firewall filter term" : [
-                50,
                 51,
                 52,
                 53,
                 54,
                 55,
                 56,
-                57
+                57,
+                58
+              ]
+            }
+          },
+          "interface" : {
+            "lo0" : {
+              "interface" : [
+                47
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                47
               ]
             }
           },
@@ -82603,13 +83054,13 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME AS_PATH" : {
+            "POLICY-NAME term AS_PATH" : {
               "policy-statement term" : [
                 40,
                 41
               ]
             },
-            "POLICY-NAME TERM" : {
+            "POLICY-NAME term TERM" : {
               "policy-statement term" : [
                 4,
                 5,
@@ -82816,7 +83267,7 @@
         },
         "configs/juniper_route_filter" : {
           "policy-statement term" : {
-            "route-filter-test-v4 t1" : {
+            "route-filter-test-v4 term t1" : {
               "policy-statement term" : [
                 4,
                 5,
@@ -82826,7 +83277,7 @@
                 9
               ]
             },
-            "route-filter-test-v6 t1" : {
+            "route-filter-test-v6 term t1" : {
               "policy-statement term" : [
                 11,
                 12,
@@ -82885,13 +83336,27 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME TERM1" : {
+            "POLICY-NAME term EXTERNAL" : {
+              "policy-statement term" : [
+                15,
+                16,
+                17
+              ]
+            },
+            "POLICY-NAME term INTERNAL" : {
+              "policy-statement term" : [
+                12,
+                13,
+                14
+              ]
+            },
+            "POLICY-NAME term TERM1" : {
               "policy-statement term" : [
                 7,
                 8
               ]
             },
-            "POLICY-NAME TERM2" : {
+            "POLICY-NAME term TERM2" : {
               "policy-statement term" : [
                 9,
                 10
@@ -85166,8 +85631,8 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                208,
-                209
+                207,
+                208
               ]
             }
           },
@@ -85186,7 +85651,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                278
+                277
               ]
             }
           }
@@ -85583,7 +86048,6 @@
             }
           }
         },
-        "configs/cisco_queue_monitor" : { },
         "configs/cisco_redundancy" : { },
         "configs/cisco_rip" : {
           "ipv4/6 acl" : {
@@ -85977,6 +86441,7 @@
         "configs/if_tag_is" : { },
         "configs/interface_exit" : { },
         "configs/interface_sdr" : { },
+        "configs/ios-xe/ios-crypto-keyword-names" : { },
         "configs/ios-xe/ios-xe-bgp-vrf" : { },
         "configs/ios_banner" : { },
         "configs/ios_banner_dos" : { },
@@ -86658,9 +87123,30 @@
           }
         },
         "configs/juniper_reth_interfaces" : { },
-        "configs/juniper_rib_groups" : { },
+        "configs/juniper_rib_groups" : {
+          "policy-statement" : {
+            "RIB_IN" : {
+              "routing-options rib-groups import-policy" : [
+                7
+              ]
+            },
+            "RIB_IN2" : {
+              "routing-options rib-groups import-policy" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/juniper_route_filter" : { },
-        "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_options" : {
+          "policy-statement" : {
+            "AGGREGATE_ROUTE_POLICY" : {
+              "aggregate route policy" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0.99" : {
@@ -87361,6 +87847,10 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.2.3.5 of group someinternalipv4group. Internal peer's AS (54321) must be the same as local AS (null)."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -87413,11 +87903,11 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Deactivating irb.5 because it has no assigned vlan"
+              "text" : "FATAL: Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
             }
           ]
         },
@@ -87433,12 +87923,20 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             }
           ]
         },
         "juniper_rib_groups~logical_system~logicalsystem" : {
           "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
@@ -87635,7 +88133,6 @@
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",
         "configs/cisco_qos" : "PASSED",
-        "configs/cisco_queue_monitor" : "PASSED",
         "configs/cisco_redundancy" : "PASSED",
         "configs/cisco_rip" : "PASSED",
         "configs/cisco_role" : "PASSED",
@@ -87694,6 +88191,7 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios-xe/ios-crypto-keyword-names" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",

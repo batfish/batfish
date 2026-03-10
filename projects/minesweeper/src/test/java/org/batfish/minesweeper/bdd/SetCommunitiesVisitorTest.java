@@ -13,6 +13,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -26,6 +27,8 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLow
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +55,7 @@ public class SetCommunitiesVisitorTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     _configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -61,12 +64,11 @@ public class SetCommunitiesVisitorTest {
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
 
-    TransferBDD transferBDD =
-        new TransferBDD(
-            _configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(_configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _scVisitor = new SetCommunitiesVisitor();
   }

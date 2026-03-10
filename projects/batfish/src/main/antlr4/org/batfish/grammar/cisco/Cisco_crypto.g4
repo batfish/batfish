@@ -490,6 +490,10 @@ cisprf_self_identity
 
 cisprf_vrf: VRF name = variable NEWLINE;
 
+ck_export_null: EXPORT null_rest_of_line;
+
+ck_import_null: IMPORT null_rest_of_line;
+
 ck_null
 :
    (
@@ -571,7 +575,8 @@ cpkicc_certificate
 :
    CERTIFICATE
    (
-      SELF_SIGNED
+      CA
+      | SELF_SIGNED
    )? certificate QUIT NEWLINE
 ;
 
@@ -710,6 +715,8 @@ crypto_key
    KEY
    (
       ck_null
+      | ck_export_null
+      | ck_import_null
       | ck_pubkey_chain
    )
 ;
@@ -942,6 +949,7 @@ s_crypto
    NO? CRYPTO
    (
       crypto_ca
+      | crypto_call_null
       | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
@@ -952,9 +960,50 @@ s_crypto
       | crypto_isakmp
       | crypto_key
       | crypto_keyring
+      | crypto_logging_null
       | crypto_map
+      | crypto_map_null
       | crypto_pki
+      | crypto_pki_null
+      | crypto_ssl_null
+      | crypto_ssh_null
+      | crypto_vpn_null
    )
+;
+
+crypto_call_null
+:
+   CALL null_rest_of_line
+;
+
+crypto_logging_null
+:
+   LOGGING null_rest_of_line
+;
+
+crypto_ssl_null
+:
+   SSL null_rest_of_line
+;
+
+crypto_ssh_null
+:
+   SSH null_rest_of_line
+;
+
+crypto_vpn_null
+:
+   VPN null_rest_of_line
+;
+
+crypto_map_null
+:
+   MAP null_rest_of_line
+;
+
+crypto_pki_null
+:
+   PKI null_rest_of_line
 ;
 
 s_key

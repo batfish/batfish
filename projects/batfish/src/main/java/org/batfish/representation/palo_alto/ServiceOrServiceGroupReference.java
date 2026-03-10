@@ -45,8 +45,8 @@ public final class ServiceOrServiceGroupReference
   /**
    * Return the name of the vsys this reference is attached to, or return null if no match is found
    */
-  @Nullable
   @SuppressWarnings("fallthrough")
+  @Nullable
   String getVsysName(PaloAltoConfiguration pc, Vsys vsys) {
     if (vsys.getServices().containsKey(_name) || vsys.getServiceGroups().containsKey(_name)) {
       return vsys.getName();
@@ -56,12 +56,12 @@ public final class ServiceOrServiceGroupReference
         if (pc.getPanorama() != null) {
           return getVsysName(pc, pc.getPanorama());
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (pc.getShared() != null) {
           return getVsysName(pc, pc.getShared());
         }
-        // fall-through
+      // fall-through
       default:
         return null;
     }

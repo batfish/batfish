@@ -7,9 +7,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
-import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
-import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -36,16 +33,14 @@ public final class PsFromAsPathGroup extends PsFrom {
     List<BooleanExpr> asPaths = new ArrayList<>();
     for (NamedAsPath namedAsPath : asPathGroup.getAsPaths().values()) {
       try {
-        AsPathMatchExpr asPathMatchExpr =
-            AsPathMatchExprParser.convertToAsPathMatchExpr(namedAsPath.getRegex());
-        asPaths.add(MatchAsPath.of(InputAsPath.instance(), asPathMatchExpr));
+        BooleanExpr booleanExpr =
+            AsPathMatchExprParser.convertToBooleanExpr(namedAsPath.getRegex());
+        asPaths.add(booleanExpr);
       } catch (Exception e) {
-        w.redFlag(
-            String.format(
-                "Error converting Juniper as-path-group regex %s, will assume no paths match"
-                    + " instead: %s.",
-                asPathGroup.getName(), e.getMessage()));
-        /* Handle error, add false to the list instead */
+        w.redFlagf(
+            "Error converting Juniper as-path-group regex %s, will assume no paths match instead:"
+                + " %s.",
+            asPathGroup.getName(), e.getMessage());
         asPaths.add(BooleanExprs.FALSE);
       }
     }

@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper.parboiled;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.annotation.Nonnull;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -30,7 +32,7 @@ public class GroupWildcard extends BaseParser<String> {
             Element(), // pop(1)
             ZeroOrMore(
                 Element(), // pop()
-                push(pop(1) + pop()))),
+                push(String.format("%s%s", pop(1), pop())))),
         EOI);
   }
 
@@ -47,7 +49,9 @@ public class GroupWildcard extends BaseParser<String> {
   Rule CharacterClass() {
     return Sequence(
         Ch('['),
-        Sequence(push(""), Optional(FirstOf(Op_Bang(), Op_Carat()), push(pop(1) + pop()))),
+        Sequence(
+            push(""),
+            Optional(FirstOf(Op_Bang(), Op_Carat()), push(String.format("%s%s", pop(1), pop())))),
         ClassLiterals(),
         Ch(']'),
         push(String.format("[%s%s]", pop(1), pop())));
@@ -64,7 +68,8 @@ public class GroupWildcard extends BaseParser<String> {
                 Ch('-'),
                 Ch('_'),
                 Ch(':'),
-                Ch('/'))),
+                Ch('/'),
+                Ch(','))),
         push(match()));
   }
 
@@ -77,7 +82,7 @@ public class GroupWildcard extends BaseParser<String> {
     Rule base = FirstOf(ClassLiterals(), Dot());
     return Sequence(
         base, // pop()
-        ZeroOrMore(base, push(pop(1) + pop())));
+        ZeroOrMore(base, push(String.format("%s%s", pop(1), pop()))));
   }
 
   Rule Dot() {
@@ -121,12 +126,13 @@ public class GroupWildcard extends BaseParser<String> {
   }
 
   public static String toJavaRegex(String wildcard) {
+    if (wildcard.isEmpty()) {
+      return "";
+    }
     GroupWildcard parser = Parboiled.createParser(GroupWildcard.class);
     BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
     ParsingResult<String> result = runner.run(wildcard);
-    if (!result.matched) {
-      throw new IllegalArgumentException("Unhandled input: " + wildcard);
-    }
+    checkArgument(result.matched, "Unhandled input: <%s>", wildcard);
     return result.resultValue;
   }
 

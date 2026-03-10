@@ -6,6 +6,16 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+// Common stuff
+
+send_path_count
+:
+  // 2-64
+  uint8
+;
+
+//
+
 b_advertise_external
 :
    ADVERTISE_EXTERNAL
@@ -56,6 +66,28 @@ b_as_override
    AS_OVERRIDE
 ;
 
+b_bmp
+:
+   BMP
+   (
+      bbmp_route_monitoring
+   )
+;
+
+bbmp_route_monitoring
+:
+   ROUTE_MONITORING
+   (
+      bbmprm_pre_policy
+      | bbmprm_post_policy
+      | bbmprm_rib_out
+   )
+;
+
+bbmprm_pre_policy: PRE_POLICY;
+bbmprm_post_policy: POST_POLICY EXCLUDE_NON_ELIGIBLE;
+bbmprm_rib_out: RIB_OUT POST_POLICY;
+
 b_cluster
 :
    CLUSTER id = ip_address
@@ -71,17 +103,19 @@ b_common
    | b_authentication_algorithm
    | b_authentication_key
    | b_authentication_key_chain
+   | b_bmp
    | b_cluster
    | b_damping
    | b_description
    | b_disable_4byte_as
-   | b_drop_path_attributes
    | b_enforce_first_as
    | b_export
    | b_family
    | b_import
+   | b_keep
    | b_local_address
    | b_local_as
+   | b_local_preference
    | b_multihop
    | b_multipath
    | b_no_client_reflect
@@ -100,9 +134,11 @@ b_damping
    DAMPING
 ;
 
+bgp_description_text: M_Description_DESCRIPTION;
+
 b_description
 :
-   description
+   DESCRIPTION text = bgp_description_text
 ;
 
 b_disable
@@ -117,7 +153,7 @@ b_disable_4byte_as
 
 b_drop_path_attributes
 :
-   DROP_PATH_ATTRIBUTES attr = dec
+   DROP_PATH_ATTRIBUTES attr = uint8_range
 ;
 
 b_enable
@@ -143,6 +179,7 @@ b_family
       | bf_inet
       | bf_inet6
       | bf_null
+      | bf_route_target
    ) bf_accepted_prefix_limit?
 ;
 
@@ -161,18 +198,28 @@ b_import
    IMPORT expr = policy_expression
 ;
 
+b_keep
+:
+   KEEP (ALL | NONE)
+;
+
 b_local_address
 :
    LOCAL_ADDRESS
    (
       ip_address
       | ipv6_address
-   )?
+   )
 ;
 
 b_local_as
 :
    LOCAL_AS bl_number? bl_common*
+;
+
+b_local_preference
+:
+   LOCAL_PREFERENCE localpref = uint32
 ;
 
 b_multihop
@@ -200,6 +247,18 @@ b_neighbor
    ) b_common
 ;
 
+b_output_queue_priority
+:
+   OUTPUT_QUEUE_PRIORITY
+   (
+      boqp_defaults_null
+      | boqp_queue_id
+   )
+;
+
+boqp_defaults_null: DEFAULTS null_filler;
+boqp_queue_id: bgp_priority_queue_id null_filler;
+
 b_no_client_reflect
 :
    NO_CLIENT_REFLECT
@@ -212,7 +271,6 @@ b_null
       | BFD_LIVENESS_DETECTION
       | GRACEFUL_RESTART
       | HOLD_TIME
-      | KEEP
       | LOG_UPDOWN
       | MTU_DISCOVERY
       | OUT_DELAY
@@ -333,6 +391,12 @@ bf_null
    ) null_filler
 ;
 
+bf_route_target
+:
+   ROUTE_TARGET
+;
+
+
 bfi_any
 :
    ANY null_filler
@@ -359,9 +423,11 @@ bfi_unicast
    (
       apply
       | bfiu_add_path
+      | bfiu_extended_nexthop_tunnel_null
       | bfiu_loops
       | bfiu_prefix_limit
       | bfiu_rib_group
+      | bfiu_withdraw_priority
    )
 ;
 
@@ -383,14 +449,79 @@ bfi6_unicast
    UNICAST
    (
       apply
+      | bfi6u_add_path
+      | bfi6u_extended_nexthop_tunnel_null
+      | bfi6u_loops
       | bfi6u_prefix_limit
+      | bfi6u_withdraw_priority
    )
+;
+
+bfi6u_add_path
+:
+   ADD_PATH
+   (
+      bfi6ua_receive
+      | bfi6ua_send
+   )
+;
+
+bfi6ua_receive
+:
+   RECEIVE
+;
+
+bfi6ua_send
+:
+  SEND
+  (
+    apply
+    | bfi6uas_multipath
+    | bfi6uas_path_count
+    | bfi6uas_path_selection_mode
+    | bfi6uas_prefix_policy
+  )
+;
+
+bfi6uas_multipath
+:
+  MULTIPATH
+;
+
+bfi6uas_path_count
+:
+   PATH_COUNT count = send_path_count
+;
+
+bfi6uas_path_selection_mode
+:
+  PATH_SELECTION_MODE
+  (
+    ALL_PATHS
+    | EQUAL_COST_PATHS
+  )
+;
+
+bfi6uas_prefix_policy
+:
+   PREFIX_POLICY policy = junos_name
+;
+
+bfi6u_extended_nexthop_tunnel_null: EXTENDED_NEXTHOP_TUNNEL;
+
+bfi6u_loops
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
 ;
 
 bfi6u_prefix_limit
 :
    PREFIX_LIMIT null_filler
 ;
+
+bfi6u_withdraw_priority: WITHDRAW_PRIORITY bgp_priority_queue_id;
 
 bfiu_add_path
 :
@@ -401,9 +532,13 @@ bfiu_add_path
    )
 ;
 
+bfiu_extended_nexthop_tunnel_null: EXTENDED_NEXTHOP_TUNNEL;
+
 bfiu_loops
 :
-   LOOPS count = dec
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
 ;
 
 bfiu_prefix_limit
@@ -415,6 +550,8 @@ bfiu_rib_group
 :
    RIB_GROUP name = junos_name
 ;
+
+bfiu_withdraw_priority: WITHDRAW_PRIORITY bgp_priority_queue_id;
 
 bfiua_receive
 :
@@ -441,12 +578,6 @@ bfiuas_multipath
 bfiuas_path_count
 :
    PATH_COUNT count = send_path_count
-;
-
-send_path_count
-:
-  // 2-64
-  uint8
 ;
 
 bfiuas_path_selection_mode
@@ -478,7 +609,9 @@ bl_common
 
 bl_loops
 :
-   LOOPS dec
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
 ;
 
 bl_no_prepend_global_as
@@ -525,10 +658,20 @@ p_bgp
 :
    BGP
    (
-      b_common
+      b_advertise_from_main_vpn_tables_null
+      | b_bgp_error_tolerance_null
+      | b_common
       | b_disable
+      | b_drop_path_attributes
       | b_enable
+      | b_forwarding_context_null
       | b_group
       | b_neighbor
+      | b_output_queue_priority
    )
 ;
+
+// Protocol-wide config only
+b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
+b_bgp_error_tolerance_null: BGP_ERROR_TOLERANCE;
+b_forwarding_context_null: FORWARDING_CONTEXT name = junos_name;

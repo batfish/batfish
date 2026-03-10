@@ -34,6 +34,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.BadRequestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -164,6 +166,16 @@ public class WorkMgr extends AbstractCoordinator {
     return entries;
   }
 
+  private static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {
+    try {
+      Path tempDir = Files.createTempDirectory(prefix, attrs);
+      tempDir.toFile().deleteOnExit();
+      return tempDir;
+    } catch (IOException e) {
+      throw new BatfishException("Failed to create temporary directory", e);
+    }
+  }
+
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
@@ -221,23 +233,19 @@ public class WorkMgr extends AbstractCoordinator {
       }
       SubmissionResult result = _workExecutor.submit(work);
       switch (result.getType()) {
-        case ERROR:
-          _logger.error(String.format("Error submitting work: %s\n", result.getMessage()));
+        case ERROR -> {
+          _logger.errorf("Error submitting work: %s\n", result.getMessage());
           _workQueueMgr.markAssignmentError(work);
-          break;
-        case SUCCESS:
-          _logger.info(String.format("Work submitted with ID: %s\n", work.getId()));
+        }
+        case SUCCESS -> {
+          _logger.infof("Work submitted with ID: %s\n", work.getId());
           TaskHandle handle = result.getTaskHandle();
           _workQueueMgr.markAssignmentSuccess(work, handle);
-          break;
-        case BUSY:
-          _logger.warn(
-              String.format("Work with ID: %s requeued because worker is busy\n", work.getId()));
+        }
+        case BUSY -> {
+          _logger.warnf("Work with ID: %s requeued because worker is busy\n", work.getId());
           _workQueueMgr.markAssignmentFailure(work);
-          break;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Invalid SubmissionResult.Type: %s", result.getType()));
+        }
       }
     } catch (Exception e) {
       _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
@@ -615,6 +623,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @throws IOException If the contents of the topology file cannot be mapped to the topology
    *     object
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable Set<String> getNodes(String network, String snapshot) throws IOException {
     Topology topology = getPojoTopology(network, snapshot);
     if (topology == null) {
@@ -909,7 +918,8 @@ public class WorkMgr extends AbstractCoordinator {
             subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR),
             subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR),
             subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR),
-            subDir.resolve(BfConsts.RELPATH_SONIC_CONFIGS_DIR));
+            subDir.resolve(BfConsts.RELPATH_SONIC_CONFIGS_DIR),
+            subDir.resolve(BfConsts.RELPATH_AZURE_CONFIGS_DIR));
     if (configPaths.stream().noneMatch(Files::exists)) {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
@@ -998,7 +1008,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Copy baseSnapshot so initSnapshot will see a properly formatted upload
     Path newSnapshotInputsDir =
-        CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
+        createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
@@ -1021,7 +1031,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
-      Path unzipDir = CommonUtil.createTempDirectory("upload");
+      Path unzipDir = createTempDirectory("upload");
       UnzipUtility.unzip(new ByteArrayInputStream(forkSnapshotBean.zipFile), unzipDir);
 
       // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
@@ -1240,6 +1250,7 @@ public class WorkMgr extends AbstractCoordinator {
    * List questions for the given network. If {@code verbose} is {@code true}, include hidden
    * questions. Returns list of questions if successful, or {@code null} if network does not exist.
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable SortedSet<String> listQuestions(String network, boolean verbose) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -1257,6 +1268,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Returns list of snapshots for given network, or {@code null} if network does not exist. */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<String> listSnapshots(@Nonnull String network) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -1294,6 +1306,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading metadata for any snapshot
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<SnapshotMetadataEntry> listSnapshotsWithMetadata(@Nonnull String network)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
@@ -1387,7 +1400,7 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         Question.parseQuestion(questionJson);
       } catch (Exception e) {
-        throw new BatfishException(
+        throw new BadRequestException(
             String.format("Invalid question %s/%s: %s", network, question, e.getMessage()), e);
       }
     }
@@ -1438,7 +1451,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new UncheckedIOException(e);
     }
 
-    Path unzipDir = CommonUtil.createTempDirectory("tr");
+    Path unzipDir = createTempDirectory("tr");
     try (InputStream zipStream = _storage.loadUploadSnapshotZip(uploadZipKey, networkId)) {
       UnzipUtility.unzip(zipStream, unzipDir);
     } catch (IOException e) {
@@ -2023,6 +2036,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
@@ -2044,6 +2058,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
       String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);

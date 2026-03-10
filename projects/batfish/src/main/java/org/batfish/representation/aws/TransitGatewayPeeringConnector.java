@@ -53,11 +53,10 @@ class TransitGatewayPeeringConnector {
           if (peers.isEmpty()) {
             warnings.redFlagf("Matching peer for TGW attachment %s not found", sendSideAttachment);
           } else if (peers.size() > 1) {
-            warnings.redFlag(
-                String.format(
-                    "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of"
-                        + " them.",
-                    sendSideAttachment, peers));
+            warnings.redFlagf(
+                "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of"
+                    + " them.",
+                sendSideAttachment, peers);
           }
           peers.forEach(
               peer ->
@@ -94,10 +93,9 @@ class TransitGatewayPeeringConnector {
             ? null
             : recvSideAttachment.getAssociation().getRouteTableId();
     if (associatedRouteTableId == null) {
-      warnings.redFlag(
-          String.format(
-              "No route table associated for peering attachment %s on TGW %s",
-              recvSideAttachment.getId(), recvSideAttachment.getGatewayId()));
+      warnings.redFlagf(
+          "No route table associated for peering attachment %s on TGW %s",
+          recvSideAttachment.getId(), recvSideAttachment.getGatewayId());
       return;
     }
 
@@ -108,17 +106,15 @@ class TransitGatewayPeeringConnector {
             .filter(r -> r.getTransitGateways().containsKey(sendSideAttachment.getGatewayId()))
             .collect(ImmutableList.toImmutableList());
     if (sendSideRegions.isEmpty()) {
-      warnings.redFlag(
-          String.format(
-              "TGW %s not found in any region of account %s",
-              sendSideAttachment.getGatewayId(), sendSideAttachment.getGatewayOwnerId()));
+      warnings.redFlagf(
+          "TGW %s not found in any region of account %s",
+          sendSideAttachment.getGatewayId(), sendSideAttachment.getGatewayOwnerId());
       return;
     }
     if (sendSideRegions.size() > 1) {
-      warnings.redFlag(
-          String.format(
-              "TGW %s found in multiple regions for account %s. Skipping its peering attachments.",
-              sendSideAttachment.getGatewayId(), sendSideAttachment.getGatewayOwnerId()));
+      warnings.redFlagf(
+          "TGW %s found in multiple regions for account %s. Skipping its peering attachments.",
+          sendSideAttachment.getGatewayId(), sendSideAttachment.getGatewayOwnerId());
       return;
     }
 
@@ -136,10 +132,9 @@ class TransitGatewayPeeringConnector {
                   .getAllInterfaces()
                   .get(sendSidePeeringInterfaceName(rt.getId(), sendSideAttachment.getId()));
           if (sendSideIface == null) {
-            warnings.redFlag(
-                String.format(
-                    "Interface for route table %s for peering attachment %s on TGW %s not found",
-                    rt.getId(), sendSideAttachment.getId(), sendSideAttachment.getGatewayId()));
+            warnings.redFlagf(
+                "Interface for route table %s for peering attachment %s on TGW %s not found",
+                rt.getId(), sendSideAttachment.getId(), sendSideAttachment.getGatewayId());
             return;
           }
 

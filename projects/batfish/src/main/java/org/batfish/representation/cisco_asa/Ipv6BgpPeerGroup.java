@@ -22,14 +22,13 @@ public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {
     return _ip6.toString();
   }
 
-  @Nullable
   @Override
-  public Prefix getNeighborPrefix() {
+  public @Nullable Prefix getNeighborPrefix() {
     return null;
   }
 
   @Override
   public Prefix6 getNeighborPrefix6() {
-    return new Prefix6(_ip6, Prefix6.MAX_PREFIX_LENGTH);
+    return Prefix6.create(_ip6, Prefix6.MAX_PREFIX_LENGTH);
   }
 }

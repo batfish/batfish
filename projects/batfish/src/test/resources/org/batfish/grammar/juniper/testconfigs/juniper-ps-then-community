@@ -1,0 +1,15 @@
+#
+set system host-name juniper-ps-then-community
+#
+set policy-options community COMM1 members 1:2
+set policy-options community COMM2 members 2:3
+#
+set policy-options policy-statement PS term MULTI_SET then community set COMM1
+set policy-options policy-statement PS term MULTI_SET then community set COMM2
+#
+set policy-options policy-statement PS term SET_ADD then community set COMM1
+set policy-options policy-statement PS term SET_ADD then community add COMM2
+#
+set policy-options policy-statement PS term ADD_SET then community add COMM1
+set policy-options policy-statement PS term ADD_SET then community set COMM2
+#

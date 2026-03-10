@@ -1,0 +1,39 @@
+#
+set system host-name junos-mpls-admin-groups
+#
+# Define admin-groups
+set protocols mpls admin-groups group1 1
+set protocols mpls admin-groups group2 2
+set protocols mpls admin-groups group3 3
+set protocols mpls admin-groups group4 4
+#
+# Interface assignments
+set protocols mpls interface ge-0/0/0.0 admin-group group1
+set protocols mpls interface ge-0/0/1.0 admin-group group2
+#
+# LSP constraints with exclude
+set protocols mpls label-switched-path lsp1 admin-group exclude group1
+#
+# LSP constraints with include-any
+set protocols mpls label-switched-path lsp2 admin-group include-any group1
+set protocols mpls label-switched-path lsp2 admin-group include-any group2
+#
+# LSP constraints with include-all
+set protocols mpls label-switched-path lsp3 admin-group include-all group2
+set protocols mpls label-switched-path lsp3 admin-group include-all group3
+#
+# Secondary path constraints with exclude
+set protocols mpls label-switched-path lsp4 secondary path1 admin-group exclude group3
+#
+# Secondary path constraints with include-any
+set protocols mpls label-switched-path lsp5 secondary path2 admin-group include-any group1
+set protocols mpls label-switched-path lsp5 secondary path2 admin-group include-any group2
+#
+# Secondary path constraints with include-all
+set protocols mpls label-switched-path lsp6 secondary path3 admin-group include-all group3
+set protocols mpls label-switched-path lsp6 secondary path3 admin-group include-all group4
+#
+# Undefined reference
+set protocols mpls interface ge-0/0/2.0 admin-group undefined-group
+set protocols mpls label-switched-path lsp7 admin-group exclude undefined-group
+#

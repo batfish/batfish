@@ -1,0 +1,7 @@
+#
+set system host-name zone-undefined-interface
+#
+# Zone references an interface that doesn't exist
+set security zones security-zone trust interfaces ge-0/0/0.0 host-inbound-traffic system-services ping
+#
+set interfaces ge-0/0/1 unit 0 family inet address 1.0.0.1/24

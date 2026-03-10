@@ -1,5 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.AclAclLine;
@@ -8,12 +10,18 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
+import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -79,9 +87,44 @@ public final class AclEraser
   }
 
   @Override
+  public AclLineMatchExpr visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    return matchDestinationIp.getTraceElement() == null
+        ? matchDestinationIp
+        : AclLineMatchExprs.matchDst(matchDestinationIp.getIps());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    return matchDestinationPort.getTraceElement() == null
+        ? matchDestinationPort
+        : AclLineMatchExprs.matchDstPort(matchDestinationPort.getPorts());
+  }
+
+  @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     // TODO erase within IpSpaces if/when we add TraceElements to them
     return new MatchHeaderSpace(matchHeaderSpace.getHeaderspace());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    return matchIpProtocol.getTraceElement() == null
+        ? matchIpProtocol
+        : matchIpProtocol(matchIpProtocol.getProtocol());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    return matchSourceIp.getTraceElement() == null
+        ? matchSourceIp
+        : AclLineMatchExprs.matchSrc(matchSourceIp.getIps());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    return matchSourcePort.getTraceElement() == null
+        ? matchSourcePort
+        : AclLineMatchExprs.matchSrcPort(matchSourcePort.getPorts());
   }
 
   @Override

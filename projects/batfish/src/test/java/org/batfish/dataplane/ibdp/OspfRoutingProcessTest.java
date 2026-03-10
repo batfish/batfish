@@ -60,6 +60,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -1296,7 +1297,7 @@ public class OspfRoutingProcessTest {
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/24");
     ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.1/24");
     Interface.Builder ifaceBuilder =
-        Interface.builder().setName("iface").setAddresses(primary, secondary);
+        TestInterface.builder().setName("iface").setAddresses(primary, secondary);
 
     // Default case (not loopback or P2MP): Should return stream of all interface addresses
     assertThat(

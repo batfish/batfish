@@ -4,7 +4,8 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
-import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -17,6 +18,8 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.IpProtocol.UDP;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -26,6 +29,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
@@ -36,6 +40,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
@@ -118,8 +123,6 @@ import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMe
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverload;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
@@ -135,11 +138,10 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
@@ -149,13 +151,11 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
-import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionTrackName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.firewallFilterTermVendorStructureId;
@@ -171,28 +171,37 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
-import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.SOURCE_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV6_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 import static org.batfish.representation.juniper.Zone.getInboundFilterName;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -219,7 +228,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -238,12 +246,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
@@ -263,9 +269,11 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -287,6 +295,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -311,6 +320,7 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -360,17 +370,28 @@ import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.DecrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -382,7 +403,6 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
-import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -396,6 +416,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
+import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
@@ -411,9 +432,12 @@ import org.batfish.representation.juniper.FwFromInterface;
 import org.batfish.representation.juniper.FwFromInterfaceSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
+import org.batfish.representation.juniper.FwFromSourceClass;
 import org.batfish.representation.juniper.FwFromSourcePort;
+import org.batfish.representation.juniper.FwFromTtl;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
+import org.batfish.representation.juniper.FwThenPolicer;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -422,8 +446,10 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
+import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -442,21 +468,34 @@ import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
+import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PathSelectionMode;
+import org.batfish.representation.juniper.Policer;
+import org.batfish.representation.juniper.PolicerThen;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
+import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromValidationDatabase;
+import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
+import org.batfish.representation.juniper.PsThenCommunityAdd;
+import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
+import org.batfish.representation.juniper.PsThenMetric;
+import org.batfish.representation.juniper.PsThenMetric2;
+import org.batfish.representation.juniper.PsThenPreference;
+import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
@@ -467,6 +506,9 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
+import org.batfish.representation.juniper.Srlg;
+import org.batfish.representation.juniper.StaticRouteV4;
+import org.batfish.representation.juniper.StaticRouteV6;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -475,6 +517,7 @@ import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
+import org.batfish.vendor.VendorConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -532,23 +575,39 @@ public final class FlatJuniperGrammarTest {
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
-    Settings settings = new Settings();
-    BatfishTestUtils.configureBatfishTestSettings(settings);
-    FlatJuniperCombinedParser flatJuniperParser =
-        new FlatJuniperCombinedParser(src, settings, null);
-    Warnings w = new Warnings();
-    FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(
-            src, flatJuniperParser, w, new SilentSyntaxCollection());
-    ParserRuleContext tree =
-        Batfish.parse(
-            flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
-    JuniperConfiguration ret =
-        SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
-    ret.setWarnings(w);
-    return ret;
+    return parseJuniperConfig(hostname, false);
+  }
+
+  /** Parse a Juniper config with optional error recovery. */
+  private JuniperConfiguration parseJuniperConfig(String hostname, boolean allowErrors) {
+    try {
+      Batfish batfish = getBatfishForConfigurationNames(hostname);
+      Settings settings = batfish.getSettings();
+      if (allowErrors) {
+        settings.setDisableUnrecognized(false);
+        settings.setHaltOnConvertError(false);
+        settings.setHaltOnParseError(false);
+        settings.setThrowOnLexerError(false);
+        settings.setThrowOnParserError(false);
+      }
+      Map<String, VendorConfiguration> vendorConfigs =
+          batfish.loadVendorConfigurations(batfish.getSnapshot());
+      assertThat(vendorConfigs, hasKey(hostname));
+      String filename = "configs/" + hostname;
+      Warnings w =
+          batfish
+              .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+              .getWarnings()
+              .get(filename);
+      if (w == null) {
+        w = new Warnings(Warnings.Settings.fromLogger(batfish.getLogger()));
+      }
+      JuniperConfiguration ret = (JuniperConfiguration) vendorConfigs.get(hostname);
+      ret.setWarnings(w);
+      return ret;
+    } catch (IOException e) {
+      throw new AssertionError("Failed to parse " + hostname, e);
+    }
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -794,6 +853,35 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplicationIcmp6() {
+    String hostname = "application-icmp6";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    // Verify that ICMP6 applications are parsed and extracted correctly
+    assertThat(
+        vc.getMasterLogicalSystem().getApplications(), hasKeys("icmp6-app", "icmp-app", "tcp-app"));
+
+    // The ICMP6 application should contain IPV6_ICMP protocol
+    BaseApplication icmp6App = vc.getMasterLogicalSystem().getApplications().get("icmp6-app");
+    assertThat(
+        icmp6App.getMainTerm().getHeaderSpace().getIpProtocols(), contains(IpProtocol.IPV6_ICMP));
+
+    // ICMP6 applications should convert to MatchHeaderSpace like other protocol applications
+    AclLineMatchExpr icmp6Expr = icmp6App.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(icmp6Expr, instanceOf(MatchHeaderSpace.class));
+
+    // For comparison, ICMP should also work normally
+    BaseApplication icmpApp = vc.getMasterLogicalSystem().getApplications().get("icmp-app");
+    AclLineMatchExpr icmpExpr = icmpApp.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(icmpExpr, instanceOf(MatchHeaderSpace.class));
+
+    // TCP applications should also work normally
+    BaseApplication tcpApp = vc.getMasterLogicalSystem().getApplications().get("tcp-app");
+    AclLineMatchExpr tcpExpr = tcpApp.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(tcpExpr, instanceOf(MatchHeaderSpace.class));
+  }
+
+  @Test
   public void testAuthenticationKeyChain() throws IOException {
     String hostname = "authentication-key-chain";
     String filename = "configs/" + hostname;
@@ -948,8 +1036,134 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpBmpParsing() {
+    parseJuniperConfig("juniper-bgp-bmp");
+  }
+
+  @Test
   public void testClassOfServiceParsing() {
     parseJuniperConfig("juniper-class-of-service");
+  }
+
+  @Test
+  public void testClassOfServiceComprehensive() {
+    parseJuniperConfig("class-of-service-comprehensive");
+  }
+
+  @Test
+  public void testClassOfServiceBuiltinForwardingClasses() throws IOException {
+    String hostname = "class-of-service-builtin-forwarding-classes";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in forwarding classes don't produce undefined reference warnings when used
+    // without explicit definition
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "best-effort")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "expedited-forwarding")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "assured-forwarding")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "network-control")));
+  }
+
+  @Test
+  public void testClassOfServiceDefaultClassifier() throws IOException {
+    String hostname = "class-of-service-default-classifier";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "default" classifier doesn't produce undefined reference warnings
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceDefaultRewriteRule() throws IOException {
+    String hostname = "class-of-service-default-rewrite-rule";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "default" rewrite-rule doesn't produce undefined reference warnings
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxMcastForwardingClass() throws IOException {
+    String hostname = "class-of-service-qfx-mcast-fc";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "mcast" forwarding class doesn't produce undefined reference warnings
+    // Platform-specific: QFX switches (except QFX10000)
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceEx4300McastVariants() throws IOException {
+    String hostname = "class-of-service-ex4300-mcast-variants";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in mcast-* forwarding class variants don't produce undefined reference warnings
+    // Platform-specific: EX4300 switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxShortAliases() throws IOException {
+    String hostname = "class-of-service-qfx-short-aliases";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in short forwarding class aliases don't produce undefined reference warnings
+    // Platform-specific: QFX switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxFcoeNoLoss() throws IOException {
+    String hostname = "class-of-service-qfx-fcoe-no-loss";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in fcoe and no-loss forwarding classes don't produce undefined reference
+    // warnings
+    // Platform-specific: QFX switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testInterfaceMacLimitParsing() {
+    parseJuniperConfig("interface-mac-limit");
+  }
+
+  @Test
+  public void testSystemServicesSshParsing() {
+    parseJuniperConfig("system-services-ssh");
   }
 
   @Test
@@ -1133,10 +1347,85 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpDropPathAttributes() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-drop-path-attributes");
+    BgpGroup master = c.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
+    IntegerSpace expected =
+        IntegerSpace.builder()
+            .including(10)
+            .including(20)
+            .including(new SubRange(30, 35))
+            .including(new SubRange(100, 110))
+            .build();
+    assertThat(master.getDropPathAttributes(), equalTo(expected));
+  }
+
+  @Test
+  public void testDescriptionValidationFatalError() throws IOException {
+    String fileKey = "description-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    // Should generate fatal errors for both empty descriptions (length 0) and long descriptions
+    // (>255 chars)
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                containsString("Description length 0 is not within range (1..255)")),
+            WarningMatchers.hasText(
+                containsString("Description length 290 is not within range (1..255)"))));
+  }
+
+  @Test
+  public void testBgpKeepExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-keep");
+
+    // Routing instance R1 does not set keep
+    RoutingInstance r1 = c.getMasterLogicalSystem().getRoutingInstances().get("R1");
+    assertNull(r1.getMasterBgpGroup().getKeep());
+    assertEquals(r1.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r1.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+    assertNull(r1.getNamedBgpGroups().get("G3").getKeep());
+
+    // group --> neighbor inheritance
+    IpBgpGroup n1 = r1.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    IpBgpGroup n2 = r1.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from group
+
+    // Routing instance R2 does set keep
+    RoutingInstance r2 = c.getMasterLogicalSystem().getRoutingInstances().get("R2");
+    assertEquals(r2.getMasterBgpGroup().getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+
+    NamedBgpGroup g3 = r2.getNamedBgpGroups().get("G3");
+    g3.cascadeInheritance();
+    assertEquals(g3.getKeep(), BgpGroup.BgpKeepType.NONE);
+
+    // routing-instance --> neighbor inheritance
+    n1 = r2.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    n2 = r2.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from routing instance
+  }
+
+  @Test
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
-        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
 
     assertThat(
         parseConfig("bgp-multipath-internal").getDefaultVrf(),
@@ -1160,7 +1449,7 @@ public final class FlatJuniperGrammarTest {
 
     String bgpNeighborStructureName = Names.bgpNeighborStructureName("1.2.3.4", "default");
     String bgpNeighborStructureName6 =
-        Names.bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+        Names.bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4, 5)));
@@ -1176,6 +1465,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 2));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName, 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName6, 1));
+  }
+
+  @Test
+  public void testBgpPriority() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-output-queue-priority");
   }
 
   @Test
@@ -1210,7 +1505,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setAdmin(140);
-    in.process(received.build(), received, Direction.IN);
+    in.process(received.build(), received, IN);
     assertThat(received.build(), hasAdministrativeCost(150));
   }
 
@@ -1306,6 +1601,42 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("1.1.1.1"), hasRemoteAs(1L)))));
+  }
+
+  @Test
+  public void testBgpLoops() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-loops");
+  }
+
+  @Test
+  public void testMpls() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-mpls");
+  }
+
+  @Test
+  public void testBgpMisc() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-misc");
+  }
+
+  @Test
+  public void testBgpValidation() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-validation");
+  }
+
+  @Test
+  public void testSecurityMisc() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-security-misc");
+  }
+
+  @Test
+  public void testVpn() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-vpn");
   }
 
   @Test
@@ -1621,6 +1952,32 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFtiInterfaceTypeSupport() {
+    parseConfig("juniper_fti_interface_type");
+    // don't crash.
+  }
+
+  @Test
+  public void testJunosFtiConfiguration() {
+    parseConfig("juniper_fti");
+    // don't crash.
+  }
+
+  @Test
+  public void testSetProtocolsIsis() throws IOException {
+    // don't crash.
+    String hostname = "juniper-set-protocols-isis";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertEquals(pvcae.getWarnings().size(), 1);
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname, containsString("This feature is not currently supported")));
+  }
+
+  @Test
   public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 
@@ -1676,6 +2033,77 @@ public final class FlatJuniperGrammarTest {
           routingPolicyPermitsRoute(
               rp, base.toBuilder().setCommunities(ImmutableSet.of(other)).build()));
     }
+  }
+
+  @Test
+  public void testPsFromNeighbor() {
+    Configuration c = parseConfig("bgp-policy-from-neighbor");
+
+    Bgpv4Route base =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
+    {
+      // Allowed from a specific neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.0.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertTrue(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
+    }
+    {
+      // Rejected from wrong neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.1.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertFalse(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
+    }
+  }
+
+  @Test
+  public void testPsFromNextHop() throws IOException {
+    Configuration c = parseConfig("bgp-policy-from-next-hop");
+
+    Bgpv4Route permittedRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route deniedRoute = permittedRoute.toBuilder().setNextHopIp(Ip.parse("10.0.0.3")).build();
+
+    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
+
+    // Allowed from a specific neighbor
+    assertThat(c.getRoutingPolicies(), hasKey("POL"));
+    RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+    BgpSessionProperties session =
+        BgpSessionProperties.builder()
+            .setRemoteAs(65500)
+            .setLocalAs(65501)
+            .setRemoteIp(Ip.parse("10.0.0.1"))
+            .setLocalIp(Ip.parse("10.9.9.9"))
+            .build();
+    assertTrue(rp.processBgpRoute(permittedRoute, out_builder, session, Direction.IN, null));
+    assertFalse(rp.processBgpRoute(deniedRoute, out_builder, session, Direction.IN, null));
   }
 
   @Test
@@ -1821,6 +2249,13 @@ public final class FlatJuniperGrammarTest {
             SECURITY_POLICY_TERM,
             computeSecurityPolicyTermName(getInboundFilterName("ZONE_NAME"), "ALL"),
             1));
+  }
+
+  @Test
+  public void testZoneUndefinedInterface() {
+    // Zone references an interface with host-inbound-traffic that doesn't exist.
+    // Should not crash during conversion.
+    parseConfig("zone-undefined-interface");
   }
 
   @Test
@@ -2264,16 +2699,21 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBookRangeError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testFirewallGlobalAddressBookRangeError() throws IOException {
+    String hostname = "firewall-global-address-book-range-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString(
                     "Range must be from low to high: address INVALID range-address 5.5.5.7 to"
                         + " 5.5.5.5"))));
-    parseConfig("firewall-global-address-book-range-error");
   }
 
   @Test
@@ -2741,6 +3181,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNameServer() {
+    Configuration config = parseConfig("name-server");
+    assertThat(config.getDnsServers(), contains("1.2.3.4", "2.0.0.0"));
+  }
+
+  @Test
   public void testAggregateDefaults() {
     Configuration config = parseConfig("aggregate-defaults");
 
@@ -2996,6 +3442,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(gr2.getDiscard(), equalTo(false));
     assertThat(gr3.getDiscard(), equalTo(false));
     assertThat(gr4.getDiscard(), equalTo(false));
+    assertThat(gr4, hasTag(3));
   }
 
   @Test
@@ -3047,6 +3494,20 @@ public final class FlatJuniperGrammarTest {
 
     // Confirm extraction works for nested configs even in the presence of multiline comments
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  /**
+   * Test that when a hierarchical config has a single missing quote, we can still extract later
+   * data.
+   */
+  @Test
+  public void testNestedConfigWithQuoteBug() throws IOException {
+    String hostname = "nested-config-with-quote-bug";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
+    assertThat(configs, hasKeys(hostname));
+    assertThat(configs.get(hostname).getVrfs(), hasKey("VRF_NAME"));
   }
 
   /** Test for https://github.com/batfish/batfish/issues/7225. */
@@ -3237,12 +3698,12 @@ public final class FlatJuniperGrammarTest {
             .setAdministrativeCost(1)
             .build();
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(IN);
     policyPreference.call(
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
     // Checking admin cost set on the output route
-    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
+    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123L));
   }
 
   @Test
@@ -3265,9 +3726,198 @@ public final class FlatJuniperGrammarTest {
         getOnlyElement(traceableStatement.getInnerStatements()),
         instanceOf(SetAdministrativeCost.class));
 
+    SetAdministrativeCost setAdministrativeCost =
+        (SetAdministrativeCost) getOnlyElement(traceableStatement.getInnerStatements());
+    assertThat(setAdministrativeCost.getAdmin(), instanceOf(LiteralAdministrativeCost.class));
     assertThat(
-        getOnlyElement(traceableStatement.getInnerStatements()),
-        isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
+        ((LiteralAdministrativeCost) setAdministrativeCost.getAdmin()).getValue(), equalTo(123L));
+  }
+
+  @Test
+  public void testPsPreferenceAddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("preference-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal preference
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(100, PsThenPreference.Operator.SET)));
+
+    // Test preference add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(50, PsThenPreference.Operator.ADD)));
+
+    // Test preference subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(30, PsThenPreference.Operator.SUBTRACT)));
+
+    // Test large preference add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(4294967200L, PsThenPreference.Operator.ADD)));
+
+    // Test large preference subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(4294967200L, PsThenPreference.Operator.SUBTRACT)));
+  }
+
+  @Test
+  public void testPsPreferenceAddSubtractConversion() {
+    Configuration c = parseConfig("preference-add-subtract");
+
+    // Test preference add
+    RoutingPolicy ps2 = c.getRoutingPolicies().get("PS2");
+    assertThat(ps2, notNullValue());
+    assertThat(ps2.getStatements(), hasSize(2));
+    SetAdministrativeCost setAdd =
+        (SetAdministrativeCost)
+            ((TraceableStatement) ((If) ps2.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setAdd.getAdmin(), instanceOf(IncrementAdministrativeCost.class));
+    IncrementAdministrativeCost inc = (IncrementAdministrativeCost) setAdd.getAdmin();
+    assertThat(inc.getAddend(), equalTo(50L));
+    assertThat(inc.getMax(), equalTo(AbstractRoute.MAX_ADMIN_DISTANCE));
+
+    // Test preference subtract
+    RoutingPolicy ps3 = c.getRoutingPolicies().get("PS3");
+    assertThat(ps3, notNullValue());
+    assertThat(ps3.getStatements(), hasSize(2));
+    SetAdministrativeCost setSub =
+        (SetAdministrativeCost)
+            ((TraceableStatement) ((If) ps3.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setSub.getAdmin(), instanceOf(DecrementAdministrativeCost.class));
+    DecrementAdministrativeCost dec = (DecrementAdministrativeCost) setSub.getAdmin();
+    assertThat(dec.getSubtrahend(), equalTo(30L));
+    assertThat(dec.getMin(), equalTo(0L));
+  }
+
+  @Test
+  public void testPsMetricAddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("metric-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal metric
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(100, PsThenMetric.Operator.SET)));
+
+    // Test metric add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(50, PsThenMetric.Operator.ADD)));
+
+    // Test metric subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(30, PsThenMetric.Operator.SUBTRACT)));
+
+    // Test large metric add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(4294967200L, PsThenMetric.Operator.ADD)));
+
+    // Test large metric subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(4294967200L, PsThenMetric.Operator.SUBTRACT)));
+  }
+
+  @Test
+  public void testPsMetricAddSubtractConversion() {
+    Configuration c = parseConfig("metric-add-subtract");
+
+    // Test metric add
+    RoutingPolicy ps2 = c.getRoutingPolicies().get("PS2");
+    assertThat(ps2, notNullValue());
+    assertThat(ps2.getStatements(), hasSize(2));
+    SetMetric setAdd =
+        (SetMetric)
+            ((TraceableStatement) ((If) ps2.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setAdd.getMetric(), instanceOf(IncrementMetric.class));
+    IncrementMetric inc = (IncrementMetric) setAdd.getMetric();
+    assertThat(inc.getAddend(), equalTo(50L));
+
+    // Test metric subtract
+    RoutingPolicy ps3 = c.getRoutingPolicies().get("PS3");
+    assertThat(ps3, notNullValue());
+    assertThat(ps3.getStatements(), hasSize(2));
+    SetMetric setSub =
+        (SetMetric)
+            ((TraceableStatement) ((If) ps3.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setSub.getMetric(), instanceOf(DecrementMetric.class));
+    DecrementMetric dec = (DecrementMetric) setSub.getMetric();
+    assertThat(dec.getSubtrahend(), equalTo(30L));
+  }
+
+  @Test
+  public void testPsMetric2AddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("metric2-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal metric2
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(100, PsThenMetric2.Operator.SET)));
+
+    // Test metric2 add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(50, PsThenMetric2.Operator.ADD)));
+
+    // Test metric2 subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(30, PsThenMetric2.Operator.SUBTRACT)));
+
+    // Test large metric2 add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(4294967200L, PsThenMetric2.Operator.ADD)));
+
+    // Test large metric2 subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(4294967200L, PsThenMetric2.Operator.SUBTRACT)));
   }
 
   @Test
@@ -3298,6 +3948,17 @@ public final class FlatJuniperGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
+
+    // policy3 has a scrubbed key value: ascii-text "<SCRUBBED>"
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "policy3",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("<SCRUBBED>" + CommonUtil.salt()))),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
   }
 
@@ -3372,6 +4033,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceSampling() {
+    // Sampling is parsed but ignored; verify parsing succeeds for both family inet and inet6
+    parseConfig("interface-sampling");
+  }
+
+  @Test
   public void testInterfaceOspfNetworkType() {
     String hostname = "ospf-interface-network-type";
     Configuration c = parseConfig(hostname);
@@ -3424,6 +4091,12 @@ public final class FlatJuniperGrammarTest {
     Integer vni = c.getMasterLogicalSystem().getNamedVlans().get("VLAN_TEST").getVniId();
     Integer vni0 = 10101;
     assertEquals(vni, vni0);
+  }
+
+  @Test
+  public void testIpAddressParsing() throws IOException {
+    // Doesn't throw.
+    parseConfig("ip_address");
   }
 
   @Test
@@ -3552,6 +4225,22 @@ public final class FlatJuniperGrammarTest {
     assertEquals(c.getAllInterfaces().get("irb.10").getVlan(), current_vlan);
     c.getAllInterfaces().get("irb.10").setVlan(null);
     assertThat(c.getAllInterfaces().get("irb.10").getVlan(), nullValue());
+    // Vlan "default" resets the vlan config
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/10/0.0", allOf(hasAccessVlan(nullValue()), hasAllowedVlans(IntegerSpace.EMPTY))));
+  }
+
+  @Test
+  public void testDhcpRelayServerGroup() throws IOException {
+    JuniperConfiguration c = parseJuniperConfig("dhcp-relay-server-group");
+
+    SortedMap<String, DhcpRelayServerGroup> serverGroups =
+        c.getMasterLogicalSystem().getRoutingInstances().get("RI").getDhcpRelayServerGroups();
+
+    assertTrue(serverGroups.get("EMPTY").getServers().isEmpty());
+    assertThat(serverGroups.get("SG1").getServers(), contains(Ip.parse("1.1.1.1")));
   }
 
   @Test
@@ -3593,6 +4282,41 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.1/30")))));
+  }
+
+  @Test
+  public void testInterfaceInet6Address() {
+    String hostname = "interface-inet6-address";
+    JuniperConfiguration jc = parseJuniperConfig(hostname);
+
+    Map<String, org.batfish.representation.juniper.Interface> units0 =
+        jc.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0").getUnits();
+    Map<String, org.batfish.representation.juniper.Interface> units1 =
+        jc.getMasterLogicalSystem().getInterfaces().get("ge-0/0/1").getUnits();
+
+    // ge-0/0/0.0 has a single IPv6 address
+    assertThat(
+        units0.get("ge-0/0/0.0").getAllAddresses6(),
+        contains(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+    assertThat(
+        units0.get("ge-0/0/0.0").getPrimaryAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+    assertThat(
+        units0.get("ge-0/0/0.0").getPreferredAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+
+    // ge-0/0/1.0 has two IPv6 addresses with explicit primary and preferred
+    assertThat(
+        units1.get("ge-0/0/1.0").getAllAddresses6(),
+        containsInAnyOrder(
+            ConcreteInterfaceAddress6.parse("2001:db8::1/64"),
+            ConcreteInterfaceAddress6.parse("2001:db8::2/64")));
+    assertThat(
+        units1.get("ge-0/0/1.0").getPrimaryAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+    assertThat(
+        units1.get("ge-0/0/1.0").getPreferredAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::2/64")));
   }
 
   @Test
@@ -3689,26 +4413,15 @@ public final class FlatJuniperGrammarTest {
                     ExprAclLine.builder()
                         .setAction(LineAction.PERMIT)
                         .setMatchCondition(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    or(
-                                        new MatchHeaderSpace(
-                                            HeaderSpace.builder()
-                                                .setSrcIps(
-                                                    IpWildcard.ipWithWildcardMask(
-                                                            Ip.parse("1.0.3.0"),
-                                                            Ip.parse("0.255.0.255"))
-                                                        .toIpSpace())
-                                                .build(),
-                                            TraceElement.of(
-                                                "Matched source-address 1.2.3.4/255.0.255.0")),
-                                        new MatchHeaderSpace(
-                                            HeaderSpace.builder()
-                                                .setSrcIps(
-                                                    IpWildcard.parse("2.3.4.5/24").toIpSpace())
-                                                .build(),
-                                            TraceElement.of(
-                                                "Matched source-address 2.3.4.5/24"))))))
+                            or(
+                                matchSrc(
+                                    IpWildcard.ipWithWildcardMask(
+                                            Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
+                                        .toIpSpace(),
+                                    TraceElement.of("Matched source-address 1.2.3.4/255.0.255.0")),
+                                matchSrc(
+                                    IpWildcard.parse("2.3.4.5/24").toIpSpace(),
+                                    TraceElement.of("Matched source-address 2.3.4.5/24"))))
                         .setName("TERM")
                         .setTraceElement(matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
                         .setVendorStructureId(
@@ -3720,10 +4433,8 @@ public final class FlatJuniperGrammarTest {
                         .setMatchCondition(
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse("0.0.0.0/0").toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        IpWildcard.parse("0.0.0.0/0").toIpSpace(),
                                         TraceElement.of("Matched source-address 0.0.0.0/0")),
                                     and(
                                         new MatchHeaderSpace(
@@ -3747,6 +4458,12 @@ public final class FlatJuniperGrammarTest {
                             firewallFilterTermVendorStructureId(
                                 filename, filterNameV4, "TERM-EXCEPT"))
                         .build()))));
+  }
+
+  @Test
+  public void testIpsecBugs() {
+    // don't crash
+    parseConfig("ipsec-bugs");
   }
 
   @Test
@@ -3912,7 +4629,7 @@ public final class FlatJuniperGrammarTest {
                             "NOPFS_ESP_3DES_MD5",
                             "NOPFS_ESP_DES_SHA",
                             "NOPFS_ESP_DES_MD5"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
   }
 
   @Test
@@ -4051,27 +4768,17 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new AndMatchExpr(
-                                    ImmutableList.of(
-                                        or(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setDstIps(
-                                                        IpWildcard.ipWithWildcardMask(
-                                                                Ip.parse("1.0.3.0"),
-                                                                Ip.parse("0.255.0.255"))
-                                                            .toIpSpace())
-                                                    .build(),
-                                                TraceElement.of(
-                                                    "Matched destination-address"
-                                                        + " 1.2.3.4/255.0.255.0")),
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setDstIps(
-                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
-                                                    .build(),
-                                                TraceElement.of(
-                                                    "Matched destination-address 2.3.4.5/24"))))))
+                                or(
+                                    matchDst(
+                                        IpWildcard.ipWithWildcardMask(
+                                                Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
+                                            .toIpSpace(),
+                                        TraceElement.of(
+                                            "Matched destination-address"
+                                                + " 1.2.3.4/255.0.255.0")),
+                                    matchDst(
+                                        IpWildcard.parse("2.3.4.5/24").toIpSpace(),
+                                        TraceElement.of("Matched destination-address 2.3.4.5/24"))))
                             .setName("TERM")
                             .setTraceElement(
                                 matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
@@ -4114,6 +4821,12 @@ public final class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "xe-0/0/0.0", c));
+  }
+
+  @Test
+  public void testApplyGroupsAtLevels() {
+    // apply-groups should be recognized at snmp and protocols levels
+    parseConfig("apply-groups-at-levels");
   }
 
   @Test
@@ -4298,6 +5011,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisIgnoreAttachedBit() {
+    parseConfig("isis-ignore-attached-bit");
+    // don't crash.
+  }
+
+  @Test
   public void testIsisInterfaceAndLevelDisable() {
     Configuration c = parseConfig("isis-interface-and-level-disable");
     IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
@@ -4430,7 +5149,7 @@ public final class FlatJuniperGrammarTest {
             .call(
                 Environment.builder(c)
                     .setOriginalRoute(
-                        StaticRoute.testBuilder()
+                        org.batfish.datamodel.StaticRoute.testBuilder()
                             .setAdministrativeCost(0)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .build())
@@ -4501,6 +5220,37 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatementTermFromValidationDatabaseExtraction() {
+    JuniperConfiguration c =
+        parseJuniperConfig("juniper-policy-statement-from-validation-database");
+    PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("VDB");
+    assertThat(policy.getTerms(), hasKeys("VALID", "INVALID", "UNKNOWN"));
+    assertThat(
+        policy.getTerms().get("VALID").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.VALID)));
+    assertThat(
+        policy.getTerms().get("INVALID").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.INVALID)));
+    assertThat(
+        policy.getTerms().get("UNKNOWN").getFroms().getFromValidationDatabase(),
+        equalTo(new PsFromValidationDatabase(PsFromValidationDatabase.State.UNKNOWN)));
+  }
+
+  @Test
+  public void testJuniperPolicyStatementThenCommunity() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-community");
+    Map<String, PsTerm> pses =
+        c.getMasterLogicalSystem().getPolicyStatements().get("PS").getTerms();
+    assertThat(
+        pses.get("MULTI_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+    assertThat(
+        pses.get("SET_ADD").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("COMM1"), new PsThenCommunityAdd("COMM2")));
+    assertThat(
+        pses.get("ADD_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
     {
@@ -4515,32 +5265,62 @@ public final class FlatJuniperGrammarTest {
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
       assertThat(policy.getTerms(), hasKeys("TSETMIN", "TADDMAX", "TSUB3"));
       assertThat(
-          policy.getTerms().get("TSETMIN").getThens(),
+          policy.getTerms().get("TSETMIN").getThens().getAllThens(),
           contains(new PsThenLocalPreference(0, Operator.SET)));
       assertThat(
-          policy.getTerms().get("TADDMAX").getThens(),
+          policy.getTerms().get("TADDMAX").getThens().getAllThens(),
           contains(new PsThenLocalPreference(MAX_LOCAL_PREFERENCE, Operator.ADD)));
       assertThat(
-          policy.getTerms().get("TSUB3").getThens(),
+          policy.getTerms().get("TSUB3").getThens().getAllThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
     }
     {
       PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("TAG_POLICY");
       assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
-      assertThat(policy.getTerms().get("TMIN").getThens(), contains(new PsThenTag(0)));
-      assertThat(policy.getTerms().get("TMAX").getThens(), contains(new PsThenTag(MAX_TAG)));
+      assertThat(
+          policy.getTerms().get("TMIN").getThens().getAllThens(), contains(new PsThenTag(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getThens().getAllThens(), contains(new PsThenTag(MAX_TAG)));
     }
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("TUNNEL_ATTR_POLICY");
       assertThat(policy.getTerms(), hasKeys("SET_TUNNEL_ATTR", "REMOVE_TUNNEL_ATTR"));
       assertThat(
-          policy.getTerms().get("SET_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("SET_TUNNEL_ATTR").getThens().getAllThens(),
           contains(new PsThenTunnelAttributeSet("TA")));
       assertThat(
-          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens().getAllThens(),
           contains(PsThenTunnelAttributeRemove.INSTANCE));
     }
+    {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("AIGP_POLICY");
+      assertThat(policy.getTerms(), hasKeys("WITHOUT_DISTANCE", "WITH_DISTANCE"));
+      assertThat(
+          policy.getTerms().get("WITHOUT_DISTANCE").getThens().getAllThens(),
+          contains(new PsThenAigpOriginate(null)));
+      assertThat(
+          policy.getTerms().get("WITH_DISTANCE").getThens().getAllThens(),
+          contains(new PsThenAigpOriginate(100L)));
+    }
+  }
+
+  @Test
+  public void testInterfaceFilter() {
+    parseConfig("juniper-set-interface-filter-crash");
+    // don't crash.
+  }
+
+  @Test
+  public void testInterfaceDamping() {
+    parseConfig("juniper-set-interface-damping");
+    // don't crash.
+  }
+
+  @Test
+  public void testBgpFamilyRouteTarget() {
+    parseConfig("juniper-bgp-family-route-target");
+    // don't crash.
   }
 
   @Test
@@ -4678,6 +5458,25 @@ public final class FlatJuniperGrammarTest {
     assertFalse(result.getBooleanValue());
 
     /*
+    Next-hop policy
+     */
+    RoutingPolicy nhPolicy = c.getRoutingPolicies().get("NEXT_HOP_POLICY");
+    result =
+        nhPolicy.call(
+            envWithRoute(c, bgpRouteBuilder.setNextHop(NextHopDiscard.instance()).build(), IN));
+    assertFalse(result.getBooleanValue());
+    result =
+        nhPolicy.call(
+            envWithRoute(
+                c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.4"))).build(), IN));
+    assertTrue(result.getBooleanValue());
+    result =
+        nhPolicy.call(
+            envWithRoute(
+                c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.5"))).build(), IN));
+    assertFalse(result.getBooleanValue());
+
+    /*
     NETWORK_POLICY should accept routes with networks matching any prefix list or route filter line.
     Prefix lists are all defined as PLX = [ X.X.X.0/24 ].
       set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list PL1
@@ -4771,6 +5570,27 @@ public final class FlatJuniperGrammarTest {
                     ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 28), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    {
+      /*
+      ROUTE_TYPE should accept routes with IBGP protocol
+        set policy-options policy-statement ROUTE_TYPE term T1 from protocol bgp
+        set policy-options policy-statement ROUTE_TYPE term T1 from route-type internal
+      */
+      RoutingPolicy policy = c.getRoutingPolicies().get("ROUTE_TYPE");
+      // Permit IBGP
+      assertTrue(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.IBGP).build()))
+              .getBooleanValue());
+      // Reject EBGP
+      assertFalse(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.BGP).build()))
+              .getBooleanValue());
+      // Reject static
+      assertFalse(policy.call(envWithRoute(c, srb.build())).getBooleanValue());
+    }
+
     /*
     TAG_POLICY should accept routes with either set tag, but not from other tags
       set policy-options policy-statement TAG_POLICY term T1 from tag 1
@@ -4813,12 +5633,42 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
+  @Test
+  public void testJuniperPolicyStatementFromMetric2Parsing() {
+    // Test that "from metric2" statements parse and are marked as unsupported
+    String hostname = "juniper-policy-statement-from-metric2";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    // Verify that the configuration generates expected unsupported warnings
+    List<ParseWarning> parseWarnings = vc.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        contains(
+            allOf(hasComment("This feature is not currently supported"), hasText("metric2 0")),
+            allOf(hasComment("This feature is not currently supported"), hasText("metric2 100"))));
+
+    // Verify that the METRIC2_POLICY was parsed into the policy statement map
+    assertThat(vc.getMasterLogicalSystem().getPolicyStatements(), hasKey("METRIC2_POLICY"));
+    PolicyStatement metric2Policy =
+        vc.getMasterLogicalSystem().getPolicyStatements().get("METRIC2_POLICY");
+    assertThat(metric2Policy.getTerms(), hasKey("T1"));
+  }
+
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c).setOriginalRoute(route).setOutputRoute(route.toBuilder()).build();
+    return envWithRoute(c, route, Direction.OUT);
+  }
+
+  private static Environment envWithRoute(
+      Configuration c, AbstractRoute route, Direction direction) {
+    return Environment.builder(c)
+        .setDirection(direction)
+        .setOriginalRoute(route)
+        .setOutputRoute(route.toBuilder())
+        .build();
   }
 
   @Test
-  public void testJuniperWildcards() {
+  public void testJuniperWildcards() throws IOException {
     String hostname = "juniper-wildcards";
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
@@ -4829,7 +5679,18 @@ public final class FlatJuniperGrammarTest {
     String prefixList3 = "p3";
     Ip neighborIp = Ip.parse("2.2.2.2");
 
-    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get("configs/" + hostname),
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText("Could not parse < as a wildcard"),
+                WarningMatchers.hasText("Could not parse <*>; as a wildcard"),
+                WarningMatchers.hasText("Could not parse <%> as a wildcard"))));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* apply-groups using group containing interface wildcard should function as expected. */
     assertThat(
@@ -4868,6 +5729,12 @@ public final class FlatJuniperGrammarTest {
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborIp)))));
+
+    /* prefix-list p5 with trailing semicolon in apply-path should exist but be empty */
+    assertThat(c, hasRouteFilterLists(hasKey("p5")));
+    assertThat(c.getRouteFilterLists().get("p5").getLines(), empty());
+    assertThat(c, hasIpAccessList("FILTER"));
+    assertThat(c, hasInterface("em0.0", hasIncomingFilter(hasName("FILTER"))));
   }
 
   @Test
@@ -4882,14 +5749,15 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, INTERFACE, "lo0", containsInAnyOrder(4, 8)));
+            filename, INTERFACE, "lo0", containsInAnyOrder(4, 7, 8)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10, 25)));
     assertThat(
         ccae,
-        hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
+        hasDefinedStructureWithDefinitionLines(
+            filename, PREFIX_LIST, "p2", containsInAnyOrder(5, 11)));
 
     // Confirm undefined references are also tracked properly for apply-groups related references
     assertThat(
@@ -5083,13 +5951,13 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("local-route-export-bgp");
 
     RoutingPolicy peer1RejectAllLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("1.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer1Vrf", "1.0.0.1/32"));
     RoutingPolicy peer2RejectPtpLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("2.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer2Vrf", "2.0.0.1/32"));
     RoutingPolicy peer3RejectLanLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("3.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer3Vrf", "3.0.0.1/32"));
     RoutingPolicy peer4AllowAllLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer4Vrf", "4.0.0.1/32"));
 
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
@@ -5463,7 +6331,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("1.1.1.1/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("1.1.1.1/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .build())
             .build();
@@ -5472,7 +6343,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet3Transformation =
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("3.3.3.3/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("3.3.3.3/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .setOrElse(ruleSet1Transformation)
                     .build())
@@ -5483,7 +6357,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet2Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("2.2.2.2/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("2.2.2.2/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .setOrElse(
                         // routing instance rule set
@@ -5803,6 +6680,30 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRtfPrefixList() throws IOException {
+    String hostname = "rtf-prefix-lists";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify that the rtf-prefix-list is properly tracked as a defined structure
+    assertThat(ccae, hasDefinedStructure(filename, RTF_PREFIX_LIST, "RTF_PL"));
+    assertThat(ccae, hasDefinedStructure(filename, RTF_PREFIX_LIST, "RTF_PL_UNUSED"));
+
+    // Verify that the reference to the rtf-prefix-list is properly tracked
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, RTF_PREFIX_LIST, "RTF_PL", POLICY_STATEMENT_RTF_PREFIX_LIST));
+    assertThat(ccae, hasNumReferrers(filename, RTF_PREFIX_LIST, "RTF_PL", 1));
+    assertThat(ccae, hasNumReferrers(filename, RTF_PREFIX_LIST, "RTF_PL_UNUSED", 0));
+
+    // Verify that the undefined reference is detected
+    assertThat(ccae, hasUndefinedReference(filename, RTF_PREFIX_LIST, "RTF_PL_UNDEF"));
+  }
+
+  @Test
   public void testPrefixListEmpty() {
     Configuration c = parseConfig("prefix-list-empty");
     Flow testFlow1 = createFlow("9.8.7.6", "0.0.0.0");
@@ -5932,6 +6833,18 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRoutingOptionsMiscParsing() {
+    // Just don't have parse warnings, for now.
+    parseJuniperConfig("routing-options-misc");
+  }
+
+  @Test
+  public void testRibNamesMiscParsing() {
+    // Just don't have parse warnings
+    parseJuniperConfig("routing-options-misc");
+  }
+
+  @Test
   public void testRoutingPolicy() {
     Configuration c = parseConfig("routing-policy");
 
@@ -5959,7 +6872,7 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute connectedRouteMaskInvalidLength =
         new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(IN);
 
     assertThat(
         policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
@@ -6087,20 +7000,20 @@ public final class FlatJuniperGrammarTest {
     assertThat(ospfE2.getProtocol(), equalTo(RoutingProtocol.OSPF_E2));
 
     // "from protocol isis" should match any type of IS-IS route
-    assertTrue(fromIsis.process(isisL1, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisL2, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisEl1, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisEl2, IsisRoute.builder(), Direction.IN));
+    assertTrue(fromIsis.process(isisL1, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisL2, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisEl1, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisEl2, IsisRoute.builder(), IN));
 
     // "from protocol ospf" should match any type of OSPF route
-    assertTrue(fromOspf.process(ospfIntra, ospfIntra.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfInter, ospfInter.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfE1, ospfE1.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfE2, ospfE2.toBuilder(), Direction.IN));
+    assertTrue(fromOspf.process(ospfIntra, ospfIntra.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfInter, ospfInter.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfE1, ospfE1.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfE2, ospfE2.toBuilder(), IN));
 
     // Neither policy should match routes of other protocols
-    assertFalse(fromIsis.process(ospfIntra, IsisRoute.builder(), Direction.IN));
-    assertFalse(fromOspf.process(isisL1, ospfIntra.toBuilder(), Direction.IN));
+    assertFalse(fromIsis.process(ospfIntra, IsisRoute.builder(), IN));
+    assertFalse(fromOspf.process(isisL1, ospfIntra.toBuilder(), IN));
   }
 
   @Test
@@ -6130,21 +7043,17 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testStaticRouteOverwrite() {
     JuniperConfiguration c = parseJuniperConfig("static-route-overwrite");
-    Map<Prefix, org.batfish.representation.juniper.StaticRoute> staticRoutes =
+    Map<Prefix, StaticRouteV4> staticRoutes =
         c.getMasterLogicalSystem()
             .getRoutingInstances()
             .get(DEFAULT_VRF_NAME)
             .getRibs()
             .get(RIB_IPV4_UNICAST)
             .getStaticRoutes();
-    org.batfish.representation.juniper.StaticRoute r0 =
-        staticRoutes.get(Prefix.parse("10.0.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r1 =
-        staticRoutes.get(Prefix.parse("10.1.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r2 =
-        staticRoutes.get(Prefix.parse("10.2.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r3 =
-        staticRoutes.get(Prefix.parse("10.3.0.0/16"));
+    StaticRouteV4 r0 = staticRoutes.get(Prefix.parse("10.0.0.0/16"));
+    StaticRouteV4 r1 = staticRoutes.get(Prefix.parse("10.1.0.0/16"));
+    StaticRouteV4 r2 = staticRoutes.get(Prefix.parse("10.2.0.0/16"));
+    StaticRouteV4 r3 = staticRoutes.get(Prefix.parse("10.3.0.0/16"));
 
     // Old next-hops are cleared
     assertFalse(r0.getDrop());
@@ -6161,7 +7070,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutes() {
+  public void testStaticRouteConversion() {
     Configuration c = parseConfig("static-routes");
     assertThat(
         c,
@@ -6229,6 +7138,25 @@ public final class FlatJuniperGrammarTest {
                             .setNextHopIp(Ip.parse("1.2.3.6"))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("12.0.0.0/8"))
+                            .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .setTag(12)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("13.0.0.0/8"))
+                            .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("14.0.0.0/8"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -6268,7 +7196,7 @@ public final class FlatJuniperGrammarTest {
                         .setNetwork(Prefix.parse("5.5.5.0/24"))
                         .setNextHopIp(Ip.parse("1.2.3.4"))
                         .setAdministrativeCost(180)
-                        .setTag(12L)
+                        .setTag(4294967295L)
                         .setMetric(7L)
                         .setRecursive(false)
                         .build(),
@@ -6278,6 +7206,122 @@ public final class FlatJuniperGrammarTest {
                         .setAdministrativeCost(5)
                         .setRecursive(false)
                         .build()))));
+  }
+
+  @Test
+  public void testStaticRouteParsing() {
+    JuniperConfiguration c = parseJuniperConfig("static-routes");
+    Map<Prefix, StaticRouteV4> routes =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("default")
+            .getRibs()
+            .get(RIB_IPV4_UNICAST)
+            .getStaticRoutes();
+    Map<Prefix, StaticRouteV4> routes2 =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("ri2")
+            .getRibs()
+            .get(RIB_IPV4_UNICAST)
+            .getStaticRoutes();
+    {
+      Prefix p = Prefix.parse("1.0.0.0/8");
+      assertThat(routes, hasKey(p));
+      assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("10.0.0.1")));
+      assertThat(routes.get(p).getInstall(), equalTo(Boolean.TRUE));
+      assertThat(routes.get(p).getReadvertise(), equalTo(Boolean.TRUE));
+    }
+    {
+      Prefix p = Prefix.parse("2.0.0.0/8");
+      assertThat(routes2, hasKey(p));
+      assertThat(routes2.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("10.0.0.2")));
+      assertThat(routes2.get(p).getInstall(), nullValue());
+      assertThat(routes2.get(p).getReadvertise(), nullValue());
+      assertThat(routes2.get(p).getTag(), nullValue());
+      assertThat(routes2.get(p).getTag2(), nullValue());
+    }
+    {
+      Prefix p = Prefix.parse("12.0.0.0/8");
+      assertThat(routes, hasKey(p));
+      assertThat(routes.get(p).getReadvertise(), equalTo(Boolean.FALSE));
+      assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("1.2.3.4")));
+      assertThat(routes.get(p).getTag(), equalTo(12L));
+      assertThat(routes.get(p).getTag2(), equalTo(1212L));
+    }
+  }
+
+  @Test
+  public void testStaticRouteIPv6Parsing() {
+    JuniperConfiguration c = parseJuniperConfig("static-routes-ipv6");
+    RoutingInformationBase routesDefault =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("default")
+            .getRibs()
+            .get(RIB_IPV6_UNICAST);
+    RoutingInformationBase routesTestVrf =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("TEST-VRF")
+            .getRibs()
+            .get("TEST-VRF.inet6.0");
+    assertThat(routesDefault.getStaticRoutes().keySet(), empty());
+    assertThat(routesTestVrf.getStaticRoutes().keySet(), empty());
+
+    {
+      Prefix6 p = Prefix6.parse("01f1:8:1e:8fff::10/57");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getTag(), equalTo(12L));
+      assertThat(route.getTag2(), equalTo(1212L));
+      assertThat(route.getNextHopIp(), containsInAnyOrder(Ip6.parse("21f1:8:1e:8fff::11")));
+      NextHop nh = new NextHop("ge-0/0/0.0");
+      assertThat(route.getQualifiedNextHops(), hasKey(nh));
+      assertThat(
+          c.getStructureManager().getStructureReferences(JuniperStructureType.INTERFACE),
+          hasKey("ge-0/0/0.0"));
+    }
+    {
+      Prefix6 p = Prefix6.parse("3ff1:8:1e:8fff::10/89");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      NextHop nh = new NextHop(Ip6.parse("3ff1:8:1e:8fff::11"));
+      assertThat(route.getQualifiedNextHops(), hasKey(nh));
+      assertThat(route.getQualifiedNextHops().get(nh).getPreference(), equalTo(180));
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getDistance(), equalTo(150));
+      assertThat(route.getInstall(), equalTo(Boolean.TRUE));
+      assertThat(route.getMetric(), equalTo(6));
+      assertThat(route.getResolve(), equalTo(Boolean.TRUE));
+    }
+    {
+      Prefix6 p = Prefix6.parse("0ff1:8:1e:8fff::/42");
+      assertThat(routesTestVrf.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesTestVrf.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getDrop(), equalTo(Boolean.TRUE));
+      assertThat(route.getInstall(), equalTo(Boolean.FALSE));
+      assertThat(route.getTag(), equalTo(201L));
+    }
+    {
+      // Check default 128 if no prefix length is provided
+      Prefix6 p = Prefix6.parse("52f1:1:1e:8f1f::8/128");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+    }
+    {
+      // Simple test of RIB routing-instance name allowing numbers and underscores
+      RoutingInformationBase routesTestVrf2 =
+          c.getMasterLogicalSystem()
+              .getRoutingInstances()
+              .get("TEST_VRF2")
+              .getRibs()
+              .get("TEST_VRF2.inet6.0");
+      assertThat(routesTestVrf2.getStaticRoutesV6(), hasKey(Prefix6.parse("0ff1:8:1e:8fff::/42")));
+    }
   }
 
   @Test
@@ -6468,6 +7512,32 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSrlgExtraction() {
+    JuniperConfiguration jc = parseJuniperConfig("junos-srlg");
+    assertThat(jc.getMasterLogicalSystem().getSrlgs(), hasKeys("srlg-a", "srlg-b"));
+    Srlg srlgA = jc.getMasterLogicalSystem().getSrlgs().get("srlg-a");
+    assertThat(srlgA.getCost(), equalTo(10));
+    assertThat(srlgA.getValue(), equalTo(101L));
+    Srlg srlgB = jc.getMasterLogicalSystem().getSrlgs().get("srlg-b");
+    assertThat(srlgB.getCost(), nullValue());
+    assertThat(srlgB.getValue(), equalTo(102L));
+  }
+
+  @Test
+  public void testSrlgReferences() throws IOException {
+    String hostname = "junos-srlg";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae, hasDefinedStructureWithDefinitionLines(filename, SRLG, "srlg-a", contains(4, 5)));
+    assertThat(ccae, hasReferencedStructure(filename, SRLG, "srlg-a", MPLS_INTERFACE_SRLG));
+  }
+
+  @Test
   public void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");
 
@@ -6525,13 +7595,9 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
-                                            .build(),
-                                        TraceElement.of("Matched source-address 1.2.3.6")))),
+                            matchSrc(
+                                IpWildcard.parse("1.2.3.6").toIpSpace(),
+                                TraceElement.of("Matched source-address 1.2.3.6")),
                             "TERM",
                             matchingFirewallFilterTerm(
                                 "configs/" + config.getHostname(), "FILTER1", "TERM"),
@@ -6561,9 +7627,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN_ZONE~untrust")
                 .setLines(
                     ImmutableList.of(
-                        ExprAclLine.accepting(
-                            new AndMatchExpr(
-                                ImmutableList.of(new PermittedByAcl("~SCREEN~IDS_OPTION_NAME"))))))
+                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN~IDS_OPTION_NAME"))))
                 .build()));
 
     assertThat(
@@ -6647,8 +7711,7 @@ public final class FlatJuniperGrammarTest {
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
 
     assertThat(
         routes.get(DEFAULT_VRF_NAME),
@@ -6668,8 +7731,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
@@ -6711,8 +7773,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
@@ -6773,8 +7834,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
@@ -6822,6 +7882,22 @@ public final class FlatJuniperGrammarTest {
             .getAppliedRibGroup()
             .getName(),
         equalTo("RIB_GROUP_2"));
+  }
+
+  @Test
+  public void testBgpRibGroupUndefined() throws IOException {
+    String hostname = "juniper-bgp-rib-group-undefined";
+    Configuration c = parseConfig(hostname);
+    BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+
+    // Should not crash on undefined rib-group, and neighbor should have no applied rib group
+    assertThat(
+        c.getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("1.1.1.3"))
+            .getAppliedRibGroup(),
+        nullValue());
   }
 
   /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
@@ -6913,6 +7989,18 @@ public final class FlatJuniperGrammarTest {
     NatPool pool1 = sourceNat.getPools().get("POOL1");
     assertThat(pool0.getOwner(), equalTo("R1"));
     assertNull(pool1.getOwner());
+  }
+
+  @Test
+  public void testJuniperNtp() {
+    // Parse with no warnings
+    parseJuniperConfig("juniper-ntp");
+  }
+
+  @Test
+  public void testJuniperSyslog() {
+    // Parse with no warnings
+    parseJuniperConfig("juniper-syslog");
   }
 
   @Test
@@ -7561,25 +8649,47 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceAllDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceAllDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-all-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"all\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-all-duplicate-error");
   }
 
   @Test
-  public void testOspfAreaInterfaceDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"ge-0/0/0.0\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-duplicate-error");
+  }
+
+  @Test
+  public void testOspfAreaInterfaceIpMissing() throws IOException {
+    String hostname = "ospf-area-interface-ip-missing";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(), empty());
   }
 
   @Test
@@ -7595,7 +8705,9 @@ public final class FlatJuniperGrammarTest {
             .getFroms()
             .getFromConditions(),
         contains(new PsFromCondition("c1")));
-    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2"));
+    assertThat(
+        jc.getMasterLogicalSystem().getConditions(),
+        hasKeys("c1", "c2", "c3", "c4", "c5", "c6", "c7"));
     {
       Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
       assertThat(c.getIfRouteExists(), notNullValue());
@@ -7608,6 +8720,36 @@ public final class FlatJuniperGrammarTest {
       assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("2.0.0.0/24")));
       assertThat(c.getIfRouteExists().getTable(), equalTo("ri2.inet.0"));
     }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c3");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("3.0.0.0/24")));
+      assertThat(c.getIfRouteExists().getTable(), equalTo("ri3.inet.0"));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c4");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), nullValue());
+      assertThat(c.getIfRouteExists().getPrefix6(), nullValue());
+      assertThat(c.getIfRouteExists().getTable(), nullValue());
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c5");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix6(), equalTo(Prefix6.parse("::1.2.3.4/127")));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c6");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.parse("192.0.2.1/32")));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c7");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(
+          c.getIfRouteExists().getPrefix6(),
+          equalTo(Prefix6.parse("2001:db8:1234:5678:abc1:2345:6789:abcd/128")));
+    }
   }
 
   @Test
@@ -7615,10 +8757,24 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-condition";
     String c1TrackName = computeConditionTrackName("c1");
     String c2TrackName = computeConditionTrackName("c2");
+    String c3TrackName = computeConditionTrackName("c3");
+    String c4TrackName = computeConditionTrackName("c4");
+    String c5TrackName = computeConditionTrackName("c5");
+    String c6TrackName = computeConditionTrackName("c6");
+    String c7TrackName = computeConditionTrackName("c7");
     Configuration c = parseConfig(hostname);
 
     // Conditions should be converted to tracks
-    assertThat(c.getTrackingGroups(), hasKeys(c1TrackName, c2TrackName));
+    assertThat(
+        c.getTrackingGroups(),
+        hasKeys(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
     assertThat(
         c.getTrackingGroups().get(c1TrackName),
         equalTo(
@@ -7626,11 +8782,27 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c.getTrackingGroups().get(c2TrackName),
         equalTo(TrackMethods.route(Prefix.strict("2.0.0.0/24"), ImmutableSet.of(), "ri2")));
+    assertThat(
+        c.getTrackingGroups().get(c3TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("3.0.0.0/24"), ImmutableSet.of(), "ri3")));
+    assertThat(c.getTrackingGroups().get(c4TrackName), equalTo(TrackMethods.alwaysTrue()));
+    assertThat(c.getTrackingGroups().get(c5TrackName), equalTo(TrackMethods.alwaysFalse()));
+    assertThat(
+        c.getTrackingGroups().get(c6TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(), "default")));
+    assertThat(c.getTrackingGroups().get(c7TrackName), equalTo(TrackMethods.alwaysFalse()));
 
     // BGP process should watch tracks for conditions
     assertThat(
         c.getDefaultVrf().getBgpProcess().getTracks(),
-        containsInAnyOrder(c1TrackName, c2TrackName));
+        containsInAnyOrder(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
   }
 
   @Test
@@ -7713,34 +8885,32 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
     String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'")));
-    parseJuniperConfig(hostname);
+        pvcae.getWarnings().get(fileKey),
+        hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Multiple inet addresses with the same VRRP VRID 1 on interface"
+                    + " 'xe-0/0/0.0'")));
   }
 
   @Test
   public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
     String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
+        pvcae.getWarnings().get(fileKey),
+        hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
                     + " 10.0.0.1/24")));
-    parseJuniperConfig(hostname);
   }
 
   @Test
@@ -7755,8 +8925,8 @@ public final class FlatJuniperGrammarTest {
         hasRedFlagWarning(
             hostname,
             equalTo(
-                "Configuration will not actually commit. Cannot create VRRP group for vrid 1 on"
-                    + " interface 'xe-0/0/0.0' because no virtual-address is assigned.")));
+                "FATAL: Cannot create VRRP group for vrid 1 on interface 'xe-0/0/0.0' because no"
+                    + " virtual-address is assigned.")));
   }
 
   @Test
@@ -7793,16 +8963,6 @@ public final class FlatJuniperGrammarTest {
     String hostname = "class-of-service-code-point-aliases";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
-
-    assertThat(
-        pvcae.getWarnings().get(filename).getParseWarnings(),
-        containsInAnyOrder(
-            hasComment(
-                "200000 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0."),
-            hasComment(
-                "1010101 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.")));
 
     assertThat(
         ((JuniperConfiguration)
@@ -7817,9 +8977,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", contains(4)));
+            filename, CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS, "my1", contains(4)));
 
-    assertThat(ccae, hasNumReferrers(filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", 1));
+    assertThat(ccae, hasNumReferrers(filename, CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS, "my1", 1));
   }
 
   @Test
@@ -7936,27 +9096,30 @@ public final class FlatJuniperGrammarTest {
           vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(1));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-count-2");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(2));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("as-list");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
       PsThenAsPathExpandAsList then =
-          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
     }
     {
@@ -7965,16 +9128,17 @@ public final class FlatJuniperGrammarTest {
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
       assertThat(
-          term.getThens(),
+          term.getThens().getAllThens(),
           contains(
               // reverse of declared order is expected
               instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
 
-      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      PsThenAsPathPrepend prepend =
+          (PsThenAsPathPrepend) Iterables.get(term.getThens().getAllThens(), 0);
       assertThat(prepend.getAsList(), contains(456L));
 
       PsThenAsPathExpandAsList expand =
-          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens().getAllThens(), 1);
       assertThat(expand.getAsList(), contains(123L));
     }
   }
@@ -8004,28 +9168,28 @@ public final class FlatJuniperGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
       Bgpv4Route inputRoute = inputRouteEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.empty()));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-count-2");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("as-list");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(
           outputRoute.getAsPath(),
           equalTo(AsPath.ofSingletonAsSets(123L, (456L << 16) + 789L, 1L, 2L)));
@@ -8034,7 +9198,7 @@ public final class FlatJuniperGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("expand-then-prepend");
       Bgpv4Route inputRoute = inputRouteEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       // prepend 456
       // expand 123
       // The prepend is applied before the expand, even though it is declared after.
@@ -8190,6 +9354,910 @@ public final class FlatJuniperGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(
         c, hasInterface("xe-0/0/0", hasDescription("\"foo bar\" unit 0 ip address 1.2.3.4/31")));
+  }
+
+  /**
+   * Tests of {@link JuniperListPaths}.
+   *
+   * <p>The code underlying this is somewhat complicated, and in an early version we found that it
+   * crashed when the entire structure is defined in a group (because of generated code lines
+   * created to ensure the relevant node in the syntax tree is present). This test is dedicated to
+   * exercising this case for all paths in there.
+   */
+  @Test
+  public void testApplyGroupsLists() {
+    // Simply tests that all the lines parse without errors
+    parseConfig("apply-groups-lists");
+  }
+
+  /**
+   * TODO: Fix and un-xfail. To fix, should backtrack and try alternate (shallow, wildcard) paths
+   * when inheriting groups lines and no match is found. See {@link GroupInheritor}.
+   */
+  @Test
+  public void testApplyGroupsWildcardNestingExtraction() {
+    String hostname = "wildcard-nesting";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Set<ConcreteInterfaceAddress> assignedAddresses =
+        vc.getMasterLogicalSystem()
+            .getInterfaces()
+            .get("xe-0/0/0")
+            .getUnits()
+            .get("xe-0/0/0.20")
+            .getAllAddresses();
+    assertThat(assignedAddresses, not(hasItem(ConcreteInterfaceAddress.parse("1.0.0.1/31"))));
+
+    // TODO: fix and remove expected assertion error
+    _thrown.expect(AssertionError.class);
+    assertThat(assignedAddresses, hasItem(ConcreteInterfaceAddress.parse("2.0.0.1/31")));
+  }
+
+  @Test
+  public void testPrefixExportLimit() throws IOException {
+    String hostname = "prefix-export-limit";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname, equalTo("Batfish does not limit prefix-export-limit")));
+  }
+
+  @Test
+  public void testFirewallInet6Filters() {
+    // Should not crash.
+    parseConfig("firewall-ipv6-filters");
+  }
+
+  @Test
+  public void testSetPartial() {
+    // Should not crash.
+    parseConfig("set-partial");
+  }
+
+  @Test
+  public void testInterfacesVlanMap() {
+    // Should not crash.
+    parseConfig("interfaces-vlan-map");
+  }
+
+  @Test
+  public void testIsisImport() {
+    // Should not crash.
+    parseConfig("isis-import");
+  }
+
+  @Test
+  public void testBmpStation() {
+    // Should not crash.
+    parseConfig("bmp-station");
+  }
+
+  @Test
+  public void testMultipathResolve() {
+    // Should not crash.
+    parseConfig("multipath-resolve");
+  }
+
+  @Test
+  public void testRecoveryTimeout() {
+    // Should not crash.
+    parseConfig("recovery-timeout");
+  }
+
+  @Test
+  public void testVrfTargetAuto() throws IOException {
+    // Should not crash.
+    parseJuniperConfig("switch-options-vrf-target-auto");
+  }
+
+  @Test
+  public void testJuniperAsPathExclamationRegex() {
+    Configuration c = parseConfig("juniper-as-path-exclamation-regex");
+    RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
+    Bgpv4Route.Builder test =
+        Bgpv4Route.testBuilder()
+            .setAdmin(100)
+            .setNetwork(Prefix.parse("1.1.1.1/28"))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+    Result result =
+        asPathGroupPolicy1.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    result =
+        asPathGroupPolicy1.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    RoutingPolicy asPathGroupPolicy2 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY2");
+    result =
+        asPathGroupPolicy2.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    result =
+        asPathGroupPolicy2.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+  }
+
+  @Test
+  public void testIfRouteExistMissingPrefix() throws IOException {
+    String hostname = "juniper-missing-prefix-condition";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c0. Config will not"
+                    + " pass commit checks."),
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c1. Config will not"
+                    + " pass commit checks.")));
+  }
+
+  @Test
+  public void testBgpPeerAsWarnings() throws IOException {
+    String hostname = "bgp-peer-as-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.2 of group EBGP_GROUP. External peer's AS (1111)"
+                    + " must not be the same as the local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.3 of group EBGP_GROUP. Peer AS number must be"
+                    + " configured for an external peer."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.5 of group IBGP_GROUP. Internal peer's AS (2222)"
+                    + " must be the same as local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.9 of group DEFAULT_GROUP. Peer AS number must be"
+                    + " configured for an external peer.")));
+  }
+
+  @Test
+  public void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
+    String hostname = "community-literals-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in"
+                    + " an add action"),
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in a"
+                    + " set action")));
+  }
+
+  @Test
+  public void testRiskyRegexWarnings() throws IOException {
+    String hostname = "risky-regexes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(
+            hasComment(
+                "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ allows longer matches such"
+                    + " as 18075:10000"),
+            hasComment("RISK: Community string ':111' is interpreted as '0:111'")));
+  }
+
+  @Test
+  public void testCommunityOverlapWarnings() throws IOException {
+    String hostname = "overlapping-policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(hasComment("RISK: Overwriting existing then community set")));
+  }
+
+  @Test
+  public void testPsFromExternal() {
+    String hostname = "policy-statement-from-external";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+    Configuration c = parseConfig(hostname);
+    Warnings w = new Warnings();
+
+    // Test policy statement with "from external type 1"
+    PsTerm termType1 =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-type-1")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termType1);
+
+    PsFromExternal fromExternalType1 = termType1.getFroms().getFromExternal();
+    assertNotNull(fromExternalType1);
+    assertThat(fromExternalType1.getType(), equalTo(OspfMetricType.E1));
+
+    // Verify conversion to vendor-independent model
+    assertThat(
+        fromExternalType1.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E1)));
+
+    // Test policy statement with "from external type 2"
+    PsTerm termType2 =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-type-2")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termType2);
+
+    PsFromExternal fromExternalType2 = termType2.getFroms().getFromExternal();
+    assertNotNull(fromExternalType2);
+    assertThat(fromExternalType2.getType(), equalTo(OspfMetricType.E2));
+
+    // Verify conversion to vendor-independent model
+    assertThat(
+        fromExternalType2.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E2)));
+
+    // Test policy statement with just "from external" (no type specified)
+    PsTerm termAny =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-any")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termAny);
+
+    PsFromExternal fromExternalAny = termAny.getFroms().getFromExternal();
+    assertNotNull(fromExternalAny);
+    assertThat(fromExternalAny.getType(), nullValue());
+
+    // Verify conversion to vendor-independent model - should match any external type
+    assertThat(
+        fromExternalAny.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2)));
+
+    // Get the converted routing policies
+    RoutingPolicy type1Policy = c.getRoutingPolicies().get("test-external-type-1");
+    RoutingPolicy type2Policy = c.getRoutingPolicies().get("test-external-type-2");
+    RoutingPolicy anyTypePolicy = c.getRoutingPolicies().get("test-external-any");
+    assertNotNull(anyTypePolicy);
+
+    // Create OSPF External Type 1 and Type 2 routes
+    Prefix testPrefix = Prefix.parse("192.0.2.0/24");
+    OspfExternalType1Route ospfE1Route =
+        (OspfExternalType1Route)
+            OspfExternalType1Route.testBuilder()
+                .setNetwork(testPrefix)
+                .setMetric(20)
+                .setAdmin(100)
+                .build();
+
+    OspfExternalType2Route ospfE2Route =
+        (OspfExternalType2Route)
+            OspfExternalType2Route.builder()
+                .setNetwork(testPrefix)
+                .setNextHopIp(Ip.parse("10.0.0.1"))
+                .setArea(0)
+                .setMetric(20)
+                .setCostToAdvertiser(10)
+                .setLsaMetric(10)
+                .setAdvertiser("advertiser")
+                .setAdmin(100)
+                .setNonRouting(true) // Required when using NextHopIp
+                .build();
+
+    assertTrue("Type 1 policy should match E1 route", type1Policy.processReadOnly(ospfE1Route));
+    assertFalse(
+        "Type 1 policy should not match E2 route", type1Policy.processReadOnly(ospfE2Route));
+
+    assertTrue("Type 2 policy should match E2 route", type2Policy.processReadOnly(ospfE2Route));
+    assertFalse(
+        "Type 2 policy should not match E1 route", type2Policy.processReadOnly(ospfE1Route));
+
+    // Test that "any type" policy matches both E1 and E2 routes
+    assertTrue("Any type policy should match E1 route", anyTypePolicy.processReadOnly(ospfE1Route));
+    assertTrue("Any type policy should match E2 route", anyTypePolicy.processReadOnly(ospfE2Route));
+  }
+
+  @Test
+  public void testRiskyTerminalTermsInPolicyStatements() throws IOException {
+    String hostname = "risky-terminal-actions";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    SortedSet<Warning> riskyWarnings = ccae.getWarnings().get(hostname).getRiskyRedFlagWarnings();
+
+    // Test risky cases (should generate warnings)
+    assertThat("Should have exactly 6 RISKY warnings", riskyWarnings, hasSize(6));
+
+    String expectedRiskyRejectWarning =
+        "RISK: 'policy-statement RISKY-REJECT term UNCONDITIONAL-REJECT then reject' always ends"
+            + " processing, but there are 2 subsequent terms that will not be evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-REJECT policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyRejectWarning)));
+
+    String expectedRiskyAcceptWarning =
+        "RISK: 'policy-statement RISKY-ACCEPT term UNCONDITIONAL-ACCEPT then accept' always ends"
+            + " processing, but there is 1 subsequent term that will not be evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-ACCEPT policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyAcceptWarning)));
+
+    String expectedRiskyNextPolicyWarning =
+        "RISK: 'policy-statement RISKY-NEXT-POLICY term UNCONDITIONAL-NEXT-POLICY then next policy'"
+            + " always ends processing, but there is 1 subsequent term that will not be evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-NEXT-POLICY policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyNextPolicyWarning)));
+
+    String expectedTooManyTerminalWarning =
+        "RISK: 'policy-statement TOO-MANY-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there are 2 subsequent terms that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for TOO-MANY-TERMINAL policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedTooManyTerminalWarning)));
+
+    String expectedTwoTerminalWarning =
+        "RISK: 'policy-statement RISKY-TWO-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there are 2 subsequent terms that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-TWO-TERMINAL policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedTwoTerminalWarning)));
+
+    String riskyMutatingWarning =
+        "RISK: 'policy-statement RISKY-UNREACHABLE-MUTATING term UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there is 1 subsequent term that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-UNREACHABLE-MUTATING policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(riskyMutatingWarning)));
+  }
+
+  @Test
+  public void testPsToConditionsFlag() throws IOException {
+    String hostname = "risky-terminal-actions";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+
+    // Test policy with only "to" condition
+    PolicyStatement policyToOnly =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("TO-ONLY");
+    PsTerm toConditionTerm = policyToOnly.getTerms().get("TO-CONDITION-TERM");
+
+    assertThat(
+        "Term with 'to' condition should have hasToConditions=true",
+        toConditionTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with 'to' condition should not have any 'from' conditions",
+        !toConditionTerm.hasAtLeastOneFrom());
+
+    // Test policy with both "from" and "to" conditions
+    PolicyStatement policyFromAndTo =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("FROM-AND-TO");
+    PsTerm fromToConditionTerm = policyFromAndTo.getTerms().get("FROM-TO-CONDITION-TERM");
+
+    assertThat(
+        "Term with both 'from' and 'to' conditions should have hasToConditions=true",
+        fromToConditionTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with both 'from' and 'to' conditions should have hasAtLeastOneFrom=true",
+        fromToConditionTerm.hasAtLeastOneFrom());
+
+    // Test policy with only "from" conditions (negative test case for hasToConditions)
+    PolicyStatement policyFromOnly =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("SAFE-CONDITIONAL");
+    PsTerm fromOnlyTerm = policyFromOnly.getTerms().get("CONDITIONAL-REJECT");
+
+    assertThat(
+        "Term with only 'from' conditions should have hasToConditions=false",
+        !fromOnlyTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with only 'from' conditions should have hasAtLeastOneFrom=true",
+        fromOnlyTerm.hasAtLeastOneFrom());
+  }
+
+  @Test
+  public void testFirewallPolicerExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("firewall-policer");
+    Map<String, Policer> policers = c.getMasterLogicalSystem().getPolicers();
+
+    // Verify policers are extracted
+    assertThat(
+        policers,
+        hasKeys("10M", "1M", "FILTER-SPECIFIC-POL", "LOGICAL-INTERFACE-POL", "BOTH-FLAGS-POL"));
+
+    // Verify 10M policer details
+    Policer policer10M = policers.get("10M");
+    assertThat(policer10M.getName(), equalTo("10M"));
+    assertThat(policer10M.getIfExceeding(), notNullValue());
+    assertThat(policer10M.getIfExceeding().getBandwidthLimit(), equalTo(10000000L));
+    assertThat(policer10M.getIfExceeding().getBurstSizeLimit(), equalTo(15000L));
+    assertThat(policer10M.getThen(), equalTo(PolicerThen.DISCARD));
+    assertThat(policer10M.getFilterSpecific(), nullValue());
+    assertThat(policer10M.getLogicalInterfacePolicer(), nullValue());
+
+    // Verify 1M policer details
+    Policer policer1M = policers.get("1M");
+    assertThat(policer1M.getName(), equalTo("1M"));
+    assertThat(policer1M.getIfExceeding(), notNullValue());
+    assertThat(policer1M.getIfExceeding().getBandwidthLimit(), equalTo(1000000L));
+    assertThat(policer1M.getIfExceeding().getBurstSizeLimit(), equalTo(2000L));
+    assertThat(policer1M.getThen(), equalTo(PolicerThen.DISCARD));
+    assertThat(policer1M.getFilterSpecific(), nullValue());
+    assertThat(policer1M.getLogicalInterfacePolicer(), nullValue());
+
+    // Verify filter-specific policer
+    Policer filterSpecificPol = policers.get("FILTER-SPECIFIC-POL");
+    assertThat(filterSpecificPol.getName(), equalTo("FILTER-SPECIFIC-POL"));
+    assertThat(filterSpecificPol.getFilterSpecific(), equalTo(true));
+    assertThat(filterSpecificPol.getLogicalInterfacePolicer(), nullValue());
+    assertThat(filterSpecificPol.getIfExceeding(), notNullValue());
+    assertThat(filterSpecificPol.getIfExceeding().getBandwidthLimit(), equalTo(100000000L));
+    assertThat(filterSpecificPol.getIfExceeding().getBurstSizeLimit(), equalTo(200000L));
+    assertThat(filterSpecificPol.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify logical-interface-policer
+    Policer logicalInterfacePol = policers.get("LOGICAL-INTERFACE-POL");
+    assertThat(logicalInterfacePol.getName(), equalTo("LOGICAL-INTERFACE-POL"));
+    assertThat(logicalInterfacePol.getFilterSpecific(), nullValue());
+    assertThat(logicalInterfacePol.getLogicalInterfacePolicer(), equalTo(true));
+    assertThat(logicalInterfacePol.getIfExceeding(), notNullValue());
+    assertThat(logicalInterfacePol.getIfExceeding().getBandwidthLimit(), equalTo(1000000000L));
+    assertThat(logicalInterfacePol.getIfExceeding().getBurstSizeLimit(), equalTo(10000000L));
+    assertThat(logicalInterfacePol.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify policer with both flags
+    Policer bothFlagsPol = policers.get("BOTH-FLAGS-POL");
+    assertThat(bothFlagsPol.getName(), equalTo("BOTH-FLAGS-POL"));
+    assertThat(bothFlagsPol.getFilterSpecific(), equalTo(true));
+    assertThat(bothFlagsPol.getLogicalInterfacePolicer(), equalTo(true));
+    assertThat(bothFlagsPol.getIfExceeding(), notNullValue());
+    assertThat(bothFlagsPol.getIfExceeding().getBandwidthLimit(), equalTo(500000000L));
+    assertThat(bothFlagsPol.getIfExceeding().getBurstSizeLimit(), equalTo(1000000L));
+    assertThat(bothFlagsPol.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify filter terms reference policers
+    Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
+    assertThat(filters, hasKey("COPP-IN"));
+    FirewallFilter filter = filters.get("COPP-IN");
+    assertThat(filter, instanceOf(ConcreteFirewallFilter.class));
+    ConcreteFirewallFilter concreteFilter = (ConcreteFirewallFilter) filter;
+    assertThat(concreteFilter.getTerms(), hasKeys("SSH", "SNMP"));
+
+    // Verify SSH term uses 10M policer
+    FwTerm sshTerm = concreteFilter.getTerms().get("SSH");
+    FwThenPolicer sshPolicerAction =
+        sshTerm.getThens().stream()
+            .filter(t -> t instanceof FwThenPolicer)
+            .map(t -> (FwThenPolicer) t)
+            .findFirst()
+            .orElse(null);
+    assertThat(sshPolicerAction, notNullValue());
+    assertThat(sshPolicerAction.getPolicerName(), equalTo("10M"));
+
+    // Verify SNMP term uses 1M policer
+    FwTerm snmpTerm = concreteFilter.getTerms().get("SNMP");
+    FwThenPolicer snmpPolicerAction =
+        snmpTerm.getThens().stream()
+            .filter(t -> t instanceof FwThenPolicer)
+            .map(t -> (FwThenPolicer) t)
+            .findFirst()
+            .orElse(null);
+    assertThat(snmpPolicerAction, notNullValue());
+    assertThat(snmpPolicerAction.getPolicerName(), equalTo("1M"));
+  }
+
+  @Test
+  public void testFirewallPolicerReferences() throws IOException {
+    String hostname = "firewall-policer";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify policer definitions
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "10M"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "1M"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "FILTER-SPECIFIC-POL"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "LOGICAL-INTERFACE-POL"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "BOTH-FLAGS-POL"));
+
+    // Verify policer references from filter terms
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "10M", 1));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "1M", 1));
+  }
+
+  @Test
+  public void testBgpPeerImportPolicyVrfCollision() {
+    Configuration c = parseConfig("bgp-peer-import-policy-vrf-collision");
+
+    // Get VRF configurations
+    org.batfish.datamodel.Vrf vrf1 = c.getVrfs().get("VRF1");
+    org.batfish.datamodel.Vrf vrf2 = c.getVrfs().get("VRF2");
+    assertThat(vrf1, notNullValue());
+    assertThat(vrf2, notNullValue());
+
+    // Get BGP processes
+    org.batfish.datamodel.BgpProcess bgp1 = vrf1.getBgpProcess();
+    org.batfish.datamodel.BgpProcess bgp2 = vrf2.getBgpProcess();
+    assertThat(bgp1, notNullValue());
+    assertThat(bgp2, notNullValue());
+
+    // Get the BGP neighbors - both VRFs have a peer at 10.0.0.1
+    org.batfish.datamodel.BgpActivePeerConfig peer1 =
+        bgp1.getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    org.batfish.datamodel.BgpActivePeerConfig peer2 =
+        bgp2.getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    assertThat(peer1, notNullValue());
+    assertThat(peer2, notNullValue());
+
+    // Get the import policy names for each peer
+    String importPolicy1 = peer1.getIpv4UnicastAddressFamily().getImportPolicy();
+    String importPolicy2 = peer2.getIpv4UnicastAddressFamily().getImportPolicy();
+    assertThat(importPolicy1, notNullValue());
+    assertThat(importPolicy2, notNullValue());
+
+    // With the fix, policy names should include VRF context and be different
+    assertThat(importPolicy1, equalTo(generatedBgpPeerImportPolicyName("VRF1", "10.0.0.1/32")));
+    assertThat(importPolicy2, equalTo(generatedBgpPeerImportPolicyName("VRF2", "10.0.0.1/32")));
+
+    // Verify both policies exist and are distinct
+    RoutingPolicy policy1 = c.getRoutingPolicies().get(importPolicy1);
+    RoutingPolicy policy2 = c.getRoutingPolicies().get(importPolicy2);
+    assertThat(policy1, notNullValue());
+    assertThat(policy2, notNullValue());
+
+    // Verify the policies call their respective VRF-specific import policies (POL1 and POL2)
+    // Both policies should have a CallExpr to their configured import policy
+    assertThat(
+        policy1.getStatements().stream().anyMatch(s -> s.toString().contains("POL1")),
+        equalTo(true));
+    assertThat(
+        policy2.getStatements().stream().anyMatch(s -> s.toString().contains("POL2")),
+        equalTo(true));
+  }
+
+  @Test
+  public void testFirewallFilterTtl() {
+    String hostname = "firewall-filter-ttl";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(filter.getTerms().keySet(), containsInAnyOrder("SINGLE", "RANGE", "EXCEPT"));
+
+    // Test single TTL value
+    {
+      FwTerm term = filter.getTerms().get("SINGLE");
+      Iterator<FwFrom> i = term.getFroms().iterator();
+      assertTrue(i.hasNext());
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromTtl.class));
+      FwFromTtl fromTtl = (FwFromTtl) from;
+      assertThat(fromTtl.getRange(), equalTo(SubRange.singleton(64)));
+      assertThat(fromTtl.getExcept(), equalTo(false));
+      assertFalse(i.hasNext());
+    }
+
+    // Test TTL range
+    {
+      FwTerm term = filter.getTerms().get("RANGE");
+      Iterator<FwFrom> i = term.getFroms().iterator();
+      assertTrue(i.hasNext());
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromTtl.class));
+      FwFromTtl fromTtl = (FwFromTtl) from;
+      assertThat(fromTtl.getRange(), equalTo(new SubRange(10, 20)));
+      assertThat(fromTtl.getExcept(), equalTo(false));
+      assertFalse(i.hasNext());
+    }
+
+    // Test TTL except
+    {
+      FwTerm term = filter.getTerms().get("EXCEPT");
+      Iterator<FwFrom> i = term.getFroms().iterator();
+      assertTrue(i.hasNext());
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromTtl.class));
+      FwFromTtl fromTtl = (FwFromTtl) from;
+      assertThat(fromTtl.getRange(), equalTo(new SubRange(100, 200)));
+      assertThat(fromTtl.getExcept(), equalTo(true));
+      assertFalse(i.hasNext());
+    }
+  }
+
+  @Test
+  public void testNextLineRecoveryGh9718() {
+    String hostname = "next-line-recovery-gh-9718";
+    JuniperConfiguration vc = parseJuniperConfig(hostname, /* allowErrors= */ true);
+
+    // Both VLANs should be parsed despite error on line 4
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans(),
+        hasKeys("EXAMPLE_VLAN_3998", "EXAMPLE_VLAN_3999", "EXAMPLE_VLAN_4000"));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3998").getVlanId(),
+        equalTo(3998));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3999").getVlanId(),
+        equalTo(3999));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_4000").getVlanId(),
+        equalTo(4000));
+  }
+
+  @Test
+  public void testBgpLocalPreference() {
+    JuniperConfiguration config = parseJuniperConfig("bgp-local-preference");
+    Map<String, NamedBgpGroup> groups =
+        config.getMasterLogicalSystem().getDefaultRoutingInstance().getNamedBgpGroups();
+    BgpGroup master =
+        config.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
+
+    // Process-level local-preference
+    assertThat(master.getLocalPreference(), equalTo(50L));
+
+    // Group with override
+    BgpGroup groupOverride = groups.get("TEST-GROUP");
+    assertThat(groupOverride.getLocalPreference(), equalTo(100L));
+
+    // Group that inherits from process level
+    BgpGroup groupInherit = groups.get("TEST-GROUP-INHERIT");
+    assertThat(groupInherit.getLocalPreference(), nullValue());
+    groupInherit.cascadeInheritance();
+    assertThat(groupInherit.getLocalPreference(), equalTo(50L));
+  }
+
+  @Test
+  public void testBgpLocalPreferenceConversion() {
+    Configuration c = parseConfig("bgp-local-preference");
+
+    // Group with local-preference 100: export policy should set local-preference
+    RoutingPolicy overrideExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("default", "1.1.1.2/32"));
+    assertThat(overrideExportPolicy, notNullValue());
+    assertThat(
+        overrideExportPolicy.getStatements(),
+        hasItem(equalTo(new SetLocalPreference(new LiteralLong(100L)))));
+
+    // Group that inherits process-level local-preference 50
+    RoutingPolicy inheritExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("default", "1.1.1.3/32"));
+    assertThat(inheritExportPolicy, notNullValue());
+    assertThat(
+        inheritExportPolicy.getStatements(),
+        hasItem(equalTo(new SetLocalPreference(new LiteralLong(50L)))));
+  }
+
+  @Test
+  public void testSourceClassExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("source-class");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+    Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
+
+    // Test policy-statement then source-class extraction (definition)
+    PolicyStatement exportScu = policies.get("EXPORT-SCU");
+    assertThat(exportScu, notNullValue());
+
+    PsTerm termA = exportScu.getTerms().get("REGION-A");
+    assertThat(termA.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termA.getThens().getAllThens()),
+        equalTo(new PsThenSourceClass("SOURCE-CLASS-A")));
+
+    PsTerm termB = exportScu.getTerms().get("REGION-B");
+    assertThat(termB.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termB.getThens().getAllThens()),
+        equalTo(new PsThenSourceClass("SOURCE-CLASS-B")));
+
+    // Test firewall filter from source-class extraction (reference)
+    assertThat(filters, hasEntry(equalTo("METERING"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringFilter = (ConcreteFirewallFilter) filters.get("METERING");
+    assertThat(meteringFilter.getTerms(), hasKeys("METER-A", "METER-B", "METER-UNDEF", "ACCEPT"));
+
+    FwTerm fwTermA = meteringFilter.getTerms().get("METER-A");
+    assertThat(fwTermA.getFroms(), hasSize(1));
+    FwFrom fromA = getOnlyElement(fwTermA.getFroms());
+    assertThat(fromA, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassA = (FwFromSourceClass) fromA;
+    assertThat(fromSourceClassA.getName(), equalTo("SOURCE-CLASS-A"));
+
+    FwTerm fwTermB = meteringFilter.getTerms().get("METER-B");
+    assertThat(fwTermB.getFroms(), hasSize(1));
+    FwFrom fromB = getOnlyElement(fwTermB.getFroms());
+    assertThat(fromB, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassB = (FwFromSourceClass) fromB;
+    assertThat(fromSourceClassB.getName(), equalTo("SOURCE-CLASS-B"));
+
+    // Test undefined source-class reference
+    FwTerm fwTermUndef = meteringFilter.getTerms().get("METER-UNDEF");
+    assertThat(fwTermUndef.getFroms(), hasSize(1));
+    FwFrom fromUndef = getOnlyElement(fwTermUndef.getFroms());
+    assertThat(fromUndef, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassUndef = (FwFromSourceClass) fromUndef;
+    assertThat(fromSourceClassUndef.getName(), equalTo("SOURCE-CLASS-UNDEFINED"));
+
+    // Test IPv6 filter with source-class
+    assertThat(filters, hasEntry(equalTo("METERING-V6"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringV6Filter = (ConcreteFirewallFilter) filters.get("METERING-V6");
+    assertThat(meteringV6Filter.getTerms(), hasKeys("METER-A", "ACCEPT"));
+
+    FwTerm fwTermV6 = meteringV6Filter.getTerms().get("METER-A");
+    assertThat(fwTermV6.getFroms(), hasSize(1));
+    FwFrom fromV6 = getOnlyElement(fwTermV6.getFroms());
+    assertThat(fromV6, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassV6 = (FwFromSourceClass) fromV6;
+    assertThat(fromSourceClassV6.getName(), equalTo("SOURCE-CLASS-A"));
+  }
+
+  @Test
+  public void testSourceClassDefinitionAndReferences() throws IOException {
+    String hostname = "source-class";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify source-class definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, SOURCE_CLASS, "SOURCE-CLASS-A"));
+    assertThat(ccae, hasDefinedStructure(filename, SOURCE_CLASS, "SOURCE-CLASS-B"));
+
+    // Verify source-class references are tracked
+    // SOURCE-CLASS-A is referenced 2 times (once in inet filter, once in inet6 filter)
+    assertThat(ccae, hasNumReferrers(filename, SOURCE_CLASS, "SOURCE-CLASS-A", 2));
+    // SOURCE-CLASS-B is referenced 1 time (in inet filter)
+    assertThat(ccae, hasNumReferrers(filename, SOURCE_CLASS, "SOURCE-CLASS-B", 1));
+
+    // Verify undefined source-class reference is identified
+    assertThat(ccae, hasUndefinedReference(filename, SOURCE_CLASS, "SOURCE-CLASS-UNDEFINED"));
+  }
+
+  @Test
+  public void testPolicyStatementFromProtocol() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-from-protocol");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Helper to extract the single PsFromProtocol from a term
+    java.util.function.Function<String, PsProtocol> getFromProtocol =
+        termName -> {
+          PsTerm term = ps.getTerms().get(termName);
+          assertThat(term.getFroms().getFromProtocols(), hasSize(1));
+          return term.getFroms().getFromProtocols().iterator().next().getProtocol();
+        };
+
+    assertThat(getFromProtocol.apply("ACCESS_INTERNAL"), equalTo(PsProtocol.ACCESS_INTERNAL));
+    assertThat(getFromProtocol.apply("AGGREGATE"), equalTo(PsProtocol.AGGREGATE));
+    assertThat(getFromProtocol.apply("BGP"), equalTo(PsProtocol.BGP));
+    assertThat(getFromProtocol.apply("DIRECT"), equalTo(PsProtocol.DIRECT));
+    assertThat(getFromProtocol.apply("EVPN"), equalTo(PsProtocol.EVPN));
+    assertThat(getFromProtocol.apply("ISIS"), equalTo(PsProtocol.ISIS));
+    assertThat(getFromProtocol.apply("LDP"), equalTo(PsProtocol.LDP));
+    assertThat(getFromProtocol.apply("LOCAL"), equalTo(PsProtocol.LOCAL));
+    assertThat(getFromProtocol.apply("OSPF"), equalTo(PsProtocol.OSPF));
+    assertThat(getFromProtocol.apply("OSPF3"), equalTo(PsProtocol.OSPF3));
+    assertThat(getFromProtocol.apply("RSVP"), equalTo(PsProtocol.RSVP));
+    assertThat(getFromProtocol.apply("STATIC"), equalTo(PsProtocol.STATIC));
+  }
+
+  @Test
+  public void testPolicyStatementToProtocol() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-to-protocol");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Helper to extract the single PsToProtocol from a term
+    java.util.function.Function<String, PsProtocol> getToProtocol =
+        termName -> {
+          PsTerm term = ps.getTerms().get(termName);
+          assertThat(term.getTos().getToProtocols(), hasSize(1));
+          return term.getTos().getToProtocols().iterator().next().getProtocol();
+        };
+
+    assertThat(getToProtocol.apply("ACCESS_INTERNAL"), equalTo(PsProtocol.ACCESS_INTERNAL));
+    assertThat(getToProtocol.apply("AGGREGATE"), equalTo(PsProtocol.AGGREGATE));
+    assertThat(getToProtocol.apply("BGP"), equalTo(PsProtocol.BGP));
+    assertThat(getToProtocol.apply("DIRECT"), equalTo(PsProtocol.DIRECT));
+    assertThat(getToProtocol.apply("EVPN"), equalTo(PsProtocol.EVPN));
+    assertThat(getToProtocol.apply("ISIS"), equalTo(PsProtocol.ISIS));
+    assertThat(getToProtocol.apply("LDP"), equalTo(PsProtocol.LDP));
+    assertThat(getToProtocol.apply("LOCAL"), equalTo(PsProtocol.LOCAL));
+    assertThat(getToProtocol.apply("OSPF"), equalTo(PsProtocol.OSPF));
+    assertThat(getToProtocol.apply("OSPF3"), equalTo(PsProtocol.OSPF3));
+    assertThat(getToProtocol.apply("RSVP"), equalTo(PsProtocol.RSVP));
+    assertThat(getToProtocol.apply("STATIC"), equalTo(PsProtocol.STATIC));
+
+    // Verify hasAtLeastOneTo for all terms
+    for (PsTerm term : ps.getTerms().values()) {
+      assertThat(term.getName(), term.hasAtLeastOneTo(), equalTo(true));
+    }
+
+    // Verify that parse-time todo warnings are generated for all to conditions
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(hasComment("This feature is not currently supported")));
+  }
+
+  @Test
+  public void testPolicyStatementTo() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-to");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Verify to level extraction
+    PsTerm levelTerm = ps.getTerms().get("LEVEL");
+    assertThat(levelTerm.getTos().getToLevel(), notNullValue());
+    assertThat(levelTerm.getTos().getToLevel().getLevel(), equalTo(1L));
+
+    PsTerm level2Term = ps.getTerms().get("LEVEL2");
+    assertThat(level2Term.getTos().getToLevel(), notNullValue());
+    assertThat(level2Term.getTos().getToLevel().getLevel(), equalTo(2L));
+
+    // Verify to rib extraction
+    PsTerm ribTerm = ps.getTerms().get("RIB");
+    assertThat(ribTerm.getTos().getToRib(), notNullValue());
+    assertThat(ribTerm.getTos().getToRib().getRibName(), equalTo("inet.0"));
+
+    PsTerm rib6Term = ps.getTerms().get("RIB6");
+    assertThat(rib6Term.getTos().getToRib(), notNullValue());
+    assertThat(rib6Term.getTos().getToRib().getRibName(), equalTo("inet6.0"));
+
+    // Verify to protocol extraction
+    PsTerm protocolTerm = ps.getTerms().get("PROTOCOL");
+    assertThat(protocolTerm.getTos().getToProtocols(), hasSize(1));
+    assertThat(
+        protocolTerm.getTos().getToProtocols().iterator().next().getProtocol(),
+        equalTo(PsProtocol.BGP));
+
+    // Verify hasAtLeastOneTo for all terms
+    for (PsTerm term : ps.getTerms().values()) {
+      assertThat(term.getName(), term.hasAtLeastOneTo(), equalTo(true));
+    }
+
+    // Verify that parse-time todo warnings are generated
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(hasComment("This feature is not currently supported")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

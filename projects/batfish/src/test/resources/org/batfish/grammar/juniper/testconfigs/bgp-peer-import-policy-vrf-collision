@@ -1,0 +1,24 @@
+#
+set system host-name bgp-peer-import-policy-vrf-collision
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+#
+# VRF1 with BGP neighbor 10.0.0.1 using policy POL1
+set routing-instances VRF1 instance-type vrf
+set routing-instances VRF1 routing-options autonomous-system 65001
+set routing-instances VRF1 protocols bgp group GROUP1 import POL1
+set routing-instances VRF1 protocols bgp group GROUP1 neighbor 10.0.0.1 peer-as 65100
+#
+# VRF2 with BGP neighbor 10.0.0.1 (same IP!) using policy POL2
+set routing-instances VRF2 instance-type vrf
+set routing-instances VRF2 routing-options autonomous-system 65002
+set routing-instances VRF2 protocols bgp group GROUP2 import POL2
+set routing-instances VRF2 protocols bgp group GROUP2 neighbor 10.0.0.1 peer-as 65200
+#
+# Define different import policies
+set policy-options policy-statement POL1 term T1 then local-preference 100
+set policy-options policy-statement POL1 term T1 then accept
+#
+set policy-options policy-statement POL2 term T2 then local-preference 200
+set policy-options policy-statement POL2 term T2 then accept
+#

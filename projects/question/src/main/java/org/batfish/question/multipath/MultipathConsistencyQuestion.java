@@ -31,9 +31,9 @@ public class MultipathConsistencyQuestion extends Question {
 
   @JsonCreator
   public MultipathConsistencyQuestion(
-      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
-      @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
+      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
+      @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces,
+      @JsonProperty(PROP_PATH_CONSTRAINTS) @Nullable PathConstraintsInput pathConstraints) {
     setDifferential(false);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);

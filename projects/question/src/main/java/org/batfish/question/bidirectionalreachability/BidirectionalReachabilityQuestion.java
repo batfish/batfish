@@ -40,9 +40,9 @@ public final class BidirectionalReachabilityQuestion extends Question {
 
   @JsonCreator
   private static BidirectionalReachabilityQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_HEADER_CONSTRAINTS) PacketHeaderConstraints headers,
-      @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints,
-      @Nullable @JsonProperty(PROP_RETURN_FLOW_TYPE) ReturnFlowType returnFlowType) {
+      @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headers,
+      @JsonProperty(PROP_PATH_CONSTRAINT) @Nullable PathConstraintsInput pathConstraints,
+      @JsonProperty(PROP_RETURN_FLOW_TYPE) @Nullable ReturnFlowType returnFlowType) {
     return new BidirectionalReachabilityQuestion(
         firstNonNull(headers, PacketHeaderConstraints.unconstrained()),
         firstNonNull(pathConstraints, PathConstraintsInput.unconstrained()),
@@ -59,21 +59,18 @@ public final class BidirectionalReachabilityQuestion extends Question {
     return "bidirectionalReachability";
   }
 
-  @Nonnull
   @JsonProperty(PROP_HEADER_CONSTRAINTS)
-  public PacketHeaderConstraints getHeaderConstraints() {
+  public @Nonnull PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }
 
-  @Nonnull
   @JsonProperty(PROP_PATH_CONSTRAINT)
-  public PathConstraintsInput getPathConstraintsInput() {
+  public @Nonnull PathConstraintsInput getPathConstraintsInput() {
     return _pathConstraints;
   }
 
-  @Nonnull
   @JsonProperty(PROP_RETURN_FLOW_TYPE)
-  public ReturnFlowType getReturnFlowType() {
+  public @Nonnull ReturnFlowType getReturnFlowType() {
     return _returnFlowType;
   }
 }

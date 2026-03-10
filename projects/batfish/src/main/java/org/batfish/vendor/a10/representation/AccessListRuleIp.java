@@ -4,27 +4,23 @@ import javax.annotation.Nonnull;
 
 /** An access-list rule matching traffic of any ip protocol. */
 public class AccessListRuleIp implements AccessListRule {
-  @Nonnull
   @Override
-  public Action getAction() {
+  public @Nonnull Action getAction() {
     return _action;
   }
 
-  @Nonnull
   @Override
-  public AccessListAddress getSource() {
+  public @Nonnull AccessListAddress getSource() {
     return _source;
   }
 
-  @Nonnull
   @Override
-  public AccessListAddress getDestination() {
+  public @Nonnull AccessListAddress getDestination() {
     return _destination;
   }
 
-  @Nonnull
   @Override
-  public String getLineText() {
+  public @Nonnull String getLineText() {
     return _lineText;
   }
 

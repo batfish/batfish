@@ -1,0 +1,5 @@
+#
+set system host-name ospf-area-interface-ip-missing
+#
+set protocols ospf area 255.255.255.255 interface 1.2.3.4 metric 17
+#

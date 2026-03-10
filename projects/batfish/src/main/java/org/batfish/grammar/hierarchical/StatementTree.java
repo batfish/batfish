@@ -32,6 +32,11 @@ public class StatementTree {
     return _parent;
   }
 
+  /** Deletes all subtrees. */
+  public void deleteAllSubtrees() {
+    _children.clear();
+  }
+
   /** Deletes subtree keyed by {@code word}. */
   public void deleteSubtree(String word) {
     _children.remove(word);

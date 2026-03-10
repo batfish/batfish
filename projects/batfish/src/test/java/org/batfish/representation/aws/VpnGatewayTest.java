@@ -14,10 +14,10 @@ import static org.batfish.representation.aws.VpnConnection.EXPORT_CONNECTED_STAT
 import static org.batfish.representation.aws.VpnConnection.VPN_TO_BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -60,7 +60,8 @@ public class VpnGatewayTest {
                 new VpnGateway(
                     "vgw-81fd279f",
                     ImmutableList.of("vpc-815775e7"),
-                    ImmutableMap.of(TAG_NAME, "lhr-aws-01")))));
+                    ImmutableMap.of(TAG_NAME, "lhr-aws-01"),
+                    64666L))));
   }
 
   @Test
@@ -69,7 +70,8 @@ public class VpnGatewayTest {
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     VpnGateway vgw =
-        new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "vgw-name"));
+        new VpnGateway(
+            "vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "vgw-name"), 64666L);
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -117,7 +119,8 @@ public class VpnGatewayTest {
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
+    VpnGateway vgw =
+        new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(), 64666L);
 
     VpnConnection vpnConnection =
         new VpnConnection(

@@ -66,11 +66,11 @@ public class AclTable implements Serializable {
   @SuppressWarnings("unused")
   @JsonCreator
   private static @Nonnull AclTable create(
-      @Nullable @JsonProperty(PROP_POLICY_DESC) String policyDesc, // ignore
-      @Nullable @JsonProperty(PROP_PORTS) List<String> ports,
-      @Nullable @JsonProperty(PROP_SERVICES) List<String> services,
-      @Nullable @JsonProperty(PROP_STAGE) Stage stage,
-      @Nullable @JsonProperty(PROP_TYPE) Type type) {
+      @JsonProperty(PROP_POLICY_DESC) @Nullable String policyDesc, // ignore
+      @JsonProperty(PROP_PORTS) @Nullable List<String> ports,
+      @JsonProperty(PROP_SERVICES) @Nullable List<String> services,
+      @JsonProperty(PROP_STAGE) @Nullable Stage stage,
+      @JsonProperty(PROP_TYPE) @Nullable Type type) {
     return AclTable.builder()
         .setPorts(ports)
         .setServices(services)

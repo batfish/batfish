@@ -11,7 +11,10 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes;
 
 /** Collect all AS-path regexes in a {@link AsPathMatchExpr}. */
 @ParametersAreNonnullByDefault
@@ -47,6 +50,22 @@ public class AsPathMatchExprAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitHasAsPathLength(
       HasAsPathLength hasAsPathLength, Configuration arg) {
-    return ImmutableSet.of();
+    IntComparison cmp = hasAsPathLength.getComparison();
+    if (!(cmp.getExpr() instanceof LiteralInt)) {
+      return ImmutableSet.of();
+    }
+
+    Set<SymbolicAsPathRegex> any = ImmutableSet.of(SymbolicAsPathRegex.ALL_AS_PATHS);
+    Set<SymbolicAsPathRegex> none = ImmutableSet.of();
+    int val = ((LiteralInt) cmp.getExpr()).getValue();
+
+    // See AsPathMatchExprToRegexes#visitHasAsPathLength
+    return switch (cmp.getComparator()) {
+      case EQ -> ImmutableSet.of();
+      case GE -> val <= 0 ? any : none;
+      case GT -> val < 0 ? any : none;
+      case LE -> val >= AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH ? any : none;
+      case LT -> val > AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH ? any : none;
+    };
   }
 }

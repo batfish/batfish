@@ -18,13 +18,13 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -127,7 +127,7 @@ public class BatfishBDDDifferentialReachabilityTest {
             .flatMap(Collection::stream);
     assertTrue(
         String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.allMatch(trace -> trace.getDisposition().equals(disposition)));
+        traces.allMatch(trace -> trace.getDisposition() == disposition));
 
     traces =
         batfish
@@ -138,7 +138,7 @@ public class BatfishBDDDifferentialReachabilityTest {
             .flatMap(Collection::stream);
     assertTrue(
         String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.noneMatch(trace -> trace.getDisposition().equals(disposition)));
+        traces.noneMatch(trace -> trace.getDisposition() == disposition));
   }
 
   private static DifferentialReachabilityParameters parameters(

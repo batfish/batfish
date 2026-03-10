@@ -22,8 +22,8 @@ This file creates a java_test target for JUnit4 run tests.
 
 # See https://github.com/bazelbuild/bazel/issues/1017 for background.
 
-load("@rules_java//java:defs.bzl", "java_library", "java_test")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
 
 _OUTPUT = """import org.junit.runners.Suite;
 import org.junit.runner.RunWith;

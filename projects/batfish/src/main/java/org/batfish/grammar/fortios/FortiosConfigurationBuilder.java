@@ -144,6 +144,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_descriptionContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_secondary_ipContext;
@@ -931,6 +932,17 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_vlanid(Csi_set_vlanidContext ctx) {
     toInteger(ctx, ctx.vlanid()).ifPresent(v -> _currentInterface.setVlanid(v));
+  }
+
+  @Override
+  public void exitCsi_set_member(Csi_set_memberContext ctx) {
+    toInterfaceMembers(ctx.members)
+        .ifPresent(
+            newMembers -> {
+              Set<String> members = _currentInterface.getMembers();
+              members.clear();
+              members.addAll(newMembers);
+            });
   }
 
   @Override
@@ -2278,6 +2290,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(addressUuidsBuilder.build());
   }
 
+  /** Returns the name of all new interfaces in the configuration context */
+  private Set<String> getNewInterfacesName(Interface_namesContext ctx) {
+    return ctx.interface_name().stream()
+        .map(n -> toString(n.str()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   /**
    * Convert names in the specified context into an optional set of interface names. Returns an
    * empty optional if the line would not be accepted.
@@ -2300,10 +2319,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             .collect(ImmutableSet.toImmutableSet());
 
     ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
-    Set<String> newIfaces =
-        ctx.interface_name().stream()
-            .map(n -> toString(n.str()))
-            .collect(ImmutableSet.toImmutableSet());
+    Set<String> newIfaces = getNewInterfacesName(ctx);
 
     for (String name : newIfaces) {
       if (usedIfaceNames.contains(name)) {
@@ -2324,6 +2340,72 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             ctx,
             String.format(
                 "Interface %s is undefined and cannot be added to zone %s", name, currentZoneName));
+        return Optional.empty();
+      }
+    }
+
+    return Optional.of(ifaceNameBuilder.build());
+  }
+
+  /**
+   * Convert names in the specified context into an optional set of interface names. Returns an
+   * empty optional if the line would not be accepted. Usable interface for aggregate and redundant
+   * interfaces as to follow criteria: We test for the first 4 points: 1. Interface must exist and
+   * is PHYSICAL. 2. Interface must not be in an other aggregate or redundant interface. 3.
+   * Interface must be in the same VDOM as the aggregate/redundant interface. 4. Interface must not
+   * have an IP address
+   * https://docs.fortinet.com/document/fortigate/7.6.2/administration-guide/567758/aggregation-and-redundancy
+   */
+  private Optional<Set<String>> toInterfaceMembers(Interface_namesContext ctx) {
+    int line = ctx.start.getLine();
+    Map<String, Interface> ifacesMap = _c.getInterfaces();
+    String currentInterfaceName = _currentInterface.getName();
+
+    // Search for interfaces used in other aggregate/redundant interface
+    ImmutableSet<String> usedIfaceNames =
+        _c.getInterfaces().values().stream()
+            .filter(i -> !i.getName().equals(currentInterfaceName))
+            .map(Interface::getMembers)
+            .flatMap(Collection::stream)
+            .collect(ImmutableSet.toImmutableSet());
+
+    ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
+    Set<String> newIfaces = getNewInterfacesName(ctx);
+
+    for (String name : newIfaces) {
+      if (usedIfaceNames.contains(name)) {
+        warn(ctx, "Interface is already in another aggregate/redundant interface");
+        return Optional.empty();
+      } else if (ifacesMap.containsKey(name)) {
+        // set current interface as parent of the new member
+        Interface iface = ifacesMap.get(name);
+
+        if (iface.getType() != Interface.Type.PHYSICAL) {
+          warn(ctx, "Only physical interfaces are allowed");
+          return Optional.empty();
+        }
+
+        if (!Objects.equals(iface.getVdom(), _currentInterface.getVdom())) {
+          warn(
+              ctx,
+              String.format(
+                  "Interface is in a different vdom (%s) than the current interface (%s)",
+                  iface.getVdom(), _currentInterface.getVdom()));
+          return Optional.empty();
+        }
+
+        if (iface.getIp() != null) {
+          warn(ctx, String.format("Interface has an IP address (%s)", iface.getIp()));
+          return Optional.empty();
+        }
+
+        ifaceNameBuilder.add(name);
+        _c.referenceStructure(
+            FortiosStructureType.INTERFACE, name, FortiosStructureUsage.INTERFACE_INTERFACE, line);
+      } else {
+        _c.undefined(
+            FortiosStructureType.INTERFACE, name, FortiosStructureUsage.INTERFACE_INTERFACE, line);
+        warn(ctx, "Interface is undefined");
         return Optional.empty();
       }
     }
@@ -2937,9 +3019,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       case GEOGRAPHY:
       case MAC:
         return null;
-      default:
-        return String.format("address type %s is unknown", a.getTypeEffective());
     }
+    throw new IllegalStateException("This line should be unreachable");
   }
 
   /** Returns message indicating why addrgrp can't be committed in the CLI, or null if it can */
@@ -2997,23 +3078,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return "name is invalid"; // currently, only invalid name can cause valid to be false
     }
     // TODO Check validity of _ipRange; it is not yet used in conversion
-    switch (s.getProtocolEffective()) {
-      case TCP_UDP_SCTP:
+    return switch (s.getProtocolEffective()) {
+      case TCP_UDP_SCTP -> {
         if (s.getTcpPortRangeDst() == null
             && s.getUdpPortRangeDst() == null
             && s.getSctpPortRangeDst() == null) {
-          return "TCP/UDP/SCTP portrange cannot all be empty";
+          yield "TCP/UDP/SCTP portrange cannot all be empty";
         }
-        return null;
-      case ICMP:
-      case ICMP6:
-        // both ICMP type and ICMP code are allowed to be unset
-      case IP:
-        // protocol-number is allowed to be unset
-        return null;
-      default:
-        return String.format("protocol %s is unknown", s.getProtocolEffective());
-    }
+        yield null;
+      }
+      // both ICMP type and ICMP code are allowed to be unset
+      case ICMP, ICMP6, IP ->
+          // protocol-number is allowed to be unset
+          null;
+    };
   }
 
   /**
@@ -3048,9 +3126,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return type == Address.Type.IPRANGE || type == Address.Type.IPMASK;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

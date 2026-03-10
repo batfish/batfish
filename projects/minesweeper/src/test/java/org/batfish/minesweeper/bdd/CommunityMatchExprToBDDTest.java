@@ -18,6 +18,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -32,6 +33,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprRefere
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
@@ -42,9 +47,13 @@ import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtended
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,7 +83,7 @@ public class CommunityMatchExprToBDDTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     ConfigAtomicPredicates configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -94,12 +103,11 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
-    TransferBDD transferBDD =
-        new TransferBDD(
-            configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
   }
@@ -268,6 +276,42 @@ public class CommunityMatchExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("20:30"));
 
     assertEquals(cvarToBDD(cvar2).not(), result);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+    ExtendedCommunityGlobalAdministratorHighMatch ec =
+        new ExtendedCommunityGlobalAdministratorHighMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorHighMatch(ec, _arg);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+    ExtendedCommunityGlobalAdministratorLowMatch ec =
+        new ExtendedCommunityGlobalAdministratorLowMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorLowMatch(ec, _arg);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+    ExtendedCommunityGlobalAdministratorMatch ec =
+        new ExtendedCommunityGlobalAdministratorMatch(
+            new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorMatch(ec, _arg);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+    ExtendedCommunityLocalAdministratorMatch ec =
+        new ExtendedCommunityLocalAdministratorMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitExtendedCommunityLocalAdministratorMatch(ec, _arg);
   }
 
   @Test

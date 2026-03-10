@@ -1,7 +1,12 @@
 parser grammar FlatJuniper_routing_instances;
 
 import
-FlatJuniper_common, FlatJuniper_bridge_domains, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
+   FlatJuniper_common,
+   FlatJuniper_bmp,
+   FlatJuniper_bridge_domains,
+   FlatJuniper_forwarding_options,
+   FlatJuniper_protocols,
+   FlatJuniper_snmp;
 
 options {
    tokenVocab = FlatJuniperLexer;
@@ -155,15 +160,6 @@ ro_autonomous_system
    )
 ;
 
-ro_bmp
-:
-   BMP
-   (
-      rob_station_address
-      | rob_station_port
-   )
-;
-
 ro_confederation
 :
   CONFEDERATION num = dec?
@@ -241,7 +237,7 @@ ro_resolution
 
 rores_rib
 :
-  RIB name = junos_name
+  RIB name = rib_name
   (
     apply
     | roresr_import
@@ -255,13 +251,51 @@ roresr_import
 
 ro_rib
 :
-   RIB name = junos_name
+   RIB
    (
+      ror_inet
+      | ror_inet6
+      | ror_iso
+      | ror_mpls
+   )
+;
+
+
+ror_inet
+:
+    name = inet_rib_name ror_common
+;
+
+ror_inet6
+:
+    name = inet6_rib_name
+    (
       apply
       | ro_aggregate
       | ro_generate
-      | ro_static
+      | ro_martians
+      | ro6_static
    )
+;
+
+ror_iso
+:
+    name = iso_rib_name ror_common
+;
+
+ror_mpls
+:
+    name = mpls_rib_name ror_common
+;
+
+
+ror_common
+:
+  apply
+  | ro_aggregate
+  | ro_generate
+  | ro_martians
+  | ro_static
 ;
 
 ro_rib_groups
@@ -299,9 +333,86 @@ ro_static
    (
       apply
       | ros_rib_group
-      | ros_route
+      | ros_route4
    )
 ;
+
+ro6_static
+:
+   STATIC
+   (
+      apply
+      | ros_rib_group
+      | ros_route6
+   )
+;
+
+ro_validation
+:
+   VALIDATION
+   (
+     rov_group
+     | rov_notification_rib
+   )
+;
+
+rov_group
+:
+   GROUP name = junos_name
+   (
+      rovg_max_sessions
+      | rovg_session
+   )
+;
+
+rovg_max_sessions: MAX_SESSIONS num = dec;
+rovg_session
+:
+   SESSION server_ip = ip_address
+   (
+      rovgs_hold_time
+      | rovgs_local_address
+      | rovgs_port
+      | rovgs_record_lifetime
+      | rovgs_refresh_time
+   )
+;
+
+rovgs_hold_time
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 10-3600, default 600
+   HOLD_TIME secs=uint16
+;
+
+rovgs_local_address
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   LOCAL_ADDRESS ip = ip_address
+;
+
+rovgs_port
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 1-255, default 100
+   PORT port
+;
+
+rovgs_record_lifetime
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 60-604800, default 3600
+   RECORD_LIFETIME secs=uint32
+;
+
+rovgs_refresh_time
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 1-1800, default 300
+   REFRESH_TIME secs=uint16
+;
+
+rov_notification_rib: NOTIFICATION_RIB rib = junos_name;
 
 roa_active
 :
@@ -366,7 +477,7 @@ roa_route
   ROUTE
   (
     prefix = ip_prefix_default_32
-    | prefix6 = ipv6_prefix
+    | prefix6 = ipv6_prefix_default_128
   )
   (
     apply
@@ -404,16 +515,6 @@ roas_loops
    LOOPS dec
 ;
 
-rob_station_address
-:
-   STATION_ADDRESS IP_ADDRESS
-;
-
-rob_station_port
-:
-   STATION_PORT dec
-;
-
 rof_export
 :
    EXPORT expr = policy_expression
@@ -446,6 +547,7 @@ rog_common
   | rog_metric
   | rog_passive
   | rog_policy
+  | rog_tag
 ;
 
 rog_community
@@ -478,12 +580,17 @@ rog_policy
    POLICY expr = policy_expression
 ;
 
+rog_tag
+:
+   TAG tag = uint32
+;
+
 rog_route
 :
   ROUTE
   (
     prefix = ip_prefix_default_32
-    | ipv6_prefix
+    | prefix6 = ipv6_prefix_default_128
   ) rog_common
 ;
 
@@ -553,27 +660,45 @@ ros_rib_group
    RIB_GROUP name = junos_name
 ;
 
-ros_route
+
+ros_route4
 :
-   ROUTE
-   (
-      prefix = ip_prefix_default_32
-      | ipv6_prefix
-   )
+    ROUTE (wildcard | prefix = ip_prefix_default_32)
    (
       rosr_common
       | rosr_qualified_next_hop
    )
 ;
 
+ros_route6
+:
+    ROUTE (wildcard | prefix = ipv6_prefix_default_128)
+   (
+      rosr_common
+      | rosr_qualified_next_hop6
+   )
+;
+
+srlg_cost
+:
+  // 1-65535, default 1
+  uint16
+;
+
+srlg_value
+:
+  // 1-4294967295
+  uint32
+;
+
 roslrg_srlg_cost
 :
-   SRLG_COST cost = dec
+   SRLG_COST cost = srlg_cost
 ;
 
 roslrg_srlg_value
 :
-   SRLG_VALUE value = dec
+   SRLG_VALUE value = srlg_value
 ;
 
 rosr_active
@@ -588,7 +713,8 @@ rosr_as_path
 
 rosr_common
 :
-   rosr_active
+   apply
+   | rosr_active
    | rosr_as_path
    | rosr_community
    | rosr_discard
@@ -606,6 +732,7 @@ rosr_common
    | rosr_resolve
    | rosr_retain
    | rosr_tag
+   | rosr_tag2
 ;
 
 rosr_community
@@ -681,6 +808,16 @@ rosr_qualified_next_hop
    rosrqnh_common?
 ;
 
+rosr_qualified_next_hop6
+:
+   QUALIFIED_NEXT_HOP
+   (
+      ipv6_address
+      | interface_id
+   )
+   rosrqnh_common?
+;
+
 rosr_readvertise
 :
    READVERTISE
@@ -703,7 +840,12 @@ rosr_retain
 
 rosr_tag
 :
-   TAG tag = dec
+   TAG tag = uint32
+;
+
+rosr_tag2
+:
+   TAG2 tag = uint32
 ;
 
 rosrqnh_common
@@ -727,7 +869,7 @@ rosrqnhc_preference
 
 rosrqnhc_tag
 :
-   TAG tag = dec
+   TAG tag = uint32
 ;
 
 s_routing_instances
@@ -763,5 +905,6 @@ s_routing_options
       | ro_router_id
       | ro_srlg
       | ro_static
+      | ro_validation
    )
 ;

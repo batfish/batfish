@@ -33,8 +33,8 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Attribute create(
-        @Nullable @JsonProperty(JSON_KEY_KEY) String key,
-        @Nullable @JsonProperty(JSON_KEY_VALUE) String value) {
+        @JsonProperty(JSON_KEY_KEY) @Nullable String key,
+        @JsonProperty(JSON_KEY_VALUE) @Nullable String value) {
       checkNonNull(key, JSON_KEY_KEY, "Load balancer attribute");
       checkNonNull(value, JSON_KEY_VALUE, "Load balancer attribute");
       return new Attribute(key, value);
@@ -82,8 +82,8 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static LoadBalancerAttributes create(
-      @Nullable @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) String arn,
-      @Nullable @JsonProperty(JSON_KEY_ATTRIBUTES) List<Attribute> attributes) {
+      @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) @Nullable String arn,
+      @JsonProperty(JSON_KEY_ATTRIBUTES) @Nullable List<Attribute> attributes) {
     checkNonNull(arn, JSON_KEY_LOAD_BALANCER_ARN, "LoadBalancer");
     checkNonNull(attributes, JSON_KEY_AVAILABILITY_ZONES, "LoadBalancer");
 

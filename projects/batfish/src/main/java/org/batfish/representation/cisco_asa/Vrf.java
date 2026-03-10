@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_asa;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ public final class Vrf implements Serializable {
   private final @Nonnull VrfAddressFamily _genericAddressFamily;
 
   public Vrf(@Nonnull String name) {
-    _addressFamilies = new HashMap<>(4);
+    _addressFamilies = new EnumMap<>(AddressFamilyType.class);
     _genericAddressFamily = new VrfAddressFamily();
     _eigrpProcesses = new TreeMap<>();
     _name = name;

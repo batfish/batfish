@@ -69,6 +69,23 @@ bgp_asn
     | asn4hi = uint16 PERIOD asn4lo = uint16
 ;
 
+bgp_priority_queue_number
+:
+  // 1-16
+  uint8
+;
+
+bgp_priority_queue_id
+:
+   EXPEDITED
+   | PRIORITY bgp_priority_queue_number
+;
+
+bgp_rib_name
+:
+    BGP_RIB_NAME
+;
+
 dec
 :
   UINT8
@@ -79,7 +96,7 @@ dec
 
 description
 :
-  DESCRIPTION text = M_Description_DESCRIPTION?
+  DESCRIPTION text = M_Description_DESCRIPTION
 ;
 
 ec_administrator
@@ -161,6 +178,8 @@ named_icmp_type
   | INFO_REQUEST
   | MASK_REPLY
   | MASK_REQUEST
+  | MEMBERSHIP_REPORT
+  | MEMBERSHIP_QUERY
   | PARAMETER_PROBLEM
   | REDIRECT
   | ROUTER_ADVERTISEMENT
@@ -179,6 +198,30 @@ icmp6_only_type
     | PACKET_TOO_BIG
 ;
 
+inet_rib_name
+:
+INET_RIB_NAME
+;
+
+inet6_rib_name
+:
+INET6_RIB_NAME
+;
+
+iso_rib_name
+:
+ISO_RIB_NAME
+;
+
+mpls_rib_name
+:
+MPLS_RIB_NAME
+;
+
+rib_name
+:
+(bgp_rib_name | inet_rib_name | inet6_rib_name | iso_rib_name | mpls_rib_name | vxlan_rib_name )
+;
 
 interface_id: INTERFACE_ID;
 
@@ -208,6 +251,8 @@ ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;
 
+ipv6_prefix_default_128: IPV6_PREFIX | IPV6_ADDRESS;
+
 iso_address: ISO_ADDRESS;
 
 ip_protocol
@@ -219,8 +264,10 @@ ip_protocol
   | GRE
   | HOP_BY_HOP
   | ICMP
+  | ICMP6
   | IGMP
   | IPIP
+  | IPV6
   | OSPF
   | PIM
   | RSVP
@@ -506,7 +553,7 @@ secret_string
 
 certificate_string
 :
-  CERTIFICATE_STRING
+  CERTIFICATE_STRING | SCRUBBED
 ;
 
 null_filler
@@ -652,6 +699,17 @@ bandwidth
   )?
 ;
 
+burst_size_limit
+:
+  // Burst size in bytes with optional k/m/g suffix
+  base = dec
+  (
+    K
+    | M
+    | G
+  )?
+;
+
 sc_literal
 :
   STANDARD_COMMUNITY
@@ -708,6 +766,11 @@ uint32
 uint32l
 :
   UINT32L
+;
+
+vxlan_rib_name
+:
+    VXLAN_RIB_NAME
 ;
 
 wildcard

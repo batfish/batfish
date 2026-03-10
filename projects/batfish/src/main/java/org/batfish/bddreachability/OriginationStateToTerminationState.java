@@ -41,6 +41,7 @@ import org.batfish.symbolic.state.VrfAccept;
  * Convert origination states to their corresponding termination states. Returns null for
  * non-origination states.
  */
+@SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
 public class OriginationStateToTerminationState implements StateExprVisitor<List<StateExpr>> {
   private static final OriginationStateToTerminationState INSTANCE =
       new OriginationStateToTerminationState();

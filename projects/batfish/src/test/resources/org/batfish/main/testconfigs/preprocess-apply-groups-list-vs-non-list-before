@@ -1,0 +1,8 @@
+#
+set system host-name preprocess-apply-groups-list-vs-non-list
+#
+set groups g policy-options policy-statement ps term groupterm1 from metric 5
+set groups g policy-options policy-statement ps term commonterm from metric 6
+set apply-groups g
+set policy-options policy-statement ps term commonterm from metric 7
+#

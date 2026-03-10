@@ -6,6 +6,21 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+if_access_session
+:
+  ACCESS_SESSION ifas_port_control_null
+;
+
+ifas_port_control_null
+:
+  PORT_CONTROL
+  (
+    AUTO
+    | FORCE_AUTHORIZED
+    | FORCE_UNAUTHORIZED
+  ) NEWLINE
+;
+
 if_autostate
 :
    NO? AUTOSTATE NEWLINE
@@ -117,6 +132,16 @@ if_description
 if_delay
 :
    NO? DELAY dec NEWLINE
+;
+
+if_device_tracking
+:
+  DEVICE_TRACKING ifdt_attach_policy
+;
+
+ifdt_attach_policy
+:
+  ATTACH_POLICY name = device_tracking_policy_name NEWLINE
 ;
 
 if_encapsulation
@@ -979,7 +1004,6 @@ if_null_block
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
       | QOS
-      | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT
@@ -1815,7 +1839,8 @@ s_interface_definition
 
 if_inner
 :
-   if_autostate
+   if_access_session
+   | if_autostate
    | if_bandwidth
    | if_bfd
    | if_channel_group
@@ -1824,6 +1849,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_device_tracking
    | if_encapsulation
    | if_flow_sampler
    | if_ip

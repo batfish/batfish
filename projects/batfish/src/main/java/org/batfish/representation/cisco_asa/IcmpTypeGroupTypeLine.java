@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_asa;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
@@ -20,7 +21,8 @@ public class IcmpTypeGroupTypeLine implements IcmpTypeObjectGroupLine {
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, IcmpTypeObjectGroup> icmpTypeObjectGroups) {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.ICMP)

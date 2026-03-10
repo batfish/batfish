@@ -17,16 +17,11 @@ public final class Nat implements Serializable {
     STATIC;
 
     public TransformationType toTransformationType() {
-      switch (this) {
-        case SOURCE:
-          return TransformationType.SOURCE_NAT;
-        case DESTINATION:
-          return TransformationType.DEST_NAT;
-        case STATIC:
-          return TransformationType.STATIC_NAT;
-        default:
-          throw new IllegalArgumentException("Unknown nat type " + this);
-      }
+      return switch (this) {
+        case SOURCE -> TransformationType.SOURCE_NAT;
+        case DESTINATION -> TransformationType.DEST_NAT;
+        case STATIC -> TransformationType.STATIC_NAT;
+      };
     }
   }
 

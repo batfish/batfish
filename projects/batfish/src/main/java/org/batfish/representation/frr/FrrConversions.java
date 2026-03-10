@@ -257,7 +257,7 @@ public final class FrrConversions {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
-              if (iface.getAllAddresses().size() == 0
+              if (iface.getAllAddresses().isEmpty()
                   && isUsedForBgpUnnumbered(iface.getName(), frrConfiguration.getBgpProcess())) {
                 iface.setAddress(LINK_LOCAL_ADDRESS);
                 iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
@@ -606,11 +606,10 @@ public final class FrrConversions {
 
     // if this interface is not defined warn and move on
     if (viIface == null) {
-      w.redFlag(
-          String.format(
-              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
-                  + " device",
-              neighbor.getName()));
+      w.redFlagf(
+          "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+              + " device",
+          neighbor.getName());
       return;
     }
 
@@ -799,7 +798,7 @@ public final class FrrConversions {
       peerExportPolicy.addStatement(RemovePrivateAs.toStaticStatement());
     }
 
-    BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
+    BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf, c);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf, localAs);
 
     peerExportPolicy.addStatement(
@@ -841,7 +840,8 @@ public final class FrrConversions {
   static @Nullable RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr peerImportConditions =
-        getBgpNeighborImportPolicyCallExpr(bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()));
+        getBgpNeighborImportPolicyCallExpr(
+            bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()), c);
     if (peerImportConditions == null) {
       return null;
     }
@@ -863,11 +863,13 @@ public final class FrrConversions {
     return peerImportPolicy.build();
   }
 
-  private static BooleanExpr computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+  private static BooleanExpr computePeerExportConditions(
+      BgpNeighbor neighbor, BgpVrf bgpVrf, Configuration c) {
     BooleanExpr commonCondition =
         new CallExpr(generatedBgpCommonExportPolicyName(bgpVrf.getVrfName()));
     BooleanExpr peerCondition =
-        getBgpNeighborExportPolicyCallExpr(bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()));
+        getBgpNeighborExportPolicyCallExpr(
+            bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()), c);
 
     return peerCondition == null
         ? commonCondition
@@ -893,17 +895,21 @@ public final class FrrConversions {
   }
 
   private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(
-      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u) {
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u, Configuration c) {
     return Optional.ofNullable(ipv4u)
         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapOut)
+        // Already warned on undefined reference, ignore
+        .filter(c.getRoutingPolicies()::containsKey)
         .map(CallExpr::new)
         .orElse(null);
   }
 
   private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(
-      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u) {
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u, Configuration c) {
     return Optional.ofNullable(ipv4u)
         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapIn)
+        // Already warned on undefined reference, ignore
+        .filter(c.getRoutingPolicies()::containsKey)
         .map(CallExpr::new)
         .orElse(null);
   }
@@ -961,27 +967,24 @@ public final class FrrConversions {
             return updateSourceAddress.getAddress();
           }
 
-          @Nullable
           @Override
-          public Ip visitBgpNeighborSourceInterface(
+          public @Nullable Ip visitBgpNeighborSourceInterface(
               BgpNeighborSourceInterface updateSourceInterface) {
             org.batfish.datamodel.Interface iface =
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());
 
             if (iface == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
             ConcreteInterfaceAddress concreteAddress = iface.getConcreteAddress();
             if (concreteAddress == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find an address for interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find an address for interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
@@ -1536,7 +1539,7 @@ public final class FrrConversions {
                       Optional.ofNullable(ospfInterface.getPassive())
                           .orElse(frr.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                   .setDeadInterval(
                       Optional.ofNullable(ospfInterface.getDeadInterval())
                           .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
@@ -1639,21 +1642,14 @@ public final class FrrConversions {
   }
 
   private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      @Nullable OspfNetworkType type, Warnings w) {
+      @Nullable OspfNetworkType type) {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        w.redFlag(
-            String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.", type));
-        return null;
-    }
+    return switch (type) {
+      case BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT -> org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    };
   }
 
   public static void convertBgpCommunityLists(

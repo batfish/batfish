@@ -4,6 +4,7 @@ import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarning;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
@@ -32,6 +33,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_P
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -40,7 +42,6 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -132,13 +133,9 @@ public class JuniperConfigurationTest {
                 .setTraceElement(TraceElement.builder().add("Matched ").add("term", vsId).build())
                 .setVendorStructureId(vsId)
                 .setMatchCondition(
-                    new AndMatchExpr(
-                        ImmutableList.of(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                    .build(),
-                                TraceElement.of("Matched source-address 1.2.3.0/24")))))
+                    matchSrc(
+                        IpWildcard.parse(ipAddrPrefix).toIpSpace(),
+                        TraceElement.of("Matched source-address 1.2.3.0/24")))
                 .build()));
   }
 
@@ -148,7 +145,7 @@ public class JuniperConfigurationTest {
     JuniperConfiguration config = createConfig();
     String iface1Name = "iface1";
     Vrf vrf = new Vrf("vrf");
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface1Name)
         .setOwner(config._c)
         .setVrf(vrf)
@@ -229,13 +226,9 @@ public class JuniperConfigurationTest {
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                            .build(),
-                                        TraceElement.of("Matched source-address 1.2.3.0/24")))),
+                            matchSrc(
+                                IpWildcard.parse(ipAddrPrefix).toIpSpace(),
+                                TraceElement.of("Matched source-address 1.2.3.0/24")),
                             new MatchSrcInterface(zone.getInterfaces()))))
                 .build()));
   }
@@ -263,7 +256,11 @@ public class JuniperConfigurationTest {
     Vrf vrf = new Vrf("vrf");
     c.setVrfs(ImmutableMap.of("vrf", vrf));
     org.batfish.datamodel.Interface iface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setVrf(vrf)
+            .build();
     return iface;
   }
 
@@ -305,18 +302,18 @@ public class JuniperConfigurationTest {
     String iface1Name = "iface1";
     String iface2Name = "iface2";
     Vrf vrf = new Vrf("vrf");
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setOwner(config._c)
         .setName(loopbackName)
         .setVrf(vrf)
         .setType(InterfaceType.LOOPBACK)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface1Name)
         .setOwner(config._c)
         .setVrf(vrf)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface2Name)
         .setOwner(config._c)
         .setVrf(vrf)
@@ -603,10 +600,7 @@ public class JuniperConfigurationTest {
             IpAccessList.builder()
                 .setName("~SCREEN_ZONE~zone")
                 .setLines(
-                    ImmutableList.of(
-                        ExprAclLine.accepting(
-                            new AndMatchExpr(
-                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1"))))))
+                    ImmutableList.of(ExprAclLine.accepting(new PermittedByAcl("~SCREEN~screen1"))))
                 .build()));
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen1"), notNullValue());
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen2"), nullValue());
@@ -913,7 +907,7 @@ public class JuniperConfigurationTest {
 
     PolicyStatement ps = new PolicyStatement("ps");
     PsTerm term = new PsTerm("psterm");
-    term.getThens().add(new PsThenTag(234L));
+    term.getThens().addPsThen(new PsThenTag(234L));
     ps.getTerms().put(term.getName(), term);
 
     // no Froms case: expect a traceable (for the then we added) and end of policy
@@ -946,7 +940,7 @@ public class JuniperConfigurationTest {
             .build();
     ifaceNames.forEach(
         ifaceName ->
-            org.batfish.datamodel.Interface.builder().setName(ifaceName).setOwner(c).build());
+            org.batfish.datamodel.TestInterface.builder().setName(ifaceName).setOwner(c).build());
     return c;
   }
 

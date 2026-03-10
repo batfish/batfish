@@ -1,0 +1,8 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name apply-groups-at-levels
+#
+set groups SNMP_GROUP snmp community COMM1 authorization read-only
+set groups PROTOCOLS_GROUP protocols ospf area 0.0.0.0 interface all
+#
+set snmp apply-groups SNMP_GROUP
+set groups SOME_GROUP protocols apply-groups PROTOCOLS_GROUP

@@ -1,9 +1,12 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToAsPathMatchExpr;
+import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToBooleanExpr;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.batfish.datamodel.AsPath;
@@ -12,6 +15,13 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.junit.Test;
 
 /**
@@ -121,9 +131,16 @@ public class AsPathMatchExprParserTest {
     }
   }
 
+  @Test
+  public void testAsPathLength() {
+    AsPathMatchExpr res = convertToAsPathMatchExpr(".{50,}");
+    assertThat(
+        res, equalTo(HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(50)))));
+  }
+
   /**
    * Test for fallback to {@link AsPathMatchRegex} for some example regexes tested in {@link
-   * AsPathRegexTest}.
+   * org.batfish.representation.juniper.parboiled.AsPathRegexTest}.
    */
   @Test
   public void testAsPathMatchRegexFallback() {
@@ -139,5 +156,16 @@ public class AsPathMatchExprParserTest {
     assertMatches(res2, 4L, 5L);
     assertMatches(res2, 4L, 6L);
     assertDoesNotMatch(res2, 1L, 2L, 3L);
+  }
+
+  /**
+   * Test for {@link AsPathMatchExprParser#convertToBooleanExpr(String)} for "!.*" and supported
+   * regex that converts to {@link MatchAsPath}.
+   */
+  @Test
+  public void testAsPathMatchNone() {
+    assertSame(convertToBooleanExpr("!.*"), BooleanExprs.FALSE);
+    assertThat(convertToBooleanExpr("!1"), instanceOf(Not.class));
+    assertThat(convertToBooleanExpr(".* 1234 .*"), instanceOf(MatchAsPath.class));
   }
 }

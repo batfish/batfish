@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
@@ -134,11 +135,7 @@ public class BgpVrf implements Serializable {
   }
 
   public void addNetwork(BgpNetwork network) {
-    _networks =
-        ImmutableMap.<Prefix, BgpNetwork>builder()
-            .putAll(_networks)
-            .put(network.getNetwork(), network)
-            .build();
+    _networks = CollectionUtil.copyMapAndAdd(_networks, network.getNetwork(), network);
   }
 
   public @Nonnull Map<CumulusRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {

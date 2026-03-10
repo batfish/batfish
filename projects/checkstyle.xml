@@ -27,6 +27,13 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <module name="RegexpMultiline">
+    <property name="format" value="(@Nullable|@Nonnull)\s*\n\s*(@|public|private|protected|static|final)"/>
+    <property name="message" value="Nullity should annotate the type when possible"/>
+    <property name="fileExtensions" value="java"/>
+    <property name="matchAcrossLines" value="true"/>
+  </module>
+
   <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
   <module name="SuppressWarningsFilter"/>
 
@@ -36,7 +43,7 @@
 
     <module name="IllegalImport">
       <property name="illegalClasses"
-                value="com.google.common.io.Files,com.google.common.base.Objects,org.hamcrest.CoreMatchers,org.hamcrest.MatcherAssert,com.fasterxml.jackson.annotation.JsonPropertyDescription"/>
+                value="com.google.common.io.Files,com.google.common.base.Objects,org.hamcrest.CoreMatchers,org.hamcrest.MatcherAssert,com.fasterxml.jackson.annotation.JsonPropertyDescription,com.google.common.collect.Sets.SetView"/>
       <property name="illegalPkgs" value="sun.reflect,org.checkerframework.checker.nullness.qual,org.glassfish.jersey.internal"/>
     </module>
 
@@ -49,8 +56,13 @@
     </module>
 
     <module name="RegexpSinglelineJava">
-      <property name="format" value="(@Nullable|@Nonnull) (private|public|protected|static|final) "/>
+      <property name="format" value="(@Nullable|@Nonnull) (private|public|protected|static|final|@\S+) "/>
       <property name="message" value="Nullity should annotate the type when possible"/>
+    </module>
+
+    <module name="RegexpSinglelineJava">
+      <property name="format" value="import static org\.junit\.Assert\.assertThat;"/>
+      <property name="message" value="Use Hamcrest assertThat, as JUnit deprecated theirs."/>
     </module>
 
     <module name="RegexpSinglelineJava">
@@ -97,7 +109,6 @@
     <module name="OneStatementPerLine"/>
     <module name="MultipleVariableDeclarations"/>
     <module name="ArrayTypeStyle"/>
-    <module name="MissingSwitchDefault"/>
     <module name="FallThrough"/>
     <module name="UpperEll"/>
     <module name="ModifierOrder"/>

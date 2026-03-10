@@ -6,32 +6,43 @@ configuration of a network device.
 For the purposes of Batfish parsing, the formats of such files are divided into two broad
 categories:
 
-* [Domain specific languages](#batfish-dsl-parsing) (DSLs) (e.g. Cisco IOS configuration,
+- [Domain specific languages](#batfish-dsl-parsing) (DSLs) (e.g. Cisco IOS configuration,
   Linux `/etc/network/interfaces` file)
-* Well-known structured [formats](#adding-support-for-structured-file-formats) (e.g. JSON, YAML)
+- Well-known structured [formats](#adding-support-for-structured-file-formats) (e.g. JSON, YAML)
 
 The bulk of this document is concerned with transforming files in DSLs into parse trees, which are
 then processed by an [extractor](../extraction/README.md).
+
+## Vendor-Specific Documentation
+
+Different vendors have unique configuration formats and parsing requirements. For vendor-specific guidance, see:
+
+- [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
+- [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
+- [ANTLR4 Tips and Tricks](antlr4_tips.md) - Practical ANTLR4 patterns, lexer rules, parser design, debugging
 
 Most developers wanting to make changes to Batfish parsing will not need to perform all the
 activities detailed in this document. Nevertheless, we recommend that you read the entire document
 and review the linked resources prior to making any modifications to the parser. This way, you will
 have a good foundation and be better prepared to:
 
-* write performant, compliant changes
-* understand build errors and test failures you encounter while making changes
-* respond and react competently to review comments on your pull requests
+- write performant, compliant changes
+- understand build errors and test failures you encounter while making changes
+- respond and react competently to review comments on your pull requests
 
-## States of config support and accompanying warnings:
+## States of config support and accompanying warnings
+
 Based on how far implementation goes, a config line should be in one of the following states:
 
-1. Not parsed (in the grammar) at all: unrecognized.
-2. In the grammar, but never needs to be extracted: silently ignored, but we add [_null suffix](#ending-rules-in-_null) to indicate it.
-3. In the grammar, not implemented yet, but known to be wrong if used. In this case, we warn, with things like [todo(...)](../extraction/README.md#Unimplemented-warnings-in-extraction)  or [warn(...)](../extraction/README.md#Validating-and-converting-parse-tree-nodes-with-variable-text) at extraction time. See `todo` and `warn` functions in [BatfishListener.java](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/grammar/BatfishListener.java)
-4. In the grammar and extracted, but depending on how it's used may not be supported correctly. In that case, we warn during conversion (Warnings#redFlag typically) if we can tell that it's not supported. If we can't tell, we warn unconditionally (and try to come up with a better system).
-5. Fully implemented. No warnings.
+1. **Not parsed (in the grammar) at all**: unrecognized.
+2. **In the grammar, but never needs to be extracted**: silently ignored, but we add [\_null suffix](#ending-rules-in-_null) to indicate it.
+3. **In the grammar, not implemented yet, but known to be wrong if used**: In this case, we warn, with things like [todo(...)](../extraction/README.md#Unimplemented-warnings-in-extraction) or [warn(...)](../extraction/README.md#Validating-and-converting-parse-tree-nodes-with-variable-text) at extraction time. See `todo` and `warn` functions in [BatfishListener.java](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/grammar/BatfishListener.java)
+4. **In the grammar and extracted, but depending on how it's used may not be supported correctly**: In that case, we warn during conversion (Warnings#redFlag typically) if we can tell that it's not supported. If we can't tell, we warn unconditionally (and try to come up with a better system).
+5. **Fully implemented**: No warnings.
 
-It is important to identify which state a line should be in before parsing, so that all unimplemented constructs have appropriate indicators. 
+It is important to identify which state a line should be in before parsing, so that all unimplemented constructs have appropriate indicators.
+
+For detailed guidance on determining which state to use and how to implement each state, see the [Implementation Guide](implementation_guide.md).
 
 ## Batfish DSL parsing
 
@@ -41,34 +52,34 @@ purpose of this section, we will assume you are writing a parser for a format ca
 example [files](example_src) for this parser. In later sections we will explain how to get Batfish
 to use this parser on files in the "Cool NOS" format.
 
-* [`CoolNosLexer.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4)
-    * lexer grammar file
-* [`CoolNosParser.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
-    * main parser grammar file
-* [`CoolNos_common.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
-    * subordinate parser grammar file containing rules referenced by the main and other subordinate
-      parser grammars
-* [`CoolNos_static_routes.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
-    * subordinate parser grammar file containing rules for defining static routes
-* [`CoolNos_system.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
-    * subordinate parser grammar file containing rules for configuring system-level properties
-* [`CoolNosBaseLexer.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/CoolNosBaseLexer.java)
-    * the base class for the generated lexer java class
-* [`CoolNosCombinedParser.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
-    * Java class that wraps the functionality of the generated parser and lexer classes
-* [Java base lexer](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
-    * bazel package defining a library of base parser/lexer files which the generated
-      parser/lexer java classes extend
-* [`antlr4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/BUILD.bazel)
-    * bazel package defining a library of generated ANTLR4 java classes
-* [Java combined parser, extractor](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
-    * bazel package defining a library of the combined parser and extractor classes
+- [`CoolNosLexer.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4)
+  - lexer grammar file
+- [`CoolNosParser.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
+  - main parser grammar file
+- [`CoolNos_common.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
+  - subordinate parser grammar file containing rules referenced by the main and other subordinate
+    parser grammars
+- [`CoolNos_static_routes.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
+  - subordinate parser grammar file containing rules for defining static routes
+- [`CoolNos_system.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
+  - subordinate parser grammar file containing rules for configuring system-level properties
+- [`CoolNosBaseLexer.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/CoolNosBaseLexer.java)
+  - the base class for the generated lexer java class
+- [`CoolNosCombinedParser.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
+  - Java class that wraps the functionality of the generated parser and lexer classes
+- [Java base lexer](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
+  - bazel package defining a library of base parser/lexer files which the generated
+    parser/lexer java classes extend
+- [`antlr4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/BUILD.bazel)
+  - bazel package defining a library of generated ANTLR4 java classes
+- [Java combined parser, extractor](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
+  - bazel package defining a library of the combined parser and extractor classes
 
 Read the rest of this section to learn about:
 
-* the pieces of the Cool NOS parser
-* [how to add the Cool NOS parser to Batfish](#adding-a-new-dsl-parser-to-batfish)
-* [how to write tests for each of the components](#parser-testing)
+- the pieces of the Cool NOS parser
+- [how to add the Cool NOS parser to Batfish](#adding-a-new-dsl-parser-to-batfish)
+- [how to write tests for each of the components](#parser-testing)
 
 ### Lexer
 
@@ -85,11 +96,11 @@ For tokens whose text may vary, the exact text matched may either be ignored or 
 Note that all lexer rule names must begin with a capital letter. We use two conventions for lexer
 rules names:
 
-* `TOKEN_NAME`, i.e. all caps, words separated by underscores
-    * virtual tokens
-    * default mode tokens
-* `M_ModeName_TOKEN_NAME`, i.e. name of mode, then underscore, then name of token within the mode.
-    * tokens in non-default mode whose name is `M_ModeName`
+- `TOKEN_NAME`, i.e. all caps, words separated by underscores
+  - virtual tokens
+  - default mode tokens
+- `M_ModeName_TOKEN_NAME`, i.e. name of mode, then underscore, then name of token within the mode.
+  - tokens in non-default mode whose name is `M_ModeName`
 
 A Batfish ANLTR4 lexer has the following structure, in this order:
 
@@ -151,8 +162,8 @@ lexer rule.
 While in a given mode, the lexer rule that is chosen next based on the current position in the input
 text is decided as follows:
 
-* find all lexer rules in the current mode that match the largest amount text
-* of these rules, choose the rule declared at the earliest position in the lexer grammar file
+- find all lexer rules in the current mode that match the largest amount text
+- of these rules, choose the rule declared at the earliest position in the lexer grammar file
 
 We place the lexer rules for the vast majority of the keywords of a language at the top of the
 default mode, i.e. right after the virtual tokens section. In general, the order of keyword lexer
@@ -205,19 +216,19 @@ WS: F_Whitespace -> channel(HIDDEN);
 
 There are a few things to note here:
 
-* When the `LEFT_BRACKET` rule matches, it emits a `LEFT_BRACKET` token, but also has the side
+- When the `LEFT_BRACKET` rule matches, it emits a `LEFT_BRACKET` token, but also has the side
   effect of pushing the current (DEFAULT) mode onto the mode stack, and then changing the current
   mode to `M_StringList`. Read on for a discussion of non-DEFAULT modes.
-* There is no `RIGHT_BRACKET` token defined in the DEFAULT (or any) mode. This is because we only
+- There is no `RIGHT_BRACKET` token defined in the DEFAULT (or any) mode. This is because we only
   expect to encounter a `]` while the lexer is in the `M_StringList` mode.
-* The variable-text-matching token definitions consist of references to fragments rather than having
+- The variable-text-matching token definitions consist of references to fragments rather than having
   an inline definition. This is because we expect to re-use these match expressions in other token
   definitions, and want to avoid duplication for maintainability. Generally, any "other" token with
   a non-trivial definition should refer to a fragment for the definition of what text it matches.
-* The `UINT*` rules are ordered such that if they match the same text, the token corresponding to
+- The `UINT*` rules are ordered such that if they match the same text, the token corresponding to
   the narrowest unsigned integer type is emitted. If e.g. `UINT16` appeared above `UINT8`,
   the `UINT8` rule would never match any text.
-* The `WS` (whitespace) rule has a `channel(HIDDEN)` action. This means that when it is chosen to
+- The `WS` (whitespace) rule has a `channel(HIDDEN)` action. This means that when it is chosen to
   match text, the token that is emitted is not seen by the parser. This helps simplify parser rule
   definitions so they do not have to refer to a WS token in between each other token.
 
@@ -345,7 +356,7 @@ M_StringList_WS: F_Whitespace -> channel(HIDDEN);
 M_StringList_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), mode(M_StringListDoubleQuotedString);
 M_StringList_UNQUOTED_STRING: F_UnquotedStringChar+ -> type(STRING);
 M_StringLiteral_RIGHT_BRACKET: ']' -> type(RIGHT_BRACKET), popMode;
-  
+
 mode M_StringListDoubleQuotedString;
 
 M_StringListDoubleQuotedString_NEWLINE: F_Newline -> type(NEWLINE), popMode;
@@ -355,18 +366,19 @@ M_StringListDoubleQuotedString_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), mode(M_S
 
 There are several things to note here:
 
-* Several rules use the `type` side effect. This causes the lexer to emit the specified token type
+- Several rules use the `type` side effect. This causes the lexer to emit the specified token type
   instead of the token identified by the rule name. Since lexer rule names must be globally unique
   (even across modes), this allows us to hide mode implementation details from the parser. The
   `type` action is unnecessary in the presence of a `channel(HIDDEN)` or `skip` action, since such a
   token will never be seen by the parser.
-* Mode `M_StringList` may emit between `LEFT_BRACE` and `RIGHT_BRACE` a sequence of ( `STRING`
+- Mode `M_StringList` may emit between `LEFT_BRACE` and `RIGHT_BRACE` a sequence of ( `STRING`
   or `DOUBLE_QUOTE` `STRING` `DOUBLE_QUOTE`)s. The parser should have a single general rule for
   strings that accepts either of these variants.
-* The example uses two different modes with substantially similar implmentations for handling
+- The example uses two different modes with substantially similar implmentations for handling
   double-quoted strings:
-    * `M_DoubleQuotedString`
-    * `M_StringListDoubleQuotedString`
+
+  - `M_DoubleQuotedString`
+  - `M_StringListDoubleQuotedString`
 
   Why not just use mode `M_DoubleQuotedString` in both the case where we encounter `"` in the
   DEFAULT mode and the case where we encounter it while in `M_StringList`?
@@ -379,21 +391,27 @@ There are several things to note here:
   the input text. In the worst case, the entire remainder of the input file could be thrown out.
 
   Consider:
-    * If you use  `mode` from `M_StringList` to enter `M_DoubleQuotedString`, then when you
-      encounter the closing `"` in the valid case, you will erroneously pop back into the DEFAULT
-      mode and lose the rest of the string list.
-    * If you use `pushMode` from `M_StringList` to enter `M_DoubleQuotedString`, then if the closing
-      `"` is missing, you will pop back into `M_StringList` when you should instead be in the
-      DEFAULT mode. This will result in the next line and potentially the remainder of the file
-      being thrown out.
+
+  - If you use `mode` from `M_StringList` to enter `M_DoubleQuotedString`, then when you
+    encounter the closing `"` in the valid case, you will erroneously pop back into the DEFAULT
+    mode and lose the rest of the string list.
+  - If you use `pushMode` from `M_StringList` to enter `M_DoubleQuotedString`, then if the closing
+    `"` is missing, you will pop back into `M_StringList` when you should instead be in the
+    DEFAULT mode. This will result in the next line and potentially the remainder of the file
+    being thrown out.
 
   Takeaways:
-    * One must be extra careful about entering one mode from two separate modes. It is generally not
-      safe when there may be more to lex in an initial non-DEFAULT mode.
-    * When handling text that might have errors, it is extremely difficult - sometimes impossible -
-      to safely push more than one mode onto the mode stack and still be able to recover without
-      polluting the mode stack. So Batfish lexers in general (and line-based grammars in particular)
-      only use `pushMode` from the DEFAULT mode.
+
+  - One must be extra careful about entering one mode from two separate modes. It is generally not
+    safe when there may be more to lex in an initial non-DEFAULT mode.
+  - When handling text that might have errors, it is extremely difficult - sometimes impossible -
+    to safely push more than one mode onto the mode stack and still be able to recover without
+    polluting the mode stack. So Batfish lexers in general (and line-based grammars in particular)
+    only use `pushMode` from the DEFAULT mode.
+
+For more advanced lexing patterns, see:
+
+- [Lexer Mode Patterns](lexer_mode_patterns.md) - Patterns for handling complex name structures and mode transitions
 
 #### Lexer predicates
 
@@ -435,13 +453,14 @@ COMMENT_LINE
 
 Note:
 
-* The lexer predicate is `{lastTokenType() == NEWLINE || lastTokenType() == -1}?`
-* Lexer predicates can appear anywhere in the token definition, but unless you have a good reason,
+- The lexer predicate is `{lastTokenType() == NEWLINE || lastTokenType() == -1}?`
+- Lexer predicates can appear anywhere in the token definition, but unless you have a good reason,
   always put them at the end (but before any action). This avoids premature evaluation, which can be
   extremely expensive.
-* This predicate makes use of the `lastTokenType()` function, which is defined in the
+- This predicate makes use of the `lastTokenType()` function, which is defined in the
   `CoolNosBaseLexer` Java class. Note that its return value is `-1` from the beginning of lexing
   until the first non-hidden token is emitted. See:
+
   ```
   @Override
   public final void emit(Token token) {
@@ -462,10 +481,10 @@ Note:
 
 The excerpts in this section are from the Cool NOS example parser files:
 
-* [CoolNosParser.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
-* [CoolNos_common.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
-* [CoolNos_static_routes.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
-* [CoolNos_system.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
+- [CoolNosParser.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
+- [CoolNos_common.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
+- [CoolNos_static_routes.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
+- [CoolNos_system.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
 
 The job of a parser to is transform a stream of tokens produced by the lexer into a parse tree, to
 be acted on by the [extractor](../extraction/README.md).
@@ -480,6 +499,7 @@ The structure of a parser file is as follows (in order):
 2. [Imports](#parser-imports)
 3. [Options](#parser-options)
 4. [Parser rules](#parser-rules)
+5. [Parser rule naming conventions](#parser-rule-naming-conventions)
 
 #### Parser grammar declaration
 
@@ -495,8 +515,8 @@ The same applies to a subordinate parser grammar file, except that it should be 
 as `CoolNos_some_construct.g4`, where `some_construct` should be a descriptive name of some
 top-level division of the grammar, e.g.:
 
-* `common`, for common rules used by all the other parsers
-* `bgp`, for constructs relating to configuring BGP
+- `common`, for common rules used by all the other parsers
+- `bgp`, for constructs relating to configuring BGP
 
 #### Parser imports
 
@@ -506,7 +526,7 @@ main parser grammar should import all other parser grammars.
 Here is the imports section of the CoolNos example main parser:
 
 ```
-import 
+import
   CoolNos_common,
   CoolNos_static_routes,
   CoolNos_system;
@@ -557,9 +577,9 @@ cool_nos_configuration
 
 This means that the token stream of valid Cool NOS configuration should contain:
 
-* an optional leading `NEWLINE` token
-* a stream of tokens matched by one or more instances of the `statement` rule.
-* nothing else
+- an optional leading `NEWLINE` token
+- a stream of tokens matched by one or more instances of the `statement` rule.
+- nothing else
 
 The `statement` rule for the Cool NOS parser is also in the main parser file:
 
@@ -596,12 +616,12 @@ s_system
 :
   SYSTEM
   (
-    ssy_host_name
-    | ssy_login_banner
+    sys_host_name
+    | sys_login_banner
   )
 ;
 ...
-ssy_login_banner: LOGIN_BANNER banner = string NEWLINE;
+sys_login_banner: LOGIN_BANNER banner = string NEWLINE;
 ...
 ```
 
@@ -624,15 +644,15 @@ Consider the `s_system` rule and its alternatives. If we instead had:
 
 s_system
 :
-  ssy_host_name
-  | ssy_login_banner
+  sys_host_name
+  | sys_login_banner
 ;
 
-ssy_host_name: SYSTEM HOST_NAME ...;
-ssy_login_banner: SYSTEM LOGIN_BANNER ...;
+sys_host_name: SYSTEM HOST_NAME ...;
+sys_login_banner: SYSTEM LOGIN_BANNER ...;
 ```
 
-then to make a decision between `ssy_host_name` and `ssy_login_banner`, we would have to read two
+then to make a decision between `sys_host_name` and `sys_login_banner`, we would have to read two
 tokens:
 
 1. `SYSTEM`
@@ -640,9 +660,19 @@ tokens:
 
 This pattern would not be LL(1), so is to be avoided.
 
+#### Parser rule naming conventions
+
+Batfish uses specific naming conventions for parser rules to ensure consistency and maintainability across all grammars. The key conventions include:
+
+- Rules are named using the pattern `<prefix>_next_token`
+- Child rules use a local extension of the parent prefix: `<parent_prefix><nt>_child_next_token`
+- Top-level rules often follow the convention `s_command_name`
+
+For detailed guidance on parser rule naming conventions, LL(1) grammar design, and handling multiple next tokens with similar shortenings, see [Parser Rule Conventions](parser_rule_conventions.md).
+
 #### Parser rule NEWLINE
 
-Also note that `ssy_host_name` and `ssy_login_banner` both end in `NEWLINE`. 
+Also note that `sys_host_name` and `sys_login_banner` both end in `NEWLINE`.
 A pattern to avoid is putting the `NEWLINE` in a parent node:
 
 ```
@@ -652,70 +682,245 @@ s_system
 :
 SYSTEM
   (
-    ssy_host_name
-    | ssy_login_banner
+    sys_host_name
+    | sys_login_banner
   ) NEWLINE
 ;
 ...
-ssy_login_banner: LOGIN_BANNER banner = string;
+sys_login_banner: LOGIN_BANNER banner = string;
 ...
 ```
+
 This makes the parser more fragile and can break recovery in the event that a child rule is only partially recognized.
 
 #### Ending rules in `_null`
+
 If a rule is added with no current plans for further implementation (use in extraction or conversion), the rule should end in `_null`.
-This allows it to be captured by the SilentSyntaxListener.
+This allows it to be captured by the SilentSyntaxListener and prevents unnecessary parse warnings.
 
-For example, a line `log syslog` has been added, which does not affect current Batfish models.
-To avoid creating a parse warning every time this line appears, parsing support is added for it.
-Since nothing in extraction needed to change, the rule was added with `_null`:
+##### Important Naming Convention for `_null` Rules
+
+When implementing rules with the `_null` suffix, follow these guidelines:
+
+1. **Leaf Rules**: Rules that don't call other rules (terminal rules) **SHOULD** have the `_null` suffix if they're not extracted
+2. **Non-Leaf Rules**: Rules that call other rules **SHOULD NOT** have the `_null` suffix, even if none of their child rules are extracted
+
+For example:
 
 ```
-statement
+// Correct: Non-leaf rule without _null suffix
+mpls_label_switched_path
 :
-  s_log_null
-  | s_static_routes
-  | s_system
+   LABEL_SWITCHED_PATH name = junos_name
+   (
+      mplslsp_to_null
+      | mplslsp_random_null
+      | ...
+   )*
 ;
 
-s_log_null
+// Correct: Leaf rule with _null suffix
+mplslsp_random_null
 :
-  LOG SYSLOG NEWLINE
+   RANDOM null_filler
+;
+
+// Incorrect: Non-leaf rule with _null suffix
+mpls_label_switched_path_null  // DON'T DO THIS
+:
+   LABEL_SWITCHED_PATH name = junos_name
+   (
+      mplslsp_to_null
+      | ...
+   )*
+;
+
+// Incorrect: Leaf rule without _null suffix
+mplslsp_random  // DON'T DO THIS
+:
+   RANDOM null_filler
 ;
 ```
 
-Note that the `_null` indicator should always be added to the leaf rule. For example, if `log syslog` was to be ignored, but `log access-list ACL` was to implemented (in order to track the use of ACL) we would have something like:
+This naming convention helps distinguish between rules that are meant to be extracted (non-null rules) and rules that are only meant for parsing but not extraction (null rules). It also maintains a clear hierarchy in the grammar structure.
+
+##### Implementation Decision Guide for Protocol Commands
+
+When implementing a new command or syntax in Batfish, you must determine whether it should be extracted to the data model or implemented as a null rule. This decision is critical for maintaining accurate network behavior modeling while avoiding unnecessary complexity.
+
+###### What Batfish Models
+
+Batfish extracts and models configuration elements that affect the following:
+
+1. **Control Plane Behavior**: Commands that influence routing decisions, next-hop selection, or path determination
+2. **Forwarding Behavior**: Commands that determine how packets are forwarded through the network
+3. **Security Posture**: Commands that affect which traffic is permitted or denied
+4. **Protocol Establishment**: Commands that determine whether protocol adjacencies or sessions can be established
+
+###### What Batfish Doesn't Model
+
+Batfish typically implements as null rules (with `_null` suffix) configuration elements that:
+
+1. **Operational Commands**: Commands that only affect logging, monitoring, or management access
+2. **Performance Tuning**: Commands that only affect convergence speed but not the final converged state
+3. **Protocol Optimizations**: Commands that optimize protocol operation but don't change the final routing decisions
+4. **Cosmetic Settings**: Commands that affect display or formatting of output
+
+###### Protocol Timer Decision Framework
+
+For protocol timers specifically, use this decision framework:
+
+| Timer Type                       | Implementation                           | Reasoning                                                       |
+| -------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| **Session Establishment Timers** | Extract to data model                    | These affect whether sessions/adjacencies can form              |
+| **Convergence Timers**           | Implement as null rules                  | These only affect how quickly the network converges             |
+| **Keep-alive Timers**            | Extract if they affect session stability | Extract if session teardown would occur in realistic timeframes |
+| **Throttling Timers**            | Implement as null rules                  | These only affect message frequency, not final state            |
+
+###### Step-by-Step Decision Process
+
+1. **Identify the command's purpose**: Understand what the command does and how it affects network behavior
+2. **Determine implementation level**:
+   - State 1: Not parsed at all (unrecognized)
+   - State 2: In grammar but never extracted (use `_null` suffix)
+   - State 3: In grammar but not implemented yet (use `todo()` or `warn()`)
+   - State 4: Extracted but conditionally supported (add warnings)
+   - State 5: Fully implemented (no warnings)
+3. **Apply the timer-specific guidance**:
+   - If the timer affects session establishment (like OSPF hello-interval), extract it
+   - If the timer only affects protocol performance or convergence time, implement as null rule
+
+###### Examples Table for Routing Protocol Commands
+
+| Command                      | Implementation | Reasoning                                                            |
+| ---------------------------- | -------------- | -------------------------------------------------------------------- |
+| `ospf hello-interval`        | Extract        | Affects whether OSPF adjacencies can form                            |
+| `ospf dead-interval`         | Extract        | Affects whether OSPF adjacencies remain up                           |
+| `ospf lsa-refresh-timer`     | Null rule      | Only affects how often LSAs are refreshed, not final SPF calculation |
+| `ospf spf-delay`             | Null rule      | Only affects convergence speed, not final SPF calculation            |
+| `bgp keepalive-interval`     | Extract        | Affects whether BGP sessions remain established                      |
+| `bgp hold-time`              | Extract        | Affects whether BGP sessions remain established                      |
+| `bgp advertisement-interval` | Null rule      | Only affects how quickly updates are sent, not final RIB             |
+| `isis hello-interval`        | Extract        | Affects whether IS-IS adjacencies can form                           |
+| `isis lsp-refresh-interval`  | Null rule      | Only affects how often LSPs are refreshed, not final SPF calculation |
+
+###### Example: Protocol Timer Implementation
+
+For example, when implementing the OSPF hello-interval command, it should be extracted because it affects whether OSPF adjacencies can form:
 
 ```
-s_log
+s_ospf_interface
 :
-  LOG
+  OSPF INTERFACE
   (
-    sl_access_list
-    | sl_syslog_null
+    soi_hello_interval
+    | soi_dead_interval
+    | soi_lsa_refresh_interval_null
   )
 ;
+
+soi_hello_interval
+:
+  HELLO_INTERVAL seconds = uint16 NEWLINE
+;
+
+soi_lsa_refresh_interval_null
+:
+  LSA_REFRESH_INTERVAL uint16 NEWLINE
+;
 ```
 
-### Grammar packages
+###### Testing Implementation Decisions
 
-**This section is still in progress. Check back later for more complete instructions.**
+Even for `_null` rules, tests should verify that the parser correctly handles the syntax:
 
-For now, if you need to write a new grammar, follow the pattern of the Cisco NX-OS grammar package.
-That is, make a copy of and appropriate alterations to each of:
+```java
+@Test
+public void testOspfTimerParsing() {
+  // Should parse without warnings
+  parseConfig("ospf-timer-test");
 
-* [`antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel)
-* [`java/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
-* [`java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel)
+  // For extracted timers, verify the values are correctly extracted
+  Configuration c = parseConfig("ospf-hello-interval-test");
+  assertThat(c.getDefaultVrf().getOspfProcess().getAreas().get(0L).getInterfaces().get("eth0")
+      .getHelloInterval(), equalTo(10));
+}
+```
 
-in the appropriate directories created for your new grammar.
+See the [Implementation Guide](implementation_guide.md) for more detailed guidance on determining the appropriate implementation level for different types of commands.
 
-Then, add appropriate references to the `//projects/batfish` target, also copying the pattern for
-Cisco NX-OS.
+### Vendor code organization
 
-For tests, copy the pattern used by:
+Batfish uses two code organization patterns for vendor support. **New vendors should use the
+vendor-scoped pattern.**
 
-* [`//projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos:tests`](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
+#### Vendor-scoped pattern (recommended for new vendors)
+
+New vendors should place all code under `org.batfish.vendor.<vendor_name>/` with subpackages for
+grammar and representation. This provides better code isolation and clearer namespacing.
+
+**Directory structure:**
+
+```
+projects/batfish/src/main/
+├── antlr4/org/batfish/vendor/<vendor>/grammar/   # ANTLR .g4 files
+└── java/org/batfish/vendor/<vendor>/
+    ├── grammar/                                   # Parser, extractor, base lexer
+    └── representation/                            # Vendor-specific data model
+
+projects/batfish/src/test/java/org/batfish/vendor/<vendor>/  # All tests unified
+```
+
+**Example vendors using this pattern:** A10, Arista, CheckPoint Gateway, CheckPoint Management, Cisco NX-OS, SONiC
+
+To add a new vendor using this pattern, follow the structure of the A10 vendor:
+
+- [`antlr4/org/batfish/vendor/a10/grammar/BUILD.bazel`](../../projects/batfish/src/main/antlr4/org/batfish/vendor/a10/grammar/BUILD.bazel)
+- [`java/org/batfish/vendor/a10/grammar/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/vendor/a10/grammar/BUILD.bazel)
+- [`java/org/batfish/vendor/a10/representation/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/vendor/a10/representation/BUILD.bazel)
+
+For tests, follow the pattern in:
+
+- [`test/java/org/batfish/vendor/a10/BUILD.bazel`](../../projects/batfish/src/test/java/org/batfish/vendor/a10/BUILD.bazel)
+
+#### Legacy flat pattern (existing vendors only)
+
+Older vendors use a flat hierarchy with grammar and representation in separate top-level packages:
+
+```
+projects/batfish/src/main/
+├── antlr4/org/batfish/grammar/<vendor>/          # ANTLR .g4 files
+└── java/
+    ├── org/batfish/grammar/<vendor>/             # Parser, extractor
+    └── org/batfish/representation/<vendor>/      # Vendor-specific data model
+
+projects/batfish/src/test/java/
+├── org/batfish/grammar/<vendor>/                 # Grammar tests
+└── org/batfish/representation/<vendor>/          # Representation tests
+```
+
+**Example vendors using this pattern:** Cisco (IOS, ASA, XR), Juniper, Palo Alto,
+Fortinet, Cumulus, F5, AWS, etc.
+
+This pattern is maintained for backward compatibility. Do not use it for new vendors.
+
+#### Implementation quality reference
+
+While new vendors should use the vendor-scoped code organization pattern, **Cisco NX-OS has the
+most mature lexer, parser, and vendor-independent representation** and serves as the best reference
+for implementation quality and patterns. When writing a new vendor's grammar or extraction logic,
+study the NX-OS implementation for examples of:
+
+- Lexer structure and mode handling
+- Parser rule organization and LL(1) grammar design
+- Extraction patterns and error handling
+- Conversion to vendor-independent model
+
+The NX-OS code is located at:
+
+- [`antlr4/org/batfish/vendor/cisco_nxos/grammar/`](../../projects/batfish/src/main/antlr4/org/batfish/vendor/cisco_nxos/grammar/)
+- [`java/org/batfish/vendor/cisco_nxos/grammar/`](../../projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/grammar/)
+- [`java/org/batfish/vendor/cisco_nxos/representation/`](../../projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/representation/)
 
 ### Combined parser
 
@@ -734,9 +939,9 @@ See [CoolNosCominbedParser.java](../example_code/new_vendor/src/main/java/org/ba
 
 In order for Batfish to use a new DSL parser on uploaded files, you must first:
 
-* add a `ConfigurationFormat` enum for the new DSL
-* provide a method for Batfish to identify files in the new format
-* add cases to all relevant `switch`es on `ConfigurationFormat`
+- add a `ConfigurationFormat` enum for the new DSL
+- provide a method for Batfish to identify files in the new format
+- add cases to all relevant `switch`es on `ConfigurationFormat`
 
 #### Adding a new ConfigurationFormat
 
@@ -783,15 +988,399 @@ In the `ParseVendorConfigurationJob.java`, add a case for your new format.
 
 For the example, you can:
 
-* copy the block for `case CISCO_NX` block, changing `CISCO_NX` to `COOL_NOS`
-* Change `CiscoNxosCombinedParser` to `CoolNosCombinedParser`
-* Change `NxosControlPlaneExtractor` to `CoolNosControlPlaneExtractor`
+- copy the block for `case CISCO_NX` block, changing `CISCO_NX` to `COOL_NOS`
+- Change `CiscoNxosCombinedParser` to `CoolNosCombinedParser`
+- Change `NxosControlPlaneExtractor` to `CoolNosControlPlaneExtractor`
   (see [extraction](../extraction/README.md)).
 
 ### Parser testing
 
-This section is still in progress. Check back later!
+Parser tests in Batfish verify that configuration files are correctly parsed, extracted, and converted into the internal data model.
+
+#### Test Organization
+
+Parser tests are organized by vendor in `projects/batfish/src/test/java/org/batfish/grammar/{vendor_name}/`:
+
+```
+projects/batfish/src/test/java/org/batfish/grammar/
+├── arista/
+│   └── AristaGrammarTest.java
+├── cisco/
+│   └── CiscoGrammarTest.java
+├── cisco_nxos/
+│   └── CiscoNxosGrammarTest.java
+├── juniper/
+│   └── JuniperGrammarTest.java
+└── ...
+```
+
+Test configurations are stored in corresponding resource directories:
+```
+projects/batfish/src/test/resources/org/batfish/grammar/{vendor_name}/testconfigs/
+├── config1/
+│   ├── config.cfg
+│   └── snapshot
+└── config2/
+    ├── config.cfg
+    └── snapshot
+```
+
+#### Test Structure
+
+A typical parser test follows this pattern:
+
+```java
+@RunWith(BatfishRunner.class)
+public class VendorGrammarTest {
+
+  @BatfishTestConfig(name = "test-config-name")
+  private static final String TESTCONFIGS = "org/batfish/grammar/{vendor}/testconfigs";
+
+  @Test
+  public void testConfigurationParsing() {
+    // Test automatic - verifies parsing succeeds without errors
+  }
+
+  @Test
+  public void testSpecificFeature() {
+    VendorConfiguration config = parseConfig("test-config-name");
+
+    // Verify extracted properties
+    assertThat(config.getHostname(), equalTo("router1"));
+    assertThat(config.getInterfaces().keySet(), hasSize(5));
+  }
+}
+```
+
+#### Test Configuration Files
+
+Test configurations should be:
+
+1. **Minimal**: Include only what's needed to test the feature
+2. **Realistic**: Use actual vendor syntax
+3. **Focused**: Test one feature or aspect at a time
+4. **Well-named**: Use descriptive directory names
+
+Example test configuration structure:
+```
+testconfigs/
+├── basic-interface/
+│   └── config.cfg          # Simple interface configuration
+├── static-routes/
+│   └── config.cfg          # Static route variations
+├── bgp-peering/
+│   └── config.cfg          # BGP neighbor configurations
+└── complex/
+    └── config.cfg          # Multiple features together
+```
+
+#### Running Parser Tests
+
+**Run a specific test**:
+```bash
+bazel test //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+```
+
+**Run a specific test method**:
+```bash
+bazel test --test_filter={VendorName}GrammarTest#testSpecificMethod \
+    //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+```
+
+**Run all parser tests**:
+```bash
+bazel test //projects/batfish/src/test/java/org/batfish/grammar/...
+```
+
+#### Test Snapshots
+
+Some parser tests use snapshots to verify the extracted configuration. A snapshot contains the serialized form of the parsed configuration:
+
+- **Location**: `testconfigs/{config-name}/snapshot`
+- **Purpose**: Verify extraction produces expected output
+- **Updates**: Run `./tools/update_snapshots.sh` after intentional changes
+
+#### Common Test Patterns
+
+1. **Parsing Success**: Verify configuration parses without warnings
+2. **Extraction Validation**: Verify specific values are extracted correctly
+3. **Error Recovery**: Test handling of malformed configurations
+4. **Feature Interaction**: Test multiple features together
+5. **Format Detection**: Test automatic format identification
+
+#### Example Test
+
+```java
+@Test
+public void testBgpNeighborExtraction() {
+  JuniperConfiguration config = parseConfig("bgp-neighbor");
+
+  BgpProcess bgp = config.getDefaultVrf().getBgpProcess();
+  assertThat(bgp.getNeighbors().keySet(), hasSize(2));
+
+  BgpNeighbor neighbor1 = bgp.getNeighbors().get(Ip.parse("10.0.0.1"));
+  assertThat(neighbor1.getRemoteAs(), equalTo(65001));
+  assertThat(neighbor1.getLocalAs(), equalTo(65000));
+}
+```
+
+For more information on writing tests, see [Testing Extraction](../extraction/README.md#testing-extraction) and [Testing Guide](../development/testing_guide.md).
 
 ## Adding support for structured file formats
 
-This section is still in progress. Check back later!
+Some network devices use structured formats like JSON or YAML for configuration. Batfish supports these formats through a different mechanism than DSL parsing.
+
+### Structured vs DSL Formats
+
+**DSL Formats** (e.g., Cisco IOS, Juniper Junos):
+- Require ANTLR4 grammar definitions
+- Use lexer/parser to generate parse trees
+- Require extraction listeners
+
+**Structured Formats** (e.g., JSON, YAML):
+- Use standard JSON/YAML parsers (Jackson)
+- Direct deserialization to Java objects
+- Simpler conversion to internal data model
+
+### Supported Structured Formats
+
+Batfish currently supports these structured formats:
+
+1. **F5 BIGIP Structured** (`F5_BIGIP_STRUCTURED`)
+   - TMSH JSON format
+   - Hierarchical configuration objects
+
+2. **SONiC ConfigDB** (`SONIC_CONFIG_DB_JSON`)
+   - JSON-based configuration database
+   - Multiple configuration files
+
+3. **Cumulus NCLU** (`CUMULUS_NCLU`)
+   - JSON-based network configuration
+
+4. **Check Point Management** (`CHECK_POINT_MANAGEMENT`)
+   - YAML-based management configuration
+
+### Adding Structured Format Support
+
+#### Step 1: Add ConfigurationFormat Enum
+
+Add a new format to `ConfigurationFormat.java`:
+
+```java
+F5_NEW_FORMAT("f5_new_format"),
+```
+
+#### Step 2: Create Format Detection
+
+Update `VendorConfigurationFormatDetector.java`:
+
+```java
+private static final Pattern F5_NEW_FORMAT_PATTERN =
+    Pattern.compile("(?m)^\\s*\\{.*\"new_format_key\"");
+
+private @Nullable ConfigurationFormat checkF5NewFormat() {
+    if (fileTextMatches(F5_NEW_FORMAT_PATTERN)) {
+        return ConfigurationFormat.F5_NEW_FORMAT;
+    }
+    return null;
+}
+```
+
+Add the check to `identifyConfigurationFormat`:
+
+```java
+ConfigurationFormat format = checkF5NewFormat();
+if (format != null) {
+    return format;
+}
+```
+
+#### Step 3: Create Representation Classes
+
+Create Java classes that mirror the structured format:
+
+```java
+package org.batfish.grammar.f5_new_format;
+
+public class NewFormatConfig {
+    private List<Interface> interfaces;
+    private List<Vlan> vlans;
+
+    // Getters and setters
+    public List<Interface> getInterfaces() { return interfaces; }
+    public void setInterfaces(List<Interface> interfaces) {
+        this.interfaces = interfaces;
+    }
+}
+```
+
+#### Step 4: Create Combined Parser
+
+For structured formats, the "parser" is actually a deserializer:
+
+```java
+public class F5NewFormatCombinedParser extends CombinedParser {
+
+  private final Map<String, String> _fileTexts;
+
+  public F5NewFormatCombinedParser(
+      String filename,
+      Map<String, String> fileTexts,
+      Map<String, Warnings> warnings) {
+    super(
+        filename,
+        fileTexts.get(filename),
+        warnings,
+        F5NewFormatCombinedParser.class,
+        true); // silentSyntax
+
+    _fileTexts = fileTexts;
+  }
+
+  @Override
+  public ParserRuleContext parse() {
+    // For structured formats, parse returns null
+    // The actual parsing happens in the extractor
+    return null;
+  }
+}
+```
+
+#### Step 5: Create Control Plane Extractor
+
+The extractor deserializes the structured format:
+
+```java
+public class F5NewFormatControlPlaneExtractor implements ControlPlaneExtractor {
+
+  private final Map<String, String> _fileTexts;
+  private final Map<String, FileCopyResult> _fileResults;
+  private F5NewFormatConfiguration _configuration;
+
+  @Override
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    _configuration = new F5NewFormatConfiguration(_filename);
+
+    // Use Jackson ObjectMapper for JSON
+    ObjectMapper mapper = new BatfishObjectMapper();
+
+    try {
+      String configText = _fileTexts.get(_filename);
+      NewFormatConfig config = mapper.readValue(configText, NewFormatConfig.class);
+
+      // Convert to VendorConfiguration
+      convertInterfaces(config.getInterfaces());
+      convertVlans(config.getVlans());
+
+    } catch (IOException e) {
+      _w.redFlag("Failed to parse JSON: " + e.getMessage());
+    }
+  }
+}
+```
+
+#### Step 6: Handle YAML Formats
+
+For YAML formats, use Jackson with YAML factory:
+
+```java
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+public class CheckpointManagementControlPlaneExtractor {
+
+  @Override
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    // For YAML
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    SnmpYml snmpYml = mapper.readValue(
+        _fileTexts.get(snmpYmlFilename).trim(),
+        SnmpYml.class);
+  }
+}
+```
+
+#### Step 7: Wire Up in ParseVendorConfigurationJob
+
+Add a case in `ParseVendorConfigurationJob.java`:
+
+```java
+case F5_NEW_FORMAT:
+  vendorConfiguration = parseF5NewFormat(fileTexts, fileResults);
+  break;
+```
+
+And implement the parsing method:
+
+```java
+private VendorConfiguration parseF5NewFormat(
+    Map<String, String> fileTexts,
+    Map<String, FileCopyResult> fileResults) {
+
+  String filename = getCfgFile(fileTexts);
+  F5NewFormatCombinedParser parser =
+      new F5NewFormatCombinedParser(filename, fileTexts, warnings);
+  F5NewFormatControlPlaneExtractor extractor =
+      new F5NewFormatControlPlaneExtractor(filename, fileTexts, fileResults, warnings);
+
+  extractor.processParseTree(wraps._snapshot, parser.parse());
+  return extractor.getVendorConfiguration();
+}
+```
+
+### JSON Deserialization Best Practices
+
+1. **Use BatfishObjectMapper**: Provides consistent JSON handling
+   ```java
+   ObjectMapper mapper = new BatfishObjectMapper();
+   ```
+
+2. **Handle Missing Fields**: Use `@JsonInclude(Include.NON_NULL)`
+   ```java
+   @JsonInclude(Include.NON_NULL)
+   public class Interface {
+       private String description;
+   }
+   ```
+
+3. **Ignore Unknown Properties**: Handle schema variations gracefully
+   ```java
+   @JsonIgnoreProperties(ignoreUnknown = true)
+   public class Interface {
+       // ...
+   }
+   ```
+
+4. **Custom Deserialization**: For complex types
+   ```java
+   public class IpAddressDeserializer extends JsonDeserializer<Ip> {
+       @Override
+       public Ip deserialize(JsonParser p, DeserializationContext ctxt) {
+           String ipStr = p.getValueAsString();
+           return Ip.parse(ipStr);
+       }
+   }
+   ```
+
+### Testing Structured Formats
+
+Test structured format parsing similarly to DSL formats:
+
+```java
+@Test
+public void testJsonFormat() {
+  Map<String, String> fileTexts = ImmutableMap.of(
+      "config.json", loadTestResource("testconfigs/json-format/config.json")
+  );
+
+  F5NewFormatConfiguration config = parseConfig(fileTexts);
+
+  assertThat(config.getInterfaces().keySet(), hasSize(3));
+  assertThat(config.getInterfaces().get("eth0").getDescription(),
+      equalTo("Uplink interface"));
+}
+```
+
+For complete examples of structured format support, see:
+- `projects/batfish/src/main/java/org/batfish/vendor/sonic/` - SONiC JSON support
+- `projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured/` - F5 BIGIP JSON support
+- `projects/batfish/src/main/java/org/batfish/vendor/check_point_management/` - Check Point YAML support

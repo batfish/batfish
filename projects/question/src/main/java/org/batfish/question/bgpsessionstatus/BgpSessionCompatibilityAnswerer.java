@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
@@ -145,33 +144,31 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()
         .flatMap(
-            peerId -> {
-              switch (peerId.getType()) {
-                case ACTIVE:
-                  BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
-                  assert activePeer != null;
-                  return Stream.of(
-                      getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
-                case DYNAMIC:
-                  BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
-                  assert passivePeer != null;
-                  return getPassivePeerRows(peerId, passivePeer, nc, configuredTopology).stream();
-                case UNNUMBERED:
-                  BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
-                  assert unnumPeer != null;
-                  return Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology));
-                default:
-                  throw new BatfishException(
-                      String.format("Unsupported type of BGP peer config: %s", peerId.getType()));
-              }
-            })
+            peerId ->
+                switch (peerId.getType()) {
+                  case ACTIVE -> {
+                    BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
+                    assert activePeer != null;
+                    yield Stream.of(
+                        getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
+                  }
+                  case DYNAMIC -> {
+                    BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
+                    assert passivePeer != null;
+                    yield getPassivePeerRows(peerId, passivePeer, nc, configuredTopology).stream();
+                  }
+                  case UNNUMBERED -> {
+                    BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
+                    assert unnumPeer != null;
+                    yield Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology));
+                  }
+                })
         .filter(row -> matchesQuestionFilters(row, nodes, remoteNodes, question))
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getActivePeerRow(
+  static @Nonnull Row getActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
@@ -212,9 +209,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .build();
   }
 
-  @Nonnull
   @VisibleForTesting
-  static List<Row> getPassivePeerRows(
+  static @Nonnull List<Row> getPassivePeerRows(
       BgpPeerConfigId passiveId,
       BgpPassivePeerConfig passivePeer,
       NetworkConfigurations nc,
@@ -278,9 +274,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         : rows;
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getUnnumberedPeerRow(
+  static @Nonnull Row getUnnumberedPeerRow(
       BgpPeerConfigId unnumId,
       BgpUnnumberedPeerConfig unnumPeer,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology) {

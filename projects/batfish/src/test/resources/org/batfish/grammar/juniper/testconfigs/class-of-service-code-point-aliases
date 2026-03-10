@@ -2,12 +2,6 @@
 set system host-name class-of-service-code-point-aliases
 #
 set class-of-service code-point-aliases dscp my1 000011
-
-# not a bit vector
-set class-of-service code-point-aliases dscp mybad1 200000
-
-# not 6-bits
-set class-of-service code-point-aliases dscp mybad2 1010101
-
-# usage
+set class-of-service code-point-aliases exp my2 101
+#
 set firewall family inet filter FILTER term TERM from dscp my1

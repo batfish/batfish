@@ -41,10 +41,10 @@ public class InterfacePropertiesQuestion extends Question {
 
   @JsonCreator
   private static InterfacePropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
-      @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
+      @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) @Nullable Boolean excludeShutInterfaces,
+      @JsonProperty(PROP_INTERFACES) @Nullable String interfaces,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_PROPERTIES) @Nullable String properties) {
     return new InterfacePropertiesQuestion(
         nodes,
         interfaces,
@@ -108,9 +108,8 @@ public class InterfacePropertiesQuestion extends Question {
     return _onlyActive;
   }
 
-  @Nullable
   @JsonProperty(PROP_INTERFACES)
-  public String getInterfaces() {
+  public @Nullable String getInterfaces() {
     return _interfaces;
   }
 
@@ -119,9 +118,8 @@ public class InterfacePropertiesQuestion extends Question {
     return _interfaceSpecifier;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 

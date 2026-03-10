@@ -33,7 +33,12 @@ import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
+import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -207,8 +212,33 @@ public class FilterLineReachabilityUtils {
     }
 
     @Override
+    public Stream<String> visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+      return Stream.empty();
+    }
+
+    @Override
     public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return Stream.of();
+    }
+
+    @Override
+    public Stream<String> visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+      return Stream.empty();
     }
 
     @Override
@@ -280,8 +310,33 @@ public class FilterLineReachabilityUtils {
     }
 
     @Override
+    public Stream<String> visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+      return Stream.empty();
+    }
+
+    @Override
     public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return Stream.of();
+    }
+
+    @Override
+    public Stream<String> visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      return Stream.empty();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+      return Stream.empty();
     }
 
     @Override

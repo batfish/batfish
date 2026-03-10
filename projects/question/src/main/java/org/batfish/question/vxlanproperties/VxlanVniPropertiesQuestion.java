@@ -29,8 +29,8 @@ public final class VxlanVniPropertiesQuestion extends Question {
 
   @JsonCreator
   private static @Nonnull VxlanVniPropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_PROPERTIES) @Nullable String properties) {
     return new VxlanVniPropertiesQuestion(nodes, properties);
   }
 

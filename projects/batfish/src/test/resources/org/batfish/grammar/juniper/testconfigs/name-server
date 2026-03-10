@@ -1,0 +1,7 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name name-server
+#
+set system name-server 1.2.3.4
+#
+set system name-server 2.0.0.0 source-address 3.0.0.0
+#

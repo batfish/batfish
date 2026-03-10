@@ -178,10 +178,9 @@ final class Conversions {
       RedistProfile redistProfile =
           vr.getRedistProfiles().get(redistRule.getKey().getRedistProfileName());
       if (redistProfile == null) {
-        w.redFlag(
-            String.format(
-                "redist-profile %s referred in %s: BGP does not exist",
-                redistRule.getKey().getRedistProfileName(), vr.getName()));
+        w.redFlagf(
+            "redist-profile %s referred in %s: BGP does not exist",
+            redistRule.getKey().getRedistProfileName(), vr.getName());
         continue;
       }
       If ifStatement = redistRuleToIfStatement(redistRule.getValue(), redistProfile);
@@ -215,21 +214,29 @@ final class Conversions {
     if (filter == null) {
       return null;
     }
-    // using conjunction since all conditions of the filter have to be met for a route to be
-    // redistributed
-    ImmutableList.Builder<BooleanExpr> conditionForConjunction = ImmutableList.builder();
 
-    // TODO: add support for protocols other than static
-    if (filter.getRoutingProtocols().contains(RoutingProtocol.STATIC)) {
-      conditionForConjunction.add(new MatchProtocol(RoutingProtocol.STATIC));
+    ImmutableList.Builder<BooleanExpr> redistConditions = ImmutableList.builder();
+
+    ImmutableList.Builder<RoutingProtocol> protocolConditions = ImmutableList.builder();
+    for (RoutingProtocol protocol : filter.getRoutingProtocols()) {
+      protocolConditions.add(protocol);
+      // BGP means both BGP and IBGP
+      if (protocol == RoutingProtocol.BGP) {
+        protocolConditions.add(RoutingProtocol.IBGP);
+      }
     }
-    PrefixSpace prefixSpace = new PrefixSpace();
-    MatchPrefixSet matchPrefixSet =
-        new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace));
-    for (Prefix prefix : filter.getDestinationPrefixes()) {
-      prefixSpace.addPrefix(prefix);
+    redistConditions.add(new MatchProtocol(protocolConditions.build()));
+
+    // If prefixes are specified, match them. If not, any prefix is allowed.
+    if (!filter.getDestinationPrefixes().isEmpty()) {
+      PrefixSpace prefixSpace = new PrefixSpace();
+      for (Prefix prefix : filter.getDestinationPrefixes()) {
+        prefixSpace.addPrefix(prefix);
+      }
+      MatchPrefixSet matchPrefixSet =
+          new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace));
+      redistConditions.add(matchPrefixSet);
     }
-    conditionForConjunction.add(matchPrefixSet);
 
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     if (redistRule.getOrigin() != null) {
@@ -241,7 +248,7 @@ final class Conversions {
             : ROUTE_MAP_DENY_STATEMENT);
 
     return new If(
-        new Conjunction(conditionForConjunction.build()),
+        new Conjunction(redistConditions.build()),
         trueStatements.build(),
         // just fall through if the conditions are not matched
         ImmutableList.of());

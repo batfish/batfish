@@ -34,6 +34,7 @@ import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBg
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -46,7 +47,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -1101,9 +1101,9 @@ public final class F5BigipImishGrammarTest {
 
     RoutingPolicy rm1 = c.getRoutingPolicies().get(rm1Name);
 
-    assertTrue(
+    assertFalse(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
-        !rm1.call(
+        rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
@@ -1133,9 +1133,9 @@ public final class F5BigipImishGrammarTest {
         outputRoute.build().getCommunities().getCommunities(),
         equalTo(ImmutableSet.of(StandardCommunity.of(1, 2), StandardCommunity.of(33, 44))));
 
-    assertTrue(
+    assertFalse(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
-        !rm1.call(
+        rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(

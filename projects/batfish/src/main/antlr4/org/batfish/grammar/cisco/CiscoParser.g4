@@ -8,6 +8,7 @@ Cisco_bgp,
 Cisco_cable,
 Cisco_crypto,
 Cisco_callhome,
+Cisco_device_tracking,
 Cisco_eigrp,
 Cisco_ignored,
 Cisco_interface,
@@ -26,6 +27,7 @@ Cisco_sla,
 Cisco_snmp,
 Cisco_static,
 Cisco_track,
+Cisco_vlan,
 Cisco_vxlan,
 Cisco_zone;
 
@@ -1695,28 +1697,6 @@ phone_proxy_null
    ) null_rest_of_line
 ;
 
-qm_length
-:
-   LENGTH null_rest_of_line
-;
-
-qm_streaming
-:
-   STREAMING NEWLINE
-   (
-      qms_null
-   )*
-;
-
-qms_null
-:
-   NO?
-   (
-      MAX_CONNECTIONS
-      | SHUTDOWN
-   ) null_rest_of_line
-;
-
 redundancy_linecard_group
 :
    LINECARD_GROUP null_rest_of_line
@@ -2647,15 +2627,6 @@ s_process_max_time
    NO? PROCESS_MAX_TIME dec NEWLINE
 ;
 
-s_queue_monitor
-:
-   QUEUE_MONITOR
-   (
-      qm_length
-      | qm_streaming
-   )
-;
-
 s_radius_server
 :
    RADIUS SERVER name = variable NEWLINE
@@ -2916,31 +2887,6 @@ s_username_attributes
 ;
 
 
-s_vlan_cisco
-:
-   NO? VLAN
-   (
-      ACCESS_MAP
-      |
-      (
-         variable_vlan? dec
-      )
-   ) null_rest_of_line
-   (
-      vlan_vn_segment
-      | vlan_null
-   )*
-;
-
-s_vlan_internal_cisco
-:
-   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
-;
-
-s_vlan_name
-:
-   VLAN_NAME name = variable_permissive NEWLINE
-;
 
 s_voice
 :
@@ -3317,6 +3263,7 @@ stanza
    | s_daemon
    | s_depi_class
    | s_depi_tunnel
+   | s_device_tracking
    | s_dhcp
    | s_dialer
    | s_dial_peer
@@ -3400,7 +3347,6 @@ stanza
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
-   | s_queue_monitor
    | s_radius_server
    | s_redundancy
    | s_rf
@@ -3436,8 +3382,7 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan_cisco
-   | s_vlan_internal_cisco
+   | s_vlan
    | s_vlan_name
    | s_voice
    | s_voice_card
@@ -3466,6 +3411,7 @@ s_no
   (
     no_ip
     | no_track
+    | no_vlan
   )
 ;
 
@@ -3782,40 +3728,6 @@ vc_null
    ) null_rest_of_line
 ;
 
-vlan_vn_segment
-:
-   VN_SEGMENT vni = dec NEWLINE
-;
-
-vlan_null
-:
-   NO?
-   (
-      ACTION
-      | BACKUPCRF
-      | BRIDGE
-      | MATCH
-      | MEDIA
-      | MTU
-      | MULTICAST
-      | NAME
-      | PARENT
-      | PRIORITY
-      | PRIVATE_VLAN
-      | REMOTE_SPAN
-      | ROUTER_INTERFACE
-      | SHUTDOWN
-      | SPANNING_TREE
-      | STATE
-      | STATISTICS
-      | STP
-      | TAGGED
-      | TRUNK
-      | TB_VLAN1
-      | TB_VLAN2
-      | UNTAGGED
-   ) null_rest_of_line
-;
 
 voice_class
 :

@@ -61,17 +61,9 @@ config system interface
         set vdom "root"
         set type loopback
     next
-    edit "agg"
-        set vdom "root"
-        set type aggregate
-    next
     edit "emac"
         set vdom "root"
         set type emac-vlan
-    next
-    edit "redundant"
-        set vdom "root"
-        set type redundant
     next
     edit "vlan"
         set vdom "root"

@@ -7,7 +7,6 @@ import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 
 /**
  * A wrapper around a route object representing a route advertisement action (send/withdraw) and the
@@ -79,16 +78,10 @@ public final class RouteAdvertisement<T> {
    * @return true if the route is being withdrawn
    */
   public boolean isWithdrawn() {
-    switch (_reason) {
-      case WITHDRAW:
-      case REPLACE:
-        return true;
-      case ADD:
-        return false;
-      default:
-        throw new BatfishException(
-            String.format("Unrecognized RouteAdvertisement reason: %s", _reason));
-    }
+    return switch (_reason) {
+      case WITHDRAW, REPLACE -> true;
+      case ADD -> false;
+    };
   }
 
   @Override

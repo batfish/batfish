@@ -1,0 +1,54 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet",
+  "name": "VM1-vnet",
+  "type": "Microsoft.Network/virtualNetworks",
+  "location": "westeurope",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "cdea1d93-9750-411b-af9b-8b325cc8816c",
+    "addressSpace": {
+      "addressPrefixes": [
+        "10.0.0.0/16"
+      ]
+    },
+    "privateEndpointVNetPolicies": "Disabled",
+    "subnets": [
+      {
+        "name": "test",
+        "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/default",
+        "etag": "foo",
+        "properties": {
+          "provisioningState": "foo",
+          "addressPrefix": "10.0.0.0/24",
+          "ipConfigurations": [
+            {
+              "id": "resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vm1346/ipConfigurations/ipconfig1"
+            }
+          ],
+          "delegations": [],
+          "privateEndpointNetworkPolicies": "Disabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        },
+        "type": "Microsoft.Network/virtualNetworks/subnets"
+      },
+      {
+        "name": "test2",
+        "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
+        "etag": "foo",
+        "properties": {
+          "provisioningState": "foo",
+          "addressPrefix": "10.0.1.0/24",
+          "ipConfigurations": [
+          ],
+          "delegations": [],
+          "privateEndpointNetworkPolicies": "Disabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        },
+        "type": "Microsoft.Network/virtualNetworks/subnets"
+      }
+    ],
+    "virtualNetworkPeerings": [],
+    "enableDdosProtection": false
+  }
+}
+

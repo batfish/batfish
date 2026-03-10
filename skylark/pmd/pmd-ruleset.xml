@@ -8,6 +8,9 @@
         This ruleset defines the PMD rules for project "batfish".
     </description>
 
+    <!-- Exclude AutoValue-generated classes -->
+    <exclude-pattern>.*/AutoValue_.*\.java</exclude-pattern>
+
     <!--
          If you need to exclude something, see https://pmd.github.io/pmd-6.4.0/pmd_rules_java.html
     -->
@@ -23,16 +26,17 @@
         <exclude name="CheckResultSet"/>
         <exclude name="ForLoopCanBeForeach"/>
         <exclude name="GuardLogStatement"/>
-        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-        <exclude name="JUnitTestsShouldIncludeAssert"/>
+        <exclude name="ImplicitFunctionalInterface"/>
         <exclude name="LiteralsFirstInComparisons"/>
+        <exclude name="LooseCoupling"/>
         <exclude name="MethodReturnsInternalArray"/>
         <exclude name="OneDeclarationPerLine"/>
-        <exclude name="PositionLiteralsFirstInCaseInsensitiveComparisons"/>
-        <exclude name="PositionLiteralsFirstInComparisons"/>
         <exclude name="PreserveStackTrace"/>
+        <exclude name="RelianceOnDefaultCharset"/>
         <exclude name="SystemPrintln"/>
+        <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+        <exclude name="UnitTestContainsTooManyAsserts"/>
+        <exclude name="UnitTestShouldIncludeAssert"/>
         <exclude name="UnusedAssignment"/>
         <exclude
                 name="UnusedPrivateMethod"/> <!--reenable after resolution of https://github.com/pmd/pmd/issues/1189 -->
@@ -45,29 +49,31 @@
 
     <rule ref="category/java/errorprone.xml">
         <exclude name="AssignmentInOperand"/>
-        <exclude name="AvoidCatchingNPE"/>
-        <exclude name="AvoidCatchingThrowable"/>
+        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="AvoidFieldNameMatchingTypeName"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
-        <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="CompareObjectsWithEquals"/>
         <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="DoNotTerminateVM"/>
         <exclude name="EmptyCatchBlock"/>
-        <exclude name="EmptyIfStmt"/>
+        <exclude name="ImplicitSwitchFallThrough"/>
         <exclude name="JUnitSpelling"/>
-        <exclude name="MissingBreakInSwitch"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
-        <exclude name="LoggerIsNotStaticFinal"/>
         <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="OverrideBothEqualsAndHashcode"/>
+        <exclude name="ReplaceJavaUtilDate"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
         <exclude name="UseLocaleWithCaseConversions"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml/TestClassWithoutTestCases">
+        <properties>
+            <property name="testClassPattern" value="^(?:.*\.)?Test$"/>
+        </properties>
     </rule>
 
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">

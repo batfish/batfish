@@ -7,11 +7,11 @@ import static org.batfish.representation.palo_alto.Conversions.portsStringToInte
 import static org.batfish.representation.palo_alto.application_definitions.TestApplicationDefinitions.createApplicationDefinition;
 import static org.batfish.representation.palo_alto.application_definitions.TestApplicationDefinitions.createDefault;
 import static org.batfish.representation.palo_alto.application_definitions.TestApplicationDefinitions.createPort;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -6,8 +6,9 @@ exports_files(["pmd-ruleset.xml"])
 
 java_binary(
     name = "pmd",
-    main_class = "net.sourceforge.pmd.PMD",
+    main_class = "net.sourceforge.pmd.cli.PmdCli",
     runtime_deps = [
+        "@maven//:net_sourceforge_pmd_pmd_cli",
         "@maven//:net_sourceforge_pmd_pmd_java",
     ],
 )

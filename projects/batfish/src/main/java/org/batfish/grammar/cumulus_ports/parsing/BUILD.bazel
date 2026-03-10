@@ -9,7 +9,7 @@ java_library(
         ":CumulusPortsBaseParser.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
+        "//projects/common:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

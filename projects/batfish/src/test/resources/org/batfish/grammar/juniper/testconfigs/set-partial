@@ -1,0 +1,4 @@
+#
+set system host-name set-partial
+#
+set protocols

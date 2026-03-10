@@ -24,7 +24,7 @@ public class PrefixTracerQuestion extends Question {
 
   @JsonCreator
   private static PrefixTracerQuestion create(
-      @JsonProperty(PROP_PREFIX) Prefix prefix, @Nullable @JsonProperty(PROP_NODES) String nodes) {
+      @JsonProperty(PROP_PREFIX) Prefix prefix, @JsonProperty(PROP_NODES) @Nullable String nodes) {
     return new PrefixTracerQuestion(prefix, nodes);
   }
 
@@ -52,21 +52,18 @@ public class PrefixTracerQuestion extends Question {
     return "prefixTracer";
   }
 
-  @Nullable
   @JsonProperty(PROP_PREFIX)
-  public Prefix getPrefix() {
+  public @Nullable Prefix getPrefix() {
     return _prefix;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 }

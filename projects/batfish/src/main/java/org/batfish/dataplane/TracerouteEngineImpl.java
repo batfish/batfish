@@ -63,7 +63,11 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
             entry ->
                 new SimpleEntry<>(
                     entry.getKey(),
-                    entry.getValue().getTraces().collect(ImmutableList.toImmutableList())))
+                    entry
+                        .getValue()
+                        .getTraces()
+                        .limit(10000)
+                        .collect(ImmutableList.toImmutableList())))
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Ordering.natural(), Entry::getKey, Entry::getValue));

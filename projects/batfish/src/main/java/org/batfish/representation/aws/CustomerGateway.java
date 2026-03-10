@@ -27,10 +27,10 @@ final class CustomerGateway implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static CustomerGateway create(
-      @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) String customerGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_IP_ADDRESS) String ipAddress,
-      @Nullable @JsonProperty(JSON_KEY_TYPE) String type,
-      @Nullable @JsonProperty(JSON_KEY_BGP_ASN) String bgpAsn) {
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
+      @JsonProperty(JSON_KEY_IP_ADDRESS) @Nullable String ipAddress,
+      @JsonProperty(JSON_KEY_TYPE) @Nullable String type,
+      @JsonProperty(JSON_KEY_BGP_ASN) @Nullable String bgpAsn) {
     checkArgument(customerGatewayId != null, "Customer gateway id cannot be null");
     checkArgument(ipAddress != null, "Ip address cannot be null for customer gateway");
     checkArgument(type != null, "Type cannot be null for customer gateway");

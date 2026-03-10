@@ -1,4 +1,4 @@
 ####BATFISH FLATTENED JUNIPER CONFIG####
-delete system host-name multiple_tags
+replace system host-name multiple_tags
 activate system host-name multiple_tags
 set system host-name multiple_tags

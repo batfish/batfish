@@ -103,27 +103,23 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     _interfaceInitOrder = new LinkedHashSet<>(); // order matters
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -417,7 +413,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     Ip gatewayIp = null;
     String nextHopInterface = null;
 
-    if (ctx.VIA().size() != 0) {
+    if (!ctx.VIA().isEmpty()) {
       if (ctx.VIA().size() > 1) {
         _w.addWarning(
             ctx,
@@ -429,7 +425,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
       gatewayIp = toIp(ctx.address(0));
     }
 
-    if (ctx.DEV().size() != 0) {
+    if (!ctx.DEV().isEmpty()) {
       if (ctx.DEV().size() > 1) {
         _w.addWarning(
             ctx,

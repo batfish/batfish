@@ -536,23 +536,6 @@ null_single
    NO?
    (
       ABSOLUTE_TIMEOUT
-      |
-      (
-         ACCESS_LIST
-         (
-            (
-               (
-                  dec
-                  | variable_aclname
-               )
-               (
-                  EXTENDED
-                  | REMARK
-               )
-            )
-            | DYNAMIC_EXTENDED
-         )
-      )
       | ACCOUNTING
       | ACCOUNTING_PORT
       | ACTIVATE_SERVICE_WHITELIST

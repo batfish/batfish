@@ -11,7 +11,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -57,7 +56,7 @@ public class Interface implements Serializable {
 
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
-    Double defaultSpeed = getDefaultSpeed(name, format);
+    Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
     } else if (name.startsWith("Loopback")) {
@@ -75,43 +74,21 @@ public class Interface implements Serializable {
     }
   }
 
-  public static @Nullable Double getDefaultSpeed(
-      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+  public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
-      switch (format) {
-        case ALCATEL_AOS:
-        case ARUBAOS:
-        case CADANT:
-        case CISCO_ASA:
-        case CISCO_IOS:
-        case FORCE10:
-        case FOUNDRY:
-          return DEFAULT_IOS_ETHERNET_SPEED;
-
-        case AWS:
-        case BLADENETWORK:
-        case EMPTY:
-        case F5:
-        case FLAT_JUNIPER:
-        case FLAT_VYOS:
-        case HOST:
-        case IGNORED:
-        case IPTABLES:
-        case JUNIPER:
-        case JUNIPER_SWITCH:
-        case MRV:
-        case MRV_COMMANDS:
-        case MSS:
-        case UNKNOWN:
-        case VXWORKS:
-        case VYOS:
-        default:
-          throw new BatfishException("Unuspported format: " + format);
-      }
+      return DEFAULT_IOS_ETHERNET_SPEED;
     } else if (name.startsWith("FastEthernet")) {
       return DEFAULT_FAST_ETHERNET_SPEED;
+    } else if (name.startsWith("FiftyGig")) {
+      return 50E9D;
+    } else if (name.startsWith("FiveGigabit")) {
+      return 5E9D;
+    } else if (name.startsWith("FortyGig")) {
+      return 40E9D;
     } else if (name.startsWith("GigabitEthernet")) {
       return 1E9D;
+    } else if (name.startsWith("HundredGig")) {
+      return 100E9D;
     } else if (name.startsWith("LongReachEthernet")) {
       return DEFAULT_LONG_REACH_ETHERNET_SPEED;
     } else if (name.startsWith("TenGigabitEthernet")) {
@@ -305,7 +282,7 @@ public class Interface implements Serializable {
         setProxyArp(true);
         break;
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         break;
     }
