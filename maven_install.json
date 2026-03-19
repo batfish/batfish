@@ -50,7 +50,7 @@
     "org.apache.logging.log4j:log4j-api": 1472311908,
     "org.apache.logging.log4j:log4j-core": -1557614427,
     "org.apache.logging.log4j:log4j-slf4j-impl": -209082032,
-    "org.codehaus.jettison:jettison": 2016307212,
+    "org.codehaus.jettison:jettison": 208852749,
     "org.glassfish.grizzly:grizzly-framework": 1869934097,
     "org.glassfish.grizzly:grizzly-http-server": -292995845,
     "org.glassfish.jersey.containers:jersey-container-grizzly2-http": -1775563412,
@@ -209,8 +209,8 @@
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
     "org.checkerframework:checker-qual": 386068353,
     "org.checkerframework:checker-qual:jar:sources": 177672168,
-    "org.codehaus.jettison:jettison": -342403950,
-    "org.codehaus.jettison:jettison:jar:sources": 1360768140,
+    "org.codehaus.jettison:jettison": 1666952040,
+    "org.codehaus.jettison:jettison:jar:sources": 205196847,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
     "org.glassfish.grizzly:grizzly-framework:jar:sources": -1312844390,
     "org.glassfish.grizzly:grizzly-http": -1102587462,
@@ -815,10 +815,10 @@
     },
     "org.codehaus.jettison:jettison": {
       "shasums": {
-        "jar": "fc3a68a7c17688ee50817340fef265d8d3f6c192c92bbee00d17f18a6d3dfeda",
-        "sources": "bc7643e6bdb8c3a2995a4420d150ae5b414902eafedbadfdb4cf94c5de31469c"
+        "jar": "925f75c0b0ce155b5c29c4a4f01e249deee5294fb9df9890fcbccb27cdf3468f",
+        "sources": "4c63fe68becd2eeaf653004e57b5b28723a58c77a9a863a5ee7ddef785af06b1"
       },
-      "version": "1.5.4"
+      "version": "1.5.5"
     },
     "org.glassfish.grizzly:grizzly-framework": {
       "shasums": {
