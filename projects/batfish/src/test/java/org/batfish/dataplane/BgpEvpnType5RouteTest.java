@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -35,7 +36,6 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -103,7 +103,6 @@ public class BgpEvpnType5RouteTest {
         foundInNode1);
   }
 
-  @Ignore("Known issue: EVPN type 5 route loops between iBGP BGP-MP RR and router1 and is lost")
   @Test
   public void testEvpnType5RoutePropagation_router1() throws IOException {
     Batfish batfish = loadTestrigAndComputeDataPlane();
@@ -154,5 +153,32 @@ public class BgpEvpnType5RouteTest {
           trace,
           hasHops(contains(hasNodeName("node1-1"), hasNodeName("router1"), hasNodeName("edge1"))));
     }
+  }
+
+  @Test
+  public void testEvpnType5RouteOriginatorIp() throws IOException {
+    Batfish batfish = loadTestrigAndComputeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(snapshot);
+    Prefix targetPrefix = Prefix.parse("192.168.99.0/24");
+
+    Map<String, java.util.SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibsForTesting();
+    GenericRib<AnnotatedRoute<AbstractRoute>> node1MainRib = ribs.get("node1-1").get("TENANT-A");
+
+    Ip originatorIp = null;
+    for (AnnotatedRoute<AbstractRoute> route : node1MainRib.getRoutes()) {
+      if (route.getNetwork().equals(targetPrefix)
+          && route.getRoute() instanceof org.batfish.datamodel.BgpRoute) {
+        originatorIp = ((org.batfish.datamodel.BgpRoute<?, ?>) route.getRoute()).getOriginatorIp();
+      }
+    }
+
+    assertNotNull("Route should be present and be a BGP route", originatorIp);
+    assertNotEquals("Originator IP should not be 0.0.0.0", Ip.ZERO, originatorIp);
+
+    // We expect the Originator ID to match router1's router ID (172.16.0.100).
+    assertThat(originatorIp, org.hamcrest.Matchers.equalTo(Ip.parse("172.16.0.100")));
   }
 }

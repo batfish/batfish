@@ -2363,12 +2363,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   public void importCrossVrfEvpnRoutesToV4(
       Stream<RouteAdvertisement<EvpnType5Route>> routesToLeak,
-      EvpnToBgpv4VrfLeakConfig leakConfig) {
+      EvpnToBgpv4VrfLeakConfig leakConfig,
+      Optional<RouteDistinguisher> selfRd) {
     // TODO: Should type 3 routes leak?
     @Nullable
     RoutingPolicy policy =
         Optional.ofNullable(leakConfig.getImportPolicy()).flatMap(_policies::get).orElse(null);
-    routesToLeak.forEach(
+    Stream<RouteAdvertisement<EvpnType5Route>> filteredRoutes =
+        routesToLeak.filter(
+            ra -> {
+              // Import loop prevention heuristic: exclude route if originated from this VRF
+              return !selfRd.isPresent()
+                  || !selfRd.get().equals(ra.getRoute().getRouteDistinguisher());
+            });
+    filteredRoutes.forEach(
         ra -> {
           EvpnType5Route route = ra.getRoute();
           LOGGER.trace("Node {}, VRF {}, Leaking EVPN route {}", _hostname, _vrfName, route);

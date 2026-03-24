@@ -3790,6 +3790,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
       Vrf vrf = _c.getVrfs().get(riName);
+      vrf.setRouteDistinguisher(ri.getRouteDistinguisher());
 
       // dhcp relay
       for (Entry<String, DhcpRelayGroup> e2 : ri.getDhcpRelayGroups().entrySet()) {

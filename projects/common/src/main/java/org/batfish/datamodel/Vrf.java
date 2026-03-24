@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
@@ -43,6 +44,7 @@ public class Vrf extends ComparableStructure<String> {
     private @Nullable String _resolutionPolicy;
     private @Nonnull Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
     private @Nullable VrfLeakConfig _vrfLeakConfig;
+    private @Nullable RouteDistinguisher _routeDistinguisher;
 
     private Builder(Supplier<String> nameGenerator) {
       _nameGenerator = nameGenerator;
@@ -57,6 +59,7 @@ public class Vrf extends ComparableStructure<String> {
       }
       vrf.setEigrpProcesses(_eigrpProcesses);
       vrf.setVrfLeakConfig(_vrfLeakConfig);
+      vrf.setRouteDistinguisher(_routeDistinguisher);
       vrf.setResolutionPolicy(_resolutionPolicy);
       return vrf;
     }
@@ -85,6 +88,11 @@ public class Vrf extends ComparableStructure<String> {
       _vrfLeakConfig = vrfLeakConfig;
       return this;
     }
+
+    public Builder setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
+      _routeDistinguisher = routeDistinguisher;
+      return this;
+    }
   }
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
@@ -101,6 +109,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VRF_LEAK_CONFIG = "vrfLeakConfig";
+  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -126,6 +135,7 @@ public class Vrf extends ComparableStructure<String> {
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
   private @Nullable VrfLeakConfig _vrfLeakConfig;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
   private @Nonnull SourceIpInference _sourceIpInference;
 
   public Vrf(@Nonnull String name) {
@@ -281,6 +291,16 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_VRF_LEAK_CONFIG)
   public void setVrfLeakConfig(@Nullable VrfLeakConfig vrfLeakConfig) {
     _vrfLeakConfig = vrfLeakConfig;
+  }
+
+  @JsonProperty(PROP_ROUTE_DISTINGUISHER)
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
+    return _routeDistinguisher;
+  }
+
+  @JsonProperty(PROP_ROUTE_DISTINGUISHER)
+  public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
+    _routeDistinguisher = routeDistinguisher;
   }
 
   public void setAppliedRibGroups(Map<RoutingProtocol, RibGroup> appliedRibGroups) {

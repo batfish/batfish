@@ -233,9 +233,6 @@ routing-instances {
         routing-options {
             multipath;
             auto-export;
-            static {
-                route 0.0.0.0/0 next-hop 10.99.0.1;
-            }
         }
         protocols {
             bgp {
