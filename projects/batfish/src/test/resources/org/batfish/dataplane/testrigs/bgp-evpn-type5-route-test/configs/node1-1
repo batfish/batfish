@@ -146,6 +146,14 @@ policy-options {
             }
         }
     }
+    policy-statement TENANT-A-ipr-import {
+        term 1 {
+            then {
+                tag 999;
+                accept;
+            }
+        }
+    }
     policy-statement TENANT-B-import {
         term from-tenant-b {
             from community TENANT-B-RT;
@@ -216,6 +224,7 @@ routing-instances {
                     advertise direct-nexthop;
                     encapsulation vxlan;
                     vni 50000;
+                    import TENANT-A-ipr-import;
                 }
             }
         }

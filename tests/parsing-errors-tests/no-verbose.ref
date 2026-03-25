@@ -6,9 +6,19 @@
         "configs/as1r1.cfg" : "FAILED",
         "configs/as1r2.cfg" : "PASSED",
         "configs/as2r1.cfg" : "PASSED",
-        "configs/cumulus_nclu_range" : "FAILED"
+        "configs/cumulus_nclu_range" : "FAILED",
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : "PASSED",
+        "vrf_import_and_ip_prefix_routes_import" : "FAILED"
       },
       "warnings" : {
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in configs/vrf_import_and_ip_prefix_routes_import.cfg\n"
+            }
+          ]
+        },
         "internet" : { }
       }
     }

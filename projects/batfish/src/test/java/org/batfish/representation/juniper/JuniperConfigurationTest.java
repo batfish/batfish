@@ -76,6 +76,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -1108,5 +1110,101 @@ public class JuniperConfigurationTest {
       iface.getAllAddresses().add(addr2);
       assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr1.getIp())));
     }
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_BothPolicies() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfImportPolicy("vrf-import-policy");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setImportPolicy("ipr-import-policy");
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getVrfLeakConfig());
+    String importPolicyName =
+        tenantVrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs().get(0).getImportPolicy();
+    org.batfish.datamodel.routing_policy.RoutingPolicy importPolicy =
+        config._c.getRoutingPolicies().get(importPolicyName);
+    assertNotNull(importPolicy);
+
+    // Expecting two if statements that call the respective policies
+    assertThat(importPolicy.getStatements(), hasSize(2));
+    org.batfish.datamodel.routing_policy.statement.If firstIf =
+        (org.batfish.datamodel.routing_policy.statement.If) importPolicy.getStatements().get(0);
+    org.batfish.datamodel.routing_policy.statement.If secondIf =
+        (org.batfish.datamodel.routing_policy.statement.If) importPolicy.getStatements().get(1);
+
+    assertThat(
+        firstIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) firstIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("vrf-import-policy"));
+
+    assertThat(
+        secondIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) secondIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("ipr-import-policy"));
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_SinglePolicy() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfImportPolicy("vrf-import-policy");
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getVrfLeakConfig());
+    String importPolicyName =
+        tenantVrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs().get(0).getImportPolicy();
+    assertThat(importPolicyName, equalTo("vrf-import-policy"));
   }
 }
