@@ -4172,29 +4172,58 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
 
-      // Resolve import RT
-      ExtendedCommunity importRt = ri.getVrfTargetImport();
-      if (importRt == null) {
-        importRt = ri.getVrfTargetCommunity();
-      }
-      if (importRt == null) {
-        continue;
-      }
+      String vrfImport = ri.getVrfImportPolicy();
+      String iprImport = ipr.getImportPolicy();
 
-      // Create import policy matching the RT community
-      String importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(riName);
-      RoutingPolicy importPolicy =
-          RoutingPolicy.builder()
-              .setOwner(_c)
-              .setName(importPolicyName)
-              .addStatement(
-                  new If(
-                      new MatchCommunities(
-                          InputCommunities.instance(), new HasCommunity(new CommunityIs(importRt))),
-                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
-              .addStatement(Statements.ReturnFalse.toStaticStatement())
-              .build();
-      _c.getRoutingPolicies().put(importPolicyName, importPolicy);
+      String importPolicyName;
+      if (vrfImport != null || iprImport != null) {
+        if (vrfImport != null && iprImport != null) {
+          importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(riName);
+          RoutingPolicy importPolicy =
+              RoutingPolicy.builder()
+                  .setOwner(_c)
+                  .setName(importPolicyName)
+                  .addStatement(
+                      new If(
+                          new CallExpr(vrfImport),
+                          ImmutableList.of(),
+                          ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
+                  .addStatement(
+                      new If(
+                          new CallExpr(iprImport),
+                          ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                          ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
+                  .build();
+          _c.getRoutingPolicies().put(importPolicyName, importPolicy);
+        } else {
+          importPolicyName = vrfImport != null ? vrfImport : iprImport;
+        }
+      } else {
+        // Resolve import RT
+        ExtendedCommunity importRt = ri.getVrfTargetImport();
+        if (importRt == null) {
+          importRt = ri.getVrfTargetCommunity();
+        }
+        if (importRt == null) {
+          continue;
+        }
+
+        // Create import policy matching the RT community
+        importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(riName);
+        RoutingPolicy importPolicy =
+            RoutingPolicy.builder()
+                .setOwner(_c)
+                .setName(importPolicyName)
+                .addStatement(
+                    new If(
+                        new MatchCommunities(
+                            InputCommunities.instance(),
+                            new HasCommunity(new CommunityIs(importRt))),
+                        ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+                .addStatement(Statements.ReturnFalse.toStaticStatement())
+                .build();
+        _c.getRoutingPolicies().put(importPolicyName, importPolicy);
+      }
 
       Vrf tenantVrf = _c.getVrfs().get(riName);
       if (tenantVrf != null) {

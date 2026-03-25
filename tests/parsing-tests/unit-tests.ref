@@ -266,6 +266,7 @@
         "configs/variables" : "CISCO_IOS",
         "configs/variables_dos" : "CISCO_IOS",
         "configs/vlan_access_map2" : "CISCO_IOS",
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : "JUNIPER",
         "configs/xr_dhcp" : "CISCO_IOS_XR",
         "configs/xr_ipsla" : "CISCO_IOS_XR",
         "configs/xr_multicast" : "CISCO_IOS_XR",
@@ -1076,6 +1077,9 @@
         "vmx4" : [
           "configs/gh-2658-juniper-vrf-import-export.cfg"
         ],
+        "vrf_import_and_ip_prefix_routes_import" : [
+          "configs/vrf_import_and_ip_prefix_routes_import.cfg"
+        ],
         "xr_dhcp" : [
           "configs/xr_dhcp"
         ],
@@ -1353,6 +1357,7 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : "PASSED",
         "configs/xr_dhcp" : "PASSED",
         "configs/xr_ipsla" : "PASSED",
         "configs/xr_multicast" : "PASSED",
@@ -68721,6 +68726,121 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'policy1'  <== mode:M_Name)",
+            "              (pops_common",
+            "                (pops_then*",
+            "                  THEN:'then'",
+            "                  (popst_common*",
+            "                    (popst_accept",
+            "                      ACCEPT:'accept')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'policy2'  <== mode:M_Name)",
+            "              (pops_common",
+            "                (pops_then*",
+            "                  THEN:'then'",
+            "                  (popst_common*",
+            "                    (popst_accept",
+            "                      ACCEPT:'accept')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_routing_instances*",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (junos_name*",
+            "                NAME:'test_vrf'  <== mode:M_Routing_Instances)",
+            "              (ri_instance_type*",
+            "                INSTANCE_TYPE:'instance-type'",
+            "                VRF:'vrf'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_routing_instances*",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (junos_name*",
+            "                NAME:'test_vrf'  <== mode:M_Routing_Instances)",
+            "              (ri_vrf_import",
+            "                VRF_IMPORT:'vrf-import'",
+            "                name = (junos_name*",
+            "                  NAME:'policy1'  <== mode:M_Name)))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_routing_instances*",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (junos_name*",
+            "                NAME:'test_vrf'  <== mode:M_Routing_Instances)",
+            "              (ri_protocols*",
+            "                (s_protocols*",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_evpn",
+            "                    EVPN:'evpn'",
+            "                    (e_ip_prefix_routes*",
+            "                      IP_PREFIX_ROUTES:'ip-prefix-routes'",
+            "                      (eipr_import",
+            "                        IMPORT:'import'",
+            "                        name = (junos_name*",
+            "                          NAME:'policy2'  <== mode:M_PolicyExpression)))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_PolicyExpression)",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_routing_instances*",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (junos_name*",
+            "                NAME:'test_vrf'  <== mode:M_Routing_Instances)",
+            "              (ri_protocols*",
+            "                (s_protocols*",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_evpn",
+            "                    EVPN:'evpn'",
+            "                    (e_ip_prefix_routes*",
+            "                      IP_PREFIX_ROUTES:'ip-prefix-routes'",
+            "                      (eipr_vni",
+            "                        VNI:'vni'",
+            "                        vni = (dec*",
+            "                          UINT16:'1000')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/xr_dhcp" : {
           "sentences" : [
             "(cisco_xr_configuration",
@@ -71257,12 +71377,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 203,
-              "Parser_Context" : "[ri_vrf_import ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "vrf-import fabric"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 221,
               "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "bridge-domains bd_100 vlan-id 100"
@@ -71728,6 +71842,14 @@
               "Text" : "$hub_comm"
             }
           ]
+        },
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in configs/vrf_import_and_ip_prefix_routes_import.cfg\n"
+            }
+          ]
         }
       }
     },
@@ -71998,6 +72120,7 @@
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
         "vmx4" : "PASSED",
+        "vrf_import_and_ip_prefix_routes_import" : "PASSED",
         "xr_dhcp" : "PASSED",
         "xr_ipsla" : "PASSED",
         "xr_multicast" : "PASSED",
@@ -76996,6 +77119,28 @@
           }
         },
         "configs/vlan_access_map2" : { },
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : {
+          "policy-statement" : {
+            "policy1" : {
+              "definitionLines" : "2-4",
+              "numReferrers" : 1
+            },
+            "policy2" : {
+              "definitionLines" : "5-7",
+              "numReferrers" : 0
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            },
+            "test_vrf" : {
+              "definitionLines" : "10-21",
+              "numReferrers" : 4
+            }
+          }
+        },
         "configs/xr_dhcp" : { },
         "configs/xr_ipsla" : { },
         "configs/xr_multicast" : { },
@@ -77801,6 +77946,9 @@
         ],
         "configs/vlan_access_map2" : [
           "vlan_access_map4"
+        ],
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : [
+          "vrf_import_and_ip_prefix_routes_import"
         ],
         "configs/xr_dhcp" : [
           "xr_dhcp"
@@ -84993,6 +85141,27 @@
               ]
             }
           }
+        },
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : {
+          "policy-statement" : {
+            "policy1" : {
+              "routing-instance vrf-import" : [
+                12
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            },
+            "test_vrf" : {
+              "routing-instance" : [
+                10
+              ]
+            }
+          }
         }
       },
       "undefinedReferences" : {
@@ -87532,6 +87701,7 @@
             }
           }
         },
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : { },
         "configs/xr_dhcp" : { },
         "configs/xr_ipsla" : { },
         "configs/xr_multicast" : { },
@@ -88309,6 +88479,7 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : "PASSED",
         "configs/xr_dhcp" : "PASSED",
         "configs/xr_ipsla" : "PASSED",
         "configs/xr_multicast" : "PASSED",

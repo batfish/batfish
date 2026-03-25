@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -96,6 +97,7 @@ public class BgpEvpnType5RouteTest {
     for (AnnotatedRoute<AbstractRoute> route : node1MainRib.getRoutes()) {
       if (route.getNetwork().equals(targetPrefix)) {
         foundInNode1 = true;
+        assertThat(route.getRoute().getTag(), equalTo(999L));
       }
     }
     assertTrue(

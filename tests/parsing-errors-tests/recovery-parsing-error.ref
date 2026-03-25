@@ -6,7 +6,9 @@
         "configs/as1r1.cfg" : "PARTIALLY_UNRECOGNIZED",
         "configs/as1r2.cfg" : "PASSED",
         "configs/as2r1.cfg" : "PASSED",
-        "configs/cumulus_nclu_range" : "PARTIALLY_UNRECOGNIZED"
+        "configs/cumulus_nclu_range" : "PARTIALLY_UNRECOGNIZED",
+        "configs/vrf_import_and_ip_prefix_routes_import.cfg" : "PASSED",
+        "vrf_import_and_ip_prefix_routes_import" : "FAILED"
       }
     }
   ],

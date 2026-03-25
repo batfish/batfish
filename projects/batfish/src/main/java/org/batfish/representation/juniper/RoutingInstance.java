@@ -68,6 +68,7 @@ public class RoutingInstance implements Serializable {
   private @Nullable ExtendedCommunity _vrfTargetCommunity;
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
+  private @Nullable String _vrfImportPolicy;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -428,5 +429,13 @@ public class RoutingInstance implements Serializable {
 
   public void setVrfTargetExport(@Nullable ExtendedCommunity vrfTargetExport) {
     _vrfTargetExport = vrfTargetExport;
+  }
+
+  public @Nullable String getVrfImportPolicy() {
+    return _vrfImportPolicy;
+  }
+
+  public void setVrfImportPolicy(@Nullable String vrfImportPolicy) {
+    _vrfImportPolicy = vrfImportPolicy;
   }
 }
