@@ -3878,8 +3878,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSo_vtep_source_interface(So_vtep_source_interfaceContext ctx) {
-    // TODO: add reference
     String ifaceName = getInterfaceFullName(ctx.iface);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
     _currentLogicalSystem.getOrInitSwitchOptions().setVtepSourceInterface(ifaceName);
   }
 
