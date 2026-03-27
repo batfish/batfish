@@ -65,7 +65,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _receivedFrom,
           getNetwork(),
           _nextHop,
-          _pathId,
+          getPathId(),
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -189,7 +189,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
-        .setPathId(_pathId)
+        .setPathId(getPathId())
         .setProtocol(_attributes.getProtocol())
         .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
@@ -211,7 +211,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _nextHop.equals(other._nextHop)
-        && Objects.equals(_pathId, other._pathId)
+        && Objects.equals(getPathId(), other.getPathId())
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
@@ -230,7 +230,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + (_pathId != null ? _pathId : 0);
+      h = h * 31 + (getPathId() != null ? getPathId() : 0);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + Long.hashCode(getTag());
@@ -256,7 +256,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_originatorIp", _attributes._originatorIp)
         .add("_originMechanism", _attributes._originMechanism)
         .add("_originType", _attributes._originType)
-        .add("_pathId", _pathId)
+        .add("getPathId()", getPathId())
         .add("_protocol", _attributes._protocol)
         .add("_receivedFrom", _receivedFrom)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)
