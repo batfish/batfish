@@ -103,8 +103,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       _asPath = firstNonNull(asPath, AsPath.empty());
       _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
       _communities = communities;
-      _localPreference = localPreference;
-      _med = med;
+      _localPreference = (int) localPreference;
+      _med = (int) med;
       _originatorIp = originatorIp;
       _originMechanism = (byte) originMechanism.ordinal();
       _originType = (byte) originType.ordinal();
@@ -125,8 +125,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       BgpRouteAttributes that = (BgpRouteAttributes) o;
       return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
           && _protocol == that._protocol
-          && _localPreference == that._localPreference
-          && _med == that._med
+          && _localPreference == that._localPreference // raw int compare is safe
+          && _med == that._med // raw int compare is safe
           && _receivedFromRouteReflectorClient == that._receivedFromRouteReflectorClient
           && _weight == that._weight
           && _asPath.equals(that._asPath)
@@ -148,8 +148,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         h = _asPath.hashCode();
         h = h * 31 + _clusterList.hashCode();
         h = h * 31 + _communities.hashCode();
-        h = h * 31 + Long.hashCode(_localPreference);
-        h = h * 31 + Long.hashCode(_med);
+        h = h * 31 + _localPreference;
+        h = h * 31 + _med;
         h = h * 31 + _originatorIp.hashCode();
         h = h * 31 + _originMechanism;
         h = h * 31 + _originType;
@@ -166,8 +166,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     protected final @Nonnull AsPath _asPath;
     protected final @Nonnull Set<Long> _clusterList;
     protected final @Nonnull CommunitySet _communities;
-    protected final long _localPreference;
-    protected final long _med;
+    // Stored as unsigned 32-bit int for memory savings. Use getLocalPreference() to read.
+    private final int _localPreference;
+    // Stored as unsigned 32-bit int for memory savings. Use getMed() to read.
+    private final int _med;
     protected final @Nonnull Ip _originatorIp;
     protected final boolean _receivedFromRouteReflectorClient;
     protected final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
@@ -188,6 +190,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     /** -1 for null */
     protected final byte _srcProtocol;
+
+    public long getLocalPreference() {
+      return Integer.toUnsignedLong(_localPreference);
+    }
+
+    public long getMed() {
+      return Integer.toUnsignedLong(_med);
+    }
 
     public @Nonnull OriginMechanism getOriginMechanism() {
       return OriginMechanism.fromOrdinal(_originMechanism);
@@ -545,14 +555,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_LOCAL_PREFERENCE)
   @Override
   public long getLocalPreference() {
-    return _attributes._localPreference;
+    return _attributes.getLocalPreference();
   }
 
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
   public long getMetric() {
-    return _attributes._med;
+    return _attributes.getMed();
   }
 
   @JsonProperty(PROP_ORIGINATOR_IP)
