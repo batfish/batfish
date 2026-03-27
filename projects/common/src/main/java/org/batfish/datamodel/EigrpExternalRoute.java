@@ -159,7 +159,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         && _metricVersion == rhs._metricVersion
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
-        && _processAsn == rhs._processAsn
+        && getProcessAsn() == rhs.getProcessAsn()
         && getTag() == rhs.getTag()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting();
@@ -177,7 +177,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         _destinationAsn,
         _metric,
         _metricVersion,
-        _processAsn);
+        getProcessAsn());
   }
 
   @Override
@@ -185,7 +185,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
         .add(PROP_NEXT_HOP_IP, _nextHop)
-        .add(PROP_PROCESS_ASN, _processAsn)
+        .add(PROP_PROCESS_ASN, getProcessAsn())
         .toString();
   }
 }

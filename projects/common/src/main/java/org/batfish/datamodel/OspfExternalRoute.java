@@ -114,8 +114,10 @@ public abstract class OspfExternalRoute extends OspfRoute {
   protected static final String PROP_LSA_METRIC = "lsaMetric";
 
   private final @Nonnull String _advertiser;
-  private final long _costToAdvertiser;
-  private final long _lsaMetric;
+  // Stored as unsigned 32-bit int for memory savings. Use getCostToAdvertiser() to read.
+  private final int _costToAdvertiser;
+  // Stored as unsigned 32-bit int for memory savings. Use getLsaMetric() to read.
+  private final int _lsaMetric;
   private transient int _hashCode;
 
   public static @Nonnull Builder builder() {
@@ -136,8 +138,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
       boolean nonRouting) {
     super(prefix, nextHop, admin, metric, area, tag, nonRouting, nonForwarding);
     _advertiser = advertiser;
-    _costToAdvertiser = costToAdvertiser;
-    _lsaMetric = lsaMetric;
+    _costToAdvertiser = (int) costToAdvertiser;
+    _lsaMetric = (int) lsaMetric;
   }
 
   @JsonProperty(PROP_ADVERTISER)
@@ -147,12 +149,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   @JsonProperty(PROP_COST_TO_ADVERTISER)
   public long getCostToAdvertiser() {
-    return _costToAdvertiser;
+    return Integer.toUnsignedLong(_costToAdvertiser);
   }
 
   @JsonProperty(PROP_LSA_METRIC)
   public long getLsaMetric() {
-    return _lsaMetric;
+    return Integer.toUnsignedLong(_lsaMetric);
   }
 
   @JsonIgnore
@@ -199,11 +201,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
         && getAdministrativeCost() == that.getAdministrativeCost()
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
-        && _metric == that._metric
+        && getMetric() == that.getMetric()
         && _nextHop.equals(that._nextHop)
         && getTag() == that.getTag()
         // OspfRoute properties
-        && _area == that._area
+        && getArea() == that.getArea()
         // OspfExternalRoute properties
         && getCostToAdvertiser() == that.getCostToAdvertiser()
         && getLsaMetric() == that.getLsaMetric()
@@ -217,17 +219,17 @@ public abstract class OspfExternalRoute extends OspfRoute {
       // AbstractRoute Properties
       h = _network.hashCode();
       h = 31 * h + Long.hashCode(getAdministrativeCost());
-      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + Long.hashCode(getMetric());
       h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonRouting());
       h = 31 * h + Boolean.hashCode(getNonForwarding());
       h = 31 * h + Long.hashCode(getTag());
       // OspfRoute properties
-      h = 31 * h + Long.hashCode(_area);
+      h = 31 * h + Long.hashCode(getArea());
       // OspfExternalRoute properties
       h = 31 * h + _advertiser.hashCode();
-      h = 31 * h + Long.hashCode(_costToAdvertiser);
-      h = 31 * h + Long.hashCode(_lsaMetric);
+      h = 31 * h + Long.hashCode(getCostToAdvertiser());
+      h = 31 * h + Long.hashCode(getLsaMetric());
 
       _hashCode = h;
     }
