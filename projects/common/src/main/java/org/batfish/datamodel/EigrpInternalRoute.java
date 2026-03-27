@@ -139,7 +139,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
         && getTag() == rhs.getTag()
-        && _processAsn == rhs._processAsn
+        && getProcessAsn() == rhs.getProcessAsn()
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
         && getNonForwarding() == rhs.getNonForwarding()
@@ -153,7 +153,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         _network,
         _nextHop,
         getTag(),
-        _processAsn,
+        getProcessAsn(),
         _metric,
         _metricVersion,
         getNonForwarding(),
@@ -165,7 +165,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
         .add(PROP_NEXT_HOP_IP, _nextHop)
-        .add(PROP_PROCESS_ASN, _processAsn)
+        .add(PROP_PROCESS_ASN, getProcessAsn())
         .toString();
   }
 }

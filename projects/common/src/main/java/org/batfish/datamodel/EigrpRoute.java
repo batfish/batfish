@@ -19,8 +19,8 @@ public abstract class EigrpRoute extends AbstractRoute {
   protected final @Nonnull EigrpMetric _metric;
   protected final @Nonnull EigrpMetricVersion _metricVersion;
 
-  /** AS number of the EIGRP process that installed this route in the RIB */
-  final long _processAsn;
+  // Stored as unsigned 32-bit int for memory savings. Use getProcessAsn() to read.
+  private final int _processAsn;
 
   EigrpRoute(
       long admin,
@@ -36,7 +36,7 @@ public abstract class EigrpRoute extends AbstractRoute {
     _metric = metric;
     _metricVersion = metricVersion;
     _nextHop = nextHop;
-    _processAsn = processAsn;
+    _processAsn = (int) processAsn;
   }
 
   @JsonIgnore
@@ -61,7 +61,7 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @JsonProperty(PROP_PROCESS_ASN)
   public long getProcessAsn() {
-    return _processAsn;
+    return Integer.toUnsignedLong(_processAsn);
   }
 
   @Override

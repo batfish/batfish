@@ -83,7 +83,7 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
         .setNetwork(getNetwork())
         .setNextHop(NextHopDiscard.instance())
         .setAdmin(getAdministrativeCost())
-        .setMetric(_metric)
+        .setMetric(getMetric())
         .setTag(getTag())
         // OspfInternalSummaryRoute properties
         .setArea(getArea());
@@ -99,8 +99,8 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
     OspfInternalSummaryRoute other = (OspfInternalSummaryRoute) o;
     return _network.equals(other._network)
         && getAdministrativeCost() == other.getAdministrativeCost()
-        && _area == other._area
-        && _metric == other._metric
+        && getArea() == other.getArea()
+        && getMetric() == other.getMetric()
         && getTag() == other.getTag();
   }
 
@@ -110,8 +110,8 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
     if (h == 0) {
       h = _network.hashCode();
       h = 31 * h + Long.hashCode(getAdministrativeCost());
-      h = 31 * h + Long.hashCode(_area);
-      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + Long.hashCode(getArea());
+      h = 31 * h + Long.hashCode(getMetric());
       h = 31 * h + Long.hashCode(getTag());
 
       _hashCode = h;

@@ -145,7 +145,8 @@ public class IsisRoute extends AbstractRoute {
 
   private final IsisLevel _level;
 
-  private final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
 
   private final boolean _overload;
 
@@ -173,7 +174,7 @@ public class IsisRoute extends AbstractRoute {
     _attach = attach;
     _down = down;
     _level = level;
-    _metric = metric;
+    _metric = (int) metric;
     _nextHop = nextHop;
     _overload = overload;
     _protocol = protocol;
@@ -212,7 +213,7 @@ public class IsisRoute extends AbstractRoute {
   @JsonProperty(PROP_METRIC)
   @Override
   public @Nonnull long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 
   /** Overload bit indicates this route came through an overloaded interface level. */
@@ -243,7 +244,7 @@ public class IsisRoute extends AbstractRoute {
         .setAttach(_attach)
         .setDown(_down)
         .setLevel(_level)
-        .setMetric(_metric)
+        .setMetric(getMetric())
         .setNetwork(_network)
         .setNextHop(_nextHop)
         .setNonForwarding(getNonForwarding())
@@ -268,7 +269,7 @@ public class IsisRoute extends AbstractRoute {
         && _attach == rhs._attach
         && _down == rhs._down
         && _level == rhs._level
-        && _metric == rhs._metric
+        && getMetric() == rhs.getMetric()
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
         && getNonForwarding() == rhs.getNonForwarding()
@@ -287,7 +288,7 @@ public class IsisRoute extends AbstractRoute {
         _attach,
         _down,
         _level.ordinal(),
-        _metric,
+        getMetric(),
         _network,
         _nextHop,
         getNonForwarding(),

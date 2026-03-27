@@ -185,7 +185,8 @@ public final class GeneratedRoute extends AbstractRoute
   private final boolean _discard;
   private final @Nullable String _generationPolicy;
   private final long _localPreference;
-  private final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
   private final @Nonnull OriginType _originType;
   private final int _weight;
 
@@ -255,7 +256,7 @@ public final class GeneratedRoute extends AbstractRoute
     _discard = discard;
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
-    _metric = metric;
+    _metric = (int) metric;
     _localPreference = localPreference;
     _nextHop = nextHop;
     _originType = originType;
@@ -318,7 +319,7 @@ public final class GeneratedRoute extends AbstractRoute
   @JsonProperty(PROP_METRIC)
   @Override
   public long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 
   @JsonProperty(PROP_ORIGIN_TYPE)
@@ -413,7 +414,7 @@ public final class GeneratedRoute extends AbstractRoute
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _discard == that._discard
-        && _metric == that._metric
+        && getMetric() == that.getMetric()
         && getTag() == that.getTag()
         && _asPath.equals(that._asPath)
         && Objects.equals(_attributePolicy, that._attributePolicy)
@@ -441,7 +442,7 @@ public final class GeneratedRoute extends AbstractRoute
               _communities,
               _discard,
               _generationPolicy,
-              _metric,
+              getMetric(),
               _nextHop,
               _localPreference,
               _originType.ordinal(),
