@@ -4053,6 +4053,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   void convertEvpnVrfLeaking() {
     Vrf defaultVrf = _c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
     if (defaultVrf == null) {
+      // Can this be an assert? Is defaultVrf always created in the Junos config builder?
       return;
     }
     RoutingInstance defaultRi = _masterLogicalSystem.getDefaultRoutingInstance();
@@ -4066,7 +4067,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // Phase 1: For each RI with ip-prefix-routes and VNI, create export config and Layer3Vni
     for (Entry<String, RoutingInstance> e : _masterLogicalSystem.getRoutingInstances().entrySet()) {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
@@ -4074,59 +4074,95 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
       EvpnIpPrefixRoutes ipr = ri.getEvpnIpPrefixRoutes();
-      if (ipr == null || ipr.getVni() == null) {
+      if (ipr == null) {
         continue;
       }
 
-      // Resolve route-target (export)
-      ExtendedCommunity exportRt = ri.getVrfTargetExport();
-      if (exportRt == null) {
-        exportRt = ri.getVrfTargetCommunity();
+      boolean iprMalformed = false;
+      if (ipr.getVni() == null) {
+        _w.redFlagf(
+            "IP-VRF not created for routing-instance %s: missing \"ip-prefix-routes vni\"", riName);
+        iprMalformed = true;
       }
-      if (exportRt == null) {
-        continue;
+      if (ipr.getAdvertise() == null) {
+        _w.redFlagf(
+            "IP-VRF not created for routing-instance %s: missing \"ip-prefix-routes advertise\"",
+            riName);
+        iprMalformed = true;
       }
-
+      if (ipr.getEncapsulation() == null) {
+        _w.redFlagf(
+            "IP-VRF not created for routing-instance %s: missing \"ip-prefix-routes"
+                + " encapsulation\"",
+            riName);
+        iprMalformed = true;
+      }
       // Resolve route-distinguisher
       RouteDistinguisher rd = ri.getRouteDistinguisher();
       if (rd == null) {
+        _w.redFlagf(
+            "IP-VRF not created for routing-instance %s: missing \"route-distinguisher\"", riName);
+        iprMalformed = true;
+      }
+      if (iprMalformed) {
         continue;
       }
 
-      // Create Bgpv4ToEvpnVrfLeakConfig on default VRF
-      getOrInitVrfLeakConfig(defaultVrf)
-          .addBgpv4ToEvpnVrfLeakConfig(
-              Bgpv4ToEvpnVrfLeakConfig.builder()
-                  .setImportFromVrf(riName)
-                  .setSrcVrfRouteDistinguisher(rd)
-                  .setAttachRouteTargets(ImmutableSet.of(exportRt))
-                  .build());
-
-      // Create Layer3Vni on tenant VRF
       Vrf tenantVrf = _c.getVrfs().get(riName);
-      if (tenantVrf != null) {
-        Layer3Vni l3vni =
-            Layer3Vni.builder()
-                .setVni(ipr.getVni())
-                .setSourceAddress(vtepSourceIp)
-                .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
-                .build();
-        tenantVrf.addLayer3Vni(l3vni);
+
+      if (tenantVrf == null) {
+        // Can this be an assert as well? Currently, toVendorIndependentConfiguration creates 1:1
+        // VRF:RI
+        continue;
       }
+
+      // Phase 1: For each RI with ip-prefix-routes and VNI, create export config and Layer3Vni
+      // Create Layer3Vni on tenant VRF
+      Layer3Vni l3vni =
+          Layer3Vni.builder()
+              .setVni(ipr.getVni())
+              .setSourceAddress(vtepSourceIp)
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
+              .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
+              .build();
+      tenantVrf.addLayer3Vni(l3vni);
+
+      boolean import_or_export_resolved = false;
 
       // Create BGP process on tenant VRF if needed (for redistribution)
-      if (tenantVrf != null && tenantVrf.getBgpProcess() == null) {
-        Ip routerId = firstNonNull(ri.getRouterId(), defaultRi.getRouterId());
-        Long localAs = firstNonNull(ri.getAs(), defaultRi.getAs());
-        if (routerId != null && localAs != null) {
-          BgpProcess bgpProc = bgpProcessBuilder().setRouterId(routerId).build();
-          tenantVrf.setBgpProcess(bgpProc);
+      if (tenantVrf.getBgpProcess() == null) {
+        Ip routerId = Optional.ofNullable(ri.getRouterId()).orElse(defaultRi.getRouterId());
+        Long localAs = Optional.ofNullable(ri.getAs()).orElse(defaultRi.getAs());
+        if (routerId == null) {
+          _w.redFlagf("IP-VRF not created for routing-instance %s: missing \"router-id\"", riName);
+          continue;
         }
+        if (localAs == null) {
+          _w.redFlagf(
+              "IP-VRF not created for routing-instance %s: missing \"autonomous-system\"", riName);
+          continue;
+        }
+        BgpProcess bgpProc = bgpProcessBuilder().setRouterId(routerId).build();
+        tenantVrf.setBgpProcess(bgpProc);
       }
 
-      // Create redistribution policy on tenant VRF
-      if (tenantVrf != null && tenantVrf.getBgpProcess() != null) {
+      // Export policy setup
+      ExtendedCommunity exportRt =
+          Optional.ofNullable(ri.getVrfTargetExport()).orElse(ri.getVrfTargetCommunity());
+      if (exportRt == null) {
+        // Unusual configuration
+        _w.pedantic("IP-VRF missing vrf-target or vrf-target export in routing-instance " + riName);
+      } else {
+        // Create Bgpv4ToEvpnVrfLeakConfig on default VRF
+        getOrInitVrfLeakConfig(defaultVrf)
+            .addBgpv4ToEvpnVrfLeakConfig(
+                Bgpv4ToEvpnVrfLeakConfig.builder()
+                    .setImportFromVrf(riName)
+                    .setSrcVrfRouteDistinguisher(rd)
+                    .setAttachRouteTargets(ImmutableSet.of(exportRt))
+                    .build());
+
+        // Create redistribution policy on tenant VRF
         String redistPolicyName = generatedEvpnIprRedistPolicyName(riName);
         if (ipr.getExportPolicy() != null
             && _c.getRoutingPolicies().containsKey(ipr.getExportPolicy())) {
@@ -4157,27 +4193,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
           _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
         }
         tenantVrf.getBgpProcess().setRedistributionPolicy(redistPolicyName);
+        import_or_export_resolved = true;
       }
-    }
 
-    // Phase 2: For each RI with an import RT matching an exported RT, create import config
-    for (Entry<String, RoutingInstance> e : _masterLogicalSystem.getRoutingInstances().entrySet()) {
-      String riName = e.getKey();
-      RoutingInstance ri = e.getValue();
-      if (riName.equals(Configuration.DEFAULT_VRF_NAME)) {
-        continue;
-      }
-      EvpnIpPrefixRoutes ipr = ri.getEvpnIpPrefixRoutes();
-      if (ipr == null || ipr.getVni() == null) {
-        continue;
-      }
+      // Phase 2: For each RI with an import RT matching an exported RT, create import config
+      String importPolicyName = null;
+      // Resolve export, import policies or communities
 
       String vrfImport = ri.getVrfImportPolicy();
       String iprImport = ipr.getImportPolicy();
-
-      String importPolicyName;
-      if (vrfImport != null || iprImport != null) {
-        if (vrfImport != null && iprImport != null) {
+      ExtendedCommunity importRt =
+          Optional.ofNullable(ri.getVrfTargetImport()).orElse(ri.getVrfTargetCommunity());
+      if (vrfImport != null) {
+        if (iprImport != null) {
           importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(riName);
           RoutingPolicy importPolicy =
               RoutingPolicy.builder()
@@ -4196,18 +4224,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .build();
           _c.getRoutingPolicies().put(importPolicyName, importPolicy);
         } else {
-          importPolicyName = vrfImport != null ? vrfImport : iprImport;
+          importPolicyName = vrfImport;
         }
-      } else {
-        // Resolve import RT
-        ExtendedCommunity importRt = ri.getVrfTargetImport();
-        if (importRt == null) {
-          importRt = ri.getVrfTargetCommunity();
-        }
-        if (importRt == null) {
-          continue;
-        }
-
+      } else if (iprImport != null) {
+        importPolicyName = iprImport;
+      } else if (importRt != null) {
         // Create import policy matching the RT community
         importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(riName);
         RoutingPolicy importPolicy =
@@ -4225,14 +4246,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getRoutingPolicies().put(importPolicyName, importPolicy);
       }
 
-      Vrf tenantVrf = _c.getVrfs().get(riName);
-      if (tenantVrf != null) {
+      if (importPolicyName != null) {
         getOrInitVrfLeakConfig(tenantVrf)
             .addEvpnToBgpv4VrfLeakConfig(
                 EvpnToBgpv4VrfLeakConfig.builder()
                     .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
                     .setImportPolicy(importPolicyName)
                     .build());
+        import_or_export_resolved = true;
+      } else {
+        _w.pedantic("IP-VRF missing import policy or vrf-target in routing-instance " + riName);
+      }
+
+      if (!import_or_export_resolved) {
+        _w.redFlagf("IP-VRF missing import or export policy in routing-instance %s", riName);
       }
     }
   }
