@@ -688,9 +688,6 @@ class FlowTracer {
           return null;
         }
 
-        // Just a sanity check, can't be Ip.AUTO
-        assert lookupIp.valid();
-
         String lookupVrf = incomingInterface.getVrfName();
         Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrf).get();
         // Re-resolve and send out using FIB lookup part of the pipeline.

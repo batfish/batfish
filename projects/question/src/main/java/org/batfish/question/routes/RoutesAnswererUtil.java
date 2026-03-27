@@ -657,8 +657,7 @@ public class RoutesAnswererUtil {
           .put(
               // included for backwards compatibility
               _columnPrefix + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(bgpRouteRowSecondaryKey.getNextHop())
-                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+              LegacyNextHops.getNextHopIp(bgpRouteRowSecondaryKey.getNextHop()).orElse(null))
           .put(_columnPrefix + COL_PROTOCOL, bgpRouteRowSecondaryKey.getProtocol())
           .put(_columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp())
           .put(_columnPrefix + COL_PATH_ID, bgpRouteRowSecondaryKey.getPathId());
@@ -685,8 +684,7 @@ public class RoutesAnswererUtil {
           .put(
               // included for backwards compatibility
               _columnPrefix + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop())
-                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+              LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop()).orElse(null))
           .put(_columnPrefix + COL_PROTOCOL, mainRibRouteRowSecondaryKey.getProtocol());
       return null;
     }

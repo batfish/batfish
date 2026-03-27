@@ -26,6 +26,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
@@ -121,7 +122,7 @@ public class GeneratedRouteHelperTest {
                 annotateRoute(
                     StaticRoute.testBuilder()
                         .setNetwork(Prefix.parse("2.2.2.2/32"))
-                        .setNextHopIp(null)
+                        .setNextHop(NextHopDiscard.instance())
                         .setNextHopInterface("eth0")
                         .setAdministrativeCost(1)
                         .setMetric(0L)

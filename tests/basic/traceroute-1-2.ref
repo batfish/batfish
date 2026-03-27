@@ -414,7 +414,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -847,7 +846,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -1280,7 +1278,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -1713,7 +1710,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -2174,7 +2170,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -2607,7 +2602,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -3040,7 +3034,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],
@@ -3473,7 +3466,6 @@
                             "type" : "interface",
                             "interface" : "GigabitEthernet2/0"
                           },
-                          "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
                       ],

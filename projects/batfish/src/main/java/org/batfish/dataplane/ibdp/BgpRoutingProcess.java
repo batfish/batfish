@@ -87,7 +87,6 @@ import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.ResolutionRestriction;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -1908,7 +1907,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         v4Family,
-        Route.UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         _pathIdGenerators,
         _routesToPathIds);
 

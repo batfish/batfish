@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Comparators.lexicographical;
-import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
@@ -360,8 +359,7 @@ public final class GeneratedRoute extends AbstractRoute
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<GeneratedRoute> COMPARATOR =
       Comparator.comparing(GeneratedRoute::getNetwork)
-          .thenComparing(GeneratedRoute::getNextHopIp, nullsLast(naturalOrder()))
-          .thenComparing(GeneratedRoute::getNextHopInterface, nullsLast(naturalOrder()))
+          .thenComparing(GeneratedRoute::getNextHop)
           .thenComparing(GeneratedRoute::getMetric)
           .thenComparing(GeneratedRoute::getAdministrativeCost)
           .thenComparing(GeneratedRoute::getTag)

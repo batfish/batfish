@@ -44,7 +44,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
@@ -243,7 +242,7 @@ public class TestRoutePoliciesAnswererTest {
     TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
     BgpRoute outputRoute =
-        inputRoute.toBuilder().setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP).build();
+        inputRoute.toBuilder().setNextHopConcrete(NextHopDiscard.instance()).build();
     BgpRouteDiffs diffs =
         new BgpRouteDiffs(
             ImmutableSet.of(

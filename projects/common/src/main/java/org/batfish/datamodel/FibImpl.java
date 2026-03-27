@@ -44,8 +44,6 @@ public final class FibImpl implements Fib {
     /** Use static factories for sanity */
     private ResolutionTreeNode(
         AbstractRoute route, @Nullable Ip finalNextHopIp, List<ResolutionTreeNode> children) {
-      // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
-      assert !Ip.AUTO.equals(finalNextHopIp);
       _route = route;
       _children = children;
       _finalNextHopIp = finalNextHopIp;

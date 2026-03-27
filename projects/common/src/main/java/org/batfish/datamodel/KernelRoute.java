@@ -26,8 +26,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<KernelRoute> COMPARATOR =
       comparing(KernelRoute::getNetwork)
-          .thenComparing(KernelRoute::getNextHopIp)
-          .thenComparing(KernelRoute::getNextHopInterface)
+          .thenComparing(KernelRoute::getNextHop)
           .thenComparing(KernelRoute::getMetric)
           .thenComparing(KernelRoute::getAdministrativeCost)
           .thenComparing(KernelRoute::getTag)

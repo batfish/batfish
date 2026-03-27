@@ -38,7 +38,6 @@ import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -209,14 +208,14 @@ public class IsisTest {
             ImmutableList.of(
                 isisRouteWith(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
                 isisRouteWith(R1_R2_PREFIX, R1_TO_R2_IP, 0), // 0 because passive
-                isisRouteWith(Prefix.ZERO, Route.UNSET_ROUTE_NEXT_HOP_IP, 0))));
+                isisRouteWith(Prefix.ZERO, null, 0))));
     assertThat(
         r2L1RibRoutes,
         containsInAnyOrder(
             ImmutableList.of(
                 isisRouteWith(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
                 isisRouteWith(R1_R2_PREFIX, R2_TO_R1_IP, 10),
-                isisRouteWith(Prefix.ZERO, Route.UNSET_ROUTE_NEXT_HOP_IP, 0))));
+                isisRouteWith(Prefix.ZERO, null, 0))));
 
     // L2 RIBs have the other's loopback
     assertThat(
@@ -269,7 +268,7 @@ public class IsisTest {
                 isisRouteWith(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
                 isisRouteWith(r2LoopbackPrefix, R2_TO_R1_IP, 10),
                 isisRouteWith(R1_R2_PREFIX, R1_TO_R2_IP, 10),
-                isisRouteWith(Prefix.ZERO, Route.UNSET_ROUTE_NEXT_HOP_IP, 0))));
+                isisRouteWith(Prefix.ZERO, null, 0))));
     assertThat(
         r2L1RibRoutes,
         containsInAnyOrder(
@@ -277,7 +276,7 @@ public class IsisTest {
                 isisRouteWith(r1LoopbackPrefix, R1_TO_R2_IP, 10),
                 isisRouteWith(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
                 isisRouteWith(R1_R2_PREFIX, R2_TO_R1_IP, 10),
-                isisRouteWith(Prefix.ZERO, Route.UNSET_ROUTE_NEXT_HOP_IP, 0))));
+                isisRouteWith(Prefix.ZERO, null, 0))));
 
     // L2 RIBs lack the other's loopback
     assertThat(

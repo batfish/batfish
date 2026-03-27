@@ -128,6 +128,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.BgpNeighborMatchers;
 import org.batfish.datamodel.matchers.VniMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1209,7 +1210,7 @@ public final class CumulusNcluGrammarTest {
                 containsInAnyOrder(
                     builder.setNextHopIp(Ip.parse("10.1.0.1")).build(),
                     builder.setNextHopIp(Ip.parse("10.1.0.2")).build(),
-                    builder.setNextHopIp(null).setNextHopInterface("swp1").build(),
+                    builder.setNextHop(NextHopInterface.of("swp1")).build(),
                     builder
                         .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
                         .build()))));

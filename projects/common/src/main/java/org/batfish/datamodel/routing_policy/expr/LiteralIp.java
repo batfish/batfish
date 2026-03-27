@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralIp extends IpExpr {
 
   @Override
-  public Ip evaluate(Environment env) {
+  public @Nonnull Ip evaluate(Environment env) {
     return _ip;
   }
 
