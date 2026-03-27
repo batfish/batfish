@@ -1951,7 +1951,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setMetric(advert.getMed())
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
-              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginatorIp(firstNonNull(advert.getOriginatorIp(), advert.getSrcIp()))
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
@@ -1983,7 +1983,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setMetric(advert.getMed())
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
-              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginatorIp(firstNonNull(advert.getOriginatorIp(), advert.getSrcIp()))
               // Don't know the origin mechanism on the sender, but for us it will be LEARNED
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())

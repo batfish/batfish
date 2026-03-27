@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
@@ -42,7 +43,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -954,6 +958,53 @@ public class BgpRoutingProcessTest {
 
     // policy application will overwrite the next hop ip
     assertThat(outputRouteBuilder.build().getNextHopIp(), equalTo(neighborIp));
+  }
+
+  /**
+   * Test that external BGP advertisements with null originator IP don't crash. Both the "received"
+   * path (EBGP_RECEIVED) and "sent" path (EBGP_SENT) build Bgpv4Routes that require non-null
+   * originator IP; the code must fall back to srcIp.
+   */
+  @Test
+  public void testProcessExternalBgpAdvertisement_nullOriginatorIp() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+
+    // Add a neighbor to the BGP process so processExternalBgpAdvertisement can find it
+    BgpActivePeerConfig neighbor =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.1.1.2"))
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setPeerAddress(srcIp)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, neighbor));
+
+    // Before the fix, this threw IllegalArgumentException: Missing originatorIp
+    for (BgpAdvertisementType type :
+        ImmutableList.of(BgpAdvertisementType.EBGP_RECEIVED, BgpAdvertisementType.EBGP_SENT)) {
+      BgpAdvertisement advert =
+          BgpAdvertisement.builder()
+              .setType(type)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Ip.parse("2.2.2.2"))
+              .setSrcIp(srcIp)
+              .setSrcNode("neighbor")
+              .setSrcVrf(DEFAULT_VRF_NAME)
+              .setDstIp(Ip.parse("1.1.1.2"))
+              .setDstNode("c1")
+              .setDstVrf(DEFAULT_VRF_NAME)
+              .setOriginType(OriginType.EGP)
+              .setSrcProtocol(RoutingProtocol.BGP)
+              .setAsPath(AsPath.empty())
+              .setCommunities(ImmutableSortedSet.of())
+              .setClusterList(ImmutableSortedSet.of())
+              // originatorIp intentionally not set (null)
+              .build();
+
+      // Should not throw; originator IP should fall back to srcIp
+      _routingProcess.processExternalBgpAdvertisement(advert);
+    }
   }
 
   @Test
