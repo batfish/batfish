@@ -90,17 +90,23 @@ public class RipInternalRoute extends RipRoute {
     }
     RipRoute other = (RipRoute) o;
     return _network.equals(other._network)
-        && _admin == other._admin
+        && getAdministrativeCost() == other.getAdministrativeCost()
         && _metric == other._metric
         && _nextHop.equals(other._nextHop)
         && getNonForwarding() == other.getNonForwarding()
         && getNonRouting() == other.getNonRouting()
-        && _tag == other._tag;
+        && getTag() == other.getTag();
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _network, _admin, _metric, _nextHop, getNonForwarding(), getNonRouting(), _tag);
+        _network,
+        getAdministrativeCost(),
+        _metric,
+        _nextHop,
+        getNonForwarding(),
+        getNonRouting(),
+        getTag());
   }
 }

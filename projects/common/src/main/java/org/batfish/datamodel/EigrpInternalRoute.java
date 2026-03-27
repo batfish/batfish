@@ -134,11 +134,11 @@ public class EigrpInternalRoute extends EigrpRoute {
       return false;
     }
     EigrpInternalRoute rhs = (EigrpInternalRoute) obj;
-    return _admin == rhs._admin
+    return getAdministrativeCost() == rhs.getAdministrativeCost()
         // Skip #getMetric() since it is derived from EigrpMetric _metric
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
-        && _tag == rhs._tag
+        && getTag() == rhs.getTag()
         && _processAsn == rhs._processAsn
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
@@ -149,10 +149,10 @@ public class EigrpInternalRoute extends EigrpRoute {
   @Override
   public final int hashCode() {
     return Objects.hash(
-        _admin,
+        getAdministrativeCost(),
         _network,
         _nextHop,
-        _tag,
+        getTag(),
         _processAsn,
         _metric,
         _metricVersion,

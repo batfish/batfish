@@ -24,7 +24,7 @@ public final class ConnectedRoute extends AbstractRoute {
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable String nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long adminCost,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create connected route: missing %s", PROP_NETWORK);
     return new ConnectedRoute(
@@ -46,9 +46,9 @@ public final class ConnectedRoute extends AbstractRoute {
         + "_network="
         + _network
         + ", _admin="
-        + _admin
+        + getAdministrativeCost()
         + ", _tag="
-        + _tag
+        + getTag()
         + '}';
   }
 
@@ -96,11 +96,11 @@ public final class ConnectedRoute extends AbstractRoute {
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setAdmin(_admin)
+        .setAdmin(getAdministrativeCost())
         .setNextHop(_nextHop)
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
-        .setTag(_tag);
+        .setTag(getTag());
   }
 
   @Override
@@ -112,15 +112,16 @@ public final class ConnectedRoute extends AbstractRoute {
     }
     ConnectedRoute rhs = (ConnectedRoute) o;
     return _network.equals(rhs._network)
-        && _admin == rhs._admin
+        && getAdministrativeCost() == rhs.getAdministrativeCost()
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
         && _nextHop.equals(rhs._nextHop)
-        && _tag == rhs._tag;
+        && getTag() == rhs.getTag();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, getNonRouting(), getNonForwarding(), _nextHop, _tag);
+    return Objects.hash(
+        _network, getAdministrativeCost(), getNonRouting(), getNonForwarding(), _nextHop, getTag());
   }
 }

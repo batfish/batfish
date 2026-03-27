@@ -68,7 +68,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   @SuppressWarnings("unused")
   private static @Nonnull KernelRoute create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long adminCost,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_REQUIRED_OWNED_IP) @Nullable Ip requiredOwnedIp,
@@ -124,14 +124,14 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     }
     KernelRoute rhs = (KernelRoute) o;
     return _network.equals(rhs._network)
-        && _tag == rhs._tag
+        && getTag() == rhs.getTag()
         && Objects.equals(_requiredOwnedIp, rhs._requiredOwnedIp)
         && getNonForwarding() == rhs.getNonForwarding();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _tag, _requiredOwnedIp, getNonForwarding());
+    return Objects.hash(_network, getTag(), _requiredOwnedIp, getNonForwarding());
   }
 
   @Override
@@ -139,7 +139,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     return toStringHelper(this)
         .omitNullValues()
         .add("_network", _network)
-        .add("_tag", _tag)
+        .add("_tag", getTag())
         .add("_requiredOwnedIp", _requiredOwnedIp)
         .add("_nonForwarding", getNonForwarding())
         .toString();

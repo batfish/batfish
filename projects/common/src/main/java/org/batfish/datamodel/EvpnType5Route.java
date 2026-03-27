@@ -179,7 +179,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
-        .setTag(_tag)
+        .setTag(getTag())
         .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setVni(_vni)
         .setWeight(_attributes._weight);
@@ -202,7 +202,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         && Objects.equals(_pathId, other._pathId)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
-        && _tag == other._tag;
+        && getTag() == other.getTag();
   }
 
   @Override
@@ -216,7 +216,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_pathId);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }
@@ -246,7 +246,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
             PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT,
             _attributes._receivedFromRouteReflectorClient)
         .add(PROP_SRC_PROTOCOL, _attributes._srcProtocol)
-        .add(PROP_TAG, _tag)
+        .add(PROP_TAG, getTag())
         .add(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE, _attributes._tunnelEncapsulationAttribute)
         .add(PROP_WEIGHT, _attributes._weight)
         .toString();

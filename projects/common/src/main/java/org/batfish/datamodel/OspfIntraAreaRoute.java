@@ -104,11 +104,11 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
         // AbstractRoute properties
         .setNetwork(getNetwork())
         .setNextHop(_nextHop)
-        .setAdmin(_admin)
+        .setAdmin(getAdministrativeCost())
         .setMetric(_metric)
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
-        .setTag(_tag)
+        .setTag(getTag())
         // OspfIntraAreaRoute properties
         .setArea(getArea());
   }
@@ -122,13 +122,13 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     }
     OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
     return _network.equals(other._network)
-        && _admin == other._admin
+        && getAdministrativeCost() == other.getAdministrativeCost()
         && _area == other._area
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
         && _metric == other._metric
         && _nextHop.equals(other._nextHop)
-        && _tag == other._tag;
+        && getTag() == other.getTag();
   }
 
   @Override
@@ -136,13 +136,13 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     int h = _hashCode;
     if (h == 0) {
       h = _network.hashCode();
-      h = 31 * h + Long.hashCode(_admin);
+      h = 31 * h + Long.hashCode(getAdministrativeCost());
       h = 31 * h + Long.hashCode(_area);
       h = 31 * h + Long.hashCode(_metric);
       h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonForwarding());
       h = 31 * h + Boolean.hashCode(getNonRouting());
-      h = 31 * h + Long.hashCode(_tag);
+      h = 31 * h + Long.hashCode(getTag());
 
       _hashCode = h;
     }

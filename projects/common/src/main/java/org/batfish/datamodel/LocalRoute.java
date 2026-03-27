@@ -108,12 +108,12 @@ public final class LocalRoute extends AbstractRoute {
   public AbstractRouteBuilder<Builder, LocalRoute> toBuilder() {
     return builder()
         .setNetwork(_network)
-        .setAdmin(_admin)
+        .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setNextHop(_nextHop)
         .setSourcePrefixLength(_sourcePrefixLength)
-        .setTag(_tag);
+        .setTag(getTag());
   }
 
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
@@ -127,17 +127,23 @@ public final class LocalRoute extends AbstractRoute {
     }
     LocalRoute rhs = (LocalRoute) o;
     return _network.equals(rhs._network)
-        && _admin == rhs._admin
+        && getAdministrativeCost() == rhs.getAdministrativeCost()
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
         && _nextHop.equals(rhs._nextHop)
         && _sourcePrefixLength == rhs._sourcePrefixLength
-        && _tag == rhs._tag;
+        && getTag() == rhs.getTag();
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _network, _admin, getNonRouting(), getNonForwarding(), _nextHop, _sourcePrefixLength, _tag);
+        _network,
+        getAdministrativeCost(),
+        getNonRouting(),
+        getNonForwarding(),
+        _nextHop,
+        _sourcePrefixLength,
+        getTag());
   }
 }

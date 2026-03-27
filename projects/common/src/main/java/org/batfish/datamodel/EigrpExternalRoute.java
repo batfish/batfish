@@ -153,14 +153,14 @@ public class EigrpExternalRoute extends EigrpRoute {
       return false;
     }
     EigrpExternalRoute rhs = (EigrpExternalRoute) obj;
-    return _admin == rhs._admin
+    return getAdministrativeCost() == rhs.getAdministrativeCost()
         && Objects.equals(_destinationAsn, rhs._destinationAsn)
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
         && _processAsn == rhs._processAsn
-        && _tag == rhs._tag
+        && getTag() == rhs.getTag()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting();
   }
@@ -170,8 +170,8 @@ public class EigrpExternalRoute extends EigrpRoute {
     return hash(
         _network,
         _nextHop,
-        _admin,
-        _tag,
+        getAdministrativeCost(),
+        getTag(),
         getNonForwarding(),
         getNonRouting(),
         _destinationAsn,

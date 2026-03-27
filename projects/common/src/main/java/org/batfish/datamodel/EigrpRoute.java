@@ -16,7 +16,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   static final String PROP_EIGRP_METRIC_VERSION = "eigrp-metric-version";
   static final String PROP_PROCESS_ASN = "process-asn";
 
-  protected final long _admin;
   protected final @Nonnull EigrpMetric _metric;
   protected final @Nonnull EigrpMetricVersion _metricVersion;
 
@@ -34,7 +33,6 @@ public abstract class EigrpRoute extends AbstractRoute {
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, tag, nonRouting, nonForwarding);
-    _admin = admin;
     _metric = metric;
     _metricVersion = metricVersion;
     _nextHop = nextHop;

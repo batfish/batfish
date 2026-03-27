@@ -38,10 +38,13 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_TAG = "tag";
 
   protected final @Nonnull Prefix _network;
-  protected final long _admin;
+  // Stored as unsigned 32-bit int for memory savings. Use getAdministrativeCost() to read.
+  private final int _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
-  protected final long _tag;
+  private final boolean _hasTag;
+  // Stored as unsigned 32-bit int for memory savings. Use getTag() to read.
+  private final int _tag;
   protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
   /** Helper to check admin distance validity. */
@@ -58,11 +61,17 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
       @Nullable Prefix network, long admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
     checkAdmin(admin, 0);
+    checkArgument(
+        tag == Route.UNSET_ROUTE_TAG || (tag >= 0 && tag <= MAX_TAG),
+        "Invalid tag %s is not UNSET or in [0,%s]",
+        tag,
+        MAX_TAG);
     _network = network;
-    _admin = admin;
+    _admin = (int) admin;
     _nonForwarding = nonForwarding;
     _nonRouting = nonRouting;
-    _tag = tag;
+    _hasTag = tag != Route.UNSET_ROUTE_TAG;
+    _tag = (int) tag;
   }
 
   @Override
@@ -78,7 +87,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   }
 
   public final long getAdministrativeCost() {
-    return _admin;
+    return Integer.toUnsignedLong(_admin);
   }
 
   @JsonIgnore
@@ -139,7 +148,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** Return the route's tag or {@link Route#UNSET_ROUTE_TAG} if no tag is present */
   @JsonProperty(PROP_TAG)
   public final long getTag() {
-    return _tag;
+    return _hasTag ? Integer.toUnsignedLong(_tag) : Route.UNSET_ROUTE_TAG;
   }
 
   @Override

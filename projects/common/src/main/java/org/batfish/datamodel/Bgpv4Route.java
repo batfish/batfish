@@ -194,7 +194,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
-        .setTag(_tag)
+        .setTag(getTag())
         .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setWeight(_attributes._weight);
   }
@@ -215,8 +215,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
-        && _admin == other._admin
-        && _tag == other._tag
+        && getAdministrativeCost() == other.getAdministrativeCost()
+        && getTag() == other.getTag()
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding();
   }
@@ -225,7 +225,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = Long.hashCode(_admin);
+      h = Long.hashCode(getAdministrativeCost());
       h = h * 31 + _attributes.hashCode();
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
@@ -233,7 +233,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + (_pathId != null ? _pathId : 0);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }
@@ -245,8 +245,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
         .add("_network", _network)
-        .add("_admin", _admin)
-        .add("_tag", _tag)
+        .add("_admin", getAdministrativeCost())
+        .add("_tag", getTag())
         .add("_asPath", _attributes._asPath)
         .add("_clusterList", _attributes._clusterList)
         .add("_communities", _attributes._communities)

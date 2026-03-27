@@ -196,12 +196,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
         // AbstractRoute properties
         && _network.equals(that._network)
-        && _admin == that._admin
+        && getAdministrativeCost() == that.getAdministrativeCost()
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _metric == that._metric
         && _nextHop.equals(that._nextHop)
-        && _tag == that._tag
+        && getTag() == that.getTag()
         // OspfRoute properties
         && _area == that._area
         // OspfExternalRoute properties
@@ -216,12 +216,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
     if (h == 0) {
       // AbstractRoute Properties
       h = _network.hashCode();
-      h = 31 * h + Long.hashCode(_admin);
+      h = 31 * h + Long.hashCode(getAdministrativeCost());
       h = 31 * h + Long.hashCode(_metric);
       h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonRouting());
       h = 31 * h + Boolean.hashCode(getNonForwarding());
-      h = 31 * h + Long.hashCode(_tag);
+      h = 31 * h + Long.hashCode(getTag());
       // OspfRoute properties
       h = 31 * h + Long.hashCode(_area);
       // OspfExternalRoute properties

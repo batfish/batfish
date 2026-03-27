@@ -105,7 +105,11 @@ public final class HmmRoute extends AbstractRoute {
 
   @Override
   public Builder toBuilder() {
-    return builder().setNetwork(_network).setNextHop(_nextHop).setAdmin(_admin).setTag(_tag);
+    return builder()
+        .setNetwork(_network)
+        .setNextHop(_nextHop)
+        .setAdmin(getAdministrativeCost())
+        .setTag(getTag());
   }
 
   @Override
@@ -120,18 +124,18 @@ public final class HmmRoute extends AbstractRoute {
     return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
         && _nextHop.equals(that._nextHop)
         && _network.equals(that._network)
-        && _tag == that._tag
-        && _admin == that._admin;
+        && getTag() == that.getTag()
+        && getAdministrativeCost() == that.getAdministrativeCost();
   }
 
   @Override
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = Long.hashCode(_admin);
+      h = Long.hashCode(getAdministrativeCost());
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }

@@ -409,12 +409,12 @@ public final class GeneratedRoute extends AbstractRoute
     GeneratedRoute that = (GeneratedRoute) o;
     return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
         && _network.equals(that._network)
-        && _admin == that._admin
+        && getAdministrativeCost() == that.getAdministrativeCost()
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _discard == that._discard
         && _metric == that._metric
-        && _tag == that._tag
+        && getTag() == that.getTag()
         && _asPath.equals(that._asPath)
         && Objects.equals(_attributePolicy, that._attributePolicy)
         && _communities.equals(that._communities)
@@ -432,10 +432,10 @@ public final class GeneratedRoute extends AbstractRoute
       h =
           Objects.hash(
               _network,
-              _admin,
+              getAdministrativeCost(),
               getNonRouting(),
               getNonForwarding(),
-              _tag,
+              getTag(),
               _asPath,
               _attributePolicy,
               _communities,
