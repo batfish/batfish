@@ -111,6 +111,12 @@ bazel_dep(name = "buildifier_prebuilt", version = "8.5.1", dev_dependency = True
 
 bazel_dep(name = "rules_shell", version = "0.6.1")
 
+# Override rules_android to 0.7.1 for Bazel 9 compatibility (CcInfo removal)
+single_version_override(
+    module_name = "rules_android",
+    version = "0.7.1",
+)
+
 # Python toolchain
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
