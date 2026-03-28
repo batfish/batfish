@@ -19,7 +19,16 @@ set vlans v10 vxlan vni 5010
 set vlans v20 vlan-id 20
 set vlans v20 l3-interface irb.20
 set vlans v20 vxlan vni 5020
+set routing-instances l3vni_vrf instance-type vrf
 set routing-instances l3vni_vrf interface irb.20
 set routing-instances l3vni_vrf interface irb.10
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes advertise direct-nexthop
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes encapsulation vxlan
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes vni 50010
+set routing-instances l3vni_vrf route-distinguisher 192.168.100.111:50010
+set routing-instances l3vni_vrf vrf-target export target:65000:50010
+set routing-instances l3vni_vrf vrf-table-label
 set routing-options route-distinguisher-id 192.168.100.111
+set routing-options autonomous-system 65001
+set routing-options router-id 10.0.0.111
 #

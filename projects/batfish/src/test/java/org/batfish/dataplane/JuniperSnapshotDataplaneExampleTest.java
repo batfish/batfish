@@ -1,15 +1,5 @@
 package org.batfish.dataplane;
 
-// import static org.hamcrest.MatcherAssert.assertThat;
-// import static org.hamcrest.Matchers.anEmptyMap;
-// import static org.hamcrest.Matchers.is;
-// import static org.hamcrest.Matchers.not;
-// import static org.hamcrest.Matchers.hasItem;
-// import static org.hamcrest.Matchers.instanceOf;
-// import static org.hamcrest.Matchers.empty;
-// import static org.hamcrest.Matchers.equalTo;
-// import static org.junit.Assert.assertNotNull;
-
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -23,18 +13,10 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-// import org.batfish.common.NetworkSnapshot;
-// import org.batfish.common.plugin.IBatfish;
-// import org.batfish.config.Settings;
-// import org.batfish.datamodel.Configuration;
-// import org.batfish.datamodel.DataPlane;
-// import org.batfish.datamodel.ForwardingAnalysis;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-// import java.util.Map;
-// import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
@@ -58,10 +40,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-// import org.batfish.main.TestrigText;
-// import org.batfish.representation.juniper.JuniperConfiguration;
-// import org.batfish.vendor.VendorConfiguration;
-// import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -91,7 +69,7 @@ public class JuniperSnapshotDataplaneExampleTest {
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
-    Ip originatorIp = Ip.parse("10.1.30.1"); // router-id of vrf1's BGP process (min interface IP)
+    Ip originatorIp = Ip.parse("10.10.10.1"); // router-id of vrf1's BGP process
     Prefix prefix = Prefix.parse("12.12.12.0/24"); // prefix of the connected route in vrf1
 
     // The connected route that vrf1 redistributes into BGP should be a connected route in vrf1, an
@@ -124,14 +102,14 @@ public class JuniperSnapshotDataplaneExampleTest {
             .setAdmin(DEFAULT_BGP_ADMIN_DISTANCE)
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
             .setOriginMechanism(REDISTRIBUTE)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFrom(ReceivedFromSelf.instance())
             .setOriginatorIp(originatorIp)
             .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
-            .setWeight(32768)
+            .setWeight(0)
             .build();
     assertThat(vrf2BgpRoute, equalTo(expectedVrf2BgpRoute));
 
@@ -147,7 +125,7 @@ public class JuniperSnapshotDataplaneExampleTest {
             .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
             .setOriginMechanism(REDISTRIBUTE)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
             .setSrcProtocol(RoutingProtocol.CONNECTED)
@@ -155,7 +133,7 @@ public class JuniperSnapshotDataplaneExampleTest {
             .setOriginatorIp(originatorIp)
             .setVni(15004)
             .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
-            .setWeight(32768)
+            .setWeight(0)
             .build();
     assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));
   }

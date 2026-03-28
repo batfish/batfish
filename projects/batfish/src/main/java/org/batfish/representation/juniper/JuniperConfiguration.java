@@ -2161,43 +2161,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.setNormalVlanRange(
             _c.getNormalVlanRange().difference(IntegerSpace.of(vxlan.getVlanId())));
       }
-      String l3Interface = vxlan.getL3Interface();
-      if (l3Interface == null) {
-        if (vxlan.getVlanId() == null) {
-          continue;
-        }
-        // Should be a l2vni
-        Layer2Vni vniSettings =
-            Layer2Vni.builder()
-                .setVni(vxlan.getVniId())
-                .setVlan(vxlan.getVlanId())
-                .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setBumTransportMethod(UNICAST_FLOOD_GROUP)
-                .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
-                .build();
-        _c.getDefaultVrf().addLayer2Vni(vniSettings);
-      } else {
-        String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
-        if (vtepSource == null) {
-          continue;
-        }
-        Interface iface =
-            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(l3Interface);
-        if (iface == null) {
-          continue;
-        }
-        if (iface.getPrimaryAddress() == null) {
-          continue;
-        }
-        Layer3Vni vniSettings =
-            Layer3Vni.builder()
-                .setVni(vxlan.getVniId())
-                .setSourceAddress(iface.getPrimaryAddress().getIp())
-                .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setSrcVrf(iface.getRoutingInstance().getName())
-                .build();
-        _c.getAllInterfaces().get(l3Interface).getVrf().addLayer3Vni(vniSettings);
+      if (vxlan.getVlanId() == null) {
+        continue;
       }
+      String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
+      if (vtepSource == null) {
+        continue;
+      }
+      Interface iface =
+          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(vtepSource);
+      if (iface == null) {
+        continue;
+      }
+
+      // Should be a l2vni
+      Layer2Vni vniSettings =
+          Layer2Vni.builder()
+              .setVni(vxlan.getVniId())
+              .setVlan(vxlan.getVlanId())
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
+              .setBumTransportMethod(UNICAST_FLOOD_GROUP)
+              .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+              .setSourceAddress(iface.getPrimaryAddress().getIp())
+              .build();
+      _c.getDefaultVrf().addLayer2Vni(vniSettings);
     }
   }
 
