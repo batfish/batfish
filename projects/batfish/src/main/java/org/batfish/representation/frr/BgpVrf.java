@@ -26,6 +26,7 @@ public class BgpVrf implements Serializable {
   private final @Nonnull String _vrfName;
   private @Nullable Long _confederationId;
   private @Nullable Long _maxMedAdministrative;
+  private @Nullable String _tableMap;
   private final @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   public BgpVrf(String vrfName) {
@@ -148,5 +149,13 @@ public class BgpVrf implements Serializable {
 
   public @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
+  }
+
+  public @Nullable String getTableMap() {
+    return _tableMap;
+  }
+
+  public void setTableMap(@Nullable String tableMap) {
+    _tableMap = tableMap;
   }
 }

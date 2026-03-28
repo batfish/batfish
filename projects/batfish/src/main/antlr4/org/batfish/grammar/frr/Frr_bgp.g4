@@ -21,6 +21,7 @@ bgp_inner
 | rb_network
 | rb_no
 | rb_redistribute
+| rb_table_map
 | rb_timers
 | rbafi_neighbor
 ;
@@ -115,6 +116,11 @@ rbbb_aspath_multipath_relax
 rb_redistribute
 :
   REDISTRIBUTE bgp_redist_type (ROUTE_MAP route_map_name)? NEWLINE
+;
+
+rb_table_map
+:
+  TABLE_MAP name = route_map_name NEWLINE
 ;
 
 rbb_router_id

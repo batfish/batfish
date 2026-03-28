@@ -3094,4 +3094,10 @@ public class FrrGrammarTest {
     parseLines("ipv6 protocol route-map set-src-address");
     assertThat(_warnings.getRedFlagWarnings(), empty());
   }
+
+  @Test
+  public void testBgpTableMap() {
+    parse("router bgp 1\n table-map MY_TABLE_MAP\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getTableMap(), equalTo("MY_TABLE_MAP"));
+  }
 }

@@ -233,7 +233,9 @@ This is the core of IBDP - repeat steps 5-7 until fixed point:
    - **EIGRP routes**: Summary routes, external routes
    - **IS-IS routes**: All IS-IS routes (leak levels, redistribute)
    - **OSPF external routes**: Type 1/2, redistributed routes
-   - **BGP routes**: All BGP routes (iBGP, eBGP, redistributed)
+   - **BGP routes**: All BGP routes (iBGP, eBGP, redistributed). If a
+     [table-map](table_map.md) policy is configured, it is applied before
+     routes are sent to the main RIB (denied routes get `nonRouting=true`).
    - **Cross-VRF routes**: Leaked between VRF main RIBs
 
 6. **Oscillation check**:

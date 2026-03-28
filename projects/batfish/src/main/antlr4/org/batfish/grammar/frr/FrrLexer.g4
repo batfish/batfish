@@ -459,6 +459,11 @@ SUPPRESS_RA: 'suppress-ra';
 
 SYSLOG: 'syslog';
 
+TABLE_MAP
+:
+  'table-map' -> pushMode(M_Word)
+;
+
 TAG: 'tag';
 
 TIMERS: 'timers';
