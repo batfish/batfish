@@ -60,7 +60,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
      * the newNode.
      */
     if (newPrefix.containsPrefix(oldPrefix)) {
-      boolean currentBit = Ip.getBitAtPosition(oldPrefix.getStartIp(), newPrefix.getPrefixLength());
+      boolean currentBit = oldPrefix.getStartIp().getBitAtPosition(newPrefix.getPrefixLength());
       if (currentBit) {
         newNode._right = oldNode;
       } else {
@@ -75,7 +75,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     Prefix lcp = longestCommonPrefix(newPrefix, oldPrefix);
     Node<T> parent = new Node<>(lcp);
 
-    boolean newNodeRight = Ip.getBitAtPosition(newPrefix.getStartIp(), lcp.getPrefixLength());
+    boolean newNodeRight = newPrefix.getStartIp().getBitAtPosition(lcp.getPrefixLength());
     if (newNodeRight) {
       parent.setRight(newNode);
       parent.setLeft(oldNode);
@@ -90,14 +90,14 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   static boolean legalLeftChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
     return parentPrefix.containsPrefix(childPrefix)
         && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
-        && !Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
+        && !childPrefix.getStartIp().getBitAtPosition(parentPrefix.getPrefixLength());
   }
 
   @VisibleForTesting
   static boolean legalRightChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
     return parentPrefix.containsPrefix(childPrefix)
         && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
-        && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
+        && childPrefix.getStartIp().getBitAtPosition(parentPrefix.getPrefixLength());
   }
 
   /**
@@ -129,8 +129,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
     private @Nonnull Node<T> createChild(Prefix prefix) {
       assert _prefix.containsPrefix(prefix);
-      boolean currentBit =
-          Ip.getBitAtPosition(prefix.getStartIp().asLong(), _prefix.getPrefixLength());
+      boolean currentBit = prefix.getStartIp().getBitAtPosition(_prefix.getPrefixLength());
 
       Node<T> node = new Node<>(prefix);
       if (currentBit) {
@@ -221,7 +220,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       if (_prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
         return null;
       }
-      Node<T> child = Ip.getBitAtPosition(ip.asLong(), _prefix.getPrefixLength()) ? _right : _left;
+      Node<T> child = ip.getBitAtPosition(_prefix.getPrefixLength()) ? _right : _left;
       return child == null || !child._prefix.containsPrefix(ip, prefixLength) ? null : child;
     }
 

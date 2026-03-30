@@ -22,13 +22,13 @@ public class IpTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void numSubnetBitsToSubnetLong() {
+  public void testNumSubnetBitsToSubnetInt() {
     // Test the boundaries (0 and 32) as well as a representative sample of intermediate values.
-    assertThat(Ip.numSubnetBitsToSubnetLong(0), equalTo(0L));
-    assertThat(Ip.numSubnetBitsToSubnetLong(4), equalTo(0xF0000000L));
-    assertThat(Ip.numSubnetBitsToSubnetLong(17), equalTo(0xFFFF8000L));
-    assertThat(Ip.numSubnetBitsToSubnetLong(31), equalTo(0xFFFFFFFEL));
-    assertThat(Ip.numSubnetBitsToSubnetLong(32), equalTo(0xFFFFFFFFL));
+    assertThat(Ip.numSubnetBitsToSubnetInt(0), equalTo(0));
+    assertThat(Ip.numSubnetBitsToSubnetInt(4), equalTo(0xF0000000));
+    assertThat(Ip.numSubnetBitsToSubnetInt(17), equalTo(0xFFFF8000));
+    assertThat(Ip.numSubnetBitsToSubnetInt(31), equalTo(0xFFFFFFFE));
+    assertThat(Ip.numSubnetBitsToSubnetInt(32), equalTo(0xFFFFFFFF));
   }
 
   @Test
