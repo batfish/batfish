@@ -54,7 +54,7 @@ public class AuthenticationKeyChain implements Serializable {
 
   @JsonProperty(PROP_KEYS)
   public void setKeys(Map<String, AuthenticationKey> keys) {
-    _keys = keys;
+    _keys = keys == null ? new TreeMap<>() : new TreeMap<>(keys);
   }
 
   @JsonProperty(PROP_TOLERANCE)
