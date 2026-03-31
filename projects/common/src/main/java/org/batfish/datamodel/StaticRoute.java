@@ -198,7 +198,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .setNetwork(getNetwork())
         .setNextHop(_nextHop)
         .setMetric(_metric)
-        .setTag(_tag)
+        .setTag(getTag())
         .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
@@ -216,12 +216,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     StaticRoute rhs = (StaticRoute) o;
     return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
         && _network.equals(rhs._network)
-        && _admin == rhs._admin
+        && getAdministrativeCost() == rhs.getAdministrativeCost()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
         && _nextHop.equals(rhs._nextHop)
-        && _tag == rhs._tag
+        && getTag() == rhs.getTag()
         && _recursive == rhs._recursive
         && Objects.equals(_track, rhs._track);
   }
@@ -233,12 +233,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       h =
           Objects.hash(
               _network,
-              _admin,
+              getAdministrativeCost(),
               getNonForwarding(),
               getNonRouting(),
               _metric,
               _nextHop,
-              _tag,
+              getTag(),
               _recursive,
               _track);
       _hashCode = h;
@@ -252,10 +252,10 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .omitNullValues()
         .add(PROP_NETWORK, _network)
         .add("nextHop", _nextHop)
-        .add(PROP_ADMINISTRATIVE_COST, _admin)
+        .add(PROP_ADMINISTRATIVE_COST, getAdministrativeCost())
         .add(PROP_METRIC, _metric)
         .add("recursive", _recursive)
-        .add(PROP_TAG, _tag)
+        .add(PROP_TAG, getTag())
         .add(PROP_TRACK, _track)
         .toString();
   }

@@ -238,7 +238,7 @@ public class IsisRoute extends AbstractRoute {
   @Override
   public Builder toBuilder() {
     return new Builder()
-        .setAdmin(_admin)
+        .setAdmin(getAdministrativeCost())
         .setArea(_area)
         .setAttach(_attach)
         .setDown(_down)
@@ -251,7 +251,7 @@ public class IsisRoute extends AbstractRoute {
         .setOverload(_overload)
         .setProtocol(_protocol)
         .setSystemId(_systemId)
-        .setTag(_tag);
+        .setTag(getTag());
   }
 
   @Override
@@ -263,7 +263,7 @@ public class IsisRoute extends AbstractRoute {
       return false;
     }
     IsisRoute rhs = (IsisRoute) o;
-    return _admin == rhs._admin
+    return getAdministrativeCost() == rhs.getAdministrativeCost()
         && _area.equals(rhs._area)
         && _attach == rhs._attach
         && _down == rhs._down
@@ -276,13 +276,13 @@ public class IsisRoute extends AbstractRoute {
         && _overload == rhs._overload
         && _protocol == rhs._protocol
         && _systemId.equals(rhs._systemId)
-        && _tag == rhs._tag;
+        && getTag() == rhs.getTag();
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _admin,
+        getAdministrativeCost(),
         _area,
         _attach,
         _down,
@@ -295,6 +295,6 @@ public class IsisRoute extends AbstractRoute {
         _overload,
         _protocol.ordinal(),
         _systemId,
-        _tag);
+        getTag());
   }
 }

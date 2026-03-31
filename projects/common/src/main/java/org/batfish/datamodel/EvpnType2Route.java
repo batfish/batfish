@@ -227,7 +227,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         .setRouteDistinguisher(_routeDistinguisher)
         .setVni(_vni)
         .setSrcProtocol(_attributes.getSrcProtocol())
-        .setTag(_tag)
+        .setTag(getTag())
         .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setWeight(_attributes._weight);
   }
@@ -251,7 +251,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         && Objects.equals(_pathId, other._pathId)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
-        && _tag == other._tag;
+        && getTag() == other.getTag();
   }
 
   @Override
@@ -267,7 +267,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_pathId);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }

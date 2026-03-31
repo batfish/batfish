@@ -211,7 +211,7 @@ public class RoutesAnswererUtilTest {
             .setArea(1L)
             .setAdvertiser("n2")
             .setOspfMetricType(OspfMetricType.E2)
-            .setTag(2L << 35)
+            .setTag(2L << 30)
             .build();
     FinalMainRib rib = FinalMainRib.of(route);
 
@@ -232,7 +232,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "e0", Schema.STRING),
                 hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
-                hasColumn(COL_TAG, equalTo(2L << 35), Schema.LONG),
+                hasColumn(COL_TAG, equalTo(2L << 30), Schema.LONG),
                 hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
                 hasColumn(COL_METRIC, equalTo(2L << 34), Schema.LONG))));
   }
