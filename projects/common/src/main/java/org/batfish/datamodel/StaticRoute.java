@@ -33,7 +33,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private static final String PROP_NEXT_VRF = "nextVrf";
   private static final String PROP_TRACK = "track";
 
-  private final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
   private final boolean _recursive;
   private final @Nullable String _track;
 
@@ -74,7 +75,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       boolean recursive,
       @Nullable String track) {
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
-    _metric = metric;
+    _metric = (int) metric;
     _nextHop = nextHop;
     _recursive = recursive;
     _track = track;
@@ -84,7 +85,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   public long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 
   /** Jackson use only */
@@ -197,7 +198,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return builder()
         .setNetwork(getNetwork())
         .setNextHop(_nextHop)
-        .setMetric(_metric)
+        .setMetric(getMetric())
         .setTag(getTag())
         .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
@@ -219,7 +220,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         && getAdministrativeCost() == rhs.getAdministrativeCost()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
-        && _metric == rhs._metric
+        && getMetric() == rhs.getMetric()
         && _nextHop.equals(rhs._nextHop)
         && getTag() == rhs.getTag()
         && _recursive == rhs._recursive
@@ -236,7 +237,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
               getAdministrativeCost(),
               getNonForwarding(),
               getNonRouting(),
-              _metric,
+              getMetric(),
               _nextHop,
               getTag(),
               _recursive,
@@ -253,7 +254,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .add(PROP_NETWORK, _network)
         .add("nextHop", _nextHop)
         .add(PROP_ADMINISTRATIVE_COST, getAdministrativeCost())
-        .add(PROP_METRIC, _metric)
+        .add(PROP_METRIC, getMetric())
         .add("recursive", _recursive)
         .add(PROP_TAG, getTag())
         .add(PROP_TRACK, _track)

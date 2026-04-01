@@ -140,8 +140,8 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
         && getAdministrativeCost() == other.getAdministrativeCost()
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
-        && _area == other._area
-        && _metric == other._metric
+        && getArea() == other.getArea()
+        && getMetric() == other.getMetric()
         && _nextHop.equals(other._nextHop)
         && getTag() == other.getTag();
   }
@@ -152,8 +152,8 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
     if (h == 0) {
       h = _network.hashCode();
       h = 31 * h + Long.hashCode(getAdministrativeCost());
-      h = 31 * h + Long.hashCode(_area);
-      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + Long.hashCode(getArea());
+      h = 31 * h + Long.hashCode(getMetric());
       h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonForwarding());
       h = 31 * h + Boolean.hashCode(getNonRouting());

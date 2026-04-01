@@ -91,7 +91,7 @@ public class RipInternalRoute extends RipRoute {
     RipRoute other = (RipRoute) o;
     return _network.equals(other._network)
         && getAdministrativeCost() == other.getAdministrativeCost()
-        && _metric == other._metric
+        && getMetric() == other.getMetric()
         && _nextHop.equals(other._nextHop)
         && getNonForwarding() == other.getNonForwarding()
         && getNonRouting() == other.getNonRouting()
@@ -103,7 +103,7 @@ public class RipInternalRoute extends RipRoute {
     return Objects.hash(
         _network,
         getAdministrativeCost(),
-        _metric,
+        getMetric(),
         _nextHop,
         getNonForwarding(),
         getNonRouting(),
