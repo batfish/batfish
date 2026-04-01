@@ -496,7 +496,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_WEIGHT = "weight";
 
   protected final @Nonnull BgpRouteAttributes _attributes;
-  protected final @Nullable Integer _pathId;
+  // Stored as int with 0 meaning null (path IDs start at 1). Use getPathId() to read.
+  private final int _pathId;
 
   protected final @Nonnull ReceivedFrom _receivedFrom;
 
@@ -513,7 +514,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     super(network, admin, tag, nonRouting, nonForwarding);
     _attributes = attributes;
     _nextHop = nextHop;
-    _pathId = pathId;
+    _pathId = pathId == null ? 0 : pathId;
     _receivedFrom = receivedFrom;
   }
 
@@ -588,7 +589,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
    */
   @JsonProperty(PROP_PATH_ID)
   public @Nullable Integer getPathId() {
-    return _pathId;
+    return _pathId == 0 ? null : _pathId;
   }
 
   @JsonIgnore(false)
