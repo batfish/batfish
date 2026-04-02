@@ -180,6 +180,6 @@ This is expected behavior — the algorithm optimizes for concise output rather 
 
 ## References
 
-- [Package README.md](../../../projects/question/src/main/java/org/batfish/question/filterlinereachability/README.md) — detailed design of blocking lines algorithm
+- [Package README.md](../../projects/question/src/main/java/org/batfish/question/filterlinereachability/README.md) — detailed design of blocking lines algorithm
 - batfish/batfish#2823 — PR implementing the blocking lines algorithm
 - [Analyzing ACLs notebook](https://github.com/batfish/pybatfish/blob/master/jupyter_notebooks/Analyzing%20ACLs%20and%20Firewall%20Rules.ipynb) — user-facing examples
