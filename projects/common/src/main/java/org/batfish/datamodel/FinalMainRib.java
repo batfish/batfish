@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import java.io.ObjectStreamException;
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -99,24 +97,6 @@ public final class FinalMainRib implements Serializable {
 
   private FinalMainRib(PrefixTrieMultiMap<AbstractRoute> tree) {
     _routeTree = tree;
-  }
-
-  @Serial
-  private Object writeReplace() throws ObjectStreamException {
-    return new SerializedForm(_routeTree.getAllElements());
-  }
-
-  private static class SerializedForm implements Serializable {
-    final Set<AbstractRoute> _routes;
-
-    public SerializedForm(Set<AbstractRoute> routes) {
-      _routes = routes;
-    }
-
-    @Serial
-    private Object readResolve() throws ObjectStreamException {
-      return FinalMainRib.of(_routes);
-    }
   }
 
   @Override
