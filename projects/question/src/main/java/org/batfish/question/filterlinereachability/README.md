@@ -1,6 +1,6 @@
 # Simpler FilterLineReachability results
 
-> **See also**: [Developer guide for filterLineReachability](../../../../../docs/question_development/filterLineReachability.md) for a broader overview of the question, its architecture, and key classes.
+> **See also**: [Developer guide for filterLineReachability](../../../../../../../../../docs/question_development/filterLineReachability.md) for a broader overview of the question, its architecture, and key classes.
 
 @dhalperi 2018-12-12
 
