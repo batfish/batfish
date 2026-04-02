@@ -1022,6 +1022,7 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromHopLimit;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
@@ -4976,6 +4977,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Fragment_offsetContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, FRAGMENT_OFFSET_RANGE, "fragment offset");
+  }
+
+  @Override
+  public void exitFftf_hop_limit(FlatJuniperParser.Fftf_hop_limitContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    _currentFwTerm.getFroms().add(new FwFromHopLimit(range, false));
+  }
+
+  @Override
+  public void exitFftf_hop_limit_except(FlatJuniperParser.Fftf_hop_limit_exceptContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    _currentFwTerm.getFroms().add(new FwFromHopLimit(range, true));
   }
 
   @Override

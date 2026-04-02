@@ -1,0 +1,8 @@
+#
+set system host-name firewall-filter-packet-length-spaced-range
+#
+set firewall family inet filter FILTER term COMPACT from packet-length 100-200
+set firewall family inet filter FILTER term COMPACT then accept
+#
+set firewall family inet filter FILTER term SPACED from packet-length 100 - 200
+set firewall family inet filter FILTER term SPACED then accept

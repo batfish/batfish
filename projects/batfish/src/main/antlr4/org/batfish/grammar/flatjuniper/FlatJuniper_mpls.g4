@@ -267,7 +267,7 @@ mplslsp_cross_credibility_cspf_null
 
 mplslsp_hop_limit_null
 :
-   HOP_LIMIT uint32
+   HOP_LIMIT uint8
 ;
 
 mplslsp_optimize_timer_null

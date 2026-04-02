@@ -421,6 +421,7 @@ import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromHopLimit;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
@@ -9846,6 +9847,81 @@ public final class FlatJuniperGrammarTest {
       assertThat(fromTtl.getRange(), equalTo(new SubRange(100, 200)));
       assertThat(fromTtl.getExcept(), equalTo(true));
       assertFalse(i.hasNext());
+    }
+  }
+
+  @Test
+  public void testFirewallFilterHopLimit() {
+    String hostname = "firewall-filter-hop-limit";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(
+        filter.getTerms().keySet(),
+        containsInAnyOrder("SINGLE", "RANGE", "EXCEPT", "EXCEPT_RANGE"));
+
+    // Single hop-limit value
+    {
+      FwTerm term = filter.getTerms().get("SINGLE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(SubRange.singleton(255)));
+      assertFalse(from.getExcept());
+    }
+
+    // hop-limit range
+    {
+      FwTerm term = filter.getTerms().get("RANGE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(10, 20)));
+      assertFalse(from.getExcept());
+    }
+
+    // hop-limit-except single value
+    {
+      FwTerm term = filter.getTerms().get("EXCEPT");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(SubRange.singleton(255)));
+      assertTrue(from.getExcept());
+    }
+
+    // hop-limit-except range
+    {
+      FwTerm term = filter.getTerms().get("EXCEPT_RANGE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+      assertTrue(from.getExcept());
+    }
+  }
+
+  @Test
+  public void testFirewallFilterPacketLengthSpacedRange() {
+    String hostname = "firewall-filter-packet-length-spaced-range";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+
+    // Compact range (no spaces around dash)
+    {
+      FwTerm term = filter.getTerms().get("COMPACT");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+    }
+
+    // Spaced range (spaces around dash)
+    {
+      FwTerm term = filter.getTerms().get("SPACED");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
     }
   }
 

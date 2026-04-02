@@ -1,0 +1,14 @@
+#
+set system host-name firewall-filter-hop-limit
+#
+set firewall family inet6 filter FILTER term SINGLE from hop-limit 255
+set firewall family inet6 filter FILTER term SINGLE then accept
+#
+set firewall family inet6 filter FILTER term RANGE from hop-limit 10-20
+set firewall family inet6 filter FILTER term RANGE then accept
+#
+set firewall family inet6 filter FILTER term EXCEPT from hop-limit-except 255
+set firewall family inet6 filter FILTER term EXCEPT then accept
+#
+set firewall family inet6 filter FILTER term EXCEPT_RANGE from hop-limit-except 100-200
+set firewall family inet6 filter FILTER term EXCEPT_RANGE then accept
