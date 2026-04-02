@@ -52637,12 +52637,14 @@
             "                    FAMILY:'family'",
             "                    (if_inet6*",
             "                      INET6:'inet6'",
-            "                      (ifi6_filter*",
-            "                        FILTER:'filter'",
-            "                        (ifi6f_input",
-            "                          INPUT:'input'  <== mode:M_Filter",
-            "                          name = (junos_name*",
-            "                            NAME:'blah6'  <== mode:M_Filter))))))))))))",
+            "                      (ifi6_filter",
+            "                        (filter*",
+            "                          FILTER:'filter'",
+            "                          (direction*",
+            "                            INPUT:'input'  <== mode:M_Filter)",
+            "                          name = (filter_name*",
+            "                            (junos_name*",
+            "                              NAME:'blah6'  <== mode:M_Filter)))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -82537,7 +82539,7 @@
         "configs/juniper_firewall" : {
           "firewall family inet6 filter" : {
             "blah6" : {
-              "interface firewall filter" : [
+              "interface firewall filter input" : [
                 47
               ]
             }

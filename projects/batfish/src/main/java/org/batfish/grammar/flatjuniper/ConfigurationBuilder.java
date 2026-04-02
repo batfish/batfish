@@ -458,9 +458,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6f_inputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
@@ -5678,10 +5678,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitIfi6f_input(Ifi6f_inputContext ctx) {
-    String name = toString(ctx.name);
+  public void exitIfi6_filter(Ifi6_filterContext ctx) {
+    FilterContext filter = ctx.filter();
+    if (filter.direction() == null) {
+      return;
+    }
+    String name = toString(filter.name);
+    JuniperStructureUsage usage = INTERFACE_FILTER;
+    if (filter.direction() != null) {
+      DirectionContext direction = filter.direction();
+      if (direction.INPUT() != null) {
+        _currentInterfaceOrRange.setIncomingFilter6(name);
+        usage = INTERFACE_INCOMING_FILTER;
+      } else if (direction.INPUT_LIST() != null) {
+        _currentInterfaceOrRange.addIncomingFilterList6(name);
+        usage = INTERFACE_INCOMING_FILTER_LIST;
+      } else if (direction.OUTPUT() != null) {
+        _currentInterfaceOrRange.setOutgoingFilter6(name);
+        usage = INTERFACE_OUTGOING_FILTER;
+      } else if (direction.OUTPUT_LIST() != null) {
+        _currentInterfaceOrRange.addOutgoingFilterList6(name);
+        usage = INTERFACE_OUTGOING_FILTER_LIST;
+      } else {
+        // Should be unreachable.
+        warn(ctx, "Unhandled filter direction");
+      }
+    }
     _configuration.referenceStructure(
-        FIREWALL_INET6_FILTER, name, INTERFACE_FILTER, getLine(ctx.name.start));
+        FIREWALL_INET6_FILTER, name, usage, getLine(filter.name.getStart()));
   }
 
   @Override
