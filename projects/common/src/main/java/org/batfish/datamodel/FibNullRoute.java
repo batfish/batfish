@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /** A {@link FibAction} that discards a packet. */
@@ -22,5 +24,11 @@ public final class FibNullRoute implements FibAction {
   @Override
   public <T> T accept(FibActionVisitor<T> visitor) {
     return visitor.visitFibNullRoute(this);
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

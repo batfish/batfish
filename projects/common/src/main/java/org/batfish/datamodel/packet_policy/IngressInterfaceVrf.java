@@ -2,6 +2,8 @@ package org.batfish.datamodel.packet_policy;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nullable;
 
 /** Represents VRF of the ingress interface, resolved at the time of policy evaluation */
@@ -33,5 +35,11 @@ public final class IngressInterfaceVrf implements VrfExpr {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(IngressInterfaceVrf.class).toString();
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

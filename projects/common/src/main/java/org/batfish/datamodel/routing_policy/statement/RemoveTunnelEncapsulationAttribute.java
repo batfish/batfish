@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,5 +58,11 @@ public final class RemoveTunnelEncapsulationAttribute extends Statement {
   @Override
   public String toString() {
     return RemoveTunnelEncapsulationAttribute.class.getSimpleName();
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -37,4 +39,10 @@ public final class IntegerValueRendering implements CommunityRendering {
   }
 
   private IntegerValueRendering() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

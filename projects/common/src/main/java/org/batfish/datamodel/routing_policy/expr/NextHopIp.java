@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -28,5 +30,11 @@ public final class NextHopIp extends IpExpr {
   @Override
   public int hashCode() {
     return System.identityHashCode(this);
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

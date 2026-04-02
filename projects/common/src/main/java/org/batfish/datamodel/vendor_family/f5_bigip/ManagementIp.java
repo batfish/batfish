@@ -1,5 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -23,4 +25,10 @@ public class ManagementIp implements UnicastAddressIp {
   }
 
   private ManagementIp() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }
