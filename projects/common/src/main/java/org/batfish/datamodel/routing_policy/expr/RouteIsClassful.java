@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -50,5 +52,11 @@ public final class RouteIsClassful extends BooleanExpr {
   @Override
   public int hashCode() {
     return 0;
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

@@ -2,6 +2,8 @@ package org.batfish.datamodel.packet_policy;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -36,5 +38,11 @@ public final class Drop implements Action {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).toString();
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

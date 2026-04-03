@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.net.InetAddresses;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.Inet4Address;
@@ -170,5 +172,11 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   /** Private constructor, use {@link #create} instead */
   private Ip6(BigInteger ip6AsBigInteger) {
     _ip6 = ip6AsBigInteger;
+  }
+
+  /** Cache after deserialization. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(_ip6);
   }
 }

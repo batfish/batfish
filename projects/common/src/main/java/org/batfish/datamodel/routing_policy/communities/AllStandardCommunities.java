@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 
 /**
@@ -35,4 +37,10 @@ public final class AllStandardCommunities extends CommunityMatchExpr {
   }
 
   private AllStandardCommunities() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

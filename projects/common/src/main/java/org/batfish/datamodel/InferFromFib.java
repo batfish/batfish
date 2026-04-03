@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -21,6 +23,12 @@ public final class InferFromFib extends SourceIpInference {
   }
 
   private InferFromFib() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 
   /**
    * Returns the potential source IPs of a packet with the given {@code dstIp} originating on the

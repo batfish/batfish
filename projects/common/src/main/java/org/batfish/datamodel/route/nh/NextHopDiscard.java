@@ -2,6 +2,8 @@ package org.batfish.datamodel.route.nh;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -40,4 +42,10 @@ public final class NextHopDiscard implements NextHop {
   private static final NextHopDiscard INSTANCE = new NextHopDiscard();
 
   private NextHopDiscard() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }
