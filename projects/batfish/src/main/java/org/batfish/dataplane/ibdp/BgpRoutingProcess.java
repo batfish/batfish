@@ -168,6 +168,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private final @Nonnull PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
   private final @Nonnull RoutingPolicies _policies;
+  private final @Nullable RoutingPolicy _tableMapPolicy;
   private final @Nonnull String _hostname;
 
   /** Name of our VRF */
@@ -381,6 +382,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _c = configuration;
     _hostname = configuration.getHostname();
     _policies = RoutingPolicies.from(configuration);
+    _tableMapPolicy =
+        Optional.ofNullable(process.getTableMapPolicy()).flatMap(_policies::get).orElse(null);
     _vrfName = vrfName;
     _mainRib = mainRib;
     _topology = topology;
@@ -944,7 +947,32 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
     LOGGER.trace(
         "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
-    _toMainRib.from(bgpv4RibDelta);
+    if (_tableMapPolicy == null) {
+      _toMainRib.from(bgpv4RibDelta);
+    } else {
+      applyTableMap(bgpv4RibDelta);
+    }
+  }
+
+  /**
+   * Apply the table-map routing policy to filter BGP routes before installation into the main RIB.
+   * Routes denied by the policy are marked nonRouting so they remain in the BGP RIB (for
+   * advertisement to peers) but are not installed in the main RIB.
+   */
+  private void applyTableMap(RibDelta<Bgpv4Route> bgpv4RibDelta) {
+    assert _tableMapPolicy != null;
+    for (RouteAdvertisement<Bgpv4Route> adv : bgpv4RibDelta.getActions()) {
+      if (adv.isWithdrawn()) {
+        _toMainRib.from(adv);
+      } else {
+        Bgpv4Route route = adv.getRoute();
+        if (_tableMapPolicy.processReadOnly(route)) {
+          _toMainRib.from(adv);
+        } else {
+          _toMainRib.from(RouteAdvertisement.adding(route.toBuilder().setNonRouting(true).build()));
+        }
+      }
+    }
   }
 
   /** Pull v4Unicast routes from our neighbors' deltas, merge them into our own RIBs */

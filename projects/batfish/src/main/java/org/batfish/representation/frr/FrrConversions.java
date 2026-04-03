@@ -427,13 +427,13 @@ public final class FrrConversions {
     }
     // First pass: only core processes
     c.getDefaultVrf()
-        .setBgpProcess(toBgpProcess(c, frr, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
+        .setBgpProcess(toBgpProcess(c, frr, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf(), w));
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
         .forEach(
             (vrfName, bgpVrf) ->
-                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, frr, vrfName, bgpVrf)));
+                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, frr, vrfName, bgpVrf, w)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
@@ -481,7 +481,7 @@ public final class FrrConversions {
    */
   @VisibleForTesting
   static @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(
-      Configuration c, FrrConfiguration frr, String vrfName, BgpVrf bgpVrf) {
+      Configuration c, FrrConfiguration frr, String vrfName, BgpVrf bgpVrf, Warnings w) {
     BgpProcess bgpProcess = frr.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
@@ -536,7 +536,50 @@ public final class FrrConversions {
     newProc.setMainRibIndependentNetworkPolicy(
         generateBgpNetworkPolicy(c, vrfName, bgpVrf, frr.getRouteMaps()));
 
+    // table-map: filter BGP routes before installation into the main RIB
+    convertBgpTableMap(bgpVrf, frr, newProc, w);
+
     return newProc;
+  }
+
+  @VisibleForTesting
+  static void convertBgpTableMap(
+      BgpVrf bgpVrf, FrrConfiguration frr, org.batfish.datamodel.BgpProcess newProc, Warnings w) {
+    String tableMapName = bgpVrf.getTableMap();
+    if (tableMapName == null) {
+      return;
+    }
+    RouteMap routeMap = frr.getRouteMaps().get(tableMapName);
+    if (routeMap == null) {
+      return;
+    }
+    newProc.setTableMapPolicy(tableMapName);
+
+    // Emit RISKY warnings for set clauses in permit entries. In the table-map context, only
+    // metric and next-hop set operations have any effect on the router; all others are no-ops.
+    // We currently only implement deny/permit (nonRouting), not metric/next-hop modification.
+    for (RouteMapEntry entry : routeMap.getEntries().values()) {
+      if (entry.getAction() != LineAction.PERMIT) {
+        continue;
+      }
+      entry
+          .getSets()
+          .forEach(
+              set -> {
+                if (set instanceof RouteMapSetMetric
+                    || set instanceof RouteMapSetIpNextHopLiteral) {
+                  w.redFlagf(
+                      "table-map %s: set %s modification not yet modeled"
+                          + " (route will be installed without modification)",
+                      tableMapName, set.getClass().getSimpleName());
+                } else {
+                  w.riskyRedFlag(
+                      "table-map %s: set %s has no effect"
+                          + " (only metric and next-hop are supported in table-map context)",
+                      tableMapName, set.getClass().getSimpleName());
+                }
+              });
+    }
   }
 
   @VisibleForTesting

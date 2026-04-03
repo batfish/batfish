@@ -31,6 +31,7 @@ public enum FrrStructureUsage {
   BGP_NEIGHBOR_INTERFACE_SELF_REF("bgp neighbor interface self ref"),
   BGP_NEIGHBOR_SELF_REF("bgp neighbor self ref"),
   BGP_NETWORK("bgp network"),
+  BGP_TABLE_MAP("bgp table-map"),
   BGP_VRF("bgp vrf"),
   OSPF_REDISTRIBUTE_BGP_ROUTE_MAP("ospf redistribute bgp route-map"),
   OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP("ospf redistribute connected route-map"),

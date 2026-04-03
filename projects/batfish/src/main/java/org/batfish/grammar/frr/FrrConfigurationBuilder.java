@@ -112,6 +112,7 @@ import org.batfish.grammar.frr.FrrParser.PrefixContext;
 import org.batfish.grammar.frr.FrrParser.Rb_neighborContext;
 import org.batfish.grammar.frr.FrrParser.Rb_networkContext;
 import org.batfish.grammar.frr.FrrParser.Rb_redistributeContext;
+import org.batfish.grammar.frr.FrrParser.Rb_table_mapContext;
 import org.batfish.grammar.frr.FrrParser.Rbaf_l2vpn_evpnContext;
 import org.batfish.grammar.frr.FrrParser.Rbafi6_importContext;
 import org.batfish.grammar.frr.FrrParser.Rbafi_aggregate_addressContext;
@@ -522,6 +523,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRbaf_l2vpn_evpn(Rbaf_l2vpn_evpnContext ctx) {
     _currentBgpL2vpnEvpnAddressFamily = null;
+  }
+
+  @Override
+  public void exitRb_table_map(Rb_table_mapContext ctx) {
+    String name = ctx.name.getText();
+    _currentBgpVrf.setTableMap(name);
+    _vc.referenceStructure(
+        ROUTE_MAP, name, FrrStructureUsage.BGP_TABLE_MAP, ctx.name.getStart().getLine());
   }
 
   @Override

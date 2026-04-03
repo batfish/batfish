@@ -221,6 +221,7 @@ public class BgpProcess implements Serializable {
 
   private static final String PROP_NEXT_HOP_IP_RESOLVER_RESTRICTION_POLICY =
       "nextHopIpResolverRestrictionPolicy";
+  private static final String PROP_TABLE_MAP_POLICY = "tableMapPolicy";
 
   private boolean _clientToClientReflection;
   private @Nullable BgpConfederation _confederation;
@@ -267,6 +268,7 @@ public class BgpProcess implements Serializable {
 
   private @Nonnull Set<String> _tracks;
   private @Nullable String _nextHopIpResolverRestrictionPolicy;
+  private @Nullable String _tableMapPolicy;
 
   /**
    * a list of prefixes from bgp network statements that will be unconditionally advertised if
@@ -728,5 +730,21 @@ public class BgpProcess implements Serializable {
   public void setNextHopIpResolverRestrictionPolicy(
       @Nullable String nextHopIpResolverRestrictionPolicy) {
     _nextHopIpResolverRestrictionPolicy = nextHopIpResolverRestrictionPolicy;
+  }
+
+  /**
+   * Name of the routing policy used as a table-map for this BGP process. The table-map controls
+   * which BGP routes are installed into the main RIB. Routes denied by the policy are kept in the
+   * BGP RIB (for advertisement to peers) but not installed in the main RIB (not used for
+   * forwarding).
+   */
+  @JsonProperty(PROP_TABLE_MAP_POLICY)
+  public @Nullable String getTableMapPolicy() {
+    return _tableMapPolicy;
+  }
+
+  @JsonProperty(PROP_TABLE_MAP_POLICY)
+  public void setTableMapPolicy(@Nullable String tableMapPolicy) {
+    _tableMapPolicy = tableMapPolicy;
   }
 }
