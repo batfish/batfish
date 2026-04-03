@@ -2292,7 +2292,7 @@ public final class FlatJuniperGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
-    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 3));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 4));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER2", 4));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER_UNUSED", 0));
 
@@ -2365,6 +2365,59 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getIncomingFilterList(), contains("FILTER1", "FILTER2"));
       assertThat(iface.getOutgoingFilter(), nullValue());
       assertThat(iface.getOutgoingFilterList(), contains("FILTER2", "FILTER1"));
+    }
+    // inet6 filter input
+    {
+      String parentName = "xe-0/0/4";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_1"));
+      assertThat(iface.getIncomingFilterList6(), nullValue());
+      assertThat(iface.getOutgoingFilter6(), nullValue());
+      assertThat(iface.getOutgoingFilterList6(), nullValue());
+    }
+    // inet6 filter input-list and output-list
+    {
+      String parentName = "xe-0/0/5";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), nullValue());
+      assertThat(iface.getIncomingFilterList6(), contains("FILTER6_1", "FILTER6_2"));
+      assertThat(iface.getOutgoingFilter6(), nullValue());
+      assertThat(iface.getOutgoingFilterList6(), contains("FILTER6_2", "FILTER6_1"));
+    }
+    // inet6 input-list then input: input wins, clears list
+    {
+      String parentName = "xe-0/0/6";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_2"));
+      assertThat(iface.getIncomingFilterList6(), nullValue());
+    }
+    // inet6 input then input-list: input-list wins, clears single
+    {
+      String parentName = "xe-0/0/7";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), nullValue());
+      assertThat(iface.getIncomingFilterList6(), contains("FILTER6_2"));
+    }
+    // inet and inet6 are independent
+    {
+      String parentName = "xe-0/0/8";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER1"));
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_1"));
     }
 
     // filter definitions

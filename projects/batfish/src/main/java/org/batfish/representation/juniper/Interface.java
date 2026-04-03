@@ -159,6 +159,8 @@ public class Interface implements Serializable {
   private @Nullable EthernetSwitching _ethernetSwitching;
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
+  private @Nullable String _incomingFilter6;
+  private @Nullable List<String> _incomingFilterList6;
   private transient boolean _inherited;
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
@@ -168,6 +170,8 @@ public class Interface implements Serializable {
   private @Nullable OspfInterfaceSettings _ospfSettings;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
+  private @Nullable String _outgoingFilter6;
+  private @Nullable List<String> _outgoingFilterList6;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private @Nullable ConcreteInterfaceAddress6 _preferredAddress6;
@@ -248,6 +252,14 @@ public class Interface implements Serializable {
     return _incomingFilterList;
   }
 
+  public @Nullable String getIncomingFilter6() {
+    return _incomingFilter6;
+  }
+
+  public @Nullable List<String> getIncomingFilterList6() {
+    return _incomingFilterList6;
+  }
+
   public @Nullable IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -290,6 +302,14 @@ public class Interface implements Serializable {
 
   public @Nullable List<String> getOutgoingFilterList() {
     return _outgoingFilterList;
+  }
+
+  public @Nullable String getOutgoingFilter6() {
+    return _outgoingFilter6;
+  }
+
+  public @Nullable List<String> getOutgoingFilterList6() {
+    return _outgoingFilterList6;
   }
 
   public Interface getParent() {
@@ -459,6 +479,19 @@ public class Interface implements Serializable {
     _incomingFilterList.add(accessListName);
   }
 
+  public void setIncomingFilter6(@Nullable String accessListName) {
+    _incomingFilter6 = accessListName;
+    _incomingFilterList6 = null;
+  }
+
+  public void addIncomingFilterList6(@Nonnull String accessListName) {
+    _incomingFilter6 = null;
+    if (_incomingFilterList6 == null) {
+      _incomingFilterList6 = new LinkedList<>();
+    }
+    _incomingFilterList6.add(accessListName);
+  }
+
   public void setIsoAddress(IsoAddress address) {
     _isoAddress = address;
   }
@@ -486,6 +519,19 @@ public class Interface implements Serializable {
       _outgoingFilterList = new LinkedList<>();
     }
     _outgoingFilterList.add(accessListName);
+  }
+
+  public void setOutgoingFilter6(@Nullable String accessListName) {
+    _outgoingFilter6 = accessListName;
+    _outgoingFilterList6 = null;
+  }
+
+  public void addOutgoingFilterList6(@Nonnull String accessListName) {
+    _outgoingFilter6 = null;
+    if (_outgoingFilterList6 == null) {
+      _outgoingFilterList6 = new LinkedList<>();
+    }
+    _outgoingFilterList6.add(accessListName);
   }
 
   public void setParent(Interface parent) {

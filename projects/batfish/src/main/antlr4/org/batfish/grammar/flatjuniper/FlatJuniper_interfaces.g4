@@ -411,9 +411,7 @@ ifi6a_primary: PRIMARY;
 
 ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
-ifi6_filter: FILTER ifi6f_input;
-
-ifi6f_input: INPUT name = junos_name;
+ifi6_filter: filter;
 
 ifi6_mtu: i_mtu;
 
