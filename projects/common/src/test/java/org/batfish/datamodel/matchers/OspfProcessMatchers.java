@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
@@ -54,6 +56,10 @@ public class OspfProcessMatchers {
   public static Matcher<OspfProcess> hasReferenceBandwidth(
       @Nonnull Matcher<? super Double> subMatcher) {
     return new HasReferenceBandwidth(subMatcher);
+  }
+
+  public static Matcher<OspfProcess> hasReferenceBandwidth(double expectedReferenceBandwidth) {
+    return hasReferenceBandwidth(equalTo(expectedReferenceBandwidth));
   }
 
   private static final class HasArea extends FeatureMatcher<OspfProcess, OspfArea> {
