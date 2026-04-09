@@ -42,7 +42,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end dataplane test for testing BGP EVPN Type 5 Route propagation and Traceroute. */
-public class BgpEvpnType5RouteTest {
+public class EvpnType5JuniperTest {
 
   private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
   private static final String TESTRIG_NAME = "bgp-evpn-type5-route-test";

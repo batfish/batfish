@@ -1,0 +1,57 @@
+set system host-name juniper-evpn-vxlan
+
+set routing-options route-distinguisher-id 10.1.1.1
+set routing-options autonomous-system 65001
+set routing-options router-id 10.0.0.111
+
+set interfaces lo0 unit 0 family inet address 10.84.249.26/32 primary
+set interfaces xe-0/0/0 description to_host-1
+set interfaces xe-0/0/0 unit 0 family ethernet-switching interface-mode access
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members v10
+
+set interfaces irb unit 10 family inet address 10.0.1.111/24 virtual-gateway-address 10.0.1.254
+set interfaces irb unit 20 family inet address 10.0.2.111/24 virtual-gateway-address 10.0.2.254
+set interfaces irb unit 30 family inet address 10.0.3.111/24 preferred
+
+set switch-options vtep-source-interface lo0.0
+set switch-options route-distinguisher 192.168.100.111:1
+set switch-options vrf-target target:65320:7999999
+set switch-options vrf-target export target:65320:7999999
+set switch-options vrf-target import target:65320:7999999
+
+set protocols evpn encapsulation vxlan
+set protocols evpn extended-vni-list all
+set protocols igmp-snooping vlan default
+
+set protocols evpn vni-options vni 5010 vrf-target target:65000:5010
+set protocols evpn vni-options vni 5020 vrf-target target:65000:5020
+set protocols evpn vni-options vni 14002 vrf-target target:65320:14002
+set protocols evpn vni-options vni 14003 vrf-target export target:65320:7999999
+set protocols evpn vni-options vni 14004 vrf-target import target:65320:7999999
+
+set vlans default vlan-id 1
+set vlans v10 vlan-id 10
+set vlans v10 l3-interface irb.10
+set vlans v10 vxlan vni 5010
+set vlans v20 vlan-id 20
+set vlans v20 l3-interface irb.20
+set vlans v20 vxlan vni 5020
+
+set routing-instances l3vni_vrf instance-type vrf
+set routing-instances l3vni_vrf interface irb.10
+set routing-instances l3vni_vrf interface irb.20
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes advertise direct-nexthop
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes encapsulation vxlan
+set routing-instances l3vni_vrf protocols evpn ip-prefix-routes vni 50010
+set routing-instances l3vni_vrf route-distinguisher 192.168.100.111:50010
+set routing-instances l3vni_vrf vrf-target export target:65000:50010
+set routing-instances l3vni_vrf vrf-table-label
+
+set routing-instances l3vni_vrf_novlan instance-type vrf
+set routing-instances l3vni_vrf_novlan interface irb.30
+set routing-instances l3vni_vrf_novlan protocols evpn ip-prefix-routes advertise direct-nexthop
+set routing-instances l3vni_vrf_novlan protocols evpn ip-prefix-routes encapsulation vxlan
+set routing-instances l3vni_vrf_novlan protocols evpn ip-prefix-routes vni 50020
+set routing-instances l3vni_vrf_novlan route-distinguisher 192.168.255.1:15004
+set routing-instances l3vni_vrf_novlan vrf-target export target:15004:15004
+set routing-instances l3vni_vrf_novlan vrf-table-label

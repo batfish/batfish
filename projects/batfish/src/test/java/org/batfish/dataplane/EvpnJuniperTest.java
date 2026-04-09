@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class JuniperSnapshotDataplaneExampleTest {
+public class EvpnJuniperTest {
   private static final String TESTCONFIGS_PATH = "org/batfish/dataplane/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
