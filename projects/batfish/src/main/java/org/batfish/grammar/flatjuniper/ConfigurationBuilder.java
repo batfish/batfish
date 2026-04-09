@@ -4901,7 +4901,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ctx.DIRECT_NEXTHOP() != null
             ? EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP
             : EvpnIpPrefixRoutesAdvertise.GATEWAY_ADDRESS;
-    getOrCreateCurrentEvpnIpPrefixRoutes().setAdvertise(advertise);
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setAdvertise(advertise);
   }
 
   @Override
@@ -4914,17 +4914,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       encapsulation = EvpnEncapsulation.MPLS;
     }
-    getOrCreateCurrentEvpnIpPrefixRoutes().setEncapsulation(encapsulation);
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setEncapsulation(encapsulation);
   }
 
   @Override
   public void exitEipr_export(Eipr_exportContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setExportPolicy(toString(ctx.name));
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setExportPolicy(toString(ctx.name));
   }
 
   @Override
   public void exitEipr_import(Eipr_importContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setImportPolicy(toString(ctx.name));
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setImportPolicy(toString(ctx.name));
   }
 
   @Override
@@ -4935,20 +4935,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     int vni = maybeVniNumber.get();
-    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(vni);
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setVni(vni);
   }
 
   /**
    * Returns the {@link EvpnIpPrefixRoutes} for the current context. When inside a named routing
-   * instance, returns the RI's ip-prefix-routes. Otherwise, returns the global evpn ip-prefix-
-   * routes.
+   * instance, returns the RI's ip-prefix-routes. Otherwise, warns (ip-prefix-routes is not
+   * permitted in the global evpn hierarchy).
    */
-  private EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes() {
+  private EvpnIpPrefixRoutes getOrCreateCurrentEvpnIpPrefixRoutes(ParserRuleContext ctx) {
     RoutingInstance defaultRi = _currentLogicalSystem.getDefaultRoutingInstance();
-    if (_currentRoutingInstance != defaultRi) {
-      return _currentRoutingInstance.getOrCreateEvpnIpPrefixRoutes();
+    if (_currentRoutingInstance == defaultRi) {
+      warn(ctx, "Default routing instance cannot have ip-prefix-routes configured.");
     }
-    return _currentLogicalSystem.getEvpn().getOrCreateIpPrefixRoutes();
+    return _currentRoutingInstance.getOrCreateEvpnIpPrefixRoutes();
   }
 
   @Override
@@ -5047,8 +5047,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String interfaceName = toInterfaceId(ctx.name).getFullName();
     _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
   }
-
-  // vrf-target sub-rules (evovt_auto, evovt_community, etc.) handle extraction directly.
 
   @Override
   public void exitF_filter(F_filterContext ctx) {
