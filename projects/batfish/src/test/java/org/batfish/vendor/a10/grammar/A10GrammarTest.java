@@ -16,9 +16,9 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;

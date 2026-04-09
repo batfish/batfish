@@ -1,10 +1,10 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
 import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;

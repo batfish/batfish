@@ -1,7 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

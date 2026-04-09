@@ -679,6 +679,23 @@ public final class InterfaceMatchers {
     return new HasPreTransformationOutgoingFilter(subMatcher);
   }
 
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code outgoingFilterName}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingFilterName(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return hasOutgoingFilter(IpAccessListMatchers.hasName(subMatcher));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s {@code outgoingFilterName} is equal
+   * to {@code expectedName}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingFilterName(@Nullable String expectedName) {
+    return hasOutgoingFilter(IpAccessListMatchers.hasName(expectedName));
+  }
+
   private InterfaceMatchers() {}
 
   private static final class HasAccessVlan extends FeatureMatcher<Interface, Integer> {

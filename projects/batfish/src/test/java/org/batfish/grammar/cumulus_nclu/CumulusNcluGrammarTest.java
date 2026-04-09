@@ -27,12 +27,12 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;

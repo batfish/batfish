@@ -1,9 +1,9 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.hamcrest.MatcherAssert.assertThat;
