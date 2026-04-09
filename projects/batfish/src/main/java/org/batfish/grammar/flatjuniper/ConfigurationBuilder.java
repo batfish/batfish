@@ -4929,7 +4929,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEipr_vni(Eipr_vniContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(toInt(ctx.vni));
+    Optional<Integer> maybeVniNumber = toInteger(ctx, ctx.vni_number());
+    if (!maybeVniNumber.isPresent()) {
+      // already warned
+      return;
+    }
+    int vni = maybeVniNumber.get();
+    getOrCreateCurrentEvpnIpPrefixRoutes().setVni(vni);
   }
 
   /**

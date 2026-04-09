@@ -53,7 +53,7 @@ eipr_import
 
 eipr_vni
 :
-    VNI vni = dec
+    VNI vni_number
 ;
 
 e_extended_vni_list
