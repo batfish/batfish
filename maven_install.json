@@ -42,7 +42,7 @@
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": 1132363499,
-    "org.apache.commons:commons-configuration2": 1840137619,
+    "org.apache.commons:commons-configuration2": 43186260,
     "org.apache.commons:commons-lang3": -278168457,
     "org.apache.commons:commons-text": -1886494041,
     "org.apache.httpcomponents:httpclient": 1643860045,
@@ -131,7 +131,7 @@
     "com.ibm.icu:icu4j:jar:sources": 400701553,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
-    "commons-beanutils:commons-beanutils": 321236186,
+    "commons-beanutils:commons-beanutils": -882775588,
     "commons-beanutils:commons-beanutils:jar:sources": 1596942423,
     "commons-cli:commons-cli": -32742453,
     "commons-cli:commons-cli:jar:sources": -2017835649,
@@ -141,8 +141,8 @@
     "commons-collections:commons-collections:jar:sources": -1549695345,
     "commons-io:commons-io": 1539755249,
     "commons-io:commons-io:jar:sources": 614234247,
-    "commons-logging:commons-logging": -1473372610,
-    "commons-logging:commons-logging:jar:sources": -1438869648,
+    "commons-logging:commons-logging": -102005530,
+    "commons-logging:commons-logging:jar:sources": 147282524,
     "dk.brics:automaton": 2008063075,
     "dk.brics:automaton:jar:sources": 153550414,
     "info.picocli:picocli": 996750497,
@@ -187,13 +187,13 @@
     "org.antlr:antlr4:jar:sources": 160843354,
     "org.apache.commons:commons-collections4": -1078772699,
     "org.apache.commons:commons-collections4:jar:sources": 899985523,
-    "org.apache.commons:commons-configuration2": 1601510182,
-    "org.apache.commons:commons-configuration2:jar:sources": -472827268,
+    "org.apache.commons:commons-configuration2": -1750023009,
+    "org.apache.commons:commons-configuration2:jar:sources": -1458214569,
     "org.apache.commons:commons-lang3": 1841935436,
     "org.apache.commons:commons-lang3:jar:sources": -982252396,
     "org.apache.commons:commons-text": 869132518,
     "org.apache.commons:commons-text:jar:sources": 400790036,
-    "org.apache.httpcomponents:httpclient": -23384209,
+    "org.apache.httpcomponents:httpclient": -104941259,
     "org.apache.httpcomponents:httpclient:jar:sources": -779528763,
     "org.apache.httpcomponents:httpcore": 67453319,
     "org.apache.httpcomponents:httpcore:jar:sources": 2134002822,
@@ -577,10 +577,10 @@
     },
     "commons-logging:commons-logging": {
       "shasums": {
-        "jar": "6d7a744e4027649fbb50895df9497d109f98c766a637062fe8d2eabbb3140ba4",
-        "sources": "496332597187dd32e41cfd1d87e5991a3d77b51bae2cc0bbe9e51496ae54ce5c"
+        "jar": "f8ead8943401081dea0aa824b5b1ba40a0e4ed297a572a0f02258150a0b62357",
+        "sources": "6e821e03cfc64e509cc162d428af84697b6c4188eb14c0b137c75b69649976ef"
       },
-      "version": "1.3.5"
+      "version": "1.3.6"
     },
     "dk.brics:automaton": {
       "shasums": {
@@ -738,10 +738,10 @@
     },
     "org.apache.commons:commons-configuration2": {
       "shasums": {
-        "jar": "7622799663317f95c81019b32b39e0c82e42b388f00abe6e5ab26489d90d9a6b",
-        "sources": "4a1c3357e2381c0f8d4062bb8ad45c2e16f2da1428f0373c640b2760b7cbf051"
+        "jar": "b5d1700036a67eb7c9831b3e58eea46cd4e93f7707839e0d59fe950b16fed68e",
+        "sources": "028dacb2f91096e7f616d5fdb12c106e25ed4935b936eb988b99cd638a8d1036"
       },
-      "version": "2.13.0"
+      "version": "2.14.0"
     },
     "org.apache.commons:commons-lang3": {
       "shasums": {
