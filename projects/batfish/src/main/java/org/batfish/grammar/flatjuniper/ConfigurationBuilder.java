@@ -4984,9 +4984,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterE_vni_options(E_vni_optionsContext ctx) {
-    int vniId = toInt(ctx.id);
-    _currentVni = vniId;
-    _currentLogicalSystem.getVniOptions().computeIfAbsent(vniId, VniOptions::new);
+    Optional<Integer> maybeVniNumber = toInteger(ctx, ctx.vni_number());
+    if (!maybeVniNumber.isPresent()) {
+      // already warned
+      return;
+    }
+    int vni = maybeVniNumber.get();
+    _currentVni = vni;
+    _currentLogicalSystem.getVniOptions().computeIfAbsent(vni, VniOptions::new);
   }
 
   @Override

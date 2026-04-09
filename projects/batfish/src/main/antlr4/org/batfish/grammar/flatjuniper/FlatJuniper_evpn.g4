@@ -80,7 +80,7 @@ e_multicast_mode
 
 e_vni_options
 :
-    VNI_OPTIONS VNI id = dec (
+    VNI_OPTIONS VNI vni_number (
         evo_designated_forwarder_election_hold_time
         | evo_vrf_target
     )+
