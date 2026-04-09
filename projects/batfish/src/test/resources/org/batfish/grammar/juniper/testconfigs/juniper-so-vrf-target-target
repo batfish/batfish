@@ -1,5 +1,0 @@
-#
-set system host-name juniper-so-vrf-target-target
-#
-set switch-options vrf-target target:65320:7999999
-#
