@@ -1,0 +1,16 @@
+#
+set system host-name forwarding-table-export
+
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/24
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+
+set routing-options static route 192.168.0.0/24 next-hop 10.0.0.2
+set routing-options static route 192.168.1.0/24 next-hop 10.0.1.2
+
+set policy-options policy-statement FIB_FILTER term allow from route-filter 192.168.0.0/24 exact
+set policy-options policy-statement FIB_FILTER term allow then load-balance per-packet
+set policy-options policy-statement FIB_FILTER term allow then accept
+set policy-options policy-statement FIB_FILTER term deny then reject
+
+set routing-options forwarding-table export FIB_FILTER

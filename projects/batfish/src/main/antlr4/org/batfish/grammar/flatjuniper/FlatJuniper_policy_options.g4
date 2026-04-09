@@ -603,7 +603,7 @@ popst_common
    | popst_next_hop
    | popst_next_policy
    | popst_next_term
-   | popst_null
+   | popst_load_balance
    | popst_origin
    | popst_preference
    | popst_priority
@@ -796,9 +796,9 @@ popst_next_term
    NEXT TERM
 ;
 
-popst_null
+popst_load_balance
 :
-   LOAD_BALANCE null_filler
+   LOAD_BALANCE PER_PACKET
 ;
 
 popst_origin

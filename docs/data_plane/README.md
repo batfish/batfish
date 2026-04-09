@@ -635,6 +635,8 @@ fib = bf.get_fib(nodes="router1")
 - [Symbolic Engine](../symbolic_engine/README.md): BDD-based analysis using data plane
 - [Post-processing](../post_processing/README.md): Pre-processing before data plane
 - [Architecture](../architecture/README.md): Overall system architecture
+- [BGP Table-Map](table_map.md): Filtering BGP routes before main RIB installation
+- [FIB Export Policy](fib_export_policy.md): Filtering routes before FIB installation
 
 ---
 

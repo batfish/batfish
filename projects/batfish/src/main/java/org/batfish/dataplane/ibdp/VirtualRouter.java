@@ -711,7 +711,17 @@ public final class VirtualRouter {
   /** Compute the FIB from the main RIB */
   public void computeFib() {
     _fib = null; // free the old one.
-    _fib = new FibImpl(_mainRib, _resolutionRestriction);
+    String fibExportPolicyName = _vrf.getFibExportPolicy();
+    if (fibExportPolicyName == null) {
+      _fib = new FibImpl(_mainRib, _resolutionRestriction);
+    } else {
+      RoutingPolicy fibExportPolicy = _c.getRoutingPolicies().get(fibExportPolicyName);
+      _fib =
+          new FibImpl(
+              _mainRib,
+              _resolutionRestriction,
+              fibExportPolicy == null ? r -> true : fibExportPolicy::processReadOnly);
+    }
   }
 
   void initBgpAggregateRoutes() {
