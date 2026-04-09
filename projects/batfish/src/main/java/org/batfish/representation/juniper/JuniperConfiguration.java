@@ -3890,6 +3890,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .ifPresent(ip -> vrf.setSourceIpInference(UseConstantIp.create(ip)));
       }
       convertResolution(ri);
+      convertForwardingTableExport(ri);
     }
 
     // static nats
@@ -4037,6 +4038,52 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     ImmutableList.of(ReturnFalse.toStaticStatement()))))
         .build();
     _c.getVrfs().get(ri.getName()).setResolutionPolicy(policyName);
+  }
+
+  private void convertForwardingTableExport(RoutingInstance ri) {
+    String policyName = ri.getForwardingTableExportPolicy();
+    if (policyName == null) {
+      return;
+    }
+    if (!_c.getRoutingPolicies().containsKey(policyName)) {
+      return;
+    }
+    _c.getVrfs().get(ri.getName()).setFibExportPolicy(policyName);
+    warnForwardingTableExportActions(policyName);
+  }
+
+  /**
+   * Emit warnings for policy actions that have no effect in the forwarding-table export context. On
+   * Junos, only accept/reject and load-balance/source-class are meaningful; all other attribute
+   * mutations (metric, next-hop, community, etc.) are no-ops.
+   */
+  private void warnForwardingTableExportActions(String policyName) {
+    PolicyStatement ps = _masterLogicalSystem.getPolicyStatements().get(policyName);
+    if (ps == null) {
+      return;
+    }
+    for (PsTerm term : ps.getTerms().values()) {
+      warnForwardingTableExportTermActions(policyName, term);
+    }
+    warnForwardingTableExportTermActions(policyName, ps.getDefaultTerm());
+  }
+
+  private void warnForwardingTableExportTermActions(String policyName, PsTerm term) {
+    for (PsThen then : term.getThens().getAllThens()) {
+      if (then instanceof PsThenAccept
+          || then instanceof PsThenReject
+          || then instanceof PsThenDefaultActionAccept
+          || then instanceof PsThenDefaultActionReject
+          || then instanceof PsThenNextPolicy
+          || then instanceof PsThenLoadBalance) {
+        // Control flow or forwarding-table-specific actions — no warning.
+        continue;
+      }
+      _w.riskyRedFlag(
+          "forwarding-table export %s term %s: %s has no effect"
+              + " (only accept/reject affects forwarding-table export)",
+          policyName, term.getName(), then.getClass().getSimpleName());
+    }
   }
 
   private void convertFirewallFiltersToIpAccessLists() {

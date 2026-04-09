@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,10 +95,22 @@ public final class FibImpl implements Fib {
 
   public <R extends AbstractRouteDecorator> FibImpl(
       GenericRib<R> rib, ResolutionRestriction<R> restriction) {
+    this(rib, restriction, r -> true);
+  }
+
+  /**
+   * @param fibExportFilter additional predicate applied to routes before FIB installation. Routes
+   *     for which this returns {@code false} are excluded from the FIB (equivalent to {@code
+   *     nonForwarding}).
+   */
+  public <R extends AbstractRouteDecorator> FibImpl(
+      GenericRib<R> rib,
+      ResolutionRestriction<R> restriction,
+      Predicate<AbstractRoute> fibExportFilter) {
     _root = new PrefixTrieMultiMap<>();
     rib.getRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
-        .filter(r -> !r.getNonForwarding())
+        .filter(r -> !r.getNonForwarding() && fibExportFilter.test(r))
         .forEach(r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction)));
     initSuppliers();
   }

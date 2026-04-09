@@ -486,4 +486,33 @@ public final class FibImplTest {
     Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
     assertThat(fibRoutesEth2, contains(restrictionViolatingRoute));
   }
+
+  @Test
+  public void testFibExportFilter() {
+    Rib rib = new Rib();
+
+    StaticRoute allowedRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute deniedRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(annotateRoute(allowedRoute));
+    rib.mergeRoute(annotateRoute(deniedRoute));
+
+    // FIB export filter that only permits 1.1.1.0/24
+    Fib fib =
+        new FibImpl(rib, alwaysTrue(), r -> r.getNetwork().equals(Prefix.parse("1.1.1.0/24")));
+
+    Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
+    assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("1.1.1.0/24"))));
+    assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("2.2.2.0/24")))));
+  }
 }

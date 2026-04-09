@@ -97,6 +97,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
+  private static final String PROP_FIB_EXPORT_POLICY = "fibExportPolicy";
   private static final String PROP_RESOLUTION_POLICY = "resolutionPolicy";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
@@ -114,6 +115,7 @@ public class Vrf extends ComparableStructure<String> {
   private BgpProcess _bgpProcess;
   private String _description;
   private FirewallSessionVrfInfo _firewallSessionVrfInfo;
+  private @Nullable String _fibExportPolicy;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
   private IsisProcess _isisProcess;
@@ -363,6 +365,21 @@ public class Vrf extends ComparableStructure<String> {
             .putAll(_ospfProcesses)
             .put(ospfProcess.getProcessId(), ospfProcess)
             .build();
+  }
+
+  /**
+   * Name of a {@link org.batfish.datamodel.routing_policy.RoutingPolicy} applied to routes exported
+   * from the main RIB into the FIB. Denied routes remain in the RIB but are not used for forwarding
+   * ({@code nonForwarding=true}).
+   */
+  @JsonProperty(PROP_FIB_EXPORT_POLICY)
+  public @Nullable String getFibExportPolicy() {
+    return _fibExportPolicy;
+  }
+
+  @JsonProperty(PROP_FIB_EXPORT_POLICY)
+  public void setFibExportPolicy(@Nullable String fibExportPolicy) {
+    _fibExportPolicy = fibExportPolicy;
   }
 
   @JsonProperty(PROP_RESOLUTION_POLICY)

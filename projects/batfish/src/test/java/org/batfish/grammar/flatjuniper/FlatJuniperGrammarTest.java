@@ -281,6 +281,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
@@ -488,6 +489,7 @@ import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
@@ -10175,6 +10177,47 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         vc.getWarnings().getParseWarnings(),
         hasItem(hasComment("This feature is not currently supported")));
+  }
+
+  @Test
+  public void testForwardingTableExport_extraction() {
+    JuniperConfiguration jc = parseJuniperConfig("forwarding-table-export");
+    // Policy is stored on the routing instance
+    assertThat(
+        jc.getMasterLogicalSystem().getDefaultRoutingInstance().getForwardingTableExportPolicy(),
+        equalTo("FIB_FILTER"));
+    // The "allow" term has load-balance per-packet and accept
+    PolicyStatement ps = jc.getMasterLogicalSystem().getPolicyStatements().get("FIB_FILTER");
+    assertThat(ps.getTerms(), hasKey("allow"));
+    assertThat(
+        ps.getTerms().get("allow").getThens().getAllThens(),
+        hasItem(instanceOf(PsThenLoadBalance.class)));
+  }
+
+  @Test
+  public void testForwardingTableExport_conversion() {
+    Configuration c = parseConfig("forwarding-table-export");
+    // The forwarding-table export policy should be wired to the VRF's fibExportPolicy
+    assertThat(c.getDefaultVrf().getFibExportPolicy(), equalTo("FIB_FILTER"));
+  }
+
+  @Test
+  public void testForwardingTableExport_dataPlane() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export");
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Both routes should be in the RIB
+    Set<AbstractRoute> routes =
+        dp.getRibs().get("forwarding-table-export", DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.0.0/24"))));
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.1.0/24"))));
+
+    // Only 192.168.0.0/24 should be in the FIB (permitted by the policy);
+    // 192.168.1.0/24 should be rejected by the policy and excluded from FIB.
+    Fib fib = dp.getFibs().get("forwarding-table-export").get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
+    assertThat(fib.get(Ip.parse("192.168.1.1")), empty());
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

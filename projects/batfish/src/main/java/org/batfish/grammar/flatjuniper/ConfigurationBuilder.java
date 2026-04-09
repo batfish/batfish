@@ -649,6 +649,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_load_balanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_multipath_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
@@ -1166,6 +1167,7 @@ import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenExternal;
+import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
@@ -6715,6 +6717,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopst_load_balance(Popst_load_balanceContext ctx) {
+    addPsThen(PsThenLoadBalance.INSTANCE, ctx);
+  }
+
+  @Override
   public void exitPopst_multipath_resolve(Popst_multipath_resolveContext ctx) {
     todo(ctx);
   }
@@ -7008,7 +7015,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         .getDefaultRoutingInstance()
         .setForwardingTableExportPolicy(
             toComplexPolicyStatement(ctx.expr, FORWARDING_TABLE_EXPORT_POLICY));
-    todo(ctx);
   }
 
   @Override

@@ -11,6 +11,10 @@ into the main RIB. This controls which BGP routes are used for forwarding.
   vendor, the router may also modify route attributes (e.g., metric,
   next-hop) before installation; Batfish does not yet model this.
 
+Table-map uses the `nonRouting` flag to exclude denied routes from the main
+RIB. See also [FIB export policy](fib_export_policy.md), which filters at
+the RIB-to-FIB boundary using `nonForwarding`.
+
 ### Vendor Support
 
 | Vendor | Syntax | Status in Batfish |
@@ -18,27 +22,11 @@ into the main RIB. This controls which BGP routes are used for forwarding.
 | FRR | `table-map <route-map>` | Implemented (deny/permit) |
 | Cisco NX-OS | `table-map <route-map> [filter]` | Parsed, not converted |
 | Cisco IOS/IOS-XR | `table-map <route-map>` | Recognized, ignored |
-| Juniper | No direct equivalent | N/A |
 
 ### Vendor-Independent Model
 
 The VI model field is `BgpProcess.tableMapPolicy` — the name of a
 `RoutingPolicy` to evaluate on each BGP route during the unstage step.
-
-### Relation to `nonRouting` and `nonForwarding`
-
-Batfish has two independent flags for controlling route installation:
-
-- **`nonRouting`**: Route is excluded from the main RIB entirely. Used by
-  table-map deny, redistributed routes (to prevent re-export), and protocol
-  computation internals.
-- **`nonForwarding`**: Route is in the main RIB but excluded from the FIB
-  (not used for longest-prefix-match forwarding). Used by Juniper
-  `no-install` on static routes.
-
-Table-map uses `nonRouting`. There is no interference with the resolvability
-enforcer: `nonRouting` is checked first as the outermost gate in
-`Rib.mergeRouteGetDelta()`, before any resolvability logic runs.
 
 ### Data Plane
 
