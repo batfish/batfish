@@ -6,8 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.matchers.AclLineMatchersImpl.HasTraceElement;
-import org.batfish.datamodel.matchers.AclLineMatchersImpl.IsExprAclLineThat;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class AclLineMatchers {
@@ -26,4 +25,21 @@ public final class AclLineMatchers {
   }
 
   private AclLineMatchers() {}
+
+  private static final class IsExprAclLineThat extends IsInstanceThat<AclLine, ExprAclLine> {
+    IsExprAclLineThat(Matcher<? super ExprAclLine> subMatcher) {
+      super(ExprAclLine.class, subMatcher);
+    }
+  }
+
+  private static final class HasTraceElement extends FeatureMatcher<AclLine, TraceElement> {
+    public HasTraceElement(Matcher<? super TraceElement> subMatcher) {
+      super(subMatcher, "an AclLine with traceElement: ", "traceElement");
+    }
+
+    @Override
+    protected TraceElement featureValueOf(AclLine aclLine) {
+      return aclLine.getTraceElement();
+    }
+  }
 }

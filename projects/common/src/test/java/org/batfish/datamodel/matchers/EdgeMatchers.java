@@ -6,10 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasHead;
-import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasNode1;
-import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasNode2;
-import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasTail;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link Edge}. */
@@ -73,4 +70,52 @@ public final class EdgeMatchers {
   }
 
   private EdgeMatchers() {}
+
+  private static final class HasHead extends FeatureMatcher<Edge, NodeInterfacePair> {
+
+    public HasHead(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "An Edge with head:", "head");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Edge actual) {
+      return actual.getHead();
+    }
+  }
+
+  private static final class HasNode1 extends FeatureMatcher<Edge, String> {
+
+    public HasNode1(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Edge with node1:", "node1");
+    }
+
+    @Override
+    protected String featureValueOf(Edge actual) {
+      return actual.getNode1();
+    }
+  }
+
+  private static final class HasNode2 extends FeatureMatcher<Edge, String> {
+
+    public HasNode2(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Edge with node2:", "node1");
+    }
+
+    @Override
+    protected String featureValueOf(Edge actual) {
+      return actual.getNode2();
+    }
+  }
+
+  private static final class HasTail extends FeatureMatcher<Edge, NodeInterfacePair> {
+
+    public HasTail(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "An Edge with tail:", "tail");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Edge actual) {
+      return actual.getTail();
+    }
+  }
 }

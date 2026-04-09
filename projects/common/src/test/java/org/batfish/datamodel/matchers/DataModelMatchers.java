@@ -26,17 +26,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
-import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterLists;
-import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
-import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
-import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
-import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
-import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
-import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
-import org.batfish.datamodel.matchers.ParseVendorConfigurationAnswerElementMatchers.HasParseWarning;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -54,8 +43,8 @@ public final class DataModelMatchers {
   }
 
   /** Provides a matcher that matches if the RouteFilterList permits the given {@code prefix}. */
-  public static RouteFilterListMatchersImpl.Permits permits(@Nonnull Prefix prefix) {
-    return new RouteFilterListMatchersImpl.Permits(prefix);
+  public static Matcher<RouteFilterList> permits(@Nonnull Prefix prefix) {
+    return RouteFilterListMatchers.permits(prefix);
   }
 
   /**
@@ -73,7 +62,7 @@ public final class DataModelMatchers {
    */
   public static Matcher<Configuration> hasZone(
       @Nonnull String name, @Nonnull Matcher<? super Zone> subMatcher) {
-    return new HasZone(name, subMatcher);
+    return ConfigurationMatchers.hasZone(name, subMatcher);
   }
 
   /**
@@ -82,7 +71,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasIncomingFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {
-    return new InterfaceMatchersImpl.HasIncomingFilter(subMatcher);
+    return InterfaceMatchers.hasIncomingFilter(subMatcher);
   }
 
   /**
@@ -91,7 +80,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasOutgoingOriginalFlowFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {
-    return new InterfaceMatchersImpl.HasOutgoingOriginalFlowFilter(subMatcher);
+    return InterfaceMatchers.hasOutgoingOriginalFlowFilter(subMatcher);
   }
 
   /**
@@ -100,7 +89,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {
-    return new InterfaceMatchersImpl.HasOutgoingFilter(subMatcher);
+    return InterfaceMatchers.hasOutgoingFilter(subMatcher);
   }
 
   /**
@@ -126,7 +115,7 @@ public final class DataModelMatchers {
    */
   public static Matcher<ParseVendorConfigurationAnswerElement> hasParseWarning(
       @Nonnull String filename, @Nonnull Matcher<? super String> subMatcher) {
-    return new HasParseWarning(filename, subMatcher);
+    return new ParseVendorConfigurationAnswerElementMatchers.HasParseWarning(filename, subMatcher);
   }
 
   /**
@@ -135,7 +124,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasPostTransformationIncomingFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {
-    return new InterfaceMatchersImpl.HasPostTransformationIncomingFilter(subMatcher);
+    return InterfaceMatchers.hasPostTransformationIncomingFilter(subMatcher);
   }
 
   /**
@@ -144,7 +133,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasPreTransformationOutgoingFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {
-    return new InterfaceMatchersImpl.HasPreTransformationOutgoingFilter(subMatcher);
+    return InterfaceMatchers.hasPreTransformationOutgoingFilter(subMatcher);
   }
 
   /**
@@ -153,7 +142,7 @@ public final class DataModelMatchers {
    */
   public static Matcher<Configuration> hasRouteFilterList(
       @Nonnull String name, @Nonnull Matcher<? super RouteFilterList> subMatcher) {
-    return new HasRouteFilterList(name, subMatcher);
+    return ConfigurationMatchers.hasRouteFilterList(name, subMatcher);
   }
 
   /**
@@ -162,7 +151,7 @@ public final class DataModelMatchers {
    */
   public static Matcher<Configuration> hasRouteFilterLists(
       @Nonnull Matcher<? super Map<String, RouteFilterList>> subMatcher) {
-    return new HasRouteFilterLists(subMatcher);
+    return ConfigurationMatchers.hasRouteFilterLists(subMatcher);
   }
 
   /**
@@ -171,7 +160,7 @@ public final class DataModelMatchers {
    */
   public static Matcher<ConvertConfigurationAnswerElement> hasRedFlagWarning(
       @Nonnull String hostname, @Nonnull Matcher<? super String> subMatcher) {
-    return new HasRedFlagWarning(hostname, subMatcher);
+    return new ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning(hostname, subMatcher);
   }
 
   /**
@@ -179,7 +168,7 @@ public final class DataModelMatchers {
    * the {@link OspfProcess}'s reference-bandwidth.
    */
   public static Matcher<OspfProcess> hasReferenceBandwidth(double expectedReferenceBandwidth) {
-    return new HasReferenceBandwidth(equalTo(expectedReferenceBandwidth));
+    return OspfProcessMatchers.hasReferenceBandwidth(equalTo(expectedReferenceBandwidth));
   }
 
   /**
@@ -188,7 +177,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<HeaderSpace> hasSrcOrDstPorts(
       @Nonnull Matcher<? super SortedSet<SubRange>> subMatcher) {
-    return new HasSrcOrDstPorts(subMatcher);
+    return HeaderSpaceMatchers.hasSrcOrDstPorts(subMatcher);
   }
 
   /**
@@ -205,7 +194,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<HeaderSpace> hasIpProtocols(
       @Nonnull Matcher<? super SortedSet<IpProtocol>> subMatcher) {
-    return new HeaderSpaceMatchersImpl.HasIpProtocols(subMatcher);
+    return HeaderSpaceMatchers.hasIpProtocols(subMatcher);
   }
 
   /**
@@ -221,7 +210,7 @@ public final class DataModelMatchers {
    * Interface}'s bandwidth.
    */
   public static @Nonnull Matcher<Interface> hasBandwidth(Matcher<? super Double> subMatcher) {
-    return new HasBandwidth(subMatcher);
+    return InterfaceMatchers.hasBandwidth(subMatcher);
   }
 
   /**
@@ -264,7 +253,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Vrf> hasEigrpProcesses(
       @Nonnull Matcher<? super Map<Long, EigrpProcess>> subMatcher) {
-    return new HasEigrpProcesses(subMatcher);
+    return VrfMatchers.hasEigrpProcesses(subMatcher);
   }
 
   /**
@@ -273,7 +262,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Vrf> hasIsisProcess(
       @Nonnull Matcher<? super IsisProcess> subMatcher) {
-    return new HasIsisProcess(subMatcher);
+    return VrfMatchers.hasIsisProcess(subMatcher);
   }
 
   /**
@@ -367,7 +356,8 @@ public final class DataModelMatchers {
       @Nonnull StructureType type,
       @Nonnull String structureName,
       int numReferrers) {
-    return new HasNumReferrers(filename, type, structureName, numReferrers);
+    return new ConvertConfigurationAnswerElementMatchers.HasNumReferrers(
+        filename, type, structureName, numReferrers);
   }
 
   /**

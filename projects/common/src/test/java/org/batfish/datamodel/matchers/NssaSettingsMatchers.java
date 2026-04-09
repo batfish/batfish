@@ -3,11 +3,9 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.matchers.NssaSettingsMatchersImpl.HasDefaultOriginateType;
-import org.batfish.datamodel.matchers.NssaSettingsMatchersImpl.HasSuppressType3;
-import org.batfish.datamodel.matchers.NssaSettingsMatchersImpl.HasSuppressType7;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class NssaSettingsMatchers {
@@ -64,4 +62,38 @@ public final class NssaSettingsMatchers {
   }
 
   private NssaSettingsMatchers() {}
+
+  private static final class HasDefaultOriginateType
+      extends FeatureMatcher<NssaSettings, OspfDefaultOriginateType> {
+    HasDefaultOriginateType(@Nonnull Matcher<? super OspfDefaultOriginateType> subMatcher) {
+      super(subMatcher, "An NssaSettings with defaultOriginateType:", "defaultOriginateType");
+    }
+
+    @Override
+    protected OspfDefaultOriginateType featureValueOf(NssaSettings actual) {
+      return actual.getDefaultOriginateType();
+    }
+  }
+
+  private static final class HasSuppressType3 extends FeatureMatcher<NssaSettings, Boolean> {
+    HasSuppressType3(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An NssaSettings with suppressType3:", "suppressType3");
+    }
+
+    @Override
+    protected Boolean featureValueOf(NssaSettings actual) {
+      return actual.getSuppressType3();
+    }
+  }
+
+  private static final class HasSuppressType7 extends FeatureMatcher<NssaSettings, Boolean> {
+    HasSuppressType7(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An NssaSettings with suppressType7:", "suppressType7");
+    }
+
+    @Override
+    protected Boolean featureValueOf(NssaSettings actual) {
+      return actual.getSuppressType7();
+    }
+  }
 }

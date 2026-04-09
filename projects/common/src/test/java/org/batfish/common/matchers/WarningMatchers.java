@@ -2,10 +2,11 @@ package org.batfish.common.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warning;
-import org.batfish.common.matchers.WarningMatchersImpl.HasTag;
-import org.batfish.common.matchers.WarningMatchersImpl.HasText;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Warning}. */
@@ -39,4 +40,26 @@ public class WarningMatchers {
   }
 
   private WarningMatchers() {}
+
+  private static final class HasTag extends FeatureMatcher<Warning, String> {
+    HasTag(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "a Warning with tag:", "tag");
+    }
+
+    @Override
+    protected @Nullable String featureValueOf(Warning actual) {
+      return actual.getTag();
+    }
+  }
+
+  private static final class HasText extends FeatureMatcher<Warning, String> {
+    HasText(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "a Warning with text:", "text");
+    }
+
+    @Override
+    protected String featureValueOf(Warning actual) {
+      return actual.getText();
+    }
+  }
 }

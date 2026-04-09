@@ -6,10 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
-import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasAllowLocalAsIn;
-import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasAllowRemoteAsOut;
-import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasSendCommunity;
-import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasSendExtendedCommunity;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link AddressFamilyCapabilities} */
@@ -51,4 +48,55 @@ public final class AddressFamilyCapabilitiesMatchers {
   }
 
   private AddressFamilyCapabilitiesMatchers() {}
+
+  private static final class HasAllowLocalAsIn
+      extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
+    HasAllowLocalAsIn(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AddressFamilyCapabilities with allowLocalAsIn:", "allowLocalAsIn");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamilyCapabilities actual) {
+      return actual.getAllowLocalAsIn();
+    }
+  }
+
+  private static final class HasAllowRemoteAsOut
+      extends FeatureMatcher<AddressFamilyCapabilities, AllowRemoteAsOutMode> {
+    HasAllowRemoteAsOut(@Nonnull Matcher<? super AllowRemoteAsOutMode> subMatcher) {
+      super(subMatcher, "An AddressFamilyCapabilities with allowRemoteAsOut:", "allowRemoteAsOut");
+    }
+
+    @Override
+    protected AllowRemoteAsOutMode featureValueOf(AddressFamilyCapabilities actual) {
+      return actual.getAllowRemoteAsOut();
+    }
+  }
+
+  private static final class HasSendCommunity
+      extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
+    HasSendCommunity(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AddressFamilyCapabilities with sendCommunity:", "sendCommunity");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamilyCapabilities actual) {
+      return actual.getSendCommunity();
+    }
+  }
+
+  private static final class HasSendExtendedCommunity
+      extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
+    HasSendExtendedCommunity(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(
+          subMatcher,
+          "An AddressFamilyCapabilities with sendExtendedCommunity:",
+          "sendExtendedCommunity");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamilyCapabilities actual) {
+      return actual.getSendExtendedCommunity();
+    }
+  }
 }

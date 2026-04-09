@@ -1,17 +1,22 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.Step;
-import org.batfish.datamodel.matchers.HopMatchersImpl.HasAcceptingInterface;
-import org.batfish.datamodel.matchers.HopMatchersImpl.HasEnterInputInterface;
-import org.batfish.datamodel.matchers.HopMatchersImpl.HasExitOutputInterface;
-import org.batfish.datamodel.matchers.HopMatchersImpl.HasNodeName;
-import org.batfish.datamodel.matchers.HopMatchersImpl.HasSteps;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Hop}. */
@@ -24,25 +29,98 @@ public final class HopMatchers {
     return new HasAcceptingInterface(is(iface));
   }
 
-  public static HasEnterInputInterface hasInputInterface(NodeInterfacePair iface) {
+  public static Matcher<Hop> hasInputInterface(NodeInterfacePair iface) {
     return new HasEnterInputInterface(is(iface));
   }
 
-  public static HasEnterInputInterface hasInputInterface(
-      Matcher<? super NodeInterfacePair> subMatcher) {
+  public static Matcher<Hop> hasInputInterface(Matcher<? super NodeInterfacePair> subMatcher) {
     return new HasEnterInputInterface(subMatcher);
   }
 
-  public static HasExitOutputInterface hasOutputInterface(NodeInterfacePair iface) {
+  public static Matcher<Hop> hasOutputInterface(NodeInterfacePair iface) {
     return new HasExitOutputInterface(is(iface));
   }
 
-  public static HasExitOutputInterface hasOutputInterface(
-      Matcher<? super NodeInterfacePair> subMatcher) {
+  public static Matcher<Hop> hasOutputInterface(Matcher<? super NodeInterfacePair> subMatcher) {
     return new HasExitOutputInterface(subMatcher);
   }
 
-  public static HasSteps hasSteps(Matcher<? super List<? extends Step<?>>> subMatcher) {
+  public static Matcher<Hop> hasSteps(Matcher<? super List<? extends Step<?>>> subMatcher) {
     return new HasSteps(subMatcher);
+  }
+
+  private static final class HasNodeName extends FeatureMatcher<Hop, String> {
+    HasNodeName(Matcher<? super String> subMatcher) {
+      super(subMatcher, "a Hop with node name:", "node name");
+    }
+
+    @Override
+    protected String featureValueOf(Hop hop) {
+      return hop.getNode().getName();
+    }
+  }
+
+  private static final class HasAcceptingInterface extends FeatureMatcher<Hop, NodeInterfacePair> {
+    HasAcceptingInterface(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "a Hop with accepting interface:", "accepting interface");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Hop hop) {
+      List<Step<?>> steps =
+          hop.getSteps().stream()
+              .filter(step -> step instanceof InboundStep)
+              .collect(ImmutableList.toImmutableList());
+      assertThat(steps, hasSize(1));
+
+      InboundStep lastStep = (InboundStep) steps.get(0);
+      return NodeInterfacePair.of(hop.getNode().getName(), lastStep.getDetail().getInterface());
+    }
+  }
+
+  private static final class HasEnterInputInterface extends FeatureMatcher<Hop, NodeInterfacePair> {
+    HasEnterInputInterface(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "a Hop with input interface:", "input interface");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Hop hop) {
+      List<Step<?>> steps = hop.getSteps();
+      assertThat(steps, not(empty()));
+      Step<?> firstStep = steps.get(0);
+      assertThat(firstStep, instanceOf(EnterInputIfaceStep.class));
+      return ((EnterInputIfaceStep) firstStep).getDetail().getInputInterface();
+    }
+  }
+
+  private static final class HasExitOutputInterface extends FeatureMatcher<Hop, NodeInterfacePair> {
+    HasExitOutputInterface(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "a Hop with output interface:", "output interface");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Hop hop) {
+      List<Step<?>> steps =
+          hop.getSteps().stream()
+              .filter(step -> step instanceof ExitOutputIfaceStep)
+              .collect(ImmutableList.toImmutableList());
+
+      assertThat(steps, hasSize(1));
+
+      ExitOutputIfaceStep lastStep = (ExitOutputIfaceStep) steps.get(0);
+
+      return lastStep.getDetail().getOutputInterface();
+    }
+  }
+
+  private static final class HasSteps extends FeatureMatcher<Hop, List<Step<?>>> {
+    HasSteps(Matcher<? super List<Step<?>>> subMatcher) {
+      super(subMatcher, "a Hop with steps:", "steps");
+    }
+
+    @Override
+    protected List<Step<?>> featureValueOf(Hop hop) {
+      return hop.getSteps();
+    }
   }
 }

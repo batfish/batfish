@@ -10,14 +10,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasDescription;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEvpnAddressFamily;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasIpv4UnicastAddressFamily;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalIp;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link BgpPeerConfig} */
@@ -74,7 +67,7 @@ public class BgpNeighborMatchers {
   }
 
   /** Provides a matcher that matches if the BGP neighbor has the specified localAs. */
-  public static HasLocalAs hasLocalAs(Long localAs) {
+  public static Matcher<BgpPeerConfig> hasLocalAs(Long localAs) {
     return new HasLocalAs(equalTo(localAs));
   }
 
@@ -82,7 +75,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP neighbor's
    * localAs.
    */
-  public static HasLocalAs hasLocalAs(Matcher<? super Long> subMatcher) {
+  public static Matcher<BgpPeerConfig> hasLocalAs(Matcher<? super Long> subMatcher) {
     return new HasLocalAs(subMatcher);
   }
 
@@ -90,7 +83,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the BGP neighbor's value of {@code enforceFirstAs} matches
    * {@code subMatcher}
    */
-  public static HasEnforceFirstAs hasEnforceFirstAs(Matcher<? super Boolean> subMatcher) {
+  public static Matcher<BgpPeerConfig> hasEnforceFirstAs(Matcher<? super Boolean> subMatcher) {
     return new HasEnforceFirstAs(subMatcher);
   }
 
@@ -98,7 +91,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the BGP neighbor's value of {@code enforceFirstAs} is {@code
    * true}.
    */
-  public static HasEnforceFirstAs hasEnforceFirstAs() {
+  public static Matcher<BgpPeerConfig> hasEnforceFirstAs() {
     return new HasEnforceFirstAs(equalTo(true));
   }
 
@@ -124,5 +117,96 @@ public class BgpNeighborMatchers {
    */
   public static Matcher<BgpPeerConfig> hasRemoteAs(Matcher<? super LongSpace> subMatcher) {
     return new HasRemoteAs(subMatcher);
+  }
+
+  private static final class HasClusterId extends FeatureMatcher<BgpPeerConfig, Long> {
+    HasClusterId(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with clusterId:", "clusterId");
+    }
+
+    @Override
+    protected Long featureValueOf(BgpPeerConfig actual) {
+      return actual.getClusterId();
+    }
+  }
+
+  private static final class HasDescription extends FeatureMatcher<BgpPeerConfig, String> {
+    HasDescription(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with description:", "description");
+    }
+
+    @Override
+    protected String featureValueOf(BgpPeerConfig actual) {
+      return actual.getDescription();
+    }
+  }
+
+  private static final class HasIpv4UnicastAddressFamily
+      extends FeatureMatcher<BgpPeerConfig, Ipv4UnicastAddressFamily> {
+    HasIpv4UnicastAddressFamily(@Nonnull Matcher<? super Ipv4UnicastAddressFamily> subMatcher) {
+      super(
+          subMatcher, "A BgpPeerConfig with ipv4UnicastAddressFamily:", "ipv4UnicastAddressFamily");
+    }
+
+    @Override
+    protected Ipv4UnicastAddressFamily featureValueOf(BgpPeerConfig actual) {
+      return actual.getIpv4UnicastAddressFamily();
+    }
+  }
+
+  private static final class HasEvpnAddressFamily
+      extends FeatureMatcher<BgpPeerConfig, EvpnAddressFamily> {
+    HasEvpnAddressFamily(@Nonnull Matcher<? super EvpnAddressFamily> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with evpnAddressFamily:", "evpnAddressFamily");
+    }
+
+    @Override
+    protected EvpnAddressFamily featureValueOf(BgpPeerConfig actual) {
+      return actual.getEvpnAddressFamily();
+    }
+  }
+
+  private static final class HasLocalAs extends FeatureMatcher<BgpPeerConfig, Long> {
+    HasLocalAs(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with localAs:", "localAs");
+    }
+
+    @Override
+    protected Long featureValueOf(BgpPeerConfig actual) {
+      return actual.getLocalAs();
+    }
+  }
+
+  private static final class HasLocalIp extends FeatureMatcher<BgpPeerConfig, Ip> {
+    HasLocalIp(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with localIp:", "localIp");
+    }
+
+    @Override
+    protected Ip featureValueOf(BgpPeerConfig actual) {
+      return actual.getLocalIp();
+    }
+  }
+
+  private static final class HasEnforceFirstAs extends FeatureMatcher<BgpPeerConfig, Boolean> {
+    HasEnforceFirstAs(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with enforce-first-as:", "enforce-first-as");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpPeerConfig actual) {
+      return actual.getEnforceFirstAs();
+    }
+  }
+
+  private static final class HasRemoteAs extends FeatureMatcher<BgpPeerConfig, LongSpace> {
+    HasRemoteAs(@Nonnull Matcher<? super LongSpace> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
+    }
+
+    @Override
+    protected LongSpace featureValueOf(BgpPeerConfig actual) {
+      return actual.getRemoteAsns();
+    }
   }
 }

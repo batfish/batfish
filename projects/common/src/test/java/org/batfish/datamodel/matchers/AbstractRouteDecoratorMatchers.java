@@ -7,17 +7,8 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasAdministrativeCost;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasMetric;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHop;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHopInterface;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHopIp;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasPrefix;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasProtocol;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasTag;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonForwarding;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonRouting;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteDecoratorMatchers {
@@ -26,7 +17,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s administrative cost
    * is {@code expectedAdministrativeCost}.
    */
-  public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasAdministrativeCost(
       long expectedAdministrativeCost) {
     return new HasAdministrativeCost(equalTo(expectedAdministrativeCost));
   }
@@ -35,7 +26,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s administrative cost.
    */
-  public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasAdministrativeCost(
       @Nonnull Matcher<? super Long> subMatcher) {
     return new HasAdministrativeCost(subMatcher);
   }
@@ -44,7 +35,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@code expectedMetric} is equal to the {@link
    * AbstractRouteDecorator}'s metric.
    */
-  public static @Nonnull HasMetric hasMetric(Long expectedMetric) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasMetric(Long expectedMetric) {
     return new HasMetric(equalTo(expectedMetric));
   }
 
@@ -52,7 +43,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s metric.
    */
-  public static @Nonnull HasMetric hasMetric(@Nonnull Matcher<? super Long> subMatcher) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasMetric(
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasMetric(subMatcher);
   }
 
@@ -60,7 +52,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s nextHop is {@code
    * expectedNextHop}.
    */
-  public static @Nonnull HasNextHop hasNextHop(@Nonnull NextHop expectedNextHop) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHop(
+      @Nonnull NextHop expectedNextHop) {
     return new HasNextHop(equalTo(expectedNextHop));
   }
 
@@ -68,7 +61,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s nextHop.
    */
-  public static @Nonnull HasNextHop hasNextHop(@Nonnull Matcher<? super NextHop> subMatcher) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHop(
+      @Nonnull Matcher<? super NextHop> subMatcher) {
     return new HasNextHop(subMatcher);
   }
 
@@ -76,7 +70,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the route's nextHopInterface is {@code
    * expectedNextHopInterface}.
    */
-  public static @Nonnull HasNextHopInterface hasNextHopInterface(
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopInterface(
       @Nonnull String expectedNextHopInterface) {
     return new HasNextHopInterface(equalTo(expectedNextHopInterface));
   }
@@ -85,7 +79,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s nextHopInterface.
    */
-  public static @Nonnull HasNextHopInterface hasNextHopInterface(
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopInterface(
       @Nonnull Matcher<? super String> subMatcher) {
     return new HasNextHopInterface(subMatcher);
   }
@@ -94,7 +88,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s nextHopIp is {@code
    * expectedNextHopIp}.
    */
-  public static @Nonnull HasNextHopIp hasNextHopIp(@Nonnull Ip expectedNextHopIp) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopIp(
+      @Nonnull Ip expectedNextHopIp) {
     return new HasNextHopIp(equalTo(expectedNextHopIp));
   }
 
@@ -102,7 +97,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s nextHopIp.
    */
-  public static @Nonnull HasNextHopIp hasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopIp(
+      @Nonnull Matcher<? super Ip> subMatcher) {
     return new HasNextHopIp(subMatcher);
   }
 
@@ -110,7 +106,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s prefix.
    */
-  public static @Nonnull HasPrefix hasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasPrefix(
+      @Nonnull Matcher<? super Prefix> subMatcher) {
     return new HasPrefix(subMatcher);
   }
 
@@ -118,7 +115,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@code expectedPrefix} is equal to the {@link
    * AbstractRouteDecorator}'s prefix.
    */
-  public static @Nonnull HasPrefix hasPrefix(Prefix expectedPrefix) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasPrefix(Prefix expectedPrefix) {
     return new HasPrefix(equalTo(expectedPrefix));
   }
 
@@ -126,7 +123,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s protocol.
    */
-  public static HasProtocol hasProtocol(@Nonnull Matcher<? super RoutingProtocol> subMatcher) {
+  public static Matcher<AbstractRouteDecorator> hasProtocol(
+      @Nonnull Matcher<? super RoutingProtocol> subMatcher) {
     return new HasProtocol(subMatcher);
   }
 
@@ -134,7 +132,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@code expectedProtocol} is equal to the {@link
    * AbstractRouteDecorator}'s protocol.
    */
-  public static HasProtocol hasProtocol(RoutingProtocol expectedProtocol) {
+  public static Matcher<AbstractRouteDecorator> hasProtocol(RoutingProtocol expectedProtocol) {
     return new HasProtocol(equalTo(expectedProtocol));
   }
 
@@ -142,7 +140,7 @@ public final class AbstractRouteDecoratorMatchers {
    * A {@link Matcher} that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s tag.
    */
-  public static @Nonnull HasTag hasTag(Matcher<? super Long> subMatcher) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasTag(Matcher<? super Long> subMatcher) {
     return new HasTag(subMatcher);
   }
 
@@ -150,7 +148,7 @@ public final class AbstractRouteDecoratorMatchers {
    * A {@link Matcher} that matches if the {@link AbstractRouteDecorator}'s tag is {@code
    * expectedTag}.
    */
-  public static @Nonnull HasTag hasTag(long expectedTag) {
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasTag(long expectedTag) {
     return hasTag(equalTo(expectedTag));
   }
 
@@ -158,7 +156,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code nonForwarding} is equal to the {@link
    * AbstractRouteDecorator}'s nonForwarding.
    */
-  public static IsNonForwarding isNonForwarding(boolean nonForwarding) {
+  public static Matcher<AbstractRouteDecorator> isNonForwarding(boolean nonForwarding) {
     return new IsNonForwarding(equalTo(nonForwarding));
   }
 
@@ -166,9 +164,123 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code nonRouting} is equal to the {@link
    * AbstractRouteDecorator}'s nonRouting.
    */
-  public static IsNonRouting isNonRouting(boolean nonRouting) {
+  public static Matcher<AbstractRouteDecorator> isNonRouting(boolean nonRouting) {
     return new IsNonRouting(equalTo(nonRouting));
   }
 
   private AbstractRouteDecoratorMatchers() {}
+
+  private static final class HasAdministrativeCost
+      extends FeatureMatcher<AbstractRouteDecorator, Long> {
+    HasAdministrativeCost(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with administrativeCost:", "administrativeCost");
+    }
+
+    @Override
+    protected Long featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getAdministrativeCost();
+    }
+  }
+
+  private static final class HasMetric extends FeatureMatcher<AbstractRouteDecorator, Long> {
+    HasMetric(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with metric:", "metric");
+    }
+
+    @Override
+    protected Long featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getMetric();
+    }
+  }
+
+  private static final class HasNextHop extends FeatureMatcher<AbstractRouteDecorator, NextHop> {
+    HasNextHop(@Nonnull Matcher<? super NextHop> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nextHop:", "nextHop");
+    }
+
+    @Override
+    protected NextHop featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNextHop();
+    }
+  }
+
+  private static final class HasNextHopInterface
+      extends FeatureMatcher<AbstractRouteDecorator, String> {
+    HasNextHopInterface(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nextHopInterface:", "nextHopInterface");
+    }
+
+    @Override
+    protected String featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNextHopInterface();
+    }
+  }
+
+  private static final class HasNextHopIp extends FeatureMatcher<AbstractRouteDecorator, Ip> {
+    HasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nextHopIp:", "nextHopIp");
+    }
+
+    @Override
+    protected Ip featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNextHopIp();
+    }
+  }
+
+  private static final class HasPrefix extends FeatureMatcher<AbstractRouteDecorator, Prefix> {
+    HasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with network:", "network");
+    }
+
+    @Override
+    protected Prefix featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getNetwork();
+    }
+  }
+
+  private static final class HasProtocol
+      extends FeatureMatcher<AbstractRouteDecorator, RoutingProtocol> {
+    HasProtocol(@Nonnull Matcher<? super RoutingProtocol> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with protocol:", "protocol");
+    }
+
+    @Override
+    protected RoutingProtocol featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getProtocol();
+    }
+  }
+
+  private static final class HasTag extends FeatureMatcher<AbstractRouteDecorator, Long> {
+    HasTag(Matcher<? super Long> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with tag", "tag");
+    }
+
+    @Override
+    protected Long featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getTag();
+    }
+  }
+
+  private static final class IsNonForwarding
+      extends FeatureMatcher<AbstractRouteDecorator, Boolean> {
+    IsNonForwarding(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nonRouting:", "nonRouting");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNonForwarding();
+    }
+  }
+
+  private static final class IsNonRouting extends FeatureMatcher<AbstractRouteDecorator, Boolean> {
+    IsNonRouting(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nonRouting:", "nonRouting");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNonRouting();
+    }
+  }
 }

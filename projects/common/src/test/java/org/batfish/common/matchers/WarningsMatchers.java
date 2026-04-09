@@ -4,14 +4,12 @@ import static org.hamcrest.Matchers.hasItem;
 
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.matchers.WarningsMatchersImpl.HasParseWarnings;
-import org.batfish.common.matchers.WarningsMatchersImpl.HasPedanticWarnings;
-import org.batfish.common.matchers.WarningsMatchersImpl.HasRedFlags;
-import org.batfish.common.matchers.WarningsMatchersImpl.HasUnimplementedWarnings;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Warnings}. */
@@ -76,4 +74,49 @@ public class WarningsMatchers {
   }
 
   private WarningsMatchers() {}
+
+  private static final class HasParseWarnings extends FeatureMatcher<Warnings, List<ParseWarning>> {
+    HasParseWarnings(@Nonnull Matcher<? super List<ParseWarning>> subMatcher) {
+      super(subMatcher, "Warnings with parse warnings:", "parse warnings");
+    }
+
+    @Override
+    protected List<ParseWarning> featureValueOf(Warnings actual) {
+      return actual.getParseWarnings();
+    }
+  }
+
+  private static final class HasRedFlags extends FeatureMatcher<Warnings, Set<Warning>> {
+    HasRedFlags(@Nonnull Matcher<? super Set<Warning>> subMatcher) {
+      super(subMatcher, "Warnings with redFlag warnings:", "redFlag warnings");
+    }
+
+    @Override
+    protected Set<Warning> featureValueOf(Warnings actual) {
+      return actual.getRedFlagWarnings();
+    }
+  }
+
+  private static final class HasPedanticWarnings extends FeatureMatcher<Warnings, Set<Warning>> {
+    HasPedanticWarnings(@Nonnull Matcher<? super Set<Warning>> subMatcher) {
+      super(subMatcher, "Warnings with pedantic warnings:", "pedantic warnings");
+    }
+
+    @Override
+    protected Set<Warning> featureValueOf(Warnings actual) {
+      return actual.getPedanticWarnings();
+    }
+  }
+
+  private static final class HasUnimplementedWarnings
+      extends FeatureMatcher<Warnings, Set<Warning>> {
+    HasUnimplementedWarnings(@Nonnull Matcher<? super Set<Warning>> subMatcher) {
+      super(subMatcher, "Warnings with unimplemented warnings:", "unimplemented warnings");
+    }
+
+    @Override
+    protected Set<Warning> featureValueOf(Warnings actual) {
+      return actual.getUnimplementedWarnings();
+    }
+  }
 }

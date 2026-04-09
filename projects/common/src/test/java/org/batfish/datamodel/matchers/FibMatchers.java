@@ -1,10 +1,11 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
-import org.batfish.datamodel.matchers.FibMatchersImpl.HasAllEntries;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link Fib}. */
@@ -20,4 +21,16 @@ public final class FibMatchers {
   }
 
   private FibMatchers() {}
+
+  private static final class HasAllEntries extends FeatureMatcher<Fib, Set<FibEntry>> {
+
+    HasAllEntries(Matcher<? super Set<FibEntry>> subMatcher) {
+      super(subMatcher, "A Fib with allEntries", "allEntries");
+    }
+
+    @Override
+    protected @Nonnull Set<FibEntry> featureValueOf(Fib actual) {
+      return actual.allEntries();
+    }
+  }
 }
