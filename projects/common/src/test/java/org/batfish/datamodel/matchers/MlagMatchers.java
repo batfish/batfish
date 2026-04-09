@@ -3,13 +3,11 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Mlag;
-import org.batfish.datamodel.matchers.MlagMatchersImpl.HasId;
-import org.batfish.datamodel.matchers.MlagMatchersImpl.HasLocalInterface;
-import org.batfish.datamodel.matchers.MlagMatchersImpl.HasPeerAddress;
-import org.batfish.datamodel.matchers.MlagMatchersImpl.HasPeerInterface;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link Mlag} */
@@ -47,4 +45,48 @@ public final class MlagMatchers {
 
   // Prevent initialization
   private MlagMatchers() {}
+
+  private static final class HasId extends FeatureMatcher<Mlag, String> {
+    HasId(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with id:", "id");
+    }
+
+    @Override
+    protected String featureValueOf(Mlag mlag) {
+      return mlag.getId();
+    }
+  }
+
+  private static final class HasLocalInterface extends FeatureMatcher<Mlag, String> {
+    HasLocalInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with localInterface:", "localInterface");
+    }
+
+    @Override
+    protected @Nullable String featureValueOf(Mlag mlag) {
+      return mlag.getLocalInterface();
+    }
+  }
+
+  private static final class HasPeerAddress extends FeatureMatcher<Mlag, Ip> {
+    HasPeerAddress(Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with peerAddress:", "peerAddress");
+    }
+
+    @Override
+    protected @Nullable Ip featureValueOf(Mlag mlag) {
+      return mlag.getPeerAddress();
+    }
+  }
+
+  private static final class HasPeerInterface extends FeatureMatcher<Mlag, String> {
+    HasPeerInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with peerInterface:", "peerInterface");
+    }
+
+    @Override
+    protected @Nullable String featureValueOf(Mlag mlag) {
+      return mlag.getPeerInterface();
+    }
+  }
 }

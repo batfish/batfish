@@ -20,18 +20,8 @@ import org.batfish.datamodel.HasReadableWeight;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasAsPath;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasClusterList;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasCommunities;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasLocalPreference;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasOriginType;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasReceivedFrom;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpv4RouteThat;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType3RouteThat;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType5RouteThat;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsReceivedFromRouteReflectorClient;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
@@ -87,7 +77,7 @@ public final class BgpRouteMatchers {
   }
 
   public static @Nonnull Matcher<BgpRoute<?, ?>> hasPathId(Matcher<? super Integer> subMatcher) {
-    return new BgpRouteMatchersImpl.HasPathId(subMatcher);
+    return new HasPathId(subMatcher);
   }
 
   public static @Nonnull Matcher<BgpRoute<?, ?>> hasNoPathId() {
@@ -151,4 +141,131 @@ public final class BgpRouteMatchers {
   }
 
   private BgpRouteMatchers() {}
+
+  private static final class HasAsPath extends FeatureMatcher<HasReadableAsPath, AsPath> {
+    HasAsPath(@Nonnull Matcher<? super AsPath> subMatcher) {
+      super(subMatcher, "A HasReadableAsPath with as-path:", "as-path");
+    }
+
+    @Override
+    protected AsPath featureValueOf(HasReadableAsPath actual) {
+      return actual.getAsPath();
+    }
+  }
+
+  private static final class HasClusterList extends FeatureMatcher<BgpRoute<?, ?>, Set<Long>> {
+    HasClusterList(@Nonnull Matcher<? super Set<Long>> subMatcher) {
+      super(subMatcher, "A BgpRoute with cluster-list:", "cluster-list");
+    }
+
+    @Override
+    protected Set<Long> featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getClusterList();
+    }
+  }
+
+  private static final class HasCommunities
+      extends FeatureMatcher<HasReadableCommunities, CommunitySet> {
+    HasCommunities(@Nonnull Matcher<? super CommunitySet> subMatcher) {
+      super(subMatcher, "A HasReadableCommunities with communities:", "communities");
+    }
+
+    @Override
+    protected CommunitySet featureValueOf(HasReadableCommunities actual) {
+      return actual.getCommunities();
+    }
+  }
+
+  private static final class HasLocalPreference
+      extends FeatureMatcher<HasReadableLocalPreference, Long> {
+    HasLocalPreference(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A HasReadableLocalPreference with localPreference:", "localPreference");
+    }
+
+    @Override
+    protected Long featureValueOf(HasReadableLocalPreference actual) {
+      return actual.getLocalPreference();
+    }
+  }
+
+  private static final class HasOriginType
+      extends FeatureMatcher<HasReadableOriginType, OriginType> {
+    HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
+      super(subMatcher, "A HasReadableOriginType with originType:", "originType");
+    }
+
+    @Override
+    protected OriginType featureValueOf(HasReadableOriginType actual) {
+      return actual.getOriginType();
+    }
+  }
+
+  private static final class HasPathId extends FeatureMatcher<BgpRoute<?, ?>, Integer> {
+    HasPathId(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "A BgpRoute with pathId:", "pathId");
+    }
+
+    @Override
+    protected Integer featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getPathId();
+    }
+  }
+
+  private static final class HasReceivedFrom extends FeatureMatcher<BgpRoute<?, ?>, ReceivedFrom> {
+    HasReceivedFrom(@Nonnull Matcher<? super ReceivedFrom> subMatcher) {
+      super(subMatcher, "A BgpRoute with receivedFrom:", "receivedFrom");
+    }
+
+    @Override
+    protected ReceivedFrom featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getReceivedFrom();
+    }
+  }
+
+  private static final class IsReceivedFromRouteReflectorClient
+      extends FeatureMatcher<BgpRoute<?, ?>, Boolean> {
+
+    IsReceivedFromRouteReflectorClient(Matcher<? super Boolean> subMatcher) {
+      super(
+          subMatcher,
+          "A BgpRoute with receivedFromRouteReflectorClient",
+          "receivedFromRouteReflectorClient");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getReceivedFromRouteReflectorClient();
+    }
+  }
+
+  private static final class HasWeight extends FeatureMatcher<HasReadableWeight, Integer> {
+    HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "A HasReadableWeight with weight:", "weight");
+    }
+
+    @Override
+    protected Integer featureValueOf(HasReadableWeight actual) {
+      return actual.getWeight();
+    }
+  }
+
+  private static final class IsBgpv4RouteThat extends IsInstanceThat<AbstractRoute, Bgpv4Route> {
+    IsBgpv4RouteThat(Matcher<? super Bgpv4Route> subMatcher) {
+      super(Bgpv4Route.class, subMatcher);
+    }
+  }
+
+  private static final class IsEvpnType3RouteThat
+      extends IsInstanceThat<AbstractRoute, EvpnType3Route> {
+    IsEvpnType3RouteThat(Matcher<? super EvpnType3Route> subMatcher) {
+      super(EvpnType3Route.class, subMatcher);
+    }
+  }
+
+  private static final class IsEvpnType5RouteThat
+      extends IsInstanceThat<AbstractRoute, EvpnType5Route> {
+    IsEvpnType5RouteThat(Matcher<? super EvpnType5Route> subMatcher) {
+      super(EvpnType5Route.class, subMatcher);
+    }
+  }
 }

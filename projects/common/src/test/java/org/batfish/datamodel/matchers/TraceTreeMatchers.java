@@ -9,9 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasChildren;
-import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasTraceElement;
 import org.batfish.datamodel.trace.TraceTree;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -127,5 +126,27 @@ public final class TraceTreeMatchers {
 
     // Finalized matcher should match on the root node
     return matcher;
+  }
+
+  private static final class HasChildren extends FeatureMatcher<TraceTree, List<TraceTree>> {
+    public HasChildren(Matcher<? super List<TraceTree>> subMatcher) {
+      super(subMatcher, "a TraceTree with children: ", "children");
+    }
+
+    @Override
+    protected List<TraceTree> featureValueOf(TraceTree traceTree) {
+      return traceTree.getChildren();
+    }
+  }
+
+  private static final class HasTraceElement extends FeatureMatcher<TraceTree, TraceElement> {
+    public HasTraceElement(Matcher<? super TraceElement> subMatcher) {
+      super(subMatcher, "a TraceTree with traceElement: ", "traceElement");
+    }
+
+    @Override
+    protected TraceElement featureValueOf(TraceTree traceTree) {
+      return traceTree.getTraceElement();
+    }
   }
 }

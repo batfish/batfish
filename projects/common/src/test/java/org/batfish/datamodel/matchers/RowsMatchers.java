@@ -3,8 +3,8 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.matchers.RowsMatchersImpl.HasSize;
 import org.batfish.datamodel.table.Rows;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class RowsMatchers {
@@ -26,4 +26,16 @@ public final class RowsMatchers {
   }
 
   private RowsMatchers() {}
+
+  private static final class HasSize extends FeatureMatcher<Rows, Integer> {
+
+    public HasSize(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "Rows with size:", "size");
+    }
+
+    @Override
+    protected Integer featureValueOf(Rows actual) {
+      return actual.size();
+    }
+  }
 }

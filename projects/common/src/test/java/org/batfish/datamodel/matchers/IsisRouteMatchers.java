@@ -13,9 +13,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.matchers.IsisRouteMatchersImpl.HasDown;
-import org.batfish.datamodel.matchers.IsisRouteMatchersImpl.HasOverload;
-import org.batfish.datamodel.matchers.IsisRouteMatchersImpl.IsIsisRouteThat;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class IsisRouteMatchers {
@@ -50,4 +48,33 @@ public final class IsisRouteMatchers {
   }
 
   private IsisRouteMatchers() {}
+
+  private static final class HasDown extends FeatureMatcher<IsisRoute, Boolean> {
+    HasDown(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An IsisRoute with down:", "down");
+    }
+
+    @Override
+    protected Boolean featureValueOf(IsisRoute actual) {
+      return actual.getDown();
+    }
+  }
+
+  private static final class HasOverload extends FeatureMatcher<IsisRoute, Boolean> {
+    HasOverload(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An IsisRoute with overload:", "overload");
+    }
+
+    @Override
+    protected Boolean featureValueOf(IsisRoute actual) {
+      return actual.getOverload();
+    }
+  }
+
+  private static final class IsIsisRouteThat
+      extends IsInstanceThat<AbstractRouteDecorator, IsisRoute> {
+    IsIsisRouteThat(Matcher<? super IsisRoute> subMatcher) {
+      super(IsisRoute.class, subMatcher);
+    }
+  }
 }
