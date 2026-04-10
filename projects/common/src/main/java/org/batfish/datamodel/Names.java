@@ -144,6 +144,10 @@ public final class Names {
     return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }
 
+  public static String generatedFibExportPolicyName(String vrf) {
+    return String.format("~FIB_EXPORT_POLICY:%s~", vrf);
+  }
+
   public static String generatedOspfExportPolicyName(String vrf, String proc) {
     return String.format("~OSPF_EXPORT_POLICY:%s:%s~", vrf, proc);
   }
