@@ -20,6 +20,7 @@ import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedFibExportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -10197,8 +10198,10 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testForwardingTableExport_conversion() {
     Configuration c = parseConfig("forwarding-table-export");
-    // The forwarding-table export policy should be wired to the VRF's fibExportPolicy
-    assertThat(c.getDefaultVrf().getFibExportPolicy(), equalTo("FIB_FILTER"));
+    // The forwarding-table export policy should be wired via a generated wrapper policy
+    assertThat(
+        c.getDefaultVrf().getFibExportPolicy(),
+        equalTo(generatedFibExportPolicyName(DEFAULT_VRF_NAME)));
   }
 
   @Test
@@ -10218,6 +10221,31 @@ public final class FlatJuniperGrammarTest {
     Fib fib = dp.getFibs().get("forwarding-table-export").get(Configuration.DEFAULT_VRF_NAME);
     assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
     assertThat(fib.get(Ip.parse("192.168.1.1")), empty());
+  }
+
+  /**
+   * Test that a forwarding-table export policy with only {@code then load-balance per-packet} (no
+   * explicit accept) allows all routes into the FIB. On Junos, the default forwarding-table export
+   * action is accept, so routes that fall through the policy without a terminal action are
+   * accepted.
+   */
+  @Test
+  public void testForwardingTableExport_defaultAccept() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export-default-accept");
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Both routes should be in the RIB
+    String hostname = "forwarding-table-export-default-accept";
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.0.0/24"))));
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.1.0/24"))));
+
+    // Both routes should also be in the FIB — the policy has no terminal action, so the default
+    // forwarding-table export action (accept) applies.
+    Fib fib = dp.getFibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
+    assertThat(fib.get(Ip.parse("192.168.1.1")), not(empty()));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

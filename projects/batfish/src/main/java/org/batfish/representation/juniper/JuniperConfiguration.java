@@ -7,6 +7,7 @@ import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedFibExportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -4048,7 +4049,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!_c.getRoutingPolicies().containsKey(policyName)) {
       return;
     }
-    _c.getVrfs().get(ri.getName()).setFibExportPolicy(policyName);
+    // Wrap the user's policy in a generated policy that sets the default action to accept. On
+    // Junos, routes not explicitly rejected by the forwarding-table export policy are installed in
+    // the FIB (the default forwarding-table behavior is accept-all).
+    String generatedName = generatedFibExportPolicyName(ri.getName());
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(generatedName)
+        .addStatement(Statements.SetDefaultActionAccept.toStaticStatement())
+        .addStatement(
+            new If(
+                new CallExpr(policyName),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+        .build();
+    _c.getVrfs().get(ri.getName()).setFibExportPolicy(generatedName);
     warnForwardingTableExportActions(policyName);
   }
 
