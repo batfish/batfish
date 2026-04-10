@@ -31,6 +31,12 @@ per-packet/per-flow distinction has no behavioral effect. Standard route
 attribute mutations (metric, next-hop, etc.) have no effect in this context
 on real Juniper routers.
 
+The default Junos forwarding-table export action is **accept**: routes that
+fall through the policy without a terminal action (accept/reject) are
+installed in the FIB. This is modeled by wrapping the user's policy in a
+generated policy (`~FIB_EXPORT_POLICY:<vrf>~`) that sets the default action
+to accept before calling the user's policy.
+
 ### Vendor-Independent Model
 
 The VI model field is `Vrf.fibExportPolicy` — the name of a `RoutingPolicy`
