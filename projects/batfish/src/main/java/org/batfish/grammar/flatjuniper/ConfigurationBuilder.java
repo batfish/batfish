@@ -2314,11 +2314,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * Parses a {@link Vrf_target_communityContext} into an {@link ExtendedCommunity}. The grammar
    * restricts this to route-target type communities ({@code target:admin:assigned}).
    */
-  private static @Nullable ExtendedCommunity toVrfTargetCommunity(Vrf_target_communityContext ctx) {
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(
+      ParserRuleContext messageCtx, Vrf_target_communityContext ctx) {
     try {
-      return ExtendedCommunity.parse(ctx.getText());
+      return Optional.of(ExtendedCommunity.parse(ctx.getText()));
     } catch (IllegalArgumentException e) {
-      return null;
+      warn(messageCtx, String.format("Expected target community: %s", ctx.getText()));
+      return Optional.empty();
     }
   }
 
@@ -3893,38 +3895,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSovt_community(Sovt_communityContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
-    if (ec != null) {
-      _currentLogicalSystem
-          .getOrInitSwitchOptions()
-          .setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.of(ec));
-    }
+    toExtendedCommunity(ctx, ctx.comm)
+        .map(ExtendedCommunityOrAuto::of)
+        .ifPresent(_currentLogicalSystem.getOrInitSwitchOptions()::setVrfTargetCommunityOrAuto);
   }
 
   @Override
   public void exitSovt_export(Sovt_exportContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
-    if (ec != null) {
-      _currentLogicalSystem.getOrInitSwitchOptions().setVrfTargetExport(ec);
-    }
+    toExtendedCommunity(ctx, ctx.comm)
+        .ifPresent(_currentLogicalSystem.getOrInitSwitchOptions()::setVrfTargetExport);
   }
 
   @Override
   public void exitSovt_import(Sovt_importContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
-    if (ec != null) {
-      _currentLogicalSystem.getOrInitSwitchOptions().setVrfTargetImport(ec);
-    }
+    toExtendedCommunity(ctx, ctx.comm)
+        .ifPresent(_currentLogicalSystem.getOrInitSwitchOptions()::setVrfTargetImport);
   }
 
   @Override
   public void exitSo_vrf_export(So_vrf_exportContext ctx) {
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(toString(ctx.name));
+    String policyName = toString(ctx.name);
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(policyName);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
   }
 
   @Override
   public void exitSo_vrf_import(So_vrf_importContext ctx) {
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(toString(ctx.name));
+    String policyName = toString(ctx.name);
+    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(policyName);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
   }
 
   @Override
@@ -5011,33 +5012,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEvovt_community(Evovt_communityContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.comm);
-    if (_currentVni != null && ec != null) {
+    if (_currentVni != null) {
       VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
       if (vo != null) {
-        vo.setVrfTargetCommunityOrAuto(ExtendedCommunityOrAuto.of(ec));
+        toExtendedCommunity(ctx, ctx.comm)
+            .map(ExtendedCommunityOrAuto::of)
+            .ifPresent(vo::setVrfTargetCommunityOrAuto);
       }
     }
   }
 
   @Override
   public void exitEvovt_export(Evovt_exportContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
-    if (_currentVni != null && ec != null) {
+    if (_currentVni != null) {
       VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
       if (vo != null) {
-        vo.setVrfTargetExport(ec);
+        toExtendedCommunity(ctx, ctx.vrf_target_community()).ifPresent(vo::setVrfTargetExport);
       }
     }
   }
 
   @Override
   public void exitEvovt_import(Evovt_importContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
-    if (_currentVni != null && ec != null) {
+    if (_currentVni != null) {
       VniOptions vo = _currentLogicalSystem.getVniOptions().get(_currentVni);
       if (vo != null) {
-        vo.setVrfTargetImport(ec);
+        toExtendedCommunity(ctx, ctx.vrf_target_community()).ifPresent(vo::setVrfTargetImport);
       }
     }
   }
@@ -7064,26 +7064,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRiv_community(Riv_communityContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
-    if (ec != null) {
-      _currentRoutingInstance.setVrfTargetCommunity(ec);
-    }
+    toExtendedCommunity(ctx, ctx.vrf_target_community())
+        .ifPresent(_currentRoutingInstance::setVrfTargetCommunity);
   }
 
   @Override
   public void exitRiv_export(Riv_exportContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
-    if (ec != null) {
-      _currentRoutingInstance.setVrfTargetExport(ec);
-    }
+    toExtendedCommunity(ctx, ctx.vrf_target_community())
+        .ifPresent(_currentRoutingInstance::setVrfTargetExport);
   }
 
   @Override
   public void exitRiv_import(Riv_importContext ctx) {
-    ExtendedCommunity ec = toVrfTargetCommunity(ctx.vrf_target_community());
-    if (ec != null) {
-      _currentRoutingInstance.setVrfTargetImport(ec);
-    }
+    toExtendedCommunity(ctx, ctx.vrf_target_community())
+        .ifPresent(_currentRoutingInstance::setVrfTargetImport);
   }
 
   @Override
