@@ -77243,7 +77243,7 @@
             },
             "policy2" : {
               "definitionLines" : "5-7",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "routing-instance" : {
@@ -85263,6 +85263,11 @@
             "policy1" : {
               "routing-instance vrf-import" : [
                 28
+              ]
+            },
+            "policy2" : {
+              "routing-instance evpn ip-prefix-routes import" : [
+                19
               ]
             }
           },
