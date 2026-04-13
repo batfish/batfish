@@ -1,13 +1,12 @@
 package org.batfish.datamodel.matchers;
 
-import static org.batfish.datamodel.matchers.FibActionMatchersImpl.HasInterfaceName;
-import static org.batfish.datamodel.matchers.FibActionMatchersImpl.IsFibForwardActionThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FibAction;
 import org.batfish.datamodel.FibForward;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link FibAction} */
@@ -32,4 +31,23 @@ public final class FibActionMatchers {
   }
 
   private FibActionMatchers() {}
+
+  private static final class HasInterfaceName extends FeatureMatcher<FibForward, String> {
+
+    public HasInterfaceName(Matcher<? super String> subMatcher) {
+      super(subMatcher, "A FibForward with interfaceName", "interfaceName");
+    }
+
+    @Override
+    protected @Nonnull String featureValueOf(FibForward actual) {
+      return actual.getInterfaceName();
+    }
+  }
+
+  private static final class IsFibForwardActionThat extends IsInstanceThat<FibAction, FibForward> {
+
+    IsFibForwardActionThat(Matcher<? super FibForward> subMatcher) {
+      super(FibForward.class, subMatcher);
+    }
+  }
 }

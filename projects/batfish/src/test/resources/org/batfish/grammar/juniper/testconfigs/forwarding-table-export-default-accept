@@ -1,0 +1,16 @@
+#
+set system host-name forwarding-table-export-default-accept
+
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/24
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+
+set routing-options static route 192.168.0.0/24 next-hop 10.0.0.2
+set routing-options static route 192.168.1.0/24 next-hop 10.0.1.2
+
+# Policy with only load-balance per-packet (no explicit accept or reject).
+# On Junos, routes fall through to the default forwarding-table export action (accept),
+# so all routes should be installed in the FIB.
+set policy-options policy-statement LB_ONLY term ecmp then load-balance per-packet
+
+set routing-options forwarding-table export LB_ONLY

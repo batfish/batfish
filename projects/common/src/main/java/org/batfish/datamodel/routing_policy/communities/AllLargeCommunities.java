@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 
 /** Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is a large community. */
@@ -33,4 +35,10 @@ public final class AllLargeCommunities extends CommunityMatchExpr {
   }
 
   private AllLargeCommunities() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

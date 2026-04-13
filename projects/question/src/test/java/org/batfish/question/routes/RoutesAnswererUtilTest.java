@@ -205,13 +205,13 @@ public class RoutesAnswererUtilTest {
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
             .setAdmin(10)
-            .setMetric(2L << 34)
+            .setMetric(2L << 30)
             .setLsaMetric(2)
             .setCostToAdvertiser(2)
             .setArea(1L)
             .setAdvertiser("n2")
             .setOspfMetricType(OspfMetricType.E2)
-            .setTag(2L << 35)
+            .setTag(2L << 30)
             .build();
     FinalMainRib rib = FinalMainRib.of(route);
 
@@ -232,9 +232,9 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "e0", Schema.STRING),
                 hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
-                hasColumn(COL_TAG, equalTo(2L << 35), Schema.LONG),
+                hasColumn(COL_TAG, equalTo(2L << 30), Schema.LONG),
                 hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
-                hasColumn(COL_METRIC, equalTo(2L << 34), Schema.LONG))));
+                hasColumn(COL_METRIC, equalTo(2L << 30), Schema.LONG))));
   }
 
   @Test

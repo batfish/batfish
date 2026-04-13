@@ -87,7 +87,6 @@ import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.ResolutionRestriction;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -169,6 +168,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private final @Nonnull PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
   private final @Nonnull RoutingPolicies _policies;
+  private final @Nullable RoutingPolicy _tableMapPolicy;
   private final @Nonnull String _hostname;
 
   /** Name of our VRF */
@@ -382,6 +382,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _c = configuration;
     _hostname = configuration.getHostname();
     _policies = RoutingPolicies.from(configuration);
+    _tableMapPolicy =
+        Optional.ofNullable(process.getTableMapPolicy()).flatMap(_policies::get).orElse(null);
     _vrfName = vrfName;
     _mainRib = mainRib;
     _topology = topology;
@@ -956,7 +958,32 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
     LOGGER.trace(
         "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
-    _toMainRib.from(bgpv4RibDelta);
+    if (_tableMapPolicy == null) {
+      _toMainRib.from(bgpv4RibDelta);
+    } else {
+      applyTableMap(bgpv4RibDelta);
+    }
+  }
+
+  /**
+   * Apply the table-map routing policy to filter BGP routes before installation into the main RIB.
+   * Routes denied by the policy are marked nonRouting so they remain in the BGP RIB (for
+   * advertisement to peers) but are not installed in the main RIB.
+   */
+  private void applyTableMap(RibDelta<Bgpv4Route> bgpv4RibDelta) {
+    assert _tableMapPolicy != null;
+    for (RouteAdvertisement<Bgpv4Route> adv : bgpv4RibDelta.getActions()) {
+      if (adv.isWithdrawn()) {
+        _toMainRib.from(adv);
+      } else {
+        Bgpv4Route route = adv.getRoute();
+        if (_tableMapPolicy.processReadOnly(route)) {
+          _toMainRib.from(adv);
+        } else {
+          _toMainRib.from(RouteAdvertisement.adding(route.toBuilder().setNonRouting(true).build()));
+        }
+      }
+    }
   }
 
   /** Pull v4Unicast routes from our neighbors' deltas, merge them into our own RIBs */
@@ -1919,7 +1946,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         v4Family,
-        Route.UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         _pathIdGenerators,
         _routesToPathIds);
 
@@ -1963,7 +1990,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setMetric(advert.getMed())
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
-              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginatorIp(firstNonNull(advert.getOriginatorIp(), advert.getSrcIp()))
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
@@ -1995,7 +2022,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setMetric(advert.getMed())
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
-              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginatorIp(firstNonNull(advert.getOriginatorIp(), advert.getSrcIp()))
               // Don't know the origin mechanism on the sender, but for us it will be LEARNED
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())

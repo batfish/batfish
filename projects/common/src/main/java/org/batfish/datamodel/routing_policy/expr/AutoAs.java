@@ -2,6 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -73,5 +75,11 @@ public final class AutoAs extends AsExpr {
   @Override
   public int hashCode() {
     return 0xb21f9d07; // randomly generated
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

@@ -1,6 +1,5 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
@@ -222,11 +221,10 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     // - remote IP
     // - session type
     // Local and remote interface will not be filled in (reserved for unnumbered peers).
-    // Local IP is set to Ip.AUTO if null, for presentation backwards compatibility.
     Row.TypedRowBuilder rb =
         Row.builder(METADATA_MAP)
             .put(COL_LOCAL_AS, passivePeer.getLocalAs())
-            .put(COL_LOCAL_IP, firstNonNull(passivePeer.getLocalIp(), Ip.AUTO))
+            .put(COL_LOCAL_IP, passivePeer.getLocalIp())
             .put(COL_NODE, new Node(passiveId.getHostname()))
             .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
             .put(

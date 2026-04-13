@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 
 @ParametersAreNonnullByDefault
@@ -23,8 +24,12 @@ public class RipInternalRoute extends RipRoute {
       @JsonProperty(PROP_METRIC) @Nullable long metric,
       @JsonProperty(PROP_TAG) @Nullable long tag) {
     checkArgument(network != null);
-    checkArgument(nextHopIp != null);
-    return new RipInternalRoute(network, NextHopIp.of(nextHopIp), admin, metric, tag);
+    return new RipInternalRoute(
+        network,
+        nextHopIp == null ? NextHopDiscard.instance() : NextHopIp.of(nextHopIp),
+        admin,
+        metric,
+        tag);
   }
 
   private RipInternalRoute(Prefix network, NextHop nextHop, long admin, long metric, long tag) {
@@ -85,17 +90,23 @@ public class RipInternalRoute extends RipRoute {
     }
     RipRoute other = (RipRoute) o;
     return _network.equals(other._network)
-        && _admin == other._admin
-        && _metric == other._metric
+        && getAdministrativeCost() == other.getAdministrativeCost()
+        && getMetric() == other.getMetric()
         && _nextHop.equals(other._nextHop)
         && getNonForwarding() == other.getNonForwarding()
         && getNonRouting() == other.getNonRouting()
-        && _tag == other._tag;
+        && getTag() == other.getTag();
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _network, _admin, _metric, _nextHop, getNonForwarding(), getNonRouting(), _tag);
+        _network,
+        getAdministrativeCost(),
+        getMetric(),
+        _nextHop,
+        getNonForwarding(),
+        getNonRouting(),
+        getTag());
   }
 }

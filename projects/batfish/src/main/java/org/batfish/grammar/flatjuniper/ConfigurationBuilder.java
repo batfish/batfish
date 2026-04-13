@@ -468,9 +468,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6f_inputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
@@ -659,6 +659,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_load_balanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_multipath_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
@@ -1046,6 +1047,7 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromHopLimit;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
@@ -1189,6 +1191,7 @@ import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenExternal;
+import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
@@ -5167,6 +5170,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_hop_limit(FlatJuniperParser.Fftf_hop_limitContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    _currentFwTerm.getFroms().add(new FwFromHopLimit(range, false));
+  }
+
+  @Override
+  public void exitFftf_hop_limit_except(FlatJuniperParser.Fftf_hop_limit_exceptContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    _currentFwTerm.getFroms().add(new FwFromHopLimit(range, true));
+  }
+
+  @Override
   public void exitFftf_interface(FlatJuniperParser.Fftf_interfaceContext ctx) {
     String interfaceName = getInterfaceFullName(ctx.interface_id());
     _currentFwTerm.getFroms().add(new FwFromInterface(interfaceName));
@@ -5866,10 +5881,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitIfi6f_input(Ifi6f_inputContext ctx) {
-    String name = toString(ctx.name);
+  public void exitIfi6_filter(Ifi6_filterContext ctx) {
+    FilterContext filter = ctx.filter();
+    if (filter.direction() == null) {
+      return;
+    }
+    String name = toString(filter.name);
+    JuniperStructureUsage usage = INTERFACE_FILTER;
+    if (filter.direction() != null) {
+      DirectionContext direction = filter.direction();
+      if (direction.INPUT() != null) {
+        _currentInterfaceOrRange.setIncomingFilter6(name);
+        usage = INTERFACE_INCOMING_FILTER;
+      } else if (direction.INPUT_LIST() != null) {
+        _currentInterfaceOrRange.addIncomingFilterList6(name);
+        usage = INTERFACE_INCOMING_FILTER_LIST;
+      } else if (direction.OUTPUT() != null) {
+        _currentInterfaceOrRange.setOutgoingFilter6(name);
+        usage = INTERFACE_OUTGOING_FILTER;
+      } else if (direction.OUTPUT_LIST() != null) {
+        _currentInterfaceOrRange.addOutgoingFilterList6(name);
+        usage = INTERFACE_OUTGOING_FILTER_LIST;
+      } else {
+        // Should be unreachable.
+        warn(ctx, "Unhandled filter direction");
+      }
+    }
     _configuration.referenceStructure(
-        FIREWALL_INET6_FILTER, name, INTERFACE_FILTER, getLine(ctx.name.start));
+        FIREWALL_INET6_FILTER, name, usage, getLine(filter.name.getStart()));
   }
 
   @Override
@@ -6866,6 +6905,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopst_load_balance(Popst_load_balanceContext ctx) {
+    addPsThen(PsThenLoadBalance.INSTANCE, ctx);
+  }
+
+  @Override
   public void exitPopst_multipath_resolve(Popst_multipath_resolveContext ctx) {
     todo(ctx);
   }
@@ -7190,7 +7234,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         .getDefaultRoutingInstance()
         .setForwardingTableExportPolicy(
             toComplexPolicyStatement(ctx.expr, FORWARDING_TABLE_EXPORT_POLICY));
-    todo(ctx);
   }
 
   @Override

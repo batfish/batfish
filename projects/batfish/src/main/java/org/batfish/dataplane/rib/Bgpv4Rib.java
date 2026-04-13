@@ -65,18 +65,22 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
 
     void addBgpRoute(Bgpv4Route route) {
       Ip nhip = route.getNextHopIp();
-      _bgpRoutesByNhip.put(nhip, route);
+      if (nhip != null) {
+        _bgpRoutesByNhip.put(nhip, route);
+        _mainRibPrefixesAndBgpNhips.addNextHopIp(nhip);
+      }
       _bgpRoutesByPrefix.put(route.getNetwork(), route);
-      _mainRibPrefixesAndBgpNhips.addNextHopIp(nhip);
     }
 
     void removeBgpRoute(Bgpv4Route route) {
       Ip nhip = route.getNextHopIp();
-      _bgpRoutesByNhip.remove(nhip, route);
-      _bgpRoutesByPrefix.remove(route.getNetwork(), route);
-      if (!_bgpRoutesByNhip.containsKey(nhip)) {
-        _mainRibPrefixesAndBgpNhips.removeNextHopIp(nhip);
+      if (nhip != null) {
+        _bgpRoutesByNhip.remove(nhip, route);
+        if (!_bgpRoutesByNhip.containsKey(nhip)) {
+          _mainRibPrefixesAndBgpNhips.removeNextHopIp(nhip);
+        }
       }
+      _bgpRoutesByPrefix.remove(route.getNetwork(), route);
     }
 
     /** Get all routes with the given {@code prefix} tracked by the resolvability enforcer. */
@@ -191,7 +195,9 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   private static @Nonnull Comparator<Bgpv4Route> toLocalRouteComparator(
       NextHopIpTieBreaker nextHopIpTieBreaker) {
     Comparator<Ip> nhipComparator =
-        nextHopIpTieBreaker == HIGHEST_NEXT_HOP_IP ? Comparator.reverseOrder() : Ip::compareTo;
+        nextHopIpTieBreaker == HIGHEST_NEXT_HOP_IP
+            ? Comparator.nullsFirst(Comparator.reverseOrder())
+            : Comparator.nullsFirst(Ip::compareTo);
     return Comparator.comparing(Bgpv4Route::getNextHopIp, nhipComparator)
         .thenComparing(Bgpv4Route::getSrcProtocol);
   }
@@ -206,6 +212,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       - routes that have a next vrf as the next hop
     */
     if (shouldCheckNextHopReachability(route) && _mainRib != null) {
+      assert route.getNextHop() instanceof NextHopIp
+          : "shouldCheckNextHopReachability should only return true for NextHopIp";
       _resolvabilityEnforcer.evictSamePrefixReceivedFromPathId(route);
       _resolvabilityEnforcer.addBgpRoute(route);
       if (!isResolvable(route.getNextHopIp())) {

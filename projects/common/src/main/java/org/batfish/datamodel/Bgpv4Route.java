@@ -65,7 +65,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _receivedFrom,
           getNetwork(),
           _nextHop,
-          _pathId,
+          getPathId(),
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -183,18 +183,18 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setAsPath(_attributes._asPath)
         .setClusterList(_attributes._clusterList)
         .setCommunities(_attributes._communities)
-        .setLocalPreference(_attributes._localPreference)
-        .setMetric(_attributes._med)
+        .setLocalPreference(_attributes.getLocalPreference())
+        .setMetric(_attributes.getMed())
         .setNextHop(_nextHop)
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
-        .setPathId(_pathId)
+        .setPathId(getPathId())
         .setProtocol(_attributes.getProtocol())
         .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
-        .setTag(_tag)
+        .setTag(getTag())
         .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setWeight(_attributes._weight);
   }
@@ -211,12 +211,12 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _nextHop.equals(other._nextHop)
-        && Objects.equals(_pathId, other._pathId)
+        && Objects.equals(getPathId(), other.getPathId())
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
-        && _admin == other._admin
-        && _tag == other._tag
+        && getAdministrativeCost() == other.getAdministrativeCost()
+        && getTag() == other.getTag()
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding();
   }
@@ -225,15 +225,15 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = Long.hashCode(_admin);
+      h = Long.hashCode(getAdministrativeCost());
       h = h * 31 + _attributes.hashCode();
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + (_pathId != null ? _pathId : 0);
+      h = h * 31 + (getPathId() != null ? getPathId() : 0);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }
@@ -245,18 +245,18 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
         .add("_network", _network)
-        .add("_admin", _admin)
-        .add("_tag", _tag)
+        .add("_admin", getAdministrativeCost())
+        .add("_tag", getTag())
         .add("_asPath", _attributes._asPath)
         .add("_clusterList", _attributes._clusterList)
         .add("_communities", _attributes._communities)
-        .add("_localPreference", _attributes._localPreference)
-        .add("_med", _attributes._med)
+        .add("_localPreference", _attributes.getLocalPreference())
+        .add("_med", _attributes.getMed())
         .add("_nextHop", _nextHop)
         .add("_originatorIp", _attributes._originatorIp)
         .add("_originMechanism", _attributes._originMechanism)
         .add("_originType", _attributes._originType)
-        .add("_pathId", _pathId)
+        .add("getPathId()", getPathId())
         .add("_protocol", _attributes._protocol)
         .add("_receivedFrom", _receivedFrom)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)

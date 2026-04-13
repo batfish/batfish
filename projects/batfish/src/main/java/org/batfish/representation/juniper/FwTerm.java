@@ -16,6 +16,8 @@ public final class FwTerm implements Serializable {
     DSCP,
     FRAGMENT_OFFSET,
     FRAGMENT_OFFSET_EXCEPT,
+    HOP_LIMIT,
+    HOP_LIMIT_EXCEPT,
     ICMP_CODE,
     ICMP_CODE_EXCEPT,
     ICMP_TYPE,

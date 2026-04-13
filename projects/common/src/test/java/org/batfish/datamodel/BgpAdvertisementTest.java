@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpAdvertisement.UNSET_LOCAL_PREFERENCE;
-import static org.batfish.datamodel.BgpAdvertisement.UNSET_ORIGINATOR_IP;
 import static org.batfish.datamodel.BgpAdvertisement.UNSET_WEIGHT;
 import static org.batfish.datamodel.BgpAdvertisement.nullSafeCompareTo;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -83,7 +82,7 @@ public class BgpAdvertisementTest {
                 OriginType.EGP,
                 UNSET_LOCAL_PREFERENCE,
                 0L,
-                UNSET_ORIGINATOR_IP,
+                null,
                 AsPath.of(AsSet.of(1239)),
                 ImmutableSortedSet.of(StandardCommunity.of(262145)),
                 ImmutableSortedSet.of(),
@@ -107,7 +106,7 @@ public class BgpAdvertisementTest {
             OriginType.EGP,
             UNSET_LOCAL_PREFERENCE,
             0L,
-            UNSET_ORIGINATOR_IP,
+            null,
             AsPath.of(AsSet.of(1239)),
             ImmutableSortedSet.of(StandardCommunity.of(262145)),
             ImmutableSortedSet.of(),
@@ -127,7 +126,7 @@ public class BgpAdvertisementTest {
             OriginType.EGP,
             UNSET_LOCAL_PREFERENCE,
             0L,
-            UNSET_ORIGINATOR_IP,
+            null,
             AsPath.of(AsSet.of(1239)),
             ImmutableSortedSet.of(StandardCommunity.of(262145)),
             ImmutableSortedSet.of(),

@@ -25,7 +25,6 @@ import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.RoutingProtocol.HMM;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -56,13 +55,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasRouteFilterLists;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHoldTime;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
@@ -966,7 +965,7 @@ public final class CiscoNxosGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
     Bgpv4Route.Builder outputRouteBuilder =
-        Bgpv4Route.testBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+        Bgpv4Route.testBuilder().setNextHop(NextHopDiscard.instance());
 
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
@@ -983,7 +982,7 @@ public final class CiscoNxosGrammarTest {
         nhipUnchangedPolicy.processBgpRoute(
             originalRoute, outputRouteBuilder, ibgpSession, Direction.OUT, null);
     assertTrue(shouldExportToIbgp);
-    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    assertThat(outputRouteBuilder.getNextHopIp(), nullValue());
 
     // Preserves original route's next hop IP for EBGP
     boolean shouldExportToEbgp =
@@ -994,14 +993,14 @@ public final class CiscoNxosGrammarTest {
 
     // Original route has unset next hop IP: leaves unset (and expects pipeline downstream to
     // handle)
-    outputRouteBuilder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    outputRouteBuilder.setNextHop(NextHopDiscard.instance());
     Bgpv4Route noNhipRoute =
         originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
     boolean shouldExportToEbgpUnsetNextHop =
         nhipUnchangedPolicy.processBgpRoute(
             noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT, null);
     assertTrue(shouldExportToEbgpUnsetNextHop);
-    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    assertThat(outputRouteBuilder.getNextHopIp(), nullValue());
   }
 
   @Test
@@ -8275,7 +8274,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route, hasNextHopInterface("Ethernet1/1"));
       assertThat(route, hasAdministrativeCost(1));
       assertThat(route, hasTag(0L));
-      assertThat(route, hasNextHopIp(UNSET_ROUTE_NEXT_HOP_IP));
+      assertThat(route, hasNextHopIp(nullValue()));
     }
     {
       org.batfish.datamodel.StaticRoute route =
@@ -9688,7 +9687,7 @@ public final class CiscoNxosGrammarTest {
 
     // iBGP route-reflector-client peer with next-hop-self
     assertRouteReflectorSetNextHopSelfTransformedIp(
-        c, ibgpClientNextHopSelfPeerIp, ibgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+        c, ibgpClientNextHopSelfPeerIp, ibgpInputRoute, null);
     assertRouteReflectorSetNextHopSelfTransformedIp(
         c, ibgpClientNextHopSelfPeerIp, ebgpInputRoute, updateSourceIp);
 
@@ -9703,15 +9702,15 @@ public final class CiscoNxosGrammarTest {
         c,
         ibgpClientNoNextHopSelfPeerIp,
         ibgpInputRoute,
-        UNSET_ROUTE_NEXT_HOP_IP /* original not set by RP for iBGP */);
+        null /* original not set by RP for iBGP */);
     assertRouteReflectorSetNextHopSelfTransformedIp(
-        c, ibgpClientNoNextHopSelfPeerIp, ebgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+        c, ibgpClientNoNextHopSelfPeerIp, ebgpInputRoute, null);
 
     // iBGP non-route-reflector-client peer without next-hop-self
     assertRouteReflectorSetNextHopSelfTransformedIp(
-        c, ibgpNonClientNoNextHopSelfPeerIp, ibgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+        c, ibgpNonClientNoNextHopSelfPeerIp, ibgpInputRoute, null);
     assertRouteReflectorSetNextHopSelfTransformedIp(
-        c, ibgpNonClientNoNextHopSelfPeerIp, ebgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+        c, ibgpNonClientNoNextHopSelfPeerIp, ebgpInputRoute, null);
 
     // eBGP peer with next-hop-self
     assertRouteReflectorSetNextHopSelfTransformedIp(c, ebgpPeerIp, ibgpInputRoute, ebgpLocalIp);
@@ -9728,7 +9727,7 @@ public final class CiscoNxosGrammarTest {
             .get(
                 Names.generatedBgpPeerExportPolicyName(
                     Configuration.DEFAULT_VRF_NAME, ibgpClientPeerIp.toString()));
-    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder().setNextHop(NextHopDiscard.instance());
     BgpActivePeerConfig fromConfig =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ibgpClientPeerIp);
     BgpActivePeerConfig neighborConfig =

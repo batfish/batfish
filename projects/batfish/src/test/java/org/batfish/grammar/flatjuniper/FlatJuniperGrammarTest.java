@@ -20,9 +20,9 @@ import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedFibExportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -65,31 +65,28 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasRouteFilterList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReferenceWithReferenceLines;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNoUndefinedReferences;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReferenceWithReferenceLines;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -136,9 +133,12 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.installsDiscard;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.ParseVendorConfigurationAnswerElementMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
@@ -282,6 +282,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
@@ -428,6 +429,7 @@ import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromHopLimit;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
@@ -494,6 +496,7 @@ import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
@@ -2318,7 +2321,7 @@ public final class FlatJuniperGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
-    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 3));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 4));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER2", 4));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER_UNUSED", 0));
 
@@ -2391,6 +2394,59 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getIncomingFilterList(), contains("FILTER1", "FILTER2"));
       assertThat(iface.getOutgoingFilter(), nullValue());
       assertThat(iface.getOutgoingFilterList(), contains("FILTER2", "FILTER1"));
+    }
+    // inet6 filter input
+    {
+      String parentName = "xe-0/0/4";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_1"));
+      assertThat(iface.getIncomingFilterList6(), nullValue());
+      assertThat(iface.getOutgoingFilter6(), nullValue());
+      assertThat(iface.getOutgoingFilterList6(), nullValue());
+    }
+    // inet6 filter input-list and output-list
+    {
+      String parentName = "xe-0/0/5";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), nullValue());
+      assertThat(iface.getIncomingFilterList6(), contains("FILTER6_1", "FILTER6_2"));
+      assertThat(iface.getOutgoingFilter6(), nullValue());
+      assertThat(iface.getOutgoingFilterList6(), contains("FILTER6_2", "FILTER6_1"));
+    }
+    // inet6 input-list then input: input wins, clears list
+    {
+      String parentName = "xe-0/0/6";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_2"));
+      assertThat(iface.getIncomingFilterList6(), nullValue());
+    }
+    // inet6 input then input-list: input-list wins, clears single
+    {
+      String parentName = "xe-0/0/7";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter6(), nullValue());
+      assertThat(iface.getIncomingFilterList6(), contains("FILTER6_2"));
+    }
+    // inet and inet6 are independent
+    {
+      String parentName = "xe-0/0/8";
+      String unitName = parentName + ".0";
+      org.batfish.representation.juniper.Interface iface =
+          ifaces.get(parentName).getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER1"));
+      assertThat(iface.getIncomingFilter6(), equalTo("FILTER6_1"));
     }
 
     // filter definitions
@@ -6952,7 +7008,7 @@ public final class FlatJuniperGrammarTest {
         IsisRoute.builder()
             .setArea("area")
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP)
+            .setNextHop(NextHopDiscard.instance())
             .setSystemId("systemId");
     IsisRoute isisL1 =
         isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();
@@ -9901,6 +9957,81 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallFilterHopLimit() {
+    String hostname = "firewall-filter-hop-limit";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(
+        filter.getTerms().keySet(),
+        containsInAnyOrder("SINGLE", "RANGE", "EXCEPT", "EXCEPT_RANGE"));
+
+    // Single hop-limit value
+    {
+      FwTerm term = filter.getTerms().get("SINGLE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(SubRange.singleton(255)));
+      assertFalse(from.getExcept());
+    }
+
+    // hop-limit range
+    {
+      FwTerm term = filter.getTerms().get("RANGE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(10, 20)));
+      assertFalse(from.getExcept());
+    }
+
+    // hop-limit-except single value
+    {
+      FwTerm term = filter.getTerms().get("EXCEPT");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(SubRange.singleton(255)));
+      assertTrue(from.getExcept());
+    }
+
+    // hop-limit-except range
+    {
+      FwTerm term = filter.getTerms().get("EXCEPT_RANGE");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromHopLimit from = (FwFromHopLimit) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+      assertTrue(from.getExcept());
+    }
+  }
+
+  @Test
+  public void testFirewallFilterPacketLengthSpacedRange() {
+    String hostname = "firewall-filter-packet-length-spaced-range";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+
+    // Compact range (no spaces around dash)
+    {
+      FwTerm term = filter.getTerms().get("COMPACT");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+    }
+
+    // Spaced range (spaces around dash)
+    {
+      FwTerm term = filter.getTerms().get("SPACED");
+      assertThat(term.getFroms(), hasSize(1));
+      FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+      assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+    }
+  }
+
+  @Test
   public void testNextLineRecoveryGh9718() {
     String hostname = "next-line-recovery-gh-9718";
     JuniperConfiguration vc = parseJuniperConfig(hostname, /* allowErrors= */ true);
@@ -10150,6 +10281,74 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         vc.getWarnings().getParseWarnings(),
         hasItem(hasComment("This feature is not currently supported")));
+  }
+
+  @Test
+  public void testForwardingTableExport_extraction() {
+    JuniperConfiguration jc = parseJuniperConfig("forwarding-table-export");
+    // Policy is stored on the routing instance
+    assertThat(
+        jc.getMasterLogicalSystem().getDefaultRoutingInstance().getForwardingTableExportPolicy(),
+        equalTo("FIB_FILTER"));
+    // The "allow" term has load-balance per-packet and accept
+    PolicyStatement ps = jc.getMasterLogicalSystem().getPolicyStatements().get("FIB_FILTER");
+    assertThat(ps.getTerms(), hasKey("allow"));
+    assertThat(
+        ps.getTerms().get("allow").getThens().getAllThens(),
+        hasItem(instanceOf(PsThenLoadBalance.class)));
+  }
+
+  @Test
+  public void testForwardingTableExport_conversion() {
+    Configuration c = parseConfig("forwarding-table-export");
+    // The forwarding-table export policy should be wired via a generated wrapper policy
+    assertThat(
+        c.getDefaultVrf().getFibExportPolicy(),
+        equalTo(generatedFibExportPolicyName(DEFAULT_VRF_NAME)));
+  }
+
+  @Test
+  public void testForwardingTableExport_dataPlane() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export");
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Both routes should be in the RIB
+    Set<AbstractRoute> routes =
+        dp.getRibs().get("forwarding-table-export", DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.0.0/24"))));
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.1.0/24"))));
+
+    // Only 192.168.0.0/24 should be in the FIB (permitted by the policy);
+    // 192.168.1.0/24 should be rejected by the policy and excluded from FIB.
+    Fib fib = dp.getFibs().get("forwarding-table-export").get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
+    assertThat(fib.get(Ip.parse("192.168.1.1")), empty());
+  }
+
+  /**
+   * Test that a forwarding-table export policy with only {@code then load-balance per-packet} (no
+   * explicit accept) allows all routes into the FIB. On Junos, the default forwarding-table export
+   * action is accept, so routes that fall through the policy without a terminal action are
+   * accepted.
+   */
+  @Test
+  public void testForwardingTableExport_defaultAccept() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export-default-accept");
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Both routes should be in the RIB
+    String hostname = "forwarding-table-export-default-accept";
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.0.0/24"))));
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("192.168.1.0/24"))));
+
+    // Both routes should also be in the FIB — the policy has no terminal action, so the default
+    // forwarding-table export action (accept) applies.
+    Fib fib = dp.getFibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
+    assertThat(fib.get(Ip.parse("192.168.1.1")), not(empty()));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

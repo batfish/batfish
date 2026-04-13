@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -35,4 +37,10 @@ public final class InputCommunities extends CommunitySetExpr {
   }
 
   private static final InputCommunities INSTANCE = new InputCommunities();
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

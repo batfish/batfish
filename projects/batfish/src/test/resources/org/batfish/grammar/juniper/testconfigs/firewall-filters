@@ -49,5 +49,31 @@ set firewall filter PARSING term PACKET_LENGTH from packet-length 100-200
 set firewall filter PARSING term PACKET_LENGTH from packet-length-except 70
 set firewall filter PARSING term PACKET_LENGTH from packet-length-except 80-90
 #
+#
+set firewall family inet6 filter FILTER6_1 term TERM from next-header tcp
+set firewall family inet6 filter FILTER6_1 term TERM then accept
+set firewall family inet6 filter FILTER6_2 term TERM from next-header udp
+set firewall family inet6 filter FILTER6_2 term TERM then accept
+set interfaces xe-0/0/4 unit 0 family inet6 address 2001:db8::1/64
+set interfaces xe-0/0/4 unit 0 family inet6 filter input FILTER6_1
+set interfaces xe-0/0/5 unit 0 family inet6 address 2001:db8::2/64
+set interfaces xe-0/0/5 unit 0 family inet6 filter input-list FILTER6_1
+set interfaces xe-0/0/5 unit 0 family inet6 filter input-list FILTER6_2
+set interfaces xe-0/0/5 unit 0 family inet6 filter output-list FILTER6_2
+set interfaces xe-0/0/5 unit 0 family inet6 filter output-list FILTER6_1
+# inet6 input-list then input: input wins, clears list
+set interfaces xe-0/0/6 unit 0 family inet6 address 2001:db8::3/64
+set interfaces xe-0/0/6 unit 0 family inet6 filter input-list FILTER6_1
+set interfaces xe-0/0/6 unit 0 family inet6 filter input FILTER6_2
+# inet6 input then input-list: input-list wins, clears single
+set interfaces xe-0/0/7 unit 0 family inet6 address 2001:db8::4/64
+set interfaces xe-0/0/7 unit 0 family inet6 filter input FILTER6_1
+set interfaces xe-0/0/7 unit 0 family inet6 filter input-list FILTER6_2
+# inet and inet6 are independent
+set interfaces xe-0/0/8 unit 0 family inet address 5.2.3.4/24
+set interfaces xe-0/0/8 unit 0 family inet filter input FILTER1
+set interfaces xe-0/0/8 unit 0 family inet6 address 2001:db8::5/64
+set interfaces xe-0/0/8 unit 0 family inet6 filter input FILTER6_1
+#
 set firewall family inet filter FILTER term IPV6 from protocol ipv6
 set firewall family inet filter FILTER term DECAPSULATE-GRE then decapsulate gre

@@ -28,6 +28,7 @@ import static org.batfish.representation.frr.FrrConversions.computeLocalIpForBgp
 import static org.batfish.representation.frr.FrrConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.frr.FrrConversions.computeOspfAreas;
 import static org.batfish.representation.frr.FrrConversions.computeOspfExportPolicyName;
+import static org.batfish.representation.frr.FrrConversions.convertBgpTableMap;
 import static org.batfish.representation.frr.FrrConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.frr.FrrConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.frr.FrrConversions.generateBgpCommonPeerConfig;
@@ -47,6 +48,8 @@ import static org.batfish.representation.frr.FrrConversions.toRouteFilterList;
 import static org.batfish.representation.frr.FrrConversions.toRouteTarget;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
@@ -435,7 +438,7 @@ public final class FrrConversionsTest {
     vrf.setIpv4Unicast(ipv4Unicast);
 
     // the method under test
-    viVrf.setBgpProcess(toBgpProcess(viConfig, frr, DEFAULT_VRF_NAME, vrf));
+    viVrf.setBgpProcess(toBgpProcess(viConfig, frr, DEFAULT_VRF_NAME, vrf, new Warnings()));
 
     // aggregate route exists with expected suppression policy (if any)
     String suppressionPolicyName = summaryOnly ? SUMMARY_ONLY_SUPPRESSION_POLICY_NAME : null;
@@ -474,7 +477,8 @@ public final class FrrConversionsTest {
     vrf.addNetwork(new BgpNetwork(prefix));
 
     // the method under test
-    org.batfish.datamodel.BgpProcess viBgp = toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
+    org.batfish.datamodel.BgpProcess viBgp =
+        toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf, new Warnings());
 
     // generation policy exists
     assertTrue(viBgp.getOriginationSpace().containsPrefix(prefix));
@@ -521,7 +525,7 @@ public final class FrrConversionsTest {
     vrf.addNetwork(new BgpNetwork(prefix, networkRouteMapName));
 
     // the method under test. In charge of creating peer export policies.
-    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
+    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf, new Warnings());
 
     // the prefix is allowed to leave
     AbstractRoute route = KernelRoute.builder().setNetwork(prefix).build();
@@ -556,7 +560,8 @@ public final class FrrConversionsTest {
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test
-    org.batfish.datamodel.BgpProcess viBgp = toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
+    org.batfish.datamodel.BgpProcess viBgp =
+        toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf, new Warnings());
 
     // generation policy exists
     assertFalse(viBgp.getOriginationSpace().containsPrefix(prefix));
@@ -1486,7 +1491,7 @@ public final class FrrConversionsTest {
     ospf.setRouterId(Ip.parse("1.1.1.1"));
 
     // the method under test
-    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
+    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf, new Warnings());
 
     // Spawn test prefixes
     Prefix prefix = Prefix.parse("1.1.1.1/32");
@@ -2103,5 +2108,84 @@ public final class FrrConversionsTest {
 
     // Should return null since route-map doesn't exist
     assertNull(importPolicy);
+  }
+
+  @Test
+  public void testConvertBgpTableMap_noTableMap() {
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
+    org.batfish.datamodel.BgpProcess viProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
+    Warnings w = new Warnings();
+
+    convertBgpTableMap(vrf, _frr, viProc, w);
+
+    assertNull(viProc.getTableMapPolicy());
+  }
+
+  @Test
+  public void testConvertBgpTableMap_denyAll() {
+    RouteMap rm = new RouteMap("DENY_ALL");
+    RouteMapEntry entry = new RouteMapEntry(1000, LineAction.DENY);
+    rm.getEntries().put(1000, entry);
+    _frr.getRouteMaps().put("DENY_ALL", rm);
+
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
+    vrf.setTableMap("DENY_ALL");
+    org.batfish.datamodel.BgpProcess viProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
+    Warnings w = new Warnings(true, true, true);
+
+    convertBgpTableMap(vrf, _frr, viProc, w);
+
+    assertEquals("DENY_ALL", viProc.getTableMapPolicy());
+    assertThat(w, hasRedFlags(empty()));
+  }
+
+  @Test
+  public void testConvertBgpTableMap_permitWithSetMetric() {
+    RouteMap rm = new RouteMap("WITH_METRIC");
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.PERMIT);
+    entry.setSetMetric(new RouteMapSetMetric(new LiteralLong(100)));
+    rm.getEntries().put(10, entry);
+    _frr.getRouteMaps().put("WITH_METRIC", rm);
+
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
+    vrf.setTableMap("WITH_METRIC");
+    org.batfish.datamodel.BgpProcess viProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
+    Warnings w = new Warnings(true, true, true);
+
+    convertBgpTableMap(vrf, _frr, viProc, w);
+
+    assertEquals("WITH_METRIC", viProc.getTableMapPolicy());
+    // Valid set operation: redFlag (not risky) since metric is supported on the router
+    assertThat(
+        w,
+        hasRedFlags(
+            contains(hasText(containsString("set RouteMapSetMetric modification not yet")))));
+  }
+
+  @Test
+  public void testConvertBgpTableMap_permitWithInvalidSet() {
+    RouteMap rm = new RouteMap("WITH_LOCPREF");
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.PERMIT);
+    entry.setSetLocalPreference(new RouteMapSetLocalPreference(200));
+    rm.getEntries().put(10, entry);
+    _frr.getRouteMaps().put("WITH_LOCPREF", rm);
+
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
+    vrf.setTableMap("WITH_LOCPREF");
+    org.batfish.datamodel.BgpProcess viProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
+    Warnings w = new Warnings(true, true, true);
+
+    convertBgpTableMap(vrf, _frr, viProc, w);
+
+    assertEquals("WITH_LOCPREF", viProc.getTableMapPolicy());
+    // Invalid set operation on the router: RISKY
+    assertThat(
+        w,
+        hasRedFlags(
+            contains(hasText(containsString("set RouteMapSetLocalPreference has no effect")))));
   }
 }

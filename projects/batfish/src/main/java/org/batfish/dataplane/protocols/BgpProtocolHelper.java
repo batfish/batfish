@@ -4,7 +4,6 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.OriginMechanism.GENERATED;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -35,7 +34,6 @@ import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -85,8 +83,6 @@ public final class BgpProtocolHelper {
     builder.setProtocol(outgoingProtocol);
     builder.setSrcProtocol(routeProtocol);
 
-    // Clear a bunch of non-transitive attributes
-    builder.setWeight(0);
     if (!(route instanceof EvpnRoute<?, ?>)) {
       // These attributes are constants for EVPN routes and cannot be set
       builder.setNonRouting(false);
@@ -187,12 +183,6 @@ public final class BgpProtocolHelper {
     if (!localSessionProperties.advertiseUnchangedMed() && !routeOriginatedLocally) {
       builder.setMetric(0);
     }
-
-    // Local preference: only transitive for iBGP or within a confederation
-    builder.setLocalPreference(
-        localSessionProperties.advertiseUnchangedLocalPref()
-            ? route.getLocalPreference()
-            : DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
   }
@@ -389,8 +379,8 @@ public final class BgpProtocolHelper {
    * @param routeBuilder Builder for the output (exported) route
    * @param ourSessionProperties properties for the sender's session
    * @param af sender's address family configuration
-   * @param originalRouteNhip BGP next hop IP of the original route, or {@link
-   *     Route#UNSET_ROUTE_NEXT_HOP_IP} if original route is not BGP
+   * @param originalRouteNhip BGP next hop IP of the original route, or {@code null} if original
+   *     route is not BGP
    * @param pathIdGenerators Used for generating a path ID for the outgoing advertisement if needed
    * @param routesToPathIds Routes we have already exported, mapped to the path IDs with which we
    *     exported them. If the outgoing route needs a path ID, we will look up {@code originalRoute}
@@ -419,6 +409,7 @@ public final class BgpProtocolHelper {
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
+        ourSessionProperties.advertiseUnchangedLocalPref(),
         af.getAddressFamilyCapabilities().getSendCommunity(),
         af.getAddressFamilyCapabilities().getSendExtendedCommunity(),
         ourSessionProperties.getConfedSessionType(),
@@ -438,6 +429,8 @@ public final class BgpProtocolHelper {
    *
    * @param routeBuilder Builder for the output (exported) route
    * @param isEbgp true for ebgp sessions
+   * @param advertiseUnchangedLocalPref whether to preserve local preference (true for iBGP and eBGP
+   *     within a confederation)
    * @param sendStandardCommunities whether to send standard communities to the neighbor
    * @param sendExtendedCommunities whether to send extended communities to the neighbor
    * @param confedSessionType type of confederation session, if any
@@ -452,6 +445,7 @@ public final class BgpProtocolHelper {
       void transformBgpRoutePostExport(
           B routeBuilder,
           boolean isEbgp,
+          boolean advertiseUnchangedLocalPref,
           boolean sendStandardCommunities,
           boolean sendExtendedCommunities,
           ConfedSessionType confedSessionType,
@@ -495,6 +489,15 @@ public final class BgpProtocolHelper {
       routeBuilder.setAsPath(routeAsPath);
     }
 
+    // Weight is non-transitive and not carried in BGP UPDATE messages.
+    routeBuilder.setWeight(0);
+
+    // Local preference is non-transitive: clear for eBGP sessions outside a confederation (after
+    // export policy may have set it). Within a confederation, local-pref is preserved.
+    if (!advertiseUnchangedLocalPref) {
+      routeBuilder.setLocalPreference(DEFAULT_LOCAL_PREFERENCE);
+    }
+
     // Tags are non-transitive
     routeBuilder.setTag(null);
 
@@ -515,8 +518,7 @@ public final class BgpProtocolHelper {
     //  If so, this should step be skipped for such routes.
     // TODO: This next hop is incorrect for EVPN type 3 routes (not critical since type 3 routes'
     //  next hops have no function).
-    if (!(routeBuilder instanceof EvpnType5Route.Builder)
-        && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+    if (!(routeBuilder instanceof EvpnType5Route.Builder) && routeBuilder.getNextHopIp() == null) {
       if (isEbgp) {
         routeBuilder.setNextHopIp(localIp);
       } else { // iBGP session
@@ -525,8 +527,7 @@ public final class BgpProtocolHelper {
         policy.
         If original route has next-hop ip, preserve it. If not, set our own.
         */
-        routeBuilder.setNextHopIp(
-            originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip);
+        routeBuilder.setNextHopIp(originalRouteNhip == null ? localIp : originalRouteNhip);
       }
     }
 

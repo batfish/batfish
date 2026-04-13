@@ -77,7 +77,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -713,7 +712,17 @@ public final class VirtualRouter {
   /** Compute the FIB from the main RIB */
   public void computeFib() {
     _fib = null; // free the old one.
-    _fib = new FibImpl(_mainRib, _resolutionRestriction);
+    String fibExportPolicyName = _vrf.getFibExportPolicy();
+    if (fibExportPolicyName == null) {
+      _fib = new FibImpl(_mainRib, _resolutionRestriction);
+    } else {
+      RoutingPolicy fibExportPolicy = _c.getRoutingPolicies().get(fibExportPolicyName);
+      _fib =
+          new FibImpl(
+              _mainRib,
+              _resolutionRestriction,
+              fibExportPolicy == null ? r -> true : fibExportPolicy::processReadOnly);
+    }
   }
 
   void initBgpAggregateRoutes() {
@@ -969,7 +978,7 @@ public final class VirtualRouter {
               .setLevel(IsisLevel.LEVEL_1)
               .setMetric(0L)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP)
+              .setNextHop(NextHopDiscard.instance())
               .setProtocol(RoutingProtocol.ISIS_L1)
               .setSystemId(proc.getNetAddress().getSystemIdString())
               .build();

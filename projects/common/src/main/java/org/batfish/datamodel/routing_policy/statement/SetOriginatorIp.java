@@ -32,6 +32,10 @@ public final class SetOriginatorIp extends Statement {
       return new Result();
     }
     Ip originatorIp = _originatorIpExpr.evaluate(environment);
+    if (originatorIp == null) {
+      // If the IP expression evaluates to null, don't set the originator IP
+      return new Result();
+    }
     HasWritableOriginatorIp<?, ?> outputRoute =
         (HasWritableOriginatorIp<?, ?>) environment.getOutputRoute();
     outputRoute.setOriginatorIp(originatorIp);

@@ -12,7 +12,7 @@ public class LinkMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches {@link
    * IpLink#getIp1}.
    */
-  public static HasIp1 hasIp1(Matcher<? super Ip> subMatcher) {
+  public static Matcher<IpLink> hasIp1(Matcher<? super Ip> subMatcher) {
     return new HasIp1(subMatcher);
   }
 

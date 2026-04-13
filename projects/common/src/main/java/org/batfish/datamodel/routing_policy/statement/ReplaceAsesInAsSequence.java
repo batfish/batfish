@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -85,6 +87,12 @@ public final class ReplaceAsesInAsSequence extends Statement {
     }
 
     private static final AnyAs INSTANCE = new AnyAs();
+
+    /** Deserialize to singleton instance. */
+    @Serial
+    private Object readResolve() throws ObjectStreamException {
+      return INSTANCE;
+    }
   }
 
   public static @Nonnull AsSequenceExpr anyAs() {
@@ -180,6 +188,12 @@ public final class ReplaceAsesInAsSequence extends Statement {
 
     private static final @Nonnull LocalAsOrConfedIfNeighborNotInConfed INSTANCE =
         new LocalAsOrConfedIfNeighborNotInConfed();
+
+    /** Deserialize to singleton instance. */
+    @Serial
+    private Object readResolve() throws ObjectStreamException {
+      return INSTANCE;
+    }
   }
 
   public ReplaceAsesInAsSequence(

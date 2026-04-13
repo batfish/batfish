@@ -15,9 +15,72 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
-final class ConvertConfigurationAnswerElementMatchers {
+public final class ConvertConfigurationAnswerElementMatchers {
 
-  static final class HasRedFlagWarning
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasDefinedStructure(
+      @Nonnull String filename, @Nonnull StructureType type, @Nonnull String structureName) {
+    return new HasDefinedStructure(filename, type, structureName);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement>
+      hasDefinedStructureWithDefinitionLines(
+          @Nonnull String filename,
+          @Nonnull StructureType type,
+          @Nonnull String structureName,
+          @Nonnull Matcher<? super Set<Integer>> subMatcher) {
+    return new HasDefinedStructureWithDefinitionLines(filename, type, structureName, subMatcher);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasRedFlagWarning(
+      @Nonnull String hostname, @Nonnull Matcher<? super String> subMatcher) {
+    return new HasRedFlagWarning(hostname, subMatcher);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasUndefinedReference(
+      @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
+    return new HasUndefinedReference(hostname, type, structureName);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasUndefinedReference(
+      @Nonnull String filename,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      @Nonnull StructureUsage usage) {
+    return new HasUndefinedReferenceWithUsage(filename, type, structureName, usage);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasNoUndefinedReferences() {
+    return new HasNoUndefinedReferences();
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasReferencedStructure(
+      @Nonnull String filename,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      @Nonnull StructureUsage usage) {
+    return new HasReferenceWithUsage(filename, type, structureName, usage);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement>
+      hasUndefinedReferenceWithReferenceLines(
+          @Nonnull String hostname,
+          @Nonnull StructureType type,
+          @Nonnull String structureName,
+          @Nonnull StructureUsage usage,
+          @Nonnull Matcher<? super Set<Integer>> subMatcher) {
+    return new HasUndefinedReferenceWithReferenceLines(
+        hostname, type, structureName, usage, subMatcher);
+  }
+
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasNumReferrers(
+      @Nonnull String filename,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      int numReferrers) {
+    return new HasNumReferrers(filename, type, structureName, numReferrers);
+  }
+
+  private static final class HasRedFlagWarning
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final @Nonnull Matcher<? super String> _subMatcher;
@@ -55,7 +118,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasDefinedStructure
+  private static final class HasDefinedStructure
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final String _filename;
@@ -108,7 +171,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasDefinedStructureWithDefinitionLines
+  private static final class HasDefinedStructureWithDefinitionLines
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final Matcher<? super Set<Integer>> _subMatcher;
@@ -176,7 +239,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasUndefinedReference
+  private static final class HasUndefinedReference
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final String _filename;
@@ -232,7 +295,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasNoUndefinedReferences
+  private static final class HasNoUndefinedReferences
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     HasNoUndefinedReferences() {}
@@ -278,7 +341,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasUndefinedReferenceWithUsage
+  private static final class HasUndefinedReferenceWithUsage
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final String _filename;
@@ -349,7 +412,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasReferenceWithUsage
+  private static final class HasReferenceWithUsage
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final String _filename;
@@ -418,7 +481,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasUndefinedReferenceWithReferenceLines
+  private static final class HasUndefinedReferenceWithReferenceLines
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final Matcher<? super Set<Integer>> _subMatcher;
@@ -499,7 +562,7 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
-  static final class HasNumReferrers
+  private static final class HasNumReferrers
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
     private final String _filename;

@@ -923,7 +923,8 @@ HOME_ADDRESS_OPTION: 'home-address-option';
 
 HOP_BY_HOP_HEADER: 'hop-by-hop-header';
 
-HOP_LIMIT: 'hop-limit';
+HOP_LIMIT: 'hop-limit' -> pushMode(M_SubRange);
+HOP_LIMIT_EXCEPT: 'hop-limit-except' -> pushMode(M_SubRange);
 
 HOST_OUTBOUND_TRAFFIC: 'host-outbound-traffic';
 
@@ -5021,6 +5022,7 @@ M_SubRange_DASH: '-' -> type(DASH), mode(M_SubRangeDash);
 M_SubRange_OTHER: F_Alpha F_NonWhitespaceChar* { less(); } -> popMode;
 
 mode M_SubRangeDash;
+M_SubRangeDash_WS: F_WhitespaceChar+ -> skip;
 M_SubRangeDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_SubRangeDash_UINT8: F_Uint8 -> type(UINT8), popMode;
 M_SubRangeDash_UINT16: F_Uint16 -> type(UINT16), popMode;

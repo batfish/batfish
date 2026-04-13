@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.isis.IsisLevelSettings;
-import org.batfish.datamodel.matchers.IsisLevelSettingsMatchersImpl.HasWideMetricsOnly;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class IsisLevelSettingsMatchers {
@@ -25,5 +25,16 @@ public final class IsisLevelSettingsMatchers {
   public static @Nonnull Matcher<IsisLevelSettings> hasWideMetricsOnly(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasWideMetricsOnly(subMatcher);
+  }
+
+  private static final class HasWideMetricsOnly extends FeatureMatcher<IsisLevelSettings, Boolean> {
+    HasWideMetricsOnly(Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An IsisLevelSettings with wideMetricsOnly:", "wideMetricsOnly");
+    }
+
+    @Override
+    protected Boolean featureValueOf(IsisLevelSettings actual) {
+      return actual.getWideMetricsOnly();
+    }
   }
 }

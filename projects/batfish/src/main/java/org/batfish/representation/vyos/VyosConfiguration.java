@@ -125,7 +125,7 @@ public class VyosConfiguration extends VendorConfiguration {
       IpsecStaticPeerConfig.Builder ipsecPeerConfigBuilder = IpsecStaticPeerConfig.builder();
       ipsecPeerConfigBuilder.setDestinationAddress(peerAddress);
       Ip localAddress = ipsecPeer.getLocalAddress();
-      if (localAddress == null || !localAddress.valid()) {
+      if (localAddress == null) {
         _w.redFlag("No local address configured for VPN " + newIpsecVpnName);
         continue;
       }

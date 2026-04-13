@@ -233,7 +233,9 @@ This is the core of IBDP - repeat steps 5-7 until fixed point:
    - **EIGRP routes**: Summary routes, external routes
    - **IS-IS routes**: All IS-IS routes (leak levels, redistribute)
    - **OSPF external routes**: Type 1/2, redistributed routes
-   - **BGP routes**: All BGP routes (iBGP, eBGP, redistributed)
+   - **BGP routes**: All BGP routes (iBGP, eBGP, redistributed). If a
+     [table-map](table_map.md) policy is configured, it is applied before
+     routes are sent to the main RIB (denied routes get `nonRouting=true`).
    - **Cross-VRF routes**: Leaked between VRF main RIBs
 
 6. **Oscillation check**:
@@ -633,6 +635,8 @@ fib = bf.get_fib(nodes="router1")
 - [Symbolic Engine](../symbolic_engine/README.md): BDD-based analysis using data plane
 - [Post-processing](../post_processing/README.md): Pre-processing before data plane
 - [Architecture](../architecture/README.md): Overall system architecture
+- [BGP Table-Map](table_map.md): Filtering BGP routes before main RIB installation
+- [FIB Export Policy](fib_export_policy.md): Filtering routes before FIB installation
 
 ---
 

@@ -135,6 +135,7 @@ fft_from
       | fftf_fragment_offset
       | fftf_fragment_offset_except
       | fftf_hop_limit
+      | fftf_hop_limit_except
       | fftf_icmp_code
       | fftf_icmp_code_except
       | fftf_icmp_type
@@ -270,7 +271,12 @@ fragment_offset
 
 fftf_hop_limit
 :
-   HOP_LIMIT uint8
+   HOP_LIMIT uint8_range
+;
+
+fftf_hop_limit_except
+:
+   HOP_LIMIT_EXCEPT uint8_range
 ;
 
 fftf_icmp_code

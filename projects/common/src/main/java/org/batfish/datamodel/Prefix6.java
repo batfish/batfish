@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Optional;
@@ -146,11 +148,13 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
         prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
         "Invalid prefix length %s",
         prefixLength);
-    if (network.valid()) {
-      _address = network.getNetworkAddress(prefixLength);
-    } else {
-      _address = network;
-    }
+    _address = network.getNetworkAddress(prefixLength);
     _prefixLength = prefixLength;
+  }
+
+  /** Cache after deserialization. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(this);
   }
 }

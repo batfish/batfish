@@ -88,7 +88,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -106,7 +106,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -143,7 +143,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -253,7 +253,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -271,7 +271,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -346,7 +346,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -364,7 +364,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -401,7 +401,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -511,7 +511,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -529,7 +529,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -547,7 +547,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -565,7 +565,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -583,7 +583,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -601,7 +601,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -619,7 +619,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -637,7 +637,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -693,7 +693,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -858,7 +858,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1028,7 +1028,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1046,7 +1046,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -1064,7 +1064,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1082,7 +1082,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -1289,7 +1289,7 @@
         "Next_Hop" : {
           "type" : "discard"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
         "Tag" : null,
@@ -1415,7 +1415,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1433,7 +1433,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -1563,7 +1563,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1733,7 +1733,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1751,7 +1751,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -1769,7 +1769,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -1787,7 +1787,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -1956,7 +1956,7 @@
         "Next_Hop" : {
           "type" : "discard"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
         "Tag" : null,
@@ -2120,7 +2120,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2138,7 +2138,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -2230,7 +2230,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2362,7 +2362,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2380,7 +2380,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -2417,7 +2417,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2435,7 +2435,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -2472,7 +2472,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2490,7 +2490,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -2508,7 +2508,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -2526,7 +2526,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -2952,7 +2952,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3027,7 +3027,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3045,7 +3045,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3082,7 +3082,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3100,7 +3100,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3156,7 +3156,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3174,7 +3174,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3192,7 +3192,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3210,7 +3210,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3520,7 +3520,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3538,7 +3538,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3556,7 +3556,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3574,7 +3574,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3592,7 +3592,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3610,7 +3610,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3628,7 +3628,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3646,7 +3646,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -3664,7 +3664,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -3904,7 +3904,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4036,7 +4036,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4054,7 +4054,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -4091,7 +4091,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4109,7 +4109,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -4146,7 +4146,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4164,7 +4164,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -4592,7 +4592,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4705,7 +4705,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4723,7 +4723,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -4760,7 +4760,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4778,7 +4778,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -4834,7 +4834,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -4852,7 +4852,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5108,7 +5108,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5126,7 +5126,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5163,7 +5163,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5238,7 +5238,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5256,7 +5256,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5347,7 +5347,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5365,7 +5365,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5402,7 +5402,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5439,7 +5439,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5457,7 +5457,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5548,7 +5548,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5566,7 +5566,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5584,7 +5584,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5602,7 +5602,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5658,7 +5658,7 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5714,7 +5714,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5732,7 +5732,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5750,7 +5750,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5768,7 +5768,7 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5805,7 +5805,7 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5823,7 +5823,7 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",
         "Tag" : null,
@@ -5860,7 +5860,7 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
         "Tag" : null,
@@ -5878,7 +5878,7 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop_IP" : null,
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",
         "Tag" : null,

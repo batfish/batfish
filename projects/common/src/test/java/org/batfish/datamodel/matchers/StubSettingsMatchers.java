@@ -3,8 +3,8 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.matchers.StubSettingsMatchersImpl.HasSuppressType3;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public final class StubSettingsMatchers {
@@ -34,4 +34,15 @@ public final class StubSettingsMatchers {
   }
 
   private StubSettingsMatchers() {}
+
+  private static final class HasSuppressType3 extends FeatureMatcher<StubSettings, Boolean> {
+    HasSuppressType3(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A StubSettings with suppressType3:", "suppressType3");
+    }
+
+    @Override
+    protected Boolean featureValueOf(StubSettings actual) {
+      return actual.getSuppressType3();
+    }
+  }
 }

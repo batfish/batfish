@@ -2,7 +2,6 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
@@ -44,6 +43,7 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
@@ -261,13 +261,24 @@ public class BgpProtocolHelperTest {
   public void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
-        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null, false);
+        builder,
+        true,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
     assertThat("Tag is cleared", builder.getTag(), equalTo(UNSET_ROUTE_TAG));
 
     builder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
         builder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.NO_CONFED,
@@ -287,13 +298,33 @@ public class BgpProtocolHelperTest {
     // Nothing sent
     Builder builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null, false);
+        builder,
+        true,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
     assertThat("Communities cleared", builder.getCommunities(), equalTo(CommunitySet.empty()));
 
     // only standard sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, true, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null, false);
+        builder,
+        true,
+        true,
+        true,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
     assertThat(
         "Only standard communities",
         builder.getCommunities().getCommunities(),
@@ -302,7 +333,17 @@ public class BgpProtocolHelperTest {
     // only extended sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, false, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null, false);
+        builder,
+        true,
+        true,
+        false,
+        true,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
     assertThat(
         "Only extended communities",
         builder.getCommunities().getCommunities(),
@@ -311,7 +352,17 @@ public class BgpProtocolHelperTest {
     // both sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, true, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null, false);
+        builder,
+        true,
+        true,
+        true,
+        true,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
     assertThat("All communities", builder.getCommunities(), equalTo(mixedComms));
   }
 
@@ -322,6 +373,7 @@ public class BgpProtocolHelperTest {
     _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
@@ -346,6 +398,7 @@ public class BgpProtocolHelperTest {
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         true,
+        true,
         false,
         false,
         ConfedSessionType.ACROSS_CONFED_BORDER,
@@ -364,6 +417,7 @@ public class BgpProtocolHelperTest {
     _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
@@ -388,6 +442,7 @@ public class BgpProtocolHelperTest {
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.NO_CONFED,
@@ -404,6 +459,7 @@ public class BgpProtocolHelperTest {
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.WITHIN_CONFED,
@@ -418,11 +474,12 @@ public class BgpProtocolHelperTest {
   @Test
   public void testTransformPostExportNextHopIp() {
     Ip nextHopIp = Ip.parse("1.2.3.4");
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
 
     // Pure eBGP, not set by the policy
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
@@ -435,9 +492,10 @@ public class BgpProtocolHelperTest {
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // eBGP across confederation border
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
@@ -450,9 +508,10 @@ public class BgpProtocolHelperTest {
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // eBGP within confederation -- change
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
@@ -465,10 +524,11 @@ public class BgpProtocolHelperTest {
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP no confederation -- no change
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.NO_CONFED,
@@ -480,10 +540,11 @@ public class BgpProtocolHelperTest {
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(DEST_IP));
 
     // iBGP within confederation -- no change
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.WITHIN_CONFED,
@@ -495,46 +556,49 @@ public class BgpProtocolHelperTest {
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(DEST_IP));
 
     // eBGP within confederation, unset original IP -- overwrite
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
+        true,
         true,
         false,
         false,
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP no confederation, unset original IP -- overwrite
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.NO_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP within confederation, unset original IP -- overwrite
-    _baseBgpRouteBuilder.setNextHopIp(null);
+    _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder,
         false,
+        true,
         false,
         false,
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));

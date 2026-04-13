@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.UnsignedInts;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.io.Serializable;
@@ -104,12 +103,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
         prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
         "Invalid prefix length %s",
         prefixLength);
-    if (ip.valid()) {
-      // TODO: stop using Ip as a holder for invalid values.
-      _ip = ip.getNetworkAddress(prefixLength);
-    } else {
-      _ip = ip;
-    }
+    // TODO: stop using Ip as a holder for invalid values.
+    _ip = ip.getNetworkAddress(prefixLength);
     _prefixLength = prefixLength;
   }
 
@@ -280,7 +275,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
     @Serial
     private Object readResolve() throws ObjectStreamException {
-      return CACHE.get(new Prefix(Ip.create(UnsignedInts.toLong(_ip)), _length));
+      return CACHE.get(new Prefix(Ip.create(_ip), _length));
     }
   }
 }

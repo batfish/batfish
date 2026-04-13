@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Comparators.lexicographical;
-import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
@@ -186,7 +185,8 @@ public final class GeneratedRoute extends AbstractRoute
   private final boolean _discard;
   private final @Nullable String _generationPolicy;
   private final long _localPreference;
-  private final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
   private final @Nonnull OriginType _originType;
   private final int _weight;
 
@@ -256,7 +256,7 @@ public final class GeneratedRoute extends AbstractRoute
     _discard = discard;
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
-    _metric = metric;
+    _metric = (int) metric;
     _localPreference = localPreference;
     _nextHop = nextHop;
     _originType = originType;
@@ -319,7 +319,7 @@ public final class GeneratedRoute extends AbstractRoute
   @JsonProperty(PROP_METRIC)
   @Override
   public long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 
   @JsonProperty(PROP_ORIGIN_TYPE)
@@ -360,8 +360,7 @@ public final class GeneratedRoute extends AbstractRoute
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<GeneratedRoute> COMPARATOR =
       Comparator.comparing(GeneratedRoute::getNetwork)
-          .thenComparing(GeneratedRoute::getNextHopIp, nullsLast(naturalOrder()))
-          .thenComparing(GeneratedRoute::getNextHopInterface, nullsLast(naturalOrder()))
+          .thenComparing(GeneratedRoute::getNextHop)
           .thenComparing(GeneratedRoute::getMetric)
           .thenComparing(GeneratedRoute::getAdministrativeCost)
           .thenComparing(GeneratedRoute::getTag)
@@ -411,12 +410,12 @@ public final class GeneratedRoute extends AbstractRoute
     GeneratedRoute that = (GeneratedRoute) o;
     return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
         && _network.equals(that._network)
-        && _admin == that._admin
+        && getAdministrativeCost() == that.getAdministrativeCost()
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _discard == that._discard
-        && _metric == that._metric
-        && _tag == that._tag
+        && getMetric() == that.getMetric()
+        && getTag() == that.getTag()
         && _asPath.equals(that._asPath)
         && Objects.equals(_attributePolicy, that._attributePolicy)
         && _communities.equals(that._communities)
@@ -434,16 +433,16 @@ public final class GeneratedRoute extends AbstractRoute
       h =
           Objects.hash(
               _network,
-              _admin,
+              getAdministrativeCost(),
               getNonRouting(),
               getNonForwarding(),
-              _tag,
+              getTag(),
               _asPath,
               _attributePolicy,
               _communities,
               _discard,
               _generationPolicy,
-              _metric,
+              getMetric(),
               _nextHop,
               _localPreference,
               _originType.ordinal(),

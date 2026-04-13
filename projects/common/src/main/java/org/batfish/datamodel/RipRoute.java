@@ -13,7 +13,8 @@ public abstract class RipRoute extends AbstractRoute {
   /** Maximum allowable route metric in RIP */
   public static final long MAX_ROUTE_METRIC = 16;
 
-  protected final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
 
   protected RipRoute(Prefix network, NextHop nextHop, long admin, long metric, long tag) {
     super(network, admin, tag, false, false);
@@ -22,7 +23,7 @@ public abstract class RipRoute extends AbstractRoute {
         "Invalid RIP route metric %s. Must be between 0 and %s",
         metric,
         MAX_ROUTE_METRIC);
-    _metric = metric;
+    _metric = (int) metric;
     _nextHop = nextHop;
   }
 
@@ -30,6 +31,6 @@ public abstract class RipRoute extends AbstractRoute {
   @JsonProperty(PROP_METRIC)
   @Override
   public final long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 }

@@ -134,12 +134,12 @@ public class EigrpInternalRoute extends EigrpRoute {
       return false;
     }
     EigrpInternalRoute rhs = (EigrpInternalRoute) obj;
-    return _admin == rhs._admin
+    return getAdministrativeCost() == rhs.getAdministrativeCost()
         // Skip #getMetric() since it is derived from EigrpMetric _metric
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
-        && _tag == rhs._tag
-        && _processAsn == rhs._processAsn
+        && getTag() == rhs.getTag()
+        && getProcessAsn() == rhs.getProcessAsn()
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
         && getNonForwarding() == rhs.getNonForwarding()
@@ -149,11 +149,11 @@ public class EigrpInternalRoute extends EigrpRoute {
   @Override
   public final int hashCode() {
     return Objects.hash(
-        _admin,
+        getAdministrativeCost(),
         _network,
         _nextHop,
-        _tag,
-        _processAsn,
+        getTag(),
+        getProcessAsn(),
         _metric,
         _metricVersion,
         getNonForwarding(),
@@ -165,7 +165,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
         .add(PROP_NEXT_HOP_IP, _nextHop)
-        .add(PROP_PROCESS_ASN, _processAsn)
+        .add(PROP_PROCESS_ASN, getProcessAsn())
         .toString();
   }
 }

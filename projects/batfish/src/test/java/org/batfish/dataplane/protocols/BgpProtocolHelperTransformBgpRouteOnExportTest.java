@@ -25,6 +25,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
@@ -203,6 +204,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     transformBgpRoutePostExport(
         routeBuilder,
         _sessionProperties.isEbgp(),
+        _sessionProperties.advertiseUnchangedLocalPref(),
         _fromNeighbor
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
@@ -504,20 +506,23 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     assertThat(transformedBgpRoute.getMetric(), equalTo(1000L));
   }
 
-  /** Test that weight is cleared before exporting for both IBGP and EBGP. */
+  /** Test that weight is cleared in post-export for both IBGP and EBGP. */
   @Test
-  public void testWeightIsClearedBeforeExport() {
-    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setWeight(19).build();
-
-    // IBGP
-    setUpPeers(true);
-    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-    assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+  public void testWeightIsClearedPostExport() {
+    int nonZeroWeight = 19;
 
     // EBGP
     setUpPeers(false);
-    transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-    assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+    Builder routeBuilder =
+        Bgpv4Route.testBuilder().setWeight(nonZeroWeight).setNetwork(DEST_NETWORK);
+    runTransformBgpRoutePostExport(routeBuilder);
+    assertThat(routeBuilder.getWeight(), equalTo(0));
+
+    // IBGP
+    setUpPeers(true);
+    routeBuilder = Bgpv4Route.testBuilder().setWeight(nonZeroWeight).setNetwork(DEST_NETWORK);
+    runTransformBgpRoutePostExport(routeBuilder);
+    assertThat(routeBuilder.getWeight(), equalTo(0));
   }
 
   @Test
@@ -572,12 +577,87 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     assertThat(runTransformBgpRoutePreExport(bgpRoute).getMetric(), equalTo(metric));
   }
 
+  /**
+   * Test that local preference is reset to default in post-export for eBGP sessions, even if the
+   * export policy set it to a non-default value. Local preference is non-transitive and should not
+   * be propagated across eBGP session boundaries.
+   */
+  @Test
+  public void testLocalPreferenceClearedPostExportForEbgp() {
+    long nonDefaultLocalPref = 50;
+    Builder routeBuilder =
+        Bgpv4Route.testBuilder().setLocalPreference(nonDefaultLocalPref).setNetwork(DEST_NETWORK);
+
+    // eBGP: local preference should be reset to default
+    transformBgpRoutePostExport(
+        routeBuilder,
+        true,
+        false,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        Ip.parse("1.1.1.1"),
+        Ip.ZERO,
+        null,
+        false);
+    assertThat(routeBuilder.getLocalPreference(), equalTo(BgpRoute.DEFAULT_LOCAL_PREFERENCE));
+  }
+
+  /**
+   * Test that local preference is preserved in post-export for iBGP sessions and eBGP sessions
+   * within a confederation.
+   */
+  @Test
+  public void testLocalPreferencePreservedPostExportForIbgpAndConfed() {
+    long nonDefaultLocalPref = 50;
+
+    // iBGP: local preference should be preserved
+    {
+      Builder routeBuilder =
+          Bgpv4Route.testBuilder().setLocalPreference(nonDefaultLocalPref).setNetwork(DEST_NETWORK);
+      transformBgpRoutePostExport(
+          routeBuilder,
+          false,
+          true,
+          false,
+          false,
+          ConfedSessionType.NO_CONFED,
+          1,
+          Ip.parse("1.1.1.1"),
+          Ip.parse("1.1.1.1"),
+          null,
+          false);
+      assertThat(routeBuilder.getLocalPreference(), equalTo(nonDefaultLocalPref));
+    }
+
+    // eBGP within confederation: local preference should be preserved
+    {
+      Builder routeBuilder =
+          Bgpv4Route.testBuilder().setLocalPreference(nonDefaultLocalPref).setNetwork(DEST_NETWORK);
+      transformBgpRoutePostExport(
+          routeBuilder,
+          true,
+          true,
+          false,
+          false,
+          ConfedSessionType.WITHIN_CONFED,
+          1,
+          Ip.parse("1.1.1.1"),
+          Ip.parse("1.1.1.1"),
+          null,
+          false);
+      assertThat(routeBuilder.getLocalPreference(), equalTo(nonDefaultLocalPref));
+    }
+  }
+
   @Test
   public void testAggregateProtocolIsCleared() {
     Builder routeBuilder = Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.AGGREGATE);
     transformBgpRoutePostExport(
         routeBuilder,
         true,
+        false,
         false,
         false,
         ConfedSessionType.NO_CONFED,

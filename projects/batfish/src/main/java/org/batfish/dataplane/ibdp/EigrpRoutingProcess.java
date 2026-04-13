@@ -449,7 +449,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute()))
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
             // next hop IP for the route.
-            .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
+            .filter(ra -> !neighborIp.equals(ra.getRoute().getNextHopIp())));
   }
 
   /**
@@ -485,7 +485,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         routes.stream()
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
             // next hop IP for the route.
-            .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
+            .filter(ra -> !neighborIp.equals(ra.getRoute().getNextHopIp())));
   }
 
   /** Filter (and transform) a RibDelta of external routes to ones allowed by export policy */

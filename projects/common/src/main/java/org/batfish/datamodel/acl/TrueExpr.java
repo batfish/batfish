@@ -3,6 +3,8 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,5 +64,11 @@ public class TrueExpr extends AclLineMatchExpr {
   private static @Nonnull TrueExpr jsonCreator(
       @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     return new TrueExpr(traceElement);
+  }
+
+  /** Deserialize to singleton instance when possible. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return _traceElement == null ? INSTANCE : this;
   }
 }

@@ -9,12 +9,7 @@ package(
 
 java_library(
     name = "matchers",
-    srcs = glob(
-        [
-            "*Matchers.java",
-            "*MatchersImpl.java",
-        ],
-    ),
+    srcs = glob(["*Matchers.java"]),
     deps = [
         "//projects/bdd",
         "@maven//:org_hamcrest_hamcrest",

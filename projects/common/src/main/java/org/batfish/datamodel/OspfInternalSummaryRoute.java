@@ -82,9 +82,9 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
         // AbstractRoute properties
         .setNetwork(getNetwork())
         .setNextHop(NextHopDiscard.instance())
-        .setAdmin(_admin)
-        .setMetric(_metric)
-        .setTag(_tag)
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setTag(getTag())
         // OspfInternalSummaryRoute properties
         .setArea(getArea());
   }
@@ -98,10 +98,10 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
     }
     OspfInternalSummaryRoute other = (OspfInternalSummaryRoute) o;
     return _network.equals(other._network)
-        && _admin == other._admin
-        && _area == other._area
-        && _metric == other._metric
-        && _tag == other._tag;
+        && getAdministrativeCost() == other.getAdministrativeCost()
+        && getArea() == other.getArea()
+        && getMetric() == other.getMetric()
+        && getTag() == other.getTag();
   }
 
   @Override
@@ -109,10 +109,10 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
     int h = _hashCode;
     if (h == 0) {
       h = _network.hashCode();
-      h = 31 * h + Long.hashCode(_admin);
-      h = 31 * h + Long.hashCode(_area);
-      h = 31 * h + Long.hashCode(_metric);
-      h = 31 * h + Long.hashCode(_tag);
+      h = 31 * h + Long.hashCode(getAdministrativeCost());
+      h = 31 * h + Long.hashCode(getArea());
+      h = 31 * h + Long.hashCode(getMetric());
+      h = 31 * h + Long.hashCode(getTag());
 
       _hashCode = h;
     }

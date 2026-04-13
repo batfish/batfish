@@ -2,6 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -39,5 +41,11 @@ public final class RemoteAs extends AsExpr {
   @Override
   public String toString() {
     return RemoteAs.class.getSimpleName();
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

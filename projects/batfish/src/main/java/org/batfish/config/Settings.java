@@ -52,8 +52,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_MAX_PARSE_TREE_PRINT_LENGTH = "maxparsetreeprintlength";
 
-  private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
-
   private static final String ARG_NO_SHUFFLE = "noshuffle";
 
   private static final String ARG_PRECOMPUTE_AUTOCOMPLETE = "precompute-autocomplete";
@@ -252,10 +250,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
   }
 
-  public int getMaxRuntimeMs() {
-    return _config.getInt(ARG_MAX_RUNTIME_MS);
-  }
-
   public boolean getPrecomputeAutocomplete() {
     return _config.getBoolean(ARG_PRECOMPUTE_AUTOCOMPLETE);
   }
@@ -390,7 +384,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
     setDefaultProperty(ARG_MAX_PARSE_TREE_PRINT_LENGTH, 0);
-    setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(ARG_PARSE_REUSE, false);
@@ -534,8 +527,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
             + "(<= 0 is treated as no limit)",
         ARGNAME_NUMBER);
 
-    addOption(ARG_MAX_RUNTIME_MS, "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
-
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
     addBooleanOption(ARG_PARSE_REUSE, "reuse parse results when appropriate");
@@ -610,6 +601,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsinputrole",
           "gsremoteas",
           "logtee",
+          "maxruntime",
           "nosimplify",
           "outputenv",
           "parentpid",
@@ -692,7 +684,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
-    getIntOptionValue(ARG_MAX_RUNTIME_MS);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
@@ -768,10 +759,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setMaxParseTreePrintLength(int maxParseTreePrintLength) {
     _config.setProperty(ARG_MAX_PARSE_TREE_PRINT_LENGTH, maxParseTreePrintLength);
-  }
-
-  public void setMaxRuntimeMs(int runtimeMs) {
-    _config.setProperty(ARG_MAX_RUNTIME_MS, runtimeMs);
   }
 
   @Override

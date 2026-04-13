@@ -5,10 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
-import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasAddressFamilyCapabilities;
-import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasExportPolicy;
-import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasImportPolicy;
-import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasRouteReflectorClient;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link AddressFamily} */
@@ -48,4 +45,50 @@ public final class AddressFamilyMatchers {
   }
 
   private AddressFamilyMatchers() {}
+
+  private static final class HasExportPolicy extends FeatureMatcher<AddressFamily, String> {
+    HasExportPolicy(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An AddressFamily with exportPolicy:", "exportPolicy");
+    }
+
+    @Override
+    protected String featureValueOf(AddressFamily actual) {
+      return actual.getExportPolicy();
+    }
+  }
+
+  private static final class HasImportPolicy extends FeatureMatcher<AddressFamily, String> {
+    HasImportPolicy(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An AddressFamily with importPolicy:", "importPolicy");
+    }
+
+    @Override
+    protected String featureValueOf(AddressFamily actual) {
+      return actual.getImportPolicy();
+    }
+  }
+
+  private static final class HasAddressFamilyCapabilities
+      extends FeatureMatcher<AddressFamily, AddressFamilyCapabilities> {
+    HasAddressFamilyCapabilities(@Nonnull Matcher<? super AddressFamilyCapabilities> subMatcher) {
+      super(subMatcher, "An AddressFamily with addressFamilySettings:", "addressFamilySettings");
+    }
+
+    @Override
+    protected AddressFamilyCapabilities featureValueOf(AddressFamily actual) {
+      return actual.getAddressFamilyCapabilities();
+    }
+  }
+
+  private static final class HasRouteReflectorClient
+      extends FeatureMatcher<AddressFamily, Boolean> {
+    HasRouteReflectorClient(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AddressFamily with routeReflectorClient:", "routeReflectorClient");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamily actual) {
+      return actual.getRouteReflectorClient();
+    }
+  }
 }

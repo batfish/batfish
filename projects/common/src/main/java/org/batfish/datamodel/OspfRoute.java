@@ -15,12 +15,14 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 public abstract class OspfRoute extends AbstractRoute {
 
   /** Indicate that this route has no defined area (e.g., external routes) */
-  public static final long NO_AREA = -1L;
+  public static final long NO_AREA = 0xFFFFFFFFL;
 
   protected static final String PROP_AREA = "area";
 
-  protected final long _area;
-  protected final long _metric;
+  // Stored as unsigned 32-bit int for memory savings. Use getArea() to read.
+  private final int _area;
+  // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
+  private final int _metric;
 
   protected OspfRoute(
       Prefix network,
@@ -38,22 +40,22 @@ public abstract class OspfRoute extends AbstractRoute {
     checkArgument(
         !(nextHop instanceof NextHopInterface) || ((NextHopInterface) nextHop).getIp() != null,
         "OSPF routes with next-hop interface must have next-hop IP.");
-    _metric = metric;
+    _metric = (int) metric;
     _nextHop = nextHop;
-    _area = area;
+    _area = (int) area;
   }
 
   /** The route's area number */
   @JsonProperty(PROP_AREA)
   public long getArea() {
-    return _area;
+    return Integer.toUnsignedLong(_area);
   }
 
   @Override
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   public final @Nonnull long getMetric() {
-    return _metric;
+    return Integer.toUnsignedLong(_metric);
   }
 
   @Override

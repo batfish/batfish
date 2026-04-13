@@ -1,6 +1,8 @@
 package org.batfish.datamodel.packet_policy;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nullable;
 
 /** The boolean false identity */
@@ -27,5 +29,11 @@ public final class FalseExpr implements BoolExpr {
   @Override
   public <T> T accept(BoolExprVisitor<T> tBoolExprVisitor) {
     return tBoolExprVisitor.visitFalseExpr(this);
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

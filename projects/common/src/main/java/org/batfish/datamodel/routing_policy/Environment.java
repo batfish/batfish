@@ -3,7 +3,6 @@ package org.batfish.datamodel.routing_policy;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Predicates.alwaysFalse;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -531,7 +530,7 @@ public class Environment {
       if (_originalRoute instanceof BgpRoute<?, ?>
           && _outputRoute instanceof BgpRoute.Builder<?, ?>
           && _direction == Direction.OUT) {
-        assert _outputRoute.getNextHopIp() == UNSET_ROUTE_NEXT_HOP_IP;
+        assert _outputRoute.getNextHopIp() == null;
       }
       return new Environment(
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),

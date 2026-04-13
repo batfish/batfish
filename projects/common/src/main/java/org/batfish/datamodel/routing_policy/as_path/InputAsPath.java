@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.as_path;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -33,4 +35,10 @@ public final class InputAsPath extends AsPathExpr {
   private static final InputAsPath INSTANCE = new InputAsPath();
 
   private InputAsPath() {}
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

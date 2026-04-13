@@ -131,7 +131,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return builder()
         // AbstractRoute properties
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(getNextHop())
         .setAdmin(getAdministrativeCost())
         // Skip setMetric since this builder ignores it in favor of setEigrpMetric
         .setTag(getTag())
@@ -153,14 +153,14 @@ public class EigrpExternalRoute extends EigrpRoute {
       return false;
     }
     EigrpExternalRoute rhs = (EigrpExternalRoute) obj;
-    return _admin == rhs._admin
+    return getAdministrativeCost() == rhs.getAdministrativeCost()
         && Objects.equals(_destinationAsn, rhs._destinationAsn)
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
         && _network.equals(rhs._network)
         && _nextHop.equals(rhs._nextHop)
-        && _processAsn == rhs._processAsn
-        && _tag == rhs._tag
+        && getProcessAsn() == rhs.getProcessAsn()
+        && getTag() == rhs.getTag()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting();
   }
@@ -170,14 +170,14 @@ public class EigrpExternalRoute extends EigrpRoute {
     return hash(
         _network,
         _nextHop,
-        _admin,
-        _tag,
+        getAdministrativeCost(),
+        getTag(),
         getNonForwarding(),
         getNonRouting(),
         _destinationAsn,
         _metric,
         _metricVersion,
-        _processAsn);
+        getProcessAsn());
   }
 
   @Override
@@ -185,7 +185,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
         .add(PROP_NEXT_HOP_IP, _nextHop)
-        .add(PROP_PROCESS_ASN, _processAsn)
+        .add(PROP_PROCESS_ASN, getProcessAsn())
         .toString();
   }
 }

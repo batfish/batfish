@@ -8,9 +8,14 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
-final class ParseVendorConfigurationAnswerElementMatchers {
+public final class ParseVendorConfigurationAnswerElementMatchers {
 
-  static final class HasParseWarning
+  public static Matcher<ParseVendorConfigurationAnswerElement> hasParseWarning(
+      @Nonnull String filename, @Nonnull Matcher<? super String> subMatcher) {
+    return new HasParseWarning(filename, subMatcher);
+  }
+
+  private static final class HasParseWarning
       extends TypeSafeDiagnosingMatcher<ParseVendorConfigurationAnswerElement> {
 
     private final @Nonnull Matcher<? super String> _subMatcher;

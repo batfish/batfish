@@ -69,7 +69,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           _nextHop,
           _routeDistinguisher,
           _vni,
-          _pathId,
+          getPathId(),
           getTag(),
           _vniIp);
     }
@@ -192,19 +192,19 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setAsPath(_attributes._asPath)
         .setClusterList(_attributes._clusterList)
         .setCommunities(_attributes._communities)
-        .setLocalPreference(_attributes._localPreference)
-        .setMetric(_attributes._med)
+        .setLocalPreference(_attributes.getLocalPreference())
+        .setMetric(_attributes.getMed())
         .setNextHop(_nextHop)
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
-        .setPathId(_pathId)
+        .setPathId(getPathId())
         .setProtocol(_attributes.getProtocol())
         .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
-        .setTag(_tag)
+        .setTag(getTag())
         .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setVni(_vni)
         .setVniIp(_vniIp)
@@ -225,10 +225,10 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         && Objects.equals(_nextHop, other._nextHop)
-        && Objects.equals(_pathId, other._pathId)
+        && Objects.equals(getPathId(), other.getPathId())
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
-        && _tag == other._tag
+        && getTag() == other.getTag()
         && Objects.equals(_vniIp, other._vniIp);
   }
 
@@ -240,10 +240,10 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + Objects.hashCode(_pathId);
+      h = h * 31 + Objects.hashCode(getPathId());
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(_tag);
+      h = h * 31 + Long.hashCode(getTag());
       h = h * 31 + _vniIp.hashCode();
 
       _hashCode = h;

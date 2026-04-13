@@ -20,7 +20,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.auto.value:auto-value-annotations:1.11.1",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.13.2",
-    "com.google.errorprone:error_prone_annotations:2.48.0",
+    "com.google.errorprone:error_prone_annotations:2.49.0",
     "com.google.guava:guava",
     "com.google.guava:guava-testlib",
     "com.google.re2j:re2j:1.8",
@@ -35,34 +35,34 @@ BATFISH_MAVEN_ARTIFACTS = [
     "jakarta.ws.rs:jakarta.ws.rs-api:2.1.6",
     "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3",
     "junit:junit:4.13.2",
-    "net.sourceforge.pmd:pmd-cli:7.22.0",
-    "net.sourceforge.pmd:pmd-java:7.22.0",
+    "net.sourceforge.pmd:pmd-cli:7.23.0",
+    "net.sourceforge.pmd:pmd-java:7.23.0",
     "org.antlr:antlr4:4.13.2:complete",
     "org.antlr:antlr4-runtime:4.13.2",
     "org.apache.commons:commons-collections4:4.5.0",
-    "org.apache.commons:commons-configuration2:2.13.0",
+    "org.apache.commons:commons-configuration2:2.14.0",
     "org.apache.commons:commons-lang3:3.20.0",
     "org.apache.commons:commons-text:1.15.0",
     "org.apache.httpcomponents:httpclient:4.5.14",
     "org.apache.httpcomponents:httpcore:4.4.16",
-    "org.apache.logging.log4j:log4j-api:2.25.3",
-    "org.apache.logging.log4j:log4j-core:2.25.3",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.25.3",
-    "org.codehaus.jettison:jettison:1.5.4",
+    "org.apache.logging.log4j:log4j-api:2.25.4",
+    "org.apache.logging.log4j:log4j-core:2.25.4",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.25.4",
+    "org.codehaus.jettison:jettison:1.5.5",
     "org.glassfish.grizzly:grizzly-framework:2.4.4",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
-    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.47",
-    "org.glassfish.jersey.core:jersey-client:2.47",
-    "org.glassfish.jersey.core:jersey-common:2.47",
-    "org.glassfish.jersey.core:jersey-server:2.47",
-    "org.glassfish.jersey.inject:jersey-hk2:2.47",
-    "org.glassfish.jersey.media:jersey-media-json-jackson:2.47",
-    "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.47",
-    "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.47",
+    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.48",
+    "org.glassfish.jersey.core:jersey-client:2.48",
+    "org.glassfish.jersey.core:jersey-common:2.48",
+    "org.glassfish.jersey.core:jersey-server:2.48",
+    "org.glassfish.jersey.inject:jersey-hk2:2.48",
+    "org.glassfish.jersey.media:jersey-media-json-jackson:2.48",
+    "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.48",
+    "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.48",
     "org.hamcrest:hamcrest:3.0",
-    "org.jgrapht:jgrapht-core:1.5.2",
-    "at.yawk.lz4:lz4-java:1.10.4",
-    "org.mockito:mockito-core:5.22.0",
+    "org.jgrapht:jgrapht-core:1.5.3",
+    "at.yawk.lz4:lz4-java:1.11.0",
+    "org.mockito:mockito-core:5.23.0",
     "org.mockito:mockito-inline:5.2.0",
     "org.parboiled:parboiled-core:1.4.1",
     "org.parboiled:parboiled-java:1.4.1",
@@ -96,7 +96,7 @@ module(
 # Core Bazel dependencies
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "bazel_features", version = "1.42.1")
+bazel_dep(name = "bazel_features", version = "1.45.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 
 # Java rules and dependencies
@@ -107,9 +107,15 @@ bazel_dep(name = "rules_jvm_external", version = "6.10")
 bazel_dep(name = "rules_python", version = "1.9.0")
 
 # Development tools
-bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "8.5.1.2", dev_dependency = True)
 
-bazel_dep(name = "rules_shell", version = "0.6.1")
+bazel_dep(name = "rules_shell", version = "0.7.1")
+
+# Override rules_android to 0.7.1 for Bazel 9 compatibility (CcInfo removal)
+single_version_override(
+    module_name = "rules_android",
+    version = "0.7.1",
+)
 
 # Python toolchain
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")

@@ -1,6 +1,8 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * Match condition that holds when flow originated from this device rather than being received on
@@ -32,5 +34,11 @@ public class OriginatingFromDevice extends AclLineMatchExpr {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).toString();
+  }
+
+  /** Deserialize to singleton instance. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }

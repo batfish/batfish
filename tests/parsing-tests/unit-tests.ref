@@ -41331,10 +41331,9 @@
             "                  (pops_then*",
             "                    THEN:'then'",
             "                    (popst_common*",
-            "                      (popst_null*",
+            "                      (popst_load_balance",
             "                        LOAD_BALANCE:'load-balance'",
-            "                        (null_filler*",
-            "                          PER_PACKET:'per-packet')))))))))))",
+            "                        PER_PACKET:'per-packet'))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -52646,12 +52645,14 @@
             "                    FAMILY:'family'",
             "                    (if_inet6*",
             "                      INET6:'inet6'",
-            "                      (ifi6_filter*",
-            "                        FILTER:'filter'",
-            "                        (ifi6f_input",
-            "                          INPUT:'input'  <== mode:M_Filter",
-            "                          name = (junos_name*",
-            "                            NAME:'blah6'  <== mode:M_Filter))))))))))))",
+            "                      (ifi6_filter",
+            "                        (filter*",
+            "                          FILTER:'filter'",
+            "                          (direction*",
+            "                            INPUT:'input'  <== mode:M_Filter)",
+            "                          name = (filter_name*",
+            "                            (junos_name*",
+            "                              NAME:'blah6'  <== mode:M_Filter)))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -71486,12 +71487,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 112,
-              "Parser_Context" : "[rof_export ro_forwarding_table s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "export lbpp"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 201,
               "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vtep-source-interface lo0.0"
@@ -82784,7 +82779,7 @@
         "configs/juniper_firewall" : {
           "firewall family inet6 filter" : {
             "blah6" : {
-              "interface firewall filter" : [
+              "interface firewall filter input" : [
                 47
               ]
             }
