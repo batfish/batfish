@@ -128,6 +128,7 @@ ADMIN_GROUP: 'admin-group' -> pushMode(M_AdminGroup);
 
 ADMIN_GROUPS: 'admin-groups' -> pushMode(M_Name);
 
+ADVERTISE: 'advertise';
 ADVERTISE_EXTERNAL: 'advertise-external';
 ADVERTISE_FROM_MAIN_VPN_TABLES: 'advertise-from-main-vpn-tables';
 ADVERTISE_HIGH_METRICS: 'advertise-high-metrics';
@@ -600,6 +601,8 @@ DHCP_SECURITY: 'dhcp-security';
 
 DIRECT: 'direct';
 
+DIRECT_NEXTHOP: 'direct-nexthop';
+
 DISABLE: 'disable';
 
 DISABLE_4BYTE_AS: 'disable-4byte-as';
@@ -852,6 +855,8 @@ FULL_DUPLEX: 'full-duplex';
 G: 'g';
 
 GATEWAY: 'gateway' -> pushMode(M_Name);
+
+GATEWAY_ADDRESS: 'gateway-address';
 
 GENERATE: 'generate';
 
@@ -1180,6 +1185,8 @@ IP_HEADER_BAD: 'ip-header-bad';
 IP_IN_UDP: 'ip-in-udp';
 
 IP_OPTIONS: 'ip-options';
+
+IP_PREFIX_ROUTES: 'ip-prefix-routes';
 
 IP_PROTOCOL: 'ip-protocol';
 
@@ -2787,6 +2794,8 @@ SRLG: 'srlg' -> pushMode(M_Name);
 SRLG_COST: 'srlg-cost';
 
 SRLG_VALUE: 'srlg-value';
+
+SRV6: 'srv6';
 
 SSH: 'ssh';
 

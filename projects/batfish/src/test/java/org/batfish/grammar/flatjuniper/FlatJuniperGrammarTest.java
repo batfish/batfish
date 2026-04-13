@@ -347,6 +347,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -400,6 +401,8 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
@@ -419,6 +422,9 @@ import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.EvpnEncapsulation;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutes;
+import org.batfish.representation.juniper.EvpnIpPrefixRoutesAdvertise;
+import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
@@ -510,12 +516,14 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
+import org.batfish.representation.juniper.SwitchOptions;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.TunnelAttribute;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
+import org.batfish.representation.juniper.VniOptions;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.vendor.VendorConfiguration;
@@ -2215,6 +2223,23 @@ public final class FlatJuniperGrammarTest {
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testEvpnAfExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-af");
+    assertNotNull(
+        c.getMasterLogicalSystem()
+            .getDefaultRoutingInstance()
+            .getNamedBgpGroups()
+            .get("_vrfA")
+            .getEvpnAf());
+    assertNull(
+        c.getMasterLogicalSystem()
+            .getDefaultRoutingInstance()
+            .getNamedBgpGroups()
+            .get("_vrfB")
+            .getEvpnAf());
   }
 
   @Test
@@ -8035,11 +8060,90 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsVtepSourceInterfaceExtraction() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-vtep-source");
-    String vtep =
-        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getVtepSourceInterface();
-    assertEquals("lo0.0", vtep);
+  public void testSwitchOptionsExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
+
+    SwitchOptions switchOptions = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions();
+    assertThat(switchOptions.getVtepSourceInterface(), equalTo("lo0.0"));
+
+    ExtendedCommunityOrAuto targetCommunity = switchOptions.getVrfTargetCommunityOrAuto();
+    assertThat(
+        targetCommunity.getExtendedCommunity(),
+        equalTo(ExtendedCommunity.parse("target:65320:7999999")));
+    assertThat(targetCommunity.isAuto(), equalTo(false));
+
+    assertThat(
+        switchOptions.getVrfTargetImport(),
+        equalTo(ExtendedCommunity.parse("target:65320:7999999")));
+    assertThat(
+        switchOptions.getVrfTargetExport(),
+        equalTo(ExtendedCommunity.parse("target:65320:7999999")));
+  }
+
+  @Test
+  public void testVniOptionsVrfTargetAutoExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vrf-target-auto");
+    VniOptions vni2 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14002);
+    ExtendedCommunityOrAuto targetOrAuto = vni2.getVrfTargetCommunityOrAuto();
+    assertThat(targetOrAuto, equalTo(ExtendedCommunityOrAuto.auto()));
+    assertThat(targetOrAuto.isAuto(), equalTo(true));
+    assertThat(vni2.getVrfTargetExport(), nullValue());
+    assertThat(vni2.getVrfTargetImport(), nullValue());
+  }
+
+  @Test
+  public void testVniOptionsVrfTargetExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
+    VniOptions vni4 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14004);
+    assertThat(vni4.getVrfTargetImport(), equalTo(ExtendedCommunity.parse("target:65320:7999999")));
+    assertThat(vni4.getVrfTargetCommunityOrAuto(), nullValue());
+    assertThat(vni4.getVrfTargetExport(), nullValue());
+    VniOptions vni3 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14003);
+    assertThat(vni3.getVrfTargetExport(), equalTo(ExtendedCommunity.parse("target:65320:7999999")));
+    assertThat(vni3.getVrfTargetCommunityOrAuto(), nullValue());
+    assertThat(vni3.getVrfTargetImport(), nullValue());
+    VniOptions vni2 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14002);
+    assertEquals(
+        vni2.getVrfTargetCommunityOrAuto().getExtendedCommunity(),
+        ExtendedCommunity.parse("target:65320:14002"));
+  }
+
+  @Test
+  public void testRoutingOptionsExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
+    Ip rd =
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getDefaultRoutingInstance()
+            .getRouteDistinguisherId();
+    Ip ip = Ip.parse("10.1.1.1");
+    assertThat(ip, equalTo(rd));
+  }
+
+  @Test
+  public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
+    JuniperConfiguration juniperConfiguration =
+        parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
+    EvpnIpPrefixRoutes ipPrefixRoutes =
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("FOO")
+            .getEvpnIpPrefixRoutes();
+    assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
+    assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
+    assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
+    assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
+    assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherWithVrf() {
+    JuniperConfiguration juniperConfiguration =
+        parseJuniperConfig("switch-options-route-distinguisher");
+    SwitchOptions switchOptions = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions();
+    assertThat(switchOptions.getVrfImportPolicy(), equalTo("evpn-switching"));
+    assertThat(switchOptions.getVrfExportPolicy(), equalTo("evpn-exporting"));
   }
 
   @Test
@@ -8400,30 +8504,29 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
     assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getVlan(), 10);
-    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress());
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
-    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress());
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getUdpPort(), 4789);
+    Layer2Vni vni10 = c.getDefaultVrf().getLayer2Vnis().get(5010);
+    assertEquals(vni10.getVlan(), 10);
+    assertEquals(vni10.getSourceAddress(), Ip.parse("10.84.249.26"));
+    assertEquals(vni10.getSrcVrf(), "default");
+    assertEquals(vni10.getUdpPort(), 4789);
+    Layer2Vni vni20 = c.getDefaultVrf().getLayer2Vnis().get(5020);
+    assertEquals(vni20.getVlan(), 20);
+    assertEquals(vni20.getSourceAddress(), Ip.parse("10.84.249.26"));
+    assertEquals(vni20.getSrcVrf(), "default");
+    assertEquals(vni20.getUdpPort(), 4789);
   }
 
   @Test
   public void testVxlanL3vniConversion() {
-    Configuration c = parseConfig("juniper-vxlan-l3vni");
+    Configuration c = parseConfig("juniper-evpn-vxlan");
+    Layer3Vni vrf10 = c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(50010);
+    assertEquals(Ip.parse("10.84.249.26"), vrf10.getSourceAddress());
+    assertEquals("default", vrf10.getSrcVrf());
+    assertEquals(4789, vrf10.getUdpPort());
 
-    assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
-    assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
-    assertEquals(
-        c.getDefaultVrf().getLayer3Vnis().get(5010).getSourceAddress(), Ip.parse("10.0.1.111"));
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getUdpPort(), 4789);
-    assertEquals(
-        c.getDefaultVrf().getLayer3Vnis().get(5020).getSourceAddress(), Ip.parse("10.0.2.111"));
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getUdpPort(), 4789);
+    Layer3Vni vrf20 = c.getVrfs().get("l3vni_vrf_novlan").getLayer3Vnis().get(50020);
+    assertEquals(Ip.parse("10.84.249.26"), vrf20.getSourceAddress());
+    assertEquals("default", vrf20.getSrcVrf());
   }
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */

@@ -129,6 +129,12 @@ extended_community
   | ec_named
 ;
 
+/** An extended community restricted to route-target type, for use in vrf-target contexts. */
+vrf_target_community
+:
+  TARGET COLON ec_administrator COLON assigned_number = dec
+;
+
 icmp_code
 :
   uint8

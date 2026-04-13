@@ -725,4 +725,32 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           setEvpnType5NhPostExport(outgoingRouteBuilder, afNoNveIp, nhDiscard, exportRouteVni));
     }
   }
+
+  @Test
+  public void testOriginatorIpSetOnOriginate() {
+    setUpPeers(true);
+    // When originating a route (e.g. from static/aggregate), Originator IP should be the local
+    // Router ID.
+    Bgpv4Route.Builder transformedRoute =
+        runTransformBgpRoutePreExport(_baseAggRouteBuilder.build());
+    assertThat(transformedRoute.getOriginatorIp(), equalTo(_fromBgpProcess.getRouterId()));
+
+    // EBGP also originates routes by overriding originatorIp
+    setUpPeers(false);
+    transformedRoute = runTransformBgpRoutePreExport(_baseAggRouteBuilder.build());
+    assertThat(transformedRoute.getOriginatorIp(), equalTo(_fromBgpProcess.getRouterId()));
+  }
+
+  @Test
+  public void testOriginatorIpLoopPrevention() {
+    setUpPeers(true); // iBGP
+
+    // Setup a received iBGP route with OriginatorIP equal to the destination's Router ID.
+    Bgpv4Route inboundRoute =
+        _baseBgpRouteBuilder.setOriginatorIp(_toBgpProcess.getRouterId()).build();
+
+    // The route should be dropped on export to prevent a loop.
+    Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(inboundRoute);
+    assertThat(transformedRoute, nullValue());
+  }
 }

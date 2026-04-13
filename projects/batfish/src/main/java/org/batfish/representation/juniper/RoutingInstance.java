@@ -18,6 +18,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public class RoutingInstance implements Serializable {
 
@@ -60,6 +62,13 @@ public class RoutingInstance implements Serializable {
   private final JuniperSystem _system;
   private @Nullable Resolution _resolution;
   private @Nonnull Map<String, BridgeDomain> _bridgeDomains;
+  private @Nullable EvpnIpPrefixRoutes _evpnIpPrefixRoutes;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
+  private @Nullable Ip _routeDistinguisherId;
+  private @Nullable ExtendedCommunity _vrfTargetCommunity;
+  private @Nullable ExtendedCommunity _vrfTargetImport;
+  private @Nullable ExtendedCommunity _vrfTargetExport;
+  private @Nullable String _vrfImportPolicy;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -365,5 +374,68 @@ public class RoutingInstance implements Serializable {
               .build();
     }
     return bd;
+  }
+
+  public @Nullable EvpnIpPrefixRoutes getEvpnIpPrefixRoutes() {
+    return _evpnIpPrefixRoutes;
+  }
+
+  public @Nonnull EvpnIpPrefixRoutes getOrCreateEvpnIpPrefixRoutes() {
+    if (_evpnIpPrefixRoutes == null) {
+      _evpnIpPrefixRoutes = new EvpnIpPrefixRoutes();
+    }
+    return _evpnIpPrefixRoutes;
+  }
+
+  public void setEvpnIpPrefixRoutes(@Nullable EvpnIpPrefixRoutes evpnIpPrefixRoutes) {
+    _evpnIpPrefixRoutes = evpnIpPrefixRoutes;
+  }
+
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
+    return _routeDistinguisher;
+  }
+
+  public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
+    _routeDistinguisher = routeDistinguisher;
+  }
+
+  public @Nullable Ip getRouteDistinguisherId() {
+    return _routeDistinguisherId;
+  }
+
+  public void setRouteDistinguisherId(@Nullable Ip routeDistinguisherId) {
+    _routeDistinguisherId = routeDistinguisherId;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetCommunity() {
+    return _vrfTargetCommunity;
+  }
+
+  public void setVrfTargetCommunity(@Nullable ExtendedCommunity vrfTargetCommunity) {
+    _vrfTargetCommunity = vrfTargetCommunity;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetImport() {
+    return _vrfTargetImport;
+  }
+
+  public void setVrfTargetImport(@Nullable ExtendedCommunity vrfTargetImport) {
+    _vrfTargetImport = vrfTargetImport;
+  }
+
+  public @Nullable ExtendedCommunity getVrfTargetExport() {
+    return _vrfTargetExport;
+  }
+
+  public void setVrfTargetExport(@Nullable ExtendedCommunity vrfTargetExport) {
+    _vrfTargetExport = vrfTargetExport;
+  }
+
+  public @Nullable String getVrfImportPolicy() {
+    return _vrfImportPolicy;
+  }
+
+  public void setVrfImportPolicy(@Nullable String vrfImportPolicy) {
+    _vrfImportPolicy = vrfImportPolicy;
   }
 }

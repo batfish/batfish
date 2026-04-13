@@ -16,7 +16,44 @@ e_encapsulation
     ENCAPSULATION (
       VXLAN
       | MPLS
+      | SRV6
     )
+;
+
+e_ip_prefix_routes
+:
+    IP_PREFIX_ROUTES (
+        eipr_advertise
+        | eipr_encapsulation
+        | eipr_export
+        | eipr_import
+        | eipr_vni
+    )
+;
+
+eipr_advertise
+:
+    ADVERTISE (DIRECT_NEXTHOP | GATEWAY_ADDRESS)
+;
+
+eipr_encapsulation
+:
+    ENCAPSULATION (VXLAN | MPLS | SRV6)
+;
+
+eipr_export
+:
+    EXPORT name = junos_name
+;
+
+eipr_import
+:
+    IMPORT name = junos_name
+;
+
+eipr_vni
+:
+    VNI vni_number
 ;
 
 e_extended_vni_list
@@ -43,7 +80,7 @@ e_multicast_mode
 
 e_vni_options
 :
-    VNI_OPTIONS VNI id = dec (
+    VNI_OPTIONS VNI vni_number (
         evo_designated_forwarder_election_hold_time
         | evo_vrf_target
     )+
@@ -71,17 +108,17 @@ evovt_auto
 
 evovt_community
 :
-    comm = vt_community
+    comm = vrf_target_community
 ;
 
 evovt_export
 :
-    EXPORT vt_community
+    EXPORT vrf_target_community
 ;
 
 evovt_import
 :
-    IMPORT vt_community
+    IMPORT vrf_target_community
 ;
 
 p_evpn
@@ -90,13 +127,9 @@ p_evpn
         e_default_gateway
         | e_encapsulation
         | e_extended_vni_list
+        | e_ip_prefix_routes
         | e_multicast_mode
         | e_vni_options
         | e_duplicate_mac_detection_null
     )
-;
-
-vt_community
-:
-    TARGET COLON x = dec COLON y = dec
 ;

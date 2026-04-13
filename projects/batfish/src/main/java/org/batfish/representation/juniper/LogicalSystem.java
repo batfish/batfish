@@ -118,6 +118,7 @@ public class LogicalSystem implements Serializable {
   private Map<String, TunnelAttribute> _tunnelAttributes;
 
   private final Map<String, Vlan> _namedVlans;
+  private final Map<Integer, VniOptions> _vniOptions;
 
   private @Nullable SwitchOptions _switchOptions;
 
@@ -171,6 +172,7 @@ public class LogicalSystem implements Serializable {
     _tacplusServers = new TreeSet<>();
     _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
+    _vniOptions = new TreeMap<>();
     _switchOptions = new SwitchOptions();
     _zones = new TreeMap<>();
   }
@@ -445,6 +447,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Vlan> getNamedVlans() {
     return _namedVlans;
+  }
+
+  public Map<Integer, VniOptions> getVniOptions() {
+    return _vniOptions;
   }
 
   public SwitchOptions getSwitchOptions() {

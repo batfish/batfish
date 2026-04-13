@@ -119,17 +119,17 @@ ri_vtep_source_interface
 
 riv_community
 :
-   extended_community
+   vrf_target_community
 ;
 
 riv_export
 :
-   EXPORT extended_community
+   EXPORT vrf_target_community
 ;
 
 riv_import
 :
-   IMPORT extended_community
+   IMPORT vrf_target_community
 ;
 
 ro_aggregate

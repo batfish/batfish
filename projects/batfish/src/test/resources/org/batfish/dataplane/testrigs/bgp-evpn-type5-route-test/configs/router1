@@ -1,0 +1,377 @@
+## ERB Design - Service Node (centralized routing + distributed anycast gateway)
+version 23.4R2-S2.1;
+interfaces {
+    ge-0/0/1 {
+        description "to node2-1 (spine1)";
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address 172.16.254.8/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        description "to node2-2 (spine2)";
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address 172.16.254.10/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        description "to edge1 - p2p link";
+        unit 0 {
+            family inet {
+                address 10.99.0.0/31;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.15/24;
+            }
+            family inet6 {
+                address 2001:db8::2/64;
+            }
+        }
+    }
+    irb {
+        unit 100 {
+            family inet {
+                address 172.16.100.3/24 {
+                    virtual-gateway-address 172.16.100.100;
+                }
+            }
+        }
+        unit 200 {
+            family inet {
+                address 172.16.200.3/24 {
+                    virtual-gateway-address 172.16.200.100;
+                }
+            }
+        }
+        unit 300 {
+            family inet {
+                address 172.16.101.3/24 {
+                    virtual-gateway-address 172.16.101.100;
+                }
+            }
+        }
+        unit 400 {
+            family inet {
+                address 172.16.201.3/24 {
+                    virtual-gateway-address 172.16.201.100;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.100/32;
+            }
+        }
+    }
+}
+forwarding-options {
+    storm-control-profiles default {
+        all;
+    }
+}
+policy-options {
+    policy-statement TENANT-A-export {
+        term default-route {
+            from {
+                protocol static;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then {
+                community add TENANT-A-community;
+                community add gateway-community;
+                accept;
+            }
+        }
+        term evpn {
+            then {
+                community add TENANT-A-community;
+                accept;
+            }
+        }
+    }
+    policy-statement TENANT-A-import {
+        term evpn {
+            from community TENANT-A-community;
+            then accept;
+        }
+    }
+    policy-statement TENANT-B-export {
+        term default-route {
+            from {
+                protocol static;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then {
+                community add TENANT-B-community;
+                community add gateway-community;
+                accept;
+            }
+        }
+        term evpn {
+            then {
+                community add TENANT-B-community;
+                accept;
+            }
+        }
+    }
+    policy-statement TENANT-B-import {
+        term evpn {
+            from community TENANT-B-community;
+            then accept;
+        }
+    }
+    policy-statement export-to-edge {
+        term tenant-a-subnets {
+            from protocol [ direct evpn bgp ];
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement export-underlay {
+        term loopbacks {
+            from {
+                protocol direct;
+                route-filter 172.16.0.0/24 orlonger;
+            }
+            then accept;
+        }
+        term p2p {
+            from {
+                protocol direct;
+                route-filter 172.16.254.0/24 orlonger;
+            }
+            then accept;
+        }
+        term default-route {
+            from {
+                protocol static;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement import-from-edge {
+        term accept-all {
+            then accept;
+        }
+    }
+    policy-statement import-underlay {
+        term loopbacks {
+            from {
+                route-filter 172.16.0.0/24 orlonger;
+            }
+            then accept;
+        }
+        term p2p {
+            from {
+                route-filter 172.16.254.0/24 orlonger;
+            }
+            then accept;
+        }
+        term deny {
+            then reject;
+        }
+    }
+    policy-statement load-balance-per-flow {
+        then {
+            load-balance per-packet;
+        }
+    }
+    community TENANT-A-community members target:65000:10000;
+    community TENANT-B-community members target:65000:20000;
+    community gateway-community members target:65000:99;
+}
+vlans {
+    VLAN100 {
+        vlan-id 100;
+        l3-interface irb.100;
+        vxlan {
+            vni 10100;
+        }
+    }
+    VLAN200 {
+        vlan-id 200;
+        l3-interface irb.200;
+        vxlan {
+            vni 10200;
+        }
+    }
+    VLAN300 {
+        vlan-id 300;
+        l3-interface irb.300;
+        vxlan {
+            vni 10300;
+        }
+    }
+    VLAN400 {
+        vlan-id 400;
+        l3-interface irb.400;
+        vxlan {
+            vni 10400;
+        }
+    }
+}
+routing-instances {
+    TENANT-A {
+        instance-type vrf;
+        routing-options {
+            multipath;
+            auto-export;
+        }
+        protocols {
+            bgp {
+                group edge {
+                    type external;
+                    import import-from-edge;
+                    family inet {
+                        unicast;
+                    }
+                    export export-to-edge;
+                    neighbor 10.99.0.1 {
+                        description edge1;
+                        peer-as 65200;
+                    }
+                }
+            }
+            evpn {
+                irb-symmetric-routing {
+                    vni 50000;
+                }
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 50000;
+                }
+            }
+        }
+        interface ge-0/0/3.0;
+        interface irb.100;
+        interface irb.200;
+        route-distinguisher 172.16.0.100:10000;
+        vrf-target target:65000:10000;
+        vrf-table-label;
+    }
+    TENANT-B {
+        instance-type vrf;
+        routing-options {
+            multipath;
+            auto-export;
+        }
+        protocols {
+            evpn {
+                irb-symmetric-routing {
+                    vni 50001;
+                }
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 50001;
+                }
+            }
+        }
+        interface irb.300;
+        interface irb.400;
+        route-distinguisher 172.16.0.100:20000;
+        vrf-target target:65000:20000;
+        vrf-table-label;
+    }
+    mgmt_junos {
+        routing-options {
+            rib mgmt_junos.inet6.0 {
+                static {
+                    route ::/0 next-hop 2001:db8::1;
+                }
+            }
+            static {
+                route 0.0.0.0/0 next-hop 10.0.0.2;
+            }
+        }
+    }
+}
+routing-options {
+    router-id 172.16.0.100;
+    autonomous-system 65100;
+    forwarding-table {
+        export load-balance-per-flow;
+        ecmp-fast-reroute;
+    }
+}
+protocols {
+    evpn {
+        encapsulation vxlan;
+        default-gateway no-gateway-community;
+        extended-vni-list all;
+    }
+    bgp {
+        group underlay {
+            type external;
+            mtu-discovery;
+            import import-underlay;
+            family inet {
+                unicast;
+            }
+            export export-underlay;
+            local-as 65100;
+            multipath {
+                multiple-as;
+            }
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+            neighbor 172.16.254.9 {
+                description node2-1;
+                peer-as 65011;
+            }
+            neighbor 172.16.254.11 {
+                description node2-2;
+                peer-as 65012;
+            }
+        }
+        group overlay {
+            type internal;
+            local-address 172.16.0.100;
+            mtu-discovery;
+            family evpn {
+                signaling;
+            }
+            local-as 65000;
+            multipath;
+            neighbor 172.16.0.11 {
+                description node2-1;
+            }
+            neighbor 172.16.0.12 {
+                description node2-2;
+            }
+            vpn-apply-export;
+        }
+        log-updown;
+        graceful-restart;
+    }
+    lldp {
+        port-id-subtype interface-name;
+        interface all;
+    }
+}
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher 172.16.0.100:1;
+    vrf-target target:65000:9999;
+}

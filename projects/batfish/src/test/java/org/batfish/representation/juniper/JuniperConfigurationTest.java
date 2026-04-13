@@ -46,9 +46,11 @@ import static org.junit.Assert.assertNotNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,6 +78,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -1107,6 +1111,228 @@ public class JuniperConfigurationTest {
       iface.getAllAddresses().add(addr1);
       iface.getAllAddresses().add(addr2);
       assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr1.getIp())));
+    }
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_BothPolicies() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi
+        .getOrCreateEvpnIpPrefixRoutes()
+        .setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfImportPolicy("vrf-import-policy");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setImportPolicy("ipr-import-policy");
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getVrfLeakConfig());
+    String importPolicyName =
+        tenantVrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs().get(0).getImportPolicy();
+    org.batfish.datamodel.routing_policy.RoutingPolicy importPolicy =
+        config._c.getRoutingPolicies().get(importPolicyName);
+    assertNotNull(importPolicy);
+
+    // Expecting two if statements that call the respective policies
+    assertThat(importPolicy.getStatements(), hasSize(2));
+    org.batfish.datamodel.routing_policy.statement.If firstIf =
+        (org.batfish.datamodel.routing_policy.statement.If) importPolicy.getStatements().get(0);
+    org.batfish.datamodel.routing_policy.statement.If secondIf =
+        (org.batfish.datamodel.routing_policy.statement.If) importPolicy.getStatements().get(1);
+
+    assertThat(
+        firstIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) firstIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("vrf-import-policy"));
+
+    assertThat(
+        secondIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) secondIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("ipr-import-policy"));
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_SinglePolicy() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi
+        .getOrCreateEvpnIpPrefixRoutes()
+        .setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfImportPolicy("vrf-import-policy");
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getVrfLeakConfig());
+    String importPolicyName =
+        tenantVrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs().get(0).getImportPolicy();
+    assertThat(importPolicyName, equalTo("vrf-import-policy"));
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_MissingRequiredConfig() {
+    String riName = "tenant";
+    Map<Consumer<RoutingInstance>, String> omissions = new LinkedHashMap<>();
+    omissions.put(
+        ri -> ri.getEvpnIpPrefixRoutes().setVni(null),
+        "IP-VRF not created for routing-instance " + riName + ": missing \"ip-prefix-routes vni\"");
+    omissions.put(
+        ri -> ri.getEvpnIpPrefixRoutes().setAdvertise(null),
+        "IP-VRF not created for routing-instance "
+            + riName
+            + ": missing \"ip-prefix-routes advertise\"");
+    omissions.put(
+        ri -> ri.getEvpnIpPrefixRoutes().setEncapsulation(null),
+        "IP-VRF not created for routing-instance "
+            + riName
+            + ": missing \"ip-prefix-routes encapsulation\"");
+    omissions.put(
+        ri -> ri.setRouteDistinguisher(null),
+        "IP-VRF not created for routing-instance " + riName + ": missing \"route-distinguisher\"");
+    omissions.put(
+        ri -> ri.setVrfTargetExport(null),
+        "IP-VRF missing import or export policy in routing-instance " + riName);
+
+    for (Map.Entry<Consumer<RoutingInstance>, String> testCase : omissions.entrySet()) {
+      JuniperConfiguration config = createConfig();
+      RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+      defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+      defaultRi.setAs(65000L);
+      config
+          .getMasterLogicalSystem()
+          .getRoutingInstances()
+          .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+      config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+      config.setWarnings(new Warnings(true, true, true));
+
+      RoutingInstance ri = new RoutingInstance(riName);
+      ri.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+      ri.getOrCreateEvpnIpPrefixRoutes().setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+      ri.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+      ri.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+      ri.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+
+      // Execute omission
+      testCase.getKey().accept(ri);
+
+      config._c.setVrfs(
+          ImmutableMap.of(
+              Configuration.DEFAULT_VRF_NAME,
+              new Vrf(Configuration.DEFAULT_VRF_NAME),
+              riName,
+              new Vrf(riName)));
+      config.getMasterLogicalSystem().getRoutingInstances().put(riName, ri);
+
+      config.convertEvpnVrfLeaking();
+
+      assertThat(
+          "Testing omission expecting warning: " + testCase.getValue(),
+          config.getWarnings().getRedFlagWarnings(),
+          contains(new Warning(testCase.getValue(), "MISCELLANEOUS")));
+    }
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_MissingExportOrImportPolicy() {
+    String riName = "tenant";
+    Map<Consumer<RoutingInstance>, String> omissions = new LinkedHashMap<>();
+    omissions.put(
+        ri -> {
+          ri.setVrfTargetExport(null);
+          ri.setVrfImportPolicy("import-policy");
+        },
+        "IP-VRF missing vrf-target or vrf-target export in routing-instance " + riName);
+    omissions.put(
+        ri -> {
+          ri.setVrfImportPolicy(null);
+          ri.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+        },
+        "IP-VRF missing import policy or vrf-target in routing-instance " + riName);
+
+    for (Map.Entry<Consumer<RoutingInstance>, String> testCase : omissions.entrySet()) {
+      JuniperConfiguration config = createConfig();
+      RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+      defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+      defaultRi.setAs(65000L);
+      config
+          .getMasterLogicalSystem()
+          .getRoutingInstances()
+          .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+      config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+      config.setWarnings(new Warnings(true, true, true));
+
+      RoutingInstance ri = new RoutingInstance(riName);
+      ri.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+      ri.getOrCreateEvpnIpPrefixRoutes().setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+      ri.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+      ri.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+
+      // Execute omission
+      testCase.getKey().accept(ri);
+
+      config._c.setVrfs(
+          ImmutableMap.of(
+              Configuration.DEFAULT_VRF_NAME,
+              new Vrf(Configuration.DEFAULT_VRF_NAME),
+              riName,
+              new Vrf(riName)));
+      config.getMasterLogicalSystem().getRoutingInstances().put(riName, ri);
+
+      config.convertEvpnVrfLeaking();
+
+      assertThat(
+          "Testing omission expecting pedantic warning: " + testCase.getValue(),
+          config.getWarnings().getPedanticWarnings(),
+          contains(new Warning(testCase.getValue(), TAG_PEDANTIC)));
     }
   }
 }

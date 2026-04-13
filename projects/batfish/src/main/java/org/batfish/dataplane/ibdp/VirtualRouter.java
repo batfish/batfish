@@ -83,6 +83,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -1653,6 +1654,7 @@ public final class VirtualRouter {
     // invariants of being called from bgpIteration
     assert _bgpRoutingProcess != null && _vrf.getVrfLeakConfig() != null;
 
+    RouteDistinguisher selfRd = _vrf.getRouteDistinguisher();
     for (EvpnToBgpv4VrfLeakConfig leakConfig :
         _vrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs()) {
       Optional<BgpRoutingProcess> exportingBgpProc =
@@ -1661,7 +1663,7 @@ public final class VirtualRouter {
               .map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
         _bgpRoutingProcess.importCrossVrfEvpnRoutesToV4(
-            exportingBgpProc.get().getEvpnRoutesToLeak(), leakConfig);
+            exportingBgpProc.get().getEvpnRoutesToLeak(), leakConfig, selfRd);
       } else {
         LOGGER.error(
             "Exporting EVPN routes to BGP from VRF {} to VRF {} on node {} failed. Exporting VRF"

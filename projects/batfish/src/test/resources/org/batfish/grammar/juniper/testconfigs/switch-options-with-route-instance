@@ -1,0 +1,145 @@
+system {
+    host-name switch-options-with-route-instance;
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            tunnel-services;
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 172.31.254.43/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.14.18.1/23;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                dhcp {
+                    vendor-id Juniper-vmx-VM699905144B;
+                }
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM699905144B;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.31.255.53/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement Campus-vrf-export {
+        term 1 {
+            from protocol direct;
+            then accept;
+        }
+    }
+    policy-statement Campus-vrf-import {
+        term 1 {
+            then accept;
+        }
+    }
+    policy-statement export-underlay-lo {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter 172.31.255.53/32 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement evpn-switching {
+        term layer2 {
+            from community evpn-switching;
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    community evpn-switching members target:10755:9999;
+}
+routing-instances {
+    Campus {
+        instance-type vrf;
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 1006;
+                    import Campus-vrf-import;
+                    export Campus-vrf-export;
+                }
+            }
+        }
+        interface ge-0/0/2.0;
+        route-distinguisher 172.31.255.53:1006;
+        vrf-target target:10755:1006;
+    }
+}
+routing-options {
+    router-id 172.31.255.53;
+    autonomous-system 65100;
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0 {
+            managed-configuration;
+        }
+    }
+    bgp {
+        group underlay {
+            type external;
+            export export-underlay-lo;
+            local-as 65001;
+            neighbor 172.31.254.42 {
+                peer-as 65000;
+            }
+        }
+        group overlay {
+            type internal;
+            local-address 172.31.255.53;
+            family evpn {
+                signaling;
+            }
+            neighbor 172.31.255.0 {
+                description SPINE-RR;
+            }
+        }
+    }
+    evpn {
+        encapsulation vxlan;
+        extended-vni-list all;
+    }
+}
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher 172.31.255.53:9999;
+    vrf-import evpn-switching;
+    vrf-target {
+        target:10755:9999;
+        auto;
+    } 
+}

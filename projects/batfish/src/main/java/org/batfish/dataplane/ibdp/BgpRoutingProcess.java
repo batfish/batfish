@@ -707,13 +707,24 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    // A redistribution policy must be defined iff exporting from BGP RIB
-    assert !_exportFromBgpRib ^ _process.getRedistributionPolicy() != null;
+    boolean hasRedistPolicy = _process.getRedistributionPolicy() != null;
 
-    if (!_exportFromBgpRib) {
+    if (!_exportFromBgpRib && !hasRedistPolicy) {
       // Export from main RIB; no local routes in BGP RIB (Juniper-like redistribution)
       assert _mainRibDelta.isEmpty();
       _mainRibDelta = mainRibDelta;
+    } else if (!_exportFromBgpRib) {
+      // Juniper EVPN tenant VRF: redistribute into BGP RIB for getRoutesToLeak() / EVPN type-5
+      // origination, but also keep main RIB delta for normal Junos-style per-peer export.
+      assert _mainRibDelta.isEmpty();
+      _mainRibDelta = mainRibDelta;
+      RoutingPolicy redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy()).orElse(null);
+      if (redistributionPolicy != null) {
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, redistributionPolicy, REDISTRIBUTE);
+        }
+      }
     } else {
       // Place redistributed routes into our RIB
       RoutingPolicy redistributionPolicy =
@@ -2379,12 +2390,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   public void importCrossVrfEvpnRoutesToV4(
       Stream<RouteAdvertisement<EvpnType5Route>> routesToLeak,
-      EvpnToBgpv4VrfLeakConfig leakConfig) {
+      EvpnToBgpv4VrfLeakConfig leakConfig,
+      @Nullable RouteDistinguisher selfRd) {
     // TODO: Should type 3 routes leak?
     @Nullable
     RoutingPolicy policy =
         Optional.ofNullable(leakConfig.getImportPolicy()).flatMap(_policies::get).orElse(null);
-    routesToLeak.forEach(
+    Stream<RouteAdvertisement<EvpnType5Route>> filteredRoutes =
+        routesToLeak.filter(
+            ra -> {
+              // Import loop prevention heuristic: exclude route if originated from this VRF
+              return selfRd == null || !selfRd.equals(ra.getRoute().getRouteDistinguisher());
+            });
+    filteredRoutes.forEach(
         ra -> {
           EvpnType5Route route = ra.getRoute();
           LOGGER.trace("Node {}, VRF {}, Leaking EVPN route {}", _hostname, _vrfName, route);

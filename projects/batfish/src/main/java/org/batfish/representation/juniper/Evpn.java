@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
@@ -13,6 +14,7 @@ public final class Evpn implements Serializable {
   private @Nullable Boolean _extendedVniAll;
   private @Nullable IntegerSpace _extendedVniList;
   private @Nullable EvpnEncapsulation _encapsulation;
+  private @Nullable EvpnIpPrefixRoutes _ipPrefixRoutes;
 
   public @Nullable MulticastModeOptions getMulticastMode() {
     return _multicastMode;
@@ -44,5 +46,20 @@ public final class Evpn implements Serializable {
 
   public void setEncapsulation(EvpnEncapsulation encapsulation) {
     _encapsulation = encapsulation;
+  }
+
+  public @Nullable EvpnIpPrefixRoutes getIpPrefixRoutes() {
+    return _ipPrefixRoutes;
+  }
+
+  public @Nonnull EvpnIpPrefixRoutes getOrCreateIpPrefixRoutes() {
+    if (_ipPrefixRoutes == null) {
+      _ipPrefixRoutes = new EvpnIpPrefixRoutes();
+    }
+    return _ipPrefixRoutes;
+  }
+
+  public void setIpPrefixRoutes(@Nullable EvpnIpPrefixRoutes ipPrefixRoutes) {
+    _ipPrefixRoutes = ipPrefixRoutes;
   }
 }

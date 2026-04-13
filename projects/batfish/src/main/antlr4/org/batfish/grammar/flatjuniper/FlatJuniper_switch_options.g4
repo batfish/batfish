@@ -31,17 +31,42 @@ so_route_distinguisher
 
 so_vrf_target
 :
-  VRF_TARGET null_filler
+  VRF_TARGET (
+    sovt_auto
+    | sovt_community
+    | sovt_export
+    | sovt_import
+  )
+;
+
+sovt_auto
+:
+  AUTO
+;
+
+sovt_community
+:
+  comm = vrf_target_community
+;
+
+sovt_export
+:
+  EXPORT comm = vrf_target_community
+;
+
+sovt_import
+:
+  IMPORT comm = vrf_target_community
 ;
 
 so_vrf_export
 :
-  VRF_EXPORT null_filler
+  VRF_EXPORT name = junos_name
 ;
 
 so_vrf_import
 :
-  VRF_IMPORT null_filler
+  VRF_IMPORT name = junos_name
 ;
 
 so_interface

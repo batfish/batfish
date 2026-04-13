@@ -6,5 +6,6 @@ package org.batfish.representation.juniper;
  */
 public enum EvpnEncapsulation {
   VXLAN,
-  MPLS
+  MPLS,
+  SRV6
 }

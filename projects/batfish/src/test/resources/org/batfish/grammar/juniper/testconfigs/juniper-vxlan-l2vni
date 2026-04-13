@@ -1,6 +1,7 @@
 #
 set system host-name juniper-vxlan-l2vni
 #
+set interfaces lo0 unit 0 family inet address 10.84.249.26/32 primary
 set interfaces xe-0/0/0 description to_host-1
 set interfaces xe-0/0/0 unit 0 family ethernet-switching interface-mode access
 set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members v10
@@ -10,7 +11,7 @@ set protocols evpn encapsulation vxlan
 set protocols evpn extended-vni-list all
 set protocols igmp-snooping vlan default
 set switch-options vtep-source-interface lo0.0
-set switch-options route-distinguisher 192.168.100.111:1
+set switch-options route-distinguisher 10.84.249.26:1
 set switch-options vrf-target target:65000:1
 set vlans default vlan-id 1
 set vlans v10 vlan-id 10
