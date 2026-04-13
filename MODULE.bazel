@@ -60,7 +60,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.48",
     "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.48",
     "org.hamcrest:hamcrest:3.0",
-    "org.jgrapht:jgrapht-core:1.5.2",
+    "org.jgrapht:jgrapht-core:1.5.3",
     "at.yawk.lz4:lz4-java:1.11.0",
     "org.mockito:mockito-core:5.23.0",
     "org.mockito:mockito-inline:5.2.0",
