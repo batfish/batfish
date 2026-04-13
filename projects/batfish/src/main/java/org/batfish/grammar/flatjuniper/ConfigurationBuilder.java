@@ -327,6 +327,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_drop_path_attributesC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_forwarding_contextContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_keepContext;
@@ -4774,6 +4775,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_enforce_first_as(B_enforce_first_asContext ctx) {
     _currentBgpGroup.setEnforceFirstAs(true);
+  }
+
+  @Override
+  public void exitB_forwarding_context(B_forwarding_contextContext ctx) {
+    _currentBgpGroup.setForwardingContext(toString(ctx.name));
   }
 
   @Override

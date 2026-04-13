@@ -94,6 +94,48 @@ public class BgpTopologyUtilsTest {
     _node3BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of());
   }
 
+  /**
+   * A peer in a non-default VRF with sessionVrf="default" and local IP owned by the default VRF
+   * should pass sanity checks and appear in the topology.
+   */
+  @Test
+  public void testInitTopologySessionVrf() {
+    // Peer on node1 in VRF "myVrf" with local IP 1.1.1.1 (owned by default VRF).
+    // sessionVrf is set to "default", so sanity check should pass.
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(1L)
+            .setPeerAddress(ip2)
+            .setRemoteAs(2L)
+            .setSessionVrf(DEFAULT_VRF_NAME)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+
+    // Add peer to node1's default VRF BGP process (for simplicity; the key point is that
+    // the ipOwners map has ip1 in DEFAULT_VRF_NAME, not "myVrf")
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
+
+    // ip1 is in the default VRF, not in "myVrf"
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)));
+
+    // With keepInvalid=false, peer should still appear (sessionVrf makes it valid)
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ipOwners, false, null).getGraph();
+    assertThat(bgpTopology.nodes(), hasSize(1));
+  }
+
   @Test
   public void testInitTopologyRemotePrefixNotMatchingLocalIp() {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 2.2.2.2

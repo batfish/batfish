@@ -45,6 +45,7 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_EVPN_ADDRESS_FAMILY = "evpnAddressFamily";
 
   static final String PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT = "replaceNonLocalAsesOnExport";
+  static final String PROP_SESSION_VRF = "sessionVrf";
 
   private final @Nullable RibGroup _appliedRibGroup;
   private final @Nullable BgpAuthenticationSettings _authenticationSettings;
@@ -94,6 +95,15 @@ public abstract class BgpPeerConfig implements Serializable {
 
   private final boolean _replaceNonLocalAsesOnExport;
 
+  /**
+   * The VRF from which this peer's BGP TCP session is sourced, if different from the VRF in which
+   * the peer is configured. When {@code null}, the session is sourced from the peer's own VRF.
+   *
+   * <p>For example, Junos {@code forwarding-context master} causes a BGP session in a VRF to source
+   * its TCP connection from the default routing instance.
+   */
+  private final @Nullable String _sessionVrf;
+
   protected BgpPeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
@@ -111,7 +121,8 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable LongSpace remoteAsns,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily,
-      boolean replaceNonLocalAsesOnExport) {
+      boolean replaceNonLocalAsesOnExport,
+      @Nullable String sessionVrf) {
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
     _checkLocalIpOnAccept = firstNonNull(checkLocalIpOnAccept, true);
@@ -129,6 +140,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
     _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
+    _sessionVrf = sessionVrf;
   }
 
   /** Return the {@link RibGroup} applied to this config */
@@ -281,6 +293,15 @@ public abstract class BgpPeerConfig implements Serializable {
     return _replaceNonLocalAsesOnExport;
   }
 
+  /**
+   * The VRF in which this peer's BGP TCP session takes place, if different from the VRF in which
+   * the peer is configured. When {@code null}, the session uses the peer's own VRF.
+   */
+  @JsonProperty(PROP_SESSION_VRF)
+  public @Nullable String getSessionVrf() {
+    return _sessionVrf;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -306,7 +327,8 @@ public abstract class BgpPeerConfig implements Serializable {
         && _remoteAsns.equals(that._remoteAsns)
         && Objects.equals(_ipv4UnicastAddressFamily, that._ipv4UnicastAddressFamily)
         && Objects.equals(_evpnAddressFamily, that._evpnAddressFamily)
-        && _replaceNonLocalAsesOnExport == that._replaceNonLocalAsesOnExport;
+        && _replaceNonLocalAsesOnExport == that._replaceNonLocalAsesOnExport
+        && Objects.equals(_sessionVrf, that._sessionVrf);
   }
 
   @Override
@@ -328,7 +350,8 @@ public abstract class BgpPeerConfig implements Serializable {
         _remoteAsns,
         _ipv4UnicastAddressFamily,
         _evpnAddressFamily,
-        _replaceNonLocalAsesOnExport);
+        _replaceNonLocalAsesOnExport,
+        _sessionVrf);
   }
 
   @Override
@@ -351,6 +374,7 @@ public abstract class BgpPeerConfig implements Serializable {
         .add("_ipv4UnicastAddressFamily", _ipv4UnicastAddressFamily)
         .add("_evpnAddressFamily", _evpnAddressFamily)
         .add("_replaceNonLocalAsesOnExport", _replaceNonLocalAsesOnExport)
+        .add("_sessionVrf", _sessionVrf)
         .toString();
   }
 
@@ -377,6 +401,7 @@ public abstract class BgpPeerConfig implements Serializable {
     protected @Nullable String _hostname;
 
     protected boolean _replaceNonLocalAsesOnExport;
+    protected @Nullable String _sessionVrf;
 
     protected Builder() {
       _remoteAsns = LongSpace.EMPTY;
@@ -493,6 +518,11 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setReplaceNonLocalAsesOnExport(boolean replaceNonLocalAsesOnExport) {
       _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
+      return getThis();
+    }
+
+    public S setSessionVrf(@Nullable String sessionVrf) {
+      _sessionVrf = sessionVrf;
       return getThis();
     }
   }

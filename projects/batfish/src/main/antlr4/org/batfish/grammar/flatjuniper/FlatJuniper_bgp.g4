@@ -111,6 +111,7 @@ b_common
    | b_enforce_first_as
    | b_export
    | b_family
+   | b_forwarding_context
    | b_import
    | b_keep
    | b_local_address
@@ -664,7 +665,6 @@ p_bgp
       | b_disable
       | b_drop_path_attributes
       | b_enable
-      | b_forwarding_context_null
       | b_group
       | b_neighbor
       | b_output_queue_priority
@@ -674,4 +674,4 @@ p_bgp
 // Protocol-wide config only
 b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
 b_bgp_error_tolerance_null: BGP_ERROR_TOLERANCE;
-b_forwarding_context_null: FORWARDING_CONTEXT name = junos_name;
+b_forwarding_context: FORWARDING_CONTEXT name = junos_name;

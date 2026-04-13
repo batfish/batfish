@@ -37,6 +37,7 @@ public class BgpGroup implements Serializable {
   private Boolean _enforceFirstAs;
   private @Nullable Boolean _evpnAf;
   private final List<String> _exportPolicies;
+  private @Nullable String _forwardingContext;
   protected String _groupName;
   private final List<String> _importPolicies;
   protected transient boolean _inherited;
@@ -103,6 +104,9 @@ public class BgpGroup implements Serializable {
       }
       if (_evpnAf == null) {
         _evpnAf = _parent._evpnAf;
+      }
+      if (_forwardingContext == null) {
+        _forwardingContext = _parent._forwardingContext;
       }
       if (_ebgpMultihop == null) {
         _ebgpMultihop = _parent._ebgpMultihop;
@@ -225,6 +229,14 @@ public class BgpGroup implements Serializable {
 
   public void setEvpnAf(@Nullable Boolean evpnAf) {
     _evpnAf = evpnAf;
+  }
+
+  public @Nullable String getForwardingContext() {
+    return _forwardingContext;
+  }
+
+  public void setForwardingContext(@Nullable String forwardingContext) {
+    _forwardingContext = forwardingContext;
   }
 
   public final List<String> getExportPolicies() {
