@@ -190,6 +190,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.RESOLUTION_RIB_IMPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_EXPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
@@ -3920,7 +3922,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String policyName = toString(ctx.name);
     _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(policyName);
     _configuration.referenceStructure(
-        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
+        POLICY_STATEMENT, policyName, ROUTING_INSTANCE_VRF_EXPORT, getLine(ctx.start));
   }
 
   @Override
@@ -3928,7 +3930,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String policyName = toString(ctx.name);
     _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(policyName);
     _configuration.referenceStructure(
-        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
+        POLICY_STATEMENT, policyName, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.start));
   }
 
   @Override
@@ -4923,12 +4925,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEipr_export(Eipr_exportContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setExportPolicy(toString(ctx.name));
+    String policyName = toString(ctx.name);
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setExportPolicy(policyName);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT,
+        policyName,
+        ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_EXPORT,
+        getLine(ctx.start));
   }
 
   @Override
   public void exitEipr_import(Eipr_importContext ctx) {
-    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setImportPolicy(toString(ctx.name));
+    String policyName = toString(ctx.name);
+    getOrCreateCurrentEvpnIpPrefixRoutes(ctx).setImportPolicy(policyName);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT,
+        policyName,
+        ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_IMPORT,
+        getLine(ctx.start));
   }
 
   @Override

@@ -164,6 +164,8 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE("policy-statement then tunnel-attribute"),
   RESOLUTION_RIB_IMPORT_POLICY("routing-instance resolution rib import"),
   ROUTING_OPTIONS_RIB_GROUPS_IMPORT_POLICY("routing-options rib-groups import-policy"),
+  ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_EXPORT("routing-instance evpn ip-prefix-routes export"),
+  ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_IMPORT("routing-instance evpn ip-prefix-routes import"),
   ROUTING_INSTANCE_INTERFACE("routing-instance interface"),
   ROUTING_INSTANCE_SELF_REFERENCE("routing-instance"),
   ROUTING_INSTANCE_VRF_EXPORT("routing-instance vrf-export"),
