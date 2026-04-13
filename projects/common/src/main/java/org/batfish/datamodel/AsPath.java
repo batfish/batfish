@@ -143,6 +143,8 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
     return _asSets.equals(other._asSets);
   }
 
+  // TODO: Group consecutive confederation singleton AsSets under a single pair of parentheses to
+  //       match standard router output, e.g. "(1 2) 64511" instead of "(1) (2) 64511".
   public String getAsPathString() {
     return StringUtils.join(_asSets, " ");
   }
