@@ -1,5 +1,6 @@
 package org.batfish.datamodel.bgp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
@@ -152,9 +153,20 @@ public final class BgpTopologyUtils {
             localIpsBuilder.put(neighborId, config.getLocalIp());
           } else {
             // No explicitly configured local IP. Check for dynamically resolvable local IPs.
-            localIpsBuilder.putAll(
-                neighborId,
-                vrf.getSourceIpInference().getPotentialSourceIps(peerAddress, fib, node));
+            // If sessionVrf is set, resolve from that VRF's FIB instead.
+            String sourceVrfName = firstNonNull(config.getSessionVrf(), vrfName);
+            Vrf sourceVrf = sourceVrfName.equals(vrfName) ? vrf : node.getVrfs().get(sourceVrfName);
+            Fib sourceFib =
+                sourceVrfName.equals(vrfName)
+                    ? fib
+                    : fibs.getOrDefault(hostname, ImmutableMap.of()).get(sourceVrfName);
+            if (sourceVrf != null && sourceFib != null) {
+              localIpsBuilder.putAll(
+                  neighborId,
+                  sourceVrf
+                      .getSourceIpInference()
+                      .getPotentialSourceIps(peerAddress, sourceFib, node));
+            }
           }
         }
         // Dynamic peers: map of prefix to BgpPassivePeerConfig
@@ -185,9 +197,16 @@ public final class BgpTopologyUtils {
         // Unnumbered configs only form sessions with each other
         continue;
       }
-      Multimap<String, BgpPeerConfigId> vrf =
+      Multimap<String, BgpPeerConfigId> hostReceivers =
           receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
-      vrf.put(peer.getVrfName(), peer);
+      // Register under sessionVrf if set (the VRF where the TCP session lives), otherwise
+      // the peer's own VRF.
+      BgpPeerConfig peerConfig = networkConfigurations.getBgpPeerConfig(peer);
+      String receiverVrf =
+          peerConfig != null
+              ? firstNonNull(peerConfig.getSessionVrf(), peer.getVrfName())
+              : peer.getVrfName();
+      hostReceivers.put(receiverVrf, peer);
     }
     SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
 
@@ -409,9 +428,10 @@ public final class BgpTopologyUtils {
     }
 
     Ip localIp = config.getLocalIp();
+    String sourceVrf = firstNonNull(config.getSessionVrf(), vrfName);
     return localIp == null
         || (ipOwners.containsKey(localIp)
-            && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(vrfName));
+            && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(sourceVrf));
   }
 
   /**
@@ -566,7 +586,7 @@ public final class BgpTopologyUtils {
             .setIpProtocol(IpProtocol.TCP)
             .setTcpFlagsSyn(true)
             .setIngressNode(initiatorId.getHostname())
-            .setIngressVrf(initiatorId.getVrfName())
+            .setIngressVrf(firstNonNull(initiator.getSessionVrf(), initiatorId.getVrfName()))
             .setSrcIp(initiatorLocalIp)
             .setDstIp(initiator.getPeerAddress())
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
@@ -596,8 +616,10 @@ public final class BgpTopologyUtils {
               Flow reverseFlow = traceAndReverseFlow.getReverseFlow();
               assert traceAndReverseFlow.getReverseFlow() != null; // success implies return flow
               assert reverseFlow.getIngressVrf() != null; // accepted
+              String listenerSessionVrf =
+                  firstNonNull(listener.getSessionVrf(), listenerId.getVrfName());
               if (!reverseFlow.getIngressNode().equals(listenerId.getHostname())
-                  || !reverseFlow.getIngressVrf().equals(listenerId.getVrfName())) {
+                  || !reverseFlow.getIngressVrf().equals(listenerSessionVrf)) {
                 // This trace is success at the wrong device or in the wrong VRF.
                 return false;
               } else if (listener.getCheckLocalIpOnAccept() && listener.getLocalIp() != null) {

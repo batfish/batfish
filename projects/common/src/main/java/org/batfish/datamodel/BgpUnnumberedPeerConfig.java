@@ -50,7 +50,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
               _remoteAsns,
               _ipv4UnicastAddressFamily,
               _evpnAddressFamily,
-              _replaceNonLocalAsesOnExport);
+              _replaceNonLocalAsesOnExport,
+              _sessionVrf);
       if (_bgpProcess != null) {
         _bgpProcess.getInterfaceNeighbors().put(_peerInterface, bgpPeerConfig);
       }
@@ -94,7 +95,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
           Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily,
-      @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT) boolean replaceNonLocalAsesOnExport) {
+      @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT) boolean replaceNonLocalAsesOnExport,
+      @JsonProperty(PROP_SESSION_VRF) @Nullable String sessionVrf) {
     checkArgument(peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
     return new BgpUnnumberedPeerConfig(
         appliedRibGroup,
@@ -113,7 +115,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         ipv4UnicastAddressFamily,
         evpnAddressFamily,
-        replaceNonLocalAsesOnExport);
+        replaceNonLocalAsesOnExport,
+        sessionVrf);
   }
 
   private final @Nonnull String _peerInterface;
@@ -135,7 +138,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @Nullable LongSpace remoteAsns,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily,
-      boolean replaceNonLocalAsesOnExport) {
+      boolean replaceNonLocalAsesOnExport,
+      @Nullable String sessionVrf) {
     super(
         appliedRibGroup,
         authenticationSettings,
@@ -153,7 +157,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         remoteAsns,
         ipv4UnicastAddressFamily,
         evpnAddressFamily,
-        replaceNonLocalAsesOnExport);
+        replaceNonLocalAsesOnExport,
+        sessionVrf);
     _peerInterface = peerInterface;
   }
 

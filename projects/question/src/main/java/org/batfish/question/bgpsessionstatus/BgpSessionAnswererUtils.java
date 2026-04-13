@@ -1,5 +1,7 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -40,6 +42,7 @@ public final class BgpSessionAnswererUtils {
   public static final String COL_REMOTE_NODE = "Remote_Node";
   public static final String COL_REMOTE_INTERFACE = "Remote_Interface";
   public static final String COL_REMOTE_IP = "Remote_IP";
+  public static final String COL_SESSION_VRF = "Session_VRF";
   public static final String COL_SESSION_TYPE = "Session_Type";
   public static final String COL_VRF = "VRF";
 
@@ -63,10 +66,11 @@ public final class BgpSessionAnswererUtils {
     Ip localIp = activePeerConfig.getLocalIp();
     Ip remoteIp = activePeerConfig.getPeerAddress();
 
+    String sourceVrf = firstNonNull(activePeerConfig.getSessionVrf(), peerId.getVrfName());
     if (!ipVrfOwners
         .getOrDefault(localIp, ImmutableMap.of())
         .getOrDefault(peerId.getHostname(), ImmutableSet.of())
-        .contains(peerId.getVrfName())) {
+        .contains(sourceVrf)) {
       return ConfiguredSessionStatus.INVALID_LOCAL_IP;
     } else if (!ipVrfOwners.containsKey(remoteIp)) {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;

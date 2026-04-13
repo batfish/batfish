@@ -18,6 +18,13 @@
           "schema" : "String"
         },
         {
+          "description" : "The VRF from which this session's TCP connection is sourced, if different from VRF",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Session_VRF",
+          "schema" : "String"
+        },
+        {
           "description" : "The local AS of the session",
           "isKey" : false,
           "isValue" : false,
@@ -113,6 +120,7 @@
           "schema" : "Ip",
           "value" : "10.23.21.3"
         },
+        "Session_VRF" : null,
         "Session_Type" : "EBGP_SINGLEHOP",
         "VRF" : "default"
       }

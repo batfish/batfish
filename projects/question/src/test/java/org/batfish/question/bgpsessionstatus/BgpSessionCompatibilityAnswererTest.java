@@ -11,6 +11,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COLUMN_METADATA;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_CONFIGURED_STATUS;
@@ -123,6 +124,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .build();
@@ -181,6 +183,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .build();
@@ -213,6 +216,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -251,6 +255,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -318,6 +323,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_IP, localIp)
             .put(COL_NODE, new Node("c1"))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.DYNAMIC_MATCH)
@@ -362,6 +368,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, null)
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -412,6 +419,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, NodeInterfacePair.of("c2", "iface2"))
             .put(COL_REMOTE_IP, null)
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_UNNUMBERED)
             .put(COL_VRF, "vrf1")
             .build();
@@ -453,6 +461,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_INTERFACE, null)
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST));
     Row row1To2 =
