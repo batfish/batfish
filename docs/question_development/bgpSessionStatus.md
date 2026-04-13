@@ -132,6 +132,7 @@ This catches issues like:
 |--------|------|-------------|
 | `Node` | Node | The node where this session is configured |
 | `VRF` | String | The VRF containing the BGP process |
+| `Session_VRF` | String | The VRF in which the BGP TCP session takes place, if different from VRF |
 | `Local_AS` | Long | The local AS number |
 | `Local_Interface` | Interface | Local interface (unnumbered peers only) |
 | `Local_IP` | IP | The local IP address |

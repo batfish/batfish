@@ -1,0 +1,17 @@
+#
+set system host-name bgp-forwarding-context
+#
+set interfaces lo0 unit 0 family inet address 10.0.0.1/32
+set routing-options autonomous-system 1
+#
+set routing-instances VRF1 instance-type vrf
+set routing-instances VRF1 protocols bgp forwarding-context master
+set routing-instances VRF1 protocols bgp group G type internal
+set routing-instances VRF1 protocols bgp group G local-address 10.0.0.1
+set routing-instances VRF1 protocols bgp group G neighbor 10.0.0.2
+#
+set routing-instances VRF2 instance-type vrf
+set routing-instances VRF2 protocols bgp group H type internal
+set routing-instances VRF2 protocols bgp group H forwarding-context master
+set routing-instances VRF2 protocols bgp group H local-address 10.0.0.1
+set routing-instances VRF2 protocols bgp group H neighbor 10.0.0.3

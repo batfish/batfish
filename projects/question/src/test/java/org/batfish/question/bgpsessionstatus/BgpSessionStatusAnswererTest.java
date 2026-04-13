@@ -13,6 +13,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswererTest.createConfigurations;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COLUMN_METADATA;
@@ -123,6 +124,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .build();
@@ -189,6 +191,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1");
     assertThat(row, equalTo(expected.build()));
@@ -215,6 +218,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, new Node("c1"))
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, localIp))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf2")
             .build();
@@ -251,6 +255,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -289,6 +294,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -324,6 +330,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, null)
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -373,6 +380,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, NodeInterfacePair.of("c2", "iface2"))
             .put(COL_REMOTE_IP, null)
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_UNNUMBERED)
             .put(COL_VRF, "vrf1")
             .build();
@@ -468,6 +476,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_LOCAL_AS, 1L)
             .put(COL_LOCAL_IP, localIp)
             .put(COL_NODE, new Node("c1"))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .put(COL_LOCAL_INTERFACE, null)
@@ -613,6 +622,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
+            .put(COL_SESSION_VRF, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP);
     Row row1To2 =
         expectedRowBuilder

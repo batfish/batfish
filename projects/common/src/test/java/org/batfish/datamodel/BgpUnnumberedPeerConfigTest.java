@@ -90,6 +90,7 @@ public final class BgpUnnumberedPeerConfigTest {
             builder.setEvpnAddressFamily(
                 EvpnAddressFamily.builder().setPropagateUnmatched(true).build()))
         .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
+        .addEqualityGroup(builder.setSessionVrf("default").build())
         .testEquals();
   }
 
@@ -124,6 +125,7 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
+            .setSessionVrf("default")
             .build();
 
     assertThat(
@@ -163,6 +165,7 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
+            .setSessionVrf("default")
             .build();
 
     assertThat(SerializationUtils.clone(bgpUnnumberedPeerConfig), equalTo(bgpUnnumberedPeerConfig));

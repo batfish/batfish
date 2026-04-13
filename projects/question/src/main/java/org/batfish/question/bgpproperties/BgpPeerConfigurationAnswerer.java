@@ -12,6 +12,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROU
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SESSION_VRF;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -61,6 +62,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       ImmutableList.of(
           COL_NODE,
           COL_VRF,
+          SESSION_VRF,
           LOCAL_AS,
           LOCAL_IP,
           COL_LOCAL_INTERFACE,

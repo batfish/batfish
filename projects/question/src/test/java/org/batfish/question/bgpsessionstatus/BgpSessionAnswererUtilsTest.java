@@ -6,8 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -162,6 +166,78 @@ public final class BgpSessionAnswererUtilsTest {
             .setRemoteAsns(LongSpace.EMPTY)
             .build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
+  }
+
+  /** Local IP is in the default VRF, peer is in a non-default VRF with sessionVrf set. */
+  @Test
+  public void testSessionVrfPreventsInvalidLocalIp() {
+    Ip localIp = Ip.parse("1.1.1.1");
+    Ip remoteIp = Ip.parse("2.2.2.2");
+
+    // Peer is in "myVrf" but sessionVrf is "default" (where localIp actually lives)
+    BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "myVrf", remoteIp.toPrefix(), false);
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(localIp)
+            .setPeerAddress(remoteIp)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setSessionVrf("default")
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // localIp is owned by the default VRF, not myVrf
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            localIp,
+            ImmutableMap.of("c1", ImmutableSet.of("default")),
+            remoteIp,
+            ImmutableMap.of("c2", ImmutableSet.of("default")));
+
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> topology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    topology.addNode(peerId);
+
+    // Without sessionVrf, this would be INVALID_LOCAL_IP (localIp not in "myVrf").
+    // With sessionVrf="default", it should pass the local IP check.
+    ConfiguredSessionStatus status =
+        getConfiguredStatus(
+            peerId, peer, BgpSessionProperties.SessionType.IBGP, ipVrfOwners, topology);
+    assertThat(status, equalTo(ConfiguredSessionStatus.HALF_OPEN));
+  }
+
+  /** Without sessionVrf, a local IP in a different VRF should produce INVALID_LOCAL_IP. */
+  @Test
+  public void testInvalidLocalIpWithoutSessionVrf() {
+    Ip localIp = Ip.parse("1.1.1.1");
+    Ip remoteIp = Ip.parse("2.2.2.2");
+
+    // Peer is in "myVrf", no sessionVrf set, localIp is in "default"
+    BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "myVrf", remoteIp.toPrefix(), false);
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(localIp)
+            .setPeerAddress(remoteIp)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            localIp,
+            ImmutableMap.of("c1", ImmutableSet.of("default")),
+            remoteIp,
+            ImmutableMap.of("c2", ImmutableSet.of("default")));
+
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> topology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    topology.addNode(peerId);
+
+    ConfiguredSessionStatus status =
+        getConfiguredStatus(
+            peerId, peer, BgpSessionProperties.SessionType.IBGP, ipVrfOwners, topology);
+    assertThat(status, equalTo(ConfiguredSessionStatus.INVALID_LOCAL_IP));
   }
 
   @Test
