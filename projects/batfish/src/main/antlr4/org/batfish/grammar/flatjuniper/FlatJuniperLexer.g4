@@ -1178,8 +1178,6 @@ INVALID: 'invalid';
 
 IP: 'ip';
 
-IP_PREFIX_ROUTES: 'ip-prefix-routes';
-
 IP_DESTINATION_ADDRESS: 'ip-destination-address';
 
 IP_HEADER_BAD: 'ip-header-bad';
@@ -1187,6 +1185,8 @@ IP_HEADER_BAD: 'ip-header-bad';
 IP_IN_UDP: 'ip-in-udp';
 
 IP_OPTIONS: 'ip-options';
+
+IP_PREFIX_ROUTES: 'ip-prefix-routes';
 
 IP_PROTOCOL: 'ip-protocol';
 
@@ -2791,11 +2791,11 @@ SQLNET_V2: 'sqlnet-v2';
 
 SRLG: 'srlg' -> pushMode(M_Name);
 
-SRV6: 'srv6';
-
 SRLG_COST: 'srlg-cost';
 
 SRLG_VALUE: 'srlg-value';
+
+SRV6: 'srv6';
 
 SSH: 'ssh';
 
