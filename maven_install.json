@@ -63,7 +63,7 @@
     "org.glassfish.jersey.test-framework:jersey-test-framework-core": -1663673216,
     "org.hamcrest:hamcrest": 1547523135,
     "org.hamcrest:hamcrest-core": 168210752,
-    "org.jgrapht:jgrapht-core": 1073457316,
+    "org.jgrapht:jgrapht-core": -733997147,
     "org.mockito:mockito-core": 1330163800,
     "org.mockito:mockito-inline": 724093597,
     "org.parboiled:parboiled-core": 179926754,
@@ -203,8 +203,8 @@
     "org.apache.logging.log4j:log4j-core:jar:sources": -310222995,
     "org.apache.logging.log4j:log4j-slf4j-impl": -1644903574,
     "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources": -113655767,
-    "org.apfloat:apfloat": -608607028,
-    "org.apfloat:apfloat:jar:sources": 3528551,
+    "org.apfloat:apfloat": -1689392346,
+    "org.apfloat:apfloat:jar:sources": -1889003084,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
     "org.checkerframework:checker-qual": 776713160,
@@ -261,8 +261,8 @@
     "org.hamcrest:hamcrest:jar:sources": 1394599014,
     "org.javassist:javassist": 1095674094,
     "org.javassist:javassist:jar:sources": 1152789755,
-    "org.jgrapht:jgrapht-core": -71586270,
-    "org.jgrapht:jgrapht-core:jar:sources": -552082014,
+    "org.jgrapht:jgrapht-core": 1777682504,
+    "org.jgrapht:jgrapht-core:jar:sources": -261629558,
     "org.jheaps:jheaps": 487946236,
     "org.jheaps:jheaps:jar:sources": 1658788425,
     "org.jline:jline": -1888912200,
@@ -794,10 +794,10 @@
     },
     "org.apfloat:apfloat": {
       "shasums": {
-        "jar": "a1480f560f37355f6c0458c523bda46658da4cd3e23cc64e309fedcd7b0782ba",
-        "sources": "ca3d005a6a57e3926a74e853988e61b32d887a2fa4314bc8e9173835e10dfd00"
+        "jar": "14fa3dee487b9d8de6d0ff7c39526159405c0879a65c817f959c9575e4b14820",
+        "sources": "0ca303116e3f0afdf173bbd20c6e4455cea864137c8df57f9e10ac46bb4b1c10"
       },
-      "version": "1.10.1"
+      "version": "1.14.0"
     },
     "org.apiguardian:apiguardian-api": {
       "shasums": {
@@ -997,10 +997,10 @@
     },
     "org.jgrapht:jgrapht-core": {
       "shasums": {
-        "jar": "dfa596e9f0d0838f1b5e81dd0cd60e3a76c2c290ac25a0a029ffde58cf5e4c14",
-        "sources": "79bd7624222ddd4742686f4f0e2490ecd94d556e57bced5eceb75f20f2de54a0"
+        "jar": "a026a34523286e1bf510e4bd4625935e3c97ce0fc40e1891f4262309f3b64c3e",
+        "sources": "a0c83fee78d65932ee2086402602d4349892a6cadafef04d32d76523f150c1f9"
       },
-      "version": "1.5.2"
+      "version": "1.5.3"
     },
     "org.jheaps:jheaps": {
       "shasums": {
@@ -2682,6 +2682,7 @@
     "org.jgrapht:jgrapht-core": [
       "org.jgrapht",
       "org.jgrapht.alg",
+      "org.jgrapht.alg.centers",
       "org.jgrapht.alg.clique",
       "org.jgrapht.alg.clustering",
       "org.jgrapht.alg.color",
@@ -2706,6 +2707,7 @@
       "org.jgrapht.alg.shortestpath",
       "org.jgrapht.alg.similarity",
       "org.jgrapht.alg.spanning",
+      "org.jgrapht.alg.steiner",
       "org.jgrapht.alg.tour",
       "org.jgrapht.alg.transform",
       "org.jgrapht.alg.util",
