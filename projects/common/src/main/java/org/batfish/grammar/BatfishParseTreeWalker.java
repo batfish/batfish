@@ -1,10 +1,14 @@
 package org.batfish.grammar;
 
 import com.google.common.base.Throwables;
+import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.RuleNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.WillNotCommitException;
@@ -17,6 +21,31 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
   public BatfishParseTreeWalker(BatfishCombinedParser<?, ?> parser) {
     super();
     _parser = parser;
+  }
+
+  /**
+   * Override walk to access {@link ParserRuleContext#children} directly instead of going through
+   * {@link ParserRuleContext#getChild(int)}, avoiding virtual dispatch and null/bounds checks per
+   * call. Logic otherwise identical to {@link ParseTreeWalker#walk}.
+   */
+  @Override
+  public void walk(ParseTreeListener listener, ParseTree t) {
+    if (t instanceof ErrorNode) {
+      listener.visitErrorNode((ErrorNode) t);
+      return;
+    } else if (t instanceof TerminalNode) {
+      listener.visitTerminal((TerminalNode) t);
+      return;
+    }
+    RuleNode r = (RuleNode) t;
+    enterRule(listener, r);
+    List<ParseTree> children = ((ParserRuleContext) r).children;
+    if (children != null) {
+      for (int i = 0, n = children.size(); i < n; i++) {
+        walk(listener, children.get(i));
+      }
+    }
+    exitRule(listener, r);
   }
 
   @Override
