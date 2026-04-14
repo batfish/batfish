@@ -29,6 +29,7 @@ junit_tests(
         "//projects/batfish/src/test/resources",
         "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-backup-routes",
         "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-best-path-export",
+        "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-confederation-external-member-as",
         "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-local-pref-ebgp",
         "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-topology-change",
     ],

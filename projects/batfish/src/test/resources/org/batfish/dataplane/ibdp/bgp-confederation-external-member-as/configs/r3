@@ -1,0 +1,11 @@
+!
+hostname r3
+!
+interface Ethernet0/1
+ ip address 10.0.23.3 255.255.255.0
+!
+router bgp 65002
+ bgp confederation identifier 65000
+ bgp confederation peers 65001
+ neighbor 10.0.23.2 remote-as 65001
+!
