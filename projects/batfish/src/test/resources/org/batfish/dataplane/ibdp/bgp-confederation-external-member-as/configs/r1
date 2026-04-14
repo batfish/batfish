@@ -1,0 +1,13 @@
+!
+hostname r1
+!
+interface Ethernet0/1
+ ip address 10.0.12.1 255.255.255.0
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+router bgp 65002
+ neighbor 10.0.12.2 remote-as 65000
+ network 1.1.1.1 mask 255.255.255.255
+!

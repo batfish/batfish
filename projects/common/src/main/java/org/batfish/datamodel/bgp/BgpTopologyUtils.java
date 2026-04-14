@@ -282,7 +282,7 @@ public final class BgpTopologyUtils {
                                     // same vrf as initiator
                                     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
                                     if (!bgpCandidatePassesSanityChecks(
-                                        neighborId, neighbor, candidateId, candidate)) {
+                                        neighborId, neighbor, candidateId, candidate, nc)) {
                                       return Stream.of();
                                     }
                                     assert candidate
@@ -378,9 +378,11 @@ public final class BgpTopologyUtils {
             p1.getLocalAs(),
             p1.getConfederationAsn(),
             p1.getRemoteAsns(),
+            getConfedMembers(id1, networkConfigurations),
             remotePeer.getLocalAs(),
             remotePeer.getConfederationAsn(),
-            remotePeer.getRemoteAsns());
+            remotePeer.getRemoteAsns(),
+            getConfedMembers(id2, networkConfigurations));
     assert asPair != null;
     return Stream.of(
         new BgpEdge(
@@ -446,7 +448,8 @@ public final class BgpTopologyUtils {
       @Nonnull BgpPeerConfigId neighborId,
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
-      @Nullable BgpPeerConfig candidate) {
+      @Nullable BgpPeerConfig candidate,
+      @Nonnull NetworkConfigurations nc) {
     if (neighborId.getHostname().equals(candidateId.getHostname())
         && neighborId.getVrfName().equals(candidateId.getVrfName())) {
       // Do not let the same node/VRF peer with itself.
@@ -456,22 +459,15 @@ public final class BgpTopologyUtils {
     if (candidate == null) {
       return false;
     }
-    return bgpCandidateHasCompatibleAs(neighbor, candidate);
-  }
-
-  /**
-   * Returns if the given candidate BGP peer has a compatible AS configuration to the given active
-   * BGP peer
-   */
-  public static boolean bgpCandidateHasCompatibleAs(
-      BgpPeerConfig neighbor, BgpPeerConfig candidate) {
     return computeAsPair(
             neighbor.getLocalAs(),
             neighbor.getConfederationAsn(),
             neighbor.getRemoteAsns(),
+            getConfedMembers(neighborId, nc),
             candidate.getLocalAs(),
             candidate.getConfederationAsn(),
-            candidate.getRemoteAsns())
+            candidate.getRemoteAsns(),
+            getConfedMembers(candidateId, nc))
         != null;
   }
 
@@ -520,7 +516,16 @@ public final class BgpTopologyUtils {
     }
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
-        && bgpCandidateHasCompatibleAs(neighbor, candidate);
+        && computeAsPair(
+                neighbor.getLocalAs(),
+                neighbor.getConfederationAsn(),
+                neighbor.getRemoteAsns(),
+                getConfedMembers(neighborId, nc),
+                candidate.getLocalAs(),
+                candidate.getConfederationAsn(),
+                candidate.getRemoteAsns(),
+                getConfedMembers(candidateId, nc))
+            != null;
   }
 
   private static final class ReverseFlowAndFirewallSessions {
@@ -665,13 +670,25 @@ public final class BgpTopologyUtils {
                         }));
   }
 
+  /** Returns the confederation members for the BGP process associated with the given peer. */
+  private static @Nullable LongSpace getConfedMembers(
+      BgpPeerConfigId id, NetworkConfigurations nc) {
+    return nc.getVrf(id.getHostname(), id.getVrfName())
+        .map(Vrf::getBgpProcess)
+        .map(BgpProcess::getConfederation)
+        .map(BgpConfederation::getMembers)
+        .orElse(null);
+  }
+
   public static @Nullable AsPair computeAsPair(
       @Nullable Long initiatorLocalAs,
       @Nullable Long initiatorConfed,
       @Nonnull LongSpace initiatorRemoteAsns,
+      @Nullable LongSpace initiatorConfedMembers,
       @Nullable Long listenerLocalAs,
       @Nullable Long listenerConfed,
-      @Nonnull LongSpace listenerRemoteAsns) {
+      @Nonnull LongSpace listenerRemoteAsns,
+      @Nullable LongSpace listenerConfedMembers) {
     if (initiatorLocalAs == null || listenerLocalAs == null) {
       return null; // This is plainly a misconfiguration. No session.
     }
@@ -708,6 +725,12 @@ public final class BgpTopologyUtils {
     }
     // Initiator is inside a confederation, but listener is not
     if (initiatorConfed != null) {
+      // If the listener's local AS is one of the initiator's confederation members, the initiator
+      // would treat this as a confed-eBGP session and send its member-AS in the OPEN message. The
+      // listener expects the confederation ID, so this is an AS mismatch. No session.
+      if (initiatorConfedMembers != null && initiatorConfedMembers.contains(listenerLocalAs)) {
+        return null;
+      }
       // Listener is not in a confederation, so this is across the confederation border if the
       // listener is configured to peer with the initiator's confederation ID. Both peers must
       // agree on the AS numbers: the initiator uses its confederation ID externally, and the
@@ -719,7 +742,13 @@ public final class BgpTopologyUtils {
         return null;
       }
     } else {
-      // Listener is inside a confederation, but initiator is not
+      // Listener is inside a confederation, but initiator is not.
+      // Same check as above in reverse: if the initiator's local AS is in the listener's
+      // confederation members, the listener would treat this as confed-eBGP and send its member-AS.
+      // The initiator expects the confederation ID. AS mismatch, no session.
+      if (listenerConfedMembers != null && listenerConfedMembers.contains(initiatorLocalAs)) {
+        return null;
+      }
       // Similar to above: initiator must be configured to peer with listener's confederation ID
       if (listenerRemoteAsns.contains(initiatorLocalAs)
           && initiatorRemoteAsns.contains(listenerConfed)) {
