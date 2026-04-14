@@ -784,24 +784,25 @@ public final class CumulusConversions {
     return source.accept(visitor);
   }
 
-  /** Scan all interfaces, find first that contains given remote IP */
+  /** Scan all interfaces in the given VRF, find first whose subnet contains the given remote IP. */
   @VisibleForTesting
   static @Nullable Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (vrf == null) {
       return null;
     }
-    return c.getAllInterfaces(vrf.getName()).values().stream()
-        .flatMap(
-            i ->
-                i.getAllConcreteAddresses().stream()
-                    .filter(
-                        addr ->
-                            addr.getPrefix().containsIp(remoteIp)
-                                && !addr.getIp().equals(remoteIp)))
-        .findFirst()
-        .map(ConcreteInterfaceAddress::getIp)
-        .orElse(null);
+    // Iterate directly to avoid stream allocation and getAllInterfaces(vrfName) map copy per call.
+    for (Interface iface : c.getAllInterfaces().values()) {
+      if (!iface.getVrfName().equals(vrfName)) {
+        continue;
+      }
+      for (ConcreteInterfaceAddress addr : iface.getAllConcreteAddresses()) {
+        if (addr.getPrefix().containsIp(remoteIp) && !addr.getIp().equals(remoteIp)) {
+          return addr.getIp();
+        }
+      }
+    }
+    return null;
   }
 
   /**
