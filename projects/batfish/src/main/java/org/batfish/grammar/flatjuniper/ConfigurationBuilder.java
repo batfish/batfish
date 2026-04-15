@@ -1196,6 +1196,7 @@ import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLoadBalance;
+import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
@@ -6922,7 +6923,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_load_balance(Popst_load_balanceContext ctx) {
-    addPsThen(PsThenLoadBalance.INSTANCE, ctx);
+    LoadBalanceMethod method;
+    if (ctx.ADAPTIVE() != null) {
+      method = LoadBalanceMethod.ADAPTIVE;
+    } else if (ctx.CONSISTENT_HASH() != null) {
+      method = LoadBalanceMethod.CONSISTENT_HASH;
+    } else if (ctx.DESTINATION_IP_ONLY() != null) {
+      method = LoadBalanceMethod.DESTINATION_IP_ONLY;
+    } else if (ctx.PER_FLOW() != null) {
+      method = LoadBalanceMethod.PER_FLOW;
+    } else if (ctx.PER_PACKET() != null) {
+      method = LoadBalanceMethod.PER_PACKET;
+    } else if (ctx.PER_PREFIX() != null) {
+      method = LoadBalanceMethod.PER_PREFIX;
+    } else if (ctx.PROFILE1() != null) {
+      method = LoadBalanceMethod.PROFILE1;
+    } else if (ctx.PROFILE2() != null) {
+      method = LoadBalanceMethod.PROFILE2;
+    } else if (ctx.RANDOM() != null) {
+      method = LoadBalanceMethod.RANDOM;
+    } else if (ctx.SOURCE_IP_ONLY() != null) {
+      method = LoadBalanceMethod.SOURCE_IP_ONLY;
+    } else {
+      assert ctx.SYMMETRIC_CONSISTENT_HASH() != null;
+      method = LoadBalanceMethod.SYMMETRIC_CONSISTENT_HASH;
+    }
+    addPsThen(new PsThenLoadBalance(method), ctx);
   }
 
   @Override

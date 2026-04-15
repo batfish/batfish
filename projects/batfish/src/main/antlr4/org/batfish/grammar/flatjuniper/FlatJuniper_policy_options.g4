@@ -798,7 +798,20 @@ popst_next_term
 
 popst_load_balance
 :
-   LOAD_BALANCE PER_PACKET
+   LOAD_BALANCE
+   (
+      ADAPTIVE
+      | CONSISTENT_HASH
+      | DESTINATION_IP_ONLY
+      | PER_FLOW
+      | PER_PACKET
+      | PER_PREFIX
+      | PROFILE1
+      | PROFILE2
+      | RANDOM
+      | SOURCE_IP_ONLY
+      | SYMMETRIC_CONSISTENT_HASH
+   )
 ;
 
 popst_origin

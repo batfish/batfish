@@ -490,6 +490,7 @@ import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
@@ -497,6 +498,7 @@ import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLoadBalance;
+import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
@@ -10296,6 +10298,37 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ps.getTerms().get("allow").getThens().getAllThens(),
         hasItem(instanceOf(PsThenLoadBalance.class)));
+  }
+
+  @Test
+  public void testLoadBalanceVariants() {
+    JuniperConfiguration jc = parseJuniperConfig("load-balance-variants");
+    Map<String, LoadBalanceMethod> expected =
+        ImmutableMap.<String, LoadBalanceMethod>builder()
+            .put("LB_ADAPTIVE", LoadBalanceMethod.ADAPTIVE)
+            .put("LB_CONSISTENT_HASH", LoadBalanceMethod.CONSISTENT_HASH)
+            .put("LB_DESTINATION_IP_ONLY", LoadBalanceMethod.DESTINATION_IP_ONLY)
+            .put("LB_PER_FLOW", LoadBalanceMethod.PER_FLOW)
+            .put("LB_PER_PACKET", LoadBalanceMethod.PER_PACKET)
+            .put("LB_PER_PREFIX", LoadBalanceMethod.PER_PREFIX)
+            .put("LB_PROFILE1", LoadBalanceMethod.PROFILE1)
+            .put("LB_PROFILE2", LoadBalanceMethod.PROFILE2)
+            .put("LB_RANDOM", LoadBalanceMethod.RANDOM)
+            .put("LB_SOURCE_IP_ONLY", LoadBalanceMethod.SOURCE_IP_ONLY)
+            .put("LB_SYMMETRIC", LoadBalanceMethod.SYMMETRIC_CONSISTENT_HASH)
+            .build();
+    expected.forEach(
+        (name, method) -> {
+          PolicyStatement ps = jc.getMasterLogicalSystem().getPolicyStatements().get(name);
+          assertThat(name, ps, notNullValue());
+          PsThen then =
+              ps.getDefaultTerm().getThens().getAllThens().stream()
+                  .filter(t -> t instanceof PsThenLoadBalance)
+                  .findFirst()
+                  .orElse(null);
+          assertThat(name, then, notNullValue());
+          assertThat(name, ((PsThenLoadBalance) then).getMethod(), equalTo(method));
+        });
   }
 
   @Test
