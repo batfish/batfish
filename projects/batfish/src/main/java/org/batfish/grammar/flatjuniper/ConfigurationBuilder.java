@@ -197,6 +197,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.RSTP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
@@ -206,12 +207,14 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMM
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.STP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HOST_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VSTP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
@@ -695,6 +698,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Prstp_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pstp_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstp_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstpv_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
@@ -7102,6 +7109,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     // only known type is IPIP
     assert ctx.IPIP() != null;
     _currentTunnelAttribute.setType(TunnelAttribute.Type.IPIP);
+  }
+
+  private void recordXstpInterface(Interface_idContext id, JuniperStructureUsage usage) {
+    Interface iface = initRoutingInterface(id);
+    _configuration.referenceStructure(INTERFACE, iface.getName(), usage, getLine(id.getStop()));
+    _currentLogicalSystem.getXstpInterfaceNames().add(iface.getName());
+  }
+
+  @Override
+  public void exitPrstp_interface(Prstp_interfaceContext ctx) {
+    if (ctx.id != null) {
+      recordXstpInterface(ctx.id, RSTP_INTERFACE);
+    }
+  }
+
+  @Override
+  public void exitPstp_interface(Pstp_interfaceContext ctx) {
+    if (ctx.id != null) {
+      recordXstpInterface(ctx.id, STP_INTERFACE);
+    }
+  }
+
+  @Override
+  public void exitPvstpv_interface(Pvstpv_interfaceContext ctx) {
+    if (ctx.id != null) {
+      recordXstpInterface(ctx.id, VSTP_INTERFACE);
+    }
+  }
+
+  @Override
+  public void exitPvstp_interface(Pvstp_interfaceContext ctx) {
+    if (ctx.id != null) {
+      recordXstpInterface(ctx.id, VSTP_INTERFACE);
+    }
   }
 
   @Override
