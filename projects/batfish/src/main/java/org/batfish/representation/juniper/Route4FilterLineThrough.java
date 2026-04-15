@@ -1,9 +1,10 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
 public final class Route4FilterLineThrough extends Route4FilterLine {
@@ -16,17 +17,18 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
   }
 
   @Override
-  public void applyTo(RouteFilterList rfl) {
+  public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
     int low = _prefix.getPrefixLength();
     int high = _throughPrefix.getPrefixLength();
     Ip startIp = _throughPrefix.getStartIp();
+    ImmutableList.Builder<org.batfish.datamodel.RouteFilterLine> lines = ImmutableList.builder();
     for (int i = low; i <= high; i++) {
       Prefix currentPrefix = Prefix.create(startIp, i);
-      org.batfish.datamodel.RouteFilterLine line =
+      lines.add(
           new org.batfish.datamodel.RouteFilterLine(
-              LineAction.PERMIT, currentPrefix, SubRange.singleton(i));
-      rfl.addLine(line);
+              LineAction.PERMIT, currentPrefix, SubRange.singleton(i)));
     }
+    return lines.build();
   }
 
   @Override

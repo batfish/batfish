@@ -16,10 +16,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.VendorStructureId;
 
@@ -34,7 +32,7 @@ public class RouteFilterList implements Serializable {
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
-  private @Nonnull List<RouteFilterLine> _lines;
+  private final @Nonnull ImmutableList<RouteFilterLine> _lines;
 
   private final @Nullable String _name;
 
@@ -58,7 +56,7 @@ public class RouteFilterList implements Serializable {
     return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()), vendorStructureId);
   }
 
-  /** Create and empty route filter list (with no lines) */
+  /** Create an empty route filter list (with no lines) */
   public RouteFilterList(@Nullable String name) {
     this(name, ImmutableList.of());
   }
@@ -74,12 +72,8 @@ public class RouteFilterList implements Serializable {
     _name = name;
     _deniedCache = Suppliers.memoize(new CacheSupplier());
     _permittedCache = Suppliers.memoize(new CacheSupplier());
-    _lines = lines;
+    _lines = ImmutableList.copyOf(lines);
     _vendorStructureId = vendorStructureId;
-  }
-
-  public void addLine(RouteFilterLine r) {
-    _lines = ImmutableList.<RouteFilterLine>builder().addAll(_lines).add(r).build();
   }
 
   @Override
@@ -145,37 +139,12 @@ public class RouteFilterList implements Serializable {
   }
 
   /**
-   * Returns the set of {@link IpWildcard ips} that match this filter list.
-   *
-   * @throws BatfishException if any line in this {@link RouteFilterList} does not have an {@link
-   *     LineAction#PERMIT} when matching.
-   */
-  @JsonIgnore
-  public List<IpWildcard> getMatchingIps() {
-    return getLines().stream()
-        .map(
-            rfLine -> {
-              if (rfLine.getAction() != LineAction.PERMIT) {
-                throw new BatfishException(
-                    "Expected accept action for routerfilterlist from juniper");
-              } else {
-                return rfLine.getIpWildcard();
-              }
-            })
-        .collect(Collectors.toList());
-  }
-
-  /** Set the list of lines against which to match a route's prefix. */
-  public void setLines(@Nonnull List<RouteFilterLine> lines) {
-    _lines = lines;
-  }
-
-  /**
    * Returns a JSON string that represents the definition of this object, ignoring any irrelevant
    * fields.
    *
    * <p>Can be used for JSON-based comparison in questions line compareSameName.
    */
+  @JsonIgnore
   public String definitionJson() {
     try {
       return BatfishObjectMapper.writePrettyString(_lines);

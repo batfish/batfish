@@ -238,10 +238,13 @@ public class OspfTest {
 
     Configuration c2 = cb.setHostname(C2_NAME).build();
     if (summaryR1L0Behavior != null) {
-      RouteFilterList rfl = new RouteFilterList(C1_L0_SUMMARY_FILTER_NAME);
-      rfl.addLine(
-          new RouteFilterLine(LineAction.DENY, PrefixRange.moreSpecificThan(C1_L0_SUMMARY_PREFIX)));
-      rfl.addLine(RouteFilterLine.PERMIT_ALL);
+      RouteFilterList rfl =
+          new RouteFilterList(
+              C1_L0_SUMMARY_FILTER_NAME,
+              ImmutableList.of(
+                  new RouteFilterLine(
+                      LineAction.DENY, PrefixRange.moreSpecificThan(C1_L0_SUMMARY_PREFIX)),
+                  RouteFilterLine.PERMIT_ALL));
       c2.getRouteFilterLists().put(C1_L0_SUMMARY_FILTER_NAME, rfl);
     }
     Vrf v2 = vb.setOwner(c2).build();

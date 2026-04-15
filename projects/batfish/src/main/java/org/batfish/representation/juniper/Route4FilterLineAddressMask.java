@@ -1,11 +1,12 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Objects;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
 /** Representation of a route-filter with a IPv4 prefix and an address mask */
@@ -19,15 +20,14 @@ public final class Route4FilterLineAddressMask extends Route4FilterLine {
   }
 
   @Override
-  public void applyTo(RouteFilterList rfl) {
+  public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
     int prefixLength = _prefix.getPrefixLength();
-    org.batfish.datamodel.RouteFilterLine line =
+    return ImmutableList.of(
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT,
             IpWildcard.ipWithWildcardMask(
                 Prefix.create(_prefix.getStartIp(), prefixLength).getStartIp(), _addressMask),
-            SubRange.singleton(prefixLength));
-    rfl.addLine(line);
+            SubRange.singleton(prefixLength)));
   }
 
   @Override

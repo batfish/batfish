@@ -1438,9 +1438,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             e -> {
               String summaryFilterName =
                   "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + e.getValue().getName() + "~";
-              RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
-              _c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
-              return toOspfAreaBuilder(e.getValue(), summaryFilter);
+              return toOspfAreaBuilder(e.getValue(), summaryFilterName);
             });
     // place interfaces into areas
     for (Entry<String, Interface> e : routingInstance.getInterfaces().entrySet()) {
@@ -1562,7 +1560,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(
-      OspfArea area, RouteFilterList summaryFilter) {
+      OspfArea area, String summaryFilterName) {
     org.batfish.datamodel.ospf.OspfArea.Builder newAreaBuilder =
         org.batfish.datamodel.ospf.OspfArea.builder();
     newAreaBuilder.setNumber(area.getName());
@@ -1574,6 +1572,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newAreaBuilder.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
 
     // Add summary filters for each area summary
+    ImmutableList.Builder<org.batfish.datamodel.RouteFilterLine> summaryLines =
+        ImmutableList.builder();
     for (Entry<Prefix, OspfAreaSummary> e2 : area.getSummaries().entrySet()) {
       Prefix prefix = e2.getKey();
       OspfAreaSummary summary = e2.getValue();
@@ -1582,18 +1582,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
           summary.isAdvertised()
               ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
               : prefixLength;
-      summaryFilter.addLine(
+      summaryLines.add(
           new org.batfish.datamodel.RouteFilterLine(
               LineAction.DENY,
               IpWildcard.create(prefix),
               new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
     }
-    summaryFilter.addLine(
+    summaryLines.add(
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT,
             IpWildcard.create(Prefix.ZERO),
             new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
-    newAreaBuilder.setSummaryFilter(summaryFilter.getName());
+    RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName, summaryLines.build());
+    _c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+    newAreaBuilder.setSummaryFilter(summaryFilterName);
     return newAreaBuilder;
   }
 
@@ -1791,12 +1793,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String rflName = computeContributorRouteFilterListName(prefix);
     MatchPrefixSet isContributingRoute =
         new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
-    RouteFilterList rfList = new RouteFilterList(rflName);
-    rfList.addLine(
-        new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT,
-            prefix,
-            new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)));
+    RouteFilterList rfList =
+        new RouteFilterList(
+            rflName,
+            ImmutableList.of(
+                new org.batfish.datamodel.RouteFilterLine(
+                    LineAction.PERMIT,
+                    prefix,
+                    new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH))));
     _c.getRouteFilterLists().put(rflName, rfList);
 
     // contributor check that exits for non-contributing routes
@@ -3174,8 +3178,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             }
             if (!line.getThens().isEmpty()) {
               String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
-              RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
-              ((Route4FilterLine) line).applyTo(lineSpecificList);
+              RouteFilterList lineSpecificList =
+                  new RouteFilterList(lineListName, ((Route4FilterLine) line).toRouteFilterLines());
               actionLineCounter++;
               _c.getRouteFilterLists().put(lineListName, lineSpecificList);
               If lineSpecificIfStatement = new If();
@@ -3649,12 +3653,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = e.getKey();
       RouteFilter rf = e.getValue();
       if (rf.getIpv4()) {
-        RouteFilterList rfl = new RouteFilterList(name);
-        for (RouteFilterLine line : rf.getLines()) {
-          if (line instanceof Route4FilterLine && line.getThens().isEmpty()) {
-            ((Route4FilterLine) line).applyTo(rfl);
-          }
-        }
+        RouteFilterList rfl =
+            new RouteFilterList(
+                name,
+                rf.getLines().stream()
+                    .filter(line -> line instanceof Route4FilterLine && line.getThens().isEmpty())
+                    .flatMap(line -> ((Route4FilterLine) line).toRouteFilterLines().stream())
+                    .collect(ImmutableList.toImmutableList()));
         _c.getRouteFilterLists().put(name, rfl);
       }
     }

@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
+import java.util.List;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterList;
 
 public abstract class Route4FilterLine extends RouteFilterLine {
 
@@ -11,5 +11,8 @@ public abstract class Route4FilterLine extends RouteFilterLine {
     _prefix = prefix;
   }
 
-  public abstract void applyTo(RouteFilterList rfl);
+  /**
+   * Returns the vendor-independent {@link org.batfish.datamodel.RouteFilterLine}s for this line.
+   */
+  public abstract List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines();
 }

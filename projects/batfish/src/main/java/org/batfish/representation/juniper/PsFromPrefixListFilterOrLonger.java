@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
@@ -49,15 +50,14 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
     String orLongerListName = name(_prefixList);
     RouteFilterList orLongerList = c.getRouteFilterLists().get(orLongerListName);
     if (orLongerList == null) {
-      orLongerList = new RouteFilterList(orLongerListName);
-      c.getRouteFilterLists().put(orLongerList.getName(), orLongerList);
+      ImmutableList.Builder<RouteFilterLine> lines = ImmutableList.builder();
       for (Prefix prefix : pl.getPrefixes()) {
         SubRange orLongerLineRange =
             new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH);
-        RouteFilterLine orLongerLine =
-            new RouteFilterLine(LineAction.PERMIT, prefix, orLongerLineRange);
-        orLongerList.addLine(orLongerLine);
+        lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, orLongerLineRange));
       }
+      orLongerList = new RouteFilterList(orLongerListName, lines.build());
+      c.getRouteFilterLists().put(orLongerList.getName(), orLongerList);
     }
     return new MatchPrefixSet(
         DestinationNetwork.instance(), new NamedPrefixSet(orLongerList.getName()));

@@ -306,14 +306,11 @@ public class VyosConfiguration extends VendorConfiguration {
   }
 
   private RouteFilterList toRouteFilterList(PrefixList prefixList) {
-    String name = prefixList.getName();
-    RouteFilterList newList = new RouteFilterList(name);
-    List<RouteFilterLine> newLines =
+    return new RouteFilterList(
+        prefixList.getName(),
         prefixList.getRules().values().stream()
             .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
-            .collect(ImmutableList.toImmutableList());
-    newList.setLines(newLines);
-    return newList;
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
