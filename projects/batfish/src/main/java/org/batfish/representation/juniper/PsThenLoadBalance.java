@@ -1,20 +1,41 @@
 package org.batfish.representation.juniper;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
- * Represents {@code then load-balance per-packet} in a Junos policy-statement. Has no effect on the
+ * Represents {@code then load-balance <method>} in a Junos policy-statement. Has no effect on the
  * VI routing policy (Batfish models all ECMP paths), but is recognized so that forwarding-table
  * export warnings can distinguish it from attribute mutations.
  */
 public final class PsThenLoadBalance extends PsThen {
 
-  public static final PsThenLoadBalance INSTANCE = new PsThenLoadBalance();
+  public enum LoadBalanceMethod {
+    ADAPTIVE,
+    CONSISTENT_HASH,
+    DESTINATION_IP_ONLY,
+    PER_FLOW,
+    PER_PACKET,
+    PER_PREFIX,
+    PROFILE1,
+    PROFILE2,
+    RANDOM,
+    SOURCE_IP_ONLY,
+    SYMMETRIC_CONSISTENT_HASH,
+  }
 
-  private PsThenLoadBalance() {}
+  private final @Nonnull LoadBalanceMethod _method;
+
+  public PsThenLoadBalance(LoadBalanceMethod method) {
+    _method = method;
+  }
+
+  public @Nonnull LoadBalanceMethod getMethod() {
+    return _method;
+  }
 
   @Override
   public void applyTo(

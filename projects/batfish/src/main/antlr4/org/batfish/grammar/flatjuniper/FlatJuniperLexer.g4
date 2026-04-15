@@ -470,6 +470,7 @@ CONNECTIONS_LIMIT: 'connections-limit';
 CONNECTION_MODE: 'connection-mode';
 
 CONNECTIVITY_FAULT_MANAGEMENT: 'connectivity-fault-management';
+CONSISTENT_HASH: 'consistent-hash';
 CONSOLE: 'console';
 
 CONTACT: 'contact';
@@ -571,6 +572,8 @@ DESTINATION_HOST_UNKNOWN: 'destination-host-unknown';
 DESTINATION_IP: 'destination-ip';
 
 DESTINATION_IP_BASED: 'destination-ip-based';
+
+DESTINATION_IP_ONLY: 'destination-ip-only';
 
 DESTINATION_NAT: 'destination-nat';
 
@@ -2186,7 +2189,9 @@ PAYLOAD_PROTOCOL: 'payload-protocol';
 PEER_ADDRESS: 'peer-address';
 PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
 PEER_UNIT: 'peer-unit';
+PER_FLOW: 'per-flow';
 PER_PACKET: 'per-packet';
+PER_PREFIX: 'per-prefix';
 PER_UNIT_SCHEDULER: 'per-unit-scheduler';
 PERCENT: 'percent';
 PERFECT_FORWARD_SECRECY: 'perfect-forward-secrecy';
@@ -2342,6 +2347,8 @@ PRIVATE: 'private';
 
 PROBE_IDLE_TUNNEL: 'probe-idle-tunnel';
 PROCESSES: 'processes';
+PROFILE1: 'profile1';
+PROFILE2: 'profile2';
 
 PROPOSAL: 'proposal' -> pushMode(M_Name);
 
@@ -2765,6 +2772,7 @@ SOURCE_HOST_ISOLATED: 'source-host-isolated';
 SOURCE_IDENTITY: 'source-identity' -> pushMode(M_SourceIdentity);
 SOURCE_INTERFACE: 'source-interface' -> pushMode(M_Interface);
 SOURCE_IP_BASED: 'source-ip-based';
+SOURCE_IP_ONLY: 'source-ip-only';
 SOURCE_MAC_ADDRESS: 'source-mac-address' -> pushMode(M_MacAddressAndLength);
 SOURCE_NAT: 'source-nat';
 SOURCE_PORT: 'source-port' -> pushMode(M_Port);
@@ -2855,6 +2863,8 @@ SWAP_SWAP: 'swap-swap';
 SWITCH_OPTIONS: 'switch-options';
 
 SWITCHOVER_ON_ROUTING_CRASH: 'switchover-on-routing-crash';
+
+SYMMETRIC_CONSISTENT_HASH: 'symmetric-consistent-hash';
 
 SYN_ACK_ACK_PROXY: 'syn-ack-ack-proxy';
 

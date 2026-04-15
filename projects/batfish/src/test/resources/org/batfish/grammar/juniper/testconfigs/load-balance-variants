@@ -1,0 +1,14 @@
+#
+set system host-name load-balance-variants
+
+set policy-options policy-statement LB_ADAPTIVE then load-balance adaptive
+set policy-options policy-statement LB_CONSISTENT_HASH then load-balance consistent-hash
+set policy-options policy-statement LB_DESTINATION_IP_ONLY then load-balance destination-ip-only
+set policy-options policy-statement LB_PER_FLOW then load-balance per-flow
+set policy-options policy-statement LB_PER_PACKET then load-balance per-packet
+set policy-options policy-statement LB_PER_PREFIX then load-balance per-prefix
+set policy-options policy-statement LB_PROFILE1 then load-balance profile1
+set policy-options policy-statement LB_PROFILE2 then load-balance profile2
+set policy-options policy-statement LB_RANDOM then load-balance random
+set policy-options policy-statement LB_SOURCE_IP_ONLY then load-balance source-ip-only
+set policy-options policy-statement LB_SYMMETRIC then load-balance symmetric-consistent-hash
