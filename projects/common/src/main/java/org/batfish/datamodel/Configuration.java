@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
@@ -630,9 +631,7 @@ public final class Configuration implements Serializable {
    */
   @JsonIgnore
   public Map<String, Interface> getAllInterfaces(@Nonnull String vrf) {
-    return _interfaces.entrySet().stream()
-        .filter(e -> e.getValue().getVrfName().equals(vrf))
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return Maps.filterValues(_interfaces, i -> i.getVrfName().equals(vrf));
   }
 
   /**
@@ -642,9 +641,7 @@ public final class Configuration implements Serializable {
    */
   @JsonIgnore
   public Map<String, Interface> getActiveInterfaces(@Nonnull String vrf) {
-    return activeInterfaces()
-        .filter(i -> i.getVrfName().equals(vrf))
-        .collect(ImmutableMap.toImmutableMap(Interface::getName, i -> i));
+    return Maps.filterValues(_interfaces, i -> i.getActive() && i.getVrfName().equals(vrf));
   }
 
   @JsonIgnore
