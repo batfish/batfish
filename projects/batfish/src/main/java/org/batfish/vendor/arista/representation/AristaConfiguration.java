@@ -1631,13 +1631,12 @@ public final class AristaConfiguration extends VendorConfiguration {
       Map<Prefix, OspfAreaSummary> summaries = e1.getValue();
       OspfArea.Builder area = areas.get(areaLong);
       String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaLong + "~";
-      RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
-      c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
       if (area == null) {
         area = OspfArea.builder().setNumber(areaLong);
         areas.put(areaLong, area);
       }
       area.setSummaryFilter(summaryFilterName);
+      ImmutableList.Builder<RouteFilterLine> summaryLines = ImmutableList.builder();
       for (Entry<Prefix, OspfAreaSummary> e2 : summaries.entrySet()) {
         Prefix prefix = e2.getKey();
         OspfAreaSummary summary = e2.getValue();
@@ -1646,18 +1645,20 @@ public final class AristaConfiguration extends VendorConfiguration {
             summary.isAdvertised()
                 ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
                 : prefixLength;
-        summaryFilter.addLine(
+        summaryLines.add(
             new RouteFilterLine(
                 LineAction.DENY,
                 IpWildcard.create(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.addSummaries(ImmutableSortedMap.copyOf(summaries));
-      summaryFilter.addLine(
+      summaryLines.add(
           new RouteFilterLine(
               LineAction.PERMIT,
               IpWildcard.create(Prefix.ZERO),
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      c.getRouteFilterLists()
+          .put(summaryFilterName, new RouteFilterList(summaryFilterName, summaryLines.build()));
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
 

@@ -112,14 +112,13 @@ public final class Common {
       return null;
     }
     // Create a RouteFilterList that matches any network longer than a prefix marked summary only.
-    RouteFilterList matchLonger =
-        new RouteFilterList("~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~");
+    String name = "~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~";
+    ImmutableList.Builder<RouteFilterLine> lines = ImmutableList.builder();
     prefixesToSuppress.forEachRemaining(
-        p ->
-            matchLonger.addLine(
-                new RouteFilterLine(LineAction.PERMIT, PrefixRange.moreSpecificThan(p))));
+        p -> lines.add(new RouteFilterLine(LineAction.PERMIT, PrefixRange.moreSpecificThan(p))));
+    RouteFilterList matchLonger = new RouteFilterList(name, lines.build());
     // Bookkeeping: record that we created this RouteFilterList to match longer networks.
-    c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
+    c.getRouteFilterLists().put(name, matchLonger);
 
     return new If(
         "Suppress more specific networks for summary-only aggregate-address networks",

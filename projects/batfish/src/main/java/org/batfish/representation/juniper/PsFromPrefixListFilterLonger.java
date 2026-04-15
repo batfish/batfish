@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
@@ -48,8 +49,7 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
 
     RouteFilterList longerList = c.getRouteFilterLists().get(name(_prefixList));
     if (longerList == null) {
-      longerList = new RouteFilterList(name(_prefixList));
-      c.getRouteFilterLists().put(longerList.getName(), longerList);
+      ImmutableList.Builder<RouteFilterLine> lines = ImmutableList.builder();
       for (Prefix prefix : pl.getPrefixes()) {
         if (prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
           // Skip this prefix; there may be others in the prefix-list.
@@ -57,8 +57,10 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
         }
         SubRange longerLineRange =
             new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH);
-        longerList.addLine(new RouteFilterLine(LineAction.PERMIT, prefix, longerLineRange));
+        lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, longerLineRange));
       }
+      longerList = new RouteFilterList(name(_prefixList), lines.build());
+      c.getRouteFilterLists().put(longerList.getName(), longerList);
     }
     return new MatchPrefixSet(
         DestinationNetwork.instance(), new NamedPrefixSet(longerList.getName()));
