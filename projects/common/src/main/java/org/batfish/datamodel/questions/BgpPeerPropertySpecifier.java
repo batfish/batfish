@@ -52,6 +52,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final String IMPORT_POLICY = "Import_Policy";
   public static final String EXPORT_POLICY = "Export_Policy";
   public static final String SEND_COMMUNITY = "Send_Community";
+  public static final String SESSION_VRF = "Session_VRF";
 
   /**
    * Some properties are reported by address family, and some peers don't have all address families
@@ -149,6 +150,12 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               DESCRIPTION,
               new PropertyDescriptor<>(
                   BgpPeerConfig::getDescription, Schema.STRING, "Configured peer description"))
+          .put(
+              SESSION_VRF,
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getSessionVrf,
+                  Schema.STRING,
+                  "The VRF in which the BGP TCP session takes place, if different from VRF"))
           .build();
 
   /** Returns the property descriptor for {@code property} */

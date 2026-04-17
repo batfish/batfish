@@ -12,6 +12,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROU
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SESSION_VRF;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_IP;
@@ -67,6 +68,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .setConfederation(1L)
             .setDescription("desc1")
             .setGroup("g1")
+            .setSessionVrf("otherVrf")
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setImportPolicySources(ImmutableSortedSet.of("p1"))
@@ -160,6 +162,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p1"))
             .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p2"))
             .put(getColumnName(SEND_COMMUNITY), false)
+            .put(getColumnName(SESSION_VRF), "otherVrf")
             .build());
     expected.add(
         Row.builder()
@@ -181,6 +184,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))
             .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p4"))
             .put(getColumnName(SEND_COMMUNITY), false)
+            .put(getColumnName(SESSION_VRF), null)
             .build());
     expected.add(
         Row.builder()
@@ -200,6 +204,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p5"))
             .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p6"))
             .put(getColumnName(SEND_COMMUNITY), false)
+            .put(getColumnName(SESSION_VRF), null)
             .build());
 
     assertThat(rows, equalTo(expected));

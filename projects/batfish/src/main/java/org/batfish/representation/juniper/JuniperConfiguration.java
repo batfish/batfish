@@ -861,6 +861,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // inherit update-source
       neighbor.setLocalIp(ig.getLocalAddress());
+      // forwarding-context: resolve the VRF from which the BGP TCP session is sourced
+      String forwardingContext = ig.getForwardingContext();
+      if (forwardingContext != null) {
+        neighbor.setSessionVrf(
+            forwardingContext.equals(DEFAULT_ROUTING_INSTANCE_NAME)
+                ? Configuration.DEFAULT_VRF_NAME
+                : forwardingContext);
+      }
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());

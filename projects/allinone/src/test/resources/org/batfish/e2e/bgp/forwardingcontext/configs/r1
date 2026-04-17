@@ -1,0 +1,20 @@
+#
+set system host-name r1
+#
+# Loopback in default VRF with BGP local-address
+set interfaces lo0 unit 0 family inet address 10.0.0.1/32
+#
+# Direct link to r2 in default VRF (for reachability)
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.0.0/31
+#
+# Static route to r2's loopback
+set routing-options static route 10.0.0.2/32 next-hop 10.1.0.1
+set routing-options autonomous-system 1
+#
+# BGP session in VRF, sourced from default VRF via forwarding-context
+set routing-instances MY-VRF instance-type vrf
+set routing-instances MY-VRF route-distinguisher 1:1
+set routing-instances MY-VRF protocols bgp forwarding-context master
+set routing-instances MY-VRF protocols bgp group PEERS type internal
+set routing-instances MY-VRF protocols bgp group PEERS local-address 10.0.0.1
+set routing-instances MY-VRF protocols bgp group PEERS neighbor 10.0.0.2

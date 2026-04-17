@@ -1358,6 +1358,47 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpForwardingContext() {
+    // Test extraction: forwarding-context at protocol level and group level
+    JuniperConfiguration jc = parseJuniperConfig("bgp-forwarding-context");
+    RoutingInstance vrf1 = jc.getMasterLogicalSystem().getRoutingInstances().get("VRF1");
+    assertThat(vrf1.getMasterBgpGroup().getForwardingContext(), equalTo("master"));
+
+    RoutingInstance vrf2 = jc.getMasterLogicalSystem().getRoutingInstances().get("VRF2");
+    // forwarding-context at group level should be inherited by neighbors
+    IpBgpGroup neighbor = vrf2.getIpBgpGroups().get(Prefix.parse("10.0.0.3/32"));
+    assertThat(neighbor, notNullValue());
+    neighbor.cascadeInheritance();
+    assertThat(neighbor.getForwardingContext(), equalTo("master"));
+  }
+
+  @Test
+  public void testBgpForwardingContextConversion() {
+    // Test VI conversion: forwarding-context master → sessionVrf = "default"
+    Configuration c = parseConfig("bgp-forwarding-context");
+
+    // VRF1 peer (protocol-level forwarding-context)
+    BgpActivePeerConfig vrf1Peer =
+        c.getVrfs().get("VRF1").getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.2"));
+    assertThat(vrf1Peer, notNullValue());
+    assertThat(vrf1Peer.getSessionVrf(), equalTo(Configuration.DEFAULT_VRF_NAME));
+
+    // VRF2 peer (group-level forwarding-context)
+    BgpActivePeerConfig vrf2Peer =
+        c.getVrfs().get("VRF2").getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.3"));
+    assertThat(vrf2Peer, notNullValue());
+    assertThat(vrf2Peer.getSessionVrf(), equalTo(Configuration.DEFAULT_VRF_NAME));
+
+    // Default VRF peers should not have sessionVrf set
+    BgpProcess defaultProc = c.getDefaultVrf().getBgpProcess();
+    if (defaultProc != null) {
+      for (BgpActivePeerConfig peer : defaultProc.getActiveNeighbors().values()) {
+        assertThat(peer.getSessionVrf(), nullValue());
+      }
+    }
+  }
+
+  @Test
   public void testBgpDropPathAttributes() {
     JuniperConfiguration c = parseJuniperConfig("bgp-drop-path-attributes");
     BgpGroup master = c.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
