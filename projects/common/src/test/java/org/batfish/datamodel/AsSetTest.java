@@ -23,6 +23,12 @@ public class AsSetTest {
 
     // For set of ASNs, should return {asn1,asn2,...lastAsn}
     assertThat(AsSet.of(1, 2, 3).toString(), equalTo("{1,2,3}"));
+
+    // Confederation single ASN should be wrapped in parentheses
+    assertThat(AsSet.confed(1).toString(), equalTo("(1)"));
+
+    // Confederation set should be wrapped in square brackets
+    assertThat(AsSet.confed(1, 2, 3).toString(), equalTo("[1,2,3]"));
   }
 
   @Test

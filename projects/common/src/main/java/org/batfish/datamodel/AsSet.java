@@ -185,6 +185,12 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   @Override
   public String toString() {
+    if (_confederation) {
+      if (_value.length == 1) {
+        return "(" + _value[0] + ")";
+      }
+      return "[" + StringUtils.join(_value, ',') + "]";
+    }
     if (_value.length == 1) {
       return Long.toString(_value[0]);
     }
