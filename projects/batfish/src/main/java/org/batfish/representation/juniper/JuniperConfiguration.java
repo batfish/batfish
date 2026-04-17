@@ -3669,6 +3669,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
 
+    // validate xSTP interface references have family ethernet-switching
+    validateXstpInterfaces();
+
     // convert conditions to TrackMethod objects
     _masterLogicalSystem
         .getConditions()
@@ -4557,6 +4560,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     return Optional.empty();
+  }
+
+  private void validateXstpInterfaces() {
+    for (String ifaceName : _masterLogicalSystem.getXstpInterfaceNames()) {
+      Optional<Interface> optIface = getInterfaceOrUnitByName(ifaceName);
+      if (optIface.isEmpty()) {
+        continue;
+      }
+      if (optIface.get().getEthernetSwitching() == null) {
+        _w.fatalRedFlag("XSTP : Interface %s is not enabled for Ethernet Switching", ifaceName);
+      }
+    }
   }
 
   private void convertInterfaces() {

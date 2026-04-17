@@ -8886,6 +8886,30 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testXstpInterfaceExtraction() {
+    JuniperConfiguration jc = parseJuniperConfig("xstp-interface-validation");
+    Set<String> xstpInterfaces = jc.getMasterLogicalSystem().getXstpInterfaceNames();
+    // Should contain the specific interfaces but not "all"
+    assertThat(xstpInterfaces, containsInAnyOrder("xe-0/0/1.0", "xe-0/0/2.0", "ge-0/0/0.0"));
+  }
+
+  @Test
+  public void testXstpInterfaceValidation() throws IOException {
+    String hostname = "xstp-interface-validation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // xe-0/0/2.0 does not have family ethernet-switching -- fatal error
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                containsString(
+                    "XSTP : Interface xe-0/0/2.0 is not enabled for Ethernet Switching"))));
+  }
+
+  @Test
   public void testMaximumPrefixes() throws IOException {
     String hostname = "maximum-prefixes";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

@@ -1,0 +1,29 @@
+#
+set system host-name xstp-interface-validation
+#
+# Interface WITH ethernet-switching (valid xSTP reference)
+set interfaces xe-0/0/1 unit 0 family ethernet-switching interface-mode access
+set interfaces xe-0/0/1 unit 0 family ethernet-switching vlan members v100
+#
+# Interface WITHOUT ethernet-switching (invalid xSTP reference - fatal error)
+set interfaces xe-0/0/2 unit 0 family inet address 10.0.0.1/24
+#
+# Interface with ethernet-switching for STP test
+set interfaces ge-0/0/0 unit 0 family ethernet-switching interface-mode access
+#
+set vlans v100 vlan-id 100
+#
+# VSTP: xe-0/0/1 is valid, xe-0/0/2 should produce fatal error
+set protocols vstp vlan v100 interface xe-0/0/1 mode point-to-point
+set protocols vstp vlan v100 interface xe-0/0/2 mode point-to-point
+#
+# RSTP: interface all should NOT produce any error
+set protocols rstp interface all mode point-to-point
+#
+# STP: ge-0/0/0 has ethernet-switching, so should NOT produce error
+set protocols stp interface ge-0/0/0 mode point-to-point
+#
+# Additional interface sub-commands
+set protocols rstp interface ge-0/0/0 edge
+set protocols rstp interface ge-0/0/0 no-root-port
+set protocols stp interface ge-0/0/0 priority 128

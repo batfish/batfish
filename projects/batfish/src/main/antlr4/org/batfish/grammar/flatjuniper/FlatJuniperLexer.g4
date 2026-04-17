@@ -674,6 +674,8 @@ ECHO_REPLY: 'echo-reply';
 
 ECHO_REQUEST: 'echo-request';
 
+EDGE: 'edge';
+
 EGP: 'egp';
 
 EGRESS: 'egress';
@@ -2042,13 +2044,9 @@ NNTP: 'nntp';
 NTALK: 'ntalk';
 
 NO_ACTIVE_BACKBONE: 'no-active-backbone';
-
 NO_ADJACENCY_DOWN_NOTIFICATION: 'no-adjacency-down-notification';
-
 NO_ADVERTISE: 'no-advertise';
-
 NO_ANTI_REPLAY: 'no-anti-replay';
-
 NO_ARP: 'no-arp';
 NO_AUTO_NEGOTIATION: 'no-auto-negotiation';
 NO_CHALLENGE_RESPONSE: 'no-challenge-response';
@@ -2062,50 +2060,29 @@ NO_GATEWAY_COMMUNITY: 'no-gateway-community';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
-
-
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';
 NO_NEIGHBOR_LEARN: 'no-neighbor-learn';
-
 NO_NEXT_HEADER: 'no-next-header';
-
 NO_NEXTHOP_CHANGE: 'no-nexthop-change';
-
 NO_PASSWORD_AUTHENTICATION: 'no-password-authentication';
-
 NO_PASSWORDS: 'no-passwords';
-
 NO_PEER_LOOP_CHECK: 'no-peer-loop-check';
-
 NO_PING_RECORD_ROUTE: 'no-ping-record-route';
-
 NO_PING_TIME_STAMP: 'no-ping-time-stamp';
-
 NO_PREEMPT: 'no-preempt';
-
 NO_PREPEND_GLOBAL_AS: 'no-prepend-global-as';
-
 NO_PUBLIC_KEYS: 'no-public-keys';
-
 NO_READVERTISE: 'no-readvertise';
-
 NO_REDIRECTS: 'no-redirects';
-
 NO_REDIRECTS_IPV6: 'no-redirects-ipv6';
-
 NO_RESOLVE: 'no-resolve';
-
 NO_RETAIN: 'no-retain';
-
 NO_RFC_1583: 'no-rfc-1583';
+NO_ROOT_PORT: 'no-root-port';
 NO_SELF_PING: 'no-self-ping';
-
 NO_SUMMARIES: 'no-summaries';
-
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
-
 NO_TRANSLATION: 'no-translation';
-
 NO_TRAPS: 'no-traps';
 
 NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);

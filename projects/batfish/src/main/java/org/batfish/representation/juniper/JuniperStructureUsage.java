@@ -184,8 +184,11 @@ public enum JuniperStructureUsage implements StructureUsage {
   SWITCH_OPTIONS_VRF_IMPORT("switch-options vrf-import"),
   SYSLOG_HOST_ROUTING_INSTANCE("syslog host routing-instance"),
   TACPLUS_SERVER_ROUTING_INSTANCE("tacplus-server routing-instance"),
+  RSTP_INTERFACE("rstp interface"),
+  STP_INTERFACE("stp interface"),
   VLAN_INTERFACE("vlan interface"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
+  VSTP_INTERFACE("vstp interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
 
   private final String _description;
