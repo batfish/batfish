@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warnings;
@@ -25,7 +26,7 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 public final class Flatten {
 
   public static void main(String[] args) throws IOException {
-    checkArgument(args.length == 2, "Expected arguments: <input_dir> <output_dir>");
+    checkArgument(args.length == 2, "Expected arguments: <input_path> <output_path>");
     Path inputPath = Paths.get(args[0]);
     Path outputPath = Paths.get(args[1]);
 
@@ -42,25 +43,52 @@ public final class Flatten {
     flatten(inputPath, outputPath, settings);
   }
 
-  private static void flatten(Path inputPath, Path outputPath, Settings settings)
+  /**
+   * Flatten configs in snapshot stored at {@code inputPath}, and dump to {@code outputPath}.
+   *
+   * <p>Handles both file and directory inputs:
+   *
+   * <ul>
+   *   <li>If {@code inputPath} is a regular file, flattens that file directly and writes to {@code
+   *       outputPath} as a file.
+   *   <li>Otherwise, treats {@code inputPath} as a snapshot directory and flattens all files in its
+   *       configs subdirectory into {@code outputPath}'s configs subdirectory.
+   * </ul>
+   */
+  private static void flatten(@Nonnull Path inputPath, @Nonnull Path outputPath, Settings settings)
       throws IOException {
     BatfishLogger logger = settings.getLogger();
-    logger.info("\n*** READING FILES TO FLATTEN ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), logger);
+
+    Map<Path, String> inputConfigurationData;
+    Path outputConfigDir;
+    if (Files.isRegularFile(inputPath)) {
+      logger.info("\n*** READING INPUT FILE ***\n");
+      logger.debugf("Reading: \"%s\"\n", inputPath);
+      inputConfigurationData = Map.of(inputPath, Files.readString(inputPath));
+      if (outputPath.getParent() != null) {
+        Files.createDirectories(outputPath.getParent());
+      }
+      outputConfigDir = null;
+    } else {
+      logger.info("\n*** READING FILES TO FLATTEN ***\n");
+      inputConfigurationData =
+          readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), logger);
+      outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      Files.createDirectories(outputConfigDir);
+    }
 
     Map<Path, String> outputConfigurationData = new TreeMap<>();
-    Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    Files.createDirectories(outputConfigDir);
     logger.info("\n*** FLATTENING TEST RIG ***\n");
     logger.resetTimer();
     List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
-    for (Entry<Path, String> configFile : configurationData.entrySet()) {
+    for (Entry<Path, String> configFile : inputConfigurationData.entrySet()) {
       Path inputFile = configFile.getKey();
       String fileText = configFile.getValue();
       Warnings warnings = forLogger(logger);
-      String name = inputFile.getFileName().toString();
-      Path outputFile = outputConfigDir.resolve(name);
+      Path outputFile =
+          outputConfigDir == null
+              ? outputPath
+              : outputConfigDir.resolve(inputFile.getFileName().toString());
       FlattenVendorConfigurationJob job =
           new FlattenVendorConfigurationJob(settings, fileText, inputFile, outputFile, warnings);
       jobs.add(job);

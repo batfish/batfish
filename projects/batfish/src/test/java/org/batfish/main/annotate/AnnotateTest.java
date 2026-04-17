@@ -56,4 +56,27 @@ public final class AnnotateTest {
   public void testHierarchical() throws IOException {
     assertValidPair("annotate-hierarchical-before", "annotate-hierarchical-after");
   }
+
+  /**
+   * Assert that running annotate on {@code before} as a direct file input (not a snapshot
+   * directory) produces the content of {@code after}.
+   */
+  private void assertValidFileProcessing(String prefix, String before, String after)
+      throws IOException {
+    Path root = _folder.getRoot().toPath();
+    Path inputFile = root.resolve("input_file");
+    Path outputFile = root.resolve("output_file");
+    writeFile(inputFile, readResource(String.format("%s%s", prefix, before), UTF_8));
+    main(new String[] {inputFile.toString(), outputFile.toString()});
+
+    assertThat(
+        CommonUtil.readFile(outputFile).trim(),
+        equalTo(readResource(String.format("%s%s", prefix, after), UTF_8).trim()));
+  }
+
+  @Test
+  public void testFileBasedProcessing() throws IOException {
+    assertValidFileProcessing(
+        TESTCONFIGS_PREFIX, "annotate-hierarchical-before", "annotate-hierarchical-after");
+  }
 }
