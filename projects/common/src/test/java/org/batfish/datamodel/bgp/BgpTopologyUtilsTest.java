@@ -436,18 +436,22 @@ public class BgpTopologyUtilsTest {
             initiatorLocalAs,
             initiatorConfed,
             initiatorRemoteAsns,
+            null,
             listenerLocalAs,
             listenerConfed,
-            listenerRemoteAsns),
+            listenerRemoteAsns,
+            null),
         result != null ? equalTo(result) : nullValue());
     assertThat(
         computeAsPair(
             listenerLocalAs,
             listenerConfed,
             listenerRemoteAsns,
+            null,
             initiatorLocalAs,
             initiatorConfed,
-            initiatorRemoteAsns),
+            initiatorRemoteAsns,
+            null),
         result != null ? equalTo(result.reverse()) : nullValue());
   }
 
@@ -726,6 +730,60 @@ public class BgpTopologyUtilsTest {
         null,
         ALL_AS_NUMBERS,
         new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  /**
+   * Regression test for https://github.com/batfish/batfish/issues/9877.
+   *
+   * <p>When an external peer's AS matches a confederation member-AS, the confederation router would
+   * treat it as a confed-eBGP peer and send its member-AS (not confed ID) in the OPEN message. The
+   * external peer expects the confed ID, causing an AS mismatch. No session should form.
+   */
+  @Test
+  public void testComputeAsPair_confedMemberCollisionWithExternalPeer() {
+    LongSpace confedMembers = LongSpace.builder().including(65001L).including(65002L).build();
+
+    // Initiator is confed peer (R2: localAs=65001, confed=65000, members={65001,65002})
+    // Listener is external (R1: localAs=65002, no confed)
+    // R2 sees R1's AS (65002) in its confed members → treats as confed-eBGP → sends member-AS
+    // R1 expects confed ID (65000) → AS mismatch → no session
+    assertThat(
+        computeAsPair(
+            65001L,
+            65000L,
+            LongSpace.of(65002L),
+            confedMembers,
+            65002L,
+            null,
+            LongSpace.of(65000L),
+            null),
+        nullValue());
+
+    // Reverse direction: R1 as initiator, R2 as listener — same result
+    assertThat(
+        computeAsPair(
+            65002L,
+            null,
+            LongSpace.of(65000L),
+            null,
+            65001L,
+            65000L,
+            LongSpace.of(65002L),
+            confedMembers),
+        nullValue());
+
+    // Sanity check: a non-member external peer (AS 2000) should still work across confed border
+    assertThat(
+        computeAsPair(
+            65001L,
+            65000L,
+            LongSpace.of(2000L),
+            confedMembers,
+            2000L,
+            null,
+            LongSpace.of(65000L),
+            null),
+        equalTo(new AsPair(65000, 2000, ConfedSessionType.ACROSS_CONFED_BORDER)));
   }
 
   @Test

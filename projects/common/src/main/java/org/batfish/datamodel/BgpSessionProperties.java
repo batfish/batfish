@@ -400,9 +400,11 @@ public final class BgpSessionProperties {
                 initiatorLocalAs,
                 initiator.getConfederationAsn(),
                 initiator.getRemoteAsns(),
+                null,
                 listenerLocalAs,
                 listener.getConfederationAsn(),
-                listener.getRemoteAsns()));
+                listener.getRemoteAsns(),
+                null));
     return from(
         initiator,
         initiatorLocalIp,
