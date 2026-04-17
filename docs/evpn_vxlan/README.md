@@ -5,9 +5,13 @@ route leaking, route target communities, import/export policies, and Layer 3
 VXLAN forwarding through VTEP tunnels. This article demonstrates these
 capabilities using a Juniper ERB (Edge-Routed Bridging) fabric.
 
-## Example Network
+## Example Network Walkthrough
 
-The demonstration network is a four-node Juniper EVPN-VXLAN fabric. It redistributes a CE route (192.168.99.0/24) into the overlay as an EVPN Type 5 route.
+The demonstration network is a four-node Juniper EVPN-VXLAN fabric (see [example network configs](../../projects/batfish/src/test/resources/org/batfish/dataplane/testrigs/bgp-evpn-type5-route-test/configs/)).
+
+The example network establishes an EVPN fabric with VTEP interfaces. It redistributes a CE route (192.168.99.0/24) into the overlay as an EVPN Type 5 route.
+
+Batfish can show trace routes for traffic entering irb.100 towards the CE route, crossing the underlay network through the VTEP tunnel, and exiting out through the CE device. It can also show the forwarding tables for all VRFs and EVPN RIBs on all devices.
 
 ```
                 ┌─────────┐
@@ -219,9 +223,9 @@ confirming the ip-prefix-routes import policy was evaluated.
 
 ## VRF Export and Route Filtering
 
-The `vrf-export` policy controls which routes from a tenant VRF are
-redistributed into the EVPN overlay. This is useful for blocking specific
-prefixes or attaching communities during export.
+The `vrf-export` policy can filter routes from a tenant VRF before they are
+redistributed into the EVPN overlay - useful for blocking specific
+prefixes. It can also add new extended community values to exported routes.
 
 In the test fabric, router1 has:
 
@@ -260,26 +264,18 @@ After data plane computation:
 - EVPN routes for connected prefixes like `172.16.100.0/24` carry the
   `gateway-community` (`target:65000:99`) set by the vrf-export policy
 
-This demonstrates that Batfish correctly evaluates `vrf-export` during route
-redistribution into the EVPN overlay.
-
 ---
 
 ## Self-Import Loop Prevention
 
-A subtle issue arises when a VRF contains routes learned via eBGP (admin
-distance 170). When the VRF exports these routes as EVPN Type 5 and the same
-device's VRF attempts to re-import them, the EVPN route (also admin distance
-170) could replace the original, triggering a withdrawal loop.
+A subtle issue arises for the eBGP-learned `192.168.99.0/24` in router1's TENANT-A.
+If a VRF contains routes learned via eBGP, those routes have admin distance 170.
+When the VRF exports EVPN Type 5 routes, they enter the device EVPN RIB and become
+candidates for re-import into the same VRF. EVPN routes also have admin distance
+170 and can replace the original if re-imported, triggering a withdrawal loop.
 
-Batfish prevents this by filtering EVPN routes whose route distinguisher matches
-the importing VRF's own RD during cross-VRF import. In the test fabric,
-router1's TENANT-A uses RD `172.16.0.100:10000`. When its own EVPN Type 5
-routes appear in the default-VRF EVPN RIB, they are not re-imported into
-TENANT-A because the RDs match.
-
-This ensures the eBGP-learned `192.168.99.0/24` in router1's TENANT-A remains
-stable — matching the behavior observed on live Junos devices.
+Batfish avoids this EVPN type 5 route re-import issue by refusing to import EVPN routes
+whose route distinguisher matches the importing VRF's own RD.
 
 ---
 
@@ -325,7 +321,7 @@ Key details visible in the trace:
 - **`Forwarded into VXLAN tunnel`**: The FORWARDED step on node1-1 shows the
   VNI and remote VTEP IP. This is how Batfish represents a packet entering the
   VXLAN overlay.
-- **`nve~50000`**: The virtual tunnel interface name encodes the L3 VNI. The
+- **`nve~50000`**: The virtual tunnel interface name reflects the L3 VNI. The
   packet exits the source VTEP on this interface and arrives at the remote VTEP
   on the same interface name.
 - **VRF context**: The packet enters node1-1 in VRF TENANT-A and exits the
@@ -334,11 +330,6 @@ Key details visible in the trace:
 - **Route used**: The forwarding step references the iBGP route to
   `192.168.99.0/24` with `nextHop: vtep` — confirming the EVPN-imported route
   drives the forwarding decision.
-
-In production networks with multiple VRFs, different VNIs are used for different
-tenants. A trace in VRF "Lab-DMZ" might use VNI 2005, while VRF "Lab" uses VNI
-2000 — each tunnel carrying traffic for a separate routing domain across the
-shared underlay.
 
 ---
 
