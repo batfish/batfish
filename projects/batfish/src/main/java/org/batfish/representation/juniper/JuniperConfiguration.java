@@ -4164,16 +4164,50 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
         // Create redistribution policy on tenant VRF
         String redistPolicyName = generatedEvpnIprRedistPolicyName(riName);
-        if (ipr.getExportPolicy() != null
-            && _c.getRoutingPolicies().containsKey(ipr.getExportPolicy())) {
-          // Use the configured export policy
+        String vrfExport = ri.getVrfExportPolicy();
+        String iprExport = ipr.getExportPolicy();
+        if (vrfExport != null && _c.getRoutingPolicies().containsKey(vrfExport)) {
+          if (iprExport != null && _c.getRoutingPolicies().containsKey(iprExport)) {
+            // Both vrf-export and ipr export: chain them (vrf-export first, then ipr export)
+            RoutingPolicy redistPolicy =
+                RoutingPolicy.builder()
+                    .setOwner(_c)
+                    .setName(redistPolicyName)
+                    .addStatement(
+                        new If(
+                            new CallExpr(vrfExport),
+                            ImmutableList.of(),
+                            ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
+                    .addStatement(
+                        new If(
+                            new CallExpr(iprExport),
+                            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                            ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
+                    .build();
+            _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
+          } else {
+            // Only vrf-export
+            RoutingPolicy redistPolicy =
+                RoutingPolicy.builder()
+                    .setOwner(_c)
+                    .setName(redistPolicyName)
+                    .addStatement(
+                        new If(
+                            new CallExpr(vrfExport),
+                            ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+                    .addStatement(Statements.ReturnFalse.toStaticStatement())
+                    .build();
+            _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
+          }
+        } else if (iprExport != null && _c.getRoutingPolicies().containsKey(iprExport)) {
+          // Only ipr export
           RoutingPolicy redistPolicy =
               RoutingPolicy.builder()
                   .setOwner(_c)
                   .setName(redistPolicyName)
                   .addStatement(
                       new If(
-                          new CallExpr(ipr.getExportPolicy()),
+                          new CallExpr(iprExport),
                           ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
                   .addStatement(Statements.ReturnFalse.toStaticStatement())
                   .build();

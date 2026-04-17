@@ -82,6 +82,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1216,6 +1217,143 @@ public class JuniperConfigurationTest {
     String importPolicyName =
         tenantVrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs().get(0).getImportPolicy();
     assertThat(importPolicyName, equalTo("vrf-import-policy"));
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_VrfExportOnly() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi
+        .getOrCreateEvpnIpPrefixRoutes()
+        .setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+    tenantRi.setVrfTargetImport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfExportPolicy("vrf-export-policy");
+    // Register the policy so containsKey check passes
+    config
+        ._c
+        .getRoutingPolicies()
+        .put(
+            "vrf-export-policy",
+            RoutingPolicy.builder().setOwner(config._c).setName("vrf-export-policy").build());
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getBgpProcess());
+    String redistPolicyName = tenantVrf.getBgpProcess().getRedistributionPolicy();
+    org.batfish.datamodel.routing_policy.RoutingPolicy redistPolicy =
+        config._c.getRoutingPolicies().get(redistPolicyName);
+    assertNotNull(redistPolicy);
+
+    // Expecting: If(call vrf-export-policy -> return true), then return false
+    assertThat(redistPolicy.getStatements(), hasSize(2));
+    org.batfish.datamodel.routing_policy.statement.If firstIf =
+        (org.batfish.datamodel.routing_policy.statement.If) redistPolicy.getStatements().get(0);
+    assertThat(
+        firstIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) firstIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("vrf-export-policy"));
+  }
+
+  @Test
+  public void testConvertEvpnVrfLeaking_BothExportPolicies() {
+    JuniperConfiguration config = createConfig();
+    config._c.setVrfs(
+        ImmutableMap.of(
+            Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME),
+            "tenant",
+            new Vrf("tenant")));
+
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    defaultRi.setRouterId(Ip.parse("1.1.1.1"));
+    defaultRi.setAs(65000L);
+    RoutingInstance tenantRi = new RoutingInstance("tenant");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setVni(100);
+    tenantRi
+        .getOrCreateEvpnIpPrefixRoutes()
+        .setAdvertise(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP);
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setEncapsulation(EvpnEncapsulation.VXLAN);
+    tenantRi.setRouteDistinguisher(RouteDistinguisher.from(1L, 1L));
+    tenantRi.setVrfTargetExport(ExtendedCommunity.target(1, 1));
+    tenantRi.setVrfTargetImport(ExtendedCommunity.target(1, 1));
+
+    tenantRi.setVrfExportPolicy("vrf-export-policy");
+    tenantRi.getOrCreateEvpnIpPrefixRoutes().setExportPolicy("ipr-export-policy");
+    // Register both policies so containsKey checks pass
+    config
+        ._c
+        .getRoutingPolicies()
+        .put(
+            "vrf-export-policy",
+            RoutingPolicy.builder().setOwner(config._c).setName("vrf-export-policy").build());
+    config
+        ._c
+        .getRoutingPolicies()
+        .put(
+            "ipr-export-policy",
+            RoutingPolicy.builder().setOwner(config._c).setName("ipr-export-policy").build());
+
+    config
+        .getMasterLogicalSystem()
+        .getRoutingInstances()
+        .put(Configuration.DEFAULT_VRF_NAME, defaultRi);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+    config.getMasterLogicalSystem().getRoutingInstances().put("tenant", tenantRi);
+
+    config.convertEvpnVrfLeaking();
+
+    Vrf tenantVrf = config._c.getVrfs().get("tenant");
+    assertNotNull(tenantVrf.getBgpProcess());
+    String redistPolicyName = tenantVrf.getBgpProcess().getRedistributionPolicy();
+    org.batfish.datamodel.routing_policy.RoutingPolicy redistPolicy =
+        config._c.getRoutingPolicies().get(redistPolicyName);
+    assertNotNull(redistPolicy);
+
+    // Expecting two if statements that chain the export policies
+    assertThat(redistPolicy.getStatements(), hasSize(2));
+    org.batfish.datamodel.routing_policy.statement.If firstIf =
+        (org.batfish.datamodel.routing_policy.statement.If) redistPolicy.getStatements().get(0);
+    org.batfish.datamodel.routing_policy.statement.If secondIf =
+        (org.batfish.datamodel.routing_policy.statement.If) redistPolicy.getStatements().get(1);
+
+    assertThat(
+        firstIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) firstIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("vrf-export-policy"));
+
+    assertThat(
+        secondIf.getGuard(), instanceOf(org.batfish.datamodel.routing_policy.expr.CallExpr.class));
+    assertThat(
+        ((org.batfish.datamodel.routing_policy.expr.CallExpr) secondIf.getGuard())
+            .getCalledPolicyName(),
+        equalTo("ipr-export-policy"));
   }
 
   @Test

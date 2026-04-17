@@ -7170,7 +7170,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_EXPORT, getLine(ctx.name.getStart()));
-    todo(ctx);
+    _currentRoutingInstance.setVrfExportPolicy(name);
   }
 
   @Override

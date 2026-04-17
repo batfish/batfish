@@ -8167,17 +8167,15 @@ public final class FlatJuniperGrammarTest {
   public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
     JuniperConfiguration juniperConfiguration =
         parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
-    EvpnIpPrefixRoutes ipPrefixRoutes =
-        juniperConfiguration
-            .getMasterLogicalSystem()
-            .getRoutingInstances()
-            .get("FOO")
-            .getEvpnIpPrefixRoutes();
+    RoutingInstance ri =
+        juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("FOO");
+    EvpnIpPrefixRoutes ipPrefixRoutes = ri.getEvpnIpPrefixRoutes();
     assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
     assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
     assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
     assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
     assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
+    assertThat(ri.getVrfExportPolicy(), equalTo("FOO-ri-export"));
   }
 
   @Test
