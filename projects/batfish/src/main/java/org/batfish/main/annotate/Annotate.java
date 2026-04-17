@@ -38,7 +38,7 @@ import org.batfish.main.preprocess.Preprocessor;
 public final class Annotate {
 
   public static void main(String[] args) throws IOException {
-    checkArgument(args.length == 2, "Expected arguments: <input_dir> <output_dir>");
+    checkArgument(args.length == 2, "Expected arguments: <input_path> <output_path>");
     Path inputPath = Paths.get(args[0]);
     Path outputPath = Paths.get(args[1]);
 
@@ -55,13 +55,45 @@ public final class Annotate {
     annotate(inputPath, outputPath, settings);
   }
 
+  /**
+   * Annotate configs at {@code inputPath}, dumping results to {@code outputPath}.
+   *
+   * <p>Handles both file and directory inputs:
+   *
+   * <ul>
+   *   <li>If {@code inputPath} is a regular file, annotates that file directly and writes to {@code
+   *       outputPath} as a file.
+   *   <li>Otherwise, treats {@code inputPath} as a snapshot directory and annotates all files in
+   *       its configs subdirectory into {@code outputPath}'s configs subdirectory.
+   * </ul>
+   */
   private static void annotate(Path inputPath, Path outputPath, Settings settings)
       throws IOException {
-    // Stream through all files in inputPath, annotate each, and write to outputPath without
-    // loading all files into memory.
-    Path inputConfigsPath = inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    Path outputConfigsPath = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    annotateStreaming(inputConfigsPath, outputConfigsPath, settings);
+    if (Files.isRegularFile(inputPath)) {
+      annotateSingleFile(inputPath, outputPath, settings);
+    } else {
+      Path inputConfigsPath = inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      Path outputConfigsPath = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      annotateStreaming(inputConfigsPath, outputConfigsPath, settings);
+    }
+  }
+
+  private static void annotateSingleFile(Path inputFile, Path outputFile, Settings settings)
+      throws IOException {
+    LOGGER.debug("Reading: {}", inputFile);
+    String inputText = Files.readString(inputFile, UTF_8);
+    if (!inputText.endsWith("\n")) {
+      inputText = inputText + "\n";
+    }
+    String annotatedText = annotateText(inputFile, inputText, settings);
+    if (annotatedText == null) {
+      return;
+    }
+    if (outputFile.getParent() != null) {
+      Files.createDirectories(outputFile.getParent());
+    }
+    MoreFiles.asCharSink(outputFile, UTF_8).write(annotatedText);
+    LOGGER.debug("Written: {}", outputFile);
   }
 
   /**

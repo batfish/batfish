@@ -82,4 +82,27 @@ public final class FlattenTest {
   public void testMultipleTags() throws IOException {
     assertInputOutputPair("multiple_tags", "multiple_tags_flattened");
   }
+
+  /**
+   * Assert that running flatten on {@code inputFilename} as a direct file input (not a snapshot
+   * directory) produces the content of {@code outputFilename}.
+   */
+  private void assertValidFileProcessing(String inputFilename, String outputFilename)
+      throws IOException {
+    Path root = _folder.getRoot().toPath();
+    Path inputFile = root.resolve("input_file");
+    Path outputFile = root.resolve("output_file");
+    writeFile(
+        inputFile, readResource(String.format("%s/%s", TESTCONFIGS_PATH, inputFilename), UTF_8));
+    main(new String[] {inputFile.toString(), outputFile.toString()});
+
+    assertThat(
+        readFile(outputFile),
+        equalTo(readResource(String.format("%s/%s", TESTCONFIGS_PATH, outputFilename), UTF_8)));
+  }
+
+  @Test
+  public void testFileBasedProcessing() throws IOException {
+    assertValidFileProcessing("hierarchical", "flat");
+  }
 }
