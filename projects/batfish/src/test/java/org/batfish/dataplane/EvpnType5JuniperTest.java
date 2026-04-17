@@ -32,6 +32,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
@@ -182,5 +183,64 @@ public class EvpnType5JuniperTest {
 
     // We expect the Originator ID to match router1's router ID (172.16.0.100).
     assertThat(originatorIp, org.hamcrest.Matchers.equalTo(Ip.parse("172.16.0.100")));
+  }
+
+  /**
+   * Tests that the vrf-export policy on router1's TENANT-A is actually called. Router1 has a static
+   * route 10.10.10.0/24 in TENANT-A and a vrf-export policy (TENANT-A-vrf-export-redist) that
+   * rejects that prefix but accepts all other routes with 'community add gateway-community'.
+   * Without vrf-export support, the default redistribution would export connected+static routes,
+   * causing 10.10.10.0/24 to appear in node1-1's TENANT-A RIB via EVPN. With vrf-export, the route
+   * is blocked and accepted routes get the gateway-community (target:65000:99) attached.
+   */
+  @Test
+  public void testEvpnType5VrfExportFiltering() throws IOException {
+    Batfish batfish = loadTestrigAndComputeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(snapshot);
+    Prefix blockedPrefix = Prefix.parse("10.10.10.0/24");
+
+    Map<String, java.util.SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibsForTesting();
+
+    // Verify 10.10.10.0/24 IS present in router1's TENANT-A (local static route)
+    GenericRib<AnnotatedRoute<AbstractRoute>> router1Rib = ribs.get("router1").get("TENANT-A");
+    assertThat(router1Rib.getRoutes(), hasItem(hasPrefix(blockedPrefix)));
+
+    // Verify 10.10.10.0/24 is NOT present in node1-1's TENANT-A
+    // (vrf-export rejected it, so it was never redistributed into EVPN)
+    GenericRib<AnnotatedRoute<AbstractRoute>> node1Rib = ribs.get("node1-1").get("TENANT-A");
+    for (AnnotatedRoute<AbstractRoute> route : node1Rib.getRoutes()) {
+      assertNotEquals(
+          "Route 10.10.10.0/24 should be blocked by vrf-export policy",
+          blockedPrefix,
+          route.getNetwork());
+    }
+
+    // Verify 192.168.99.0/24 STILL propagates (vrf-export accepts it)
+    Prefix allowedPrefix = Prefix.parse("192.168.99.0/24");
+    assertThat(node1Rib.getRoutes(), hasItem(hasPrefix(allowedPrefix)));
+
+    // NOTE: The vrf-export policy includes 'community add gateway-community' in its accept-rest
+    // term, but Batfish currently wraps the vrf-export policy as a boolean CallExpr filter
+    // (accept/reject only). Route attribute modifications like 'community add' are NOT evaluated
+    // by the redistribution policy. This assertion documents that current limitation.
+    Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes = dp.getEvpnRoutes();
+    Set<EvpnRoute<?, ?>> node2EvpnRoutes =
+        evpnRoutes.get("node2-1", org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME);
+    ExtendedCommunity gatewayCommunity = ExtendedCommunity.target(65000, 99);
+    boolean foundRouteWithGatewayCommunity = false;
+    for (EvpnRoute<?, ?> route : node2EvpnRoutes) {
+      if (route.getNetwork().equals(allowedPrefix)
+          && route.getCommunities().getCommunities().contains(gatewayCommunity)) {
+        foundRouteWithGatewayCommunity = true;
+      }
+    }
+    // TODO: When redistribution policy attribute modification is supported, change to assertTrue
+    assertFalse(
+        "community-add in vrf-export is not currently evaluated (attribute modification unsupported"
+            + " in redistribution CallExpr filter)",
+        foundRouteWithGatewayCommunity);
   }
 }
