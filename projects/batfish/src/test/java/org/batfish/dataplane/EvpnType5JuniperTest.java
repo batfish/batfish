@@ -222,25 +222,24 @@ public class EvpnType5JuniperTest {
     Prefix allowedPrefix = Prefix.parse("192.168.99.0/24");
     assertThat(node1Rib.getRoutes(), hasItem(hasPrefix(allowedPrefix)));
 
-    // NOTE: The vrf-export policy includes 'community add gateway-community' in its accept-rest
-    // term, but Batfish currently wraps the vrf-export policy as a boolean CallExpr filter
-    // (accept/reject only). Route attribute modifications like 'community add' are NOT evaluated
-    // by the redistribution policy. This assertion documents that current limitation.
+    // Verify the vrf-export policy's 'community add gateway-community' action is evaluated:
+    // Connected routes from router1's TENANT-A (e.g. 172.16.100.0/24 from irb.100) go through
+    // the vrf-export redistribution policy and should carry gateway-community (target:65000:99).
     Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes = dp.getEvpnRoutes();
     Set<EvpnRoute<?, ?>> node2EvpnRoutes =
         evpnRoutes.get("node2-1", org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME);
     ExtendedCommunity gatewayCommunity = ExtendedCommunity.target(65000, 99);
+    Prefix connectedPrefix = Prefix.parse("172.16.100.0/24");
     boolean foundRouteWithGatewayCommunity = false;
     for (EvpnRoute<?, ?> route : node2EvpnRoutes) {
-      if (route.getNetwork().equals(allowedPrefix)
+      if (route.getNetwork().equals(connectedPrefix)
           && route.getCommunities().getCommunities().contains(gatewayCommunity)) {
         foundRouteWithGatewayCommunity = true;
       }
     }
-    // TODO: When redistribution policy attribute modification is supported, change to assertTrue
-    assertFalse(
-        "community-add in vrf-export is not currently evaluated (attribute modification unsupported"
-            + " in redistribution CallExpr filter)",
+    assertTrue(
+        "EVPN Type 5 route for 172.16.100.0/24 should carry gateway-community (target:65000:99)"
+            + " set by vrf-export policy",
         foundRouteWithGatewayCommunity);
   }
 }
