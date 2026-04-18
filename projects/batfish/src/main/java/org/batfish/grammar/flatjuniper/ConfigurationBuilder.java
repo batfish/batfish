@@ -7217,7 +7217,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRo_route_distinguisher_id(Ro_route_distinguisher_idContext ctx) {
     Ip rdId = Ip.parse(ctx.addr.getText());
     _currentRoutingInstance.setRouteDistinguisherId(rdId);
-    todo(ctx);
   }
 
   @Override

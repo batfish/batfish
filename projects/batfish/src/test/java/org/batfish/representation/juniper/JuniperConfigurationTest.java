@@ -1473,4 +1473,61 @@ public class JuniperConfigurationTest {
           contains(new Warning(testCase.getValue(), TAG_PEDANTIC)));
     }
   }
+
+  @Test
+  public void testConvertRouteDistinguishers_NoRdId() {
+    JuniperConfiguration config = createConfig();
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+
+    RoutingInstance ri1 = new RoutingInstance("VRF1");
+    config.getMasterLogicalSystem().getRoutingInstances().put("VRF1", ri1);
+
+    // No route-distinguisher-id set, so convertRouteDistinguishers should be a no-op
+    config.convertRouteDistinguishers();
+
+    assertThat(ri1.getRouteDistinguisher(), nullValue());
+  }
+
+  @Test
+  public void testConvertRouteDistinguishers_AutoGeneratesRds() {
+    JuniperConfiguration config = createConfig();
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    Ip rdId = Ip.parse("10.0.0.1");
+    defaultRi.setRouteDistinguisherId(rdId);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+
+    RoutingInstance ri1 = new RoutingInstance("VRF1");
+    RoutingInstance ri2 = new RoutingInstance("VRF2");
+    config.getMasterLogicalSystem().getRoutingInstances().put("VRF1", ri1);
+    config.getMasterLogicalSystem().getRoutingInstances().put("VRF2", ri2);
+
+    config.convertRouteDistinguishers();
+
+    assertThat(ri1.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(rdId, 1)));
+    assertThat(ri2.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(rdId, 2)));
+  }
+
+  @Test
+  public void testConvertRouteDistinguishers_SkipsExplicitRd() {
+    JuniperConfiguration config = createConfig();
+    RoutingInstance defaultRi = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
+    Ip rdId = Ip.parse("10.0.0.1");
+    defaultRi.setRouteDistinguisherId(rdId);
+    config.getMasterLogicalSystem().setDefaultRoutingInstance(defaultRi);
+
+    RoutingInstance ri1 = new RoutingInstance("VRF1");
+    RouteDistinguisher explicitRd = RouteDistinguisher.from(Ip.parse("10.0.0.2"), 99);
+    ri1.setRouteDistinguisher(explicitRd);
+    RoutingInstance ri2 = new RoutingInstance("VRF2");
+    config.getMasterLogicalSystem().getRoutingInstances().put("VRF1", ri1);
+    config.getMasterLogicalSystem().getRoutingInstances().put("VRF2", ri2);
+
+    config.convertRouteDistinguishers();
+
+    // ri1 already has an explicit RD, should not be overwritten
+    assertThat(ri1.getRouteDistinguisher(), equalTo(explicitRd));
+    // ri2 should get an auto-generated RD (index 2)
+    assertThat(ri2.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(rdId, 2)));
+  }
 }

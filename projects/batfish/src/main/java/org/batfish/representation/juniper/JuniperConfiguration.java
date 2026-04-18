@@ -3785,6 +3785,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setDefaultCrossZoneAction(_masterLogicalSystem.getDefaultCrossZoneAction());
     _c.setDefaultInboundAction(_masterLogicalSystem.getDefaultInboundAction());
 
+    // convert route distinguishers: if routing-options route-distinguisher-id is set,
+    // auto-generate RDs for routing-instances missing an explicit route-distinguisher
+    convertRouteDistinguishers();
+
     for (Entry<String, RoutingInstance> e : _masterLogicalSystem.getRoutingInstances().entrySet()) {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
@@ -4040,6 +4044,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       }
     }.visit(vlanId);
+  }
+
+  /**
+   * If {@code routing-options route-distinguisher-id} is set, auto-generate a unique Type 1 Route
+   * Distinguisher for each routing-instance that does not already have an explicit
+   * route-distinguisher configured. The generated RD uses the route-distinguisher-id IP as the
+   * administrator subfield and the 1-based index of the routing-instance (in iteration order) as
+   * the assigned-number subfield.
+   */
+  @VisibleForTesting
+  void convertRouteDistinguishers() {
+    Ip rdId = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
+    if (rdId == null) {
+      return;
+    }
+    int index = 1;
+    for (RoutingInstance ri : _masterLogicalSystem.getRoutingInstances().values()) {
+      if (ri.getRouteDistinguisher() == null) {
+        ri.setRouteDistinguisher(RouteDistinguisher.from(rdId, index));
+      }
+      index++;
+    }
   }
 
   /**
