@@ -806,7 +806,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         @JsonProperty(JSON_KEY_PHASE2_LIFETIME_SECONDS) @Nullable Integer phase2LifetimeSeconds) {
       checkArgument(outsideIpAddress != null, "OutsideIpAddress cannot be null");
       checkArgument(presharedKey != null, "PreSharedKey cannot be null");
-      checkArgument(tunnelInsideCidr != null, "TunnelInsideCidr cannot be null");
       return new TunnelOptions(
           ikeVersions,
           firstNonNull(
