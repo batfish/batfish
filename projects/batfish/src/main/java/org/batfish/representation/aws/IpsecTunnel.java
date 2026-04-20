@@ -140,19 +140,24 @@ final class IpsecTunnel implements Serializable {
             Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
     builder.setIpsecMode(
         Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
-    if (ipsecTunnel != null) {
-      // AWS configs give the subnet address, they will always use the first host.
-      assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
+    // Use TunnelOptions crypto settings if available, otherwise fall back to
+    // permissive defaults. Some snapshots have TunnelOptions with only
+    // OutsideIpAddress/PreSharedKey but no crypto algorithms.
+    boolean hasCryptoOptions =
+        ipsecTunnel != null
+            && ipsecTunnel.getPhase1IntegrityAlgorithm() != null
+            && ipsecTunnel.getPhase1EncryptionAlgorithm() != null
+            && ipsecTunnel.getPhase1DHGroupNumbers() != null
+            && ipsecTunnel.getPhase2IntegrityAlgorithm() != null
+            && ipsecTunnel.getPhase2EncryptionAlgorithm() != null
+            && ipsecTunnel.getPhase2DHGroupNumbers() != null;
+
+    if (hasCryptoOptions) {
       builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
-      assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
       builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
-      assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
       builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
-      assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
       builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
-      assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
       builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
-      assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
       builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
     } else {
       builder.setIkeAuthProtocol(
