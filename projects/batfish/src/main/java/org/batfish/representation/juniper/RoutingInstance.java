@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class RoutingInstance implements Serializable {
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
   private @Nullable String _vrfImportPolicy;
-  private @Nullable String _vrfExportPolicy;
+  private final @Nonnull List<String> _vrfExportPolicies;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -80,6 +81,7 @@ public class RoutingInstance implements Serializable {
     _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
     _instanceImports = new LinkedList<>();
+    _vrfExportPolicies = new ArrayList<>();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
     _masterBgpGroup = new BgpGroup();
@@ -440,11 +442,11 @@ public class RoutingInstance implements Serializable {
     _vrfImportPolicy = vrfImportPolicy;
   }
 
-  public @Nullable String getVrfExportPolicy() {
-    return _vrfExportPolicy;
+  public @Nonnull List<String> getVrfExportPolicies() {
+    return _vrfExportPolicies;
   }
 
-  public void setVrfExportPolicy(@Nullable String vrfExportPolicy) {
-    _vrfExportPolicy = vrfExportPolicy;
+  public void addVrfExportPolicy(@Nonnull String vrfExportPolicy) {
+    _vrfExportPolicies.add(vrfExportPolicy);
   }
 }

@@ -8175,7 +8175,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
     assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
     assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
-    assertThat(ri.getVrfExportPolicy(), equalTo("FOO-ri-export"));
+    assertThat(
+        ri.getVrfExportPolicies(), equalTo(ImmutableList.of("FOO-ri-export", "FOO-ri-export2")));
   }
 
   @Test

@@ -4190,42 +4190,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
         // Create redistribution policy on tenant VRF
         String redistPolicyName = generatedEvpnIprRedistPolicyName(riName);
-        String vrfExport = ri.getVrfExportPolicy();
+        // Collect all constituent export policies (vrf-export policies first, then ipr export)
+        List<String> constituentPolicies = new ArrayList<>();
+        for (String vrfExport : ri.getVrfExportPolicies()) {
+          if (!_c.getRoutingPolicies().containsKey(vrfExport)) {
+            _w.redFlagf(
+                "Ignoring vrf-export policy %s in routing-instance %s: policy not defined",
+                vrfExport, riName);
+            continue;
+          }
+          constituentPolicies.add(vrfExport);
+        }
         String iprExport = ipr.getExportPolicy();
-        boolean hasVrfExport = vrfExport != null && _c.getRoutingPolicies().containsKey(vrfExport);
-        boolean hasIprExport = iprExport != null && _c.getRoutingPolicies().containsKey(iprExport);
-        if (hasVrfExport && hasIprExport) {
-          // Both vrf-export and ipr export: chain them (vrf-export first, then ipr export)
-          RoutingPolicy redistPolicy =
-              RoutingPolicy.builder()
-                  .setOwner(_c)
-                  .setName(redistPolicyName)
-                  .addStatement(
-                      new If(
-                          new CallExpr(vrfExport),
-                          ImmutableList.of(),
-                          ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
-                  .addStatement(
-                      new If(
-                          new CallExpr(iprExport),
-                          ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                          ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
-                  .build();
-          _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
-        } else if (hasVrfExport || hasIprExport) {
-          // Single policy (either vrf-export or ipr export)
-          String exportPolicy = hasVrfExport ? vrfExport : iprExport;
-          RoutingPolicy redistPolicy =
-              RoutingPolicy.builder()
-                  .setOwner(_c)
-                  .setName(redistPolicyName)
-                  .addStatement(
-                      new If(
-                          new CallExpr(exportPolicy),
-                          ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
-                  .addStatement(Statements.ReturnFalse.toStaticStatement())
-                  .build();
-          _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
+        if (iprExport != null) {
+          if (!_c.getRoutingPolicies().containsKey(iprExport)) {
+            _w.redFlagf(
+                "Ignoring ip-prefix-routes export policy %s in routing-instance %s:"
+                    + " policy not defined",
+                iprExport, riName);
+          } else {
+            constituentPolicies.add(iprExport);
+          }
+        }
+        if (!constituentPolicies.isEmpty()) {
+          // Evaluate all constituent export policies; stop early on reject
+          RoutingPolicy.Builder builder =
+              RoutingPolicy.builder().setOwner(_c).setName(redistPolicyName);
+          for (String policy : constituentPolicies) {
+            builder.addStatement(
+                new If(
+                    new CallExpr(policy),
+                    ImmutableList.of(),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
+          }
+          builder.addStatement(Statements.ReturnTrue.toStaticStatement());
+          _c.getRoutingPolicies().put(redistPolicyName, builder.build());
         } else {
           // Default: redistribute connected and static
           RoutingPolicy redistPolicy =
