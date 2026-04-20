@@ -1,0 +1,12 @@
+set system host-name route-distinguisher-id-auto
+set routing-options route-distinguisher-id 10.0.0.1
+set routing-options autonomous-system 65001
+set routing-options router-id 10.0.0.1
+
+set interfaces lo0 unit 0 family inet address 10.0.0.1/32
+
+set routing-instances VRF1 instance-type vrf
+set routing-instances VRF1 interface lo0.0
+
+set routing-instances VRF2 instance-type vrf
+set routing-instances VRF2 route-distinguisher 10.0.0.2:99
