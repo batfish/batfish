@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.RoutingPolicyContextDiff;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.SyntacticDifference;
 
 public class SyntacticDifferenceTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();

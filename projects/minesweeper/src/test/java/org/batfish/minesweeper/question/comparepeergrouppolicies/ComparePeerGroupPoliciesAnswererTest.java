@@ -79,8 +79,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.ComparePeerGroupPoliciesAnswerer;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.ComparePeerGroupPoliciesQuestion;
 
 public class ComparePeerGroupPoliciesAnswererTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();

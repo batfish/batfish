@@ -1,4 +1,4 @@
-package projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies;
+package org.batfish.minesweeper.question.comparepeergrouppolicies;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
