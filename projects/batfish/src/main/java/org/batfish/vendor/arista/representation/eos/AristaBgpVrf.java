@@ -53,6 +53,7 @@ public final class AristaBgpVrf implements Serializable {
   private final @Nonnull Map<Prefix6, AristaBgpAggregateNetwork> _v6aggregates;
   private final @Nonnull Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
   private final @Nonnull Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
+  private final @Nonnull Map<String, AristaBgpInterfaceNeighbor> _interfaceNeighbors;
 
   private @Nullable AristaBgpVrfEvpnAddressFamily _evpnAf;
 
@@ -81,6 +82,7 @@ public final class AristaBgpVrf implements Serializable {
     _v6aggregates = new HashMap<>(0);
     _v4DynamicNeighbors = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
+    _interfaceNeighbors = new HashMap<>(0);
     _redistributionPolicies = new EnumMap<>(AristaRedistributeType.class);
   }
 
@@ -374,6 +376,18 @@ public final class AristaBgpVrf implements Serializable {
 
   public @Nonnull AristaBgpV4DynamicNeighbor getOrCreateV4DynamicNeighbor(Prefix prefix) {
     return _v4DynamicNeighbors.computeIfAbsent(prefix, AristaBgpV4DynamicNeighbor::new);
+  }
+
+  public @Nonnull Map<String, AristaBgpInterfaceNeighbor> getInterfaceNeighbors() {
+    return _interfaceNeighbors;
+  }
+
+  public @Nonnull AristaBgpInterfaceNeighbor getOrCreateInterfaceNeighbor(String ifaceName) {
+    return _interfaceNeighbors.computeIfAbsent(ifaceName, AristaBgpInterfaceNeighbor::new);
+  }
+
+  public void removeInterfaceNeighbor(String ifaceName) {
+    _interfaceNeighbors.remove(ifaceName);
   }
 
   public @Nonnull Map<Ip, AristaBgpV4Neighbor> getV4neighbors() {

@@ -79,6 +79,7 @@ import static org.batfish.vendor.arista.representation.AristaConfiguration.DEFAU
 import static org.batfish.vendor.arista.representation.AristaConfiguration.aclLineStructureName;
 import static org.batfish.vendor.arista.representation.AristaStructureType.BGP_LISTEN_RANGE;
 import static org.batfish.vendor.arista.representation.AristaStructureType.BGP_NEIGHBOR;
+import static org.batfish.vendor.arista.representation.AristaStructureType.BGP_PEER_GROUP;
 import static org.batfish.vendor.arista.representation.AristaStructureType.INTERFACE;
 import static org.batfish.vendor.arista.representation.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.vendor.arista.representation.AristaStructureType.POLICY_MAP;
@@ -153,6 +154,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
@@ -509,6 +511,88 @@ public class AristaGrammarTest {
       assertTrue(vrf.getShutdown());
       assertThat(vrf.getRouterId(), nullValue());
     }
+  }
+
+  @Test
+  public void testBgpNeighborInterfaceExtraction() {
+    AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_interface");
+    AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+    // Et99 was removed by `no neighbor interface`; Et2-3,Et5 expands the comma-separated range
+    assertThat(
+        vrf.getInterfaceNeighbors().keySet(),
+        containsInAnyOrder(
+            "Ethernet1",
+            "Ethernet2",
+            "Ethernet3",
+            "Ethernet5",
+            "Ethernet6",
+            "Ethernet7",
+            "Ethernet8",
+            "Ethernet3/1/1",
+            "Ethernet100"));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet1").getPeerGroup(), equalTo("LEAVES"));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet1").getPeerFilter(), equalTo("PF_LEAVES"));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet1").getRemoteAs(), nullValue());
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet2").getPeerGroup(), equalTo("LEAVES"));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet2").getPeerFilter(), nullValue());
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet2").getRemoteAs(), equalTo(65999L));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet3").getRemoteAs(), equalTo(65999L));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet5").getRemoteAs(), equalTo(65999L));
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet6").getPeerGroup(), equalTo("SHUT"));
+    // two-word `peer group`
+    assertThat(vrf.getInterfaceNeighbors().get("Ethernet7").getPeerGroup(), equalTo("LEAVES"));
+
+    AristaBgpVrf tenant = config.getAristaBgp().getVrfs().get("TENANT");
+    assertThat(tenant.getInterfaceNeighbors().keySet(), containsInAnyOrder("Ethernet10"));
+  }
+
+  @Test
+  public void testBgpNeighborInterfaceConversion() {
+    Configuration c = parseConfig("arista_bgp_neighbor_interface");
+    Map<String, BgpUnnumberedPeerConfig> neighbors =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors();
+    // Et6 inherits shutdown from peer-group SHUT and is dropped; Et99 was removed by `no`;
+    // Et100 references a non-existent interface and is dropped with a warning
+    assertThat(
+        neighbors.keySet(),
+        containsInAnyOrder(
+            "Ethernet1",
+            "Ethernet2",
+            "Ethernet3",
+            "Ethernet5",
+            "Ethernet7",
+            "Ethernet8",
+            "Ethernet3/1/1"));
+    BgpUnnumberedPeerConfig et1 = neighbors.get("Ethernet1");
+    assertThat(et1.getPeerInterface(), equalTo("Ethernet1"));
+    assertThat(et1.getLocalAs(), equalTo(65001L));
+    assertThat(et1.getRemoteAsns(), equalTo(LongSpace.of(Range.closed(65100L, 65199L))));
+    assertThat(et1.getGroup(), equalTo("LEAVES"));
+    // send-community inherited from peer-group LEAVES
+    assertThat(
+        et1.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity(),
+        equalTo(true));
+    BgpUnnumberedPeerConfig et2 = neighbors.get("Ethernet2");
+    assertThat(et2.getRemoteAsns(), equalTo(LongSpace.of(65999L)));
+    // Et8 has no remote-as and no peer-filter
+    assertThat(neighbors.get("Ethernet8").getRemoteAsns(), equalTo(LongSpace.EMPTY));
+    // EVPN inherited from peer-group LEAVES activate
+    assertThat(et1.getEvpnAddressFamily(), notNullValue());
+
+    Map<String, BgpUnnumberedPeerConfig> tenantNeighbors =
+        c.getVrfs().get("TENANT").getBgpProcess().getInterfaceNeighbors();
+    assertThat(tenantNeighbors.keySet(), containsInAnyOrder("Ethernet10"));
+  }
+
+  @Test
+  public void testBgpNeighborInterfaceReferences() throws IOException {
+    String hostname = "arista_bgp_neighbor_interface";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, BGP_PEER_GROUP, "LEAVES", 9));
+    assertThat(ccae, hasNumReferrers(filename, BGP_PEER_GROUP, "SHUT", 1));
   }
 
   @Test

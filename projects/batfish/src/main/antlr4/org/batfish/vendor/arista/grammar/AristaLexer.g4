@@ -6355,6 +6355,16 @@ M_Interface_IPV4
    'IPv4' -> type ( IPV4 )
 ;
 
+M_Interface_PEER_GROUP
+:
+   'peer-group' -> type ( PEER_GROUP ) , popMode , pushMode ( M_NEIGHBOR )
+;
+
+M_Interface_PEER
+:
+   'peer' -> type ( PEER ) , popMode
+;
+
 M_Interface_POINT_TO_POINT
 :
    'point-to-point' -> type ( POINT_TO_POINT ) , popMode
@@ -6592,6 +6602,11 @@ M_NEIGHBOR_PASSIVE
 M_NEIGHBOR_SRC_IP
 :
    'src-ip' -> type ( SRC_IP ) , popMode
+;
+
+M_NEIGHBOR_INTERFACE
+:
+   'interface' -> type ( INTERFACE ) , popMode , pushMode ( M_Interface )
 ;
 
 M_NEIGHBOR_NEWLINE

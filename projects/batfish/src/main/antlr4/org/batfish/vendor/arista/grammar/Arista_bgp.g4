@@ -1666,9 +1666,20 @@ eos_rbi_neighbor
   (
     eos_rbi_neighbor4
     | eos_rbi_neighbor6
+    | eos_rbi_neighbor_interface
     // Definition of a peer group
     | eos_rbi_peer_group
   )
+;
+
+eos_rbi_neighbor_interface
+:
+  INTERFACE inames += interface_name (COMMA inames += interface_name)*
+  (PEER_GROUP | PEER GROUP) pg = variable
+  (
+    PEER_FILTER pf = variable
+    | REMOTE_AS asn = bgp_asn
+  )? NEWLINE
 ;
 
 eos_rbi_neighbor4
@@ -1969,6 +1980,7 @@ eos_rbi_no
     | eos_rbino_ipv6
     | eos_rbino_monitoring
     | eos_rbino_neighbor
+    | eos_rbino_neighbor_interface
     | eos_rbino_redistribute
     | eos_rbino_router_id
     | eos_rbino_shutdown
@@ -2329,6 +2341,11 @@ eos_rbino_mrr_post_policy
 eos_rbino_mrr_pre_policy
 :
   PRE_POLICY NEWLINE
+;
+
+eos_rbino_neighbor_interface
+:
+  NEIGHBOR INTERFACE inames += interface_name (COMMA inames += interface_name)* NEWLINE
 ;
 
 eos_rbino_neighbor
