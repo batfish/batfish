@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Flow;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.HeaderConstraintsToFlows;
 
 /** Produces the answer for {@link TracerouteQuestion} */
 public final class TracerouteAnswerer extends Answerer {
@@ -42,11 +44,12 @@ public final class TracerouteAnswerer extends Answerer {
 
   @VisibleForTesting
   SortedMap<Flow, List<Trace>> getTraces(NetworkSnapshot snapshot, TracerouteQuestion q) {
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
             q.getHeaderConstraints(),
             q.getSourceLocationStr(),
-            _batfish.specifierContext(snapshot));
+            _batfish.specifierContext(snapshot),
+            FlowPreference.TRACEROUTE);
     Set<Flow> flows = helper.getFlows();
     return _batfish.getTracerouteEngine(snapshot).computeTraces(flows, q.getIgnoreFilters());
   }
