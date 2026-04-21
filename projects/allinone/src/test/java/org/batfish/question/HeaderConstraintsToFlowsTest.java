@@ -1,4 +1,4 @@
-package org.batfish.question.traceroute;
+package org.batfish.question;
 
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -31,8 +32,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link TracerouteAnswererHelper}. */
-public class TracerouteAnswererHelperTest {
+/** Tests for {@link HeaderConstraintsToFlows}. */
+public class HeaderConstraintsToFlowsTest {
   private IBatfish _batfish;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -66,11 +67,12 @@ public class TracerouteAnswererHelperTest {
 
   @Test
   public void testGetFlows_interfaceSource() {
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             NODE1,
-            _batfish.specifierContext(_batfish.getSnapshot()));
+            _batfish.specifierContext(_batfish.getSnapshot()),
+            FlowPreference.TRACEROUTE);
     Set<Flow> flows = helper.getFlows();
 
     String ingressInterface = null;
@@ -95,22 +97,24 @@ public class TracerouteAnswererHelperTest {
 
   @Test
   public void testGetFlows_interfaceLinkSourceNoSourceIp() {
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             "@enter(node1)",
-            _batfish.specifierContext(_batfish.getSnapshot()));
+            _batfish.specifierContext(_batfish.getSnapshot()),
+            FlowPreference.TRACEROUTE);
     thrown.expect(IllegalArgumentException.class);
     helper.getFlows();
   }
 
   @Test
   public void testGetFlows_interfaceLinkSource() {
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
             "@enter(node1)",
-            _batfish.specifierContext(_batfish.getSnapshot()));
+            _batfish.specifierContext(_batfish.getSnapshot()),
+            FlowPreference.TRACEROUTE);
 
     Set<Flow> flows = helper.getFlows();
 
@@ -138,11 +142,12 @@ public class TracerouteAnswererHelperTest {
 
   @Test
   public void testGetFlows_dst() {
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("node2").build(),
             String.format("%s[%s]", NODE1, LOOPBACK),
-            _batfish.specifierContext(_batfish.getSnapshot()));
+            _batfish.specifierContext(_batfish.getSnapshot()),
+            FlowPreference.TRACEROUTE);
     Set<Flow> flows = helper.getFlows();
     assertThat(
         flows, everyItem(anyOf(hasDstIp(NODE2_FAST_ETHERNET_IP), hasDstIp(NODE2_LOOPBACK_IP))));

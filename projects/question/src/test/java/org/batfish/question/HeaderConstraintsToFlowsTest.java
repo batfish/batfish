@@ -1,4 +1,4 @@
-package org.batfish.question.traceroute;
+package org.batfish.question;
 
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
@@ -38,7 +39,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.SpecifierFactories;
 import org.junit.Test;
 
-public class TracerouteAnswererHelperTest {
+public class HeaderConstraintsToFlowsTest {
   @Test
   public void testGetFlows() {
     NetworkFactory nf = new NetworkFactory();
@@ -84,8 +85,9 @@ public class TracerouteAnswererHelperTest {
             new InterfaceLinkLocation(config.getHostname(), inactiveIface.getName())));
 
     // getFlows filters out locations of inactive interfaces
-    TracerouteAnswererHelper helper =
-        new TracerouteAnswererHelper(headerConstraints, sourceLocationStr, ctxt);
+    HeaderConstraintsToFlows helper =
+        new HeaderConstraintsToFlows(
+            headerConstraints, sourceLocationStr, ctxt, FlowPreference.TRACEROUTE);
 
     Set<Flow> flows = helper.getFlows();
     assertThat(
@@ -115,7 +117,8 @@ public class TracerouteAnswererHelperTest {
             .build();
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setDstIp("8.8.8.8").setApplications("icmp/3/15").build();
-    Set<Flow> flows = new TracerouteAnswererHelper(phc, ".*", ctxt).getFlows();
+    Set<Flow> flows =
+        new HeaderConstraintsToFlows(phc, ".*", ctxt, FlowPreference.TRACEROUTE).getFlows();
     assertThat(flows, contains(allOf(hasIpProtocol(IpProtocol.ICMP))));
   }
 }
