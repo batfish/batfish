@@ -1,0 +1,80 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_neighbor_interface
+!
+peer-filter PF_LEAVES
+   10 match as-range 65100-65199 result accept
+!
+interface Ethernet1
+   no switchport
+   ipv6 enable
+!
+interface Ethernet2
+   no switchport
+   ipv6 enable
+!
+interface Ethernet3
+   no switchport
+   ipv6 enable
+!
+interface Ethernet5
+   no switchport
+   ipv6 enable
+!
+interface Ethernet6
+   no switchport
+   ipv6 enable
+!
+interface Ethernet8
+   no switchport
+   ipv6 enable
+!
+interface Ethernet3/1/1
+   no switchport
+   ipv6 enable
+!
+interface Ethernet4/1/1
+   no switchport
+   ipv6 enable
+!
+interface Ethernet5/1/1
+   no switchport
+   ipv6 enable
+!
+vrf instance TENANT
+!
+interface Ethernet9
+   no switchport
+   ipv6 enable
+!
+interface Ethernet10
+   no switchport
+   vrf TENANT
+   ipv6 enable
+!
+router bgp 65001
+   router-id 10.0.0.1
+   no bgp default ipv4-unicast
+   neighbor LEAVES peer group
+   neighbor LEAVES send-community
+   neighbor SHUT peer group
+   neighbor SHUT shutdown
+   neighbor ISOLATED peer group
+   neighbor interface Et1 peer-group LEAVES peer-filter PF_LEAVES
+   neighbor interface Et2-3,5 peer-group LEAVES remote-as 65999
+   neighbor interface Et6 peer-group SHUT remote-as 65999
+   neighbor interface Et8 peer-group LEAVES
+   neighbor interface Et3/1/1,4/1/1,5/1/1 peer-group LEAVES remote-as 65999
+   neighbor interface Et9 peer-group ISOLATED remote-as 65999
+   ! Following lines are deliberate-warning cases (bad prefix, range bound), not show-run output:
+   neighbor interface Xy1 peer-group LEAVES remote-as 65999
+   neighbor interface Et200-2000 peer-group LEAVES remote-as 65999
+   neighbor interface Et99 peer-group LEAVES remote-as 65999
+   no neighbor interface Et99
+   neighbor interface Et100 peer-group LEAVES remote-as 65999
+   address-family evpn
+      neighbor LEAVES activate
+   vrf TENANT
+      neighbor interface Et10 peer-group LEAVES remote-as 65999
+!
+end

@@ -1666,9 +1666,39 @@ eos_rbi_neighbor
   (
     eos_rbi_neighbor4
     | eos_rbi_neighbor6
+    | eos_rbi_neighbor_interface
     // Definition of a peer group
     | eos_rbi_peer_group
   )
+;
+
+eos_rbi_neighbor_interface
+:
+  INTERFACE irange = eos_bgp_iface_range
+  PEER_GROUP pg = variable
+  (
+    PEER_FILTER pf = variable
+    | REMOTE_AS asn = bgp_asn
+  )? NEWLINE
+;
+
+// Interface range as Arista's running-config emits it for `neighbor
+// interface`: the prefix appears once and subsequent comma-separated entries
+// elide it (Et1/1,2/1,3/1 = Ethernet1/1, Ethernet2/1, Ethernet3/1).
+eos_bgp_iface_range
+:
+  prefix = M_Interface_PREFIX entries += eos_bgp_iface_tail
+  (COMMA entries += eos_bgp_iface_tail)*
+;
+
+eos_bgp_iface_tail
+:
+  path = eos_bgp_iface_path sr = subrange
+;
+
+eos_bgp_iface_path
+:
+  (dec (FORWARD_SLASH | PERIOD))*
 ;
 
 eos_rbi_neighbor4
@@ -1969,6 +1999,7 @@ eos_rbi_no
     | eos_rbino_ipv6
     | eos_rbino_monitoring
     | eos_rbino_neighbor
+    | eos_rbino_neighbor_interface
     | eos_rbino_redistribute
     | eos_rbino_router_id
     | eos_rbino_shutdown
@@ -2329,6 +2360,11 @@ eos_rbino_mrr_post_policy
 eos_rbino_mrr_pre_policy
 :
   PRE_POLICY NEWLINE
+;
+
+eos_rbino_neighbor_interface
+:
+  NEIGHBOR INTERFACE irange = eos_bgp_iface_range NEWLINE
 ;
 
 eos_rbino_neighbor

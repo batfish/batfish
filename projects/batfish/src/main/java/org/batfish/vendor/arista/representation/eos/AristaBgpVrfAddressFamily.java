@@ -14,6 +14,7 @@ import org.batfish.datamodel.Prefix;
  */
 public abstract class AristaBgpVrfAddressFamily implements Serializable {
   protected @Nullable AristaBgpAdditionalPathsConfig _additionalPaths;
+  private final @Nonnull Map<String, AristaBgpNeighborAddressFamily> _interfaceNeighbors;
   private final @Nonnull Map<String, AristaBgpNeighborAddressFamily> _peerGroups;
   private final @Nonnull Map<Ip, AristaBgpNeighborAddressFamily> _v4Neighbors;
   private final @Nonnull Map<Prefix, AristaBgpNeighborAddressFamily> _v4DynamicNeighbors;
@@ -21,6 +22,7 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
   protected @Nullable Boolean _nextHopUnchanged;
 
   public AristaBgpVrfAddressFamily() {
+    _interfaceNeighbors = new HashMap<>();
     _peerGroups = new HashMap<>();
     _v4DynamicNeighbors = new HashMap<>();
     _v4Neighbors = new HashMap<>();
@@ -76,5 +78,15 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
 
   public @Nonnull AristaBgpNeighborAddressFamily getOrCreatePeerGroup(String peerGroup) {
     return _peerGroups.computeIfAbsent(peerGroup, n -> new AristaBgpNeighborAddressFamily());
+  }
+
+  public @Nullable AristaBgpNeighborAddressFamily getInterfaceNeighbor(String interfaceName) {
+    return _interfaceNeighbors.get(interfaceName);
+  }
+
+  public @Nonnull AristaBgpNeighborAddressFamily getOrCreateInterfaceNeighbor(
+      String interfaceName) {
+    return _interfaceNeighbors.computeIfAbsent(
+        interfaceName, n -> new AristaBgpNeighborAddressFamily());
   }
 }
