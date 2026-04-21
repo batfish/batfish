@@ -36,7 +36,6 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
 import org.junit.Test;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.RoutingPolicyContextDiff;
 
 public class RoutingPolicyContextDiffTest {
   private static final String HOSTNAME = "hostname";
