@@ -1,14 +1,13 @@
-package org.batfish.question.traceroute;
+package org.batfish.question;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDFlowConstraintGenerator;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -32,10 +31,11 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
- * Helper for {@link TracerouteAnswerer} and {@link BidirectionalTracerouteAnswerer}. Processes
- * question parameters and constructs {@link Flow Flows} for the backend engine.
+ * Converts {@link PacketHeaderConstraints} and a source location specifier into concrete {@link
+ * Flow Flows}. Used by questions that need to construct flows for {@link
+ * org.batfish.common.plugin.TracerouteEngine}.
  */
-public final class TracerouteAnswererHelper {
+public final class HeaderConstraintsToFlows {
   private final PacketHeaderConstraints _packetHeaderConstraints;
   private final String _sourceLocationStr;
   private final SpecifierContext _specifierContext;
@@ -64,10 +64,11 @@ public final class TracerouteAnswererHelper {
         }
       };
 
-  public TracerouteAnswererHelper(
+  public HeaderConstraintsToFlows(
       PacketHeaderConstraints packetHeaderConstraints,
       String sourceLocationStr,
-      SpecifierContext specifierContext) {
+      SpecifierContext specifierContext,
+      FlowPreference flowPreference) {
     _packetHeaderConstraints = packetHeaderConstraints;
     _sourceLocationStr = sourceLocationStr;
     _specifierContext = specifierContext;
@@ -77,20 +78,19 @@ public final class TracerouteAnswererHelper {
     _packetHeaderConstraintToFlowHelper =
         new IpFieldExtractorContext(_srcIpAssignment, _specifierContext);
 
-    _flowBuilder = initFlowBuilder(_packetHeaderConstraints);
+    _flowBuilder = initFlowBuilder(_packetHeaderConstraints, flowPreference);
     setDstIp(_packetHeaderConstraints, _flowBuilder);
   }
 
-  static Flow.Builder initFlowBuilder(PacketHeaderConstraints phc) {
+  static Flow.Builder initFlowBuilder(PacketHeaderConstraints phc, FlowPreference flowPreference) {
     BDDPacket pkt = new BDDPacket();
     return pkt.getFlow(
             PacketHeaderConstraintsUtil.toBDD(
                 pkt, phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
-            BDDFlowConstraintGenerator.FlowPreference.TRACEROUTE)
+            flowPreference)
         .orElseThrow(() -> new BatfishException("could not convert header constraints to flow"));
   }
 
-  @VisibleForTesting
   static IpSpaceAssignment initSourceIpAssignment(
       String sourceLocation, String sourceIps, SpecifierContext specifierContext) {
     /* construct specifiers */
@@ -124,9 +124,8 @@ public final class TracerouteAnswererHelper {
     builder.setDstIp(dstIp);
   }
 
-  /** Generate a set of flows to do traceroute */
-  @VisibleForTesting
-  Set<Flow> getFlows() {
+  /** Generate a set of flows from the configured header constraints and source locations. */
+  public Set<Flow> getFlows() {
     Set<Location> srcLocations =
         SpecifierFactories.getLocationSpecifierOrDefault(
                 _sourceLocationStr, AllInterfacesLocationSpecifier.INSTANCE)
@@ -145,7 +144,6 @@ public final class TracerouteAnswererHelper {
     for (Location srcLocation : srcLocations) {
       try {
         Flow.Builder flowBuilder = _flowBuilder;
-        // Extract and source IP from header constraints,
         setSrcIp(_packetHeaderConstraints, srcLocation, flowBuilder);
         setStartLocation(_specifierContext.getConfigs(), flowBuilder, srcLocation);
         setBuilder.add(flowBuilder.build());

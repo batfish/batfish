@@ -30,7 +30,7 @@ The 2023 SIGCOMM paper discusses how forwarding analysis ("Lesson 4: Faithfully 
 User inputs (startLocation, headers)
         |
         v
-[TracerouteAnswererHelper] -- resolves specifiers, builds Flow objects
+[HeaderConstraintsToFlows] -- resolves specifiers, builds Flow objects
         |
         v
 [TracerouteEngineImpl] -- chunks flows, creates context
@@ -47,7 +47,7 @@ User inputs (startLocation, headers)
 
 ### Flow Construction
 
-The `TracerouteAnswererHelper` converts user inputs into concrete `Flow` objects:
+`HeaderConstraintsToFlows` converts user inputs into concrete `Flow` objects:
 
 1. **Resolve location specifier** to source locations (interfaces or nodes)
 2. **Resolve IP constraints** to concrete source and destination IPs
@@ -103,7 +103,7 @@ Every trace ends with a disposition indicating what happened to the packet. See 
 |-------|----------|---------------|
 | `TracerouteQuestion` | `projects/question/.../traceroute/` | Question parameters: start location, headers, ignoreFilters, maxTraces |
 | `TracerouteAnswerer` | `projects/question/.../traceroute/` | Orchestrates question execution, formats output table |
-| `TracerouteAnswererHelper` | `projects/question/.../traceroute/` | Resolves specifiers, constructs Flow objects from constraints |
+| `HeaderConstraintsToFlows` | `projects/question/.../question/` | Resolves specifiers, constructs Flow objects from constraints |
 | `TracerouteEngine` | `projects/common/.../plugin/` | Interface for computing traces from flows |
 | `TracerouteEngineImpl` | `projects/batfish/.../dataplane/` | Main implementation: chunks flows, builds context, coordinates tracing |
 | `TracerouteEngineImplContext` | `projects/batfish/.../dataplane/traceroute/` | Per-trace-batch context: FIBs, forwarding analysis, sessions, topology |
