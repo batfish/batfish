@@ -1,0 +1,23 @@
+#
+set system host-name irb-vxlan-autostate
+
+set interfaces lo0 unit 0 family inet address 10.0.0.1/32
+
+# Trunk port is a member of VLAN100 only
+set interfaces xe-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members VLAN100
+
+# IRB interfaces for two VLANs
+set interfaces irb unit 100 family inet address 172.16.100.1/24
+set interfaces irb unit 200 family inet address 172.16.200.1/24
+
+# Both VLANs have VNI IDs (VXLAN overlay)
+set vlans VLAN100 vlan-id 100
+set vlans VLAN100 l3-interface irb.100
+set vlans VLAN100 vxlan vni 10100
+
+set vlans VLAN200 vlan-id 200
+set vlans VLAN200 l3-interface irb.200
+set vlans VLAN200 vxlan vni 10200
+
+set switch-options vtep-source-interface lo0.0

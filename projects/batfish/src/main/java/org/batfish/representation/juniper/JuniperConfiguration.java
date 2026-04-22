@@ -2168,12 +2168,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (vxlan.getVniId() == null) {
         continue;
       }
-      // Exclude VNI VLANs from normalVlanRange so their IRB interfaces are not deactivated by
-      // autostate (these VLANs carry VXLAN overlay traffic and may have no physical members).
-      if (vxlan.getVlanId() != null) {
-        _c.setNormalVlanRange(
-            _c.getNormalVlanRange().difference(IntegerSpace.of(vxlan.getVlanId())));
-      }
       if (vxlan.getVlanId() == null) {
         continue;
       }
