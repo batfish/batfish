@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -37,12 +39,16 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.HmmRoute;
+import org.batfish.datamodel.InactiveReason;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginMechanism;
@@ -51,6 +57,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
@@ -61,6 +68,11 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Vni;
+import org.batfish.datamodel.vxlan.VniLayer;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Test;
@@ -543,6 +555,159 @@ public final class IncrementalBdpEngineTest {
     assertThat(
         dp.getRibsForTesting().get("r2").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
         empty());
+  }
+
+  // ---- updateVxlanAutostate tests ----
+
+  /** Helper to build a VxlanTopology with the given L2 VNI edges. */
+  private static VxlanTopology buildL2VxlanTopology(VxlanNode... nodesInPairs) {
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    for (int i = 0; i < nodesInPairs.length; i += 2) {
+      graph.putEdge(nodesInPairs[i], nodesInPairs[i + 1]);
+    }
+    return new VxlanTopology(graph);
+  }
+
+  /**
+   * Helper to build a Configuration with a VLAN interface (optionally autostate-deactivated) and an
+   * L2 VNI for the VLAN.
+   */
+  private static Configuration buildVxlanConfig(
+      String hostname, int vlanNumber, int vni, boolean autostateDeactivated) {
+    Configuration c =
+        Configuration.builder().setHostname(hostname).setConfigurationFormat(CISCO_IOS).build();
+    Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    Interface vlanIface =
+        Interface.builder()
+            .setOwner(c)
+            .setVrf(vrf)
+            .setName("Vlan" + vlanNumber)
+            .setType(InterfaceType.VLAN)
+            .setVlan(vlanNumber)
+            .setAutoState(true)
+            .setAddress(ConcreteInterfaceAddress.parse("172.16." + vlanNumber + ".1/24"))
+            .build();
+    if (autostateDeactivated) {
+      vlanIface.deactivate(InactiveReason.AUTOSTATE_FAILURE);
+    }
+    vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(vni)
+            .setVlan(vlanNumber)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setUdpPort(Vni.DEFAULT_UDP_PORT)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .build());
+    return c;
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_gainedEdgeReactivatesIrb() {
+    Configuration c = buildVxlanConfig("leaf1", 100, 10100, true);
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(
+            VxlanTopology.EMPTY, buildL2VxlanTopology(leaf1, leaf2), ImmutableMap.of("leaf1", c));
+    assertTrue(changed);
+    assertTrue(c.getAllInterfaces().get("Vlan100").getActive());
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_gainedEdgeAlreadyActive() {
+    Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(
+            VxlanTopology.EMPTY, buildL2VxlanTopology(leaf1, leaf2), ImmutableMap.of("leaf1", c));
+    assertFalse(changed);
+    assertTrue(c.getAllInterfaces().get("Vlan100").getActive());
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_gainedEdgeAdminDown() {
+    Configuration c =
+        Configuration.builder().setHostname("leaf1").setConfigurationFormat(CISCO_IOS).build();
+    Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    Interface.builder()
+        .setOwner(c)
+        .setVrf(vrf)
+        .setName("Vlan100")
+        .setType(InterfaceType.VLAN)
+        .setVlan(100)
+        .setAutoState(true)
+        .setAdminUp(false)
+        .setAddress(ConcreteInterfaceAddress.parse("172.16.100.1/24"))
+        .build();
+    vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(10100)
+            .setVlan(100)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setUdpPort(Vni.DEFAULT_UDP_PORT)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .build());
+
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(
+            VxlanTopology.EMPTY, buildL2VxlanTopology(leaf1, leaf2), ImmutableMap.of("leaf1", c));
+    assertFalse(changed);
+    assertFalse(c.getAllInterfaces().get("Vlan100").getActive());
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_lostEdgeDeactivatesIrb() {
+    Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(
+            buildL2VxlanTopology(leaf1, leaf2), VxlanTopology.EMPTY, ImmutableMap.of("leaf1", c));
+    assertTrue(changed);
+    assertFalse(c.getAllInterfaces().get("Vlan100").getActive());
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_lostEdgeWithPhysicalMembers() {
+    Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
+    // Add a trunk port member for VLAN 100
+    Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
+    Interface.builder()
+        .setOwner(c)
+        .setVrf(vrf)
+        .setName("Ethernet1")
+        .setType(InterfaceType.PHYSICAL)
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .setAllowedVlans(IntegerSpace.of(100))
+        .build();
+
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(
+            buildL2VxlanTopology(leaf1, leaf2), VxlanTopology.EMPTY, ImmutableMap.of("leaf1", c));
+    assertFalse(changed);
+    assertTrue(c.getAllInterfaces().get("Vlan100").getActive());
+  }
+
+  @Test
+  public void testUpdateVxlanAutostate_noChanges() {
+    Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
+    VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
+    VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
+    VxlanTopology topo = buildL2VxlanTopology(leaf1, leaf2);
+
+    boolean changed =
+        IncrementalBdpEngine.updateVxlanAutostate(topo, topo, ImmutableMap.of("leaf1", c));
+    assertFalse(changed);
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {

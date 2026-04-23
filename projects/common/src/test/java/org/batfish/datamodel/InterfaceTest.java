@@ -202,6 +202,33 @@ public class InterfaceTest {
   }
 
   @Test
+  public void testReactivateForAutostate() {
+    Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
+    i.deactivate(InactiveReason.AUTOSTATE_FAILURE);
+    assertThat(i, allOf(isActive(false), hasInactiveReason(InactiveReason.AUTOSTATE_FAILURE)));
+
+    i.reactivateForAutostate();
+    assertThat(i, allOf(isActive(), hasInactiveReason(nullValue())));
+  }
+
+  @Test
+  public void testReactivateForAutostateAlreadyActive() {
+    Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
+    _thrown.expect(IllegalStateException.class);
+    _thrown.expectMessage("Cannot reactivate an active interface");
+    i.reactivateForAutostate();
+  }
+
+  @Test
+  public void testReactivateForAutostateWrongReason() {
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
+    i.deactivate(PARENT_DOWN);
+    _thrown.expect(IllegalStateException.class);
+    _thrown.expectMessage("AUTOSTATE_FAILURE");
+    i.reactivateForAutostate();
+  }
+
+  @Test
   public void testAdminDown() {
     // admin down
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
