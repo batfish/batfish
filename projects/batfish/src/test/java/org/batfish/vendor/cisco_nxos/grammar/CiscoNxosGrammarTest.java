@@ -5525,11 +5525,11 @@ public final class CiscoNxosGrammarTest {
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             hasVni(20001)));
-    // Make sure Vlan3 and Vlan7 are up after post-processing. While they have no associated
-    // switchports and are in autostate, they should stay up since they are associated with
-    // vn-segments.
-    assertThat(c, hasInterface("Vlan3", isActive()));
-    assertThat(c, hasInterface("Vlan7", isActive()));
+    // Vlan3 and Vlan7 have VNI associations but no switchport members, so autostate deactivates
+    // them during single-config parsing. They would be reactivated during topology iteration when
+    // VXLAN tunnels come up (see IncrementalBdpEngine.updateVxlanAutostate).
+    assertThat(c, hasInterface("Vlan3", isActive(false)));
+    assertThat(c, hasInterface("Vlan7", isActive(false)));
 
     assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(30001))));
     assertThat(

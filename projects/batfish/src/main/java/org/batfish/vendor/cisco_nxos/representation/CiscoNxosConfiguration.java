@@ -3912,13 +3912,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertVlans() {
-    _vlans.forEach(
-        (vlanId, vlan) -> {
-          if (vlan.getVni() != null) {
-            // Ensure IRB stays up even if it has no associated switchports
-            _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlanId)));
-          }
-        });
+    // VNI-backed VLANs are subject to normal autostate. Their IRBs are reactivated dynamically
+    // during topology iteration when VXLAN tunnels come up (see IncrementalBdpEngine).
   }
 
   private void makeLeakConfigs() {

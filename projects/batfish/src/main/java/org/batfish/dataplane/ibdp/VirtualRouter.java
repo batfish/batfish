@@ -775,6 +775,33 @@ public final class VirtualRouter {
         .forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
   }
 
+  /**
+   * Recompute connected and local routes, applying deltas to the main RIB. Called when VXLAN-aware
+   * autostate changes interface status during topology iteration.
+   */
+  void updateConnectedAndLocalRoutesForAutostateChange() {
+    // Withdraw old connected routes from main RIB
+    for (AnnotatedRoute<ConnectedRoute> route : _connectedRib.getRoutes()) {
+      _mainRibRouteDeltaBuilder.from(
+          _mainRib.removeRouteGetDelta(
+              new AnnotatedRoute<>(route.getRoute(), route.getSourceVrf())));
+    }
+    // Withdraw old local routes from main RIB
+    for (AnnotatedRoute<LocalRoute> route : _localRib.getRoutes()) {
+      _mainRibRouteDeltaBuilder.from(
+          _mainRib.removeRouteGetDelta(
+              new AnnotatedRoute<>(route.getRoute(), route.getSourceVrf())));
+    }
+    // Rebuild connected and local RIBs from current active interfaces
+    _connectedRib = new ConnectedRib();
+    initConnectedRib();
+    _localRib = new LocalRib();
+    initLocalRib();
+    // Add new routes to main RIB
+    _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _connectedRib));
+    _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _localRib));
+  }
+
   /** Generate connected routes for a given active interface. */
   private static @Nonnull Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
     assert iface.getActive();
