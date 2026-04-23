@@ -37,6 +37,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BdpOscillationException;
@@ -56,10 +57,16 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.InactiveReason;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -75,6 +82,8 @@ import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
@@ -257,6 +266,129 @@ final class IncrementalBdpEngine {
         .build();
   }
 
+  /**
+   * Update autostate for VLAN interfaces based on VXLAN L2 VNI edge changes. When a VLAN gains an
+   * active L2 VNI edge (remote VTEP reachable), its IRB should be active even without physical
+   * switchport members. When L2 VNI edges disappear and the VLAN has no physical members, the IRB
+   * should be deactivated.
+   *
+   * @return the set of hostnames whose interface status changed (empty if no changes)
+   */
+  @VisibleForTesting
+  static Set<String> updateVxlanAutostate(
+      VxlanTopology oldVxlanTopology,
+      VxlanTopology newVxlanTopology,
+      Map<String, Configuration> configurations) {
+    // Collect (hostname, VNI) pairs that have L2 VNI edges in each topology
+    Set<VxlanNode> oldNodes = nodesWithLayer2VniEdges(oldVxlanTopology);
+    Set<VxlanNode> newNodes = nodesWithLayer2VniEdges(newVxlanTopology);
+
+    Set<VxlanNode> gained = Sets.difference(newNodes, oldNodes);
+    Set<VxlanNode> lost = Sets.difference(oldNodes, newNodes);
+    if (gained.isEmpty() && lost.isEmpty()) {
+      return ImmutableSet.of();
+    }
+
+    NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+    ImmutableSet.Builder<String> affectedHostnames = ImmutableSet.builder();
+
+    // Activate IRBs for VLANs that gained VXLAN connectivity
+    for (VxlanNode node : gained) {
+      Interface iface = findVlanInterfaceForVni(node, nc);
+      if (iface != null
+          && !iface.getActive()
+          && iface.getInactiveReason() == InactiveReason.AUTOSTATE_FAILURE) {
+        iface.reactivateForAutostate();
+        affectedHostnames.add(node.getHostname());
+      }
+    }
+
+    // Deactivate IRBs for VLANs that lost VXLAN connectivity (if no physical members)
+    for (VxlanNode node : lost) {
+      Interface iface = findVlanInterfaceForVni(node, nc);
+      if (iface != null && iface.getActive() && iface.getAutoState()) {
+        Configuration c = configurations.get(node.getHostname());
+        int vlanNumber = iface.getVlan();
+        if (c.getNormalVlanRange().contains(vlanNumber)
+            && countPhysicalVlanMembers(c, vlanNumber) == 0) {
+          iface.deactivate(InactiveReason.AUTOSTATE_FAILURE);
+          affectedHostnames.add(node.getHostname());
+        }
+      }
+    }
+
+    return affectedHostnames.build();
+  }
+
+  /** Collect the set of VxlanNodes that participate in at least one L2 VNI edge. */
+  private static Set<VxlanNode> nodesWithLayer2VniEdges(VxlanTopology topology) {
+    ImmutableSet.Builder<VxlanNode> nodes = ImmutableSet.builder();
+    topology
+        .getLayer2VniEdges()
+        .forEach(
+            edge -> {
+              nodes.add(edge.nodeU());
+              nodes.add(edge.nodeV());
+            });
+    return nodes.build();
+  }
+
+  /**
+   * Find the VLAN interface associated with a given VxlanNode's L2 VNI. Returns null if the VNI or
+   * VLAN interface cannot be resolved.
+   */
+  private static @Nullable Interface findVlanInterfaceForVni(
+      VxlanNode node, NetworkConfigurations nc) {
+    Optional<Layer2Vni> vniOpt =
+        nc.getVniSettings(node.getHostname(), node.getVni(), Vrf::getLayer2Vnis);
+    if (vniOpt.isEmpty()) {
+      return null;
+    }
+    int vlanNumber = vniOpt.get().getVlan();
+    Optional<Configuration> cOpt = nc.get(node.getHostname());
+    if (cOpt.isEmpty()) {
+      return null;
+    }
+    // Find the VLAN interface for this VLAN number
+    return cOpt.get().getAllInterfaces().values().stream()
+        .filter(
+            iface ->
+                iface.getInterfaceType() == InterfaceType.VLAN
+                    && Integer.valueOf(vlanNumber).equals(iface.getVlan()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  /**
+   * Count active physical switchport members for a given VLAN on a device. This mirrors the
+   * member-counting logic in {@link org.batfish.main.Batfish#disableUnusableVlanInterfaces}.
+   */
+  private static int countPhysicalVlanMembers(Configuration c, int vlanNumber) {
+    int count = 0;
+    for (Interface iface : c.getActiveInterfaces().values()) {
+      if (iface.getInterfaceType() == InterfaceType.VLAN) {
+        continue;
+      }
+      if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+        IntegerSpace allowed = iface.getAllowedVlans();
+        if (allowed.isEmpty() || allowed.contains(vlanNumber)) {
+          count++;
+          continue;
+        }
+        Integer nativeVlan = iface.getNativeVlan();
+        if (nativeVlan != null && nativeVlan == vlanNumber) {
+          count++;
+        }
+      } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+        Integer accessVlan = iface.getAccessVlan();
+        if (accessVlan != null && accessVlan == vlanNumber) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
   /** Helper method used to sample the change in tracks across iterations. */
   @VisibleForTesting
   static <T> @Nonnull Optional<String> compareTracks(
@@ -402,6 +534,19 @@ final class IncrementalBdpEngine {
               networkConfigurations,
               currentIpOwners.getIpVrfOwners());
 
+      // Activate/deactivate IRBs based on L2 VNI edge changes (VXLAN-aware autostate)
+      Set<String> autostateAffectedHostnames =
+          updateVxlanAutostate(
+              currentTopologyContext.getVxlanTopology(),
+              nextTopologyContext.getVxlanTopology(),
+              configurations);
+      if (!autostateAffectedHostnames.isEmpty()) {
+        // Recompute connected routes only for VRFs on affected nodes
+        vrs.parallelStream()
+            .filter(vr -> autostateAffectedHostnames.contains(vr.getHostname()))
+            .forEach(VirtualRouter::updateConnectedAndLocalRoutesForAutostateChange);
+      }
+
       Table<String, TrackReachability, Boolean> nextTrackReachabilityResults =
           nextTrackReachabilityResults(
               currentDataplane,
@@ -434,6 +579,10 @@ final class IncrementalBdpEngine {
       if (!currentIpOwners.equals(nextIpOwners)) {
         converged = false;
         LOGGER.info("IP ownership changed in this iteration");
+      }
+      if (!autostateAffectedHostnames.isEmpty()) {
+        converged = false;
+        LOGGER.info("VXLAN autostate changed interface status in this iteration");
       }
       currentTopologyContext = nextTopologyContext;
       currentTrackReachabilityResults = nextTrackReachabilityResults;
