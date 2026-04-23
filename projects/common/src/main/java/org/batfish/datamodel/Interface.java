@@ -1968,6 +1968,25 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  /**
+   * Reactivate this interface after it was deactivated by autostate (no active VLAN members).
+   *
+   * <p>Callers must verify preconditions before calling: the interface must be inactive with {@link
+   * InactiveReason#AUTOSTATE_FAILURE}.
+   *
+   * @throws IllegalStateException if this interface is active or was deactivated for a different
+   *     reason.
+   */
+  public void reactivateForAutostate() {
+    checkState(!_active, "Cannot reactivate an active interface");
+    checkState(
+        _inactiveReason == InactiveReason.AUTOSTATE_FAILURE,
+        "Can only reactivate AUTOSTATE_FAILURE interfaces, not %s",
+        _inactiveReason);
+    _active = true;
+    _inactiveReason = null;
+  }
+
   /** Helper to get an IpAccessList object given its name. */
   private @Nullable IpAccessList getIpAccessList(@Nullable String name) {
     return _owner == null || name == null
