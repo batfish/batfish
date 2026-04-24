@@ -29,7 +29,7 @@
     "com.ibm.icu:icu4j": 304238961,
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
-    "commons-io:commons-io": -1192334111,
+    "commons-io:commons-io": 1305681826,
     "dk.brics:automaton": -1128129151,
     "io.github.java-diff-utils:java-diff-utils": 1296992014,
     "jakarta.activation:jakarta.activation-api": 1724199980,
@@ -139,8 +139,8 @@
     "commons-codec:commons-codec:jar:sources": 1505191552,
     "commons-collections:commons-collections": 7509648,
     "commons-collections:commons-collections:jar:sources": -1549695345,
-    "commons-io:commons-io": 1539755249,
-    "commons-io:commons-io:jar:sources": 614234247,
+    "commons-io:commons-io": 1072619124,
+    "commons-io:commons-io:jar:sources": -238571367,
     "commons-logging:commons-logging": -102005530,
     "commons-logging:commons-logging:jar:sources": 147282524,
     "dk.brics:automaton": 2008063075,
@@ -570,10 +570,10 @@
     },
     "commons-io:commons-io": {
       "shasums": {
-        "jar": "7d643a2afea8b058b762aa6fb90e5b256f6c729739f8b3784c3370ddc609e88d",
-        "sources": "5fd4d4493dd1eee5c6f314159dbac7fda1988a4ab037feacbeb2ecb3033c43b4"
+        "jar": "2b9a7b1f726fb86216dbd2c8321eabe0221dbd5b1be81c18e1cb53811b104758",
+        "sources": "de5acfae5fa2735276df7facf46cdb0347374208ea47db246b554fae59277fb5"
       },
-      "version": "2.21.0"
+      "version": "2.22.0"
     },
     "commons-logging:commons-logging": {
       "shasums": {
