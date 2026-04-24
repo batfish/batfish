@@ -19,7 +19,7 @@
     "com.google.auto.value:auto-value": -661233359,
     "com.google.auto.value:auto-value-annotations": 1386235898,
     "com.google.code.findbugs:jsr305": 495355163,
-    "com.google.code.gson:gson": 245099245,
+    "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 1790047777,
     "com.google.guava:guava": -692456693,
     "com.google.guava:guava-bom": -1581455824,
@@ -112,8 +112,8 @@
     "com.google.auto:auto-common:jar:sources": -542679945,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.findbugs:jsr305:jar:sources": -935881202,
-    "com.google.code.gson:gson": 2040798970,
-    "com.google.code.gson:gson:jar:sources": 907899269,
+    "com.google.code.gson:gson": -1496337728,
+    "com.google.code.gson:gson:jar:sources": 935710753,
     "com.google.errorprone:error_prone_annotations": 430949977,
     "com.google.errorprone:error_prone_annotations:jar:sources": -1210049757,
     "com.google.guava:failureaccess": 1715931538,
@@ -173,13 +173,13 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": -560158028,
     "net.sf.saxon:Saxon-HE:jar:sources": 134942547,
-    "net.sourceforge.pmd:pmd-cli": -721992671,
+    "net.sourceforge.pmd:pmd-cli": 1734620767,
     "net.sourceforge.pmd:pmd-cli:jar:sources": 2055003475,
-    "net.sourceforge.pmd:pmd-core": 235559852,
+    "net.sourceforge.pmd:pmd-core": -1857303101,
     "net.sourceforge.pmd:pmd-core:jar:sources": 1593553754,
     "net.sourceforge.pmd:pmd-designer": -1899777465,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 1263048820,
-    "net.sourceforge.pmd:pmd-java": 1899804761,
+    "net.sourceforge.pmd:pmd-java": -1935064741,
     "net.sourceforge.pmd:pmd-java:jar:sources": 1486246317,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
@@ -473,10 +473,10 @@
     },
     "com.google.code.gson:gson": {
       "shasums": {
-        "jar": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0",
-        "sources": "058974b69cb7b0a04712278e11870e84ee8cd8fb5f551bd8401e72ba6638bfef"
+        "jar": "2cbd119bf1961c28788310963dc80ba65f58cdeec1dd139c8bdb1240faa2c36f",
+        "sources": "a4873f0ef88981cab520c3d7449cd89a68e605f15e9fe46e1aa2c77d5f87eb6f"
       },
-      "version": "2.13.2"
+      "version": "2.14.0"
     },
     "com.google.errorprone:error_prone_annotations": {
       "shasums": {
