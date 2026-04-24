@@ -9,6 +9,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.vendor.arista.representation.AristaConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.arista.representation.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
@@ -79,6 +81,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType.Type;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -92,6 +95,7 @@ import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.vendor.arista.representation.eos.AristaBgpAggregateNetwork;
@@ -219,6 +223,33 @@ final class AristaConversions {
     return true;
   }
 
+  private static @Nonnull String generatedAggregateAttributePolicyName(
+      @Nullable String attributeMap) {
+    return String.format("~BGP_AGGREGATE_ATTRIBUTE_MAP:%s~", attributeMap);
+  }
+
+  /**
+   * Generates a routing policy for Arista BGP aggregate routes that sets vendor-specific defaults
+   * (origin type incomplete) and optionally wraps a user-provided attribute-map.
+   */
+  static @Nonnull String generateAggregateAttributePolicy(
+      @Nullable String attributeMap, Configuration c) {
+    String name = generatedAggregateAttributePolicyName(attributeMap);
+    if (c.getRoutingPolicies().containsKey(name)) {
+      return name;
+    }
+    RoutingPolicy.Builder p = RoutingPolicy.builder().setName(name).setOwner(c);
+    // Arista EOS uses origin type incomplete for aggregate routes.
+    p.addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)));
+    if (attributeMap != null) {
+      p.addStatement(new If(new CallExpr(attributeMap), ImmutableList.of()));
+    }
+    p.addStatement(ExitAccept.toStaticStatement());
+    RoutingPolicy rp = p.build();
+    c.getRoutingPolicies().put(rp.getName(), rp);
+    return name;
+  }
+
   static @Nonnull BgpAggregate toBgpAggregate(
       Prefix prefix, AristaBgpAggregateNetwork vsAggregate, Configuration c, Warnings w) {
     // TODO: handle advertise-only
@@ -230,12 +261,13 @@ final class AristaConversions {
       w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
+    String attributePolicy = generateAggregateAttributePolicy(attributeMap, c);
     return BgpAggregate.of(
         prefix,
         generateSuppressionPolicy(vsAggregate.getSummaryOnlyEffective(), c),
         // TODO: put match-map here
         null,
-        attributeMap);
+        attributePolicy);
   }
 
   static @Nonnull Map<Ip, BgpActivePeerConfig> getNeighbors(
