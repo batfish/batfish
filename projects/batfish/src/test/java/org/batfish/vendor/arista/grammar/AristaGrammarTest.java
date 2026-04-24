@@ -1391,18 +1391,22 @@ public class AristaGrammarTest {
                 Prefix.parse("1.2.33.0/24"),
                 SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                 null,
-                "ATTR_MAP")));
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:ATTR_MAP~")));
     assertThat(
         defaultVrfAggs,
         hasEntry(
             Prefix.parse("1.2.44.0/24"),
             BgpAggregate.of(
-                Prefix.parse("1.2.44.0/24"), SUMMARY_ONLY_SUPPRESSION_POLICY_NAME, null, null)));
+                Prefix.parse("1.2.44.0/24"),
+                SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                null,
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
     assertThat(
         defaultVrfAggs,
         hasEntry(
             Prefix.parse("1.2.55.0/24"),
-            BgpAggregate.of(Prefix.parse("1.2.55.0/24"), null, null, null)));
+            BgpAggregate.of(
+                Prefix.parse("1.2.55.0/24"), null, null, "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
 
     // vrf FOO
     Map<Prefix, BgpAggregate> vrfFooAggs = c.getVrfs().get("FOO").getBgpProcess().getAggregates();
@@ -1412,7 +1416,8 @@ public class AristaGrammarTest {
         hasEntry(
             Prefix.parse("5.6.7.0/24"),
             // TODO Support as-set
-            BgpAggregate.of(Prefix.parse("5.6.7.0/24"), null, null, null)));
+            BgpAggregate.of(
+                Prefix.parse("5.6.7.0/24"), null, null, "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
   }
 
   @Test
@@ -1530,7 +1535,7 @@ public class AristaGrammarTest {
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
             .setOriginMechanism(OriginMechanism.GENERATED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
@@ -1605,7 +1610,7 @@ public class AristaGrammarTest {
               .setNextHop(NextHopDiscard.instance())
               .setOriginatorIp(Ip.parse("2.2.2.2"))
               .setOriginMechanism(OriginMechanism.GENERATED)
-              .setOriginType(OriginType.IGP)
+              .setOriginType(OriginType.INCOMPLETE)
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
