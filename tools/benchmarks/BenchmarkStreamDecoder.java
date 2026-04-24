@@ -99,13 +99,15 @@ public class BenchmarkStreamDecoder {
     }
   }
 
-  private static BOMInputStream bomInputStream(InputStream inputStream) {
-    return new BOMInputStream(
-        inputStream,
-        ByteOrderMark.UTF_8,
-        ByteOrderMark.UTF_16BE,
-        ByteOrderMark.UTF_16LE,
-        ByteOrderMark.UTF_32BE,
-        ByteOrderMark.UTF_32LE);
+  private static BOMInputStream bomInputStream(InputStream inputStream) throws IOException {
+    return BOMInputStream.builder()
+        .setInputStream(inputStream)
+        .setByteOrderMarks(
+            ByteOrderMark.UTF_8,
+            ByteOrderMark.UTF_16BE,
+            ByteOrderMark.UTF_16LE,
+            ByteOrderMark.UTF_32BE,
+            ByteOrderMark.UTF_32LE)
+        .get();
   }
 }
