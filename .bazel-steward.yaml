@@ -24,6 +24,8 @@ pull-requests:
     group-id: mockito
   - dependencies: "org.parboiled:*"
     group-id: parboiled
+  - dependencies: "tools.profiler:*"
+    group-id: async-profiler
   - limits:
       max-open: 5
 
