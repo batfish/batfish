@@ -71,6 +71,9 @@ router bgp 65001
    neighbor interface Et200-2000 peer-group LEAVES remote-as 65999
    neighbor interface Et99 peer-group LEAVES remote-as 65999
    no neighbor interface Et99
+   ! Removal by range: Et50-51 added, then both removed in one statement.
+   neighbor interface Et50-51 peer-group LEAVES remote-as 65999
+   no neighbor interface Et50-51
    neighbor interface Et100 peer-group LEAVES remote-as 65999
    address-family evpn
       neighbor LEAVES activate

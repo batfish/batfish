@@ -517,7 +517,8 @@ public class AristaGrammarTest {
   public void testBgpNeighborInterfaceExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_interface");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
-    // Et99 was removed by `no neighbor interface`; Et2-3,Et5 expands the comma-separated range
+    // Et99 was removed by `no neighbor interface`; Et50-51 added then removed by range;
+    // Et2-3,Et5 expands the comma-separated range.
     assertThat(
         vrf.getInterfaceNeighbors().keySet(),
         containsInAnyOrder(
@@ -547,11 +548,24 @@ public class AristaGrammarTest {
 
     AristaBgpVrf tenant = config.getAristaBgp().getVrfs().get("TENANT");
     assertThat(tenant.getInterfaceNeighbors().keySet(), containsInAnyOrder("Ethernet10"));
+
+    // Parse-time warnings for bad prefix (`Xy1`) and too-large range (`Et200-2000`).
+    assertThat(
+        config.getWarnings().getParseWarnings(),
+        hasItems(
+            hasComment("Unrecognized interface name: Invalid interface name prefix: 'Xy'"),
+            hasComment(
+                "Interface range Ethernet[200,2000] exceeds 1000 entries; skipping this"
+                    + " range.")));
   }
 
   @Test
-  public void testBgpNeighborInterfaceConversion() {
-    Configuration c = parseConfig("arista_bgp_neighbor_interface");
+  public void testBgpNeighborInterfaceConversion() throws IOException {
+    String hostname = "arista_bgp_neighbor_interface";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Configuration c = parseConfig(hostname);
     Map<String, BgpUnnumberedPeerConfig> neighbors =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors();
     // Dropped: Et6 (inherits shutdown from SHUT), Et99 (removed by `no`),
@@ -588,6 +602,20 @@ public class AristaGrammarTest {
     Map<String, BgpUnnumberedPeerConfig> tenantNeighbors =
         c.getVrfs().get("TENANT").getBgpProcess().getInterfaceNeighbors();
     assertThat(tenantNeighbors.keySet(), containsInAnyOrder("Ethernet10"));
+
+    // Conversion-time warnings: non-existent interface (Et100) and no acceptable remote-as (Et8).
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "BGP interface neighbor Ethernet100 refers to a non-existent interface")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "No acceptable remote-as for BGP neighbor interface Ethernet8 in vrf default")));
   }
 
   @Test
@@ -597,7 +625,7 @@ public class AristaGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    assertThat(ccae, hasNumReferrers(filename, BGP_PEER_GROUP, "LEAVES", 10));
+    assertThat(ccae, hasNumReferrers(filename, BGP_PEER_GROUP, "LEAVES", 11));
     assertThat(ccae, hasNumReferrers(filename, BGP_PEER_GROUP, "SHUT", 1));
   }
 
