@@ -97,6 +97,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1091,6 +1092,19 @@ public final class AristaConfiguration extends VendorConfiguration {
             _peerFilters,
             _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
+
+    Map<String, BgpUnnumberedPeerConfig> interfaceNeighbors =
+        AristaConversions.getInterfaceNeighbors(
+            c,
+            v,
+            newBgpProcess,
+            bgpGlobal,
+            bgpVrf,
+            _eosVxlan,
+            vxlanSourceInterfaceIp,
+            _peerFilters,
+            _w);
+    newBgpProcess.setInterfaceNeighbors(ImmutableSortedMap.copyOf(interfaceNeighbors));
 
     return newBgpProcess;
   }
