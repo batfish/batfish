@@ -174,7 +174,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -890,20 +889,18 @@ public final class AristaConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
-    // Arista sets local routes' local preference to 0
-    // actually, it is unset but treated like 0 in terms of BgpRib comparisons.
-    redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
-    // Note: unlike IOS/IOS-XE, Arista EOS does NOT apply weight 32768
-    // to locally-originated BGP paths; the effective weight is 0.
-    // Verified empirically on EOS 4.36 in both multi-agent and ribd
-    // modes: a received path with `neighbor ... weight 10000` wins
-    // over the local path, and the device emits "Not best: Path
-    // weight" as the reason. A route-map on a `network` statement or
-    // aggregate attribute-map can still set weight as usual. See
-    // lab-validation#152 for the repro lab. (Aggregate routes are
-    // still generated with weight 32768 via the shared
-    // BgpProtocolHelper.toBgpv4Route code path; fixing that requires a
-    // vendor-specific override and is left for a follow-up.)
+    // Note: Arista EOS locally-originated BGP paths use standard BGP
+    // defaults for both weight (0) and local-preference (100).
+    // Unlike IOS/IOS-XE, Arista does NOT set weight 32768 on local
+    // paths. And unlike what the previous code assumed, local-pref
+    // is not 0 — it is the standard default 100 (verified empirically
+    // on EOS 4.36 in both multi-agent and ribd by forcing best-path
+    // tiebreaks at each step; see lab-validation#152). We therefore
+    // set neither attribute here; the BGP pipeline's defaults suffice.
+    // A route-map on a `network` statement or `redistribute` can
+    // still override as usual. (Aggregate routes are still generated
+    // with weight 32768 via the shared BgpProtocolHelper.toBgpv4Route
+    // code path; fixing that is left for a follow-up.)
 
     // Arista sets origin type differently depending on source protocol. Redistributed connected
     // routes have origin type IGP and redistributed static routes have origin type incomplete.

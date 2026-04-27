@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
@@ -899,7 +900,7 @@ public class AristaGrammarTest {
             .setNetwork(connectedPrefix)
             .setNonRouting(true)
             .setAdmin(bgpAdmin)
-            .setLocalPreference(0)
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
             .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.IGP)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
@@ -1629,7 +1630,7 @@ public class AristaGrammarTest {
             .setNetwork(staticPrefix1)
             .setNonRouting(true)
             .setAdmin(localAdmin)
-            .setLocalPreference(0)
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
