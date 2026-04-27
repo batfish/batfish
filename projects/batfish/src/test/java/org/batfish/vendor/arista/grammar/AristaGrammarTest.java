@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
@@ -75,7 +76,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.vendor.arista.representation.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.vendor.arista.representation.AristaConfiguration.aclLineStructureName;
 import static org.batfish.vendor.arista.representation.AristaStructureType.BGP_LISTEN_RANGE;
 import static org.batfish.vendor.arista.representation.AristaStructureType.BGP_NEIGHBOR;
@@ -907,7 +907,6 @@ public class AristaGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.CONNECTED)
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route bgpRouteVrf1 =
         bgpRouteDefaultVrf.toBuilder()
@@ -1638,13 +1637,16 @@ public class AristaGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .setTag(0) // TODO: should redistribute static preserve tag?
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
     Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
     Bgpv4Route localRoute4 = localRoute1.toBuilder().setNetwork(staticPrefix4).build();
     Bgpv4Route localRoute5 = localRoute1.toBuilder().setNetwork(staticPrefix5).build();
+    // TODO: aggregate routes still use the shared BgpRoute.DEFAULT_LOCAL_WEIGHT
+    // (32768) via BgpProtocolHelper.toBgpv4Route. Arista actually uses 0, but
+    // fixing that requires a vendor-specific code path in BgpProtocolHelper;
+    // out of scope for the Arista-local-weight fix. See lab-validation#152.
     Bgpv4Route aggRoute1 =
         Bgpv4Route.builder()
             .setNetwork(aggPrefix1)
@@ -1657,7 +1659,7 @@ public class AristaGrammarTest {
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .setWeight(DEFAULT_LOCAL_WEIGHT)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
@@ -1732,7 +1734,7 @@ public class AristaGrammarTest {
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
-              .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+              .setWeight(DEFAULT_LOCAL_WEIGHT) // TODO(lab-validation#152): Arista should be 0
               .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(

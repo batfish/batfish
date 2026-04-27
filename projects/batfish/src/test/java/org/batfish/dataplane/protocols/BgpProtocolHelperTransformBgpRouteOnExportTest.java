@@ -55,7 +55,6 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.vendor.arista.representation.AristaConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -693,8 +692,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFrom(ReceivedFromSelf.instance())
-            .setVni(exportRouteVni)
-            .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT);
+            .setVni(exportRouteVni);
     {
       // Learned EVPN route: Exported route should keep original NH.
       // Whether address family has an NVE IP should not matter.

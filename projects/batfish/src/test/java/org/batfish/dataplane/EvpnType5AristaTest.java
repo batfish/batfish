@@ -39,7 +39,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.vendor.arista.representation.AristaConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -107,7 +106,6 @@ public class EvpnType5AristaTest {
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFrom(ReceivedFromSelf.instance())
             .setOriginatorIp(originatorIp)
-            .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     assertThat(vrf2BgpRoute, equalTo(expectedVrf2BgpRoute));
 
@@ -132,7 +130,6 @@ public class EvpnType5AristaTest {
             .setReceivedFrom(ReceivedFromSelf.instance())
             .setOriginatorIp(originatorIp)
             .setVni(15004)
-            .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));
   }
