@@ -2890,6 +2890,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   /**
+   * Upper bound on the size of a single {@code neighbor interface} range entry. A typical Arista
+   * chassis has far fewer physical interfaces than this; any range that exceeds it is almost
+   * certainly a typo or misuse of the syntax.
+   */
+  private static final int BGP_IFACE_RANGE_MAX = 1000;
+
+  /**
    * Expands a {@code neighbor interface} range to canonical interface names. The prefix (e.g.
    * {@code Et}) appears once; each comma-separated entry is a bare numeric path with optional
    * trailing dash-range ({@code Et1/1,2/1,3-4} = Ethernet1/1, Ethernet2/1, Ethernet3, Ethernet4).
@@ -2903,16 +2910,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       warn(ctx, "Unrecognized interface name: " + e.getMessage());
       return ImmutableList.of();
     }
-    final int maxRange = 1000;
     List<String> ifaceNames = new ArrayList<>();
     for (Eos_bgp_iface_tailContext entry : range.entries) {
       String base = canonicalPrefix + entry.path.getText();
       SubRange sr = toSubRange(entry.sr);
-      if (sr.getEnd() - sr.getStart() > maxRange) {
+      if (sr.getEnd() - sr.getStart() > BGP_IFACE_RANGE_MAX) {
         warn(
             ctx,
             String.format(
-                "Interface range %s%s exceeds %d entries; ignoring.", base, sr, maxRange));
+                "Interface range %s%s exceeds %d entries; skipping this range.",
+                base, sr, BGP_IFACE_RANGE_MAX));
         continue;
       }
       sr.asStream().forEach(i -> ifaceNames.add(base + i));
