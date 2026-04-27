@@ -41,6 +41,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -548,9 +549,12 @@ final class AristaConversions {
                     new MatchBgpSessionType(Type.IBGP),
                     // The route being exported is not learned.
                     new Not(new MatchSourceProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP)),
-                    // The route being exported has the unset default local preference of 0 (since
-                    // we can't yet model unset explicitly)
-                    new MatchLocalPreference(IntComparator.EQ, new LiteralLong(0)))),
+                    // The route being exported has the default local preference (since
+                    // we can't yet model unset explicitly). Locally-originated routes
+                    // inherit the BGP default (100) from the pipeline when no explicit
+                    // SetLocalPreference is applied in the redistribution policy.
+                    new MatchLocalPreference(
+                        IntComparator.EQ, new LiteralLong(BgpRoute.DEFAULT_LOCAL_PREFERENCE)))),
             ImmutableList.of(
                 new SetLocalPreference(
                     new LiteralLong(
