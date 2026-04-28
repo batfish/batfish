@@ -5,10 +5,12 @@ import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_RECEIVED_FROM;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.allowAsPathOut;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.isReflectable;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.receivedFromPeer;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,6 +36,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
@@ -660,5 +663,32 @@ public class BgpProtocolHelperTest {
     assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, EXCEPT_FIRST));
     assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, EXCEPT_FIRST));
     assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L), peerAs, EXCEPT_FIRST));
+  }
+
+  @Test
+  public void testAllowAsPathOutExceptReceivedFrom() {
+    long peerAs = 1L;
+    // AS-path filtering is disabled for EXCEPT_RECEIVED_FROM — always allows
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, EXCEPT_RECEIVED_FROM));
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, EXCEPT_RECEIVED_FROM));
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L), peerAs, EXCEPT_RECEIVED_FROM));
+  }
+
+  @Test
+  public void testReceivedFromPeer() {
+    Ip peerIp = Ip.parse("10.0.0.1");
+    Ip otherIp = Ip.parse("10.0.0.2");
+    Ip linkLocalIp = Ip.parse("169.254.0.1");
+
+    // ReceivedFromIp: matches if IP equals peer IP
+    assertTrue(receivedFromPeer(ReceivedFromIp.of(peerIp), peerIp));
+    assertFalse(receivedFromPeer(ReceivedFromIp.of(otherIp), peerIp));
+
+    // ReceivedFromInterface: matches if link-local IP equals peer IP
+    assertTrue(receivedFromPeer(ReceivedFromInterface.of("eth0", linkLocalIp), linkLocalIp));
+    assertFalse(receivedFromPeer(ReceivedFromInterface.of("eth0", linkLocalIp), peerIp));
+
+    // ReceivedFromSelf: never matches
+    assertFalse(receivedFromPeer(ReceivedFromSelf.instance(), peerIp));
   }
 }
