@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import com.google.common.testing.EqualsTester;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,7 +37,13 @@ public class LargeCommunityTest {
   @Test
   public void testJsonSerialization() {
     LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
-    assertThat(SerializationUtils.clone(lc), equalTo(lc));
+    assertThat(BatfishObjectMapper.clone(lc, LargeCommunity.class), equalTo(lc));
+  }
+
+  @Test
+  public void testJsonSerializationAsCommunity() {
+    LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
+    assertThat(BatfishObjectMapper.clone(lc, Community.class), equalTo(lc));
   }
 
   @Test

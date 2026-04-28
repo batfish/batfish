@@ -3,6 +3,7 @@ package org.batfish.datamodel.bgp.community;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Optional;
@@ -119,6 +120,7 @@ public final class LargeCommunity extends Community {
     return Objects.hash(_globalAdministrator, _localData1, _localData2);
   }
 
+  @JsonValue
   @Override
   public @Nonnull String toString() {
     if (_str == null) {
