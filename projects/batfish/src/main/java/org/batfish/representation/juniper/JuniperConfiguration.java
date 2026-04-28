@@ -12,8 +12,8 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_RECEIVED_FROM;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
@@ -709,7 +709,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (advertisePeerAs == null) {
         advertisePeerAs = false;
       }
-      ipv4AfSettingsBuilder.setAllowRemoteAsOut(advertisePeerAs ? ALWAYS : EXCEPT_FIRST);
+      ipv4AfSettingsBuilder.setAllowRemoteAsOut(
+          advertisePeerAs ? EXCEPT_RECEIVED_FROM : EXCEPT_FIRST);
       Boolean advertiseExternal = ig.getAdvertiseExternal();
       if (advertiseExternal == null) {
         advertiseExternal = false;

@@ -106,11 +106,16 @@ public final class BgpProtocolHelper {
     }
 
     // For eBGP, do not export if AS path contains the peer's AS in a disallowed position
+    AllowRemoteAsOutMode allowRemoteAsOut = af.getAddressFamilyCapabilities().getAllowRemoteAsOut();
     if (localSessionProperties.isEbgp()
         && !allowAsPathOut(
-            route.getAsPath(),
-            localSessionProperties.getRemoteAs(),
-            af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
+            route.getAsPath(), localSessionProperties.getRemoteAs(), allowRemoteAsOut)) {
+      return null;
+    }
+    // For EXCEPT_RECEIVED_FROM, also block re-advertisement to the originating peer
+    if (localSessionProperties.isEbgp()
+        && allowRemoteAsOut == AllowRemoteAsOutMode.EXCEPT_RECEIVED_FROM
+        && receivedFromPeer(route.getReceivedFrom(), localSessionProperties.getRemoteIp())) {
       return null;
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
@@ -233,10 +238,25 @@ public final class BgpProtocolHelper {
       return true;
     }
     return switch (mode) {
-      case ALWAYS -> true;
+      case ALWAYS, EXCEPT_RECEIVED_FROM -> true;
       case NEVER -> asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
       case EXCEPT_FIRST -> !asSets.get(0).containsAs(peerAs);
     };
+  }
+
+  /**
+   * Return {@code true} if the route's {@link ReceivedFrom} indicates it was received from the
+   * given {@code peerIp}. For unnumbered sessions, compares link-local IPs which could
+   * theoretically false-positive across peers with identical link-local addresses.
+   */
+  @VisibleForTesting
+  static boolean receivedFromPeer(ReceivedFrom receivedFrom, Ip peerIp) {
+    if (receivedFrom instanceof ReceivedFromIp receivedFromIp) {
+      return receivedFromIp.getIp().equals(peerIp);
+    } else if (receivedFrom instanceof ReceivedFromInterface receivedFromInterface) {
+      return receivedFromInterface.getLinkLocalIp().equals(peerIp);
+    }
+    return false;
   }
 
   /**
