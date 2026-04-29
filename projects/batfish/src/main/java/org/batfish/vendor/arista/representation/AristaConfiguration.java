@@ -1372,10 +1372,12 @@ public final class AristaConfiguration extends VendorConfiguration {
 
       case ACCESS:
         // switch settings
+        warnSwitchportWithAddress(iface);
         newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
         break;
 
       case TRUNK:
+        warnSwitchportWithAddress(iface);
         newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
         /*
          * Compute allowed VLANs as configured allowed vlans (or default) minus vlans in other trunk groups.
@@ -1393,7 +1395,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         break;
 
       default:
-        // not handled
+        warnSwitchportWithAddress(iface);
         break;
     }
 
@@ -1431,6 +1433,14 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
 
     return newIface;
+  }
+
+  private void warnSwitchportWithAddress(Interface iface) {
+    if (iface.getAddress() != null
+        || !iface.getSecondaryAddresses().isEmpty()
+        || iface.getUnnumberedSourceInterface() != null) {
+      _w.redFlag(String.format("Ignoring IP address for switchport interface %s", iface.getName()));
+    }
   }
 
   private void generateDestinationStaticNats(
