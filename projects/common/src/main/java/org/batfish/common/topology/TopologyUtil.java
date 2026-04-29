@@ -473,13 +473,12 @@ public final class TopologyUtil {
                         // Keep if virtual wire
                         || isVirtualWireSameDevice(edge));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    // For link-layer edges, we see if there is a unique point-to-point interface in the same
-    // broadcast domain that is unnumbered. If so, we create an edge, otherwise there is no
-    // neighbor.
-    Stream<Edge> linkLocalEdges =
+    // For point-to-point interfaces that don't participate in subnet-based L3 synthesis (link-local
+    // or unnumbered addresses), create edges via physical adjacency instead.
+    Stream<Edge> pointToPointEdges =
         configurations.values().stream()
             .flatMap(Configuration::activeInterfaces)
-            .filter(i -> !i.getAllLinkLocalAddresses().isEmpty())
+            .filter(TopologyUtil::hasPointToPointAddress)
             .map(i -> NodeInterfacePair.of(i.getOwner().getHostname(), i.getName()))
             .flatMap(
                 nip -> {
@@ -490,10 +489,7 @@ public final class TopologyUtil {
                           .filter(
                               other ->
                                   nc.getInterface(other.getHostname(), other.getInterface())
-                                      .map(
-                                          i ->
-                                              i.getActive()
-                                                  && !i.getAllLinkLocalAddresses().isEmpty())
+                                      .map(i -> i.getActive() && hasPointToPointAddress(i))
                                       .orElse(false))
                           .orElse(null);
                   if (paired == null) {
@@ -503,7 +499,7 @@ public final class TopologyUtil {
                 });
 
     return new Topology(
-        Streams.concat(filteredEdgeStream, linkLocalEdges)
+        Streams.concat(filteredEdgeStream, pointToPointEdges)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
@@ -647,6 +643,17 @@ public final class TopologyUtil {
           }
         });
     return prefixInterfaces;
+  }
+
+  /**
+   * Returns true if the interface has link-local or unnumbered addresses (i.e., addresses that
+   * don't participate in subnet-based L3 topology synthesis and need point-to-point physical
+   * adjacency edges instead).
+   */
+  @VisibleForTesting
+  static boolean hasPointToPointAddress(Interface iface) {
+    return !iface.getAllLinkLocalAddresses().isEmpty()
+        || !iface.getAllUnnumberedAddresses().isEmpty();
   }
 
   /**

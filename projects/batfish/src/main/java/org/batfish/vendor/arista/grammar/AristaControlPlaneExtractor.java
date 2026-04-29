@@ -646,6 +646,7 @@ import org.batfish.vendor.arista.grammar.AristaParser.Ifigmphp_access_listContex
 import org.batfish.vendor.arista.grammar.AristaParser.Ifigmpsg_aclContext;
 import org.batfish.vendor.arista.grammar.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.vendor.arista.grammar.AristaParser.Ifip_address_address_eosContext;
+import org.batfish.vendor.arista.grammar.AristaParser.Ifip_address_unnumbered_eosContext;
 import org.batfish.vendor.arista.grammar.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.vendor.arista.grammar.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.vendor.arista.grammar.AristaParser.Ifipm_boundary_eosContext;
@@ -5158,6 +5159,24 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           } else {
             i.setAddress(addr);
           }
+        });
+  }
+
+  @Override
+  public void exitIfip_address_unnumbered_eos(Ifip_address_unnumbered_eosContext ctx) {
+    String sourceInterface = toInterfaceName(ctx.iname);
+    _configuration.referenceStructure(
+        INTERFACE,
+        sourceInterface,
+        AristaStructureUsage.INTERFACE_IP_ADDRESS_UNNUMBERED,
+        ctx.iname.getStart().getLine());
+    _currentInterfaces.forEach(
+        i -> {
+          if (i.getSwitchport()) {
+            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
+            return;
+          }
+          i.setUnnumberedSourceInterface(sourceInterface);
         });
   }
 

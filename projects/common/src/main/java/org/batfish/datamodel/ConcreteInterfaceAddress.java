@@ -75,11 +75,8 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
   }
 
   @Override
-  public int compareTo(InterfaceAddress rhs) {
-    if (rhs instanceof ConcreteInterfaceAddress) {
-      return COMPARATOR.compare(this, (ConcreteInterfaceAddress) rhs);
-    }
-    return 1;
+  protected int compareSameClass(InterfaceAddress o) {
+    return COMPARATOR.compare(this, (ConcreteInterfaceAddress) o);
   }
 
   @Override

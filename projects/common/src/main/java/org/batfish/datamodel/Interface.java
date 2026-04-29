@@ -718,6 +718,9 @@ public final class Interface extends ComparableStructure<String> {
   /** Cache of all link-local addresses */
   private @Nullable transient Set<LinkLocalAddress> _allLinkLocalAddresses;
 
+  /** Cache of all unnumbered addresses */
+  private @Nullable transient Set<UnnumberedAddress> _allUnnumberedAddresses;
+
   private boolean _autoState;
   private @Nullable Double _bandwidth;
   private @Nullable Boolean _blacklisted;
@@ -984,6 +987,18 @@ public final class Interface extends ComparableStructure<String> {
               .collect(ImmutableSet.toImmutableSet());
     }
     return _allLinkLocalAddresses;
+  }
+
+  @JsonIgnore
+  public Set<UnnumberedAddress> getAllUnnumberedAddresses() {
+    if (_allUnnumberedAddresses == null) {
+      _allUnnumberedAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof UnnumberedAddress)
+              .map(a -> (UnnumberedAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allUnnumberedAddresses;
   }
 
   public @Nonnull Set<InterfaceAddress> getAllAddresses() {
@@ -1425,6 +1440,7 @@ public final class Interface extends ComparableStructure<String> {
     // Clear cached values
     _allLinkLocalAddresses = null;
     _allConcreteAddresses = null;
+    _allUnnumberedAddresses = null;
   }
 
   @JsonProperty(PROP_AUTOSTATE)
