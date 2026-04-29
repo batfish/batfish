@@ -2776,6 +2776,63 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testInterfaceIpUnnumberedExtraction() {
+    AristaConfiguration config = parseVendorConfig("arista_interface_ip_unnumbered");
+    org.batfish.vendor.arista.representation.Interface eth1 =
+        config.getInterfaces().get("Ethernet1");
+    assertThat(eth1.getUnnumberedSourceInterface(), equalTo("Loopback0"));
+    assertThat(eth1.getAddress(), nullValue());
+    org.batfish.vendor.arista.representation.Interface eth2 =
+        config.getInterfaces().get("Ethernet2");
+    assertThat(eth2.getUnnumberedSourceInterface(), equalTo("Loopback0"));
+    org.batfish.vendor.arista.representation.Interface lo0 =
+        config.getInterfaces().get("Loopback0");
+    assertThat(lo0.getUnnumberedSourceInterface(), nullValue());
+  }
+
+  @Test
+  public void testInterfaceIpUnnumberedConversion() {
+    Configuration c = parseConfig("arista_interface_ip_unnumbered", true);
+    ConcreteInterfaceAddress loopbackAddr = ConcreteInterfaceAddress.parse("10.0.0.1/32");
+    // Loopback0 has its own address and generates connected routes normally
+    assertThat(c, hasInterface("Loopback0", hasAllAddresses(contains(loopbackAddr))));
+    assertThat(
+        c,
+        hasInterface(
+            "Loopback0",
+            hasAddressMetadata(
+                equalTo(
+                    ImmutableSortedMap.of(
+                        loopbackAddr,
+                        ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())))));
+    // Unnumbered interfaces borrow address but suppress connected route generation
+    assertThat(c, hasInterface("Ethernet1", hasAllAddresses(contains(loopbackAddr))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1",
+            hasAddressMetadata(
+                equalTo(
+                    ImmutableSortedMap.of(
+                        loopbackAddr,
+                        ConnectedRouteMetadata.builder()
+                            .setGenerateConnectedRoute(false)
+                            .setGenerateLocalRoute(false)
+                            .build())))));
+  }
+
+  @Test
+  public void testInterfaceIpUnnumberedReferences() throws IOException {
+    String hostname = "arista_interface_ip_unnumbered";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    // Loopback0 is referenced by two unnumbered interfaces + its own self-ref
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback0", 3));
+  }
+
+  @Test
   public void testMacAccessList() throws IOException {
     String hostname = "arista_mac_access_list";
     String filename = "configs/" + hostname;

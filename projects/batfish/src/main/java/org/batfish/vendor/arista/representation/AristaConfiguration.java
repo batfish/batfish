@@ -1338,6 +1338,14 @@ public final class AristaConfiguration extends VendorConfiguration {
           }
           newIface.setAutoState(iface.getAutoState());
         }
+        // Resolve unnumbered interface address from source interface.
+        boolean isUnnumbered = iface.getUnnumberedSourceInterface() != null;
+        if (isUnnumbered && iface.getAddress() == null) {
+          Interface sourceIface = _interfaces.get(iface.getUnnumberedSourceInterface());
+          if (sourceIface != null && sourceIface.getAddress() != null) {
+            iface.setAddress(sourceIface.getAddress());
+          }
+        }
         // All prefixes is the combination of the interface prefix + any secondary prefixes.
         ImmutableSet.Builder<ConcreteInterfaceAddress> allPrefixesBuilder = ImmutableSet.builder();
         if (iface.getAddress() != null) {
@@ -1347,15 +1355,15 @@ public final class AristaConfiguration extends VendorConfiguration {
         allPrefixesBuilder.addAll(iface.getSecondaryAddresses());
         ImmutableSet<ConcreteInterfaceAddress> allPrefixes = allPrefixesBuilder.build();
         newIface.setAllAddresses(allPrefixes);
+        ConnectedRouteMetadata.Builder metadataBuilder =
+            ConnectedRouteMetadata.builder().setGenerateLocalRoute(false);
+        if (isUnnumbered) {
+          metadataBuilder.setGenerateConnectedRoute(false);
+        }
+        ConnectedRouteMetadata metadata = metadataBuilder.build();
         newIface.setAddressMetadata(
             allPrefixes.stream()
-                .collect(
-                    toImmutableSortedMap(
-                        Function.identity(),
-                        addr ->
-                            ConnectedRouteMetadata.builder()
-                                .setGenerateLocalRoute(false)
-                                .build())));
+                .collect(toImmutableSortedMap(Function.identity(), addr -> metadata)));
 
         break;
 
