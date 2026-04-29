@@ -502,8 +502,34 @@ public final class TopologyUtil {
                   return Stream.of(new Edge(nip, paired), new Edge(paired, nip));
                 });
 
+    // For point-to-point interfaces with only /32 addresses (e.g., unnumbered interfaces that
+    // borrow a loopback /32), synthesizeL3Topology excludes them from prefix bucketing. Create
+    // edges via physical adjacency instead.
+    Stream<Edge> unnumberedP2pEdges =
+        configurations.values().stream()
+            .flatMap(Configuration::activeInterfaces)
+            .filter(TopologyUtil::hasOnlyMaxPrefixLengthAddresses)
+            .map(i -> NodeInterfacePair.of(i.getOwner().getHostname(), i.getName()))
+            .flatMap(
+                nip -> {
+                  @Nullable
+                  NodeInterfacePair paired =
+                      adjacencies
+                          .pairedPointToPointL3Interface(nip)
+                          .filter(
+                              other ->
+                                  nc.getInterface(other.getHostname(), other.getInterface())
+                                      .map(i -> i.getActive() && hasOnlyMaxPrefixLengthAddresses(i))
+                                      .orElse(false))
+                          .orElse(null);
+                  if (paired == null) {
+                    return Stream.of();
+                  }
+                  return Stream.of(new Edge(nip, paired), new Edge(paired, nip));
+                });
+
     return new Topology(
-        Streams.concat(filteredEdgeStream, linkLocalEdges)
+        Streams.concat(filteredEdgeStream, linkLocalEdges, unnumberedP2pEdges)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
@@ -623,6 +649,21 @@ public final class TopologyUtil {
                 iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
         .forEach(candidateInterfaces::add);
     return candidateInterfaces;
+  }
+
+  /**
+   * Returns true if the interface is not a loopback, has at least one concrete address, and all of
+   * its concrete addresses are /32 (max prefix length). Such interfaces are excluded from
+   * subnet-based L3 topology synthesis and need point-to-point physical adjacency edges instead.
+   */
+  private static boolean hasOnlyMaxPrefixLengthAddresses(Interface iface) {
+    if (iface.isLoopback()) {
+      return false;
+    }
+    Collection<ConcreteInterfaceAddress> addresses = iface.getAllConcreteAddresses();
+    return !addresses.isEmpty()
+        && addresses.stream()
+            .allMatch(a -> a.getPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH);
   }
 
   /** Bucket Interfaces that are not loopbacks and not /32s by their prefix */
