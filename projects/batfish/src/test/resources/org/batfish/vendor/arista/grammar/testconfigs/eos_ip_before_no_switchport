@@ -1,0 +1,30 @@
+!
+hostname eos_ip_before_no_switchport
+boot system flash fake.swi
+!
+! Test that IP address is accepted regardless of order relative to `no switchport`.
+!
+! Ethernet0/0: ip address BEFORE no switchport (the bug scenario)
+interface Ethernet0/0
+ ip address 10.0.0.0/31
+ no switchport
+ no shutdown
+!
+! Ethernet0/1: no switchport BEFORE ip address (the normal order)
+interface Ethernet0/1
+ no switchport
+ ip address 10.0.1.0/31
+ no shutdown
+!
+! Ethernet0/2: ip address with secondary BEFORE no switchport
+interface Ethernet0/2
+ ip address 10.0.2.0/31
+ ip address 10.0.2.2/31 secondary
+ no switchport
+ no shutdown
+!
+! Ethernet0/3: switchport stays (ip address should NOT be assigned)
+interface Ethernet0/3
+ ip address 10.0.3.0/31
+ no shutdown
+!

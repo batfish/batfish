@@ -1123,6 +1123,56 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpAddressBeforeNoSwitchport() throws IOException {
+    // IP address should be accepted on interfaces that ultimately have `no switchport`,
+    // regardless of whether ip address appears before or after `no switchport` in the config.
+    String hostname = "eos_ip_before_no_switchport";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Configuration c = parseConfig(hostname);
+
+    // Ethernet0/0: ip address BEFORE no switchport — should still get the address
+    assertThat(c, hasInterface("Ethernet0/0", isSwitchport(false)));
+    assertThat(c, hasInterface("Ethernet0/0", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/0",
+            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.0.0.0/31")))));
+
+    // Ethernet0/1: no switchport BEFORE ip address — the normal order, should work
+    assertThat(c, hasInterface("Ethernet0/1", isSwitchport(false)));
+    assertThat(c, hasInterface("Ethernet0/1", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/1",
+            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.0.1.0/31")))));
+
+    // Ethernet0/2: ip address + secondary BEFORE no switchport — both should be assigned
+    assertThat(c, hasInterface("Ethernet0/2", isSwitchport(false)));
+    assertThat(c, hasInterface("Ethernet0/2", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/2",
+            hasAllAddresses(
+                containsInAnyOrder(
+                    ConcreteInterfaceAddress.parse("10.0.2.0/31"),
+                    ConcreteInterfaceAddress.parse("10.0.2.2/31")))));
+
+    // Ethernet0/3: switchport stays (no `no switchport`) — ip address should NOT be assigned
+    assertThat(c, hasInterface("Ethernet0/3", isSwitchport(true)));
+    assertThat(c, hasInterface("Ethernet0/3", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("Ethernet0/3", hasAllAddresses(empty())));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname, containsString("Ignoring IP address for switchport interface Ethernet0/3")));
+  }
+
+  @Test
   public void testAristaDynamicSourceNat() throws IOException {
     Configuration c = parseConfig("arista-dynamic-source-nat");
     Interface iface = c.getAllInterfaces().get("Ethernet1");

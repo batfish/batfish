@@ -18,6 +18,7 @@ ip access-list INVALID_ACL
   permit ip any host 11.11.11.11 fragments
 !
 interface Ethernet1
+  no switchport
   ! lots of valid configurations
   ip address 1.0.0.0/31
   ip nat source static 1.1.1.1 2.2.2.2
@@ -26,6 +27,7 @@ interface Ethernet1
   ip nat source static 7.7.7.7 77 access-list ACL 8.8.8.8 88 protocol udp
 !
 interface Ethernet2
+  no switchport
   ip address 2.0.0.0/31
   ip nat source static 1.1.1.1 access-list INVALID_ACL 2.2.2.2
   ip nat source static 3.3.3.3 access-list UNDEFINED_ACL 4.4.4.4

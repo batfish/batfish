@@ -5150,10 +5150,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
     _currentInterfaces.forEach(
         i -> {
-          if (i.getSwitchport()) {
-            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
-            return;
-          }
           if (ctx.SECONDARY() != null) {
             i.getSecondaryAddresses().add(addr);
           } else {
@@ -5170,14 +5166,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         sourceInterface,
         AristaStructureUsage.INTERFACE_IP_ADDRESS_UNNUMBERED,
         ctx.iname.getStart().getLine());
-    _currentInterfaces.forEach(
-        i -> {
-          if (i.getSwitchport()) {
-            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
-            return;
-          }
-          i.setUnnumberedSourceInterface(sourceInterface);
-        });
+    _currentInterfaces.forEach(i -> i.setUnnumberedSourceInterface(sourceInterface));
   }
 
   @Override
@@ -5186,10 +5175,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
     _currentInterfaces.forEach(
         i -> {
-          if (i.getSwitchport()) {
-            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
-            return;
-          }
           if (ctx.SECONDARY() != null) {
             i.getSecondaryAddresses().add(addr);
           } else {
