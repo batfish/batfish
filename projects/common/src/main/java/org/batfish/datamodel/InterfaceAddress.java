@@ -11,6 +11,9 @@ public abstract class InterfaceAddress implements Serializable, Comparable<Inter
   @JsonCreator
   private static InterfaceAddress jsonCreator(@Nullable String text) {
     checkArgument(text != null);
+    if (text.startsWith(UnnumberedAddress.STR_PREFIX + ":")) {
+      return UnnumberedAddress.parse(text);
+    }
     try {
       // Try the common case first
       return ConcreteInterfaceAddress.parse(text);

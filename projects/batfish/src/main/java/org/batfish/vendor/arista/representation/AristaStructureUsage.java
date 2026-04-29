@@ -51,6 +51,7 @@ public enum AristaStructureUsage implements StructureUsage {
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
+  INTERFACE_IP_ADDRESS_UNNUMBERED("interface ip address unnumbered"),
   INTERFACE_IP_ACCESS_GROUP_IN("interface ip access-group in"),
   INTERFACE_IP_ACCESS_GROUP_OUT("interface ip access-group out"),
   INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),

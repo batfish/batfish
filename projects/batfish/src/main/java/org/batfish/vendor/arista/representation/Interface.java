@@ -141,6 +141,8 @@ public class Interface implements Serializable {
 
   private ConcreteInterfaceAddress _address;
 
+  private @Nullable String _unnumberedSourceInterface;
+
   private boolean _proxyArp;
 
   private String _routingPolicy;
@@ -368,6 +370,10 @@ public class Interface implements Serializable {
     return _address;
   }
 
+  public @Nullable String getUnnumberedSourceInterface() {
+    return _unnumberedSourceInterface;
+  }
+
   public boolean getProxyArp() {
     return _proxyArp;
   }
@@ -557,6 +563,10 @@ public class Interface implements Serializable {
 
   public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
+  }
+
+  public void setUnnumberedSourceInterface(@Nullable String unnumberedSourceInterface) {
+    _unnumberedSourceInterface = unnumberedSourceInterface;
   }
 
   public void setProxyArp(boolean proxyArp) {

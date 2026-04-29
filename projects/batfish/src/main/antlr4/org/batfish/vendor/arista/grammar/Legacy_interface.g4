@@ -315,7 +315,7 @@ ifip_address_eos
   (
     ifip_address_address_eos
     | ifip_address_dhcp_eos
-    // | ifip_address_unnumbered_eos
+    | ifip_address_unnumbered_eos
     | ifip_address_virtual_eos
   )
 ;
@@ -328,6 +328,11 @@ ifip_address_address_eos
 ifip_address_dhcp_eos
 :
    DHCP NEWLINE
+;
+
+ifip_address_unnumbered_eos
+:
+  UNNUMBERED iname = interface_name NEWLINE
 ;
 
 ifip_address_virtual_eos
