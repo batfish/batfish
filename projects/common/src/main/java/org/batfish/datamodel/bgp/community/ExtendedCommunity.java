@@ -50,8 +50,8 @@ public final class ExtendedCommunity extends Community {
   private final long _value;
 
   // Cached string representations
-  private @Nullable transient String _str;
-  private @Nullable transient String _regexStr;
+  private transient @Nullable String _str;
+  private transient @Nullable String _regexStr;
 
   private ExtendedCommunity(int type, int subType, long value) {
     checkArgument(VALID_TYPES.contains(type), "Not a valid BGP extended community type: %s", type);

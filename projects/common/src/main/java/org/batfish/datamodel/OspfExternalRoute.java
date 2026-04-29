@@ -158,7 +158,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @JsonIgnore
-  public @Nonnull abstract OspfMetricType getOspfMetricType();
+  public abstract @Nonnull OspfMetricType getOspfMetricType();
 
   @Override
   public @Nonnull RoutingProtocol getProtocol() {

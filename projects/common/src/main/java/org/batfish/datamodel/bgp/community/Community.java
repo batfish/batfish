@@ -25,7 +25,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class Community implements Serializable, Comparable<Community> {
 
-  private @Nullable transient BigInteger _bigInt;
+  private transient @Nullable BigInteger _bigInt;
 
   @JsonCreator
   private static Community create(@Nullable JsonNode node) {
@@ -88,14 +88,14 @@ public abstract class Community implements Serializable, Comparable<Community> {
    * Return the community value as a {@link java.math.BigInteger} so it can be compared and ordered
    * deterministically regardless of community type
    */
-  protected @Nonnull abstract BigInteger asBigIntImpl();
+  protected abstract @Nonnull BigInteger asBigIntImpl();
 
   /** Return a string representation of the community suitable for regex matching. */
-  public @Nonnull abstract String matchString();
+  public abstract @Nonnull String matchString();
 
   /** Return a string representation of the community in canonical form. */
   @Override
-  public @Nonnull abstract String toString();
+  public abstract @Nonnull String toString();
 
   @Override
   public abstract boolean equals(@Nullable Object obj);

@@ -18,7 +18,7 @@ public class NodeRole implements Comparable<NodeRole> {
   private static final String PROP_NAME = "name";
   private static final String PROP_REGEX = "regex";
 
-  private final @Nonnull transient Pattern _compiledPattern;
+  private final transient @Nonnull Pattern _compiledPattern;
 
   private final @Nonnull String _name;
 

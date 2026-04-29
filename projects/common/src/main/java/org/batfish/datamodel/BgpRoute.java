@@ -284,10 +284,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     to create a completely new builder which should be of the same type as environment's output
     route builder but we are not sure of the concrete type and only know that it extends the
     abstract BgpRoute's builder. */
-    public @Nonnull abstract B newBuilder();
+    public abstract @Nonnull B newBuilder();
 
     @Override
-    public @Nonnull abstract R build();
+    public abstract @Nonnull R build();
 
     @Override
     public @Nonnull AsPath getAsPath() {
@@ -339,7 +339,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Override
-    protected @Nonnull abstract B getThis();
+    protected abstract @Nonnull B getThis();
 
     @Override
     public int getWeight() {

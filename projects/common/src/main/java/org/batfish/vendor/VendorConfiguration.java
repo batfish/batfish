@@ -36,7 +36,7 @@ public abstract class VendorConfiguration implements Serializable {
   private transient @Nullable ConversionContext _conversionContext;
   protected String _filename;
   protected @Nonnull List<String> _secondaryFilenames;
-  protected @Nonnull transient SnapshotRuntimeData _runtimeData;
+  protected transient @Nonnull SnapshotRuntimeData _runtimeData;
   private VendorConfiguration _overlayConfiguration;
   protected final @Nonnull StructureManager _structureManager;
 

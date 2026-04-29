@@ -91,7 +91,7 @@ public class RoutingPolicy implements Serializable {
 
   private final @Nonnull String _name;
   private @Nullable Configuration _owner;
-  private @Nullable transient Set<String> _sources;
+  private transient @Nullable Set<String> _sources;
   private @Nonnull List<Statement> _statements;
 
   @JsonCreator

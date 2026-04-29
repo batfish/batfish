@@ -273,14 +273,14 @@ public class WorkQueueMgr {
     return work;
   }
 
-  private @Nullable synchronized QueuedWork getWork(UUID workId, QueueType qType) {
+  private synchronized @Nullable QueuedWork getWork(UUID workId, QueueType qType) {
     return switch (qType) {
       case COMPLETED -> _queueCompletedWork.getWork(workId);
       case INCOMPLETE -> _queueIncompleteWork.getWork(workId);
     };
   }
 
-  public @Nullable synchronized QueuedWork getWorkForAssignment() {
+  public synchronized @Nullable QueuedWork getWorkForAssignment() {
 
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.UNASSIGNED) {
@@ -292,7 +292,7 @@ public class WorkQueueMgr {
     return null;
   }
 
-  public @Nonnull synchronized List<QueuedWork> getWorkForChecking() {
+  public synchronized @Nonnull List<QueuedWork> getWorkForChecking() {
     List<QueuedWork> workToCheck = new ArrayList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.ASSIGNED) {
