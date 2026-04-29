@@ -141,6 +141,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.UnnumberedAddress;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -148,6 +149,7 @@ import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfAddresses;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -1338,6 +1340,19 @@ public final class AristaConfiguration extends VendorConfiguration {
           }
           newIface.setAutoState(iface.getAutoState());
         }
+        // Resolve unnumbered interface address from source interface.
+        if (iface.getUnnumberedSourceInterface() != null && iface.getAddress() == null) {
+          Interface sourceIface = _interfaces.get(iface.getUnnumberedSourceInterface());
+          if (sourceIface != null && sourceIface.getAddress() != null) {
+            UnnumberedAddress unnumbered =
+                UnnumberedAddress.of(
+                    iface.getUnnumberedSourceInterface(), sourceIface.getAddress().getIp());
+            newIface.setAddress(unnumbered);
+            newIface.setAllAddresses(ImmutableSet.of(unnumbered));
+            // No address metadata needed — unnumbered addresses don't generate connected routes.
+            break;
+          }
+        }
         // All prefixes is the combination of the interface prefix + any secondary prefixes.
         ImmutableSet.Builder<ConcreteInterfaceAddress> allPrefixesBuilder = ImmutableSet.builder();
         if (iface.getAddress() != null) {
@@ -1347,15 +1362,11 @@ public final class AristaConfiguration extends VendorConfiguration {
         allPrefixesBuilder.addAll(iface.getSecondaryAddresses());
         ImmutableSet<ConcreteInterfaceAddress> allPrefixes = allPrefixesBuilder.build();
         newIface.setAllAddresses(allPrefixes);
+        ConnectedRouteMetadata metadata =
+            ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
         newIface.setAddressMetadata(
             allPrefixes.stream()
-                .collect(
-                    toImmutableSortedMap(
-                        Function.identity(),
-                        addr ->
-                            ConnectedRouteMetadata.builder()
-                                .setGenerateLocalRoute(false)
-                                .build())));
+                .collect(toImmutableSortedMap(Function.identity(), addr -> metadata)));
 
         break;
 
@@ -1783,6 +1794,13 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface, networkType));
     ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
+    // For unnumbered interfaces, set explicit OSPF addresses so neighbor init can find the IP.
+    if (vsIface.getUnnumberedSourceInterface() != null) {
+      Interface sourceIface = _interfaces.get(vsIface.getUnnumberedSourceInterface());
+      if (sourceIface != null && sourceIface.getAddress() != null) {
+        ospfSettings.setOspfAddresses(OspfAddresses.of(ImmutableList.of(sourceIface.getAddress())));
+      }
+    }
 
     iface.setOspfSettings(ospfSettings.build());
   }

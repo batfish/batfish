@@ -4695,6 +4695,11 @@ UPDATE_SOURCE
    'update-source' -> pushMode ( M_Interface )
 ;
 
+UNNUMBERED
+:
+   'unnumbered' -> pushMode ( M_Interface )
+;
+
 UPLINK_FAILURE_DETECTION: 'uplink-failure-detection';
 
 UPLINKFAST: 'uplinkfast';
