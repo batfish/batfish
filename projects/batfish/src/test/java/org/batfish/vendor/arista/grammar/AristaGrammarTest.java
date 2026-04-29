@@ -242,6 +242,7 @@ import org.batfish.vendor.arista.representation.IpAsPathAccessListLine;
 import org.batfish.vendor.arista.representation.MlagConfiguration;
 import org.batfish.vendor.arista.representation.NatProtocol;
 import org.batfish.vendor.arista.representation.OspfNetwork;
+import org.batfish.vendor.arista.representation.OspfProcess;
 import org.batfish.vendor.arista.representation.PrefixList;
 import org.batfish.vendor.arista.representation.PrefixListLine;
 import org.batfish.vendor.arista.representation.RouteMap;
@@ -641,6 +642,33 @@ public class AristaGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth()));
+  }
+
+  @Test
+  public void testAristaOspfDefaultInterfaceCost() throws IOException {
+    // When auto-cost reference-bandwidth is not configured, EOS uses a flat default cost of 10
+    // for all interfaces, including loopbacks.
+    Configuration c = parseConfig("arista_ospf_default_cost");
+    assertThat(
+        c.getAllInterfaces().get("Loopback0").getOspfSettings().getCost(),
+        equalTo(OspfProcess.DEFAULT_INTERFACE_OSPF_COST));
+    assertThat(
+        c.getAllInterfaces().get("Ethernet1").getOspfSettings().getCost(),
+        equalTo(OspfProcess.DEFAULT_INTERFACE_OSPF_COST));
+    assertThat(c.getAllInterfaces().get("Ethernet2").getOspfSettings().getCost(), equalTo(42));
+  }
+
+  @Test
+  public void testAristaOspfAutoCostInterfaceCost() throws IOException {
+    // When auto-cost reference-bandwidth is configured, cost is computed from reference bandwidth.
+    Configuration c = parseConfig("arista_ospf_auto_cost");
+    assertThat(
+        c.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(100e6d));
+    assertThat(
+        c.getAllInterfaces().get("Loopback0").getOspfSettings().getCost(),
+        equalTo(OspfProcess.DEFAULT_LOOPBACK_OSPF_COST));
+    // auto-cost 100 (100 Mbps) / 1 Gbps Ethernet = cost 1 (computed by initInterfaceCosts)
+    assertThat(c.getAllInterfaces().get("Ethernet1").getOspfSettings().getCost(), equalTo(1));
   }
 
   @Test

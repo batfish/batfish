@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_ospf_auto_cost
+!
+interface Loopback0
+  ip address 2.2.2.2/32
+!
+interface Ethernet1
+  no switchport
+  ip address 10.0.0.1/31
+!
+ip routing
+!
+router ospf 1
+  router-id 2.2.2.2
+  auto-cost reference-bandwidth 100
+  network 0.0.0.0/0 area 0
+!
