@@ -1584,7 +1584,8 @@ public final class AristaConfiguration extends VendorConfiguration {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
         org.batfish.datamodel.ospf.OspfProcess.builder()
             .setProcessId(proc.getName())
-            .setReferenceBandwidth(proc.getReferenceBandwidth())
+            .setReferenceBandwidth(
+                firstNonNull(proc.getReferenceBandwidth(), OspfProcess.DEFAULT_REFERENCE_BANDWIDTH))
             .setAdminCosts(
                 org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
                     c.getConfigurationFormat()))
@@ -1795,12 +1796,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     org.batfish.datamodel.ospf.OspfNetworkType networkType =
         toOspfNetworkType(vsIface.getOspfNetworkType(), _w);
     ospfSettings.setNetworkType(networkType);
-    if (vsIface.getOspfCost() == null
-        && iface.isLoopback()
-        && networkType != OspfNetworkType.POINT_TO_POINT) {
+    if (vsIface.getOspfCost() != null) {
+      ospfSettings.setCost(vsIface.getOspfCost());
+    } else if (proc != null && proc.getReferenceBandwidth() == null) {
+      // EOS: when auto-cost reference-bandwidth is not configured, use flat default cost of 10.
+      ospfSettings.setCost(OspfProcess.DEFAULT_INTERFACE_OSPF_COST);
+    } else if (iface.isLoopback() && networkType != OspfNetworkType.POINT_TO_POINT) {
       ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
     } else {
-      ospfSettings.setCost(vsIface.getOspfCost());
+      ospfSettings.setCost(null);
     }
     ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface, networkType));
     ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));

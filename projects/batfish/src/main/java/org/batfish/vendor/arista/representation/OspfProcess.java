@@ -29,7 +29,11 @@ public class OspfProcess implements Serializable {
 
   public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
 
-  private static final double DEFAULT_REFERENCE_BANDWIDTH_10_MBPS = 10E6D;
+  /** Default cost for Ethernet interfaces when auto-cost reference-bandwidth is not configured. */
+  public static final int DEFAULT_INTERFACE_OSPF_COST = 10;
+
+  /** Default reference bandwidth (100 Mbps) when auto-cost reference-bandwidth IS configured. */
+  public static final double DEFAULT_REFERENCE_BANDWIDTH = 100E6D;
 
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
@@ -77,7 +81,7 @@ public class OspfProcess implements Serializable {
 
   private Map<RedistributionSourceProtocol, OspfRedistributionPolicy> _redistributionPolicies;
 
-  private double _referenceBandwidth;
+  private @Nullable Double _referenceBandwidth;
 
   private @Nullable Boolean _rfc1583Compatible;
 
@@ -85,9 +89,12 @@ public class OspfProcess implements Serializable {
 
   private Map<Long, Map<Prefix, OspfAreaSummary>> _summaries;
 
+  /**
+   * Returns the default reference bandwidth (100 Mbps) used when {@code auto-cost
+   * reference-bandwidth} IS explicitly configured without a rate. Per EOS manual, Chapter 27.
+   */
   public static double getReferenceOspfBandwidth() {
-    // EOS manual, Chapter 27, "auto-cost reference-bandwidth (OSPFv2)"
-    return DEFAULT_REFERENCE_BANDWIDTH_10_MBPS;
+    return DEFAULT_REFERENCE_BANDWIDTH;
   }
 
   public long getEffectiveDefaultMetric() {
@@ -101,7 +108,6 @@ public class OspfProcess implements Serializable {
 
   public OspfProcess(String name) {
     _name = name;
-    _referenceBandwidth = getReferenceOspfBandwidth();
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
@@ -199,7 +205,7 @@ public class OspfProcess implements Serializable {
     return _redistributionPolicies;
   }
 
-  public double getReferenceBandwidth() {
+  public @Nullable Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
 
