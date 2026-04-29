@@ -193,6 +193,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.UnnumberedAddress;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -2773,6 +2774,50 @@ public class AristaGrammarTest {
                                 .build()))),
                 isActive())));
     assertThat(c, hasInterface("UnconnectedEthernet5", hasInterfaceType(InterfaceType.UNKNOWN)));
+  }
+
+  @Test
+  public void testInterfaceIpUnnumberedExtraction() {
+    AristaConfiguration config = parseVendorConfig("arista_interface_ip_unnumbered");
+    org.batfish.vendor.arista.representation.Interface eth1 =
+        config.getInterfaces().get("Ethernet1");
+    assertThat(eth1.getUnnumberedSourceInterface(), equalTo("Loopback0"));
+    assertThat(eth1.getAddress(), nullValue());
+    org.batfish.vendor.arista.representation.Interface eth2 =
+        config.getInterfaces().get("Ethernet2");
+    assertThat(eth2.getUnnumberedSourceInterface(), equalTo("Loopback0"));
+    org.batfish.vendor.arista.representation.Interface lo0 =
+        config.getInterfaces().get("Loopback0");
+    assertThat(lo0.getUnnumberedSourceInterface(), nullValue());
+  }
+
+  @Test
+  public void testInterfaceIpUnnumberedConversion() {
+    Configuration c = parseConfig("arista_interface_ip_unnumbered", true);
+    ConcreteInterfaceAddress loopbackAddr = ConcreteInterfaceAddress.parse("10.0.0.1/32");
+    UnnumberedAddress unnumberedAddr = UnnumberedAddress.of("Loopback0", Ip.parse("10.0.0.1"));
+    // Loopback0 has its own concrete address
+    assertThat(c, hasInterface("Loopback0", hasAllAddresses(contains(loopbackAddr))));
+    // Unnumbered interfaces get UnnumberedAddress, not ConcreteInterfaceAddress
+    Interface eth1 = c.getAllInterfaces().get("Ethernet1");
+    assertThat(eth1.getAddress(), equalTo(unnumberedAddr));
+    assertThat(eth1.getAllAddresses(), contains(unnumberedAddr));
+    assertThat(eth1.getAllConcreteAddresses(), empty());
+    assertThat(eth1.getAddressMetadata(), anEmptyMap());
+    // OSPF addresses set for neighbor formation
+    assertThat(eth1.getOspfSettings(), notNullValue());
+    assertThat(eth1.getOspfSettings().getOspfAddresses().getAddresses(), contains(loopbackAddr));
+  }
+
+  @Test
+  public void testInterfaceIpUnnumberedReferences() throws IOException {
+    String hostname = "arista_interface_ip_unnumbered";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    // Loopback0 is referenced by two unnumbered interfaces + its own self-ref
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback0", 3));
   }
 
   @Test

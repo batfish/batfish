@@ -82,10 +82,7 @@ public final class LinkLocalAddress extends InterfaceAddress {
   }
 
   @Override
-  public int compareTo(InterfaceAddress o) {
-    if (o instanceof LinkLocalAddress) {
-      return _ip.compareTo(((LinkLocalAddress) o).getIp());
-    }
-    return -1;
+  protected int compareSameClass(InterfaceAddress o) {
+    return _ip.compareTo(((LinkLocalAddress) o).getIp());
   }
 }
