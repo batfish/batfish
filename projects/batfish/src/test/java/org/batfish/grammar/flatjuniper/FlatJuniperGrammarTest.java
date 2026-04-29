@@ -8167,17 +8167,16 @@ public final class FlatJuniperGrammarTest {
   public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
     JuniperConfiguration juniperConfiguration =
         parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
-    EvpnIpPrefixRoutes ipPrefixRoutes =
-        juniperConfiguration
-            .getMasterLogicalSystem()
-            .getRoutingInstances()
-            .get("FOO")
-            .getEvpnIpPrefixRoutes();
+    RoutingInstance ri =
+        juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("FOO");
+    EvpnIpPrefixRoutes ipPrefixRoutes = ri.getEvpnIpPrefixRoutes();
     assertThat(ipPrefixRoutes.getAdvertise(), equalTo(EvpnIpPrefixRoutesAdvertise.DIRECT_NEXTHOP));
     assertThat(ipPrefixRoutes.getEncapsulation(), equalTo(EvpnEncapsulation.VXLAN));
     assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
     assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
     assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
+    assertThat(
+        ri.getVrfExportPolicies(), equalTo(ImmutableList.of("FOO-ri-export", "FOO-ri-export2")));
   }
 
   @Test
@@ -10447,6 +10446,20 @@ public final class FlatJuniperGrammarTest {
     Fib fib = dp.getFibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME);
     assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
     assertThat(fib.get(Ip.parse("192.168.1.1")), not(empty()));
+  }
+
+  @Test
+  public void testRouteDistinguisherIdAutoGeneration() {
+    Configuration c = parseConfig("route-distinguisher-id-auto");
+    Ip rdId = Ip.parse("10.0.0.1");
+
+    // VRF1 has no explicit RD; should get auto-generated Type 1 RD with index 1
+    Vrf vrf1 = c.getVrfs().get("VRF1");
+    assertThat(vrf1.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(rdId, 1)));
+
+    // VRF2 has explicit RD 99:99; should keep it
+    Vrf vrf2 = c.getVrfs().get("VRF2");
+    assertThat(vrf2.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("10.0.0.2:99")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
