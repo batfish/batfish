@@ -23,7 +23,7 @@ public final class BatchManager {
     return _instance;
   }
 
-  private @Nullable synchronized Task getTask(Settings settings) {
+  private synchronized @Nullable Task getTask(Settings settings) {
     String taskId = settings.getTaskId();
     if (taskId == null) {
       return null;
@@ -44,7 +44,7 @@ public final class BatchManager {
     }
   }
 
-  public @Nullable synchronized Task getTaskFromLog(String taskId) {
+  public synchronized @Nullable Task getTaskFromLog(String taskId) {
     return _taskLog.get(taskId);
   }
 

@@ -713,13 +713,13 @@ public final class Interface extends ComparableStructure<String> {
   private @Nonnull SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
 
   /** Cache of all concrete addresses */
-  private @Nullable transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+  private transient @Nullable Set<ConcreteInterfaceAddress> _allConcreteAddresses;
 
   /** Cache of all link-local addresses */
-  private @Nullable transient Set<LinkLocalAddress> _allLinkLocalAddresses;
+  private transient @Nullable Set<LinkLocalAddress> _allLinkLocalAddresses;
 
   /** Cache of all unnumbered addresses */
-  private @Nullable transient Set<UnnumberedAddress> _allUnnumberedAddresses;
+  private transient @Nullable Set<UnnumberedAddress> _allUnnumberedAddresses;
 
   private boolean _autoState;
   private @Nullable Double _bandwidth;

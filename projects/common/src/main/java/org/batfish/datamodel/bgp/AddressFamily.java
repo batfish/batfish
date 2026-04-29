@@ -150,9 +150,9 @@ public abstract class AddressFamily implements Serializable {
       return getThis();
     }
 
-    public @Nonnull abstract B getThis();
+    public abstract @Nonnull B getThis();
 
-    public @Nonnull abstract F build();
+    public abstract @Nonnull F build();
   }
 
   /** BGP address family type */

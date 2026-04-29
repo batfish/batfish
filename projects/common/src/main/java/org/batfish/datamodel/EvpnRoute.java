@@ -62,7 +62,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     }
 
     @Override
-    public @Nonnull abstract R build();
+    public abstract @Nonnull R build();
   }
 
   /**

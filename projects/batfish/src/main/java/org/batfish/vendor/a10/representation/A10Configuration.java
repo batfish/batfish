@@ -1170,7 +1170,7 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
-  private @Nullable transient Map<String, Interface> _ifaceNametoIface;
+  private transient @Nullable Map<String, Interface> _ifaceNametoIface;
 
   private @Nonnull Map<String, AccessList> _accessLists;
   private @Nullable BgpProcess _bgpProcess;

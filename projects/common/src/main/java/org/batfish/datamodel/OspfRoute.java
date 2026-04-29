@@ -59,5 +59,5 @@ public abstract class OspfRoute extends AbstractRoute {
   }
 
   @Override
-  public @Nonnull abstract RoutingProtocol getProtocol();
+  public abstract @Nonnull RoutingProtocol getProtocol();
 }

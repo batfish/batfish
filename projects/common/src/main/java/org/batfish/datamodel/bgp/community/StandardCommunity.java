@@ -50,7 +50,7 @@ public final class StandardCommunity extends Community {
   private final long _value;
 
   // Cached string representation
-  private @Nullable transient String _str;
+  private transient @Nullable String _str;
 
   private StandardCommunity(long value) {
     checkArgument(
