@@ -2609,10 +2609,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setGroup(pg.getName())
             .setLocalAs(localAs)
             .setPeerAddress(peer.getPeerAddress())
-            // Multihop (as batfish VI model understands it) is always on for PAN because of
-            // "number + 2" computation
-            // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
-            .setEbgpMultihop(true)
+            // Use multihop only when explicitly configured with a TTL > 0. PAN-OS "multihop 0"
+            // means disabled; absence of multihop config means single-hop (directly adjacent peer).
+            .setEbgpMultihop(peer.getMultihop() != null && peer.getMultihop() > 0)
             .setRemoteAsns(Optional.ofNullable(peerAs).map(LongSpace::of).orElse(LongSpace.EMPTY));
     if (peer.getLocalAddress() != null) {
       peerB.setLocalIp(peer.getLocalAddress());

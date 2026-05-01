@@ -953,6 +953,8 @@ public final class PaloAltoGrammarTest {
     String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
     assertThat(exportPolicyName, not(nullValue()));
     assertThat(c.getRoutingPolicies().get(exportPolicyName), not(nullValue()));
+    // No multihop configured: peer should be single-hop
+    assertFalse(peer.getEbgpMultihop());
   }
 
   @Test
@@ -4256,7 +4258,22 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testBgpMultihopConversion() {
+    // multihop 0 means disabled in PAN-OS; peer should be classified as single-hop
     String hostname = "bgp-multihop";
+    Configuration c = parseConfig(hostname);
+    assertFalse(
+        c.getVrfs()
+            .get("vr1")
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("120.120.120.120"))
+            .getEbgpMultihop());
+  }
+
+  @Test
+  public void testBgpMultihopEnabledConversion() {
+    // multihop > 0 means enabled in PAN-OS; peer should be classified as multi-hop
+    String hostname = "bgp-multihop-enabled";
     Configuration c = parseConfig(hostname);
     assertTrue(
         c.getVrfs()
