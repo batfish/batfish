@@ -1,0 +1,9 @@
+#
+set system host-name static-route-prefix-validation
+#
+# Valid static route (host bits are zero)
+set routing-options static route 192.168.1.0/24 reject
+# Invalid static route (host bits are set)
+set routing-options static route 192.168.1.111/24 reject
+# Another invalid static route
+set routing-options static route 10.0.0.5/8 reject

@@ -1434,6 +1434,45 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testStaticRoutePrefixValidationFatalError() throws IOException {
+    String fileKey = "static-route-prefix-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    // contains is exhaustive — also verifies no warning for the valid route 192.168.1.0/24
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(containsString("10.0.0.5/8")),
+            WarningMatchers.hasText(containsString("192.168.1.111/24"))));
+  }
+
+  @Test
+  public void testPrefixNormalizationValidation() throws IOException {
+    String fileKey = "prefix-normalization-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(allOf(containsString("Aggregate route"), containsString("10.1.2.3/8"))),
+            WarningMatchers.hasText(allOf(containsString("Generated route"), containsString("172.16.5.5/12"))),
+            WarningMatchers.hasText(allOf(containsString("OSPF area-range"), containsString("192.168.1.1/16"))),
+            WarningMatchers.hasText(allOf(containsString("Firewall address"), containsString("10.0.0.1/8"))),
+            WarningMatchers.hasText(allOf(containsString("Firewall next-ip"), containsString("10.0.0.99/24"))),
+            WarningMatchers.hasText(allOf(containsString("Condition if-route-exists"), containsString("10.0.0.5/8")))));
+  }
+
+  @Test
   public void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
 

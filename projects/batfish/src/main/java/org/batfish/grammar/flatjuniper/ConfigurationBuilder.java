@@ -3273,7 +3273,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentAreaRangeRestrict = false;
 
     if (ctx.prefix != null) {
-      _currentAreaRangePrefix = toPrefix(ctx.prefix);
+      _currentAreaRangePrefix = toNormalizedPrefix(ctx.prefix, "OSPF area-range");
     } else {
       todo(ctx);
     }
@@ -3660,7 +3660,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRoa_route(Roa_routeContext ctx) {
     if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.prefix);
+      Prefix prefix = toNormalizedPrefix(ctx.prefix, "Aggregate route");
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
       _currentAggregateRoute = aggregateRoutes.computeIfAbsent(prefix, AggregateRoute::new);
     } else {
@@ -3696,7 +3696,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRog_route(Rog_routeContext ctx) {
     if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.prefix);
+      Prefix prefix = toNormalizedPrefix(ctx.prefix, "Generated route");
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
       _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
     } else if (ctx.prefix6 != null) {
@@ -3800,7 +3800,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRos_route4(Ros_route4Context ctx) {
-    Prefix prefix = toPrefix(ctx.prefix);
+    Prefix prefix = toNormalizedPrefix(ctx.prefix, "Static route destination");
     Map<Prefix, StaticRouteV4> staticRoutes = _currentRib.getStaticRoutes();
     _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV4::new);
   }
@@ -5499,7 +5499,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftt_next_ip(Fftt_next_ipContext ctx) {
-    FwThenNextIp then = new FwThenNextIp(toPrefix(ctx.prefix));
+    FwThenNextIp then = new FwThenNextIp(toNormalizedPrefix(ctx.prefix, "Firewall next-ip"));
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     _currentFilter.setUsedForFBF(true);
@@ -8868,7 +8868,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPocondiafi_prefix(Pocondiafi_prefixContext ctx) {
-    _currentCondition.getIfRouteExists().setPrefix(toPrefix(ctx.prefix));
+    _currentCondition.getIfRouteExists().setPrefix(
+        toNormalizedPrefix(ctx.prefix, "Condition if-route-exists"));
   }
 
   @Override
@@ -8884,6 +8885,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPocondiaf_ccc(Pocondiaf_cccContext ctx) {
     todo(ctx);
+  }
+
+  /**
+   * Parses a prefix from context, issuing a fatal red flag if host bits are set. Junos rejects
+   * unnormalized prefixes at commit time in certain contexts.
+   */
+  private @Nonnull Prefix toNormalizedPrefix(Ip_prefix_default_32Context ctx, String description) {
+    if (ctx.IP_PREFIX() != null) {
+      String text = ctx.IP_PREFIX().getText();
+      Ip originalIp = Ip.parse(text.substring(0, text.indexOf('/')));
+      Prefix prefix = Prefix.parse(text);
+      if (!originalIp.equals(prefix.getStartIp())) {
+        _w.fatalRedFlag(
+            "%s %s is not a valid network prefix (host bits are set)", description, text);
+      }
+      return prefix;
+    }
+    assert ctx.IP_ADDRESS() != null;
+    return Ip.parse(ctx.getText()).toPrefix();
+  }
+
+  private @Nonnull Prefix toNormalizedPrefix(Ip_prefixContext ctx, String description) {
+    String text = ctx.IP_PREFIX().getText();
+    Ip originalIp = Ip.parse(text.substring(0, text.indexOf('/')));
+    Prefix prefix = Prefix.parse(text);
+    if (!originalIp.equals(prefix.getStartIp())) {
+      _w.fatalRedFlag(
+          "%s %s is not a valid network prefix (host bits are set)", description, text);
+    }
+    return prefix;
   }
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
@@ -9134,7 +9165,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return toIpWildcard(ctx.ip_and_mask);
     } else {
       assert ctx.prefix != null;
-      return toIpWildcard(ctx.prefix);
+      return IpWildcard.create(toNormalizedPrefix(ctx.prefix, "Firewall address"));
     }
   }
 
