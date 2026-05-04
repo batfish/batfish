@@ -3801,6 +3801,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRos_route4(Ros_route4Context ctx) {
     Prefix prefix = toPrefix(ctx.prefix);
+    if (ctx.prefix.IP_PREFIX() != null) {
+      String text = ctx.prefix.IP_PREFIX().getText();
+      Ip originalIp = Ip.parse(text.substring(0, text.indexOf('/')));
+      if (!originalIp.equals(prefix.getStartIp())) {
+        _w.fatalRedFlag(
+            "Static route destination %s is not a valid network prefix (host bits are set)", text);
+      }
+    }
     Map<Prefix, StaticRouteV4> staticRoutes = _currentRib.getStaticRoutes();
     _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV4::new);
   }

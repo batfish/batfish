@@ -1434,6 +1434,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testStaticRoutePrefixValidationFatalError() throws IOException {
+    String fileKey = "static-route-prefix-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    // contains is exhaustive — also verifies no warning for the valid route 192.168.1.0/24
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(containsString("10.0.0.5/8")),
+            WarningMatchers.hasText(containsString("192.168.1.111/24"))));
+  }
+
+  @Test
   public void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
 
