@@ -71723,6 +71723,16 @@
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
             }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Firewall address 5.5.5.5/31 is not a valid network prefix (host bits are set)"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Firewall next-ip 1.2.3.4/5 is not a valid network prefix (host bits are set)"
+            }
           ]
         },
         "configs/juniper_forwarding_options" : {
