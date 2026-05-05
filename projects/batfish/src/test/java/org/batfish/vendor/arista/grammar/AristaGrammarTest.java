@@ -633,6 +633,18 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborPrefixListIpv6AddressFamily() throws IOException {
+    String hostname = "arista_bgp_neighbor_prefix_list_ipv6_af";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
   public void testAristaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("aristaOspfCost");
     assertThat(
