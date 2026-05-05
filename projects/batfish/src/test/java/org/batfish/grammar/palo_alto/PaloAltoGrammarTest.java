@@ -953,6 +953,8 @@ public final class PaloAltoGrammarTest {
     String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
     assertThat(exportPolicyName, not(nullValue()));
     assertThat(c.getRoutingPolicies().get(exportPolicyName), not(nullValue()));
+    // No multihop configured: peer should be single-hop
+    assertFalse(peer.getEbgpMultihop());
   }
 
   @Test
@@ -4249,7 +4251,7 @@ public final class PaloAltoGrammarTest {
             .getPeerGroups()
             .get("pg1")
             .getPeers()
-            .get("peer1")
+            .get("peer-disabled")
             .getMultihop(),
         equalTo(0));
   }
@@ -4258,13 +4260,14 @@ public final class PaloAltoGrammarTest {
   public void testBgpMultihopConversion() {
     String hostname = "bgp-multihop";
     Configuration c = parseConfig(hostname);
-    assertTrue(
-        c.getVrfs()
-            .get("vr1")
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("120.120.120.120"))
-            .getEbgpMultihop());
+    Map<Ip, BgpActivePeerConfig> neighbors =
+        c.getVrfs().get("vr1").getBgpProcess().getActiveNeighbors();
+    // multihop 0 (disabled) -> single-hop
+    assertFalse(neighbors.get(Ip.parse("10.0.0.1")).getEbgpMultihop());
+    // multihop 1 (TTL 1) -> also single-hop; multihop requires TTL >= 2
+    assertFalse(neighbors.get(Ip.parse("10.0.0.2")).getEbgpMultihop());
+    // multihop 5 -> true multi-hop
+    assertTrue(neighbors.get(Ip.parse("10.0.0.3")).getEbgpMultihop());
   }
 
   @Test
