@@ -634,10 +634,6 @@ public class AristaGrammarTest {
 
   @Test
   public void testBgpNeighborPrefixListIpv6AddressFamily() throws IOException {
-    // Before this commit, eos_rbafnc_prefix_list always referenced the
-    // binding as PREFIX_LIST regardless of the enclosing address-family
-    // block, so PL-V6 (an ipv6 prefix-list bound under address-family
-    // ipv6) showed up as an ipv4 undefined reference.
     String hostname = "arista_bgp_neighbor_prefix_list_ipv6_af";
     AristaConfiguration vc = parseVendorConfig(hostname);
     assertThat(vc.getWarnings().getParseWarnings(), empty());

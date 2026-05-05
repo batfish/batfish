@@ -2541,9 +2541,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbafnc_prefix_list(Eos_rbafnc_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    // The grammar rule eos_rbafnc_prefix_list is shared by both
-    // address-family ipv4 and address-family ipv6 (eos_rb_af_neighbor_common);
-    // the structure type depends on which AF block we're in.
     AristaStructureType type =
         _currentAristaBgpVrfAf instanceof AristaBgpVrfIpv6UnicastAddressFamily
             ? PREFIX6_LIST
