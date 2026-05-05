@@ -4251,37 +4251,23 @@ public final class PaloAltoGrammarTest {
             .getPeerGroups()
             .get("pg1")
             .getPeers()
-            .get("peer1")
+            .get("peer-disabled")
             .getMultihop(),
         equalTo(0));
   }
 
   @Test
   public void testBgpMultihopConversion() {
-    // multihop 0 means disabled in PAN-OS; peer should be classified as single-hop
     String hostname = "bgp-multihop";
     Configuration c = parseConfig(hostname);
-    assertFalse(
-        c.getVrfs()
-            .get("vr1")
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("120.120.120.120"))
-            .getEbgpMultihop());
-  }
-
-  @Test
-  public void testBgpMultihopEnabledConversion() {
-    // multihop > 0 means enabled in PAN-OS; peer should be classified as multi-hop
-    String hostname = "bgp-multihop-enabled";
-    Configuration c = parseConfig(hostname);
-    assertTrue(
-        c.getVrfs()
-            .get("vr1")
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("120.120.120.120"))
-            .getEbgpMultihop());
+    Map<Ip, BgpActivePeerConfig> neighbors =
+        c.getVrfs().get("vr1").getBgpProcess().getActiveNeighbors();
+    // multihop 0 (disabled) -> single-hop
+    assertFalse(neighbors.get(Ip.parse("10.0.0.1")).getEbgpMultihop());
+    // multihop 1 (TTL 1) -> also single-hop; multihop requires TTL >= 2
+    assertFalse(neighbors.get(Ip.parse("10.0.0.2")).getEbgpMultihop());
+    // multihop 5 -> true multi-hop
+    assertTrue(neighbors.get(Ip.parse("10.0.0.3")).getEbgpMultihop());
   }
 
   @Test
