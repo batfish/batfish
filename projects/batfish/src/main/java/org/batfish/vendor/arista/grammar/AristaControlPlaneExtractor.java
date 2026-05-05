@@ -999,6 +999,7 @@ import org.batfish.vendor.arista.representation.eos.AristaBgpVlanBase;
 import org.batfish.vendor.arista.representation.eos.AristaBgpVrf;
 import org.batfish.vendor.arista.representation.eos.AristaBgpVrfAddressFamily;
 import org.batfish.vendor.arista.representation.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.vendor.arista.representation.eos.AristaBgpVrfIpv6UnicastAddressFamily;
 import org.batfish.vendor.arista.representation.eos.AristaEosVxlan;
 import org.batfish.vendor.arista.representation.eos.AristaRedistributeType;
 
@@ -2540,15 +2541,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbafnc_prefix_list(Eos_rbafnc_prefix_listContext ctx) {
     String name = ctx.name.getText();
+    // The grammar rule eos_rbafnc_prefix_list is shared by both
+    // address-family ipv4 and address-family ipv6 (eos_rb_af_neighbor_common);
+    // the structure type depends on which AF block we're in.
+    AristaStructureType type =
+        _currentAristaBgpVrfAf instanceof AristaBgpVrfIpv6UnicastAddressFamily
+            ? PREFIX6_LIST
+            : PREFIX_LIST;
     if (ctx.IN() != null) {
       _currentAristaBgpNeighborAddressFamily.setPrefixListIn(name);
       _configuration.referenceStructure(
-          PREFIX_LIST, name, BGP_INBOUND_PREFIX_LIST, ctx.getStart().getLine());
+          type, name, BGP_INBOUND_PREFIX_LIST, ctx.getStart().getLine());
     } else {
       assert ctx.OUT() != null;
       _currentAristaBgpNeighborAddressFamily.setPrefixListOut(name);
       _configuration.referenceStructure(
-          PREFIX_LIST, name, BGP_OUTBOUND_PREFIX_LIST, ctx.getStart().getLine());
+          type, name, BGP_OUTBOUND_PREFIX_LIST, ctx.getStart().getLine());
     }
   }
 

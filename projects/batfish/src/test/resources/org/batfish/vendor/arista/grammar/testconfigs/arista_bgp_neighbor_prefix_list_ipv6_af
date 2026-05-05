@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_neighbor_prefix_list_ipv6_af
+!
+ip prefix-list PL-V4
+   seq 10 permit 0.0.0.0/0
+!
+ipv6 prefix-list PL-V6
+   seq 10 permit ::/0
+!
+router bgp 65000
+   neighbor PG peer group
+   neighbor PG remote-as 65001
+   neighbor 192.0.2.1 peer group PG
+   address-family ipv4
+      neighbor PG activate
+      neighbor PG prefix-list PL-V4 out
+   address-family ipv6
+      neighbor PG activate
+      neighbor PG prefix-list PL-V6 out
