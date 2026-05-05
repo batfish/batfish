@@ -2609,9 +2609,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setGroup(pg.getName())
             .setLocalAs(localAs)
             .setPeerAddress(peer.getPeerAddress())
-            // Use multihop only when explicitly configured with a TTL > 0. PAN-OS "multihop 0"
-            // means disabled; absence of multihop config means single-hop (directly adjacent peer).
-            .setEbgpMultihop(peer.getMultihop() != null && peer.getMultihop() > 0)
+            // Use multihop only when TTL >= 2. PAN-OS "multihop 0" and "multihop 1" both result
+            // in TTL 1 (directly adjacent peers only). Only multihop >= 2 enables true multi-hop.
+            .setEbgpMultihop(peer.getMultihop() != null && peer.getMultihop() > 1)
             .setRemoteAsns(Optional.ofNullable(peerAs).map(LongSpace::of).orElse(LongSpace.EMPTY));
     if (peer.getLocalAddress() != null) {
       peerB.setLocalIp(peer.getLocalAddress());
