@@ -8,8 +8,21 @@ set network virtual-router vr1 protocol bgp router-id 1.1.1.1
 set network virtual-router vr1 protocol bgp local-as 1
 
 set network virtual-router vr1 protocol bgp peer-group pg1 enable yes
-set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 local-address interface ethernet1/3.5
-set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 peer-address ip 120.120.120.120
-set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 peer-as 2345
-set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 enable yes
-set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 connection-options multihop 0
+
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-disabled local-address interface ethernet1/3.5
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-disabled peer-address ip 10.0.0.1
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-disabled peer-as 2345
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-disabled enable yes
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-disabled connection-options multihop 0
+
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-ttl1 local-address interface ethernet1/3.5
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-ttl1 peer-address ip 10.0.0.2
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-ttl1 peer-as 2345
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-ttl1 enable yes
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-ttl1 connection-options multihop 1
+
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-enabled local-address interface ethernet1/3.5
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-enabled peer-address ip 10.0.0.3
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-enabled peer-as 2345
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-enabled enable yes
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer-enabled connection-options multihop 5
