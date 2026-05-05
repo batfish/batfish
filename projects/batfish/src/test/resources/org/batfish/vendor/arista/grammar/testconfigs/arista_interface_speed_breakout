@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_interface_speed_breakout
+!
+interface Ethernet1/1
+   speed 400g-4
+!
+interface Ethernet2/1
+   speed 100g-1
+!
+interface Ethernet3/1
+   speed forced 10000full
+!
+interface Ethernet4/1
+   speed forced 50gfull
+!
+interface Ethernet5/1
+   speed forced 400gfull
+!
+interface Ethernet6/1
+   speed 200g-2
+!
+interface Ethernet7/1
+   speed 400g-4
+   speed forced 400gfull
+!
+interface Ethernet8/1
+   speed forced 40gfull
+!

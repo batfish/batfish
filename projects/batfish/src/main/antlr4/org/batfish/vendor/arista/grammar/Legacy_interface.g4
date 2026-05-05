@@ -8,12 +8,17 @@ options {
 
 eos_bandwidth_specifier
 :
-   FORTYG_FULL
+   FIFTYG_FULL
+   | FORTYG_FULL
+   | FOUR_HUNDREDG_4
+   | FOUR_HUNDREDG_FULL
+   | ONE_HUNDREDG_1
    | ONE_HUNDREDG_FULL
    | ONE_HUNDRED_FULL
    | ONE_THOUSAND_FULL
    | TEN_THOUSAND_FULL
    | TWENTY_FIVEG_FULL
+   | TWO_HUNDREDG_2
 ;
 
 eos_vxlan_if_inner

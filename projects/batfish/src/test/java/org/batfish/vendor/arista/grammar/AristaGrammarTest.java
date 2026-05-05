@@ -2024,6 +2024,27 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testEosInterfaceSpeedBreakout() throws IOException {
+    Configuration c = parseConfig("arista_interface_speed_breakout");
+    assertThat(c, hasInterface("Ethernet1/1", hasSpeed(400E9D)));
+    assertThat(c, hasInterface("Ethernet1/1", hasBandwidth(400E9D)));
+    assertThat(c, hasInterface("Ethernet2/1", hasSpeed(100E9D)));
+    assertThat(c, hasInterface("Ethernet2/1", hasBandwidth(100E9D)));
+    assertThat(c, hasInterface("Ethernet3/1", hasSpeed(10E9D)));
+    assertThat(c, hasInterface("Ethernet3/1", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("Ethernet4/1", hasSpeed(50E9D)));
+    assertThat(c, hasInterface("Ethernet4/1", hasBandwidth(50E9D)));
+    assertThat(c, hasInterface("Ethernet5/1", hasSpeed(400E9D)));
+    assertThat(c, hasInterface("Ethernet5/1", hasBandwidth(400E9D)));
+    assertThat(c, hasInterface("Ethernet6/1", hasSpeed(200E9D)));
+    assertThat(c, hasInterface("Ethernet6/1", hasBandwidth(200E9D)));
+    assertThat(c, hasInterface("Ethernet7/1", hasSpeed(400E9D)));
+    assertThat(c, hasInterface("Ethernet7/1", hasBandwidth(400E9D)));
+    assertThat(c, hasInterface("Ethernet8/1", hasSpeed(40E9D)));
+    assertThat(c, hasInterface("Ethernet8/1", hasBandwidth(40E9D)));
+  }
+
+  @Test
   public void testEosPortChannel() throws IOException {
     String hostname = "eos-port-channel";
 
