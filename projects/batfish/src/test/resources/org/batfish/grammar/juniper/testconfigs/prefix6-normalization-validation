@@ -1,0 +1,18 @@
+#
+set system host-name prefix6-normalization-validation
+#
+# Valid IPv6 prefixes (no warnings expected)
+set routing-options rib inet6.0 static route 2001:db8::/32 reject
+set routing-options rib inet6.0 aggregate route 2001:db8:1::/48 discard
+set routing-options rib inet6.0 generate route 2001:db8:2::/48 discard
+set protocols ospf3 area 0 area-range 2001:db8:3::/48
+set policy-options condition C1 if-route-exists 2001:db8:4::/48
+set policy-options condition C1 if-route-exists table inet6.0
+#
+# Invalid IPv6 prefixes (host bits set — fatal red flag expected)
+set routing-options rib inet6.0 static route 2001:db8::1/32 reject
+set routing-options rib inet6.0 aggregate route 2001:db8:1::1/48 discard
+set routing-options rib inet6.0 generate route 2001:db8:2::1/48 discard
+set protocols ospf3 area 0 area-range 2001:db8:3::1/48
+set policy-options condition C2 if-route-exists 2001:db8:4::1/48
+set policy-options condition C2 if-route-exists table inet6.0

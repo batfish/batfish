@@ -1479,6 +1479,34 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPrefix6NormalizationValidation() throws IOException {
+    String fileKey = "prefix6-normalization-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                allOf(
+                    containsString("Static route destination"), containsString("2001:db8::1/32"))),
+            WarningMatchers.hasText(
+                allOf(containsString("Aggregate route"), containsString("2001:db8:1::1/48"))),
+            WarningMatchers.hasText(
+                allOf(containsString("Generated route"), containsString("2001:db8:2::1/48"))),
+            WarningMatchers.hasText(
+                allOf(containsString("OSPFv3 area-range"), containsString("2001:db8:3::1/48"))),
+            WarningMatchers.hasText(
+                allOf(
+                    containsString("Condition if-route-exists"),
+                    containsString("2001:db8:4::1/48")))));
+  }
+
+  @Test
   public void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
 
