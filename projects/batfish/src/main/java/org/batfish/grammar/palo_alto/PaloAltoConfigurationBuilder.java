@@ -48,7 +48,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TUNNEL_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_FROM_ZONE;
@@ -71,6 +70,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TAP_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TUNNEL_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_WIRE_INTERFACE_ZONE;
