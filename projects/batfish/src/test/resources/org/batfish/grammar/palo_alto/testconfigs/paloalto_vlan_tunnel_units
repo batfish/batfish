@@ -13,6 +13,10 @@ config {
             units {
               tunnel.3 {
                 comment "tunnel.3 comment";
+                ip {
+                  169.254.0.1/30;
+                }
+                mtu 1427;
               }
             }
           }
