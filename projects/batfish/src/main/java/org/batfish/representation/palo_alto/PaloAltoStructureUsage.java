@@ -18,6 +18,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   LAYER3_INTERFACE_ADDRESS("interface ethernet layer3 ip"),
   LAYER3_INTERFACE_ZONE("zone network layer3"),
   LOOPBACK_INTERFACE_ADDRESS("interface loopback ip"),
+  TUNNEL_INTERFACE_ADDRESS("interface tunnel ip"),
   NAT_RULE_DESTINATION("rulebase nat rules destination"),
   NAT_RULE_DESTINATION_TRANSLATION("rulebase nat rules destination-translation"),
   NAT_RULE_FROM_ZONE("rulebase nat rules from"),

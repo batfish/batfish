@@ -48,6 +48,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TUNNEL_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_FROM_ZONE;
@@ -283,6 +284,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
@@ -2219,6 +2222,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSnil_unit(Snil_unitContext ctx) {
     _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void exitSnit_ip(Snit_ipContext ctx) {
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, TUNNEL_INTERFACE_ADDRESS);
+  }
+
+  @Override
+  public void exitSnit_mtu(Snit_mtuContext ctx) {
+    _currentInterface.setMtu(Integer.parseInt(getText(ctx.mtu)));
   }
 
   @Override

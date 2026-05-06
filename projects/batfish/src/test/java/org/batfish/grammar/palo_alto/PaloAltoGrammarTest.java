@@ -4744,6 +4744,19 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testTunnelUnitIp() {
+    String hostname = "paloalto_vlan_tunnel_units";
+    Configuration c = parseConfig(hostname);
+    // tunnel.3 has ip 169.254.0.1/30 and mtu 1427 configured; confirm both appear in the VI model.
+    assertThat(
+        c,
+        hasInterface(
+            "tunnel.3",
+            hasAllAddresses(contains(ConcreteInterfaceAddress.parse("169.254.0.1/30")))));
+    assertThat(c, hasInterface("tunnel.3", hasMtu(1427)));
+  }
+
+  @Test
   public void testPanoramaRulebaseCopy() {
     String panoramaHostname = "panorama-rulebase-copy";
     PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
