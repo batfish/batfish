@@ -3275,6 +3275,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.prefix != null) {
       _currentAreaRangePrefix = toNormalizedPrefix(ctx.prefix, "OSPF area-range");
     } else {
+      assert ctx.prefix6 != null;
+      toNormalizedPrefix6(ctx.prefix6, "OSPFv3 area-range");
       todo(ctx);
     }
   }
@@ -3664,6 +3666,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
       _currentAggregateRoute = aggregateRoutes.computeIfAbsent(prefix, AggregateRoute::new);
     } else {
+      assert ctx.prefix6 != null;
+      toNormalizedPrefix6(ctx.prefix6, "Aggregate route");
       _currentAggregateRoute = DUMMY_AGGREGATE_ROUTE;
     }
   }
@@ -3700,6 +3704,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
       _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
     } else if (ctx.prefix6 != null) {
+      toNormalizedPrefix6(ctx.prefix6, "Generated route");
       // dummy generated route not added to configuration
       _currentGeneratedRoute = new GeneratedRoute(null);
       todo(ctx);
@@ -3807,7 +3812,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRos_route6(Ros_route6Context ctx) {
-    Prefix6 prefix = toPrefix6(ctx.prefix);
+    Prefix6 prefix = toNormalizedPrefix6(ctx.prefix, "Static route destination");
     Map<Prefix6, StaticRouteV6> staticRoutes = _currentRib.getStaticRoutesV6();
     _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV6::new);
   }
@@ -8875,7 +8880,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPocondiafi_prefix6(Pocondiafi_prefix6Context ctx) {
-    _currentCondition.getIfRouteExists().setPrefix6(toPrefix6(ctx.prefix));
+    _currentCondition
+        .getIfRouteExists()
+        .setPrefix6(toNormalizedPrefix6(ctx.prefix, "Condition if-route-exists"));
   }
 
   @Override
@@ -8936,6 +8943,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefix_default_128Context ctx) {
     if (ctx.IPV6_PREFIX() != null) {
       return Prefix6.parse(ctx.getText());
+    }
+    assert ctx.IPV6_ADDRESS() != null;
+    return Ip6.parse(ctx.getText()).toPrefix6();
+  }
+
+  private @Nonnull Prefix6 toNormalizedPrefix6(
+      Ipv6_prefix_default_128Context ctx, String description) {
+    if (ctx.IPV6_PREFIX() != null) {
+      String text = ctx.IPV6_PREFIX().getText();
+      Ip6 originalIp = Ip6.parse(text.substring(0, text.indexOf('/')));
+      Prefix6 prefix = Prefix6.parse(text);
+      if (!originalIp.equals(prefix.getAddress())) {
+        _w.fatalRedFlag(
+            "%s %s is not a valid network prefix (host bits are set)", description, text);
+      }
+      return prefix;
     }
     assert ctx.IPV6_ADDRESS() != null;
     return Ip6.parse(ctx.getText()).toPrefix6();
