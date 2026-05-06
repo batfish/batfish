@@ -1,0 +1,18 @@
+#
+set system host-name prefix-normalization-validation
+#
+# Valid prefixes (no warnings expected)
+set routing-options aggregate route 10.0.0.0/8 discard
+set routing-options generate route 172.16.0.0/12 discard
+set protocols ospf area 0 area-range 192.168.0.0/16
+set firewall filter F1 term T1 from address 10.0.0.0/8
+set firewall filter F1 term T1 then next-ip 10.0.0.0/24
+set policy-options condition C1 if-route-exists 10.0.0.0/8
+#
+# Invalid prefixes (host bits set — fatal red flag expected)
+set routing-options aggregate route 10.1.2.3/8 discard
+set routing-options generate route 172.16.5.5/12 discard
+set protocols ospf area 0 area-range 192.168.1.1/16
+set firewall filter F2 term T2 from address 10.0.0.1/8
+set firewall filter F2 term T2 then next-ip 10.0.0.99/24
+set policy-options condition C2 if-route-exists 10.0.0.5/8
