@@ -16,8 +16,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
@@ -75,7 +73,6 @@ import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
-import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -87,12 +84,6 @@ import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 
 public class RoutesAnswererUtil {
-
-  /** IPs that are used internally and should not be exposed as next hop IPs */
-  private static final Set<Ip> INTERNAL_USE_IPS =
-      ImmutableSet.of(
-          // BGP unnumbered IP
-          Ip.parse("169.254.0.1"));
 
   public enum RouteEntryPresenceStatus {
     ONLY_IN_SNAPSHOT(TableDiff.COL_KEY_STATUS_ONLY_BASE),
@@ -385,18 +376,11 @@ public class RoutesAnswererUtil {
       String vrfName,
       AbstractRoute abstractRoute,
       Map<String, ColumnMetadata> columnMetadataMap) {
-    // If the route's next hop IP is for internal use, do not show it in the row
-    Ip nextHopIp =
-        INTERNAL_USE_IPS.contains(abstractRoute.getNextHopIp())
-            ? null
-            : abstractRoute.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, abstractRoute.getNetwork())
         .put(COL_NEXT_HOP, abstractRoute.getNextHop())
-        .put(COL_NEXT_HOP_IP, nextHopIp)
-        .put(COL_NEXT_HOP_INTERFACE, abstractRoute.getNextHopInterface())
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
         .put(
             COL_TAG,
@@ -422,16 +406,11 @@ public class RoutesAnswererUtil {
       Bgpv4Route bgpv4Route,
       Set<BgpRouteStatus> statuses,
       Map<String, ColumnMetadata> columnMetadataMap) {
-    // If the route's next hop IP is for internal use, do not show it in the row
-    Ip nextHopIp =
-        INTERNAL_USE_IPS.contains(bgpv4Route.getNextHopIp()) ? null : bgpv4Route.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, bgpv4Route.getNetwork())
         .put(COL_NEXT_HOP, bgpv4Route.getNextHop())
-        .put(COL_NEXT_HOP_IP, nextHopIp)
-        .put(COL_NEXT_HOP_INTERFACE, bgpv4Route.getNextHopInterface())
         .put(COL_PROTOCOL, bgpv4Route.getProtocol())
         .put(COL_AS_PATH, bgpv4Route.getAsPath().getAsPathString())
         .put(COL_METRIC, bgpv4Route.getMetric())
@@ -473,16 +452,11 @@ public class RoutesAnswererUtil {
       EvpnRoute<?, ?> evpnRoute,
       Set<BgpRouteStatus> statuses,
       Map<String, ColumnMetadata> columnMetadataMap) {
-    // If the route's next hop IP is for internal use, do not show it in the row
-    Ip nextHopIp =
-        INTERNAL_USE_IPS.contains(evpnRoute.getNextHopIp()) ? null : evpnRoute.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, evpnRoute.getNetwork())
         .put(COL_NEXT_HOP, evpnRoute.getNextHop())
-        .put(COL_NEXT_HOP_IP, nextHopIp)
-        .put(COL_NEXT_HOP_INTERFACE, evpnRoute.getNextHopInterface())
         .put(COL_PROTOCOL, evpnRoute.getProtocol())
         .put(COL_AS_PATH, evpnRoute.getAsPath().getAsPathString())
         .put(COL_METRIC, evpnRoute.getMetric())
@@ -654,10 +628,6 @@ public class RoutesAnswererUtil {
     public Void visitBgpRouteRowSecondaryKey(BgpRouteRowSecondaryKey bgpRouteRowSecondaryKey) {
       _rowBuilder
           .put(_columnPrefix + COL_NEXT_HOP, bgpRouteRowSecondaryKey.getNextHop())
-          .put(
-              // included for backwards compatibility
-              _columnPrefix + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(bgpRouteRowSecondaryKey.getNextHop()).orElse(null))
           .put(_columnPrefix + COL_PROTOCOL, bgpRouteRowSecondaryKey.getProtocol())
           .put(_columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp())
           .put(_columnPrefix + COL_PATH_ID, bgpRouteRowSecondaryKey.getPathId());
@@ -681,10 +651,6 @@ public class RoutesAnswererUtil {
         MainRibRouteRowSecondaryKey mainRibRouteRowSecondaryKey) {
       _rowBuilder
           .put(_columnPrefix + COL_NEXT_HOP, mainRibRouteRowSecondaryKey.getNextHop())
-          .put(
-              // included for backwards compatibility
-              _columnPrefix + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop()).orElse(null))
           .put(_columnPrefix + COL_PROTOCOL, mainRibRouteRowSecondaryKey.getProtocol());
       return null;
     }
@@ -818,9 +784,6 @@ public class RoutesAnswererUtil {
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     rowBuilder
         .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_INTERFACE,
-            routeRowAttribute != null ? routeRowAttribute.getNextHopInterface() : null)
-        .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
             routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
         .put(
@@ -881,7 +844,6 @@ public class RoutesAnswererUtil {
                             k -> new TreeSet<>())
                         .add(
                             RouteRowAttribute.builder()
-                                .setNextHopInterface(route.getNextHopInterface())
                                 .setAdminDistance(route.getAdministrativeCost())
                                 .setMetric(route.getMetric())
                                 .setTag(route.getTag())

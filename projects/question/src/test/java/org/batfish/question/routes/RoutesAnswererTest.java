@@ -17,8 +17,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
@@ -318,8 +316,6 @@ public class RoutesAnswererTest {
             COL_VRF_NAME,
             COL_NETWORK,
             COL_NEXT_HOP,
-            COL_NEXT_HOP_IP,
-            COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
             COL_METRIC,
             COL_ADMIN_DISTANCE,
@@ -334,8 +330,6 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.PREFIX,
             Schema.NEXT_HOP,
-            Schema.IP,
-            Schema.STRING,
             Schema.STRING,
             Schema.LONG,
             Schema.LONG,
@@ -351,8 +345,6 @@ public class RoutesAnswererTest {
             COL_NETWORK,
             COL_STATUS,
             COL_NEXT_HOP,
-            COL_NEXT_HOP_IP,
-            COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
             // BGP attributes
             COL_AS_PATH,
@@ -387,8 +379,6 @@ public class RoutesAnswererTest {
             COL_STATUS,
             COL_ROUTE_DISTINGUISHER,
             COL_NEXT_HOP,
-            COL_NEXT_HOP_IP,
-            COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
             // BGP attributes
             COL_AS_PATH,
@@ -428,10 +418,6 @@ public class RoutesAnswererTest {
             COL_ROUTE_ENTRY_PRESENCE,
             COL_BASE_PREFIX + COL_NEXT_HOP,
             COL_DELTA_PREFIX + COL_NEXT_HOP,
-            COL_BASE_PREFIX + COL_NEXT_HOP_IP,
-            COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
-            COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE,
-            COL_DELTA_PREFIX + COL_NEXT_HOP_INTERFACE,
             COL_BASE_PREFIX + COL_PROTOCOL,
             COL_DELTA_PREFIX + COL_PROTOCOL,
             COL_BASE_PREFIX + COL_METRIC,
@@ -452,10 +438,6 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.NEXT_HOP,
             Schema.NEXT_HOP,
-            Schema.IP,
-            Schema.IP,
-            Schema.STRING,
-            Schema.STRING,
             Schema.STRING,
             Schema.STRING,
             Schema.LONG,
@@ -478,8 +460,6 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_STATUS,
         COL_BASE_PREFIX + COL_NEXT_HOP,
         COL_DELTA_PREFIX + COL_NEXT_HOP,
-        COL_BASE_PREFIX + COL_NEXT_HOP_IP,
-        COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
         COL_BASE_PREFIX + COL_PROTOCOL,
         COL_DELTA_PREFIX + COL_PROTOCOL,
         COL_BASE_PREFIX + COL_AS_PATH,
@@ -519,8 +499,6 @@ public class RoutesAnswererTest {
         Schema.list(Schema.STRING),
         Schema.NEXT_HOP,
         Schema.NEXT_HOP,
-        Schema.IP,
-        Schema.IP,
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
@@ -720,18 +698,13 @@ public class RoutesAnswererTest {
 
     // After key columns, all columns in the non-differential result should correspond to two
     // columns in the differential result (snapshot and reference).
-    // One exception: next hop interface is only present in non-differential for backwards
-    // compatibility, and was never added to differential BGP routes.
-    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_INTERFACE);
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
         .forEach(
             c -> {
               expectedNonDiffColumns.add(c);
-              if (!nonDifferentialOnly.contains(c)) {
-                expectedDiffColumns.add(COL_BASE_PREFIX + c);
-                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
-              }
+              expectedDiffColumns.add(COL_BASE_PREFIX + c);
+              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
             });
 
     assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
@@ -762,18 +735,13 @@ public class RoutesAnswererTest {
 
     // After key columns, all columns in the non-differential result should correspond to two
     // columns in the differential result (snapshot and reference).
-    // Exception: next hop IP and interface columns are only present in non-differential for
-    // backwards compatibility, and were never added to differential EVPN routes.
-    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_IP, COL_NEXT_HOP_INTERFACE);
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
         .forEach(
             c -> {
               expectedNonDiffColumns.add(c);
-              if (!nonDifferentialOnly.contains(c)) {
-                expectedDiffColumns.add(COL_BASE_PREFIX + c);
-                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
-              }
+              expectedDiffColumns.add(COL_BASE_PREFIX + c);
+              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
             });
 
     assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));

@@ -31,7 +31,6 @@ import org.batfish.datamodel.questions.BgpRouteStatus;
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
-  private final @Nullable String _nextHopInterface;
   private final @Nullable AsPath _asPath;
   private final @Nullable Long _adminDistance;
   private final @Nonnull Set<Long> _clusterList;
@@ -48,7 +47,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   private final @Nullable Integer _weight;
 
   private RouteRowAttribute(
-      String nextHopInterface,
       Long adminDistance,
       Long metric,
       AsPath asPath,
@@ -63,7 +61,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       BgpRouteStatus status,
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       Integer weight) {
-    _nextHopInterface = nextHopInterface;
     _adminDistance = adminDistance;
     _metric = metric;
     _asPath = asPath;
@@ -104,10 +101,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return _communities;
   }
 
-  public @Nullable String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
   public @Nullable String getOriginProtocol() {
     return _originProtocol;
   }
@@ -145,8 +138,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
-      comparing(RouteRowAttribute::getNextHopInterface, nullsLast(String::compareTo))
-          .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Long::compareTo))
+      comparing(RouteRowAttribute::getAdminDistance, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
           .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
@@ -183,8 +175,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return false;
     }
     RouteRowAttribute that = (RouteRowAttribute) o;
-    return Objects.equals(_nextHopInterface, that._nextHopInterface)
-        && Objects.equals(_adminDistance, that._adminDistance)
+    return Objects.equals(_adminDistance, that._adminDistance)
         && Objects.equals(_metric, that._metric)
         && Objects.equals(_asPath, that._asPath)
         && Objects.equals(_localPreference, that._localPreference)
@@ -203,7 +194,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _nextHopInterface,
         _adminDistance,
         _metric,
         _asPath,
@@ -224,7 +214,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   public String toString() {
     return toStringHelper(getClass())
         .omitNullValues()
-        .add("nextHopInterface", _nextHopInterface)
         .add("adminDistance", _adminDistance)
         .add("asPath", _asPath)
         .add("clusterList", _clusterList)
@@ -244,7 +233,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
-    private @Nullable String _nextHopInterface;
     private @Nullable Long _adminDistance;
     private @Nullable Long _metric;
     private @Nullable AsPath _asPath;
@@ -265,7 +253,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _tag = null;
       }
       return new RouteRowAttribute(
-          _nextHopInterface,
           _adminDistance,
           _metric,
           _asPath,
@@ -309,11 +296,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setCommunities(List<String> communities) {
       _communities = communities;
-      return this;
-    }
-
-    public Builder setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
       return this;
     }
 

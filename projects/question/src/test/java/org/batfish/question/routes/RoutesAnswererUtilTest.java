@@ -12,8 +12,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
@@ -229,8 +227,8 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_NODE, new Node("n1"), Schema.NODE),
                 hasColumn(COL_VRF_NAME, Configuration.DEFAULT_VRF_NAME, Schema.STRING),
                 hasColumn(COL_NETWORK, Prefix.parse("1.1.1.0/24"), Schema.PREFIX),
-                hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "e0", Schema.STRING),
+                hasColumn(
+                    COL_NEXT_HOP, NextHopInterface.of("e0", Ip.parse("1.1.1.2")), Schema.NEXT_HOP),
                 hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
                 hasColumn(COL_TAG, equalTo(2L << 30), Schema.LONG),
                 hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
@@ -306,8 +304,7 @@ public class RoutesAnswererUtilTest {
             // Standard route
             allOf(
                 commonMatcher,
-                hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                hasColumn(COL_NEXT_HOP, NextHopIp.of(ip), Schema.NEXT_HOP),
                 // order matters
                 hasColumn(
                     COL_CLUSTER_LIST, ImmutableList.of(1L, 3L, 5L), Schema.list(Schema.LONG))),
@@ -315,8 +312,7 @@ public class RoutesAnswererUtilTest {
             // Route from BGP unnumbered session
             allOf(
                 commonMatcher,
-                hasColumn(COL_NEXT_HOP_IP, nullValue(), Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING),
+                hasColumn(COL_NEXT_HOP, NextHopInterface.of("iface", bgpUnnumIp), Schema.NEXT_HOP),
                 hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)))));
   }
 
@@ -424,8 +420,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
                 hasColumn(COL_WEIGHT, 7, Schema.INTEGER),
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
-                hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING))));
+                hasColumn(COL_NEXT_HOP, NextHopIp.of(ip), Schema.NEXT_HOP))));
   }
 
   @Test
@@ -565,12 +560,7 @@ public class RoutesAnswererUtilTest {
     MainRibRouteRowSecondaryKey secondaryKey =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
     RouteRowAttribute attrs =
-        RouteRowAttribute.builder()
-            .setAdminDistance(200L)
-            .setNextHopInterface("nhIface")
-            .setMetric(1L)
-            .setTag(2L)
-            .build();
+        RouteRowAttribute.builder().setAdminDistance(200L).setMetric(1L).setTag(2L).build();
 
     List<DiffRoutesOutput> diff =
         ImmutableList.of(
@@ -597,8 +587,6 @@ public class RoutesAnswererUtilTest {
     Map<String, Schema> columnSchemas =
         ImmutableMap.<String, Schema>builder()
             .put(COL_NEXT_HOP, Schema.NEXT_HOP)
-            .put(COL_NEXT_HOP_IP, Schema.IP)
-            .put(COL_NEXT_HOP_INTERFACE, Schema.STRING)
             .put(COL_PROTOCOL, Schema.STRING)
             .put(COL_ADMIN_DISTANCE, Schema.INTEGER)
             .put(COL_METRIC, Schema.LONG)
@@ -661,7 +649,6 @@ public class RoutesAnswererUtilTest {
         ImmutableMap.<String, Schema>builder()
             .put(COL_STATUS, Schema.list(Schema.STRING))
             .put(COL_NEXT_HOP, Schema.NEXT_HOP)
-            .put(COL_NEXT_HOP_IP, Schema.IP)
             .put(COL_PROTOCOL, Schema.STRING)
             .put(COL_RECEIVED_FROM_IP, Schema.IP)
             .put(COL_PATH_ID, Schema.INTEGER)
@@ -809,19 +796,11 @@ public class RoutesAnswererUtilTest {
             new MainRibRouteRowSecondaryKey(
                 NextHopInterface.of("e0", Ip.parse("1.1.1.2")), "ospfE2"),
             ImmutableSortedSet.of(
-                RouteRowAttribute.builder()
-                    .setAdminDistance(10L)
-                    .setMetric(30L)
-                    .setNextHopInterface("e0")
-                    .build()),
+                RouteRowAttribute.builder().setAdminDistance(10L).setMetric(30L).build()),
             new MainRibRouteRowSecondaryKey(
                 NextHopInterface.of("e0", Ip.parse("1.1.1.3")), "ospfE2"),
             ImmutableSortedSet.of(
-                RouteRowAttribute.builder()
-                    .setAdminDistance(10L)
-                    .setMetric(20L)
-                    .setNextHopInterface("e0")
-                    .build()));
+                RouteRowAttribute.builder().setAdminDistance(10L).setMetric(20L).build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
   }
@@ -1220,12 +1199,7 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testPopulateRouteRowAttributes() {
     RouteRowAttribute routeRowAttribute =
-        RouteRowAttribute.builder()
-            .setNextHopInterface("nhIface1")
-            .setMetric(1L)
-            .setAdminDistance(1L)
-            .setTag(1L)
-            .build();
+        RouteRowAttribute.builder().setMetric(1L).setAdminDistance(1L).setTag(1L).build();
     Row.RowBuilder rowBuilder = Row.builder();
 
     populateRouteAttributes(rowBuilder, routeRowAttribute, true);
@@ -1234,7 +1208,6 @@ public class RoutesAnswererUtilTest {
         rowBuilder.build(),
         equalTo(
             Row.builder()
-                .put(COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE, "nhIface1")
                 .put(COL_BASE_PREFIX + COL_METRIC, 1L)
                 .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1L)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
