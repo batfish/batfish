@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.DirectConnectVirtualInterface.BgpPeer;
 import org.junit.Test;
@@ -42,13 +43,13 @@ public class DirectConnectVirtualInterfaceTest {
                     "dxgw-12345678abcdef012",
                     100,
                     65001L,
-                    Prefix.parse("169.254.100.1/30"),
-                    Prefix.parse("169.254.100.2/30"),
+                    ConcreteInterfaceAddress.parse("169.254.100.1/30"),
+                    ConcreteInterfaceAddress.parse("169.254.100.2/30"),
                     ImmutableList.of(
                         new BgpPeer(
                             65001L,
-                            Prefix.parse("169.254.100.1/30"),
-                            Prefix.parse("169.254.100.2/30"))),
+                            ConcreteInterfaceAddress.parse("169.254.100.1/30"),
+                            ConcreteInterfaceAddress.parse("169.254.100.2/30"))),
                     ImmutableList.of(Prefix.parse("10.0.0.0/8")),
                     ImmutableMap.of("Name", "prod-vif")))));
   }
@@ -65,8 +66,8 @@ public class DirectConnectVirtualInterfaceTest {
                 "dxgw-1",
                 100,
                 65001L,
-                Prefix.parse("169.254.1.1/30"),
-                Prefix.parse("169.254.1.2/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.1/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.2/30"),
                 ImmutableList.of(),
                 ImmutableList.of(),
                 ImmutableMap.of()),
@@ -78,8 +79,8 @@ public class DirectConnectVirtualInterfaceTest {
                 "dxgw-1",
                 100,
                 65001L,
-                Prefix.parse("169.254.1.1/30"),
-                Prefix.parse("169.254.1.2/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.1/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.2/30"),
                 ImmutableList.of(),
                 ImmutableList.of(),
                 ImmutableMap.of()))
@@ -92,8 +93,8 @@ public class DirectConnectVirtualInterfaceTest {
                 "dxgw-1",
                 100,
                 65001L,
-                Prefix.parse("169.254.1.1/30"),
-                Prefix.parse("169.254.1.2/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.1/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.2/30"),
                 ImmutableList.of(),
                 ImmutableList.of(),
                 ImmutableMap.of()))
@@ -106,8 +107,8 @@ public class DirectConnectVirtualInterfaceTest {
                 "dxgw-1",
                 200,
                 65001L,
-                Prefix.parse("169.254.1.1/30"),
-                Prefix.parse("169.254.1.2/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.1/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.2/30"),
                 ImmutableList.of(),
                 ImmutableList.of(),
                 ImmutableMap.of()))

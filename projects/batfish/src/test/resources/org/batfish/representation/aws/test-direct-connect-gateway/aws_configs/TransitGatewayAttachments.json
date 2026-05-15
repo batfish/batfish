@@ -1,0 +1,44 @@
+{
+ "TransitGatewayAttachments": [
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+   },
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "ResourceId": "vpc-dx01",
+   "ResourceOwnerId": "123456789012",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-vpc-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-vpc01",
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayOwnerId": "123456789012"
+  },
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+   },
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "ResourceId": "dxgw-dx01",
+   "ResourceOwnerId": "123456789012",
+   "ResourceType": "direct-connect-gateway",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-dxgw-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-dx01",
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayOwnerId": "123456789012"
+  }
+ ]
+}
