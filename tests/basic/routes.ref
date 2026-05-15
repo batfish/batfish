@@ -32,20 +32,6 @@
           "schema" : "NextHop"
         },
         {
-          "description" : "Route's Next Hop IP",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Next_Hop_IP",
-          "schema" : "Ip"
-        },
-        {
-          "description" : "Route's Next Hop Interface",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Next_Hop_Interface",
-          "schema" : "String"
-        },
-        {
           "description" : "Route's Protocol",
           "isKey" : false,
           "isValue" : true,
@@ -88,8 +74,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -106,8 +90,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -125,8 +107,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.1.2"
         },
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -143,8 +123,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -162,8 +140,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.1.2"
         },
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -181,8 +157,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.1.2"
         },
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -199,8 +173,6 @@
           "type" : "ip",
           "ip" : "10.12.11.2"
         },
-        "Next_Hop_IP" : "10.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -217,8 +189,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -235,8 +205,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -253,8 +221,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -271,8 +237,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -290,8 +254,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.1.2"
         },
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -309,8 +271,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.1.2"
         },
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -328,8 +288,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.2.2"
         },
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -346,8 +304,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -364,8 +320,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -383,8 +337,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.2.2"
         },
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -401,8 +353,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -420,8 +370,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.2.2"
         },
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -438,8 +386,6 @@
           "type" : "ip",
           "ip" : "10.12.11.2"
         },
-        "Next_Hop_IP" : "10.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -456,8 +402,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -474,8 +418,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -493,8 +435,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.2.2"
         },
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -511,8 +451,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -529,8 +467,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -547,8 +483,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -565,8 +499,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -583,8 +515,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -601,8 +531,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -619,8 +547,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -637,8 +563,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -656,8 +580,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.1.1"
         },
-        "Next_Hop_IP" : "1.0.1.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -675,8 +597,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.2.1"
         },
-        "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -693,8 +613,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -711,8 +629,6 @@
           "type" : "ip",
           "ip" : "10.12.11.2"
         },
-        "Next_Hop_IP" : "10.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -729,8 +645,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -747,8 +661,6 @@
           "type" : "ip",
           "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.13.22.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -766,8 +678,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "1.0.1.1"
         },
-        "Next_Hop_IP" : "1.0.1.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -785,8 +695,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.2.1"
         },
-        "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -804,8 +712,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "1.0.2.1"
         },
-        "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -822,8 +728,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -840,8 +744,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -858,8 +760,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -877,8 +777,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -896,8 +794,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -915,8 +811,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -934,8 +828,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -953,8 +845,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -972,8 +862,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -991,8 +879,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1010,8 +896,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1028,8 +912,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1046,8 +928,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1064,8 +944,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1082,8 +960,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1101,8 +977,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1120,8 +994,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1139,8 +1011,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1158,8 +1028,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1177,8 +1045,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1196,8 +1062,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1215,8 +1079,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1234,8 +1096,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1253,8 +1113,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1272,8 +1130,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1289,8 +1145,6 @@
         "Next_Hop" : {
           "type" : "discard"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1307,8 +1161,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1325,8 +1177,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1343,8 +1193,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1361,8 +1209,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1379,8 +1225,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1397,8 +1241,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1415,8 +1257,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1433,8 +1273,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1452,8 +1290,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.11.2"
         },
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1471,8 +1307,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.12.2"
         },
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1489,8 +1323,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1507,8 +1339,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1526,8 +1356,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1545,8 +1373,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1563,8 +1389,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1582,8 +1406,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1601,8 +1423,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1620,8 +1440,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1639,8 +1457,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1658,8 +1474,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1677,8 +1491,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1696,8 +1508,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1715,8 +1525,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1733,8 +1541,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1751,8 +1557,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1769,8 +1573,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1787,8 +1589,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -1806,8 +1606,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1825,8 +1623,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1844,8 +1640,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1863,8 +1657,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1882,8 +1674,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1901,8 +1691,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1920,8 +1708,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1939,8 +1725,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1956,8 +1740,6 @@
         "Next_Hop" : {
           "type" : "discard"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1974,8 +1756,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -1992,8 +1772,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2010,8 +1788,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2028,8 +1804,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2046,8 +1820,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -2064,8 +1836,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -2083,8 +1853,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.12.21.2"
         },
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2102,8 +1870,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.22.2"
         },
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2120,8 +1886,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2138,8 +1902,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2156,8 +1918,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2174,8 +1934,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2193,8 +1951,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.11.1"
         },
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2212,8 +1968,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.21.1"
         },
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2230,8 +1984,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2249,8 +2001,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.11.1"
         },
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2268,8 +2018,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.21.1"
         },
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2287,8 +2035,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.11.3"
         },
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2306,8 +2052,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.12.3"
         },
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2325,8 +2069,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.11.3"
         },
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2344,8 +2086,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.12.3"
         },
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2362,8 +2102,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2380,8 +2118,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2399,8 +2135,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.11.1"
         },
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2417,8 +2151,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2435,8 +2167,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2454,8 +2184,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.21.1"
         },
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2472,8 +2200,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2490,8 +2216,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2508,8 +2232,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2526,8 +2248,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2545,8 +2265,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.11.3"
         },
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2564,8 +2282,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.12.3"
         },
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2583,8 +2299,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.11.3"
         },
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2602,8 +2316,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.12.3"
         },
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2620,8 +2332,6 @@
           "type" : "ip",
           "ip" : "2.1.1.1"
         },
-        "Next_Hop_IP" : "2.1.1.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2638,8 +2348,6 @@
           "type" : "ip",
           "ip" : "2.1.1.2"
         },
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2656,8 +2364,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2674,8 +2380,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2692,8 +2396,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2710,8 +2412,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2728,8 +2428,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2746,8 +2444,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2765,8 +2461,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.11.1"
         },
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2784,8 +2478,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.21.1"
         },
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2802,8 +2494,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2820,8 +2510,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -2839,8 +2527,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.12.1"
         },
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2858,8 +2544,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.22.1"
         },
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2877,8 +2561,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.12.1"
         },
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2896,8 +2578,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.22.1"
         },
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2915,8 +2595,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.21.3"
         },
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2934,8 +2612,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.22.3"
         },
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2952,8 +2628,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -2971,8 +2645,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.21.3"
         },
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2990,8 +2662,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.22.3"
         },
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3009,8 +2679,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.12.1"
         },
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3027,8 +2695,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3045,8 +2711,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3064,8 +2728,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.22.1"
         },
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3082,8 +2744,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3100,8 +2760,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3119,8 +2777,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.21.3"
         },
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3138,8 +2794,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.22.3"
         },
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3156,8 +2810,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3174,8 +2826,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3192,8 +2842,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3210,8 +2858,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3229,8 +2875,6 @@
           "interface" : "GigabitEthernet3/0",
           "ip" : "2.23.21.3"
         },
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3248,8 +2892,6 @@
           "interface" : "GigabitEthernet2/0",
           "ip" : "2.23.22.3"
         },
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3266,8 +2908,6 @@
           "type" : "ip",
           "ip" : "2.1.1.1"
         },
-        "Next_Hop_IP" : "2.1.1.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3284,8 +2924,6 @@
           "type" : "ip",
           "ip" : "2.1.1.2"
         },
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3302,8 +2940,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3320,8 +2956,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3338,8 +2972,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3356,8 +2988,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3374,8 +3004,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3392,8 +3020,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3411,8 +3037,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.12.12.1"
         },
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3430,8 +3054,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.12.22.1"
         },
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3448,8 +3070,6 @@
           "type" : "ip",
           "ip" : "2.34.101.3"
         },
-        "Next_Hop_IP" : "2.34.101.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3466,8 +3086,6 @@
           "type" : "ip",
           "ip" : "2.34.201.3"
         },
-        "Next_Hop_IP" : "2.34.201.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3484,8 +3102,6 @@
           "type" : "ip",
           "ip" : "2.34.101.3"
         },
-        "Next_Hop_IP" : "2.34.101.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3502,8 +3118,6 @@
           "type" : "ip",
           "ip" : "2.34.201.3"
         },
-        "Next_Hop_IP" : "2.34.201.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3520,8 +3134,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3538,8 +3150,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3556,8 +3166,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3574,8 +3182,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3592,8 +3198,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3610,8 +3214,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3628,8 +3230,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3646,8 +3246,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3664,8 +3262,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3682,8 +3278,6 @@
           "type" : "ip",
           "ip" : "2.34.101.3"
         },
-        "Next_Hop_IP" : "2.34.101.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3700,8 +3294,6 @@
           "type" : "ip",
           "ip" : "2.34.201.3"
         },
-        "Next_Hop_IP" : "2.34.201.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3718,8 +3310,6 @@
           "type" : "ip",
           "ip" : "2.34.101.3"
         },
-        "Next_Hop_IP" : "2.34.101.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3736,8 +3326,6 @@
           "type" : "ip",
           "ip" : "2.34.201.3"
         },
-        "Next_Hop_IP" : "2.34.201.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -3754,8 +3342,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3772,8 +3358,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -3791,8 +3375,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3810,8 +3392,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3829,8 +3409,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3848,8 +3426,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3867,8 +3443,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3886,8 +3460,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3904,8 +3476,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -3923,8 +3493,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3942,8 +3510,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3961,8 +3527,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3980,8 +3544,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3999,8 +3561,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4018,8 +3578,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4036,8 +3594,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4054,8 +3610,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4073,8 +3627,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4091,8 +3643,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4109,8 +3659,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4128,8 +3676,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4146,8 +3692,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4164,8 +3708,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4183,8 +3725,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4202,8 +3742,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4220,8 +3758,6 @@
           "type" : "ip",
           "ip" : "2.1.1.1"
         },
-        "Next_Hop_IP" : "2.1.1.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4238,8 +3774,6 @@
           "type" : "ip",
           "ip" : "2.1.1.2"
         },
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4256,8 +3790,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -4274,8 +3806,6 @@
           "type" : "ip",
           "ip" : "2.34.101.4"
         },
-        "Next_Hop_IP" : "2.34.101.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -4292,8 +3822,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4310,8 +3838,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4329,8 +3855,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4348,8 +3872,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4367,8 +3889,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.11.2"
         },
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4386,8 +3906,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.21.2"
         },
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4404,8 +3922,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4422,8 +3938,6 @@
           "type" : "ip",
           "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4441,8 +3955,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4460,8 +3972,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4479,8 +3989,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4498,8 +4006,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4517,8 +4023,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4536,8 +4040,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4555,8 +4057,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4574,8 +4074,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4592,8 +4090,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4611,8 +4107,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4630,8 +4124,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4649,8 +4141,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4668,8 +4158,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4687,8 +4175,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4705,8 +4191,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4723,8 +4207,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4742,8 +4224,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4760,8 +4240,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4778,8 +4256,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4797,8 +4273,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4816,8 +4290,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4834,8 +4306,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4852,8 +4322,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -4870,8 +4338,6 @@
           "type" : "ip",
           "ip" : "2.1.1.1"
         },
-        "Next_Hop_IP" : "2.1.1.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4888,8 +4354,6 @@
           "type" : "ip",
           "ip" : "2.1.1.2"
         },
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4906,8 +4370,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -4924,8 +4386,6 @@
           "type" : "ip",
           "ip" : "2.34.201.4"
         },
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -4942,8 +4402,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4960,8 +4418,6 @@
           "type" : "ip",
           "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -4979,8 +4435,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4998,8 +4452,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5017,8 +4469,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "2.23.12.2"
         },
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5036,8 +4486,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "2.23.22.2"
         },
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5054,8 +4502,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5072,8 +4518,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5090,8 +4534,6 @@
           "type" : "ip",
           "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -5108,8 +4550,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5126,8 +4566,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5145,8 +4583,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.1.2"
         },
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5163,8 +4599,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5182,8 +4616,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.1.2"
         },
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5201,8 +4633,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.1.2"
         },
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5220,8 +4650,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.1.2"
         },
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5238,8 +4666,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5256,8 +4682,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5274,8 +4698,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -5292,8 +4714,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
         "Tag" : null,
         "Admin_Distance" : 20,
@@ -5310,8 +4730,6 @@
           "type" : "ip",
           "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5329,8 +4747,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.2.2"
         },
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5347,8 +4763,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5365,8 +4779,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5384,8 +4796,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.2.2"
         },
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5402,8 +4812,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5421,8 +4829,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.2.2"
         },
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5439,8 +4845,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5457,8 +4861,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5476,8 +4878,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.2.2"
         },
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5494,8 +4894,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5512,8 +4910,6 @@
           "type" : "ip",
           "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.13.22.1",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5530,8 +4926,6 @@
           "type" : "ip",
           "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
         "Admin_Distance" : 200,
@@ -5548,8 +4942,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5566,8 +4958,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet1/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5584,8 +4974,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5602,8 +4990,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet0/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5621,8 +5007,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.1.1"
         },
-        "Next_Hop_IP" : "3.0.1.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5640,8 +5024,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.2.1"
         },
-        "Next_Hop_IP" : "3.0.2.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5658,8 +5040,6 @@
           "type" : "interface",
           "interface" : "Loopback0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5677,8 +5057,6 @@
           "interface" : "GigabitEthernet0/0",
           "ip" : "3.0.2.1"
         },
-        "Next_Hop_IP" : "3.0.2.1",
-        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5696,8 +5074,6 @@
           "interface" : "GigabitEthernet1/0",
           "ip" : "3.0.1.1"
         },
-        "Next_Hop_IP" : "3.0.1.1",
-        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5714,8 +5090,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5732,8 +5106,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5750,8 +5122,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet2/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5768,8 +5138,6 @@
           "type" : "interface",
           "interface" : "GigabitEthernet3/0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5787,8 +5155,6 @@
           "interface" : "eth0",
           "ip" : "2.128.0.1"
         },
-        "Next_Hop_IP" : "2.128.0.1",
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "static",
         "Tag" : null,
         "Admin_Distance" : 1,
@@ -5805,8 +5171,6 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5823,8 +5187,6 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5842,8 +5204,6 @@
           "interface" : "eth0",
           "ip" : "2.128.1.1"
         },
-        "Next_Hop_IP" : "2.128.1.1",
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "static",
         "Tag" : null,
         "Admin_Distance" : 1,
@@ -5860,8 +5220,6 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
         "Tag" : null,
         "Admin_Distance" : 0,
@@ -5878,8 +5236,6 @@
           "type" : "interface",
           "interface" : "eth0"
         },
-        "Next_Hop_IP" : null,
-        "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",
         "Tag" : null,
         "Admin_Distance" : 0,
