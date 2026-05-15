@@ -87,6 +87,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -616,6 +617,12 @@ public class TransferBDD {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD = matchLongComparison(mm.getComparator(), mm.getMetric(), currRoute.getMed());
       finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchLocalPreference) {
+      MatchLocalPreference mlp = (MatchLocalPreference) expr;
+      BDD mlpBDD =
+          matchLongComparison(mlp.getComparator(), mlp.getMetric(), currRoute.getLocalPref());
+      finalResults.add(result.setReturnValueBDD(mlpBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchClusterListLength) {
       MatchClusterListLength mcll = (MatchClusterListLength) expr;

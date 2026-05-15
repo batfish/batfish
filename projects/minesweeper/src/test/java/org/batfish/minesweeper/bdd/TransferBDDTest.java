@@ -117,6 +117,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -1505,6 +1506,112 @@ public class TransferBDDTest {
             .addStatement(
                 new If(
                     new MatchMetric(IntComparator.EQ, new VarLong("var")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    any.setUnsupported(true);
+
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
+  }
+
+  @Test
+  public void testMatchLocalPreference() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchLocalPreference(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, any.getLocalPref().value(42), true),
+            new TransferReturn(any, any.getLocalPref().value(42).not(), false)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testMatchLocalPreferenceGE() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchLocalPreference(IntComparator.GE, new LiteralLong(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD lpGETwo = any.getLocalPref().value(0).or(any.getLocalPref().value(1)).not();
+
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, lpGETwo, true), new TransferReturn(any, lpGETwo.not(), false)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testSetThenMatchLocalPreference() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetLocalPreference(new LiteralLong(42)),
+            new If(
+                new MatchLocalPreference(IntComparator.EQ, new LiteralLong(42)),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger lp = expected.getLocalPref();
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(lp.getFactory(), 32, 42));
+
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, any.getLocalPref().value(42), true),
+            new TransferReturn(expected, any.getLocalPref().value(42).not(), false)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    paths = tbdd.computePaths(policy, true);
+
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testMatchLocalPreferenceUnsupported() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchLocalPreference(IntComparator.EQ, new VarLong("var")),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
