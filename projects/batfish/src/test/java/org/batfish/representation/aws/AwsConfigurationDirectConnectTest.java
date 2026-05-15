@@ -2,6 +2,9 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -102,5 +105,17 @@ public class AwsConfigurationDirectConnectTest {
         FlowDisposition.ACCEPTED,
         ImmutableList.of(_instance, _subnet, _vpc, _tgw, _dxgw, _onPremRouter),
         _batfish);
+  }
+
+  /**
+   * Verify TGW route preference ordering: static (admin 1) > DX-propagated (admin 10) > VPN/BGP
+   * (admin 20). This ensures that when both DX and VPN advertise the same prefix, DX wins.
+   */
+  @Test
+  public void testRoutePreferenceOrdering() {
+    // DX-propagated routes have admin distance between static and BGP
+    assertThat(
+        Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN, greaterThan(Route.DEFAULT_STATIC_ROUTE_ADMIN));
+    assertThat(Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN, lessThan(20));
   }
 }
