@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
+import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.makeBgpProcess;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,14 +23,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -102,16 +101,13 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     return directConnectGatewayId;
   }
 
-  static String vrfNameForTgw(String tgwNodeName) {
-    return "vrf-" + tgwNodeName;
-  }
-
   static final String DXGW_EXPORT_POLICY_NAME = "~dxgw~export-policy~";
   static final String DXGW_IMPORT_POLICY_NAME = "~dxgw~import-policy~";
 
   /**
-   * Creates a Configuration node for this Direct Connect Gateway. Configures BGP sessions toward
-   * customer routers (via VIFs) and creates VRFs for each attached TGW.
+   * Creates a Configuration node for this Direct Connect Gateway. Uses a single default VRF for
+   * both TGW-facing and customer-facing (VIF) interfaces so that routes learned from the customer
+   * via BGP are automatically available for forwarding toward the TGW, and vice versa.
    */
   Configuration toConfigurationNode(
       Region region, ConvertedConfiguration awsConfiguration, Warnings warnings) {
@@ -123,45 +119,29 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
             DeviceModel.AWS_DIRECT_CONNECT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    // Create VRFs for each attached TGW (populated during TGW conversion)
-    region.getTransitGatewayAttachments().values().stream()
-        .filter(
-            a ->
-                a.getResourceType() == TransitGatewayAttachment.ResourceType.DIRECT_CONNECT_GATEWAY
-                    && a.getResourceId().equals(_directConnectGatewayId))
-        .forEach(
-            attachment -> {
-              String tgwNodeName = TransitGateway.nodeName(attachment.getGatewayId());
-              String vrfName = vrfNameForTgw(tgwNodeName);
-              Vrf vrf = Vrf.builder().setOwner(cfgNode).setName(vrfName).build();
-              // Create BGP process in this VRF for routes exchanged with TGW
-              createBgpProcess(cfgNode, vrf);
-            });
+    // Initialize BGP in the default VRF
+    initBgp(cfgNode);
 
     // Configure BGP sessions toward customer routers via VIFs
     region.getDirectConnectVirtualInterfaces().values().stream()
         .filter(vif -> _directConnectGatewayId.equals(vif.getDirectConnectGatewayId()))
-        .forEach(vif -> configureVifBgpSession(cfgNode, vif, region, warnings));
+        .forEach(vif -> configureVifBgpSession(cfgNode, vif, warnings));
 
     return cfgNode;
   }
 
-  private void createBgpProcess(Configuration cfgNode, Vrf vrf) {
+  private void initBgp(Configuration cfgNode) {
     LinkLocalAddress loopbackAddress = LinkLocalAddress.of(LINK_LOCAL_IP);
-    Utils.newInterface(
-        "bgp-loopback-" + vrf.getName(),
-        cfgNode,
-        vrf.getName(),
-        loopbackAddress,
-        "BGP loopback for " + vrf.getName());
+    Utils.newInterface("bgp-loopback", cfgNode, loopbackAddress, "BGP loopback");
 
-    BgpProcess proc = makeBgpProcess(loopbackAddress.getIp(), vrf);
+    Vrf defaultVrf = cfgNode.getDefaultVrf();
+    BgpProcess proc = makeBgpProcess(loopbackAddress.getIp(), defaultVrf);
     proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RoutingPolicy.builder()
         .setName(DXGW_EXPORT_POLICY_NAME)
         .setOwner(cfgNode)
-        .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
+        .setStatements(Collections.singletonList(ACCEPT_ALL_BGP_AND_STATIC))
         .build();
 
     RoutingPolicy.builder()
@@ -172,38 +152,15 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
   }
 
   private void configureVifBgpSession(
-      Configuration cfgNode, DirectConnectVirtualInterface vif, Region region, Warnings warnings) {
-    // The VIF defines the BGP session between the DXGW (Amazon side) and the customer router.
-    // Amazon address = DXGW's IP on the VIF subnet
-    // Customer address = on-prem router's IP on the VIF subnet
+      Configuration cfgNode, DirectConnectVirtualInterface vif, Warnings warnings) {
     Ip amazonIp = vif.getAmazonIp();
     Ip customerIp = vif.getCustomerIp();
 
-    // Create the VIF interface in the default VRF
-    Prefix amazonPrefix = vif.getAmazonAddress();
-    ConcreteInterfaceAddress ifaceAddress =
-        ConcreteInterfaceAddress.create(amazonIp, amazonPrefix.getPrefixLength());
     Utils.newInterface(
-        vif.getId(), cfgNode, ifaceAddress, "Direct Connect VIF " + vif.getVirtualInterfaceName());
-
-    // Ensure a BGP process exists in the default VRF
-    Vrf defaultVrf = cfgNode.getDefaultVrf();
-    if (defaultVrf.getBgpProcess() == null) {
-      BgpProcess proc = makeBgpProcess(amazonIp, defaultVrf);
-      proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-      RoutingPolicy.builder()
-          .setName(DXGW_EXPORT_POLICY_NAME)
-          .setOwner(cfgNode)
-          .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
-          .build();
-
-      RoutingPolicy.builder()
-          .setName(DXGW_IMPORT_POLICY_NAME)
-          .setOwner(cfgNode)
-          .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
-          .build();
-    }
+        vif.getId(),
+        cfgNode,
+        vif.getAmazonAddress(),
+        "Direct Connect VIF " + vif.getVirtualInterfaceName());
 
     // Add BGP peer for the customer router
     BgpActivePeerConfig.builder()
@@ -211,7 +168,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         .setRemoteAsns(LongSpace.of(vif.getAsn()))
         .setLocalIp(amazonIp)
         .setLocalAs(_amazonSideAsn)
-        .setBgpProcess(defaultVrf.getBgpProcess())
+        .setBgpProcess(cfgNode.getDefaultVrf().getBgpProcess())
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(DXGW_EXPORT_POLICY_NAME)

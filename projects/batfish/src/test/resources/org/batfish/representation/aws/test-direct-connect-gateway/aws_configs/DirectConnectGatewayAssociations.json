@@ -1,0 +1,21 @@
+{
+ "DirectConnectGatewayAssociations": [
+  {
+   "AssociationId": "dxgw-assoc-dx01",
+   "DirectConnectGatewayId": "dxgw-dx01",
+   "AssociatedGateway": {
+    "Id": "tgw-dx01",
+    "Type": "transitGateway",
+    "OwnerAccount": "123456789012",
+    "Region": "us-east-1"
+   },
+   "AssociationState": "associated",
+   "State": "associated",
+   "AllowedPrefixesToDirectConnectGateway": [
+    {
+     "Cidr": "10.0.0.0/8"
+    }
+   ]
+  }
+ ]
+}

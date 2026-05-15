@@ -34,6 +34,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
@@ -415,14 +416,46 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
 
-    // Create BGP process on this VRF if one doesn't exist yet
-    if (vrf.getBgpProcess() == null) {
-      createBgpProcess(tgwCfg, vrf, awsConfiguration);
-    }
+    // Connect TGW to DXGW via link-local interfaces (DXGW uses default VRF)
+    connect(
+        awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
 
-    // Connect TGW to DXGW via link-local interfaces
-    String dxgwVrfName = DirectConnectGateway.vrfNameForTgw(tgwCfg.getHostname());
-    connect(awsConfiguration, tgwCfg, vrfName, dxgwCfg, dxgwVrfName, routeTableId);
+    // Install static routes on TGW for allowed prefixes from the DXGW association.
+    // These represent prefixes that the customer advertises via BGP through the DXGW.
+    String ifaceOnTgw = interfaceNameToRemote(dxgwCfg, routeTableId);
+    Ip nextHopOnDxgw =
+        Utils.getInterfaceLinkLocalIp(dxgwCfg, interfaceNameToRemote(tgwCfg, routeTableId));
+
+    region.getDirectConnectGatewayAssociations().values().stream()
+        .filter(
+            assoc ->
+                assoc.getDirectConnectGatewayId().equals(attachment.getResourceId())
+                    && assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
+        .flatMap(assoc -> assoc.getAllowedPrefixes().stream())
+        .forEach(prefix -> addStaticRoute(vrf, toStaticRoute(prefix, ifaceOnTgw, nextHopOnDxgw)));
+
+    // Install static routes on DXGW for VPC CIDRs reachable via this TGW.
+    // This lets the DXGW forward traffic from the customer toward VPCs behind the TGW.
+    String ifaceOnDxgw = interfaceNameToRemote(tgwCfg, routeTableId);
+    Ip nextHopOnTgw = Utils.getInterfaceLinkLocalIp(tgwCfg, ifaceOnTgw);
+    Vrf dxgwVrf = dxgwCfg.getDefaultVrf();
+
+    region.getTransitGatewayAttachments().values().stream()
+        .filter(
+            a ->
+                a.getGatewayId().equals(tgwCfg.getHostname())
+                    && a.getResourceType() == ResourceType.VPC)
+        .forEach(
+            vpcAttachment -> {
+              Vpc vpc = region.getVpcs().get(vpcAttachment.getResourceId());
+              if (vpc != null) {
+                vpc.getCidrBlockAssociations()
+                    .forEach(
+                        cidr ->
+                            addStaticRoute(
+                                dxgwVrf, toStaticRoute(cidr, ifaceOnDxgw, nextHopOnTgw)));
+              }
+            });
   }
 
   /**

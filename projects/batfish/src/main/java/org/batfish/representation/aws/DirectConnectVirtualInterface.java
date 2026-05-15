@@ -15,6 +15,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
@@ -48,8 +49,8 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
     static final String JSON_KEY_BGP_STATUS = "BgpStatus";
 
     private final long _asn;
-    private final @Nonnull Prefix _amazonAddress;
-    private final @Nonnull Prefix _customerAddress;
+    private final @Nonnull ConcreteInterfaceAddress _amazonAddress;
+    private final @Nonnull ConcreteInterfaceAddress _customerAddress;
 
     @JsonCreator
     private static BgpPeer create(
@@ -59,10 +60,16 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       checkArgument(asn != null, "ASN cannot be null for BGP peer");
       checkArgument(amazonAddress != null, "Amazon address cannot be null for BGP peer");
       checkArgument(customerAddress != null, "Customer address cannot be null for BGP peer");
-      return new BgpPeer(asn, Prefix.parse(amazonAddress), Prefix.parse(customerAddress));
+      return new BgpPeer(
+          asn,
+          ConcreteInterfaceAddress.parse(amazonAddress),
+          ConcreteInterfaceAddress.parse(customerAddress));
     }
 
-    BgpPeer(long asn, Prefix amazonAddress, Prefix customerAddress) {
+    BgpPeer(
+        long asn,
+        ConcreteInterfaceAddress amazonAddress,
+        ConcreteInterfaceAddress customerAddress) {
       _asn = asn;
       _amazonAddress = amazonAddress;
       _customerAddress = customerAddress;
@@ -72,11 +79,11 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       return _asn;
     }
 
-    public @Nonnull Prefix getAmazonAddress() {
+    public @Nonnull ConcreteInterfaceAddress getAmazonAddress() {
       return _amazonAddress;
     }
 
-    public @Nonnull Prefix getCustomerAddress() {
+    public @Nonnull ConcreteInterfaceAddress getCustomerAddress() {
       return _customerAddress;
     }
 
@@ -114,9 +121,9 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
 
   private final long _asn;
 
-  private final @Nonnull Prefix _amazonAddress;
+  private final @Nonnull ConcreteInterfaceAddress _amazonAddress;
 
-  private final @Nonnull Prefix _customerAddress;
+  private final @Nonnull ConcreteInterfaceAddress _customerAddress;
 
   private final @Nonnull List<BgpPeer> _bgpPeers;
 
@@ -156,8 +163,8 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         directConnectGatewayId,
         vlan,
         asn,
-        Prefix.parse(amazonAddress),
-        Prefix.parse(customerAddress),
+        ConcreteInterfaceAddress.parse(amazonAddress),
+        ConcreteInterfaceAddress.parse(customerAddress),
         firstNonNull(bgpPeers, ImmutableList.of()),
         firstNonNull(
                 routeFilterPrefixes,
@@ -177,8 +184,8 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       @Nullable String directConnectGatewayId,
       int vlan,
       long asn,
-      Prefix amazonAddress,
-      Prefix customerAddress,
+      ConcreteInterfaceAddress amazonAddress,
+      ConcreteInterfaceAddress customerAddress,
       List<BgpPeer> bgpPeers,
       List<Prefix> routeFilterPrefixes,
       Map<String, String> tags) {
@@ -226,20 +233,20 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
     return _asn;
   }
 
-  public @Nonnull Prefix getAmazonAddress() {
+  public @Nonnull ConcreteInterfaceAddress getAmazonAddress() {
     return _amazonAddress;
   }
 
-  public @Nonnull Prefix getCustomerAddress() {
+  public @Nonnull ConcreteInterfaceAddress getCustomerAddress() {
     return _customerAddress;
   }
 
   public @Nonnull Ip getAmazonIp() {
-    return _amazonAddress.getStartIp();
+    return _amazonAddress.getIp();
   }
 
   public @Nonnull Ip getCustomerIp() {
-    return _customerAddress.getStartIp();
+    return _customerAddress.getIp();
   }
 
   public @Nonnull List<BgpPeer> getBgpPeers() {

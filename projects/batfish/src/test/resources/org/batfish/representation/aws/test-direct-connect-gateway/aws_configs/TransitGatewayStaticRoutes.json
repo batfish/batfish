@@ -1,0 +1,9 @@
+{
+ "TransitGatewayStaticRoutes": [
+  {
+   "AdditionalRoutesAvailable": false,
+   "Routes": [],
+   "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+  }
+ ]
+}
