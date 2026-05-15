@@ -432,7 +432,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                 assoc.getDirectConnectGatewayId().equals(attachment.getResourceId())
                     && assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
         .flatMap(assoc -> assoc.getAllowedPrefixes().stream())
-        .forEach(prefix -> addStaticRoute(vrf, toStaticRoute(prefix, ifaceOnTgw, nextHopOnDxgw)));
+        .forEach(
+            prefix ->
+                addStaticRoute(
+                    vrf,
+                    toStaticRoute(
+                        prefix,
+                        ifaceOnTgw,
+                        nextHopOnDxgw,
+                        false,
+                        Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN)));
 
     // Install static routes on DXGW for VPC CIDRs reachable via this TGW.
     // This lets the DXGW forward traffic from the customer toward VPCs behind the TGW.

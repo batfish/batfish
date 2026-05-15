@@ -273,10 +273,24 @@ public final class Utils {
       @Nullable String nextHopInterfaceName,
       @Nullable Ip nextHopIp,
       boolean nonForwarding) {
+    return toStaticRoute(
+        targetPrefix,
+        nextHopInterfaceName,
+        nextHopIp,
+        nonForwarding,
+        Route.DEFAULT_STATIC_ROUTE_ADMIN);
+  }
+
+  static @Nonnull StaticRoute toStaticRoute(
+      Prefix targetPrefix,
+      @Nullable String nextHopInterfaceName,
+      @Nullable Ip nextHopIp,
+      boolean nonForwarding,
+      int adminDistance) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
         .setNextHop(NextHop.legacyConverter(nextHopInterfaceName, nextHopIp))
-        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+        .setAdministrativeCost(adminDistance)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .setNonForwarding(nonForwarding)
         .build();

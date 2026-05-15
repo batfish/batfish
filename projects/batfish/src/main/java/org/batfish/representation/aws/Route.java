@@ -46,6 +46,11 @@ abstract class Route implements Serializable {
 
   static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
+  /**
+   * Admin distance for routes propagated from Direct Connect (preferred over VPN but not static)
+   */
+  static final int DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN = 10;
+
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
   protected final @Nonnull State _state;
