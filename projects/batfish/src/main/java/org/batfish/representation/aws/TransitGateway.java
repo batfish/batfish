@@ -371,11 +371,58 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           connectVpn(tgwCfg, attachment, vpnConnection.get(), awsConfiguration, region, warnings);
           return;
         }
+      case DIRECT_CONNECT_GATEWAY:
+        {
+          connectDirectConnect(tgwCfg, attachment, awsConfiguration, region, warnings);
+          return;
+        }
       default:
         warnings.redFlag(
             "Unsupported resource type in transit gateway attachment: "
                 + attachment.getResourceType());
     }
+  }
+
+  private static void connectDirectConnect(
+      Configuration tgwCfg,
+      TransitGatewayAttachment attachment,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+
+    if (attachment.getAssociation() == null
+        || !attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
+      warnings.redFlagf(
+          "Skipped Direct Connect Gateway %s as attachment because it is not associated",
+          attachment.getResourceId());
+      return;
+    }
+
+    Configuration dxgwCfg =
+        awsConfiguration.getNode(DirectConnectGateway.nodeName(attachment.getResourceId()));
+    if (dxgwCfg == null) {
+      warnings.redFlagf(
+          "Direct Connect Gateway node %s not found for transit gateway %s",
+          attachment.getResourceId(), tgwCfg.getHostname());
+      return;
+    }
+
+    String routeTableId = attachment.getAssociation().getRouteTableId();
+    String vrfName = vrfNameForRouteTable(routeTableId);
+    if (!tgwCfg.getVrfs().containsKey(vrfName)) {
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
+      return;
+    }
+    Vrf vrf = tgwCfg.getVrfs().get(vrfName);
+
+    // Create BGP process on this VRF if one doesn't exist yet
+    if (vrf.getBgpProcess() == null) {
+      createBgpProcess(tgwCfg, vrf, awsConfiguration);
+    }
+
+    // Connect TGW to DXGW via link-local interfaces
+    String dxgwVrfName = DirectConnectGateway.vrfNameForTgw(tgwCfg.getHostname());
+    connect(awsConfiguration, tgwCfg, vrfName, dxgwCfg, dxgwVrfName, routeTableId);
   }
 
   /**
@@ -610,6 +657,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         (We warn about lack of support in connectVpn.)
         */
         return;
+      case DIRECT_CONNECT_GATEWAY:
+        // Routes from DX are propagated via BGP from the DXGW node, same as VPN
+        return;
       default:
         warnings.redFlagf(
             "Resource type %s for transit gateway route propagation",
@@ -774,6 +824,33 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                           vrf,
                           toStaticRoute(
                               route.getDestinationCidrBlock(), tunnel.getCgwInsideAddress())));
+          return;
+        }
+      case DIRECT_CONNECT_GATEWAY:
+        {
+          Configuration dxgwCfg =
+              awsConfiguration.getNode(
+                  DirectConnectGateway.nodeName(tgwAttachment.getResourceId()));
+          if (dxgwCfg == null) {
+            warnings.redFlagf(
+                "Direct Connect Gateway %s for transit gateway %s not found",
+                tgwAttachment.getResourceId(), _gatewayId);
+            return;
+          }
+          String ifaceOnTgw = interfaceNameToRemote(dxgwCfg, routeTableId);
+          if (!tgwCfg.getAllInterfaces().containsKey(ifaceOnTgw)) {
+            warnings.redFlagf(
+                "Interface to DXGW %s not found on TGW %s for route table %s",
+                dxgwCfg.getHostname(), tgwCfg.getHostname(), routeTableId);
+            return;
+          }
+          addStaticRoute(
+              vrf,
+              toStaticRoute(
+                  route.getDestinationCidrBlock(),
+                  ifaceOnTgw,
+                  Utils.getInterfaceLinkLocalIp(
+                      dxgwCfg, interfaceNameToRemote(tgwCfg, routeTableId))));
           return;
         }
       default:

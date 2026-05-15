@@ -858,6 +858,11 @@ public final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
+    for (DirectConnectGateway dcGw : getDirectConnectGateways().values()) {
+      Configuration cfgNode = dcGw.toConfigurationNode(this, awsConfiguration, warnings);
+      awsConfiguration.addNode(cfgNode);
+    }
+
     for (Instance instance : getInstances().values()) {
       Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
