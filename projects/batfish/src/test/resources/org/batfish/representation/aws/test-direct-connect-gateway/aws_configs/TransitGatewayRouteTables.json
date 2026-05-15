@@ -1,0 +1,18 @@
+{
+ "TransitGatewayRouteTables": [
+  {
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "DefaultAssociationRouteTable": true,
+   "DefaultPropagationRouteTable": true,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-tgw-rtb"
+    }
+   ],
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+  }
+ ]
+}

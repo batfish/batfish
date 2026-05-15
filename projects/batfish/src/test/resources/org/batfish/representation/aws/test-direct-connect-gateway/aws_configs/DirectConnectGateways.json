@@ -1,0 +1,16 @@
+{
+ "DirectConnectGateways": [
+  {
+   "DirectConnectGatewayId": "dxgw-dx01",
+   "DirectConnectGatewayName": "dx-test-gateway",
+   "AmazonSideAsn": 64513,
+   "DirectConnectGatewayState": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-gateway"
+    }
+   ]
+  }
+ ]
+}
