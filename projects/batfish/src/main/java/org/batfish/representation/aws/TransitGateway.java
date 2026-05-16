@@ -447,9 +447,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
 
     // Build a TGW-side import policy that accepts BGP routes from the DXGW peer and tags them
-    // with an elevated local-preference. AWS uses local-preference (not admin distance) to encode
-    // DX > VPN preference: when both DX and VPN BGP peers advertise the same prefix, the higher
-    // local-pref tagged here ensures the DX route wins BGP best-path selection on the TGW.
+    // with a local-preference value that depends on the AWS Direct Connect traffic-engineering
+    // community on the route. This matches AWS's documented behavior: customers attach
+    // 7224:7300/7200/7100 to BGP advertisements over the VIF to control AWS-side preference.
+    // All three values are higher than the default lp (100) used for VPN-propagated routes, so
+    // DX still wins over VPN in every case.
     String importPolicyName = dxImportPolicyName(routeTableId);
     if (!tgwCfg.getRoutingPolicies().containsKey(importPolicyName)) {
       RoutingPolicy.builder()
@@ -460,8 +462,26 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                   new If(
                       new MatchProtocol(RoutingProtocol.BGP),
                       ImmutableList.of(
-                          new SetLocalPreference(
-                              new LiteralLong(Route.DIRECT_CONNECT_LOCAL_PREFERENCE)),
+                          // High preference (7224:7300)
+                          new If(
+                              dxCommunityMatch(DirectConnectGateway.DX_HIGH_PREF_COMMUNITY),
+                              ImmutableList.of(
+                                  new SetLocalPreference(
+                                      new LiteralLong(Route.DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE))),
+                              // Low preference (7224:7100)
+                              ImmutableList.of(
+                                  new If(
+                                      dxCommunityMatch(DirectConnectGateway.DX_LOW_PREF_COMMUNITY),
+                                      ImmutableList.of(
+                                          new SetLocalPreference(
+                                              new LiteralLong(
+                                                  Route.DIRECT_CONNECT_LOW_LOCAL_PREFERENCE))),
+                                      // Medium / default (7224:7200 or no community)
+                                      ImmutableList.of(
+                                          new SetLocalPreference(
+                                              new LiteralLong(
+                                                  Route
+                                                      .DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE)))))),
                           Statements.ExitAccept.toStaticStatement()),
                       ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
           .build();
@@ -503,6 +523,15 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   private static String dxImportPolicyName(String routeTableId) {
     return String.format("~tgw~dx-import-policy~%s~", routeTableId);
+  }
+
+  /** Returns a boolean expression that matches if the route carries the given community. */
+  private static org.batfish.datamodel.routing_policy.expr.BooleanExpr dxCommunityMatch(
+      org.batfish.datamodel.bgp.community.StandardCommunity community) {
+    return new org.batfish.datamodel.routing_policy.communities.MatchCommunities(
+        org.batfish.datamodel.routing_policy.communities.InputCommunities.instance(),
+        new org.batfish.datamodel.routing_policy.communities.HasCommunity(
+            new org.batfish.datamodel.routing_policy.communities.CommunityIs(community)));
   }
 
   private static long getDxgwAmazonSideAsn(Region region, String dxgwId) {

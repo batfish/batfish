@@ -126,6 +126,18 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
   /** Common import policy on the DXGW: accept all BGP. */
   static final String DXGW_IMPORT_POLICY_NAME = "~dxgw~import-policy~";
 
+  /** AWS Direct Connect traffic-engineering community: high preference. */
+  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_HIGH_PREF_COMMUNITY =
+      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7300);
+
+  /** AWS Direct Connect traffic-engineering community: medium preference (default). */
+  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_MEDIUM_PREF_COMMUNITY =
+      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7200);
+
+  /** AWS Direct Connect traffic-engineering community: low preference. */
+  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_LOW_PREF_COMMUNITY =
+      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7100);
+
   /**
    * Creates a Configuration node for this Direct Connect Gateway. Uses a single default VRF for
    * both TGW-facing and customer-facing (VIF) interfaces.
