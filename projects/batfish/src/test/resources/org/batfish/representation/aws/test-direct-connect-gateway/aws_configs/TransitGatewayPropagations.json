@@ -14,6 +14,23 @@
      "ResourceType": "direct-connect-gateway",
      "State": "enabled",
      "TransitGatewayAttachmentId": "tgw-attach-dx01"
+    },
+    {
+     "ResourceId": "vpn-dx-test",
+     "ResourceType": "vpn",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-vpn-dx-test"
+    }
+   ]
+  },
+  {
+   "TransitGatewayRouteTableId": "tgw-rtb-iso01",
+   "TransitGatewayRouteTablePropagations": [
+    {
+     "ResourceId": "vpc-iso01",
+     "ResourceType": "vpc",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-iso01"
     }
    ]
   }

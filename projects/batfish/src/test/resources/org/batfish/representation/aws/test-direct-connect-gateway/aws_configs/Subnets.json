@@ -13,6 +13,20 @@
    "VpcId": "vpc-dx01",
    "OwnerId": "123456789012",
    "SubnetArn": "arn:aws:ec2:us-east-1:123456789012:subnet/subnet-dx01"
+  },
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-east-1a",
+   "AvailableIpAddressCount": 251,
+   "CidrBlock": "10.200.1.0/24",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": false,
+   "State": "available",
+   "SubnetId": "subnet-iso01",
+   "VpcId": "vpc-iso01",
+   "OwnerId": "123456789012",
+   "SubnetArn": "arn:aws:ec2:us-east-1:123456789012:subnet/subnet-iso01"
   }
  ]
 }

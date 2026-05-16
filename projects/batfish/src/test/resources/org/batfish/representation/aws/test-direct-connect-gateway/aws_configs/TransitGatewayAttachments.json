@@ -39,6 +39,46 @@
    "TransitGatewayAttachmentId": "tgw-attach-dx01",
    "TransitGatewayId": "tgw-dx01",
    "TransitGatewayOwnerId": "123456789012"
+  },
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-iso01"
+   },
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "ResourceId": "vpc-iso01",
+   "ResourceOwnerId": "123456789012",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "isolated-vpc-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-iso01",
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayOwnerId": "123456789012"
+  },
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+   },
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "ResourceId": "vpn-dx-test",
+   "ResourceOwnerId": "123456789012",
+   "ResourceType": "vpn",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-vpn-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-vpn-dx-test",
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayOwnerId": "123456789012"
   }
  ]
 }

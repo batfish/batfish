@@ -9,17 +9,67 @@ interface GigabitEthernet0/0
  ip address 169.254.10.2 255.255.255.252
  no shutdown
 !
+! Outside-tunnel interface used as tunnel source for the VPN tunnel to AWS.
+interface Ethernet0/0
+ description Internet-facing interface (VPN tunnel source)
+ ip address 1.1.1.2 255.255.255.252
+ no shutdown
+!
+! Static route to reach the AWS VPN gateway outside-tunnel address.
+ip route 3.3.3.3 255.255.255.255 Ethernet0/0
+!
+! IKE/IPsec configuration matching the AWS-supplied tunnel parameters
+! (PSK / encryption / DH group from VpnConnections.json XML).
+crypto isakmp policy 200
+ encr aes
+ authentication pre-share
+ group 2
+ lifetime 28800
+ hash sha
+exit
+crypto keyring keyring-vpn-dx-test-0
+ local-address 1.1.1.2
+ pre-shared-key address 3.3.3.3 key placeholder_psk_dx_test_tunnel
+exit
+crypto isakmp profile isakmp-vpn-dx-test-0
+ local-address 1.1.1.2
+ match identity address 3.3.3.3 255.255.255.255
+ keyring keyring-vpn-dx-test-0
+exit
+crypto ipsec transform-set ipsec-prop-vpn-dx-test-0 esp-aes 128 esp-sha-hmac
+ mode tunnel
+exit
+crypto ipsec profile ipsec-vpn-dx-test-0
+ set pfs group2
+ set security-association lifetime seconds 3600
+ set transform-set ipsec-prop-vpn-dx-test-0
+exit
+!
+! IPsec tunnel to AWS Transit Gateway via TGW-attached VPN connection.
+! Provides a redundant path to AWS in addition to the Direct Connect VIF.
+interface Tunnel1
+ ip address 169.254.20.2 255.255.255.252
+ tunnel source 1.1.1.2
+ tunnel destination 3.3.3.3
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile ipsec-vpn-dx-test-0
+ no shutdown
+!
 router bgp 65001
  bgp router-id 10.10.0.1
  neighbor 169.254.10.1 remote-as 64513
+ neighbor 169.254.20.1 remote-as 64512
  !
  address-family ipv4 unicast
   network 10.10.0.0 mask 255.255.0.0
   neighbor 169.254.10.1 activate
+  neighbor 169.254.20.1 activate
  exit-address-family
 !
-! On-prem advertises its own /16 to AWS; expects AWS to advertise the allowed
-! summary 10.0.0.0/8 back over BGP, which then provides a route for any 10.x.x.x
-! destination not covered by a more-specific local route.
+! On-prem advertises its own /16 to AWS over both BGP sessions (DX and VPN);
+! expects AWS to advertise the allowed summary 10.0.0.0/8 back over BGP, which
+! then provides a route for any 10.x.x.x destination not covered by a more-
+! specific local route. The DX path should win in AWS due to the elevated DX
+! local-preference applied at the TGW.
 ip route 10.10.0.0 255.255.0.0 Null0
 !
