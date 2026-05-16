@@ -278,11 +278,9 @@ modified by `SetLocalPreference`, which dispatches through
 `SetMetric`, `SetTag`, and `SetWeight` use the same infrastructure with their
 respective `BDDRoute` integer fields.
 
-There is no `MatchLocalPreference` handler in `TransferBDD`. Any policy that
-uses `MatchLocalPreference` falls through to the catch-all and is marked
-unsupported. By contrast, `MatchMetric` and `MatchTag` are supported via
-direct integer comparisons. Adding `MatchLocalPreference` would be a
-mechanical change.
+`MatchLocalPreference`, `MatchMetric`, and `MatchTag` are all supported via
+`matchLongComparison`, which compiles a literal-`LongExpr` comparison into a
+constraint on the corresponding `BDDRoute` integer field.
 
 ## Non-BGP Routes
 
@@ -346,8 +344,6 @@ references are to classes in
   (`_prependedASes`), so only paths with identical prepend sequences can be
   merged in `combineSymbolicResults`. Policies with many distinct prepend
   combinations produce many paths.
-- **No `MatchLocalPreference`.** No handler exists in `TransferBDD`; affected
-  paths are marked unsupported.
 - **No symbolic intermediate-attribute tracking across calls in some cases.**
   `TransferParam` updates made inside expression visits can be dropped — see
   the TODO in `TransferBDD.compute(BooleanExpr, ...)`.
