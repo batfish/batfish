@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 
 /**
  * Represents an AWS Direct Connect Virtual Interface (Transit VIF).
@@ -39,7 +38,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
   static final String JSON_KEY_VIRTUAL_INTERFACE_STATE = "VirtualInterfaceState";
   static final String JSON_KEY_DIRECT_CONNECT_GATEWAY_ID = "DirectConnectGatewayId";
   static final String JSON_KEY_BGP_PEERS = "BgpPeers";
-  static final String JSON_KEY_ROUTE_FILTER_PREFIXES = "RouteFilterPrefixes";
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -127,8 +125,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
 
   private final @Nonnull List<BgpPeer> _bgpPeers;
 
-  private final @Nonnull List<Prefix> _routeFilterPrefixes;
-
   private final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
@@ -143,8 +139,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       @JsonProperty(JSON_KEY_AMAZON_ADDRESS) @Nullable String amazonAddress,
       @JsonProperty(JSON_KEY_CUSTOMER_ADDRESS) @Nullable String customerAddress,
       @JsonProperty(JSON_KEY_BGP_PEERS) @Nullable List<BgpPeer> bgpPeers,
-      @JsonProperty(JSON_KEY_ROUTE_FILTER_PREFIXES) @Nullable
-          List<DirectConnectGatewayAssociation.AllowedPrefix> routeFilterPrefixes,
       @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags) {
     checkArgument(virtualInterfaceId != null, "Virtual interface id cannot be null");
     checkArgument(virtualInterfaceName != null, "Virtual interface name cannot be null");
@@ -166,12 +160,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         ConcreteInterfaceAddress.parse(amazonAddress),
         ConcreteInterfaceAddress.parse(customerAddress),
         firstNonNull(bgpPeers, ImmutableList.of()),
-        firstNonNull(
-                routeFilterPrefixes,
-                ImmutableList.<DirectConnectGatewayAssociation.AllowedPrefix>of())
-            .stream()
-            .map(DirectConnectGatewayAssociation.AllowedPrefix::getCidr)
-            .collect(ImmutableList.toImmutableList()),
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
@@ -187,7 +175,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       ConcreteInterfaceAddress amazonAddress,
       ConcreteInterfaceAddress customerAddress,
       List<BgpPeer> bgpPeers,
-      List<Prefix> routeFilterPrefixes,
       Map<String, String> tags) {
     _virtualInterfaceId = virtualInterfaceId;
     _virtualInterfaceName = virtualInterfaceName;
@@ -199,7 +186,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
     _amazonAddress = amazonAddress;
     _customerAddress = customerAddress;
     _bgpPeers = bgpPeers;
-    _routeFilterPrefixes = routeFilterPrefixes;
     _tags = tags;
   }
 
@@ -253,10 +239,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
     return _bgpPeers;
   }
 
-  public @Nonnull List<Prefix> getRouteFilterPrefixes() {
-    return _routeFilterPrefixes;
-  }
-
   public @Nonnull Map<String, String> getTags() {
     return _tags;
   }
@@ -280,7 +262,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         && Objects.equals(_amazonAddress, that._amazonAddress)
         && Objects.equals(_customerAddress, that._customerAddress)
         && Objects.equals(_bgpPeers, that._bgpPeers)
-        && Objects.equals(_routeFilterPrefixes, that._routeFilterPrefixes)
         && Objects.equals(_tags, that._tags);
   }
 
@@ -297,7 +278,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         _amazonAddress,
         _customerAddress,
         _bgpPeers,
-        _routeFilterPrefixes,
         _tags);
   }
 }

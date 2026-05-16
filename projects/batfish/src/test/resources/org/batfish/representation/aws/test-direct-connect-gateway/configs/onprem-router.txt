@@ -2,7 +2,7 @@
 hostname onprem-router
 !
 interface Loopback0
- ip address 10.0.0.1 255.255.255.255
+ ip address 10.10.0.1 255.255.255.255
 !
 interface GigabitEthernet0/0
  description Direct Connect VIF to AWS
@@ -10,13 +10,16 @@ interface GigabitEthernet0/0
  no shutdown
 !
 router bgp 65001
- bgp router-id 10.0.0.1
+ bgp router-id 10.10.0.1
  neighbor 169.254.10.1 remote-as 64513
  !
  address-family ipv4 unicast
-  network 10.0.0.0 mask 255.0.0.0
+  network 10.10.0.0 mask 255.255.0.0
   neighbor 169.254.10.1 activate
  exit-address-family
 !
-ip route 10.0.0.0 255.0.0.0 Null0
+! On-prem advertises its own /16 to AWS; expects AWS to advertise the allowed
+! summary 10.0.0.0/8 back over BGP, which then provides a route for any 10.x.x.x
+! destination not covered by a more-specific local route.
+ip route 10.10.0.0 255.255.0.0 Null0
 !
