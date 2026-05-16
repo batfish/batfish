@@ -3,15 +3,20 @@ package org.batfish.representation.aws;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
@@ -97,25 +102,34 @@ public class AwsConfigurationDirectConnectTest {
 
   @Test
   public void testFromInstanceToOnPrem() {
-    // Instance sends traffic to 10.0.0.1 (on-prem loopback).
-    // Subnet route table sends 0.0.0.0/0 to TGW.
-    // TGW should have learned 10.0.0.0/8 from DXGW via BGP and forward toward on-prem.
+    // Instance sends traffic to 10.10.0.1 (on-prem loopback).
+    // Subnet route table sends 0.0.0.0/0 to TGW. TGW learned 10.10.0.0/16 from
+    // DXGW via BGP (originated by on-prem) and forwards toward on-prem.
     testTrace(
-        getAnyFlow(_instance, Ip.parse("10.0.0.1"), _batfish),
+        getAnyFlow(_instance, Ip.parse("10.10.0.1"), _batfish),
         FlowDisposition.ACCEPTED,
         ImmutableList.of(_instance, _subnet, _vpc, _tgw, _dxgw, _onPremRouter),
         _batfish);
   }
 
   /**
-   * Verify TGW route preference ordering: static (admin 1) > DX-propagated (admin 10) > VPN/BGP
-   * (admin 20). This ensures that when both DX and VPN advertise the same prefix, DX wins.
+   * Verify that BGP routes received on the TGW from a DX peer are tagged with the DX-propagated
+   * admin distance. This is the mechanism that ensures DX wins over VPN-propagated routes (which
+   * use the default BGP admin distance) for the same prefix in TGW route selection.
    */
   @Test
-  public void testRoutePreferenceOrdering() {
-    // DX-propagated routes have admin distance between static and BGP
+  public void testTgwReceivesDxRoutesWithDxAdminDistance() {
+    DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
+    String tgwVrfName = TransitGateway.vrfNameForRouteTable("tgw-rtb-dx01");
+    Set<AbstractRoute> tgwRoutes =
+        dp.getRibs().get(_tgw, tgwVrfName).getRoutes().stream()
+            .filter(r -> r.getNetwork().equals(Prefix.parse("10.10.0.0/16")))
+            .collect(Collectors.toSet());
+    assertThat(tgwRoutes, hasSize(1));
+    AbstractRoute route = tgwRoutes.iterator().next();
     assertThat(
-        Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN, greaterThan(Route.DEFAULT_STATIC_ROUTE_ADMIN));
-    assertThat(Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN, lessThan(20));
+        "BGP route propagated from DXGW should carry DX-propagated admin distance",
+        route.getAdministrativeCost(),
+        equalTo(Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN));
   }
 }

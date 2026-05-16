@@ -31,15 +31,22 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
@@ -408,63 +415,105 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return;
     }
 
+    Optional<DirectConnectGatewayAssociation> dxgwAssociation =
+        region.getDirectConnectGatewayAssociations().values().stream()
+            .filter(
+                assoc ->
+                    assoc.getDirectConnectGatewayId().equals(attachment.getResourceId())
+                        && assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
+            .findFirst();
+    if (!dxgwAssociation.isPresent()) {
+      warnings.redFlagf(
+          "No Direct Connect Gateway association found between DXGW %s and TGW %s",
+          attachment.getResourceId(), tgwCfg.getHostname());
+      return;
+    }
+
     String routeTableId = attachment.getAssociation().getRouteTableId();
     String vrfName = vrfNameForRouteTable(routeTableId);
     if (!tgwCfg.getVrfs().containsKey(vrfName)) {
       warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
       return;
     }
-    Vrf vrf = tgwCfg.getVrfs().get(vrfName);
+    Vrf tgwVrf = tgwCfg.getVrfs().get(vrfName);
+
+    // Ensure a BGP process exists on the TGW VRF (shared with VPN if both are present)
+    if (tgwVrf.getBgpProcess() == null) {
+      createBgpProcess(tgwCfg, tgwVrf, awsConfiguration);
+    }
 
     // Connect TGW to DXGW via link-local interfaces (DXGW uses default VRF)
     connect(
         awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
 
-    // Install static routes on TGW for allowed prefixes from the DXGW association.
-    // These represent prefixes that the customer advertises via BGP through the DXGW.
-    String ifaceOnTgw = interfaceNameToRemote(dxgwCfg, routeTableId);
-    Ip nextHopOnDxgw =
-        Utils.getInterfaceLinkLocalIp(dxgwCfg, interfaceNameToRemote(tgwCfg, routeTableId));
+    // Build a TGW-side import policy that accepts BGP routes from the DXGW peer and tags them
+    // with the DX-propagated admin distance. This achieves AWS's documented preference:
+    // static (admin 1) > DX-propagated (admin DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN) > VPN (BGP
+    // default admin).
+    String importPolicyName = dxImportPolicyName(routeTableId);
+    if (!tgwCfg.getRoutingPolicies().containsKey(importPolicyName)) {
+      RoutingPolicy.builder()
+          .setName(importPolicyName)
+          .setOwner(tgwCfg)
+          .setStatements(
+              ImmutableList.of(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.BGP),
+                      ImmutableList.of(
+                          new SetAdministrativeCost(
+                              new LiteralAdministrativeCost(
+                                  Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN)),
+                          Statements.ExitAccept.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+          .build();
+    }
 
-    region.getDirectConnectGatewayAssociations().values().stream()
-        .filter(
-            assoc ->
-                assoc.getDirectConnectGatewayId().equals(attachment.getResourceId())
-                    && assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
-        .flatMap(assoc -> assoc.getAllowedPrefixes().stream())
-        .forEach(
-            prefix ->
-                addStaticRoute(
-                    vrf,
-                    toStaticRoute(
-                        prefix,
-                        ifaceOnTgw,
-                        nextHopOnDxgw,
-                        false,
-                        Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN)));
+    // BGP unnumbered peer on the TGW side (in the DX route table's VRF). The peer interface is
+    // the link-local interface to the DXGW that was just created by connect().
+    String tgwIfaceToDxgw = interfaceNameToRemote(dxgwCfg, routeTableId);
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(tgwIfaceToDxgw)
+        .setRemoteAs(getDxgwAmazonSideAsn(region, attachment.getResourceId()))
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(getTgwAmazonSideAsn(region, tgwCfg.getHostname()))
+        .setBgpProcess(tgwVrf.getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(bgpExportPolicyName(vrfName))
+                .setImportPolicy(importPolicyName)
+                .build())
+        .build();
 
-    // Install static routes on DXGW for VPC CIDRs reachable via this TGW.
-    // This lets the DXGW forward traffic from the customer toward VPCs behind the TGW.
-    String ifaceOnDxgw = interfaceNameToRemote(tgwCfg, routeTableId);
-    Ip nextHopOnTgw = Utils.getInterfaceLinkLocalIp(tgwCfg, ifaceOnTgw);
-    Vrf dxgwVrf = dxgwCfg.getDefaultVrf();
+    // BGP unnumbered peer on the DXGW side (in default VRF). Export filtered by allowed prefixes
+    // for this association; import accepts all BGP.
+    String dxgwIfaceToTgw = interfaceNameToRemote(tgwCfg, routeTableId);
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(dxgwIfaceToTgw)
+        .setRemoteAs(getTgwAmazonSideAsn(region, tgwCfg.getHostname()))
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(getDxgwAmazonSideAsn(region, attachment.getResourceId()))
+        .setBgpProcess(dxgwCfg.getDefaultVrf().getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(
+                    DirectConnectGateway.tgwExportPolicyName(dxgwAssociation.get().getId()))
+                .setImportPolicy(DirectConnectGateway.DXGW_IMPORT_POLICY_NAME)
+                .build())
+        .build();
+  }
 
-    region.getTransitGatewayAttachments().values().stream()
-        .filter(
-            a ->
-                a.getGatewayId().equals(tgwCfg.getHostname())
-                    && a.getResourceType() == ResourceType.VPC)
-        .forEach(
-            vpcAttachment -> {
-              Vpc vpc = region.getVpcs().get(vpcAttachment.getResourceId());
-              if (vpc != null) {
-                vpc.getCidrBlockAssociations()
-                    .forEach(
-                        cidr ->
-                            addStaticRoute(
-                                dxgwVrf, toStaticRoute(cidr, ifaceOnDxgw, nextHopOnTgw)));
-              }
-            });
+  private static String dxImportPolicyName(String routeTableId) {
+    return String.format("~tgw~dx-import-policy~%s~", routeTableId);
+  }
+
+  private static long getDxgwAmazonSideAsn(Region region, String dxgwId) {
+    DirectConnectGateway dxgw = region.getDirectConnectGateways().get(dxgwId);
+    return dxgw == null ? 0L : dxgw.getAmazonSideAsn();
+  }
+
+  private static long getTgwAmazonSideAsn(Region region, String tgwId) {
+    TransitGateway tgw = region.getTransitGateways().get(tgwId);
+    return tgw == null ? 0L : tgw.getOptions().getAmazonSideAsn();
   }
 
   /**
