@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -172,5 +174,67 @@ public class AwsConfigurationDirectConnectTest {
         "BGP route propagated from DXGW should carry the DX local-preference",
         bgpRoute.getLocalPreference(),
         equalTo(Route.DIRECT_CONNECT_LOCAL_PREFERENCE));
+  }
+
+  /**
+   * Verify the AWS DX traffic-engineering communities (7224:7300/7200/7100) translate to the
+   * correct local-preference values on the TGW. The TGW's DX import policy reads the community on
+   * incoming BGP routes and assigns a local-pref accordingly, allowing customers to control
+   * AWS-side path preference among multiple DX paths.
+   */
+  @Test
+  public void testDxCommunityToLocalPreferenceMapping() {
+    Configuration tgwCfg = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_tgw);
+    String policyName = "~tgw~dx-import-policy~tgw-rtb-dx01~";
+    org.batfish.datamodel.routing_policy.RoutingPolicy policy =
+        tgwCfg.getRoutingPolicies().get(policyName);
+    assertThat(
+        "DX import policy should exist on the TGW", policy, org.hamcrest.Matchers.notNullValue());
+
+    org.batfish.datamodel.Bgpv4Route base =
+        org.batfish.datamodel.Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("10.10.0.0/16"))
+            .setOriginatorIp(Ip.parse("10.10.0.1"))
+            .setOriginType(org.batfish.datamodel.OriginType.IGP)
+            .setProtocol(org.batfish.datamodel.RoutingProtocol.BGP)
+            .build();
+
+    // No community → MEDIUM (default)
+    assertEquals(
+        Route.DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE, processIn(policy, base).getLocalPreference());
+    // 7224:7200 (medium) → MEDIUM
+    assertEquals(
+        Route.DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE,
+        processIn(policy, withCommunity(base, DirectConnectGateway.DX_MEDIUM_PREF_COMMUNITY))
+            .getLocalPreference());
+    // 7224:7300 (high) → HIGH
+    assertEquals(
+        Route.DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE,
+        processIn(policy, withCommunity(base, DirectConnectGateway.DX_HIGH_PREF_COMMUNITY))
+            .getLocalPreference());
+    // 7224:7100 (low) → LOW (still > VPN's default 100, keeping DX > VPN preference)
+    assertEquals(
+        Route.DIRECT_CONNECT_LOW_LOCAL_PREFERENCE,
+        processIn(policy, withCommunity(base, DirectConnectGateway.DX_LOW_PREF_COMMUNITY))
+            .getLocalPreference());
+  }
+
+  private static org.batfish.datamodel.Bgpv4Route processIn(
+      org.batfish.datamodel.routing_policy.RoutingPolicy policy,
+      org.batfish.datamodel.Bgpv4Route route) {
+    org.batfish.datamodel.Bgpv4Route.Builder builder = route.toBuilder();
+    boolean accepted =
+        policy.process(
+            route, builder, org.batfish.datamodel.routing_policy.Environment.Direction.IN);
+    assertThat(accepted, equalTo(true));
+    return builder.build();
+  }
+
+  private static org.batfish.datamodel.Bgpv4Route withCommunity(
+      org.batfish.datamodel.Bgpv4Route base,
+      org.batfish.datamodel.bgp.community.StandardCommunity community) {
+    return base.toBuilder()
+        .setCommunities(org.batfish.datamodel.routing_policy.communities.CommunitySet.of(community))
+        .build();
   }
 }
