@@ -43,9 +43,6 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
   @ParametersAreNonnullByDefault
   static final class BgpPeer implements Serializable {
 
-    static final String JSON_KEY_BGP_PEER_STATE = "BgpPeerState";
-    static final String JSON_KEY_BGP_STATUS = "BgpStatus";
-
     private final long _asn;
     private final @Nonnull ConcreteInterfaceAddress _amazonAddress;
     private final @Nonnull ConcreteInterfaceAddress _customerAddress;
