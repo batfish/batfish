@@ -163,7 +163,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
               buildTgwExportPolicy(cfgNode, assoc.getId(), assoc.getAllowedPrefixes());
             });
 
-    // VIF export policy: advertise the static null-routes (which are exactly the allowed prefixes).
+    // VIF export policy: advertise the originated allowed-prefix statics to on-prem.
     buildVifExportPolicy(cfgNode);
 
     // Configure BGP sessions toward customer routers via VIFs.
@@ -198,6 +198,11 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     Vrf defaultVrf = cfgNode.getDefaultVrf();
     prefixes.forEach(
         p -> {
+          // The static null-route exists so BGP can advertise the allowed-prefix list to on-prem
+          // (matching AWS's behavior of advertising the allowed-prefix list itself). The static
+          // is the "summary" route; the customer router uses it for outbound destinations within
+          // the allowed prefix and the DXGW relies on the more-specific BGP-learned route from
+          // the TGW peer for forwarding.
           StaticRoute route =
               StaticRoute.builder()
                   .setNetwork(p)
@@ -209,7 +214,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         });
   }
 
-  /** Build the policy that exports static null-routes (the allowed prefixes) toward on-prem. */
+  /** Build the policy that exports allowed-prefix static null-routes toward on-prem. */
   private static void buildVifExportPolicy(Configuration cfgNode) {
     if (cfgNode.getRoutingPolicies().containsKey(VIF_EXPORT_POLICY_NAME)) {
       return;

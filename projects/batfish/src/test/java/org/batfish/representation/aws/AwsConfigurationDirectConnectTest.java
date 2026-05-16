@@ -5,6 +5,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -89,22 +91,35 @@ public class AwsConfigurationDirectConnectTest {
 
   @Test
   public void testFromOnPremToInstance() {
-    // On-prem router advertises 10.0.0.0/8 to DXGW via BGP.
-    // Instance is at 10.100.1.10, which is in VPC 10.100.0.0/16.
-    // TGW propagates VPC CIDR, DXGW propagates it to on-prem via BGP.
-    // Traffic from on-prem should reach the instance (security group allows all).
+    // Instance is at 10.100.1.10, in VPC 10.100.0.0/16. The on-prem router learns the VPC CIDR
+    // via the VPN tunnel BGP session (TGW advertises VPC routes via the VPN attachment) and the
+    // allowed-prefix summary 10.0.0.0/8 via the Direct Connect VIF. Longest-match selects the
+    // VPN route, so traffic from on-prem to the VPC takes the VPN path. (Production deployments
+    // typically use BGP communities on AWS to influence on-prem preference; that is out of scope
+    // for this snapshot.) Traffic still reaches the instance and is accepted.
     testTrace(
         getAnyFlow(_onPremRouter, _instanceIp, _batfish),
         FlowDisposition.ACCEPTED,
-        ImmutableList.of(_onPremRouter, _dxgw, _tgw, _vpc, _subnet, _instance),
+        ImmutableList.of(_onPremRouter, _tgw, _vpc, _subnet, _instance),
         _batfish);
   }
 
+  /**
+   * Verify AWS's documented TGW route preference: when both DX and VPN attachments propagate the
+   * same prefix into the same TGW route table, traffic from inside AWS takes the DX path.
+   *
+   * <p>The snapshot includes a VPN attachment (vpn-dx-test) associated with tgw-rtb-dx01 alongside
+   * the DX attachment. The on-prem router peers BGP with both the DXGW (via the Direct Connect VIF)
+   * and the TGW (via the IPsec VPN tunnel), advertising 10.10.0.0/16 over both.
+   *
+   * <p>Mechanism: routes received on the TGW's DX BGP peer get tagged with {@link
+   * Route#DIRECT_CONNECT_LOCAL_PREFERENCE} (200), higher than the default local-pref (100) used for
+   * VPN-propagated BGP routes. BGP best-path selection on the TGW then picks the DX-tagged route
+   * over the VPN-propagated route. The trace from the VPC instance toward 10.10.0.1 traverses the
+   * DXGW node, not the TGW's VPN tunnel.
+   */
   @Test
   public void testFromInstanceToOnPrem() {
-    // Instance sends traffic to 10.10.0.1 (on-prem loopback).
-    // Subnet route table sends 0.0.0.0/0 to TGW. TGW learned 10.10.0.0/16 from
-    // DXGW via BGP (originated by on-prem) and forwards toward on-prem.
     testTrace(
         getAnyFlow(_instance, Ip.parse("10.10.0.1"), _batfish),
         FlowDisposition.ACCEPTED,
@@ -113,12 +128,36 @@ public class AwsConfigurationDirectConnectTest {
   }
 
   /**
-   * Verify that BGP routes received on the TGW from a DX peer are tagged with the DX-propagated
-   * admin distance. This is the mechanism that ensures DX wins over VPN-propagated routes (which
-   * use the default BGP admin distance) for the same prefix in TGW route selection.
+   * Verify that the DXGW only receives VPC CIDRs propagated to the TGW route table associated with
+   * the DX attachment. The snapshot has two VPCs and two TGW route tables: vpc-dx01 propagates to
+   * tgw-rtb-dx01 (the DX RT) and vpc-iso01 propagates only to tgw-rtb-iso01. The DXGW should know
+   * about 10.100.0.0/16 (vpc-dx01) but NOT about 10.200.0.0/16 (vpc-iso01).
    */
   @Test
-  public void testTgwReceivesDxRoutesWithDxAdminDistance() {
+  public void testDxgwOnlySeesVpcsInDxRouteTable() {
+    DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
+    Set<Prefix> dxgwRoutes =
+        dp.getRibs().get(_dxgw, "default").getRoutes().stream()
+            .map(AbstractRoute::getNetwork)
+            .collect(Collectors.toSet());
+    assertThat(
+        "DXGW should have a route to vpc-dx01's CIDR (propagated to the DX route table)",
+        dxgwRoutes,
+        org.hamcrest.Matchers.hasItem(Prefix.parse("10.100.0.0/16")));
+    assertThat(
+        "DXGW must NOT have a route to vpc-iso01's CIDR (propagated only to a different "
+            + "TGW route table)",
+        dxgwRoutes,
+        org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem(Prefix.parse("10.200.0.0/16"))));
+  }
+
+  /**
+   * Verify that BGP routes received on the TGW from a DX peer are tagged with the elevated DX
+   * local-preference. This is the mechanism that ensures DX wins over VPN-propagated routes (which
+   * use default local-pref 100) for the same prefix in TGW route selection.
+   */
+  @Test
+  public void testTgwReceivesDxRoutesWithDxLocalPreference() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     String tgwVrfName = TransitGateway.vrfNameForRouteTable("tgw-rtb-dx01");
     Set<AbstractRoute> tgwRoutes =
@@ -127,9 +166,11 @@ public class AwsConfigurationDirectConnectTest {
             .collect(Collectors.toSet());
     assertThat(tgwRoutes, hasSize(1));
     AbstractRoute route = tgwRoutes.iterator().next();
+    assertThat("DX-propagated route should be a BGP route", route, instanceOf(Bgpv4Route.class));
+    Bgpv4Route bgpRoute = (Bgpv4Route) route;
     assertThat(
-        "BGP route propagated from DXGW should carry DX-propagated admin distance",
-        route.getAdministrativeCost(),
-        equalTo(Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN));
+        "BGP route propagated from DXGW should carry the DX local-preference",
+        bgpRoute.getLocalPreference(),
+        equalTo(Route.DIRECT_CONNECT_LOCAL_PREFERENCE));
   }
 }

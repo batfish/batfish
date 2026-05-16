@@ -42,10 +42,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
@@ -447,9 +447,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
 
     // Build a TGW-side import policy that accepts BGP routes from the DXGW peer and tags them
-    // with the DX-propagated admin distance. This achieves AWS's documented preference:
-    // static (admin 1) > DX-propagated (admin DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN) > VPN (BGP
-    // default admin).
+    // with an elevated local-preference. AWS uses local-preference (not admin distance) to encode
+    // DX > VPN preference: when both DX and VPN BGP peers advertise the same prefix, the higher
+    // local-pref tagged here ensures the DX route wins BGP best-path selection on the TGW.
     String importPolicyName = dxImportPolicyName(routeTableId);
     if (!tgwCfg.getRoutingPolicies().containsKey(importPolicyName)) {
       RoutingPolicy.builder()
@@ -460,9 +460,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                   new If(
                       new MatchProtocol(RoutingProtocol.BGP),
                       ImmutableList.of(
-                          new SetAdministrativeCost(
-                              new LiteralAdministrativeCost(
-                                  Route.DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN)),
+                          new SetLocalPreference(
+                              new LiteralLong(Route.DIRECT_CONNECT_LOCAL_PREFERENCE)),
                           Statements.ExitAccept.toStaticStatement()),
                       ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
           .build();

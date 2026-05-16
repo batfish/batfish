@@ -13,6 +13,20 @@
    ],
    "TransitGatewayId": "tgw-dx01",
    "TransitGatewayRouteTableId": "tgw-rtb-dx01"
+  },
+  {
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "DefaultAssociationRouteTable": false,
+   "DefaultPropagationRouteTable": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "isolated-tgw-rtb"
+    }
+   ],
+   "TransitGatewayId": "tgw-dx01",
+   "TransitGatewayRouteTableId": "tgw-rtb-iso01"
   }
  ]
 }

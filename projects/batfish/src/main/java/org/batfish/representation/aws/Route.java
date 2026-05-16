@@ -47,9 +47,13 @@ abstract class Route implements Serializable {
   static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
   /**
-   * Admin distance for routes propagated from Direct Connect (preferred over VPN but not static)
+   * BGP local-preference applied on the TGW to routes received from a Direct Connect Gateway peer.
+   * Higher than the default local-pref of 100 used for VPN-learned BGP routes, so DX wins when both
+   * advertise the same prefix. AWS internally uses local-preference (not admin distance) to encode
+   * DX-vs-VPN preference, so this representation composes correctly with future public-VIF
+   * community-based local-pref adjustments (7224:7100/7200/7300).
    */
-  static final long DIRECT_CONNECT_PROPAGATED_ROUTE_ADMIN = 10L;
+  static final long DIRECT_CONNECT_LOCAL_PREFERENCE = 200L;
 
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
