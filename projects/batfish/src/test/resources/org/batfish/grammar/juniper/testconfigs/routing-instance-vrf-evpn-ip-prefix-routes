@@ -7,3 +7,7 @@ set routing-instances FOO protocols evpn ip-prefix-routes encapsulation vxlan
 set routing-instances FOO protocols evpn ip-prefix-routes vni 1011
 set routing-instances FOO protocols evpn ip-prefix-routes import FOO-vrf-import
 set routing-instances FOO protocols evpn ip-prefix-routes export FOO-vrf-export
+set routing-instances FOO vrf-export FOO-ri-export
+set routing-instances FOO vrf-export FOO-ri-export2
+set policy-options policy-statement FOO-ri-export then accept
+set policy-options policy-statement FOO-ri-export2 then accept

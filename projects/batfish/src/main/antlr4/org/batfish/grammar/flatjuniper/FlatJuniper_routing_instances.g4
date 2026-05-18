@@ -89,7 +89,7 @@ ri_snmp
 
 ri_vrf_export
 :
-   VRF_EXPORT name = junos_name
+   VRF_EXPORT junos_name_list
 ;
 
 ri_vrf_import

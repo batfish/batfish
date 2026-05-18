@@ -3785,6 +3785,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setDefaultCrossZoneAction(_masterLogicalSystem.getDefaultCrossZoneAction());
     _c.setDefaultInboundAction(_masterLogicalSystem.getDefaultInboundAction());
 
+    // convert route distinguishers: if routing-options route-distinguisher-id is set,
+    // auto-generate RDs for routing-instances missing an explicit route-distinguisher
+    convertRouteDistinguishers();
+
     for (Entry<String, RoutingInstance> e : _masterLogicalSystem.getRoutingInstances().entrySet()) {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
@@ -4043,6 +4047,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /**
+   * If {@code routing-options route-distinguisher-id} is set, auto-generate a unique Type 1 Route
+   * Distinguisher for each routing-instance that does not already have an explicit
+   * route-distinguisher configured. The generated RD uses the route-distinguisher-id IP as the
+   * administrator subfield and the 1-based index of the routing-instance (in iteration order) as
+   * the assigned-number subfield.
+   */
+  @VisibleForTesting
+  void convertRouteDistinguishers() {
+    Ip rdId = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
+    if (rdId == null) {
+      return;
+    }
+    int index = 1;
+    for (RoutingInstance ri : _masterLogicalSystem.getRoutingInstances().values()) {
+      if (ri.getRouteDistinguisher() == null) {
+        ri.setRouteDistinguisher(RouteDistinguisher.from(rdId, index));
+      }
+      index++;
+    }
+  }
+
+  /**
    * Converts EVPN ip-prefix-routes configuration into EVPN VRF leaking on the VI model. For each RI
    * with ip-prefix-routes and a VNI, creates: (1) Bgpv4ToEvpnVrfLeakConfig on the default VRF
    * (exports from tenant VRF's BGP into EVPN), (2) EvpnToBgpv4VrfLeakConfig on each importing
@@ -4164,20 +4190,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
         // Create redistribution policy on tenant VRF
         String redistPolicyName = generatedEvpnIprRedistPolicyName(riName);
-        if (ipr.getExportPolicy() != null
-            && _c.getRoutingPolicies().containsKey(ipr.getExportPolicy())) {
-          // Use the configured export policy
-          RoutingPolicy redistPolicy =
-              RoutingPolicy.builder()
-                  .setOwner(_c)
-                  .setName(redistPolicyName)
-                  .addStatement(
-                      new If(
-                          new CallExpr(ipr.getExportPolicy()),
-                          ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
-                  .addStatement(Statements.ReturnFalse.toStaticStatement())
-                  .build();
-          _c.getRoutingPolicies().put(redistPolicyName, redistPolicy);
+        // Collect all constituent export policies (vrf-export policies first, then ipr export)
+        List<String> constituentPolicies = new ArrayList<>();
+        for (String vrfExport : ri.getVrfExportPolicies()) {
+          if (!_c.getRoutingPolicies().containsKey(vrfExport)) {
+            _w.redFlagf(
+                "Ignoring vrf-export policy %s in routing-instance %s: policy not defined",
+                vrfExport, riName);
+            continue;
+          }
+          constituentPolicies.add(vrfExport);
+        }
+        String iprExport = ipr.getExportPolicy();
+        if (iprExport != null) {
+          if (!_c.getRoutingPolicies().containsKey(iprExport)) {
+            _w.redFlagf(
+                "Ignoring ip-prefix-routes export policy %s in routing-instance %s:"
+                    + " policy not defined",
+                iprExport, riName);
+          } else {
+            constituentPolicies.add(iprExport);
+          }
+        }
+        if (!constituentPolicies.isEmpty()) {
+          // Evaluate all constituent export policies; stop early on reject
+          RoutingPolicy.Builder builder =
+              RoutingPolicy.builder().setOwner(_c).setName(redistPolicyName);
+          for (String policy : constituentPolicies) {
+            builder.addStatement(
+                new If(
+                    new CallExpr(policy),
+                    ImmutableList.of(),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
+          }
+          builder.addStatement(Statements.ReturnTrue.toStaticStatement());
+          _c.getRoutingPolicies().put(redistPolicyName, builder.build());
         } else {
           // Default: redistribute connected and static
           RoutingPolicy redistPolicy =

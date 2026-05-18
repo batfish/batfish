@@ -71481,12 +71481,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 109,
-              "Parser_Context" : "[ro_route_distinguisher_id s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "route-distinguisher-id 192.168.1.2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 201,
               "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vtep-source-interface lo0.0"

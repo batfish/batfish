@@ -100,6 +100,20 @@ policy-options {
             }
         }
     }
+    policy-statement TENANT-A-vrf-export-redist {
+        term reject-blocked {
+            from {
+                route-filter 10.10.10.0/24 exact;
+            }
+            then reject;
+        }
+        term accept-rest {
+            then {
+                community add gateway-community;
+                accept;
+            }
+        }
+    }
     policy-statement TENANT-A-import {
         term evpn {
             from community TENANT-A-community;
@@ -233,6 +247,9 @@ routing-instances {
         routing-options {
             multipath;
             auto-export;
+            static {
+                route 10.10.10.0/24 discard;
+            }
         }
         protocols {
             bgp {
@@ -265,6 +282,7 @@ routing-instances {
         interface irb.200;
         route-distinguisher 172.16.0.100:10000;
         vrf-target target:65000:10000;
+        vrf-export TENANT-A-vrf-export-redist;
         vrf-table-label;
     }
     TENANT-B {
