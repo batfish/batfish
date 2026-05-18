@@ -384,10 +384,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           connectDirectConnect(tgwCfg, attachment, awsConfiguration, region, warnings);
           return;
         }
-      default:
-        warnings.redFlag(
-            "Unsupported resource type in transit gateway attachment: "
-                + attachment.getResourceType());
     }
   }
 
@@ -972,10 +968,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                       dxgwCfg, interfaceNameToRemote(tgwCfg, routeTableId))));
           return;
         }
-      default:
-        warnings.redFlagf(
-            "Transit gateway attachment type %s not handled in addRoute",
-            tgwAttachment.getResourceType());
     }
   }
 
