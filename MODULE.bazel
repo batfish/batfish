@@ -29,7 +29,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "commons-cli:commons-cli:1.11.0",
     "commons-io:commons-io:2.22.0",
     "dk.brics:automaton:1.12-4",
-    "io.github.java-diff-utils:java-diff-utils:4.16",
+    "io.github.java-diff-utils:java-diff-utils:4.17",
     "jakarta.activation:jakarta.activation-api:1.2.2",
     "jakarta.annotation:jakarta.annotation-api:1.3.5",
     "jakarta.ws.rs:jakarta.ws.rs-api:2.1.6",
