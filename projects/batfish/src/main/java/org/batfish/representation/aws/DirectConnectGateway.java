@@ -181,7 +181,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     // Configure BGP sessions toward customer routers via VIFs.
     region.getDirectConnectVirtualInterfaces().values().stream()
         .filter(vif -> _directConnectGatewayId.equals(vif.getDirectConnectGatewayId()))
-        .forEach(vif -> configureVifBgpSession(cfgNode, vif, warnings));
+        .forEach(vif -> configureVifBgpSession(cfgNode, vif));
 
     return cfgNode;
   }
@@ -276,8 +276,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         .build();
   }
 
-  private void configureVifBgpSession(
-      Configuration cfgNode, DirectConnectVirtualInterface vif, Warnings warnings) {
+  private void configureVifBgpSession(Configuration cfgNode, DirectConnectVirtualInterface vif) {
     Ip amazonIp = vif.getAmazonIp();
     Ip customerIp = vif.getCustomerIp();
 
