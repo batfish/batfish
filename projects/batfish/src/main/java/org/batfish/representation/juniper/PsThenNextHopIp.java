@@ -30,4 +30,20 @@ public final class PsThenNextHopIp extends PsThen {
   public Ip getNextHopIp() {
     return _nextHopIp;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenNextHopIp)) {
+      return false;
+    }
+    PsThenNextHopIp that = (PsThenNextHopIp) o;
+    return _nextHopIp.equals(that._nextHopIp);
+  }
+
+  @Override
+  public int hashCode() {
+    return _nextHopIp.hashCode();
+  }
 }

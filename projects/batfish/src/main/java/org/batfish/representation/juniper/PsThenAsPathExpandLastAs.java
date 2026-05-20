@@ -47,5 +47,21 @@ public final class PsThenAsPathExpandLastAs extends PsThenAsPathExpand {
     return _count;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenAsPathExpandLastAs)) {
+      return false;
+    }
+    PsThenAsPathExpandLastAs that = (PsThenAsPathExpandLastAs) o;
+    return _count == that._count;
+  }
+
+  @Override
+  public int hashCode() {
+    return Integer.hashCode(_count);
+  }
+
   private final int _count;
 }

@@ -3329,11 +3329,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
         || then instanceof PsThenNextPolicy;
   }
 
-  private List<Statement> toStatements(Set<PsThen> thens) {
+  private List<Statement> toStatements(List<PsThen> thens) {
+    // If `then next term` is present, it suppresses any bare `accept`/`reject` in the same term:
+    // both lines are retained at commit, but at runtime the route falls through to the next term.
+    // default-action and next-policy are unaffected.
+    boolean hasNextTerm = thens.stream().anyMatch(t -> t instanceof PsThenNextTerm);
+    Stream<PsThen> filtered =
+        hasNextTerm
+            ? thens.stream()
+                .filter(t -> !(t instanceof PsThenAccept) && !(t instanceof PsThenReject))
+            : thens.stream();
+    List<PsThen> all = filtered.collect(ImmutableList.toImmutableList());
     List<Statement> thenStatements = new ArrayList<>();
     Stream.concat(
-            thens.stream().filter(then -> !isFinalThen(then)),
-            thens.stream().filter(JuniperConfiguration::isFinalThen))
+            all.stream().filter(then -> !isFinalThen(then)),
+            all.stream().filter(JuniperConfiguration::isFinalThen))
         .forEach(then -> then.applyTo(thenStatements, this, _c, _w));
     return thenStatements;
   }
@@ -4414,6 +4424,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           || then instanceof PsThenDefaultActionAccept
           || then instanceof PsThenDefaultActionReject
           || then instanceof PsThenNextPolicy
+          || then instanceof PsThenNextTerm
           || then instanceof PsThenLoadBalance) {
         // Control flow or forwarding-table-specific actions — no warning.
         continue;
@@ -4913,7 +4924,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               if (nextTerminalAction.isPresent()) {
                 // Check that the terminal action is the ONLY action.
                 // If there are multiple thens, some are likely mutating actions that are skipped
-                Set<PsThen> allThens = nextTerm.getThens().getAllThens();
+                List<PsThen> allThens = nextTerm.getThens().getAllThens();
                 if (allThens.size() == 1) {
                   return;
                 }
@@ -4950,7 +4961,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
 
-    return term.getThens().getAllThens().stream()
+    List<PsThen> allThens = term.getThens().getAllThens();
+    // `next term` overrides any bare accept/reject in the same term: at runtime the route falls
+    // through to the next term, so this term is not terminal. The interaction between
+    // `next term` and `next policy` in the same term is not characterized by lab data, so
+    // conservatively report no terminal action.
+    if (allThens.stream().anyMatch(t -> t instanceof PsThenNextTerm)) {
+      return Optional.empty();
+    }
+    return allThens.stream()
         .filter(
             then ->
                 then instanceof PsThenAccept

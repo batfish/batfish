@@ -1,0 +1,90 @@
+#
+set system host-name juniper-ps-then-conflicts
+#
+# Communities for testing
+set policy-options community RED members 65000:1
+set policy-options community BLUE members 65000:2
+set policy-options community GREEN members 65000:3
+#
+# §1: Scalar last-wins
+set policy-options policy-statement ORIGIN-DIFF term t1 then origin igp
+set policy-options policy-statement ORIGIN-DIFF term t1 then origin egp
+#
+set policy-options policy-statement LP-SET-DIFF term t1 then local-preference 200
+set policy-options policy-statement LP-SET-DIFF term t1 then local-preference 50
+#
+set policy-options policy-statement LP-SET-ADD term t1 then local-preference 200
+set policy-options policy-statement LP-SET-ADD term t1 then local-preference add 50
+#
+set policy-options policy-statement LP-ADD-SET term t1 then local-preference add 50
+set policy-options policy-statement LP-ADD-SET term t1 then local-preference 200
+#
+set policy-options policy-statement MED-SET-DIFF term t1 then metric 200
+set policy-options policy-statement MED-SET-DIFF term t1 then metric 50
+#
+set policy-options policy-statement MED-SET-ADD term t1 then metric 200
+set policy-options policy-statement MED-SET-ADD term t1 then metric add 50
+#
+set policy-options policy-statement MED-ADD-SET term t1 then metric add 50
+set policy-options policy-statement MED-ADD-SET term t1 then metric 200
+#
+set policy-options policy-statement NEXTHOP-SELF-VS-IP term t1 then next-hop self
+set policy-options policy-statement NEXTHOP-SELF-VS-IP term t1 then next-hop 192.0.2.1
+#
+# §4: Community cumulative
+set policy-options policy-statement COMM-SET-SET term t1 then community set RED
+set policy-options policy-statement COMM-SET-SET term t1 then community set BLUE
+#
+set policy-options policy-statement COMM-ADD-ADD term t1 then community add RED
+set policy-options policy-statement COMM-ADD-ADD term t1 then community add BLUE
+#
+set policy-options policy-statement COMM-SET-ADD term t1 then community set RED
+set policy-options policy-statement COMM-SET-ADD term t1 then community add BLUE
+#
+# add then set: set wipes the prior add (warning, only set retained)
+set policy-options policy-statement COMM-ADD-SET term t1 then community add RED
+set policy-options policy-statement COMM-ADD-SET term t1 then community set BLUE
+#
+# add then delete on same name: delete makes prior add a no-op (warning, only delete retained)
+set policy-options policy-statement COMM-ADD-DEL-SAME term t1 then community add RED
+set policy-options policy-statement COMM-ADD-DEL-SAME term t1 then community delete RED
+#
+# delete then add interleaved with another delete; declared order preserved
+set policy-options policy-statement COMM-ORDERED term t1 then community delete RED
+set policy-options policy-statement COMM-ORDERED term t1 then community add BLUE
+set policy-options policy-statement COMM-ORDERED term t1 then community delete GREEN
+#
+# §7: Cross-attribute
+set policy-options policy-statement CROSS-ATTR term t1 then local-preference 200
+set policy-options policy-statement CROSS-ATTR term t1 then metric 100
+set policy-options policy-statement CROSS-ATTR term t1 then community add RED
+#
+# §5: Flow-control
+# accept; reject — last-wins among bare terminators (only reject retained)
+set policy-options policy-statement FC-ACCEPT-REJECT term t1 then accept
+set policy-options policy-statement FC-ACCEPT-REJECT term t1 then reject
+#
+# reject; accept — last-wins (only accept retained)
+set policy-options policy-statement FC-REJECT-ACCEPT term t1 then reject
+set policy-options policy-statement FC-REJECT-ACCEPT term t1 then accept
+#
+# accept; next term — both retained at commit, but next-term wins at runtime: t1 falls through
+set policy-options policy-statement FC-ACCEPT-NEXT-TERM term t1 then community add RED
+set policy-options policy-statement FC-ACCEPT-NEXT-TERM term t1 then accept
+set policy-options policy-statement FC-ACCEPT-NEXT-TERM term t1 then next term
+set policy-options policy-statement FC-ACCEPT-NEXT-TERM term t2 then accept
+#
+# next term; accept — same as above; t1 falls through to t2 regardless of source order
+set policy-options policy-statement FC-NEXT-TERM-ACCEPT term t1 then community add RED
+set policy-options policy-statement FC-NEXT-TERM-ACCEPT term t1 then next term
+set policy-options policy-statement FC-NEXT-TERM-ACCEPT term t1 then accept
+set policy-options policy-statement FC-NEXT-TERM-ACCEPT term t2 then accept
+#
+# accept; default-action reject — accept fires, default-action reject is dead config
+set policy-options policy-statement FC-ACCEPT-DEFAULT-REJECT term t1 then accept
+set policy-options policy-statement FC-ACCEPT-DEFAULT-REJECT term t1 then default-action reject
+#
+# reject; default-action accept — reject fires
+set policy-options policy-statement FC-REJECT-DEFAULT-ACCEPT term t1 then reject
+set policy-options policy-statement FC-REJECT-DEFAULT-ACCEPT term t1 then default-action accept
+#
