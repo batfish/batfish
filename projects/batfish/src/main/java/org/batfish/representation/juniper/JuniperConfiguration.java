@@ -3330,10 +3330,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private List<Statement> toStatements(Set<PsThen> thens) {
+    // If `then next term` is present, it suppresses any bare `accept`/`reject` in the same term:
+    // both lines are retained at commit, but at runtime the route falls through to the next term.
+    // default-action and next-policy are unaffected.
+    boolean hasNextTerm = thens.stream().anyMatch(t -> t instanceof PsThenNextTerm);
+    Stream<PsThen> filtered =
+        hasNextTerm
+            ? thens.stream()
+                .filter(t -> !(t instanceof PsThenAccept) && !(t instanceof PsThenReject))
+            : thens.stream();
+    List<PsThen> all = filtered.collect(ImmutableList.toImmutableList());
     List<Statement> thenStatements = new ArrayList<>();
     Stream.concat(
-            thens.stream().filter(then -> !isFinalThen(then)),
-            thens.stream().filter(JuniperConfiguration::isFinalThen))
+            all.stream().filter(then -> !isFinalThen(then)),
+            all.stream().filter(JuniperConfiguration::isFinalThen))
         .forEach(then -> then.applyTo(thenStatements, this, _c, _w));
     return thenStatements;
   }
@@ -4414,6 +4424,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           || then instanceof PsThenDefaultActionAccept
           || then instanceof PsThenDefaultActionReject
           || then instanceof PsThenNextPolicy
+          || then instanceof PsThenNextTerm
           || then instanceof PsThenLoadBalance) {
         // Control flow or forwarding-table-specific actions — no warning.
         continue;
@@ -4950,7 +4961,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
 
-    return term.getThens().getAllThens().stream()
+    Set<PsThen> allThens = term.getThens().getAllThens();
+    // `next term` overrides any bare accept/reject in the same term: at runtime the route falls
+    // through, so the term is not actually terminal. next-policy still terminates this policy.
+    if (allThens.stream().anyMatch(t -> t instanceof PsThenNextTerm)) {
+      return allThens.stream().filter(t -> t instanceof PsThenNextPolicy).findFirst();
+    }
+    return allThens.stream()
         .filter(
             then ->
                 then instanceof PsThenAccept
