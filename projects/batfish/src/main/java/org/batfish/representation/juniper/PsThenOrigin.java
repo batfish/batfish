@@ -29,4 +29,20 @@ public final class PsThenOrigin extends PsThen {
   public OriginType getOriginType() {
     return _originType;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenOrigin)) {
+      return false;
+    }
+    PsThenOrigin that = (PsThenOrigin) o;
+    return _originType == that._originType;
+  }
+
+  @Override
+  public int hashCode() {
+    return _originType.hashCode();
+  }
 }
