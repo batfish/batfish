@@ -496,6 +496,7 @@ import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
+import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
@@ -503,6 +504,8 @@ import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
+import org.batfish.representation.juniper.PsThenNextHopIp;
+import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
@@ -5413,13 +5416,267 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-community");
     Map<String, PsTerm> pses =
         c.getMasterLogicalSystem().getPolicyStatements().get("PS").getTerms();
+    // set COMM1; set COMM2 — second set wipes first (last-wins)
     assertThat(
         pses.get("MULTI_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+    // set COMM1; add COMM2 — both retained (set replaces, add unions)
     assertThat(
         pses.get("SET_ADD").getThens().getAllThens(),
         contains(new PsThenCommunitySet("COMM1"), new PsThenCommunityAdd("COMM2")));
+    // add COMM1; set COMM2 — set wipes prior add (no-op once set replaces)
     assertThat(
         pses.get("ADD_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+  }
+
+  @Test
+  public void testPsThenConflictsExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-conflicts");
+    Map<String, PolicyStatement> pses = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // §1 Scalar last-wins: origin igp; origin egp → only egp retained
+    assertThat(
+        pses.get("ORIGIN-DIFF").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenOrigin(OriginType.EGP)));
+
+    // §2 Numeric last-wins: local-preference 200; local-preference 50 → only 50
+    assertThat(
+        pses.get("LP-SET-DIFF").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenLocalPreference(50, PsThenLocalPreference.Operator.SET)));
+
+    // local-preference 200; local-preference add 50 → only add 50
+    assertThat(
+        pses.get("LP-SET-ADD").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenLocalPreference(50, PsThenLocalPreference.Operator.ADD)));
+
+    // local-preference add 50; local-preference 200 → only set 200
+    assertThat(
+        pses.get("LP-ADD-SET").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET)));
+
+    // metric 200; metric 50 → only 50
+    assertThat(
+        pses.get("MED-SET-DIFF").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenMetric(50, PsThenMetric.Operator.SET)));
+
+    // metric 200; metric add 50 → only add 50
+    assertThat(
+        pses.get("MED-SET-ADD").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenMetric(50, PsThenMetric.Operator.ADD)));
+
+    // metric add 50; metric 200 → only set 200
+    assertThat(
+        pses.get("MED-ADD-SET").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenMetric(200, PsThenMetric.Operator.SET)));
+
+    // next-hop self; next-hop 192.0.2.1 → only ip
+    assertThat(
+        pses.get("NEXTHOP-SELF-VS-IP").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenNextHopIp(Ip.parse("192.0.2.1"))));
+
+    // §4 set RED; set BLUE → second wipes first (last-wins)
+    assertThat(
+        pses.get("COMM-SET-SET").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("BLUE")));
+
+    // add RED; add BLUE → both retained (add is cumulative)
+    assertThat(
+        pses.get("COMM-ADD-ADD").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenCommunityAdd("RED"), new PsThenCommunityAdd("BLUE")));
+
+    // set RED; add BLUE → both retained (set replaces, add unions)
+    assertThat(
+        pses.get("COMM-SET-ADD").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("RED"), new PsThenCommunityAdd("BLUE")));
+
+    // add RED; set BLUE → set wipes prior add; only set retained
+    assertThat(
+        pses.get("COMM-ADD-SET").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("BLUE")));
+
+    // add RED; delete RED → both retained (order matters), warning emitted at parse time
+    assertThat(
+        pses.get("COMM-ADD-DEL-SAME").getTerms().get("t1").getThens().getAllThens(),
+        contains(new PsThenCommunityAdd("RED"), new PsThenCommunityDelete("RED")));
+
+    // delete RED; add BLUE; delete GREEN → all retained in declared order
+    assertThat(
+        pses.get("COMM-ORDERED").getTerms().get("t1").getThens().getAllThens(),
+        contains(
+            new PsThenCommunityDelete("RED"),
+            new PsThenCommunityAdd("BLUE"),
+            new PsThenCommunityDelete("GREEN")));
+
+    // §7 Cross-attribute: all three families coexist
+    List<PsThen> crossThens = pses.get("CROSS-ATTR").getTerms().get("t1").getThens().getAllThens();
+    assertThat(crossThens, hasSize(3));
+    assertThat(
+        crossThens,
+        containsInAnyOrder(
+            new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET),
+            new PsThenMetric(100, PsThenMetric.Operator.SET),
+            new PsThenCommunityAdd("RED")));
+  }
+
+  @Test
+  public void testPsThenConflictsConversion() {
+    Configuration c = parseConfig("juniper-ps-then-conflicts");
+
+    Bgpv4Route baseRoute =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.0.1")))
+            .setNetwork(Prefix.parse("10.0.0.0/24"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .setLocalPreference(100)
+            .setMetric(500)
+            .build();
+
+    // LP-SET-DIFF: last-wins → lp 50
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("LP-SET-DIFF");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getLocalPreference(), equalTo(50L));
+    }
+    // LP-SET-ADD: last-wins → add 50 to input 100 = 150
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("LP-SET-ADD");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getLocalPreference(), equalTo(150L));
+    }
+    // LP-ADD-SET: last-wins → set 200
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("LP-ADD-SET");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getLocalPreference(), equalTo(200L));
+    }
+    // MED-SET-DIFF: last-wins → metric 50
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("MED-SET-DIFF");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getMetric(), equalTo(50L));
+    }
+    // MED-SET-ADD: last-wins → add 50 to input 500 = 550
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("MED-SET-ADD");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getMetric(), equalTo(550L));
+    }
+    // MED-ADD-SET: last-wins → set 200
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("MED-ADD-SET");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(out.getMetric(), equalTo(200L));
+    }
+
+    // §5: Flow-control conversion behavior
+    // FC-ACCEPT-REJECT: accept; reject → reject wins (last-wins within accept/reject)
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-ACCEPT-REJECT");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertFalse(rp.process(baseRoute, out, IN));
+    }
+    // FC-REJECT-ACCEPT: reject; accept → accept wins
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-REJECT-ACCEPT");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertTrue(rp.process(baseRoute, out, IN));
+    }
+    // FC-ACCEPT-NEXT-TERM: t1 has accept; next term — next-term wins, route falls through to t2
+    // which accepts. The community add in t1 fires before the fall-through.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-ACCEPT-NEXT-TERM");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertTrue(rp.process(baseRoute, out, IN));
+      assertThat(
+          out.getCommunities().getCommunities(), hasItem(StandardCommunity.parse("65000:1")));
+    }
+    // FC-NEXT-TERM-ACCEPT: same as above with reversed source order — still falls through
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-NEXT-TERM-ACCEPT");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertTrue(rp.process(baseRoute, out, IN));
+      assertThat(
+          out.getCommunities().getCommunities(), hasItem(StandardCommunity.parse("65000:1")));
+    }
+    // FC-ACCEPT-DEFAULT-REJECT: accept fires, default-action reject is dead config
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-ACCEPT-DEFAULT-REJECT");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertTrue(rp.process(baseRoute, out, IN));
+    }
+    // FC-REJECT-DEFAULT-ACCEPT: reject fires, default-action accept is dead config
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-REJECT-DEFAULT-ACCEPT");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertFalse(rp.process(baseRoute, out, IN));
+    }
+    // FC-NEXT-TERM-NEXT-POLICY: next-term; next-policy — last-wins → next-policy retained.
+    // The community add in t1 fires, then next-policy emits FallThrough which leaves the
+    // policy result undecided (false here, since this test calls a single policy in isolation).
+    // The point of the test is that next-term did NOT win: t1 did not jump to t2 (which rejects),
+    // so the community add in t1 fires before fall-through.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-NEXT-TERM-NEXT-POLICY");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      rp.process(baseRoute, out, IN);
+      assertThat(
+          out.getCommunities().getCommunities(), hasItem(StandardCommunity.parse("65000:1")));
+    }
+    // FC-NEXT-POLICY-NEXT-TERM: next-policy; next-term — last-wins → next-term retained.
+    // The community add in t1 fires, then next-term jumps to t2 which rejects.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("FC-NEXT-POLICY-NEXT-TERM");
+      Bgpv4Route.Builder out = baseRoute.toBuilder();
+      assertFalse(rp.process(baseRoute, out, IN));
+    }
+  }
+
+  @Test
+  public void testPsThenConflictsWarnings() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-conflicts");
+    List<ParseWarning> riskyWarnings = c.getWarnings().getRiskyParseWarnings();
+
+    // Last-wins cases should emit "Overwriting existing then <family>" warnings
+    assertThat(
+        riskyWarnings,
+        hasItems(
+            hasComment("RISK: Overwriting existing then origin"),
+            hasComment("RISK: Overwriting existing then local-preference"),
+            hasComment("RISK: Overwriting existing then metric"),
+            hasComment("RISK: Overwriting existing then next-hop"),
+            // community set wipes prior community set (last-wins)
+            hasComment("RISK: Overwriting existing then community set RED"),
+            // community set wipes prior community add (set is a barrier)
+            hasComment("RISK: Overwriting existing then community add RED"),
+            // community delete X conflicts with prior community add X (both retained)
+            hasComment("RISK: Conflicts with prior then community add RED"),
+            // accept; reject — last-wins within accept/reject
+            hasComment("RISK: Overwriting existing then accept-or-reject"),
+            // next term; next policy — same family, last-wins
+            hasComment("RISK: Overwriting existing then next-term-or-policy"),
+            // accept; next term — prior accept suppressed at runtime by next term/next policy
+            hasComment(
+                "RISK: then next term/next policy suppresses prior then accept/reject in the"
+                    + " same term: accept/reject does not fire"),
+            // next term; accept — accept after next term/next policy is dead config
+            hasComment(
+                "RISK: then accept/reject has no effect when then next term/next policy is also"
+                    + " present in the same term: accept/reject does not fire")));
+
+    // COMM-ORDERED has no conflicts — no warnings should mention BLUE or GREEN
+    assertTrue(
+        riskyWarnings.stream().noneMatch(w -> w.getComment().contains("community add BLUE")));
+    assertTrue(
+        riskyWarnings.stream().noneMatch(w -> w.getComment().contains("community delete GREEN")));
   }
 
   @Test
@@ -9656,6 +9913,8 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testCommunityOverlapWarnings() throws IOException {
+    // Two community set actions in the same term: second wipes the first (last-wins). Emit a
+    // RISK warning naming the prior community set being overwritten.
     String hostname = "overlapping-policy";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -9668,7 +9927,7 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         riskyParseWarnings,
-        containsInAnyOrder(hasComment("RISK: Overwriting existing then community set")));
+        containsInAnyOrder(hasComment("RISK: Overwriting existing then community set LOC1")));
   }
 
   @Test

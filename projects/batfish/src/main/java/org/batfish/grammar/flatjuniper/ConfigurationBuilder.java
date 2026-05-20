@@ -1214,6 +1214,7 @@ import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
 import org.batfish.representation.juniper.PsThenNextHopReject;
 import org.batfish.representation.juniper.PsThenNextHopSelf;
 import org.batfish.representation.juniper.PsThenNextPolicy;
+import org.batfish.representation.juniper.PsThenNextTerm;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
@@ -2569,12 +2570,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private void addPsThen(PsThen then, ParserRuleContext ctx) {
     List<String> cleared = _currentPsThens.addPsThen(then);
-    if (!cleared.isEmpty()) {
-      warnRisky(
-          ctx,
-          String.format(
-              "Overwriting existing %s %s",
-              cleared.size() > 1 ? "thens" : "then", String.join(", ", cleared)));
+    for (String entry : cleared) {
+      if (entry.contains("(suppressed-by-next-term-or-policy)")) {
+        warnRisky(
+            ctx,
+            "then next term/next policy suppresses prior then accept/reject in the same term:"
+                + " accept/reject does not fire");
+      } else if (entry.contains("(dead-after-next-term-or-policy)")) {
+        warnRisky(
+            ctx,
+            "then accept/reject has no effect when then next term/next policy is also present in"
+                + " the same term: accept/reject does not fire");
+      } else if (entry.contains("(dedup)")) {
+        warnRisky(ctx, String.format("Duplicate then %s", entry.replace(" (dedup)", "")));
+      } else if (entry.contains("(conflict)")) {
+        warnRisky(
+            ctx, String.format("Conflicts with prior then %s", entry.replace(" (conflict)", "")));
+      } else {
+        warnRisky(ctx, String.format("Overwriting existing then %s", entry));
+      }
     }
   }
 
@@ -7012,10 +7026,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_next_term(Popst_next_termContext ctx) {
-    // The next-term action itself is a no-op in Batfish, so we do not model this behavior.
-    //
-    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement next_term replacing
-    // any existing flow control action.
+    addPsThen(PsThenNextTerm.INSTANCE, ctx);
   }
 
   @Override

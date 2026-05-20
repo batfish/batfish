@@ -28,4 +28,20 @@ public final class PsThenExternal extends PsThen {
   public OspfMetricType getType() {
     return _type;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenExternal)) {
+      return false;
+    }
+    PsThenExternal that = (PsThenExternal) o;
+    return _type == that._type;
+  }
+
+  @Override
+  public int hashCode() {
+    return _type.hashCode();
+  }
 }
