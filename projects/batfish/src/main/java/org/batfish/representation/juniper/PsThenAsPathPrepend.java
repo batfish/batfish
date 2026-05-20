@@ -35,5 +35,21 @@ public final class PsThenAsPathPrepend extends PsThen {
     return _asList;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenAsPathPrepend)) {
+      return false;
+    }
+    PsThenAsPathPrepend that = (PsThenAsPathPrepend) o;
+    return _asList.equals(that._asList);
+  }
+
+  @Override
+  public int hashCode() {
+    return _asList.hashCode();
+  }
+
   private final @Nonnull List<Long> _asList;
 }

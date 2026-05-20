@@ -36,5 +36,21 @@ public final class PsThenAsPathExpandAsList extends PsThenAsPathExpand {
     return _asList;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenAsPathExpandAsList)) {
+      return false;
+    }
+    PsThenAsPathExpandAsList that = (PsThenAsPathExpandAsList) o;
+    return _asList.equals(that._asList);
+  }
+
+  @Override
+  public int hashCode() {
+    return _asList.hashCode();
+  }
+
   private final @Nonnull List<Long> _asList;
 }

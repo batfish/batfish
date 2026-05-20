@@ -36,5 +36,21 @@ public final class PsThenCommunityDelete extends PsThen {
     return _name;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenCommunityDelete)) {
+      return false;
+    }
+    PsThenCommunityDelete that = (PsThenCommunityDelete) o;
+    return _name.equals(that._name);
+  }
+
+  @Override
+  public int hashCode() {
+    return _name.hashCode();
+  }
+
   private final String _name;
 }

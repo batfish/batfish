@@ -38,6 +38,22 @@ public final class PsThenLoadBalance extends PsThen {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof PsThenLoadBalance)) {
+      return false;
+    }
+    PsThenLoadBalance that = (PsThenLoadBalance) o;
+    return _method == that._method;
+  }
+
+  @Override
+  public int hashCode() {
+    return _method.hashCode();
+  }
+
+  @Override
   public void applyTo(
       List<Statement> statements,
       JuniperConfiguration juniperVendorConfiguration,
