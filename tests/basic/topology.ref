@@ -554,17 +554,17 @@
       "properties" : null
     },
     {
-      "id" : "node-as2dept1",
-      "model" : "CISCO_UNSPECIFIED",
-      "name" : "as2dept1",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
       "id" : "node-host2",
       "model" : null,
       "name" : "host2",
       "type" : "HOST",
+      "properties" : null
+    },
+    {
+      "id" : "node-as2dept1",
+      "model" : "CISCO_UNSPECIFIED",
+      "name" : "as2dept1",
+      "type" : "ROUTER",
       "properties" : null
     },
     {

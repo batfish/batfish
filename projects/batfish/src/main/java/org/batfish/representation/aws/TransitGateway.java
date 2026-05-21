@@ -381,7 +381,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         }
       case DIRECT_CONNECT_GATEWAY:
         {
-          connectDirectConnect(tgwCfg, attachment, awsConfiguration, region, warnings);
+          connectDirectConnect(tgwCfg, attachment, vsConfiguration, awsConfiguration, warnings);
           return;
         }
     }
@@ -390,8 +390,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private static void connectDirectConnect(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
+      AwsConfiguration vsConfiguration,
       ConvertedConfiguration awsConfiguration,
-      Region region,
       Warnings warnings) {
 
     if (attachment.getAssociation() == null
@@ -411,12 +411,12 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return;
     }
 
+    // DXGW associations are regional but the DXGW is global, so the matching association may live
+    // in a different region than the TGW. Look across all regions.
     Optional<DirectConnectGatewayAssociation> dxgwAssociation =
-        region.getDirectConnectGatewayAssociations().values().stream()
-            .filter(
-                assoc ->
-                    assoc.getDirectConnectGatewayId().equals(attachment.getResourceId())
-                        && assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
+        vsConfiguration
+            .getDirectConnectGatewayAssociations(attachment.getResourceId())
+            .filter(assoc -> assoc.getAssociatedGateway().getId().equals(tgwCfg.getHostname()))
             .findFirst();
     if (!dxgwAssociation.isPresent()) {
       warnings.redFlagf(
@@ -483,14 +483,17 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           .build();
     }
 
+    long dxgwAmazonSideAsn = getDxgwAmazonSideAsn(vsConfiguration, attachment.getResourceId());
+    long tgwAmazonSideAsn = getTgwAmazonSideAsn(vsConfiguration, tgwCfg.getHostname());
+
     // BGP unnumbered peer on the TGW side (in the DX route table's VRF). The peer interface is
     // the link-local interface to the DXGW that was just created by connect().
     String tgwIfaceToDxgw = interfaceNameToRemote(dxgwCfg, routeTableId);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(tgwIfaceToDxgw)
-        .setRemoteAs(getDxgwAmazonSideAsn(region, attachment.getResourceId()))
+        .setRemoteAs(dxgwAmazonSideAsn)
         .setLocalIp(LINK_LOCAL_IP)
-        .setLocalAs(getTgwAmazonSideAsn(region, tgwCfg.getHostname()))
+        .setLocalAs(tgwAmazonSideAsn)
         .setBgpProcess(tgwVrf.getBgpProcess())
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
@@ -504,9 +507,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     String dxgwIfaceToTgw = interfaceNameToRemote(tgwCfg, routeTableId);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(dxgwIfaceToTgw)
-        .setRemoteAs(getTgwAmazonSideAsn(region, tgwCfg.getHostname()))
+        .setRemoteAs(tgwAmazonSideAsn)
         .setLocalIp(LINK_LOCAL_IP)
-        .setLocalAs(getDxgwAmazonSideAsn(region, attachment.getResourceId()))
+        .setLocalAs(dxgwAmazonSideAsn)
         .setBgpProcess(dxgwCfg.getDefaultVrf().getBgpProcess())
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
@@ -530,14 +533,19 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
             new org.batfish.datamodel.routing_policy.communities.CommunityIs(community)));
   }
 
-  private static long getDxgwAmazonSideAsn(Region region, String dxgwId) {
-    DirectConnectGateway dxgw = region.getDirectConnectGateways().get(dxgwId);
+  private static long getDxgwAmazonSideAsn(AwsConfiguration vsConfiguration, String dxgwId) {
+    DirectConnectGateway dxgw = vsConfiguration.getDirectConnectGateway(dxgwId);
     return dxgw == null ? 0L : dxgw.getAmazonSideAsn();
   }
 
-  private static long getTgwAmazonSideAsn(Region region, String tgwId) {
-    TransitGateway tgw = region.getTransitGateways().get(tgwId);
-    return tgw == null ? 0L : tgw.getOptions().getAmazonSideAsn();
+  private static long getTgwAmazonSideAsn(AwsConfiguration vsConfiguration, String tgwId) {
+    return vsConfiguration.getAccounts().stream()
+        .flatMap(a -> a.getRegions().stream())
+        .map(r -> r.getTransitGateways().get(tgwId))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .map(tgw -> tgw.getOptions().getAmazonSideAsn())
+        .orElse(0L);
   }
 
   /**

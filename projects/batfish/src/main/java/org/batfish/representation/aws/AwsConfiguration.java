@@ -140,6 +140,32 @@ public class AwsConfiguration extends VendorConfiguration {
     return getAllVpc().filter(v -> vpcId.equals(v.getId())).findFirst().orElse(null);
   }
 
+  /**
+   * Return the {@link DirectConnectGateway} with the given id from any account/region, or {@code
+   * null}. DXGWs are global and the same gateway typically appears in every region's collection;
+   * the first match is authoritative.
+   */
+  public @Nullable DirectConnectGateway getDirectConnectGateway(String dxgwId) {
+    return getAccounts().stream()
+        .flatMap(a -> a.getRegions().stream())
+        .map(r -> r.getDirectConnectGateways().get(dxgwId))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(null);
+  }
+
+  /**
+   * Return all {@link DirectConnectGatewayAssociation}s across all accounts and regions for the
+   * given DXGW. Associations are regional and may live in any region the DXGW is observed in.
+   */
+  public @Nonnull Stream<DirectConnectGatewayAssociation> getDirectConnectGatewayAssociations(
+      String dxgwId) {
+    return getAccounts().stream()
+        .flatMap(a -> a.getRegions().stream())
+        .flatMap(r -> r.getDirectConnectGatewayAssociations().values().stream())
+        .filter(assoc -> dxgwId.equals(assoc.getDirectConnectGatewayId()));
+  }
+
   public @Nonnull Account addOrGetAccount(String accountId) {
     return _accounts.computeIfAbsent(accountId, Account::new);
   }
@@ -253,6 +279,17 @@ public class AwsConfiguration extends VendorConfiguration {
     }
     // Vpc peerings can be both cross-region and cross-account, so we handle them here
     processVpcPeerings();
+    // Direct Connect Gateways are global resources (the same DXGW appears in every region's
+    // collection), while their associations and VIFs are regional. Build one node per unique DXGW
+    // here, after the per-region loop, aggregating associations and VIFs across regions.
+    try {
+      DirectConnectGatewayConverter.convertDirectConnectGateways(this)
+          .forEach(_convertedConfiguration::addNode);
+    } catch (Exception e) {
+      getWarnings()
+          .redFlagf(
+              "Failed to convert Direct Connect gateways %s", Throwables.getStackTraceAsString(e));
+    }
     // Transit gateways can be cross-account so we handle them here
     try {
       TransitGatewayConverter.convertTransitGateways(this, _convertedConfiguration)

@@ -246,7 +246,9 @@ The on-premises router and the DXGW share an IP subnet on the VIF and run eBGP. 
 
 #### Node and routing model
 
-**`DirectConnectGateway` Configuration node** (one per DXGW; created in `Region.toConfigurationNodes()`)
+**`DirectConnectGateway` Configuration node** (one per DXGW; created in `DirectConnectGatewayConverter.convertDirectConnectGateways()`)
+
+DXGWs are global resources: the same gateway entry appears in every region's `DirectConnectGateways.json` collection, while its associations and VIFs are regional and can live in different regions than the DXGW's "primary" terminations. The converter walks every account/region, dedups DXGWs by id, aggregates associations and VIFs across regions, and builds one node per unique DXGW. This runs after the per-region pass, before transit-gateway conversion.
 
 Uses a single default VRF for both customer-facing (VIF) and TGW-facing interfaces, so that routes received on one side are immediately available for forwarding on the other.
 
