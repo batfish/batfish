@@ -637,10 +637,13 @@ public class PsThensTest {
   @Test
   public void testDefaultActionAndBareTerminatorBothRetained() {
     // default-action accept and bare reject are different families. Both retained at commit.
+    // Bare terminator overrides default-action: dead-with-bare-terminator warning fires.
     PsThens ps = new PsThens();
     PsThenDefaultActionAccept defaultAccept = new PsThenDefaultActionAccept();
     assertThat(ps.addPsThen(defaultAccept), empty());
-    assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
+    assertThat(
+        ps.addPsThen(PsThenReject.INSTANCE),
+        contains("default-action (dead-with-bare-terminator)"));
     assertThat(ps.getAllThens(), containsInAnyOrder(defaultAccept, PsThenReject.INSTANCE));
   }
 
@@ -726,5 +729,136 @@ public class PsThensTest {
     assertThat(ps.addPsThen(PsThenNextPolicy.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenNextTerm.INSTANCE), contains("next-term-or-policy"));
     assertEquals(ImmutableList.of(PsThenNextTerm.INSTANCE), ps.getAllThens());
+  }
+
+  // ==========================================================================
+  // default-action: separate last-wins family; dead when bare terminator is also present
+  // ==========================================================================
+
+  @Test
+  public void testDefaultActionAcceptDedup() {
+    PsThens ps = new PsThens();
+    PsThenDefaultActionAccept da1 = new PsThenDefaultActionAccept();
+    PsThenDefaultActionAccept da2 = new PsThenDefaultActionAccept();
+    assertThat(ps.addPsThen(da1), empty());
+    assertThat(ps.addPsThen(da2), contains("default-action (dedup)"));
+    assertThat(ps.getAllThens(), contains(da2));
+  }
+
+  @Test
+  public void testDefaultActionAcceptThenRejectLastWins() {
+    PsThens ps = new PsThens();
+    PsThenDefaultActionAccept daAccept = new PsThenDefaultActionAccept();
+    PsThenDefaultActionReject daReject = new PsThenDefaultActionReject();
+    assertThat(ps.addPsThen(daAccept), empty());
+    assertThat(ps.addPsThen(daReject), contains("default-action"));
+    assertThat(ps.getAllThens(), contains(daReject));
+  }
+
+  @Test
+  public void testBareAcceptThenDefaultActionIsDead() {
+    // accept; default-action reject — default-action is dead config when added after a bare
+    // terminator. Both lines retained at commit.
+    PsThens ps = new PsThens();
+    PsThenDefaultActionReject defaultReject = new PsThenDefaultActionReject();
+    assertThat(ps.addPsThen(PsThenAccept.INSTANCE), empty());
+    assertThat(ps.addPsThen(defaultReject), contains("default-action (dead-with-bare-terminator)"));
+    assertThat(ps.getAllThens(), containsInAnyOrder(PsThenAccept.INSTANCE, defaultReject));
+  }
+
+  @Test
+  public void testDefaultActionRejectThenBareAcceptIsDeadConfig() {
+    // default-action reject; accept — adding the bare terminator makes the default-action dead
+    // config (the default-action was authored first but never fires).
+    PsThens ps = new PsThens();
+    PsThenDefaultActionReject defaultReject = new PsThenDefaultActionReject();
+    assertThat(ps.addPsThen(defaultReject), empty());
+    assertThat(
+        ps.addPsThen(PsThenAccept.INSTANCE),
+        contains("default-action (dead-with-bare-terminator)"));
+    assertThat(ps.getAllThens(), containsInAnyOrder(PsThenAccept.INSTANCE, defaultReject));
+  }
+
+  // ==========================================================================
+  // mutating action vs bare reject: mutating action is dead since route is rejected
+  // ==========================================================================
+
+  @Test
+  public void testMutatingThenRejectFlagsAllPriorMutations() {
+    // metric 100; community add RED; reject — metric and community are dead config; one warning
+    // per prior mutating action.
+    PsThens ps = new PsThens();
+    PsThenMetric m = new PsThenMetric(100, PsThenMetric.Operator.SET);
+    PsThenCommunityAdd add = new PsThenCommunityAdd("RED");
+    assertThat(ps.addPsThen(m), empty());
+    assertThat(ps.addPsThen(add), empty());
+    assertThat(
+        ps.addPsThen(PsThenReject.INSTANCE),
+        contains("metric (dead-with-bare-reject)", "community add RED (dead-with-bare-reject)"));
+  }
+
+  @Test
+  public void testRejectThenMutatingIsDead() {
+    // reject; metric 100 — metric is dead since reject already fires. Both retained at commit.
+    PsThens ps = new PsThens();
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
+    assertThat(
+        ps.addPsThen(new PsThenMetric(100, PsThenMetric.Operator.SET)),
+        contains("metric (dead-with-bare-reject)"));
+  }
+
+  @Test
+  public void testRejectThenCommunityAddIsDead() {
+    PsThens ps = new PsThens();
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
+    assertThat(
+        ps.addPsThen(new PsThenCommunityAdd("RED")),
+        contains("community add RED (dead-with-bare-reject)"));
+  }
+
+  @Test
+  public void testRejectAcceptThenMutatingNotDead() {
+    // reject; accept — accept wins (last-wins). A mutating action after that is NOT dead because
+    // the route is accepted.
+    PsThens ps = new PsThens();
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
+    assertThat(ps.addPsThen(PsThenAccept.INSTANCE), contains("accept-or-reject"));
+    assertThat(ps.addPsThen(new PsThenMetric(100, PsThenMetric.Operator.SET)), empty());
+  }
+
+  @Test
+  public void testRejectThenNextTermNotDead() {
+    // reject; next term — next-term suppresses the reject. A mutating action added after is not
+    // dead-with-bare-reject because reject does not fire.
+    PsThens ps = new PsThens();
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
+    assertThat(
+        ps.addPsThen(PsThenNextTerm.INSTANCE),
+        contains("accept-or-reject (suppressed-by-next-term-or-policy)"));
+    assertThat(ps.addPsThen(new PsThenMetric(100, PsThenMetric.Operator.SET)), empty());
+  }
+
+  @Test
+  public void testRejectThenMutatingDedupNotDoubleWarned() {
+    // metric 100; reject; metric 100 — the second metric is a dedup. Don't double-warn (the
+    // earlier metric was already warned when reject was added).
+    PsThens ps = new PsThens();
+    PsThenMetric m = new PsThenMetric(100, PsThenMetric.Operator.SET);
+    assertThat(ps.addPsThen(m), empty());
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), contains("metric (dead-with-bare-reject)"));
+    // dedup: only the dedup warning, not the dead-with-bare-reject one
+    assertThat(ps.addPsThen(m), contains("metric (dedup)"));
+  }
+
+  @Test
+  public void testRejectThenMutatingOverwriteWarned() {
+    // metric 100; reject; metric 200 — metric 200 IS new dead config; warn for both the
+    // overwrite and the dead-with-reject. (Author wrote a new metric line that has no effect.)
+    PsThens ps = new PsThens();
+    assertThat(ps.addPsThen(new PsThenMetric(100, PsThenMetric.Operator.SET)), empty());
+    assertThat(ps.addPsThen(PsThenReject.INSTANCE), contains("metric (dead-with-bare-reject)"));
+    assertThat(
+        ps.addPsThen(new PsThenMetric(200, PsThenMetric.Operator.SET)),
+        contains("metric", "metric (dead-with-bare-reject)"));
   }
 }
