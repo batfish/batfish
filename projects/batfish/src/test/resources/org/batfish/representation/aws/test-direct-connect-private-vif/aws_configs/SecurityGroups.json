@@ -1,0 +1,43 @@
+{
+ "SecurityGroups": [
+  {
+   "Description": "Security group for Private VIF instance",
+   "GroupId": "sg-priv01",
+   "GroupName": "priv-sg",
+   "IpPermissions": [
+    {
+     "IpProtocol": "-1",
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0"
+      }
+     ],
+     "Ipv6Ranges": [],
+     "PrefixListIds": [],
+     "UserIdGroupPairs": []
+    }
+   ],
+   "IpPermissionsEgress": [
+    {
+     "IpProtocol": "-1",
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0"
+      }
+     ],
+     "Ipv6Ranges": [],
+     "PrefixListIds": [],
+     "UserIdGroupPairs": []
+    }
+   ],
+   "OwnerId": "123456789012",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "priv-sg"
+    }
+   ],
+   "VpcId": "vpc-priv01"
+  }
+ ]
+}

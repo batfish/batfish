@@ -16,6 +16,7 @@ import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -28,8 +29,13 @@ import java.io.IOException;
 import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -100,7 +106,8 @@ public class VpnGatewayTest {
         .getVrfs()
         .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
-    Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
+    Configuration vgwConfig =
+        vgw.toConfigurationNode(new AwsConfiguration(), awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
     assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
@@ -149,7 +156,8 @@ public class VpnGatewayTest {
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
-    Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
+    Configuration vgwConfig =
+        vgw.toConfigurationNode(new AwsConfiguration(), awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     // the loopback interface, bgp process, and static route should exist
@@ -193,5 +201,73 @@ public class VpnGatewayTest {
                     .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
                     .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
                     .build())));
+  }
+
+  /**
+   * VGW-attached Private VIF: the VGW should expose a customer-facing interface bearing the VIF id,
+   * with the AWS-side address, dot1Q encapsulation, and a BGP peer toward the customer address.
+   */
+  @Test
+  public void testToConfigurationNodeVgwAttachedPrivateVif() {
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
+    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    VpnGateway vgw =
+        new VpnGateway("vgw-1", ImmutableList.of(vpc.getId()), ImmutableMap.of(), 64666L);
+
+    DirectConnectVirtualInterface vif =
+        new DirectConnectVirtualInterface(
+            "dxvif-priv1",
+            "private-vif",
+            "private",
+            "dxcon-1",
+            null,
+            vgw.getId(),
+            300,
+            65010L,
+            ConcreteInterfaceAddress.parse("169.254.30.1/30"),
+            ConcreteInterfaceAddress.parse("169.254.30.2/30"),
+            ImmutableList.of(),
+            ImmutableMap.of());
+
+    Region region =
+        Region.builder("region")
+            .setVpnGateways(ImmutableMap.of(vgw.getId(), vgw))
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setDirectConnectVirtualInterfaces(ImmutableMap.of(vif.getId(), vif))
+            .build();
+
+    AwsConfiguration vsConfiguration = new AwsConfiguration();
+    vsConfiguration.addOrGetAccount("acc").addRegion(region);
+
+    String vrfNameOnVpc = vrfNameForLink(vgw.getId());
+    vpcConfig
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
+
+    Configuration vgwConfig =
+        vgw.toConfigurationNode(vsConfiguration, awsConfiguration, region, new Warnings());
+
+    assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());
+    Interface vifIface = vgwConfig.getAllInterfaces().get(vif.getId());
+    assertThat(vifIface, notNullValue());
+    assertThat(vifIface.getAddress(), equalTo(vif.getAmazonAddress()));
+    assertThat(vifIface.getEncapsulationVlan(), equalTo(300));
+
+    assertThat(
+        vgwConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors().keySet(),
+        hasItem(Ip.parse("169.254.30.2")));
+    BgpActivePeerConfig peer =
+        vgwConfig
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("169.254.30.2"));
+    assertThat(peer.getLocalIp(), equalTo(Ip.parse("169.254.30.1")));
+    assertThat(peer.getLocalAs(), equalTo(64666L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65010L)));
   }
 }

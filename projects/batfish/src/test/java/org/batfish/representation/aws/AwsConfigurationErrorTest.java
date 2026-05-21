@@ -34,7 +34,7 @@ public class AwsConfigurationErrorTest {
 
     Region r2_mock = mock(Region.class);
     when(r2_mock.getName()).thenReturn("region2");
-    doThrow(new NullPointerException()).when(r2_mock).toConfigurationNodes(any(), same(w));
+    doThrow(new NullPointerException()).when(r2_mock).toConfigurationNodes(any(), any(), same(w));
     account.addRegion(r2_mock);
 
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();

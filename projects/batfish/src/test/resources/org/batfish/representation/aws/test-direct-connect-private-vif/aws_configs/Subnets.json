@@ -1,0 +1,18 @@
+{
+ "Subnets": [
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-east-1a",
+   "AvailableIpAddressCount": 251,
+   "CidrBlock": "10.50.1.0/24",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": false,
+   "State": "available",
+   "SubnetId": "subnet-priv01",
+   "VpcId": "vpc-priv01",
+   "OwnerId": "123456789012",
+   "SubnetArn": "arn:aws:ec2:us-east-1:123456789012:subnet/subnet-priv01"
+  }
+ ]
+}

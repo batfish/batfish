@@ -38,15 +38,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
-import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
@@ -442,46 +436,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     connect(
         awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
 
-    // Build a TGW-side import policy that accepts BGP routes from the DXGW peer and tags them
-    // with a local-preference value that depends on the AWS Direct Connect traffic-engineering
-    // community on the route. This matches AWS's documented behavior: customers attach
-    // 7224:7300/7200/7100 to BGP advertisements over the VIF to control AWS-side preference.
-    // All three values are higher than the default lp (100) used for VPN-propagated routes, so
-    // DX still wins over VPN in every case.
-    String importPolicyName = dxImportPolicyName(routeTableId);
-    if (!tgwCfg.getRoutingPolicies().containsKey(importPolicyName)) {
-      RoutingPolicy.builder()
-          .setName(importPolicyName)
-          .setOwner(tgwCfg)
-          .setStatements(
-              ImmutableList.of(
-                  new If(
-                      new MatchProtocol(RoutingProtocol.BGP),
-                      ImmutableList.of(
-                          // High preference (7224:7300)
-                          new If(
-                              dxCommunityMatch(DirectConnectGateway.DX_HIGH_PREF_COMMUNITY),
-                              ImmutableList.of(
-                                  new SetLocalPreference(
-                                      new LiteralLong(Route.DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE))),
-                              // Low preference (7224:7100)
-                              ImmutableList.of(
-                                  new If(
-                                      dxCommunityMatch(DirectConnectGateway.DX_LOW_PREF_COMMUNITY),
-                                      ImmutableList.of(
-                                          new SetLocalPreference(
-                                              new LiteralLong(
-                                                  Route.DIRECT_CONNECT_LOW_LOCAL_PREFERENCE))),
-                                      // Medium / default (7224:7200 or no community)
-                                      ImmutableList.of(
-                                          new SetLocalPreference(
-                                              new LiteralLong(
-                                                  Route
-                                                      .DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE)))))),
-                          Statements.ExitAccept.toStaticStatement()),
-                      ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
-          .build();
-    }
+    // Per-route-table TGW-side import policy: accepts BGP and tags routes with a local-preference
+    // value depending on the AWS DX traffic-engineering community on the route. Customers attach
+    // 7224:7300/7200/7100 to BGP advertisements over the VIF to control AWS-side preference. All
+    // three values are higher than the default lp (100) used for VPN-propagated routes, so DX
+    // still wins over VPN in every case.
+    String importPolicyName =
+        DirectConnectGateway.installDxImportPolicy(tgwCfg, dxImportPolicyName(routeTableId));
 
     long dxgwAmazonSideAsn = getDxgwAmazonSideAsn(vsConfiguration, attachment.getResourceId());
     long tgwAmazonSideAsn = getTgwAmazonSideAsn(vsConfiguration, tgwCfg.getHostname());
@@ -522,15 +483,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   private static String dxImportPolicyName(String routeTableId) {
     return String.format("~tgw~dx-import-policy~%s~", routeTableId);
-  }
-
-  /** Returns a boolean expression that matches if the route carries the given community. */
-  private static org.batfish.datamodel.routing_policy.expr.BooleanExpr dxCommunityMatch(
-      org.batfish.datamodel.bgp.community.StandardCommunity community) {
-    return new org.batfish.datamodel.routing_policy.communities.MatchCommunities(
-        org.batfish.datamodel.routing_policy.communities.InputCommunities.instance(),
-        new org.batfish.datamodel.routing_policy.communities.HasCommunity(
-            new org.batfish.datamodel.routing_policy.communities.CommunityIs(community)));
   }
 
   private static long getDxgwAmazonSideAsn(AwsConfiguration vsConfiguration, String dxgwId) {

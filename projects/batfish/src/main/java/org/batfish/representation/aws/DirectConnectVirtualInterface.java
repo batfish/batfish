@@ -37,6 +37,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
   static final String JSON_KEY_CUSTOMER_ADDRESS = "CustomerAddress";
   static final String JSON_KEY_VIRTUAL_INTERFACE_STATE = "VirtualInterfaceState";
   static final String JSON_KEY_DIRECT_CONNECT_GATEWAY_ID = "DirectConnectGatewayId";
+  static final String JSON_KEY_VIRTUAL_GATEWAY_ID = "VirtualGatewayId";
   static final String JSON_KEY_BGP_PEERS = "BgpPeers";
 
   @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,6 +113,8 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
 
   private final @Nullable String _directConnectGatewayId;
 
+  private final @Nullable String _virtualGatewayId;
+
   private final int _vlan;
 
   private final long _asn;
@@ -131,6 +134,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       @JsonProperty(JSON_KEY_VIRTUAL_INTERFACE_TYPE) @Nullable String virtualInterfaceType,
       @JsonProperty(JSON_KEY_CONNECTION_ID) @Nullable String connectionId,
       @JsonProperty(JSON_KEY_DIRECT_CONNECT_GATEWAY_ID) @Nullable String directConnectGatewayId,
+      @JsonProperty(JSON_KEY_VIRTUAL_GATEWAY_ID) @Nullable String virtualGatewayId,
       @JsonProperty(JSON_KEY_VLAN) @Nullable Integer vlan,
       @JsonProperty(JSON_KEY_ASN) @Nullable Long asn,
       @JsonProperty(JSON_KEY_AMAZON_ADDRESS) @Nullable String amazonAddress,
@@ -152,6 +156,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         virtualInterfaceType,
         connectionId,
         directConnectGatewayId,
+        virtualGatewayId,
         vlan,
         asn,
         ConcreteInterfaceAddress.parse(amazonAddress),
@@ -167,6 +172,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
       String virtualInterfaceType,
       String connectionId,
       @Nullable String directConnectGatewayId,
+      @Nullable String virtualGatewayId,
       int vlan,
       long asn,
       ConcreteInterfaceAddress amazonAddress,
@@ -178,6 +184,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
     _virtualInterfaceType = virtualInterfaceType;
     _connectionId = connectionId;
     _directConnectGatewayId = directConnectGatewayId;
+    _virtualGatewayId = virtualGatewayId;
     _vlan = vlan;
     _asn = asn;
     _amazonAddress = amazonAddress;
@@ -205,6 +212,10 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
 
   public @Nullable String getDirectConnectGatewayId() {
     return _directConnectGatewayId;
+  }
+
+  public @Nullable String getVirtualGatewayId() {
+    return _virtualGatewayId;
   }
 
   public int getVlan() {
@@ -256,6 +267,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         && Objects.equals(_virtualInterfaceType, that._virtualInterfaceType)
         && Objects.equals(_connectionId, that._connectionId)
         && Objects.equals(_directConnectGatewayId, that._directConnectGatewayId)
+        && Objects.equals(_virtualGatewayId, that._virtualGatewayId)
         && Objects.equals(_amazonAddress, that._amazonAddress)
         && Objects.equals(_customerAddress, that._customerAddress)
         && Objects.equals(_bgpPeers, that._bgpPeers)
@@ -270,6 +282,7 @@ final class DirectConnectVirtualInterface implements AwsVpcEntity, Serializable 
         _virtualInterfaceType,
         _connectionId,
         _directConnectGatewayId,
+        _virtualGatewayId,
         _vlan,
         _asn,
         _amazonAddress,

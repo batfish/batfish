@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** Represents an AWS VPN gateway */
@@ -123,7 +130,10 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
    * right policy.
    */
   Configuration toConfigurationNode(
-      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+      AwsConfiguration vsConfiguration,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
     Configuration cfgNode =
         Utils.newAwsConfiguration(_vpnGatewayId, "aws", _tags, DeviceModel.AWS_VPN_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
@@ -132,11 +142,35 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         vpcId ->
             connectGatewayToVpc(_vpnGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings));
 
+    // VIFs that terminate directly on this VGW (Private VIFs, VGW-attached). VIFs are global
+    // resources in the AWS model and may be observed in any region; aggregate across all regions.
+    Collection<DirectConnectVirtualInterface> vifs =
+        vsConfiguration.getAccounts().stream()
+            .flatMap(a -> a.getRegions().stream())
+            .flatMap(r -> r.getDirectConnectVirtualInterfaces().values().stream())
+            .filter(vif -> _vpnGatewayId.equals(vif.getVirtualGatewayId()))
+            .collect(Collectors.toList());
+
+    // True if any DXGW has an association whose AssociatedGateway is this VGW. Such an association
+    // implies a BGP-unnumbered link between the DXGW and this VGW will be added later.
+    boolean hasDxgwAssociation =
+        vsConfiguration.getAccounts().stream()
+            .flatMap(a -> a.getRegions().stream())
+            .flatMap(r -> r.getDirectConnectGatewayAssociations().values().stream())
+            .anyMatch(
+                a ->
+                    a.getAssociatedGateway().getType()
+                            == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                                .VIRTUAL_PRIVATE_GATEWAY
+                        && _vpnGatewayId.equals(a.getAssociatedGateway().getId()));
+
     // if this VGW has any BGP-based VPN connections, configure BGP on it
     boolean doBgp =
         region.getVpnConnections().values().stream()
-            .filter(conn -> _vpnGatewayId.equals(conn.getAwsGatewayId()))
-            .anyMatch(VpnConnection::isBgpConnection);
+                .filter(conn -> _vpnGatewayId.equals(conn.getAwsGatewayId()))
+                .anyMatch(VpnConnection::isBgpConnection)
+            || !vifs.isEmpty()
+            || hasDxgwAssociation;
 
     if (doBgp) {
       String loopbackBgp = "loopbackBgp";
@@ -178,7 +212,46 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
                   warnings));
     }
 
+    // Wire customer-facing VIFs (Private VIFs, VGW-attached). The VIF interface and BGP peer live
+    // on the VGW; operators add an L1 edge from on-prem to this interface.
+    vifs.forEach(vif -> configureVifBgpSession(cfgNode, vif));
+
     return cfgNode;
+  }
+
+  /** Per-VIF DX community-to-localpref import policy name on the VGW. */
+  static String vgwDxImportPolicyName(String vifId) {
+    return String.format("~vgw~dx-import-policy~%s~", vifId);
+  }
+
+  private void configureVifBgpSession(Configuration cfgNode, DirectConnectVirtualInterface vif) {
+    Ip amazonIp = vif.getAmazonIp();
+    Ip customerIp = vif.getCustomerIp();
+
+    Interface vifIface =
+        Utils.newInterface(
+            vif.getId(),
+            cfgNode,
+            vif.getAmazonAddress(),
+            "Direct Connect VIF " + vif.getVirtualInterfaceName());
+    vifIface.updateInterfaceType(InterfaceType.PHYSICAL);
+    vifIface.setEncapsulationVlan(vif.getVlan());
+
+    String importPolicy =
+        DirectConnectGateway.installDxImportPolicy(cfgNode, vgwDxImportPolicyName(vif.getId()));
+
+    BgpActivePeerConfig.builder()
+        .setPeerAddress(customerIp)
+        .setRemoteAsns(LongSpace.of(vif.getAsn()))
+        .setLocalIp(amazonIp)
+        .setLocalAs(_amazonSideAsn)
+        .setBgpProcess(cfgNode.getDefaultVrf().getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(VGW_EXPORT_POLICY_NAME)
+                .setImportPolicy(importPolicy)
+                .build())
+        .build();
   }
 
   @Override

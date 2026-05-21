@@ -1,0 +1,28 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "10.50.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-priv01",
+     "CidrBlock": "10.50.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-priv01",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "private-vif-vpc"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "VpcId": "vpc-priv01"
+  }
+ ]
+}

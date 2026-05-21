@@ -1,0 +1,50 @@
+{
+ "VirtualInterfaces": [
+  {
+   "VirtualInterfaceId": "dxvif-priv01",
+   "VirtualInterfaceName": "vgw-private-vif-high",
+   "VirtualInterfaceType": "private",
+   "ConnectionId": "dxcon-priv01",
+   "VirtualGatewayId": "vgw-priv01",
+   "Vlan": 300,
+   "Asn": 65010,
+   "AmazonAddress": "169.254.30.1/30",
+   "CustomerAddress": "169.254.30.2/30",
+   "VirtualInterfaceState": "available",
+   "BgpPeers": [
+    {
+     "Asn": 65010,
+     "AmazonAddress": "169.254.30.1/30",
+     "CustomerAddress": "169.254.30.2/30",
+     "BgpPeerState": "available",
+     "BgpStatus": "up"
+    }
+   ],
+   "RouteFilterPrefixes": [],
+   "Tags": []
+  },
+  {
+   "VirtualInterfaceId": "dxvif-priv02",
+   "VirtualInterfaceName": "vgw-private-vif-low",
+   "VirtualInterfaceType": "private",
+   "ConnectionId": "dxcon-priv02",
+   "VirtualGatewayId": "vgw-priv01",
+   "Vlan": 301,
+   "Asn": 65020,
+   "AmazonAddress": "169.254.31.1/30",
+   "CustomerAddress": "169.254.31.2/30",
+   "VirtualInterfaceState": "available",
+   "BgpPeers": [
+    {
+     "Asn": 65020,
+     "AmazonAddress": "169.254.31.1/30",
+     "CustomerAddress": "169.254.31.2/30",
+     "BgpPeerState": "available",
+     "BgpStatus": "up"
+    }
+   ],
+   "RouteFilterPrefixes": [],
+   "Tags": []
+  }
+ ]
+}
