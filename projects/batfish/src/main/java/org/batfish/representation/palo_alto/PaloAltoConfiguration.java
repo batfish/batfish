@@ -2264,6 +2264,19 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setEncapsulationVlan(iface.getTag());
     } else if (iface.getType() == Interface.Type.LAYER2) {
       newIface.setAccessVlan(iface.getTag());
+    } else if (iface.getType() == Interface.Type.VLAN_UNIT) {
+      // PAN-OS encodes the VLAN ID as the numeric suffix of the unit name
+      // (vlan.10 → VLAN 10). Surface that to Batfish's SVI machinery so the
+      // broadcast-domain → SVI bridge can resolve once the layer2 side is
+      // modeled as a trunk carrying matching VLAN IDs.
+      int dotIndex = iface.getName().lastIndexOf('.');
+      if (dotIndex > 0 && dotIndex < iface.getName().length() - 1) {
+        try {
+          newIface.setVlan(Integer.parseInt(iface.getName().substring(dotIndex + 1)));
+        } catch (NumberFormatException e) {
+          // Non-numeric suffix; skip SVI VLAN ID binding.
+        }
+      }
     }
 
     // add outgoing filter

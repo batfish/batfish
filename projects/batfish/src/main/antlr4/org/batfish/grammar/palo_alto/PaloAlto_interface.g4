@@ -271,11 +271,23 @@ snit_units
     UNITS snit_unit?
 ;
 
+sniv_ip
+:
+    IP address = interface_address_or_reference
+;
+
+sniv_mtu
+:
+    MTU mtu = uint32
+;
+
 sniv_unit
 :
     name = variable
     (
         if_common
+        | sniv_ip
+        | sniv_mtu
     )?
 ;
 
