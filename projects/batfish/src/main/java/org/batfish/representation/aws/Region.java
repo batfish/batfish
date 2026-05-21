@@ -859,10 +859,8 @@ public final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
-    for (DirectConnectGateway dcGw : getDirectConnectGateways().values()) {
-      Configuration cfgNode = dcGw.toConfigurationNode(this, awsConfiguration, warnings);
-      awsConfiguration.addNode(cfgNode);
-    }
+    // Direct Connect Gateways are global resources and are converted once per unique gateway by
+    // {@link DirectConnectGatewayConverter}, after the per-region pass completes.
 
     for (Instance instance : getInstances().values()) {
       Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);

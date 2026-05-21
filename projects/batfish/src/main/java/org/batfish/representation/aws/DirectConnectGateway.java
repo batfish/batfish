@@ -11,13 +11,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -149,6 +149,11 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
    * Creates a Configuration node for this Direct Connect Gateway. Uses a single default VRF for
    * both TGW-facing and customer-facing (VIF) interfaces.
    *
+   * <p>DXGWs are global resources: the same gateway appears in every region's collection, while its
+   * associations and VIFs are regional and may live in different regions. Callers must aggregate
+   * associations and VIFs from every region in which they were observed before invoking this
+   * method.
+   *
    * <p>Routing on the DXGW is BGP-driven and matches AWS's documented behavior:
    *
    * <ul>
@@ -162,7 +167,8 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
    * </ul>
    */
   Configuration toConfigurationNode(
-      Region region, ConvertedConfiguration awsConfiguration, Warnings warnings) {
+      Collection<DirectConnectGatewayAssociation> associations,
+      Collection<DirectConnectVirtualInterface> virtualInterfaces) {
     Configuration cfgNode =
         Utils.newAwsConfiguration(
             nodeName(_directConnectGatewayId),
@@ -172,26 +178,21 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     if (cfgNode.getHumanName() == null) {
       cfgNode.setHumanName(_directConnectGatewayName);
     }
-    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     initBgp(cfgNode);
 
     // Per-association: install allowed-prefix statics and a TGW-export filter.
-    region.getDirectConnectGatewayAssociations().values().stream()
-        .filter(assoc -> _directConnectGatewayId.equals(assoc.getDirectConnectGatewayId()))
-        .forEach(
-            assoc -> {
-              installAllowedPrefixStatics(cfgNode, assoc.getAllowedPrefixes());
-              buildTgwExportPolicy(cfgNode, assoc.getId(), assoc.getAllowedPrefixes());
-            });
+    associations.forEach(
+        assoc -> {
+          installAllowedPrefixStatics(cfgNode, assoc.getAllowedPrefixes());
+          buildTgwExportPolicy(cfgNode, assoc.getId(), assoc.getAllowedPrefixes());
+        });
 
     // VIF export policy: advertise the originated allowed-prefix statics to on-prem.
     buildVifExportPolicy(cfgNode);
 
     // Configure BGP sessions toward customer routers via VIFs.
-    region.getDirectConnectVirtualInterfaces().values().stream()
-        .filter(vif -> _directConnectGatewayId.equals(vif.getDirectConnectGatewayId()))
-        .forEach(vif -> configureVifBgpSession(cfgNode, vif));
+    virtualInterfaces.forEach(vif -> configureVifBgpSession(cfgNode, vif));
 
     return cfgNode;
   }

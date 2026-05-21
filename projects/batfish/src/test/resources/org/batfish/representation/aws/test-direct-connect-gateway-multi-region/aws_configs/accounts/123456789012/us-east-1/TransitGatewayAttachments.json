@@ -1,0 +1,19 @@
+{
+ "TransitGatewayAttachments": [
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-east"
+   },
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "ResourceId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
+   "ResourceOwnerId": "123456789012",
+   "ResourceType": "direct-connect-gateway",
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayAttachmentId": "tgw-attach-east-dx",
+   "TransitGatewayId": "tgw-east",
+   "TransitGatewayOwnerId": "123456789012"
+  }
+ ]
+}
