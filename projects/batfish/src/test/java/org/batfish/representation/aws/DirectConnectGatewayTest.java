@@ -29,9 +29,9 @@ public class DirectConnectGatewayTest {
         region.getDirectConnectGateways(),
         equalTo(
             ImmutableMap.of(
-                "dxgw-12345678abcdef012",
+                "12345678-90ab-4cde-9f01-23456789abcd",
                 new DirectConnectGateway(
-                    "dxgw-12345678abcdef012",
+                    "12345678-90ab-4cde-9f01-23456789abcd",
                     "my-dx-gateway",
                     64512L,
                     ImmutableMap.of("Name", "prod-dxgw")))));

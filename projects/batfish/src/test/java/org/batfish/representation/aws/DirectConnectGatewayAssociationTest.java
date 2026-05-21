@@ -37,7 +37,7 @@ public class DirectConnectGatewayAssociationTest {
                 "dxgw-assoc-001122aabbccddee0",
                 new DirectConnectGatewayAssociation(
                     "dxgw-assoc-001122aabbccddee0",
-                    "dxgw-12345678abcdef012",
+                    "12345678-90ab-4cde-9f01-23456789abcd",
                     new AssociatedGateway(
                         "tgw-0984f045a02daba60",
                         GatewayType.TRANSIT_GATEWAY,

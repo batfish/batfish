@@ -107,8 +107,15 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     return _tags;
   }
 
+  /**
+   * Direct Connect Gateway IDs are bare lowercase-hex UUIDs (e.g. {@code
+   * 085f3c96-59d9-4e6a-a37a-982e8f5653fc}). Unlike most AWS resource IDs, they have no service
+   * prefix and so begin with a digit, which the pybatfish node specifier grammar rejects in
+   * unquoted names (it disallows leading digits to avoid ambiguity with IP addresses). Prefix with
+   * {@code dxgw-} so the node name starts with a letter.
+   */
   static String nodeName(String directConnectGatewayId) {
-    return directConnectGatewayId;
+    return "dxgw-" + directConnectGatewayId;
   }
 
   /**
@@ -162,6 +169,9 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
             "aws",
             _tags,
             DeviceModel.AWS_DIRECT_CONNECT_GATEWAY);
+    if (cfgNode.getHumanName() == null) {
+      cfgNode.setHumanName(_directConnectGatewayName);
+    }
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     initBgp(cfgNode);

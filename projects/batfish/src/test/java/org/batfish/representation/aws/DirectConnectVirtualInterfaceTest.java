@@ -39,7 +39,7 @@ public class DirectConnectVirtualInterfaceTest {
                     "my-transit-vif",
                     "transit",
                     "dxcon-abc12345",
-                    "dxgw-12345678abcdef012",
+                    "12345678-90ab-4cde-9f01-23456789abcd",
                     100,
                     65001L,
                     ConcreteInterfaceAddress.parse("169.254.100.1/30"),

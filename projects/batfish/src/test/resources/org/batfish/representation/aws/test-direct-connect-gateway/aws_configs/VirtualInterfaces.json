@@ -5,7 +5,7 @@
    "VirtualInterfaceName": "dx-test-vif",
    "VirtualInterfaceType": "transit",
    "ConnectionId": "dxcon-dx01",
-   "DirectConnectGatewayId": "dxgw-dx01",
+   "DirectConnectGatewayId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
    "Vlan": 100,
    "Asn": 65001,
    "AmazonAddress": "169.254.10.1/30",

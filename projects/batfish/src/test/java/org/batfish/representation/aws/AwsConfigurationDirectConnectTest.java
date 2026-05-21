@@ -68,7 +68,7 @@ public class AwsConfigurationDirectConnectTest {
   private static final String onPremRouterFile = "onprem-router.txt";
 
   private static final String _onPremRouter = "onprem-router";
-  private static final String _dxgw = "dxgw-dx01";
+  private static final String _dxgw = "dxgw-7b2c4f8a-1234-4abc-9def-fedcba987654";
   private static final String _tgw = "tgw-dx01";
   private static final String _vpc = "vpc-dx01";
   private static final String _subnet = "subnet-dx01";

@@ -26,7 +26,7 @@
     "TransitGatewayRouteTableId": "tgw-rtb-dx01"
    },
    "CreationTime": "2023-01-01 00:00:00+00:00",
-   "ResourceId": "dxgw-dx01",
+   "ResourceId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
    "ResourceOwnerId": "123456789012",
    "ResourceType": "direct-connect-gateway",
    "State": "available",
