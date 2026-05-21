@@ -10115,6 +10115,50 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testCommunityAddDeleteOverlapWarnings() throws IOException {
+    String hostname = "juniper-community-add-delete-overlap";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    SortedSet<Warning> riskyWarnings = ccae.getWarnings().get(hostname).getRiskyRedFlagWarnings();
+
+    // Literal add overlapped by regex delete in the same term.
+    assertThat(
+        riskyWarnings,
+        hasItem(
+            WarningMatchers.hasText(
+                "RISK: 'policy-statement ADD-OVERLAPS-DELETE-REGEX term t1': then community add"
+                    + " RED adds 65000:1, which is also matched by then community delete"
+                    + " ALL_65000 in the same term, so it is removed")));
+    // Literal set overlapped by regex delete in the same term.
+    assertThat(
+        riskyWarnings,
+        hasItem(
+            WarningMatchers.hasText(
+                "RISK: 'policy-statement SET-OVERLAPS-DELETE-REGEX term t1': then community set"
+                    + " RED adds 65000:1, which is also matched by then community delete ALL in"
+                    + " the same term, so it is removed")));
+    // Literal add and literal delete on the exact same community.
+    assertThat(
+        riskyWarnings,
+        hasItem(
+            WarningMatchers.hasText(
+                "RISK: 'policy-statement ADD-OVERLAPS-DELETE-LITERAL term t1': then community add"
+                    + " RED adds 65000:1, which is also matched by then community delete RED in"
+                    + " the same term, so it is removed")));
+    // No overlap and delete-then-add cases must not produce overlap warnings.
+    assertTrue(
+        "ADD-NO-OVERLAP must not produce an overlap warning",
+        riskyWarnings.stream()
+            .noneMatch(w -> w.getText().contains("policy-statement ADD-NO-OVERLAP")));
+    assertTrue(
+        "DELETE-THEN-ADD must not produce an overlap warning",
+        riskyWarnings.stream()
+            .noneMatch(w -> w.getText().contains("policy-statement DELETE-THEN-ADD")));
+  }
+
+  @Test
   public void testPsToConditionsFlag() throws IOException {
     String hostname = "risky-terminal-actions";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);

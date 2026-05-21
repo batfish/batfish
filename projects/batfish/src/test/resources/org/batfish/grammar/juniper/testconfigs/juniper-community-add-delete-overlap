@@ -1,0 +1,35 @@
+#
+set system host-name juniper-community-add-delete-overlap
+#
+# Communities used in the policy-statements below.
+set policy-options community RED members 65000:1
+set policy-options community BLUE members 65000:2
+set policy-options community ALL_65000 members "^65000:"
+set policy-options community ALL members ".*:.*"
+set policy-options community OTHER members "^65001:"
+#
+# Bug pattern from the ticket: literal `add` of a community that is also matched by a
+# regex `delete` in the same term — the just-added community is silently removed.
+set policy-options policy-statement ADD-OVERLAPS-DELETE-REGEX term t1 then community add RED
+set policy-options policy-statement ADD-OVERLAPS-DELETE-REGEX term t1 then community delete ALL_65000
+set policy-options policy-statement ADD-OVERLAPS-DELETE-REGEX term t1 then accept
+#
+# `community set` followed by `community delete` matching the just-set community.
+set policy-options policy-statement SET-OVERLAPS-DELETE-REGEX term t1 then community set RED
+set policy-options policy-statement SET-OVERLAPS-DELETE-REGEX term t1 then community delete ALL
+set policy-options policy-statement SET-OVERLAPS-DELETE-REGEX term t1 then accept
+#
+# Add and delete with literal members that match exactly.
+set policy-options policy-statement ADD-OVERLAPS-DELETE-LITERAL term t1 then community add RED
+set policy-options policy-statement ADD-OVERLAPS-DELETE-LITERAL term t1 then community delete RED
+set policy-options policy-statement ADD-OVERLAPS-DELETE-LITERAL term t1 then accept
+#
+# No overlap: add RED, delete OTHER (regex that does not match RED). No warning expected.
+set policy-options policy-statement ADD-NO-OVERLAP term t1 then community add RED
+set policy-options policy-statement ADD-NO-OVERLAP term t1 then community delete OTHER
+set policy-options policy-statement ADD-NO-OVERLAP term t1 then accept
+#
+# Delete then add (no overlap warning — the add survives).
+set policy-options policy-statement DELETE-THEN-ADD term t1 then community delete ALL_65000
+set policy-options policy-statement DELETE-THEN-ADD term t1 then community add RED
+set policy-options policy-statement DELETE-THEN-ADD term t1 then accept
