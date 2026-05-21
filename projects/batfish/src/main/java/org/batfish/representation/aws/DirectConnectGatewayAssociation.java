@@ -26,6 +26,7 @@ final class DirectConnectGatewayAssociation implements AwsVpcEntity, Serializabl
   static final String JSON_KEY_DIRECT_CONNECT_GATEWAY_ASSOCIATIONS =
       "DirectConnectGatewayAssociations";
   static final String JSON_KEY_ASSOCIATION_ID = "AssociationId";
+  static final String JSON_KEY_ASSOCIATION_STATE = "AssociationState";
   static final String JSON_KEY_ASSOCIATED_GATEWAY = "AssociatedGateway";
   static final String JSON_KEY_ALLOWED_PREFIXES_TO_DIRECT_CONNECT_GATEWAY =
       "AllowedPrefixesToDirectConnectGateway";

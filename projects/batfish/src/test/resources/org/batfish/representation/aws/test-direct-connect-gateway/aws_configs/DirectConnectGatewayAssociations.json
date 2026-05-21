@@ -10,7 +10,6 @@
     "Region": "us-east-1"
    },
    "AssociationState": "associated",
-   "State": "associated",
    "AllowedPrefixesToDirectConnectGateway": [
     {
      "Cidr": "10.0.0.0/8"

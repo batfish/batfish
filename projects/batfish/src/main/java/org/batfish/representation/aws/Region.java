@@ -355,7 +355,8 @@ public final class Region implements Serializable {
         };
       case DirectConnectGatewayAssociation.JSON_KEY_DIRECT_CONNECT_GATEWAY_ASSOCIATIONS:
         return json -> {
-          String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          String state =
+              json.get(DirectConnectGatewayAssociation.JSON_KEY_ASSOCIATION_STATE).textValue();
           if (state.equals(AwsVpcEntity.STATE_ASSOCIATED)) {
             DirectConnectGatewayAssociation association =
                 BatfishObjectMapper.mapper()
