@@ -16,4 +16,14 @@ public class PsThenDefaultActionReject extends PsThen {
       Warnings warnings) {
     statements.add(Statements.SetDefaultActionReject.toStaticStatement());
   }
+
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof PsThenDefaultActionReject;
+  }
+
+  @Override
+  public int hashCode() {
+    return PsThenDefaultActionReject.class.hashCode();
+  }
 }

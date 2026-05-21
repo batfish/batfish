@@ -29,9 +29,17 @@ import javax.annotation.Nullable;
  *       accept}/{@code reject} appear in the same term, both lines stay in retained config but
  *       {@code next term}/{@code next policy} wins at runtime: the {@code accept}/{@code reject}
  *       does not fire.
+ *   <li>{@code default-action accept}/{@code default-action reject} share one last-wins slot, and
+ *       are a separate family from bare {@code accept}/{@code reject}. When a bare terminator and a
+ *       {@code default-action} coexist in the same term, the bare terminator wins at runtime and
+ *       the {@code default-action} is dead config.
+ *   <li>When a bare {@code reject} fires (i.e., it is present and not suppressed by {@code next
+ *       term}/{@code next policy}), any mutating action in the same term has no effect on the
+ *       propagated route since the route is discarded.
  * </ul>
  *
- * <p>All cleared/eliminated actions produce a RISKY warning so the user can audit the config.
+ * <p>All cleared/eliminated actions, and dead-config combinations, produce a RISKY warning so the
+ * user can audit the config.
  */
 public final class PsThens implements Serializable {
 
@@ -42,7 +50,8 @@ public final class PsThens implements Serializable {
    */
   public @Nonnull List<String> addPsThen(PsThen then) {
     if (isCommunityAction(then)) {
-      return addCommunityAction(then);
+      List<String> warnings = addCommunityAction(then);
+      return appendBareRejectWarningIfMutating(then, warnings);
     }
     if (isNextTermOrPolicy(then)) {
       return setNextTermOrPolicy(then);
@@ -50,13 +59,17 @@ public final class PsThens implements Serializable {
     if (then instanceof PsThenAccept || then instanceof PsThenReject) {
       return setAcceptOrReject(then);
     }
+    if (isDefaultAction(then)) {
+      return setDefaultAction(then);
+    }
     String family = getFamily(then);
     if (family == null) {
       // Unclassified action (flow-control, unmodeled, etc.) — always retain
       _others.add(then);
-      return ImmutableList.of();
+      return appendBareRejectWarningIfMutating(then, ImmutableList.of());
     }
-    return setLastWins(then, family);
+    List<String> warnings = setLastWins(then, family);
+    return appendBareRejectWarningIfMutating(then, warnings);
   }
 
   /**
@@ -80,6 +93,9 @@ public final class PsThens implements Serializable {
     if (_nextTermOrPolicy != null) {
       allThens.add(_nextTermOrPolicy);
     }
+    if (_defaultAction != null) {
+      allThens.add(_defaultAction);
+    }
     if (_acceptOrReject != null) {
       allThens.add(_acceptOrReject);
     }
@@ -100,7 +116,7 @@ public final class PsThens implements Serializable {
   // Canonical output order for scalar last-wins families. Matches Junos commit-time
   // normalization (e.g., as-path-prepend is applied before as-path-expand). After scalars,
   // getAllThens emits communities, then the `next term`/`next policy` slot, then the
-  // `accept`/`reject` slot, then _others.
+  // `default-action` slot, then the `accept`/`reject` slot, then _others.
   private static final ImmutableList<String> SCALAR_CANONICAL_ORDER =
       ImmutableList.of(
           "as-path-prepend",
@@ -282,8 +298,9 @@ public final class PsThens implements Serializable {
 
   private @Nonnull List<String> setAcceptOrReject(PsThen then) {
     ImmutableList.Builder<String> warnings = ImmutableList.builder();
-    if (_acceptOrReject != null) {
-      if (_acceptOrReject.equals(then)) {
+    PsThen prior = _acceptOrReject;
+    if (prior != null) {
+      if (prior.equals(then)) {
         warnings.add("accept-or-reject (dedup)");
       } else {
         warnings.add("accept-or-reject");
@@ -295,12 +312,125 @@ public final class PsThens implements Serializable {
       // line is dead — `next term`/`next policy` wins at runtime.
       warnings.add("accept-or-reject (dead-after-next-term-or-policy)");
     }
+    if (_defaultAction != null) {
+      // Bare terminator overrides any `default-action` in the same term: the `default-action` is
+      // dead config.
+      warnings.add("default-action (dead-with-bare-terminator)");
+    }
+    if (then instanceof PsThenReject
+        && _nextTermOrPolicy == null
+        && !(prior instanceof PsThenReject)) {
+      // First time reject is the retained terminator and it will actually fire (not suppressed by
+      // next-term/next-policy). Any mutating action already in the same term has no effect on the
+      // propagated route. Skip on dedup (prior reject already triggered these warnings).
+      for (String label : mutatingLabels()) {
+        warnings.add(label + " (dead-with-bare-reject)");
+      }
+    }
     return warnings.build();
+  }
+
+  // --- default-action: dedicated last-wins slot, dead when bare terminator is also present ---
+
+  private static boolean isDefaultAction(PsThen then) {
+    return then instanceof PsThenDefaultActionAccept || then instanceof PsThenDefaultActionReject;
+  }
+
+  private @Nonnull List<String> setDefaultAction(PsThen then) {
+    ImmutableList.Builder<String> warnings = ImmutableList.builder();
+    if (_defaultAction != null) {
+      if (_defaultAction.equals(then)) {
+        warnings.add("default-action (dedup)");
+      } else {
+        warnings.add("default-action");
+      }
+    }
+    _defaultAction = then;
+    if (_acceptOrReject != null) {
+      // Bare terminator overrides default-action regardless of source order; this new
+      // default-action is dead config.
+      warnings.add("default-action (dead-with-bare-terminator)");
+    }
+    return warnings.build();
+  }
+
+  // --- mutating-action vs bare-reject ---
+
+  /**
+   * Returns true when {@code then} mutates the route in a way that would be observable on a
+   * propagated route. Flow-control actions (accept/reject, next-term/next-policy, default-action)
+   * are excluded.
+   */
+  private static boolean isMutatingAction(PsThen then) {
+    return !(then instanceof PsThenAccept
+        || then instanceof PsThenReject
+        || then instanceof PsThenNextTerm
+        || then instanceof PsThenNextPolicy
+        || then instanceof PsThenDefaultActionAccept
+        || then instanceof PsThenDefaultActionReject);
+  }
+
+  /**
+   * If a bare {@code reject} that will actually fire is already retained in this {@link PsThens}
+   * and the newly added {@code then} is a mutating action that ended up retained (i.e., not a pure
+   * dedup), append a "dead-with-bare-reject" warning for the new action.
+   */
+  private @Nonnull List<String> appendBareRejectWarningIfMutating(
+      PsThen then, List<String> baseWarnings) {
+    if (!(_acceptOrReject instanceof PsThenReject) || _nextTermOrPolicy != null) {
+      return baseWarnings;
+    }
+    if (!isMutatingAction(then)) {
+      return baseWarnings;
+    }
+    // Skip pure dedup: the prior action was already flagged when reject was added.
+    for (String warning : baseWarnings) {
+      if (warning.contains("(dedup)")) {
+        return baseWarnings;
+      }
+    }
+    return ImmutableList.<String>builder()
+        .addAll(baseWarnings)
+        .add(actionLabel(then) + " (dead-with-bare-reject)")
+        .build();
+  }
+
+  /**
+   * Returns labels for every retained mutating action, in canonical (output) order. Used when a
+   * bare {@code reject} is added after mutating actions to emit one warning per action.
+   */
+  private @Nonnull List<String> mutatingLabels() {
+    ImmutableList.Builder<String> labels = ImmutableList.builder();
+    for (PsThen then : getAllThens()) {
+      if (isMutatingAction(then)) {
+        labels.add(actionLabel(then));
+      }
+    }
+    return labels.build();
+  }
+
+  /** Returns a short human-readable label for a mutating action (used in warning text). */
+  private static @Nonnull String actionLabel(PsThen then) {
+    if (isCommunityAction(then)) {
+      return communityLabel(then);
+    }
+    String family = getFamily(then);
+    if (family != null) {
+      return family;
+    }
+    // Unclassified actions in _others (e.g., aigp-originate) — fall back to class-name-derived
+    // label.
+    String simpleName = then.getClass().getSimpleName();
+    if (simpleName.startsWith("PsThen")) {
+      simpleName = simpleName.substring("PsThen".length());
+    }
+    return simpleName;
   }
 
   private final @Nonnull Map<String, List<PsThen>> _familyActions;
   private final @Nonnull List<PsThen> _communityActions;
   private @Nullable PsThen _nextTermOrPolicy;
   private @Nullable PsThen _acceptOrReject;
+  private @Nullable PsThen _defaultAction;
   private final @Nonnull List<PsThen> _others;
 }
