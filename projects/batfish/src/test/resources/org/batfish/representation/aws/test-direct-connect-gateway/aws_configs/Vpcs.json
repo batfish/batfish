@@ -1,0 +1,52 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "10.100.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-dx01",
+     "CidrBlock": "10.100.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-dx01",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-vpc"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "VpcId": "vpc-dx01"
+  },
+  {
+   "CidrBlock": "10.200.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-iso01",
+     "CidrBlock": "10.200.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-iso01",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "isolated-vpc"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "VpcId": "vpc-iso01"
+  }
+ ]
+}

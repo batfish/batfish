@@ -1,0 +1,38 @@
+{
+ "TransitGatewayPropagations": [
+  {
+   "TransitGatewayRouteTableId": "tgw-rtb-dx01",
+   "TransitGatewayRouteTablePropagations": [
+    {
+     "ResourceId": "vpc-dx01",
+     "ResourceType": "vpc",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-vpc01"
+    },
+    {
+     "ResourceId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
+     "ResourceType": "direct-connect-gateway",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-dx01"
+    },
+    {
+     "ResourceId": "vpn-dx-test",
+     "ResourceType": "vpn",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-vpn-dx-test"
+    }
+   ]
+  },
+  {
+   "TransitGatewayRouteTableId": "tgw-rtb-iso01",
+   "TransitGatewayRouteTablePropagations": [
+    {
+     "ResourceId": "vpc-iso01",
+     "ResourceType": "vpc",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-iso01"
+    }
+   ]
+  }
+ ]
+}

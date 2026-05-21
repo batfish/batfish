@@ -23,6 +23,7 @@ AWS provides a rich set of networking components that enable users to build comp
 - **VPC Peering**: Direct connections between VPCs
 - **Transit Gateways**: Hub-and-spoke connectivity between multiple VPCs and on-premises networks
 - **VPN Connections**: Secure connections between AWS and on-premises networks
+- **Direct Connect**: Dedicated network connections from on-premises to AWS via a Direct Connect Gateway and Virtual Interfaces
 - **Security Groups**: Stateful firewalls that control traffic at the instance level
 - **Network ACLs**: Stateless firewalls that control traffic at the subnet level
 - **VPC Endpoints**: Private connections to AWS services without traversing the internet
@@ -106,6 +107,16 @@ When the destination IP is a public IP in the subnet:
 - Static routing or BGP may be configured on top of these tunnels
 - With BGP, the VPN gateway announces VPC prefixes to the customer gateway
 - Traffic flow depends on subnet routing tables, BGP-learned announcements, and static routes
+
+### Traffic To and From On-Premises Networks via Direct Connect
+
+For hybrid networks using AWS Direct Connect with a Transit Gateway attachment:
+
+- [src-instance] → src-subnet-router → vpc-router → tgw → dx-gateway → on-prem-router
+- The TGW route table for the DX attachment receives BGP routes from the DXGW peer; a customer prefix advertised over the DX VIF reaches the TGW via BGP and is then forwarded toward the DXGW
+- The DXGW relays customer-advertised prefixes to attached TGWs (filtered by the per-association `AllowedPrefixesToDirectConnectGateway` list)
+- The DXGW advertises the allowed-prefix list to the on-prem customer router over the VIF BGP session, matching AWS's documented behavior
+- **TGW route preference**: when both Direct Connect and VPN attachments propagate the same prefix into the same TGW route table, AWS prefers the DX path. Batfish encodes this with elevated BGP local-preference on the DX peer's import policy.
 
 ## 6. AWS Component Modeling
 
@@ -207,6 +218,124 @@ VPC endpoints provide private connections to AWS services. There are two types:
    - Have static routes to service prefixes
    - Include an incoming filter to reject non-service-prefix destinations
 
+### 6.9 Direct Connect
+
+AWS Direct Connect provides dedicated connectivity between on-premises networks and AWS via a **Direct Connect Gateway (DXGW)** that is attached to one or more **Transit Gateways** (or Virtual Private Gateways). On-premises traffic enters AWS over a **Virtual Interface (VIF)**, which is a tagged Ethernet sub-interface on a physical Direct Connect connection. Batfish currently models **Transit VIFs** end-to-end (DXGW → TGW → VPC); Private VIFs (DXGW → VGW) and Public VIFs are not yet modeled.
+
+#### Required input files
+
+The following AWS describe-output JSON files must be present in the snapshot to enable Direct Connect modeling. The Direct Connect API is global (one call per account returns all DX resources):
+
+- **`DirectConnectGateways.json`** — `dx:DescribeDirectConnectGateways`. Provides the DXGW ID, name, and Amazon-side ASN.
+- **`VirtualInterfaces.json`** — `dx:DescribeVirtualInterfaces`. Provides VIF ID, type (`transit`/`private`/`public`), the parent DXGW, VLAN, customer ASN, Amazon and customer tunnel-inside addresses, and BGP peer info.
+- **`DirectConnectGatewayAssociations.json`** — `dx:DescribeDirectConnectGatewayAssociations`. Provides the DXGW-to-TGW (or DXGW-to-VGW) association, including the critical `AllowedPrefixesToDirectConnectGateway` list.
+- **`TransitGatewayAttachments.json`** — already collected. Entries with `ResourceType: direct-connect-gateway` link a TGW attachment to a DXGW. Prior to Direct Connect support, these entries were silently dropped.
+
+The `dx:DescribeDirectConnectGatewayAttachments` API (DXGW ↔ VIF mapping) is also useful but is reconstructable from the parent DXGW IDs in `VirtualInterfaces.json`.
+
+#### Topology overview
+
+```
+on-prem-router ── BGP/eBGP ── [DXGW node] ── BGP/eBGP unnumbered ── [TGW node] ── ... ── VPC
+   AS 65001        VIF subnet     AS 64513      link-local L1            AS 64512
+                   (e.g.                       (per route table)
+                    169.254.10.x/30)
+```
+
+The on-premises router and the DXGW share an IP subnet on the VIF and run eBGP. The DXGW and TGW share a link-local subnet (L1-paired interfaces) and run eBGP unnumbered. Each side speaks its respective Amazon-side ASN (per-DXGW for DXGW; per-TGW for TGW).
+
+#### Node and routing model
+
+**`DirectConnectGateway` Configuration node** (one per DXGW; created in `DirectConnectGatewayConverter.convertDirectConnectGateways()`)
+
+DXGWs are global resources: the same gateway entry appears in every region's `DirectConnectGateways.json` collection, while its associations and VIFs are regional and can live in different regions than the DXGW's "primary" terminations. The converter walks every account/region, dedups DXGWs by id, aggregates associations and VIFs across regions, and builds one node per unique DXGW. This runs after the per-region pass, before transit-gateway conversion.
+
+Uses a single default VRF for both customer-facing (VIF) and TGW-facing interfaces, so that routes received on one side are immediately available for forwarding on the other.
+
+- A `bgp-loopback` interface with a link-local address hosts the BGP process.
+- For each `VirtualInterface` whose `DirectConnectGatewayId` matches this DXGW, a VIF interface is created with the Amazon-side `ConcreteInterfaceAddress` (e.g., 169.254.10.1/30). A `BgpActivePeerConfig` is added with the customer's address as the peer and the customer ASN as remote-AS.
+- For each `DirectConnectGatewayAssociation` involving this DXGW:
+  - Each prefix in `AllowedPrefixesToDirectConnectGateway` is installed as a static null-route. These statics are advertised to the on-prem customer over the VIF (matching AWS's "advertise the allowed-prefix list" behavior). They use a high admin distance so that more-specific BGP routes from the TGW peer win in the FIB.
+  - A per-association TGW-export policy (`tgwExportPolicyName`) is built that filters routes received from on-prem to those within or equal to one of the allowed prefixes (using `PrefixRange.sameAsOrMoreSpecificThan`). This is the boundary filter that AWS applies between the DXGW and the TGW route table.
+
+**TGW changes for `DIRECT_CONNECT_GATEWAY` attachments** (in `TransitGateway.connectAttachment`)
+
+The `DIRECT_CONNECT_GATEWAY` case in `TransitGateway`'s attachment-dispatch switch does the following:
+
+1. Locates the matching `DirectConnectGatewayAssociation` for `(DXGW, TGW)`.
+2. Ensures a BGP process exists on the TGW VRF for the route table the DX attachment is associated with (creates one if not — shared with VPN attachments in the same VRF).
+3. Calls `Utils.connect()` to create link-local interfaces between the TGW VRF and the DXGW default VRF, with an L1 edge.
+4. Builds a **per-route-table import policy** (`dxImportPolicyName`) that:
+   - Reads any AWS Direct Connect traffic-engineering community on the route (`7224:7300` HIGH, `7224:7200` MEDIUM, `7224:7100` LOW).
+   - Sets BGP local-preference accordingly: HIGH=300, MEDIUM=200, LOW=150 (no community → MEDIUM).
+   - All three values exceed the default BGP local-preference (100) used for VPN routes, so DX routes always win against VPN routes for the same prefix in the TGW's BGP best-path selection.
+5. Creates **`BgpUnnumberedPeerConfig`** entries on both sides:
+   - On the TGW (in the DX route table's VRF): peer-interface = TGW's link-local interface to the DXGW; export = `bgpExportPolicyName(vrf)`; import = the DX import policy from step 4.
+   - On the DXGW (default VRF): peer-interface = DXGW's link-local interface to the TGW; export = the per-association `tgwExportPolicyName`; import = `DXGW_IMPORT_POLICY_NAME` (accept all BGP).
+
+**Static-route attachment dispatch** (in `addTransitGatewayStaticRouteAttachment`)
+
+When a TGW route table has a static route targeting a DX attachment, the TGW installs a static route with the next-hop set to the DXGW's link-local interface. This handles user-configured static routes (as opposed to BGP-propagated routes).
+
+#### Information flow
+
+**Customer prefix → AWS:**
+1. On-prem advertises a prefix via BGP over the VIF.
+2. The DXGW receives it (default VRF, unfiltered import).
+3. For each TGW peer, the DXGW's per-association export policy filters by `AllowedPrefixesToDirectConnectGateway` (same-as-or-more-specific). Matching prefixes are advertised to the TGW.
+4. The TGW's DX import policy tags the route with the appropriate local-preference based on community (or the MEDIUM default).
+5. The route enters the TGW's VRF for the DX route table, available for forwarding from VPCs.
+
+**AWS prefix → on-prem:**
+1. The TGW VRF holds VPC CIDRs as static routes (installed by `propagateRoutesVpc`) and any other routes for that route table.
+2. The TGW VRF's BGP export policy (`ACCEPT_ALL_BGP_AND_STATIC`) advertises these to the DXGW peer.
+3. The DXGW's default VRF receives them (unfiltered import).
+4. The DXGW's VIF export policy advertises the originated allowed-prefix statics to the on-prem customer. These represent the summary prefixes the customer is permitted to reach via DX.
+5. Forwarding within an allowed prefix on the DXGW uses the more-specific BGP route from the TGW (lower admin distance than the static null-route).
+
+#### Route-table isolation
+
+Each TGW route table has its own VRF on the TGW node. The DX attachment is associated with exactly one route table; BGP peering between the DXGW and the TGW is established in *only that VRF*. As a consequence:
+
+- VPCs propagated to a different TGW route table than the DX attachment are NOT visible on the DXGW.
+- Multiple DX attachments to different route tables on the same TGW result in independent BGP peers (one per route table) — each with its own DX import policy.
+
+This isolation is implemented structurally via per-VRF BGP processes; no extra filtering is needed.
+
+#### TGW route preference (DX > VPN)
+
+AWS documents the following preference order on a Transit Gateway: **static > Direct Connect propagated > VPN propagated > peering propagated**. Batfish models the DX > VPN portion via BGP local-preference:
+
+| Source | Local-preference on TGW |
+|---|---|
+| Direct Connect (community `7224:7300`) | 300 |
+| Direct Connect (community `7224:7200` or default) | 200 |
+| Direct Connect (community `7224:7100`) | 150 |
+| VPN-propagated BGP route | 100 (default) |
+
+Static routes win because they have admin distance 1, lower than BGP's 20.
+
+#### Customer traffic-engineering communities
+
+Customers attach BGP communities to advertisements over the VIF to control AWS-side path preference among multiple DX paths to the same prefix:
+
+| Community | Meaning | Use case |
+|---|---|---|
+| `7224:7300` | High preference | Active path |
+| `7224:7200` | Medium preference (default) | Active/active ECMP |
+| `7224:7100` | Low preference | Passive/backup path |
+
+Communities are honored on the AWS-side BGP best-path selection within a single TGW route table. They do not influence on-premises route preference for outbound traffic — that is controlled by the customer's own BGP policy. See [AWS DX routing policies and BGP communities](https://docs.aws.amazon.com/directconnect/latest/UserGuide/routing-and-bgp.html).
+
+#### Limitations and known gaps
+
+- **Transit VIFs only.** Private VIFs (DXGW → VGW) and Public VIFs are not yet modeled. The `VirtualInterface` parser accepts entries of any type, but only Transit VIFs are wired into the data plane.
+- **`RouteFilterPrefixes` on VIFs is ignored.** This per-VIF prefix filter applies primarily to Public VIFs and would need to be wired as an inbound BGP filter when those are added.
+- **Multiple DXGWs sharing a VIF** is rare; not specifically tested.
+- **MACsec, LAGs, IPv6, SiteLink, and BGP MD5 authentication** are not represented.
+- **BGP session liveness from VIF telemetry is intentionally not consulted.** The `BgpStatus` and `BgpPeerState` fields on each VIF's BGP peer (e.g., `up`/`down`) are not read. Batfish models *configuration*: BGP sessions converge based on the parsed snapshot's interfaces, IPs, ASNs, and policies. Reading the runtime status field would conflate config with operational state and prevent users from exploring what-if scenarios — the value of asking Batfish "what would happen if I fixed this BGP config?" is lost if Batfish hard-coded the session to "down" because AWS happened to report it as such at snapshot time. Users who want to model a session as down should adjust the underlying config (e.g., remove the BGP peer, change the customer ASN to a non-matching value).
+- **Cross-account DXGW associations** (DXGW owned by one account, TGW owned by another) are parsed but not specifically de-duplicated like cross-account TGWs are.
+
 ## 7. Supported AWS Services
 
 Batfish supports modeling of various AWS services and their network interactions, including:
@@ -217,7 +346,7 @@ Batfish supports modeling of various AWS services and their network interactions
 - VPC endpoints for AWS services
 - Transit gateways
 - VPN connections
-- Direct Connect (limited support)
+- Direct Connect (Transit VIFs end-to-end via TGW; Private/Public VIFs not yet modeled)
 
 ## 8. Use Cases and Applications
 
@@ -261,6 +390,10 @@ Batfish's AWS modeling is implemented in Java, with key classes including:
 - `SecurityGroup.java`: Represents a security group
 - `VpcPeeringConnection.java`: Represents a VPC peering connection
 - `TransitGateway.java`: Represents a transit gateway
+- `VpnConnection.java`: Represents a VPN connection (terminating at a VGW or TGW)
+- `DirectConnectGateway.java`: Represents an AWS Direct Connect Gateway (DXGW)
+- `DirectConnectGatewayAssociation.java`: Represents a DXGW-to-TGW (or DXGW-to-VGW) association, including the `AllowedPrefixesToDirectConnectGateway` filter
+- `DirectConnectVirtualInterface.java`: Represents a Direct Connect Virtual Interface (Transit/Private/Public VIF)
 
 The conversion process transforms these AWS-specific objects into Batfish's vendor-independent model, which is then used for analysis.
 

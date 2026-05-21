@@ -1,0 +1,23 @@
+{
+  "DirectConnectGateways": [
+    {
+      "DirectConnectGatewayId": "12345678-90ab-4cde-9f01-23456789abcd",
+      "DirectConnectGatewayName": "my-dx-gateway",
+      "AmazonSideAsn": 64512,
+      "DirectConnectGatewayState": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "prod-dxgw"
+        }
+      ]
+    },
+    {
+      "DirectConnectGatewayId": "abcdef01-2345-4678-9abc-def012345678",
+      "DirectConnectGatewayName": "deleted-gateway",
+      "AmazonSideAsn": 64513,
+      "DirectConnectGatewayState": "deleted",
+      "Tags": []
+    }
+  ]
+}

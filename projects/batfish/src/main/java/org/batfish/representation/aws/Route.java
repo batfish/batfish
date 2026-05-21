@@ -46,6 +46,35 @@ abstract class Route implements Serializable {
 
   static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
+  /**
+   * BGP local-preference values applied on the TGW to routes received from a Direct Connect Gateway
+   * peer. AWS exposes traffic-engineering communities that customers attach to BGP advertisements
+   * over a VIF; AWS translates these to local-preference values applied on the AWS side when
+   * selecting a path back to on-prem. See <a
+   * href="https://docs.aws.amazon.com/directconnect/latest/UserGuide/routing-and-bgp.html">AWS DX
+   * routing policies and BGP communities</a>.
+   *
+   * <ul>
+   *   <li>{@code 7224:7300} (high) → {@link #DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE}
+   *   <li>{@code 7224:7200} (medium, default if no community is set) → {@link
+   *       #DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE}
+   *   <li>{@code 7224:7100} (low) → {@link #DIRECT_CONNECT_LOW_LOCAL_PREFERENCE}
+   * </ul>
+   *
+   * All three values are higher than the default BGP local-pref (100) used for VPN-propagated
+   * routes, preserving AWS's documented "DX > VPN" preference even when a customer flags a DX path
+   * as low priority. Within DX, HIGH > MEDIUM > LOW determines active/active vs active/passive
+   * between multiple DX paths.
+   */
+  static final long DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE = 300L;
+
+  static final long DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE = 200L;
+
+  static final long DIRECT_CONNECT_LOW_LOCAL_PREFERENCE = 150L;
+
+  /** Default DX local-preference: applied when no traffic-engineering community is set. */
+  static final long DIRECT_CONNECT_LOCAL_PREFERENCE = DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE;
+
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
   protected final @Nonnull State _state;

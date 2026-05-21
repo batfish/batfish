@@ -1,0 +1,51 @@
+{
+  "VirtualInterfaces": [
+    {
+      "VirtualInterfaceId": "dxvif-fghi1234",
+      "VirtualInterfaceName": "my-transit-vif",
+      "VirtualInterfaceType": "transit",
+      "ConnectionId": "dxcon-abc12345",
+      "DirectConnectGatewayId": "12345678-90ab-4cde-9f01-23456789abcd",
+      "Vlan": 100,
+      "Asn": 65001,
+      "AmazonAddress": "169.254.100.1/30",
+      "CustomerAddress": "169.254.100.2/30",
+      "VirtualInterfaceState": "available",
+      "BgpPeers": [
+        {
+          "Asn": 65001,
+          "AmazonAddress": "169.254.100.1/30",
+          "CustomerAddress": "169.254.100.2/30",
+          "BgpPeerState": "available",
+          "BgpStatus": "up"
+        }
+      ],
+      "RouteFilterPrefixes": [
+        {
+          "Cidr": "10.0.0.0/8"
+        }
+      ],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "prod-vif"
+        }
+      ]
+    },
+    {
+      "VirtualInterfaceId": "dxvif-wxyz5678",
+      "VirtualInterfaceName": "down-vif",
+      "VirtualInterfaceType": "transit",
+      "ConnectionId": "dxcon-def67890",
+      "DirectConnectGatewayId": "12345678-90ab-4cde-9f01-23456789abcd",
+      "Vlan": 200,
+      "Asn": 65002,
+      "AmazonAddress": "169.254.200.1/30",
+      "CustomerAddress": "169.254.200.2/30",
+      "VirtualInterfaceState": "down",
+      "BgpPeers": [],
+      "RouteFilterPrefixes": [],
+      "Tags": []
+    }
+  ]
+}

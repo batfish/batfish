@@ -1,0 +1,46 @@
+{
+ "TransitGatewayVpcAttachments": [
+  {
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-dx01"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-vpc-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-vpc01",
+   "TransitGatewayId": "tgw-dx01",
+   "VpcId": "vpc-dx01",
+   "VpcOwnerId": "123456789012"
+  },
+  {
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-iso01"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "isolated-vpc-attachment"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-iso01",
+   "TransitGatewayId": "tgw-dx01",
+   "VpcId": "vpc-iso01",
+   "VpcOwnerId": "123456789012"
+  }
+ ]
+}

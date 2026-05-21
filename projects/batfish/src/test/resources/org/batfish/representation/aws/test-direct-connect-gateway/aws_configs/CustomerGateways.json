@@ -1,0 +1,12 @@
+{
+ "CustomerGateways": [
+  {
+   "BgpAsn": "65001",
+   "CustomerGatewayId": "cgw-dx-test",
+   "IpAddress": "1.1.1.2",
+   "State": "available",
+   "Tags": [],
+   "Type": "ipsec.1"
+  }
+ ]
+}

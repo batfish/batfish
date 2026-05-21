@@ -1,0 +1,36 @@
+{
+ "DirectConnectGatewayAssociations": [
+  {
+   "AssociationId": "dxgw-assoc-east",
+   "DirectConnectGatewayId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
+   "AssociatedGateway": {
+    "Id": "tgw-east",
+    "Type": "transitGateway",
+    "OwnerAccount": "123456789012",
+    "Region": "us-east-1"
+   },
+   "AssociationState": "associated",
+   "AllowedPrefixesToDirectConnectGateway": [
+    {
+     "Cidr": "10.0.0.0/8"
+    }
+   ]
+  },
+  {
+   "AssociationId": "dxgw-assoc-west",
+   "DirectConnectGatewayId": "7b2c4f8a-1234-4abc-9def-fedcba987654",
+   "AssociatedGateway": {
+    "Id": "tgw-west",
+    "Type": "transitGateway",
+    "OwnerAccount": "123456789012",
+    "Region": "us-west-1"
+   },
+   "AssociationState": "associated",
+   "AllowedPrefixesToDirectConnectGateway": [
+    {
+     "Cidr": "10.0.0.0/8"
+    }
+   ]
+  }
+ ]
+}

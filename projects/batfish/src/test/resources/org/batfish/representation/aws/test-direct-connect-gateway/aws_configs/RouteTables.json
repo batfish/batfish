@@ -1,0 +1,78 @@
+{
+ "RouteTables": [
+  {
+   "Associations": [
+    {
+     "AssociationState": {
+      "State": "associated"
+     },
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-dx01",
+     "RouteTableId": "rtb-dx01",
+     "SubnetId": "subnet-dx01"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-dx01",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.100.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "Origin": "CreateRoute",
+     "State": "active",
+     "TransitGatewayId": "tgw-dx01"
+    }
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "dx-test-rtb"
+    }
+   ],
+   "VpcId": "vpc-dx01"
+  },
+  {
+   "Associations": [
+    {
+     "AssociationState": {
+      "State": "associated"
+     },
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-iso01",
+     "RouteTableId": "rtb-iso01",
+     "SubnetId": "subnet-iso01"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-iso01",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.200.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "Origin": "CreateRoute",
+     "State": "active",
+     "TransitGatewayId": "tgw-dx01"
+    }
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "isolated-rtb"
+    }
+   ],
+   "VpcId": "vpc-iso01"
+  }
+ ]
+}

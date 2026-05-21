@@ -1,0 +1,27 @@
+{
+ "VpnConnections": [
+  {
+   "Category": "VPN",
+   "CustomerGatewayConfiguration": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<vpn_connection id=\"vpn-dx-test\">\n  <customer_gateway_id>cgw-dx-test</customer_gateway_id>\n  <transit_gateway_id>tgw-dx01</transit_gateway_id>\n  <vpn_connection_type>ipsec.1</vpn_connection_type>\n  <ipsec_tunnel>\n    <customer_gateway>\n      <tunnel_outside_address>\n        <ip_address>1.1.1.2</ip_address>\n      </tunnel_outside_address>\n      <tunnel_inside_address>\n        <ip_address>169.254.20.2</ip_address>\n        <network_mask>255.255.255.252</network_mask>\n        <network_cidr>30</network_cidr>\n      </tunnel_inside_address>\n      <bgp>\n        <asn>65001</asn>\n        <hold_time>30</hold_time>\n      </bgp>\n    </customer_gateway>\n    <vpn_gateway>\n      <tunnel_outside_address>\n        <ip_address>3.3.3.3</ip_address>\n      </tunnel_outside_address>\n      <tunnel_inside_address>\n        <ip_address>169.254.20.1</ip_address>\n        <network_mask>255.255.255.252</network_mask>\n        <network_cidr>30</network_cidr>\n      </tunnel_inside_address>\n      <bgp>\n        <asn>64512</asn>\n        <hold_time>30</hold_time>\n      </bgp>\n    </vpn_gateway>\n    <ike>\n      <authentication_protocol>sha1</authentication_protocol>\n      <encryption_protocol>aes-128-cbc</encryption_protocol>\n      <lifetime>28800</lifetime>\n      <perfect_forward_secrecy>group2</perfect_forward_secrecy>\n      <mode>main</mode>\n      <pre_shared_key>placeholder_psk_dx_test_tunnel</pre_shared_key>\n    </ike>\n    <ipsec>\n      <protocol>esp</protocol>\n      <authentication_protocol>hmac-sha1-96</authentication_protocol>\n      <encryption_protocol>aes-128-cbc</encryption_protocol>\n      <lifetime>3600</lifetime>\n      <perfect_forward_secrecy>group2</perfect_forward_secrecy>\n      <mode>tunnel</mode>\n      <clear_df_bit>true</clear_df_bit>\n      <fragmentation_before_encryption>true</fragmentation_before_encryption>\n      <tcp_mss_adjustment>1379</tcp_mss_adjustment>\n      <dead_peer_detection>\n        <interval>10</interval>\n        <retries>3</retries>\n      </dead_peer_detection>\n    </ipsec>\n  </ipsec_tunnel>\n</vpn_connection>",
+   "CustomerGatewayId": "cgw-dx-test",
+   "Options": {
+    "StaticRoutesOnly": false
+   },
+   "Routes": [],
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayId": "tgw-dx01",
+   "Type": "ipsec.1",
+   "VgwTelemetry": [
+    {
+     "AcceptedRouteCount": 1,
+     "LastStatusChange": "2023-01-01 00:00:00+00:00",
+     "OutsideIpAddress": "3.3.3.3",
+     "Status": "UP",
+     "StatusMessage": ""
+    }
+   ],
+   "VpnConnectionId": "vpn-dx-test"
+  }
+ ]
+}
