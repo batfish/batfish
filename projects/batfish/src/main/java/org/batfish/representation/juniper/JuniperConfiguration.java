@@ -3147,6 +3147,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
     detectMisplacedTerminalActions(ps);
+    detectCommunityActionOverlaps(ps);
 
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
@@ -4991,6 +4992,61 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException(
           "Unknown terminal action type: " + terminalAction.getClass().getSimpleName());
+    }
+  }
+
+  /**
+   * Detects {@code then community add/set X; then community delete Y} same-term sequences where
+   * {@code X} and {@code Y} can match overlapping communities, so the just-added community is
+   * silently removed by the later delete.
+   */
+  private void detectCommunityActionOverlaps(PolicyStatement policy) {
+    Map<String, NamedCommunity> namedCommunities = _masterLogicalSystem.getNamedCommunities();
+    for (PsTerm term : policy.getTerms().values()) {
+      if (term.getThens() == null) {
+        continue;
+      }
+      List<PsThen> thens = term.getThens().getAllThens();
+      for (int i = 0; i < thens.size(); i++) {
+        PsThen earlier = thens.get(i);
+        if (!(earlier instanceof PsThenCommunityAdd || earlier instanceof PsThenCommunitySet)) {
+          continue;
+        }
+        String addName =
+            earlier instanceof PsThenCommunityAdd
+                ? ((PsThenCommunityAdd) earlier).getName()
+                : ((PsThenCommunitySet) earlier).getName();
+        NamedCommunity addCommunity = namedCommunities.get(addName);
+        if (addCommunity == null) {
+          continue;
+        }
+        String addVerb = earlier instanceof PsThenCommunityAdd ? "add" : "set";
+        for (int j = i + 1; j < thens.size(); j++) {
+          PsThen later = thens.get(j);
+          if (!(later instanceof PsThenCommunityDelete)) {
+            continue;
+          }
+          String delName = ((PsThenCommunityDelete) later).getName();
+          NamedCommunity delCommunity = namedCommunities.get(delName);
+          if (delCommunity == null) {
+            continue;
+          }
+          List<String> overlap =
+              CommunityActionOverlap.overlappingCommunities(addCommunity, delCommunity);
+          if (overlap.isEmpty()) {
+            continue;
+          }
+          _w.riskyRedFlag(
+              "'policy-statement %s term %s': then community %s %s adds %s, which is also matched"
+                  + " by then community delete %s in the same term, so it is removed",
+              policy.getName(),
+              term.getName(),
+              addVerb,
+              addName,
+              String.join(", ", overlap),
+              delName);
+        }
+      }
     }
   }
 
