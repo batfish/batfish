@@ -71,19 +71,19 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link ElasticsearchDomain} */
 public class ElasticsearchDomainTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  private StaticRoute.Builder _staticRouteBuilder;
-  private Map<String, Configuration> _configurations;
-  private String _node0Name;
-  private String _node1Name;
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  private static StaticRoute.Builder _staticRouteBuilder;
+  private static Map<String, Configuration> _configurations;
+  private static String _node0Name;
+  private static String _node1Name;
 
   public static final AclLineMatchExpr matchTcp =
       matchIpProtocol(TCP, traceElementForProtocol(TCP));
@@ -93,8 +93,8 @@ public class ElasticsearchDomainTest {
         IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeClass
+  public static void setup() throws IOException {
     _staticRouteBuilder =
         StaticRoute.testBuilder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
@@ -110,10 +110,6 @@ public class ElasticsearchDomainTest {
             1,
             "arn:aws:es:us-west-2:118292266645:domain/es-domain",
             "vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com");
-    _configurations = loadAwsConfigurations();
-  }
-
-  private Map<String, Configuration> loadAwsConfigurations() throws IOException {
     List<String> awsFilenames =
         ImmutableList.of(
             "ElasticsearchDomains.json",
@@ -129,11 +125,11 @@ public class ElasticsearchDomainTest {
                 .setAwsFiles("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
-    return batfish.loadConfigurations(batfish.getSnapshot());
+    _configurations = batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   @Test
-  public void testEsSubnetEdge() throws IOException {
+  public void testEsSubnetEdge() {
     Topology topology = TopologyUtil.synthesizeL3Topology(_configurations);
 
     // check that ES instance is a neighbor of both  subnets in which its interfaces are
@@ -155,7 +151,7 @@ public class ElasticsearchDomainTest {
 
   /** Check that IPs are unique for all the interfaces */
   @Test
-  public void testUniqueIps() throws IOException {
+  public void testUniqueIps() {
     List<Ip> ipsAsList =
         _configurations.values().stream()
             .map(Configuration::getAllInterfaces)

@@ -62,26 +62,24 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class RdsInstanceTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  private StaticRoute.Builder _staticRouteBuilder;
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  private static StaticRoute.Builder _staticRouteBuilder;
+  private static Map<String, Configuration> _configurations;
 
-  @Before
-  public void setup() {
+  @BeforeClass
+  public static void setup() throws IOException {
     _staticRouteBuilder =
         StaticRoute.testBuilder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
             .setNetwork(Prefix.ZERO);
-  }
-
-  public Map<String, Configuration> loadAwsConfigurations() throws IOException {
     List<String> awsFilenames =
         ImmutableList.of(
             "RdsInstances.json",
@@ -97,13 +95,12 @@ public class RdsInstanceTest {
                 .setAwsFiles("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
-    return batfish.loadConfigurations(batfish.getSnapshot());
+    _configurations = batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   @Test
-  public void testRdsSubnetEdge() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+  public void testRdsSubnetEdge() {
+    Topology topology = TopologyUtil.synthesizeL3Topology(_configurations);
 
     // check that RDS instance is a neighbor of the deterministically chosen subnets in which its
     // interfaces are located.
@@ -117,12 +114,10 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testUniqueIps() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-
+  public void testUniqueIps() {
     // check that  IPs are unique for all the interfaces
     List<Ip> ipsAsList =
-        configurations.values().stream()
+        _configurations.values().stream()
             .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)
@@ -135,22 +130,19 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testDefaultRoute() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
+  public void testDefaultRoute() {
     StaticRoute defaultRoute = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
     // checking that the default route is installed to the deterministically chosen subnet.
-    assertThat(configurations, hasKey("test-rds"));
+    assertThat(_configurations, hasKey("test-rds"));
     assertThat(
-        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(), contains(defaultRoute));
+        _configurations.get("test-rds").getDefaultVrf().getStaticRoutes(), contains(defaultRoute));
   }
 
   @Test
-  public void testSecurityGroupsAcl() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-
-    assertThat(configurations, hasKey("test-rds"));
-    Configuration testRds = configurations.get("test-rds");
+  public void testSecurityGroupsAcl() {
+    assertThat(_configurations, hasKey("test-rds"));
+    Configuration testRds = _configurations.get("test-rds");
     assertThat(testRds.getAllInterfaces().entrySet(), hasSize(1));
     assertThat(
         testRds
