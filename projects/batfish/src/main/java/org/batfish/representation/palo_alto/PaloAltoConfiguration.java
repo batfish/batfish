@@ -2264,6 +2264,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setEncapsulationVlan(iface.getTag());
     } else if (iface.getType() == Interface.Type.LAYER2) {
       newIface.setAccessVlan(iface.getTag());
+    } else if (iface.getType() == Interface.Type.AGGREGATED_ETHERNET
+        && iface.getUnits().values().stream().anyMatch(u -> u.getType() == Interface.Type.LAYER2)) {
+      // PAN-OS layer2 aes carry one VLAN per tagged sub-interface (ae2.10 with
+      // tag 10, ae2.20 with tag 20, ...). Surface that to Batfish's L2
+      // topology by modeling the parent as a TRUNK port whose allowedVlans is
+      // the union of child tags, so a packet arriving on ae2 tagged X bridges
+      // to vlan.X for L3 processing.
+      IntegerSpace.Builder allowed = IntegerSpace.builder();
+      iface.getUnits().values().stream()
+          .filter(u -> u.getType() == Interface.Type.LAYER2)
+          .map(Interface::getTag)
+          .filter(Objects::nonNull)
+          .forEach(allowed::including);
+      newIface.setSwitchport(true);
+      newIface.setSwitchportMode(SwitchportMode.TRUNK);
+      newIface.setAllowedVlans(allowed.build());
     } else if (iface.getType() == Interface.Type.VLAN_UNIT) {
       // PAN-OS encodes the VLAN ID as the numeric suffix of the unit name
       // (vlan.10 → VLAN 10). Surface that to Batfish's SVI machinery so the
@@ -3358,6 +3374,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           _w.redFlagf(
               "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
               iface.getName(), nullVrf.getName());
+        } else if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+          // Layer2 trunk parents (e.g., layer2 aes) don't belong to a
+          // virtual-router. Keep the trunk semantics so packets bridge through
+          // to SVIs; just place the interface in the null VRF as a
+          // placeholder.
         } else {
           // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
           // data.

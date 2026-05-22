@@ -1,0 +1,40 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "r1";
+        }
+      }
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              aggregate-group ae1;
+            }
+          }
+          aggregate-ethernet {
+            ae1 {
+              layer3 {
+                units {
+                  ae1.10 {
+                    tag 10;
+                    ip {
+                      10.0.10.2/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          default {
+            interface [ ae1.10 ];
+          }
+        }
+      }
+    }
+  }
+}

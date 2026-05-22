@@ -34,6 +34,7 @@ import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMa
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -42,10 +43,12 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOutgoingOriginalFlowFilter;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -169,6 +172,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -184,6 +188,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
@@ -206,11 +211,14 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.InsertOrderedMap;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -4769,6 +4777,61 @@ public final class PaloAltoGrammarTest {
             "vlan.1", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.0.1/24")))));
     assertThat(c, hasInterface("vlan.1", hasMtu(1500)));
     assertThat(c, hasInterface("vlan.1", hasVlan(1)));
+  }
+
+  @Test
+  public void testLayer2AeBridgesToVlanUnit() {
+    // ae1 is a layer2 trunk carrying VLAN 10 and 20 via tagged sub-interfaces
+    // ae1.10 and ae1.20. vlan.10 and vlan.20 are SVIs for the matching VLANs.
+    // The parent ae must be modeled as a TRUNK with allowedVlans = {10, 20} so
+    // Batfish's L2 topology can bridge a tagged frame on ae1 to its SVI for L3
+    // processing.
+    String hostname = "paloalto_layer2_ae_svi";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ae1", isSwitchport()));
+    assertThat(c, hasInterface("ae1", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(
+        c,
+        hasInterface(
+            "ae1",
+            hasAllowedVlans(IntegerSpace.unionOf(IntegerSpace.of(10), IntegerSpace.of(20)))));
+    assertThat(c, hasInterface("vlan.10", hasVlan(10)));
+    assertThat(c, hasInterface("vlan.20", hasVlan(20)));
+  }
+
+  /**
+   * End-to-end check that a packet on a PAN-OS layer2 ae trunk bridges to its matching {@code
+   * vlan.X} SVI for L3 processing. Two PA devices: {@code pa_fw} has a layer2 ae1 carrying VLAN 10
+   * (sub-interface ae1.10 tag 10) plus an SVI vlan.10 (10.0.10.1/24); {@code r1} has an aggregate
+   * ae1 with a layer3 sub-interface ae1.10 tag 10 (10.0.10.2/24). The L1 link is ethernet1/1 ↔
+   * ethernet1/1. We expect pa_fw.vlan.10 and r1.ae1.10 to land in the same broadcast domain and to
+   * form a layer-3 edge.
+   */
+  @Test
+  public void testLayer2AeBridgesToVlanUnitL3() throws IOException {
+    String snapshotName = "layer2_ae_trunk";
+    String pa = "pa_fw";
+    String r1 = "r1";
+    String resourcePrefix = SNAPSHOTS_PREFIX + snapshotName;
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setLayer1TopologyPrefix(resourcePrefix)
+                .setConfigurationFiles(resourcePrefix, ImmutableSet.of(pa, r1))
+                .build(),
+            _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
+
+    L3Adjacencies adjacencies =
+        batfish.getTopologyProvider().getInitialL3Adjacencies(batfish.getSnapshot());
+    NodeInterfacePair svi = NodeInterfacePair.of(pa, "vlan.10");
+    NodeInterfacePair peer = NodeInterfacePair.of(r1, "ae1.10");
+    assertTrue(adjacencies.inSameBroadcastDomain(svi, peer));
+
+    Topology layer3Topology =
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
+    Edge edge = Edge.of(pa, "vlan.10", r1, "ae1.10");
+    assertThat(layer3Topology.getEdges(), containsInAnyOrder(edge, edge.reverse()));
   }
 
   @Test
