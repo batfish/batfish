@@ -23,7 +23,13 @@ config {
           vlan {
             comment "vlan comment";
             units {
-              vlan.1;
+              vlan.1 {
+                comment "vlan.1 comment";
+                ip {
+                  10.0.0.1/24;
+                }
+                mtu 1500;
+              }
             }
           }
         }

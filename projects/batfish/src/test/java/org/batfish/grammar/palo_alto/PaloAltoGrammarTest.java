@@ -42,6 +42,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOutgoingOriginalFlowFilter;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
@@ -4754,6 +4755,20 @@ public final class PaloAltoGrammarTest {
             "tunnel.3",
             hasAllAddresses(contains(ConcreteInterfaceAddress.parse("169.254.0.1/30")))));
     assertThat(c, hasInterface("tunnel.3", hasMtu(1427)));
+  }
+
+  @Test
+  public void testVlanUnitIp() {
+    String hostname = "paloalto_vlan_tunnel_units";
+    Configuration c = parseConfig(hostname);
+    // vlan.1 has ip 10.0.0.1/24 and mtu 1500 configured; confirm both appear in the VI model.
+    // The numeric suffix in vlan.1 should also surface as the SVI VLAN ID.
+    assertThat(
+        c,
+        hasInterface(
+            "vlan.1", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.0.1/24")))));
+    assertThat(c, hasInterface("vlan.1", hasMtu(1500)));
+    assertThat(c, hasInterface("vlan.1", hasVlan(1)));
   }
 
   @Test

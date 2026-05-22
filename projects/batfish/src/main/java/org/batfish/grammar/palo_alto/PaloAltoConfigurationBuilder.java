@@ -74,6 +74,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TUNNEL
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_WIRE_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VLAN_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
@@ -2261,8 +2262,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
             .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
-    // TODO: convert vlan ID for created vlan units
-    todo(ctx);
+  }
+
+  @Override
+  public void exitSnivu_ip(PaloAltoParser.Snivu_ipContext ctx) {
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, VLAN_INTERFACE_ADDRESS);
+  }
+
+  @Override
+  public void exitSnivu_mtu(PaloAltoParser.Snivu_mtuContext ctx) {
+    _currentInterface.setMtu(Integer.parseInt(getText(ctx.mtu)));
   }
 
   @Override
