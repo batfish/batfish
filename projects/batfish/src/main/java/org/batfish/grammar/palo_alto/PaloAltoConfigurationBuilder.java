@@ -2265,14 +2265,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
-  public void exitSniv_ip(PaloAltoParser.Sniv_ipContext ctx) {
+  public void exitSnivu_ip(PaloAltoParser.Snivu_ipContext ctx) {
     InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
     referenceInterfaceAddress(ctx.address, VLAN_INTERFACE_ADDRESS);
   }
 
   @Override
-  public void exitSniv_mtu(PaloAltoParser.Sniv_mtuContext ctx) {
+  public void exitSnivu_mtu(PaloAltoParser.Snivu_mtuContext ctx) {
     _currentInterface.setMtu(Integer.parseInt(getText(ctx.mtu)));
   }
 

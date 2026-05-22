@@ -4766,8 +4766,7 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "vlan.1",
-            hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.0.1/24")))));
+            "vlan.1", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.0.1/24")))));
     assertThat(c, hasInterface("vlan.1", hasMtu(1500)));
     assertThat(c, hasInterface("vlan.1", hasVlan(1)));
   }
