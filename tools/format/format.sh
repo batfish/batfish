@@ -48,6 +48,7 @@ if [ "$#" -gt 0 ]; then
   FILES=()
   for f in "$@"; do
     case "${f}" in
+      @*) FILES+=("${f}") ;;
       /*) FILES+=("${f}") ;;
       *)  FILES+=("${WORKDIR}/${f}") ;;
     esac
