@@ -3,7 +3,6 @@ package org.batfish.representation.palo_alto;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
 
 /**
  * Configuration of a BGP Peer {@code network virtual-router NAME protocol bgp peer-group NAME peer
@@ -44,11 +43,11 @@ public class BgpPeer implements Serializable {
     _enableSenderSideLoopDetection = enableSenderSideLoopDetection;
   }
 
-  public @Nullable Ip getLocalAddress() {
+  public @Nullable InterfaceAddress getLocalAddress() {
     return _localAddress;
   }
 
-  public void setLocalAddress(@Nullable Ip localAddress) {
+  public void setLocalAddress(@Nullable InterfaceAddress localAddress) {
     _localAddress = localAddress;
   }
 
@@ -72,11 +71,11 @@ public class BgpPeer implements Serializable {
     return _name;
   }
 
-  public @Nullable Ip getPeerAddress() {
+  public @Nullable InterfaceAddress getPeerAddress() {
     return _peerAddress;
   }
 
-  public void setPeerAddress(@Nullable Ip peerAddress) {
+  public void setPeerAddress(@Nullable InterfaceAddress peerAddress) {
     _peerAddress = peerAddress;
   }
 
@@ -101,10 +100,10 @@ public class BgpPeer implements Serializable {
   private BgpConnectionOptions _connectionOptions = new BgpConnectionOptions();
   private boolean _enable;
   private @Nullable Boolean _enableSenderSideLoopDetection;
-  private @Nullable Ip _localAddress;
+  private @Nullable InterfaceAddress _localAddress;
   private @Nullable String _localInterface;
   private final @Nonnull String _name;
-  private @Nullable Ip _peerAddress;
+  private @Nullable InterfaceAddress _peerAddress;
   private @Nullable Long _peerAs;
   private @Nullable ReflectorClient _reflectorClient;
   private @Nullable Integer _multihop;

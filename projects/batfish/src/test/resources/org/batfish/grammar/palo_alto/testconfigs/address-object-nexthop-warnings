@@ -1,0 +1,12 @@
+set deviceconfig system hostname address-object-nexthop-warnings
+
+# Address object with non-/32 mask (should generate warning)
+set address NEXTHOP-NETMASK ip-netmask 10.10.10.0/24
+
+# Undefined reference (should generate warning)
+set network virtual-router VR routing-table ip static-route ROUTE1 destination 0.0.0.0/0
+set network virtual-router VR routing-table ip static-route ROUTE1 nexthop ip-address UNDEFINED-OBJ
+
+# Non-/32 mask reference (should generate warning)
+set network virtual-router VR routing-table ip static-route ROUTE2 destination 192.168.1.0/24
+set network virtual-router VR routing-table ip static-route ROUTE2 nexthop ip-address NEXTHOP-NETMASK

@@ -86,11 +86,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_ADDRESS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXTHOP_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
@@ -924,8 +927,12 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getEnable(), equalTo(true));
     assertThat(peer.getEnableSenderSideLoopDetection(), equalTo(false));
     assertThat(peer.getLocalInterface(), equalTo("ethernet1/1"));
-    assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
-    assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
+    assertThat(
+        peer.getLocalAddress(),
+        equalTo(new InterfaceAddress(InterfaceAddress.Type.IP_PREFIX, "1.2.3.6/24")));
+    assertThat(
+        peer.getPeerAddress(),
+        equalTo(new InterfaceAddress(InterfaceAddress.Type.IP_ADDRESS, "5.4.3.2")));
     assertThat(peer.getPeerAs(), equalTo(54321L));
     assertThat(peer.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
 
@@ -4877,5 +4884,112 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrDstName, 3));
     assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceName, 1));
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroupName, 1));
+  }
+
+  @Test
+  public void testAddressObjectNexthop() throws IOException {
+    String hostname = "address-object-nexthop";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Static route with address object as nexthop should resolve to the IP in the object
+    assertThat(
+        c,
+        hasVrf(
+            "BGP",
+            hasStaticRoutes(
+                hasItem(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(Ip.parse("10.10.10.1")))))));
+
+    // Static route with literal IP should still work
+    assertThat(
+        c,
+        hasVrf(
+            "BGP",
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("192.168.1.0/24")),
+                        hasNextHopIp(Ip.parse("192.168.2.1")))))));
+
+    // Static route with address object defined AFTER the route - order shouldn't matter
+    assertThat(
+        c,
+        hasVrf(
+            "BGP",
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("172.16.0.0/16")),
+                        hasNextHopIp(Ip.parse("10.20.20.1")))))));
+
+    // BGP peer with address object as peer-address should resolve to the IP in the object
+    assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
+    BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
+    assertThat(
+        proc.getActiveNeighbors().keySet(),
+        containsInAnyOrder(Ip.parse("5.4.3.2"), Ip.parse("6.5.4.3")));
+    BgpActivePeerConfig bgpPeer = proc.getActiveNeighbors().get(Ip.parse("5.4.3.2"));
+    assertThat(bgpPeer.getDescription(), equalTo("PEER"));
+
+    // BGP peer with an interface-subnet-masked (/29) address object as local-address ip should
+    // resolve to the object's host IP (10.0.0.1), ignoring the mask.
+    BgpActivePeerConfig bgpPeer2 = proc.getActiveNeighbors().get(Ip.parse("6.5.4.3"));
+    assertThat(bgpPeer2.getDescription(), equalTo("PEER2"));
+    assertThat(bgpPeer2.getLocalIp(), equalTo(Ip.parse("10.0.0.1")));
+
+    // Verify structure references
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String filename = "configs/" + hostname;
+
+    // NEXTHOP-OBJ should be referenced by static route
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "NEXTHOP-OBJ"),
+            STATIC_ROUTE_NEXTHOP_IP));
+
+    // PEER-OBJ should be referenced by BGP peer
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "PEER-OBJ"),
+            BGP_PEER_ADDRESS));
+
+    // LOCAL-MASKED should be referenced by BGP peer local-address ip
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "LOCAL-MASKED"),
+            BGP_PEER_LOCAL_ADDRESS_IP));
+  }
+
+  @Test
+  public void testAddressObjectNexthopWarnings() throws IOException {
+    String hostname = "address-object-nexthop-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Routes with invalid nexthops should not be converted
+    assertThat(c, hasVrf("VR", hasStaticRoutes(empty())));
+
+    // Verify warnings are generated for unresolved references
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings,
+        hasRedFlag(hasText(containsString("Could not resolve address reference: UNDEFINED-OBJ"))));
+    assertThat(
+        warnings,
+        hasRedFlag(hasText(containsString("NEXTHOP-NETMASK' is not a valid host address"))));
   }
 }
