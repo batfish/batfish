@@ -105,5 +105,13 @@ public class CommunityMemberParseResultTest {
     assertThat(
         parseCommunityMember("^123:456$"),
         equalTo(new CommunityMemberParseResult(new RegexCommunityMember("^123:456$"), null)));
+    // Regex with a dk.brics-reserved char that's a literal in Java regex: parse without crash, and
+    // surface a warning describing the unintended-match risk introduced by the optional '<'.
+    assertThat(
+        parseCommunityMember("12345<?:1"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new RegexCommunityMember("12345<?:1"),
+                "Community regex 12345<?:1 allows longer matches such as 12345:10")));
   }
 }

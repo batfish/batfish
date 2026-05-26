@@ -8,6 +8,7 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
@@ -60,6 +61,19 @@ public final class RegexCommunityMember implements CommunityMember {
     return REGEX_CACHE.get(junosRegex);
   }
 
+  /**
+   * Characters that have no special meaning in Java regex but are reserved in dk.brics automaton's
+   * {@link RegExp} syntax (e.g., {@code <0-65535>} for numeric ranges, {@code ~} for complement,
+   * {@code &} for intersection, {@code @} for any string, {@code #} for empty language, {@code "}
+   * for literal strings). Escape these when feeding a Java-regex-like pattern to dk.brics so that
+   * they are treated as literals — matching what {@link java.util.regex.Pattern} does at runtime.
+   */
+  private static final Pattern DK_BRICS_SPECIAL_CHARS = Pattern.compile("([<>~&@#\"])");
+
+  private static String escapeForDkBrics(String javaRegex) {
+    return DK_BRICS_SPECIAL_CHARS.matcher(javaRegex).replaceAll("\\\\$1");
+  }
+
   private static List<String> getUnintendedCommunityMatchesImpl(String junosRegex) {
     if (junosRegex.split(":", -1).length != 2) {
       return ImmutableList.of();
@@ -80,7 +94,7 @@ public final class RegexCommunityMember implements CommunityMember {
     // This replacement is necessary because otherwise something like .....:..... will be treated as
     // allowing shorter communities such as 1:2 by matching, e.g., xx^^1:2$$xx. Make the . only
     // match numbers to disallow this. This stems from the lack of ^$ support.
-    String regex = javaRegex.replaceAll("\\.", "[0-9]");
+    String regex = escapeForDkBrics(javaRegex.replaceAll("\\.", "[0-9]"));
 
     RegExp r = new RegExp(".*" + regex + ".*");
     RegExp rClipped = new RegExp("^?^" + regex + "$$?");
