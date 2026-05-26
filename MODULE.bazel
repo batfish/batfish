@@ -120,9 +120,9 @@ single_version_override(
 # Python toolchain
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
-    python_version = "3.10",
+    python_version = "3.14",
 )
-use_repo(python, "python_3_10")
+use_repo(python, "python_3_14")
 
 # Maven dependencies
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -207,7 +207,7 @@ use_repo(maven, "jmh_maven", "jol_maven", "maven")
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "pip",
-    python_version = "3.10",
+    python_version = "3.14",
     requirements_lock = "@batfish//python:requirements.txt",
 )
 use_repo(pip, "pip")
