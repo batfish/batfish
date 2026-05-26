@@ -5,8 +5,8 @@ repos:
     hooks:
       - id: java-format
         name: java-format
-        entry: ./tools/fix_java_format.sh --replace
-        language: script
+        entry: bazel --noblock_for_lock run --ui_event_filters=-stdout,-stderr,-info,-progress //tools/format:format.fix --
+        language: system
         files: '\.java$'
         require_serial: true
         pass_filenames: true

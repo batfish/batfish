@@ -259,13 +259,6 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-**Issue: "Permission denied" when running hooks**
-
-The pre-commit scripts may need execute permissions:
-```bash
-chmod +x tools/fix_java_format.sh
-```
-
 **Issue: Python version incompatibility**
 
 Pre-commit requires Python 3.10 or later:
@@ -285,10 +278,10 @@ If you need to format code manually without pre-commit:
 **Java files:**
 ```bash
 # Format all Java files
-bazel run //tools/formatter:formatter -- --replace $(git ls-files '*.java')
+bazel run //tools/format:format.fix
 
 # Format specific files
-bazel run //tools/formatter:formatter -- --replace path/to/file.java
+bazel run //tools/format:format.fix -- path/to/file.java
 ```
 
 **Markdown/JSON/YAML:**
@@ -301,8 +294,8 @@ npx prettier --write '**/*.{md,json,yaml,yml}'
 
 Check if files need formatting:
 ```bash
-# Check Java formatting (dry-run)
-bazel run //tools/formatter:formatter -- --dry-run $(git ls-files '*.java')
+# Check Java formatting (fails if anything is misformatted)
+bazel run //tools/format:format.check
 
 # Check prettier formatting
 npx prettier --check '**/*.{md,json,yaml,yml}'
@@ -465,7 +458,7 @@ Before pushing your changes (and creating a PR), perform these final checks:
 pre-commit run --all-files
 
 # Or manually
-bazel run //tools/formatter:formatter -- --replace $(git ls-files '*.java')
+bazel run //tools/format:format.fix
 ```
 
 ### 2. Build Check
