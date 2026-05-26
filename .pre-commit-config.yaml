@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: java-format
         name: java-format
-        entry: bazel --noblock_for_lock run //tools/format:format.fix --
+        entry: tools/fix_java_format.sh
         language: system
         files: '\.java$'
         require_serial: true
