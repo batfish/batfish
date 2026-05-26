@@ -18,8 +18,13 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 public final class DirectConnectGatewayConverter {
 
-  public static List<Configuration> convertDirectConnectGateways(
-      AwsConfiguration awsConfiguration) {
+  /**
+   * Converts all Direct Connect Gateways in {@code awsConfiguration}, adds the resulting nodes to
+   * {@code convertedConfiguration}, and wires DXGW→VGW links for any VGW-typed associations (the
+   * VGW nodes must already exist in {@code convertedConfiguration}).
+   */
+  public static void convertDirectConnectGateways(
+      AwsConfiguration awsConfiguration, ConvertedConfiguration convertedConfiguration) {
     Map<String, DirectConnectGateway> uniqueGateways = new HashMap<>();
     Map<String, List<DirectConnectGatewayAssociation>> associationsByDxgw = new HashMap<>();
     Map<String, List<DirectConnectVirtualInterface>> vifsByDxgw = new HashMap<>();
@@ -39,20 +44,38 @@ public final class DirectConnectGatewayConverter {
             .getDirectConnectVirtualInterfaces()
             .values()
             .forEach(
-                v ->
-                    vifsByDxgw
-                        .computeIfAbsent(v.getDirectConnectGatewayId(), k -> new ArrayList<>())
-                        .add(v));
+                v -> {
+                  if (v.getDirectConnectGatewayId() == null) {
+                    return;
+                  }
+                  vifsByDxgw
+                      .computeIfAbsent(v.getDirectConnectGatewayId(), k -> new ArrayList<>())
+                      .add(v);
+                });
       }
     }
 
-    return uniqueGateways.values().stream()
-        .map(
-            dxgw ->
-                dxgw.toConfigurationNode(
-                    associationsByDxgw.getOrDefault(dxgw.getId(), ImmutableList.of()),
-                    vifsByDxgw.getOrDefault(dxgw.getId(), ImmutableList.of())))
-        .collect(ImmutableList.toImmutableList());
+    for (DirectConnectGateway dxgw : uniqueGateways.values()) {
+      List<DirectConnectGatewayAssociation> associations =
+          associationsByDxgw.getOrDefault(dxgw.getId(), ImmutableList.of());
+      List<DirectConnectVirtualInterface> vifs =
+          vifsByDxgw.getOrDefault(dxgw.getId(), ImmutableList.of());
+      Configuration node = dxgw.toConfigurationNode(associations, vifs);
+      convertedConfiguration.addNode(node);
+
+      // Wire DXGW→VGW links for VGW-typed associations. The VGW node was created during the
+      // per-region pass, so it must already be present in convertedConfiguration.
+      associations.stream()
+          .filter(
+              a ->
+                  a.getAssociatedGateway().getType()
+                      == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                          .VIRTUAL_PRIVATE_GATEWAY)
+          .forEach(
+              a ->
+                  DirectConnectGateway.connectVgwAssociation(
+                      node, dxgw, a, awsConfiguration, convertedConfiguration));
+    }
   }
 
   private DirectConnectGatewayConverter() {}

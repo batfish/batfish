@@ -267,7 +267,7 @@ public class AwsConfiguration extends VendorConfiguration {
       Collection<Region> regions = account.getRegions();
       for (Region region : regions) {
         try {
-          region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+          region.toConfigurationNodes(this, _convertedConfiguration, getWarnings());
           region.addPrefixListReferenceBook(_convertedConfiguration, getWarnings());
         } catch (Exception e) {
           getWarnings()
@@ -283,8 +283,7 @@ public class AwsConfiguration extends VendorConfiguration {
     // collection), while their associations and VIFs are regional. Build one node per unique DXGW
     // here, after the per-region loop, aggregating associations and VIFs across regions.
     try {
-      DirectConnectGatewayConverter.convertDirectConnectGateways(this)
-          .forEach(_convertedConfiguration::addNode);
+      DirectConnectGatewayConverter.convertDirectConnectGateways(this, _convertedConfiguration);
     } catch (Exception e) {
       getWarnings()
           .redFlagf(

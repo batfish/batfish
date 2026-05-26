@@ -46,6 +46,29 @@
       "BgpPeers": [],
       "RouteFilterPrefixes": [],
       "Tags": []
+    },
+    {
+      "VirtualInterfaceId": "dxvif-vgw0001",
+      "VirtualInterfaceName": "vgw-private-vif",
+      "VirtualInterfaceType": "private",
+      "ConnectionId": "dxcon-vgw01",
+      "VirtualGatewayId": "vgw-abcd1234",
+      "Vlan": 300,
+      "Asn": 65003,
+      "AmazonAddress": "169.254.30.1/30",
+      "CustomerAddress": "169.254.30.2/30",
+      "VirtualInterfaceState": "available",
+      "BgpPeers": [
+        {
+          "Asn": 65003,
+          "AmazonAddress": "169.254.30.1/30",
+          "CustomerAddress": "169.254.30.2/30",
+          "BgpPeerState": "available",
+          "BgpStatus": "up"
+        }
+      ],
+      "RouteFilterPrefixes": [],
+      "Tags": []
     }
   ]
 }

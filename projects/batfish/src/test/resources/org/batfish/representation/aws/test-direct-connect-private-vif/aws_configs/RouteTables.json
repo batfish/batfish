@@ -1,0 +1,40 @@
+{
+ "RouteTables": [
+  {
+   "Associations": [
+    {
+     "AssociationState": {
+      "State": "associated"
+     },
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-priv01",
+     "RouteTableId": "rtb-priv01",
+     "SubnetId": "subnet-priv01"
+    }
+   ],
+   "OwnerId": "123456789012",
+   "PropagatingVgws": [
+    {
+     "GatewayId": "vgw-priv01"
+    }
+   ],
+   "RouteTableId": "rtb-priv01",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.50.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "GatewayId": "vgw-priv01",
+     "Origin": "CreateRoute",
+     "State": "active"
+    }
+   ],
+   "Tags": [],
+   "VpcId": "vpc-priv01"
+  }
+ ]
+}

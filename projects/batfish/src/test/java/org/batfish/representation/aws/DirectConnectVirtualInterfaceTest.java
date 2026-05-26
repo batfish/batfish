@@ -28,7 +28,7 @@ public class DirectConnectVirtualInterfaceTest {
     Region region = new Region("r1");
     region.addConfigElement(json, null, null);
 
-    // Only the "available" VIF should be included
+    // Only the "available" VIFs should be included
     assertThat(
         region.getDirectConnectVirtualInterfaces(),
         equalTo(
@@ -40,6 +40,7 @@ public class DirectConnectVirtualInterfaceTest {
                     "transit",
                     "dxcon-abc12345",
                     "12345678-90ab-4cde-9f01-23456789abcd",
+                    null,
                     100,
                     65001L,
                     ConcreteInterfaceAddress.parse("169.254.100.1/30"),
@@ -49,7 +50,25 @@ public class DirectConnectVirtualInterfaceTest {
                             65001L,
                             ConcreteInterfaceAddress.parse("169.254.100.1/30"),
                             ConcreteInterfaceAddress.parse("169.254.100.2/30"))),
-                    ImmutableMap.of("Name", "prod-vif")))));
+                    ImmutableMap.of("Name", "prod-vif")),
+                "dxvif-vgw0001",
+                new DirectConnectVirtualInterface(
+                    "dxvif-vgw0001",
+                    "vgw-private-vif",
+                    "private",
+                    "dxcon-vgw01",
+                    null,
+                    "vgw-abcd1234",
+                    300,
+                    65003L,
+                    ConcreteInterfaceAddress.parse("169.254.30.1/30"),
+                    ConcreteInterfaceAddress.parse("169.254.30.2/30"),
+                    ImmutableList.of(
+                        new BgpPeer(
+                            65003L,
+                            ConcreteInterfaceAddress.parse("169.254.30.1/30"),
+                            ConcreteInterfaceAddress.parse("169.254.30.2/30"))),
+                    ImmutableMap.of()))));
   }
 
   @Test
@@ -62,6 +81,7 @@ public class DirectConnectVirtualInterfaceTest {
                 "transit",
                 "conn1",
                 "dxgw-1",
+                null,
                 100,
                 65001L,
                 ConcreteInterfaceAddress.parse("169.254.1.1/30"),
@@ -74,6 +94,7 @@ public class DirectConnectVirtualInterfaceTest {
                 "transit",
                 "conn1",
                 "dxgw-1",
+                null,
                 100,
                 65001L,
                 ConcreteInterfaceAddress.parse("169.254.1.1/30"),
@@ -87,6 +108,7 @@ public class DirectConnectVirtualInterfaceTest {
                 "transit",
                 "conn1",
                 "dxgw-1",
+                null,
                 100,
                 65001L,
                 ConcreteInterfaceAddress.parse("169.254.1.1/30"),
@@ -100,7 +122,22 @@ public class DirectConnectVirtualInterfaceTest {
                 "transit",
                 "conn1",
                 "dxgw-1",
+                null,
                 200,
+                65001L,
+                ConcreteInterfaceAddress.parse("169.254.1.1/30"),
+                ConcreteInterfaceAddress.parse("169.254.1.2/30"),
+                ImmutableList.of(),
+                ImmutableMap.of()))
+        .addEqualityGroup(
+            new DirectConnectVirtualInterface(
+                "vif1",
+                "name",
+                "private",
+                "conn1",
+                null,
+                "vgw-1",
+                100,
                 65001L,
                 ConcreteInterfaceAddress.parse("169.254.1.1/30"),
                 ConcreteInterfaceAddress.parse("169.254.1.2/30"),

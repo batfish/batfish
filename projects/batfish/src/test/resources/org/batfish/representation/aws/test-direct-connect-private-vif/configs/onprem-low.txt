@@ -1,0 +1,27 @@
+!
+hostname onprem-low
+!
+interface Loopback0
+ ip address 10.20.0.2 255.255.255.255
+!
+interface GigabitEthernet0/0
+ description Direct Connect Private VIF to AWS VGW (LOW pref)
+ ip address 169.254.31.2 255.255.255.252
+ no shutdown
+!
+route-map RM_TO_AWS_LOW permit 10
+ set community 7224:7100
+!
+router bgp 65020
+ bgp router-id 10.20.0.2
+ neighbor 169.254.31.1 remote-as 64533
+ neighbor 169.254.31.1 send-community
+ !
+ address-family ipv4 unicast
+  network 10.20.0.0 mask 255.255.0.0
+  neighbor 169.254.31.1 activate
+  neighbor 169.254.31.1 route-map RM_TO_AWS_LOW out
+ exit-address-family
+!
+ip route 10.20.0.0 255.255.0.0 Null0
+!

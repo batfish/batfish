@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
@@ -34,13 +35,21 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Represents an AWS Direct Connect Gateway */
@@ -130,20 +139,69 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     return String.format("~dxgw~tgw-export~%s~", associationId);
   }
 
+  /** Per-association policy for routes exported from the DXGW toward an associated VGW. */
+  static String vgwExportPolicyName(String associationId) {
+    return String.format("~dxgw~vgw-export~%s~", associationId);
+  }
+
   /** Common import policy on the DXGW: accept all BGP. */
   static final String DXGW_IMPORT_POLICY_NAME = "~dxgw~import-policy~";
 
   /** AWS Direct Connect traffic-engineering community: high preference. */
-  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_HIGH_PREF_COMMUNITY =
-      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7300);
+  static final StandardCommunity DX_HIGH_PREF_COMMUNITY = StandardCommunity.of(7224, 7300);
 
   /** AWS Direct Connect traffic-engineering community: medium preference (default). */
-  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_MEDIUM_PREF_COMMUNITY =
-      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7200);
+  static final StandardCommunity DX_MEDIUM_PREF_COMMUNITY = StandardCommunity.of(7224, 7200);
 
   /** AWS Direct Connect traffic-engineering community: low preference. */
-  static final org.batfish.datamodel.bgp.community.StandardCommunity DX_LOW_PREF_COMMUNITY =
-      org.batfish.datamodel.bgp.community.StandardCommunity.of(7224, 7100);
+  static final StandardCommunity DX_LOW_PREF_COMMUNITY = StandardCommunity.of(7224, 7100);
+
+  /**
+   * Builds (if not already present) a routing policy on {@code owner} that accepts BGP routes and
+   * sets local-preference based on AWS DX traffic-engineering communities (7224:7300/7200/7100).
+   * Returns the policy name. Used on the AWS-internal side of any DXGW-adjacent BGP peer (TGW
+   * import, VGW import on a VGW-attached Private VIF, VGW import on a DXGW→VGW peer) so that
+   * customer-attached communities propagate to AWS-side path preference.
+   */
+  static String installDxImportPolicy(Configuration owner, String policyName) {
+    if (owner.getRoutingPolicies().containsKey(policyName)) {
+      return policyName;
+    }
+    RoutingPolicy.builder()
+        .setName(policyName)
+        .setOwner(owner)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    ImmutableList.of(
+                        new If(
+                            dxCommunityMatch(DX_HIGH_PREF_COMMUNITY),
+                            ImmutableList.of(
+                                new SetLocalPreference(
+                                    new LiteralLong(Route.DIRECT_CONNECT_HIGH_LOCAL_PREFERENCE))),
+                            ImmutableList.of(
+                                new If(
+                                    dxCommunityMatch(DX_LOW_PREF_COMMUNITY),
+                                    ImmutableList.of(
+                                        new SetLocalPreference(
+                                            new LiteralLong(
+                                                Route.DIRECT_CONNECT_LOW_LOCAL_PREFERENCE))),
+                                    ImmutableList.of(
+                                        new SetLocalPreference(
+                                            new LiteralLong(
+                                                Route.DIRECT_CONNECT_MEDIUM_LOCAL_PREFERENCE)))))),
+                        Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+    return policyName;
+  }
+
+  /** Returns a boolean expression that matches if the route carries the given community. */
+  private static BooleanExpr dxCommunityMatch(StandardCommunity community) {
+    return new MatchCommunities(
+        InputCommunities.instance(), new HasCommunity(new CommunityIs(community)));
+  }
 
   /**
    * Creates a Configuration node for this Direct Connect Gateway. Uses a single default VRF for
@@ -181,11 +239,17 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
 
     initBgp(cfgNode);
 
-    // Per-association: install allowed-prefix statics and a TGW-export filter.
+    // Per-association: install allowed-prefix statics and a downstream-export filter.
     associations.forEach(
         assoc -> {
           installAllowedPrefixStatics(cfgNode, assoc.getAllowedPrefixes());
-          buildTgwExportPolicy(cfgNode, assoc.getId(), assoc.getAllowedPrefixes());
+          String policyName =
+              assoc.getAssociatedGateway().getType()
+                      == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                          .VIRTUAL_PRIVATE_GATEWAY
+                  ? vgwExportPolicyName(assoc.getId())
+                  : tgwExportPolicyName(assoc.getId());
+          buildAllowedPrefixExportPolicy(cfgNode, policyName, assoc.getAllowedPrefixes());
         });
 
     // VIF export policy: advertise the originated allowed-prefix statics to on-prem.
@@ -255,12 +319,12 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * Build a per-association export policy from the DXGW toward a TGW peer. Accept BGP routes whose
-   * destination is the same as or more specific than one of the allowed prefixes.
+   * Build a per-association export policy from the DXGW toward a downstream peer (TGW or VGW).
+   * Accept BGP routes whose destination is the same as or more specific than one of the allowed
+   * prefixes.
    */
-  private static void buildTgwExportPolicy(
-      Configuration cfgNode, String associationId, List<Prefix> allowedPrefixes) {
-    String policyName = tgwExportPolicyName(associationId);
+  private static void buildAllowedPrefixExportPolicy(
+      Configuration cfgNode, String policyName, List<Prefix> allowedPrefixes) {
     if (allowedPrefixes.isEmpty()) {
       RoutingPolicy.builder()
           .setName(policyName)
@@ -287,6 +351,74 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         .build();
   }
 
+  /**
+   * Wire a BGP-unnumbered link from this DXGW node to the associated VGW node for a VGW-typed
+   * association. The DXGW exports allowed prefixes (same filter as TGW exports). The VGW imports
+   * BGP and exports its VPC CIDRs (existing VGW BGP setup, see {@link
+   * VpnGateway#toConfigurationNode}).
+   */
+  static void connectVgwAssociation(
+      Configuration dxgwCfg,
+      DirectConnectGateway dxgw,
+      DirectConnectGatewayAssociation association,
+      AwsConfiguration vsConfiguration,
+      ConvertedConfiguration awsConfiguration) {
+    String vgwId = association.getAssociatedGateway().getId();
+    Configuration vgwCfg = awsConfiguration.getNode(vgwId);
+    if (vgwCfg == null || vgwCfg.getDefaultVrf().getBgpProcess() == null) {
+      // VGW node missing or has no BGP process; nothing to wire. (BGP is enabled on the VGW when
+      // any DXGW association points at it; absence implies the VGW JSON wasn't loaded.)
+      return;
+    }
+
+    long vgwAmazonSideAsn =
+        vsConfiguration.getAccounts().stream()
+            .flatMap(a -> a.getRegions().stream())
+            .map(r -> r.getVpnGateways().get(vgwId))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .map(VpnGateway::getAmazonSideAsn)
+            .orElse(0L);
+
+    Utils.connect(
+        awsConfiguration,
+        dxgwCfg,
+        Configuration.DEFAULT_VRF_NAME,
+        vgwCfg,
+        Configuration.DEFAULT_VRF_NAME,
+        association.getId());
+
+    String dxgwIfaceToVgw = Utils.interfaceNameToRemote(vgwCfg, association.getId());
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(dxgwIfaceToVgw)
+        .setRemoteAs(vgwAmazonSideAsn)
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(dxgw._amazonSideAsn)
+        .setBgpProcess(dxgwCfg.getDefaultVrf().getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(vgwExportPolicyName(association.getId()))
+                .setImportPolicy(DXGW_IMPORT_POLICY_NAME)
+                .build())
+        .build();
+
+    String vgwIfaceToDxgw = Utils.interfaceNameToRemote(dxgwCfg, association.getId());
+    String vgwImportPolicy =
+        installDxImportPolicy(vgwCfg, VpnGateway.vgwDxImportPolicyName(association.getId()));
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(vgwIfaceToDxgw)
+        .setRemoteAs(dxgw._amazonSideAsn)
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(vgwAmazonSideAsn)
+        .setBgpProcess(vgwCfg.getDefaultVrf().getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(VpnGateway.VGW_EXPORT_POLICY_NAME)
+                .setImportPolicy(vgwImportPolicy)
+                .build())
+        .build();
+  }
+
   private void configureVifBgpSession(Configuration cfgNode, DirectConnectVirtualInterface vif) {
     Ip amazonIp = vif.getAmazonIp();
     Ip customerIp = vif.getCustomerIp();
@@ -298,6 +430,7 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
             vif.getAmazonAddress(),
             "Direct Connect VIF " + vif.getVirtualInterfaceName());
     vifIface.updateInterfaceType(org.batfish.datamodel.InterfaceType.PHYSICAL);
+    vifIface.setEncapsulationVlan(vif.getVlan());
 
     BgpActivePeerConfig.builder()
         .setPeerAddress(customerIp)

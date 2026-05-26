@@ -825,7 +825,10 @@ public final class Region implements Serializable {
     }
   }
 
-  void toConfigurationNodes(ConvertedConfiguration awsConfiguration, Warnings warnings) {
+  void toConfigurationNodes(
+      AwsConfiguration vsConfiguration,
+      ConvertedConfiguration awsConfiguration,
+      Warnings warnings) {
 
     updateSubnetAllocatedIps();
 
@@ -855,7 +858,8 @@ public final class Region implements Serializable {
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
+      Configuration cfgNode =
+          vgw.toConfigurationNode(vsConfiguration, awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
     }
 

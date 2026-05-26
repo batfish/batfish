@@ -1,0 +1,22 @@
+{
+ "VpnGateways": [
+  {
+   "AmazonSideAsn": 64533,
+   "State": "available",
+   "Type": "ipsec.1",
+   "VpcAttachments": [
+    {
+     "State": "attached",
+     "VpcId": "vpc-priv01"
+    }
+   ],
+   "VpnGatewayId": "vgw-priv01",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "private-vif-vgw"
+    }
+   ]
+  }
+ ]
+}
