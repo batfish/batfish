@@ -160,17 +160,17 @@ pre-commit autoupdate
 ### Manual Formatting
 
 ```bash
-# Format Java files
-bazel run //tools/formatter:formatter -- --replace $(git ls-files '*.java')
+# Format all Java files
+bazel run //tools/format:format.fix
 
-# Check Java formatting (dry-run)
-bazel run //tools/formatter:formatter -- --dry-run $(git ls-files '*.java')
+# Check Java formatting (dry-run, fails if anything would change)
+bazel run //tools/format:format.check
 
 # Format specific file
-bazel run //tools/formatter:formatter -- --replace src/main/java/com/example/MyClass.java
+bazel run //tools/format:format.fix -- src/main/java/com/example/MyClass.java
 
 # Format BUILD files
-bazel run //tools/formatter:buildifier
+bazel run //:buildifier.fix
 ```
 
 ---
