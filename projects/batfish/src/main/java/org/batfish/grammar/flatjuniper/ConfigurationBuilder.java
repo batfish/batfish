@@ -2586,13 +2586,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             ctx,
             "then default-action is overridden by bare then accept/reject in the same term:"
                 + " default-action does not fire");
-      } else if (entry.contains("(dead-with-bare-reject)")) {
-        warnRisky(
-            ctx,
-            String.format(
-                "then %s has no effect on the propagated route when then reject is also present"
-                    + " in the same term",
-                entry.replace(" (dead-with-bare-reject)", "")));
       } else if (entry.contains("(dedup)")) {
         warnRisky(ctx, String.format("Duplicate then %s", entry.replace(" (dedup)", "")));
       } else if (entry.contains("(conflict)")) {

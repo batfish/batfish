@@ -102,15 +102,6 @@ set policy-options policy-statement FC-NEXT-POLICY-NEXT-TERM term t1 then next p
 set policy-options policy-statement FC-NEXT-POLICY-NEXT-TERM term t1 then next term
 set policy-options policy-statement FC-NEXT-POLICY-NEXT-TERM term t2 then reject
 #
-# Mutating action + bare reject — every mutating line in the term is dead config
-set policy-options policy-statement FC-MUTATE-THEN-REJECT term t1 then metric 100
-set policy-options policy-statement FC-MUTATE-THEN-REJECT term t1 then community add RED
-set policy-options policy-statement FC-MUTATE-THEN-REJECT term t1 then reject
-#
-# Bare reject before a mutation — same dead-config interpretation
-set policy-options policy-statement FC-REJECT-THEN-MUTATE term t1 then reject
-set policy-options policy-statement FC-REJECT-THEN-MUTATE term t1 then metric 100
-#
 # default-action reject + bare accept — default-action is dead config (bare terminator wins)
 set policy-options policy-statement FC-DEFAULT-REJECT-THEN-ACCEPT term t1 then default-action reject
 set policy-options policy-statement FC-DEFAULT-REJECT-THEN-ACCEPT term t1 then accept

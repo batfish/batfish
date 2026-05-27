@@ -33,9 +33,6 @@ import javax.annotation.Nullable;
  *       are a separate family from bare {@code accept}/{@code reject}. When a bare terminator and a
  *       {@code default-action} coexist in the same term, the bare terminator wins at runtime and
  *       the {@code default-action} is dead config.
- *   <li>When a bare {@code reject} fires (i.e., it is present and not suppressed by {@code next
- *       term}/{@code next policy}), any mutating action in the same term has no effect on the
- *       propagated route since the route is discarded.
  * </ul>
  *
  * <p>All cleared/eliminated actions, and dead-config combinations, produce a RISKY warning so the
@@ -50,8 +47,7 @@ public final class PsThens implements Serializable {
    */
   public @Nonnull List<String> addPsThen(PsThen then) {
     if (isCommunityAction(then)) {
-      List<String> warnings = addCommunityAction(then);
-      return appendBareRejectWarningIfMutating(then, warnings);
+      return addCommunityAction(then);
     }
     if (isNextTermOrPolicy(then)) {
       return setNextTermOrPolicy(then);
@@ -66,10 +62,9 @@ public final class PsThens implements Serializable {
     if (family == null) {
       // Unclassified action (flow-control, unmodeled, etc.) — always retain
       _others.add(then);
-      return appendBareRejectWarningIfMutating(then, ImmutableList.of());
+      return ImmutableList.of();
     }
-    List<String> warnings = setLastWins(then, family);
-    return appendBareRejectWarningIfMutating(then, warnings);
+    return setLastWins(then, family);
   }
 
   /**
@@ -317,16 +312,6 @@ public final class PsThens implements Serializable {
       // dead config.
       warnings.add("default-action (dead-with-bare-terminator)");
     }
-    if (then instanceof PsThenReject
-        && _nextTermOrPolicy == null
-        && !(prior instanceof PsThenReject)) {
-      // First time reject is the retained terminator and it will actually fire (not suppressed by
-      // next-term/next-policy). Any mutating action already in the same term has no effect on the
-      // propagated route. Skip on dedup (prior reject already triggered these warnings).
-      for (String label : mutatingLabels()) {
-        warnings.add(label + " (dead-with-bare-reject)");
-      }
-    }
     return warnings.build();
   }
 
@@ -352,79 +337,6 @@ public final class PsThens implements Serializable {
       warnings.add("default-action (dead-with-bare-terminator)");
     }
     return warnings.build();
-  }
-
-  // --- mutating-action vs bare-reject ---
-
-  /**
-   * Returns true when {@code then} mutates the route in a way that would be observable on a
-   * propagated route. Flow-control actions (accept/reject, next-term/next-policy, default-action)
-   * are excluded.
-   */
-  private static boolean isMutatingAction(PsThen then) {
-    return !(then instanceof PsThenAccept
-        || then instanceof PsThenReject
-        || then instanceof PsThenNextTerm
-        || then instanceof PsThenNextPolicy
-        || then instanceof PsThenDefaultActionAccept
-        || then instanceof PsThenDefaultActionReject);
-  }
-
-  /**
-   * If a bare {@code reject} that will actually fire is already retained in this {@link PsThens}
-   * and the newly added {@code then} is a mutating action that ended up retained (i.e., not a pure
-   * dedup), append a "dead-with-bare-reject" warning for the new action.
-   */
-  private @Nonnull List<String> appendBareRejectWarningIfMutating(
-      PsThen then, List<String> baseWarnings) {
-    if (!(_acceptOrReject instanceof PsThenReject) || _nextTermOrPolicy != null) {
-      return baseWarnings;
-    }
-    if (!isMutatingAction(then)) {
-      return baseWarnings;
-    }
-    // Skip pure dedup: the prior action was already flagged when reject was added.
-    for (String warning : baseWarnings) {
-      if (warning.contains("(dedup)")) {
-        return baseWarnings;
-      }
-    }
-    return ImmutableList.<String>builder()
-        .addAll(baseWarnings)
-        .add(actionLabel(then) + " (dead-with-bare-reject)")
-        .build();
-  }
-
-  /**
-   * Returns labels for every retained mutating action, in canonical (output) order. Used when a
-   * bare {@code reject} is added after mutating actions to emit one warning per action.
-   */
-  private @Nonnull List<String> mutatingLabels() {
-    ImmutableList.Builder<String> labels = ImmutableList.builder();
-    for (PsThen then : getAllThens()) {
-      if (isMutatingAction(then)) {
-        labels.add(actionLabel(then));
-      }
-    }
-    return labels.build();
-  }
-
-  /** Returns a short human-readable label for a mutating action (used in warning text). */
-  private static @Nonnull String actionLabel(PsThen then) {
-    if (isCommunityAction(then)) {
-      return communityLabel(then);
-    }
-    String family = getFamily(then);
-    if (family != null) {
-      return family;
-    }
-    // Unclassified actions in _others (e.g., aigp-originate) — fall back to class-name-derived
-    // label.
-    String simpleName = then.getClass().getSimpleName();
-    if (simpleName.startsWith("PsThen")) {
-      simpleName = simpleName.substring("PsThen".length());
-    }
-    return simpleName;
   }
 
   private final @Nonnull Map<String, List<PsThen>> _familyActions;
