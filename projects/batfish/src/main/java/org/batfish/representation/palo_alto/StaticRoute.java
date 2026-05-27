@@ -2,7 +2,6 @@ package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 public class StaticRoute implements Serializable {
@@ -19,7 +18,7 @@ public class StaticRoute implements Serializable {
   private final String _name;
   private boolean _nextHopDiscard;
   private @Nullable String _nextHopInterface;
-  private @Nullable Ip _nextHopIp;
+  private @Nullable InterfaceAddress _nextHopIp;
   private @Nullable String _nextVr;
 
   public StaticRoute(String name) {
@@ -48,7 +47,7 @@ public class StaticRoute implements Serializable {
     return _nextHopInterface;
   }
 
-  public @Nullable Ip getNextHopIp() {
+  public @Nullable InterfaceAddress getNextHopIp() {
     return _nextHopIp;
   }
 
@@ -88,7 +87,7 @@ public class StaticRoute implements Serializable {
     _nextVr = null;
   }
 
-  public void setNextHopIp(Ip nextHopIp) {
+  public void setNextHopIp(InterfaceAddress nextHopIp) {
     _nextHopIp = nextHopIp;
     // keep nexthop interface
     // TODO: will this clear or warn?

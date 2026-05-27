@@ -83,6 +83,29 @@ public final class AddressObject implements Serializable {
     return null;
   }
 
+  /**
+   * Returns whether this address object resolves to a single host IP usable for BGP peer-address,
+   * BGP local-address, or static-route nexthop. An {@code ip-netmask} object qualifies as long as
+   * its configured address is a host within its own subnet — the mask itself is ignored, so an
+   * interface-subnet-masked object such as {@code 10.0.0.1/29} is valid and resolves to {@code
+   * 10.0.0.1}. A bare network or broadcast address (e.g. {@code 10.10.10.0/24}), an IP_RANGE, or an
+   * FQDN object has no single usable host IP and is not valid.
+   */
+  public boolean isValidHostAddress() {
+    if (_ip != null) {
+      return true;
+    }
+    if (_prefix != null) {
+      Prefix prefix = _prefix.getPrefix();
+      Ip ip = _prefix.getIp();
+      // /31 and /32 have no reserved network/broadcast address; otherwise the configured IP must
+      // not be the subnet's network or broadcast address.
+      return prefix.getPrefixLength() >= Prefix.MAX_PREFIX_LENGTH - 1
+          || (!ip.equals(prefix.getStartIp()) && !ip.equals(prefix.getEndIp()));
+    }
+    return false;
+  }
+
   /** Returns all addresses owned by this address object as an IP {@link RangeSet}. */
   public @Nonnull RangeSet<Ip> getAddressAsRangeSet() {
     if (_ip != null) {

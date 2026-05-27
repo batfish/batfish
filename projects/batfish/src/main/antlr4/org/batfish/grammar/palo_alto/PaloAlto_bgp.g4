@@ -211,12 +211,12 @@ bgppgp_la_interface
 
 bgppgp_la_ip
 :
-    IP addr = interface_address
+    IP addr = interface_address_or_reference
 ;
 
 bgppgp_peer_address
 :
-    PEER_ADDRESS IP addr = ip_address_or_slash32
+    PEER_ADDRESS IP addr = interface_address_or_reference
 ;
 
 bgppgp_peer_as
