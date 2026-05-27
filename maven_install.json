@@ -21,7 +21,7 @@
     "com.google.code.findbugs:jsr305": 495355163,
     "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 1790047777,
-    "com.google.googlejavaformat:google-java-format": 2066321673,
+    "com.google.googlejavaformat:google-java-format": -1003676123,
     "com.google.guava:guava": -692456693,
     "com.google.guava:guava-bom": -1581455824,
     "com.google.guava:guava-testlib": 279911981,
@@ -117,8 +117,8 @@
     "com.google.code.gson:gson:jar:sources": 935710753,
     "com.google.errorprone:error_prone_annotations": 430949977,
     "com.google.errorprone:error_prone_annotations:jar:sources": -1210049757,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": -1920494622,
-    "com.google.googlejavaformat:google-java-format:jar:sources": 305056395,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": -451068644,
+    "com.google.googlejavaformat:google-java-format:jar:sources": 863436563,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
     "com.google.guava:guava": -440006436,
@@ -490,10 +490,10 @@
     },
     "com.google.googlejavaformat:google-java-format": {
       "shasums": {
-        "all-deps": "32342e7c1b4600f80df3471da46aee8012d3e1445d5ea1be1fb71289b07cc735",
-        "sources": "4f39e4c06d2fbbd7ad25a800c5ad9a70cb07bc56955e44d0e4f24f660f04ce51"
+        "all-deps": "bfb7f9ead6cd328389bc2da53860443bc0e805dfd08cc889bfdf43b26cb2a6e8",
+        "sources": "2c3195a5032287616b3839078bd82d19780b2c0cb75932d9f92153421b6c2c93"
       },
-      "version": "1.28.0"
+      "version": "1.35.0"
     },
     "com.google.guava:failureaccess": {
       "shasums": {
@@ -1720,7 +1720,6 @@
       "com.google.googlejavaformat",
       "com.google.googlejavaformat.java",
       "com.google.googlejavaformat.java.filer",
-      "com.google.googlejavaformat.java.java21",
       "com.google.googlejavaformat.java.javadoc",
       "com.google.j2objc.annotations",
       "com.google.thirdparty.publicsuffix",
