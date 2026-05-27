@@ -5671,13 +5671,6 @@ public final class FlatJuniperGrammarTest {
             hasComment(
                 "RISK: then accept/reject has no effect when then next term/next policy is also"
                     + " present in the same term: accept/reject does not fire"),
-            // metric/community before bare reject — dead since route is rejected
-            hasComment(
-                "RISK: then metric has no effect on the propagated route when then reject is"
-                    + " also present in the same term"),
-            hasComment(
-                "RISK: then community add RED has no effect on the propagated route when then"
-                    + " reject is also present in the same term"),
             // default-action with bare terminator — default-action is dead
             hasComment(
                 "RISK: then default-action is overridden by bare then accept/reject in the same"
