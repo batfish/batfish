@@ -11,7 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
-        "//docs/example_code/new_vendor/src/test/resources/org/batfish/grammar/cool_nos/testconfigs",
+        "//docs/example_code/new_vendor/src/test/resources/org/batfish/vendor/cool_nos/grammar/testconfigs",
         "//projects/batfish/src/test/resources:log4j_config",
     ],
     tags = ["cpu:4"],
@@ -20,8 +20,8 @@ junit_tests(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
-        "//docs/example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos",
-        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos",
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/grammar",
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/representation",
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/common",

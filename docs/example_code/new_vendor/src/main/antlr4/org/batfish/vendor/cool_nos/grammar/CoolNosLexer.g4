@@ -1,7 +1,7 @@
 lexer grammar CoolNosLexer;
 
 options {
-  superClass = 'org.batfish.grammar.cool_nos.parsing.CoolNosBaseLexer';
+  superClass = 'CoolNosBaseLexer';
 }
 
 tokens {

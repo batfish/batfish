@@ -1,0 +1,39 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(
+    default_visibility = ["//docs/example_code:__subpackages__"],
+)
+
+java_library(
+    name = "cool_nos_base",
+    srcs = [
+        "CoolNosBaseLexer.java",
+    ],
+    deps = [
+        "//projects/common:parser_common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+java_library(
+    name = "grammar",
+    srcs = glob(
+        ["*.java"],
+        exclude = ["CoolNosBaseLexer.java"],
+    ),
+    deps = [
+        "//docs/example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar",
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/representation",
+        "//projects/common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":grammar",
+)
