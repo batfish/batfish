@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +58,7 @@ public class RemoveOutgoingInterfaceConstraintsTest {
 
     // Create manager and corresponding RemoveOutgoingInterfaceConstraints transition
     MGR = getMgrForConfig(c);
-    assert !MGR.isTrivial(); // sanity check
+    assertFalse("sanity check", MGR.isTrivial());
     TRANSITION = removeOutgoingInterfaceConstraints(MGR);
   }
 

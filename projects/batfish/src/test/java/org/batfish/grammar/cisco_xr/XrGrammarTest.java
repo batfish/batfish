@@ -1539,7 +1539,7 @@ public final class XrGrammarTest {
       RoutingPolicy exportPolicy =
           c.getRoutingPolicies()
               .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
-      assert exportPolicy != null;
+      assertThat(exportPolicy, notNullValue());
       // set export route's values to non-defaults to confirm they really get set by the policy
       exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
       assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
@@ -1561,7 +1561,7 @@ public final class XrGrammarTest {
       RoutingPolicy exportPolicy =
           c.getRoutingPolicies()
               .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
-      assert exportPolicy != null;
+      assertThat(exportPolicy, notNullValue());
       // set export route's values to confirm they really get rewritten by the policy
       exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E2);
       assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
@@ -1591,7 +1591,7 @@ public final class XrGrammarTest {
       RoutingPolicy exportPolicy =
           c.getRoutingPolicies()
               .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
-      assert exportPolicy != null;
+      assertThat(exportPolicy, notNullValue());
       // set export route's values to confirm they really get rewritten by the policy
       exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
       assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);

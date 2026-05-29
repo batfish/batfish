@@ -1,6 +1,12 @@
 package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
@@ -73,18 +79,18 @@ public class StructuredBgpRouteDiffsTest {
             ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")),
             Optional.of(comms1));
 
-    assert d1.compareTo(d2) > 0;
-    assert d3.compareTo(d2) < 0;
-    assert d4.compareTo(d2) > 0;
-    assert d1.compareTo(d4) < 0;
-    assert d1.compareTo(d5) == 0;
+    assertThat(d1, greaterThan(d2));
+    assertThat(d3, lessThan(d2));
+    assertThat(d4, greaterThan(d2));
+    assertThat(d1, lessThan(d4));
+    assertThat(d1, comparesEqualTo(d5));
   }
 
   @Test
   public void testHasDifferences() {
 
     StructuredBgpRouteDiffs d1 = new StructuredBgpRouteDiffs();
-    assert (!d1.hasDifferences());
+    assertFalse(d1.hasDifferences());
 
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet(1, 1, 2, 2);
@@ -92,13 +98,13 @@ public class StructuredBgpRouteDiffsTest {
 
     StructuredBgpRouteDiffs d2 =
         new StructuredBgpRouteDiffs(ImmutableSortedSet.of(), Optional.of(comms1));
-    assert (d2.hasDifferences());
+    assertTrue(d2.hasDifferences());
 
     StructuredBgpRouteDiffs d3 =
         new StructuredBgpRouteDiffs(
             ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")),
             Optional.empty());
 
-    assert (d3.hasDifferences());
+    assertTrue(d3.hasDifferences());
   }
 }

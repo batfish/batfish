@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -25,7 +26,7 @@ public class HostProtocolTest {
   public void testGetMatchExpr_bgp() {
     HostProtocol from = HostProtocol.BGP;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertTrue(matchExpr.isPresent());
 
     assertThat(
         matchExpr.get(),
@@ -42,7 +43,7 @@ public class HostProtocolTest {
   public void testGetMatchExpr_all_traceElements() {
     HostProtocol from = HostProtocol.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertTrue(matchExpr.isPresent());
 
     TraceElement expectedTraceElement =
         TraceElement.of(String.format("Matched host-inbound-traffic protocol %s", from));

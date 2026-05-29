@@ -3889,10 +3889,10 @@ public final class CiscoGrammarTest {
     String redistRmName = "redist_eigrp";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
-    assert bgpProc != null;
+    assertThat(bgpProc, notNullValue());
     BgpRedistributionPolicy eigrpRedist =
         bgpProc.getRedistributionPolicies().get(RoutingProtocolInstance.eigrp(1L));
-    assert eigrpRedist != null;
+    assertThat(eigrpRedist, notNullValue());
     assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
 
     /* Confirm route-map was referenced from correct context */

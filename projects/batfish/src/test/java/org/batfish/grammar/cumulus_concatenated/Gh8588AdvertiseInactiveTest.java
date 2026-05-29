@@ -5,6 +5,7 @@ import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public final class Gh8588AdvertiseInactiveTest {
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     FinalMainRib s0MainRib = dp.getRibs().get("s0", DEFAULT_VRF_NAME);
-    assert s0MainRib != null;
+    assertThat(s0MainRib, notNullValue());
     assertThat(s0MainRib.getRoutes(Prefix.strict("10.2.10.0/24")), contains(hasProtocol(BGP)));
   }
 
