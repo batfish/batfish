@@ -37,6 +37,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -46,6 +47,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -265,7 +267,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
               vrf -> new PostInVrf(node, vrf));
 
       // sanity check
-      assert !originateIfaceEdges.isEmpty() && !originateVrfEdges.isEmpty();
+      assertThat(originateIfaceEdges, not(anEmptyMap()));
+      assertThat(originateVrfEdges, not(anEmptyMap()));
 
       originateIfaceEdges.forEach(
           (originateIface, postInVrf) -> {
@@ -2165,7 +2168,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .map(ip -> _pkt.getSrcIp().value(ip.asLong()))
             .reduce(BDD::or)
             .orElse(null);
-    assert permittedByFilter != null;
+    assertThat(permittedByFilter, notNullValue());
 
     List<Edge> edges =
         factory

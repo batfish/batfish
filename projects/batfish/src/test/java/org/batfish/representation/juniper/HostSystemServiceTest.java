@@ -26,7 +26,7 @@ public class HostSystemServiceTest {
   public void testGetMatchExpr_bgp() {
     HostSystemService from = HostSystemService.DNS;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertThat(matchExpr.isPresent(), equalTo(true));
 
     assertThat(
         matchExpr.get(),
@@ -43,7 +43,7 @@ public class HostSystemServiceTest {
   public void testGetMatchExpr_all_traceElement() {
     HostSystemService from = HostSystemService.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertThat(matchExpr.isPresent(), equalTo(true));
 
     TraceElement expectedTraceElement = from.getTraceElement();
     assertThat(matchExpr.get().getTraceElement(), equalTo(expectedTraceElement));

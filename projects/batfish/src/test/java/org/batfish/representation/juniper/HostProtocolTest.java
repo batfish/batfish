@@ -25,7 +25,7 @@ public class HostProtocolTest {
   public void testGetMatchExpr_bgp() {
     HostProtocol from = HostProtocol.BGP;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertThat(matchExpr.isPresent(), equalTo(true));
 
     assertThat(
         matchExpr.get(),
@@ -42,7 +42,7 @@ public class HostProtocolTest {
   public void testGetMatchExpr_all_traceElements() {
     HostProtocol from = HostProtocol.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertThat(matchExpr.isPresent(), equalTo(true));
 
     TraceElement expectedTraceElement =
         TraceElement.of(String.format("Matched host-inbound-traffic protocol %s", from));

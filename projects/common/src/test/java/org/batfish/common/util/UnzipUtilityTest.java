@@ -31,7 +31,7 @@ public class UnzipUtilityTest {
     File empty = _folder.newFile("empty");
     try (FileOutputStream fos = new FileOutputStream(empty);
         ZipOutputStream ignored = new ZipOutputStream(fos)) {
-      assert ignored != null; // avoid unused warning.
+      // Opening and closing the stream produces an empty zip file.
     }
 
     File dest = _folder.newFolder("dest");

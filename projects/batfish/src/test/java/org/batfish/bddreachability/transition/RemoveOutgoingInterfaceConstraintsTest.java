@@ -57,7 +57,7 @@ public class RemoveOutgoingInterfaceConstraintsTest {
 
     // Create manager and corresponding RemoveOutgoingInterfaceConstraints transition
     MGR = getMgrForConfig(c);
-    assert !MGR.isTrivial(); // sanity check
+    assertThat("sanity check", MGR.isTrivial(), equalTo(false));
     TRANSITION = removeOutgoingInterfaceConstraints(MGR);
   }
 

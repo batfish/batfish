@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -65,7 +66,7 @@ public final class JuniperConditionTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     FinalMainRib rMainRib =
         batfish.loadDataPlane(batfish.getSnapshot()).getRibs().get("r", DEFAULT_VRF_NAME);
-    assert rMainRib != null;
+    assertThat(rMainRib, notNullValue());
     Set<AbstractRoute> rBgpRoutes =
         rMainRib.getRoutes().stream()
             .filter(r -> r.getProtocol() == RoutingProtocol.BGP)

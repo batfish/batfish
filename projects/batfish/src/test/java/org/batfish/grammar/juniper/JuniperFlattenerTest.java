@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
@@ -48,7 +49,7 @@ public class JuniperFlattenerTest {
             new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    assert flattener instanceof JuniperFlattener;
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
     // Should not throw
     String flatText = flattener.getFlattenedConfigurationText();
 
@@ -67,7 +68,7 @@ public class JuniperFlattenerTest {
             new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    assert flattener instanceof JuniperFlattener;
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
     String flatText = flattener.getFlattenedConfigurationText();
     assertThat(
         flatText,
@@ -95,7 +96,7 @@ public class JuniperFlattenerTest {
             new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    assert flattener instanceof JuniperFlattener;
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
     String flatText = flattener.getFlattenedConfigurationText();
     // Flattening the configs does not lose either of the filter lines in the input.
     assertThat(
@@ -118,7 +119,7 @@ public class JuniperFlattenerTest {
             new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    assert flattener instanceof JuniperFlattener;
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
 
     /*
@@ -165,7 +166,7 @@ public class JuniperFlattenerTest {
             new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    assert flattener instanceof JuniperFlattener;
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
     String flatText = flattener.getFlattenedConfigurationText();
     assertThat(
         flatText,
