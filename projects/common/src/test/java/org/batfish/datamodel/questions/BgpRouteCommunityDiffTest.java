@@ -2,6 +2,11 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -59,7 +64,7 @@ public class BgpRouteCommunityDiffTest {
     BgpRouteCommunityDiff comms2 = new BgpRouteCommunityDiff(oldComms2, newComms2);
 
     // These community diffs are delta equal
-    assert (comms1.equals(comms2));
+    assertThat(comms1, equalTo(comms2));
     // but not equal according to BgpRouteDiff
     assertNotEquals(comms1.toRouteDiff(), comms2.toRouteDiff());
   }
@@ -86,8 +91,8 @@ public class BgpRouteCommunityDiffTest {
     SortedSet<Community> newComms4 = makeCommSet();
     BgpRouteCommunityDiff comms4 = new BgpRouteCommunityDiff(oldComms4, newComms4);
 
-    assert comms1.compareTo(comms2) == 0;
-    assert comms1.compareTo(comms3) < 0;
-    assert comms1.compareTo(comms4) > 0;
+    assertThat(comms1, comparesEqualTo(comms2));
+    assertThat(comms1, lessThan(comms3));
+    assertThat(comms1, greaterThan(comms4));
   }
 }

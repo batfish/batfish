@@ -913,13 +913,13 @@ public class RoutesAnswererTest {
     AnswerElement el =
         new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
 
-    assert el.getSummary() != null;
+    assertThat(el.getSummary(), notNullValue());
     assertThat(el.getSummary().getNumResults(), equalTo(1));
 
     // no results for empty ribs
     batfish = new MockBatfish(nc, MockDataPlane.builder().setRibs(ImmutableTable.of()).build());
     el = new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
-    assert el.getSummary() != null;
+    assertThat(el.getSummary(), notNullValue());
     assertThat(el.getSummary().getNumResults(), equalTo(0));
   }
 

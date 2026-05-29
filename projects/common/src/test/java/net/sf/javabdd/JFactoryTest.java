@@ -1,5 +1,7 @@
 package net.sf.javabdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.bdd.BDDInteger;
@@ -39,7 +41,7 @@ public class JFactoryTest {
 
     long tMultiOr = System.currentTimeMillis();
     BDD resMultiOr = factory.orAll(bdds);
-    assert resMultiOr.isOne();
+    assertThat(resMultiOr, isOne());
     tMultiOr = System.currentTimeMillis() - tMultiOr;
     System.out.println(String.format("MultOr: %dms", tMultiOr));
 

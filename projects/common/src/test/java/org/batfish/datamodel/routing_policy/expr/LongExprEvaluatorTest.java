@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,6 +27,6 @@ public final class LongExprEvaluatorTest {
   @Test
   public void testVisitVarLong() {
     // TODO: support integer variable evaluation
-    assert false;
+    fail();
   }
 }

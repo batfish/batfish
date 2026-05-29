@@ -2,10 +2,10 @@ package org.batfish.common;
 
 import com.google.errorprone.annotations.FormatMethod;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -190,8 +190,8 @@ public final class BatfishLogger {
       @SuppressWarnings("PMD.CloseResource") // PMD cannot link to much later closing.
       PrintStream filePrintStream = null;
       try {
-        filePrintStream = new PrintStream(_logFile, "UTF-8");
-      } catch (FileNotFoundException | UnsupportedEncodingException e) {
+        filePrintStream = new PrintStream(_logFile, StandardCharsets.UTF_8);
+      } catch (IOException e) {
         throw new BatfishException("Could not create logfile", e);
       }
       _ps = filePrintStream;

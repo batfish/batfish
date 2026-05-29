@@ -38,8 +38,8 @@
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
     "jakarta.xml.bind:jakarta.xml.bind-api": 952929903,
     "junit:junit": -744267592,
-    "net.sourceforge.pmd:pmd-cli": 1273507201,
-    "net.sourceforge.pmd:pmd-java": -2117826691,
+    "net.sourceforge.pmd:pmd-cli": -523444158,
+    "net.sourceforge.pmd:pmd-java": 380189246,
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": 1132363499,
@@ -176,14 +176,14 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": -560158028,
     "net.sf.saxon:Saxon-HE:jar:sources": 134942547,
-    "net.sourceforge.pmd:pmd-cli": -136141904,
-    "net.sourceforge.pmd:pmd-cli:jar:sources": -1024973860,
-    "net.sourceforge.pmd:pmd-core": 2146418280,
-    "net.sourceforge.pmd:pmd-core:jar:sources": 1682128822,
+    "net.sourceforge.pmd:pmd-cli": -855073850,
+    "net.sourceforge.pmd:pmd-cli:jar:sources": 1442646810,
+    "net.sourceforge.pmd:pmd-core": 636157863,
+    "net.sourceforge.pmd:pmd-core:jar:sources": -738511708,
     "net.sourceforge.pmd:pmd-designer": -1899777465,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 1263048820,
-    "net.sourceforge.pmd:pmd-java": 1045694834,
-    "net.sourceforge.pmd:pmd-java:jar:sources": -965017430,
+    "net.sourceforge.pmd:pmd-java": -1877018907,
+    "net.sourceforge.pmd:pmd-java:jar:sources": 2045124175,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
     "org.antlr:antlr4:jar:complete": -609884220,
@@ -210,8 +210,8 @@
     "org.apfloat:apfloat:jar:sources": -1889003084,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
-    "org.checkerframework:checker-qual": -1868243245,
-    "org.checkerframework:checker-qual:jar:sources": -1826555423,
+    "org.checkerframework:checker-qual": -805622774,
+    "org.checkerframework:checker-qual:jar:sources": 1303991860,
     "org.codehaus.jettison:jettison": 1666952040,
     "org.codehaus.jettison:jettison:jar:sources": 205196847,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
@@ -292,17 +292,17 @@
     "org.objenesis:objenesis:jar:sources": 1586171112,
     "org.opentest4j:opentest4j": -1711174392,
     "org.opentest4j:opentest4j:jar:sources": -1740624156,
-    "org.ow2.asm:asm": 1614653533,
-    "org.ow2.asm:asm-analysis": 1686184058,
+    "org.ow2.asm:asm": -153858314,
+    "org.ow2.asm:asm-analysis": 820111867,
     "org.ow2.asm:asm-analysis:jar:sources": -1263606580,
-    "org.ow2.asm:asm-tree": 1537409847,
+    "org.ow2.asm:asm-tree": 1769195083,
     "org.ow2.asm:asm-tree:jar:sources": 1806688935,
-    "org.ow2.asm:asm-util": 692725521,
+    "org.ow2.asm:asm-util": 635814825,
     "org.ow2.asm:asm-util:jar:sources": -358803464,
-    "org.ow2.asm:asm:jar:sources": 340034775,
+    "org.ow2.asm:asm:jar:sources": 1372783843,
     "org.parboiled:parboiled-core": 1851660128,
     "org.parboiled:parboiled-core:jar:sources": 200753406,
-    "org.parboiled:parboiled-java": -1091846308,
+    "org.parboiled:parboiled-java": 967132897,
     "org.parboiled:parboiled-java:jar:sources": -1922688500,
     "org.pcollections:pcollections": -311488717,
     "org.pcollections:pcollections:jar:sources": 238016638,
@@ -699,17 +699,17 @@
     },
     "net.sourceforge.pmd:pmd-cli": {
       "shasums": {
-        "jar": "7872591ca3a155477e3ab6f79b24075b3340530e8be81583ffd808a08a0e10c7",
-        "sources": "c45fe0bf57ae89924152644935f80c1471e49370815c5b00e7da5f5f27e9537c"
+        "jar": "fd304a3a0a6bbc386706d07bc8bcce16211a10bd76c8a51a440a8fc33ff546d3",
+        "sources": "f4e7ac2850ec73f2f1d7eb60da3fcae4ba22b4adbd75303dc160ebc4704db609"
       },
-      "version": "7.24.0"
+      "version": "7.25.0"
     },
     "net.sourceforge.pmd:pmd-core": {
       "shasums": {
-        "jar": "09dce6e1ada39f0ce281465dbe5036be35ecf73b9a2125502e991abc518c275d",
-        "sources": "7f32a6ad8a39bbe394186685c6f3b7c061099f3fde519a87c38fca3daffb3d9d"
+        "jar": "eb11a97f4bf92a22e7e59151f4d0fb5231424eea22fec7cf525c3ad502854277",
+        "sources": "6b61592a60c9c3292b82702e9b5d87be810d4406b262d053a85367b6dd085194"
       },
-      "version": "7.24.0"
+      "version": "7.25.0"
     },
     "net.sourceforge.pmd:pmd-designer": {
       "shasums": {
@@ -720,10 +720,10 @@
     },
     "net.sourceforge.pmd:pmd-java": {
       "shasums": {
-        "jar": "050c0f2cdffae74b325cf16deafe6fe61a60ce50f9ea0dd48f601b43dc3fd9ca",
-        "sources": "7789b37bbc4c5619aef247c31b90a1c1e9a98ef4e593b3f95f871e92eb4d841a"
+        "jar": "2adbdab917049fcc3809bf1ff3bf136d7ba00a30b751d1b1f2e2085ad2fa8b6e",
+        "sources": "f2e5e27d0d479da5209225c375b5e22e3c5265500bac887d9357633f3a7c8232"
       },
-      "version": "7.24.0"
+      "version": "7.25.0"
     },
     "org.antlr:antlr4": {
       "shasums": {
@@ -818,10 +818,10 @@
     },
     "org.checkerframework:checker-qual": {
       "shasums": {
-        "jar": "a06f08bc5dfa51d751cc5bd2453443a99a14825d57bd3c576de2648d2c99fcb8",
-        "sources": "2c205702e5ee27b2f45f06fd9dfa5a05c6d3b7192e0c280cd6869d756601d70e"
+        "jar": "a7e08a5400f6e1d97818ed01a8624473fee90b0ded941a44d190f1210c081790",
+        "sources": "25fe5d48d0b230b4c88cce90379fd3d21d6186df98c44db3d315938971a30774"
       },
-      "version": "4.0.0"
+      "version": "4.1.0"
     },
     "org.codehaus.jettison:jettison": {
       "shasums": {
@@ -1105,10 +1105,10 @@
     },
     "org.ow2.asm:asm": {
       "shasums": {
-        "jar": "6f3828a215c920059a5efa2fb55c233d6c54ec5cadca99ce1b1bdd10077c7ddd",
-        "sources": "057e39aa1800b25bc8944846a376509990f49b7fe1e07192b1d6e48e1a780eb2"
+        "jar": "ed825d10ab1399c8c0cb669e688cf0c8c82629b4c8399b58352b68e92ca10fcb",
+        "sources": "cb29bf42b4008972c566944d377192aa1b2d90275b9cfa9a7fa86de669fde11c"
       },
-      "version": "9.9.1"
+      "version": "9.10.1"
     },
     "org.ow2.asm:asm-analysis": {
       "shasums": {

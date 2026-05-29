@@ -969,7 +969,7 @@ public final class FileBasedStorageTest {
         _storage.listSnapshotInputObjectKeys(
             new NetworkSnapshot(new NetworkId("n1"), new SnapshotId("s1")))) {
       // silence warning; shouldn't be hit because of expected exception
-      assert keys != null;
+      assertThat(keys, notNullValue());
     }
   }
 

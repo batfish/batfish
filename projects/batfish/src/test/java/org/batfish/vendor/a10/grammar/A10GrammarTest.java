@@ -78,6 +78,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
@@ -1994,7 +1995,7 @@ public class A10GrammarTest {
       Trace trace = Iterables.getOnlyElement(traces.get(matchingVsFlow));
       assertThat(trace, hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET));
       List<Step<?>> steps = getStepsInSingleHopTrace(trace);
-      assert steps.stream().anyMatch(TransformationStep.class::isInstance);
+      assertThat(steps, hasItem(instanceOf(TransformationStep.class)));
       assertThat(
           getTransformedFlow(steps),
           equalTo(
@@ -2011,21 +2012,21 @@ public class A10GrammarTest {
       Trace trace = Iterables.getOnlyElement(traces.get(pingToVipFlow));
       assertThat(trace, hasDisposition(FlowDisposition.ACCEPTED));
       List<Step<?>> steps = getStepsInSingleHopTrace(trace);
-      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+      assertThat(steps, not(hasItem(instanceOf(TransformationStep.class))));
     }
     {
       // Other traffic to VIP of an enabled virtual-server is dropped
       Trace trace = Iterables.getOnlyElement(traces.get(nonPingToVipFlow));
       assertThat(trace, hasDisposition(FlowDisposition.DENIED_IN));
       List<Step<?>> steps = getStepsInSingleHopTrace(trace);
-      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+      assertThat(steps, not(hasItem(instanceOf(TransformationStep.class))));
     }
     {
       // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
       Trace trace = Iterables.getOnlyElement(traces.get(matchingDisabledVsFlow));
       assertThat(trace, hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET));
       List<Step<?>> steps = getStepsInSingleHopTrace(trace);
-      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+      assertThat(steps, not(hasItem(instanceOf(TransformationStep.class))));
     }
   }
 
@@ -2035,7 +2036,7 @@ public class A10GrammarTest {
    */
   private static List<Step<?>> getStepsInSingleHopTrace(Trace trace) {
     List<Hop> hops = trace.getHops();
-    assert hops.size() == 1;
+    assertThat(hops, iterableWithSize(1));
     return hops.get(0).getSteps();
   }
 
@@ -2049,7 +2050,7 @@ public class A10GrammarTest {
             .filter(s -> s instanceof ExitOutputIfaceStep)
             .map(ExitOutputIfaceStep.class::cast)
             .collect(ImmutableList.toImmutableList());
-    assert exitIfaceSteps.size() == 1;
+    assertThat(exitIfaceSteps, iterableWithSize(1));
     return exitIfaceSteps.get(0).getDetail().getTransformedFlow();
   }
 

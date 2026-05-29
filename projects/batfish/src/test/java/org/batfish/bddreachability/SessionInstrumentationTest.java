@@ -6,11 +6,13 @@ import static org.batfish.bddreachability.LastHopOutgoingInterfaceManager.NO_LAS
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -152,7 +154,7 @@ public final class SessionInstrumentationTest {
       // Setup source tracking for firewall
       _fwSrcMgr = BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(FW_I1, FAKE_IFACE));
       _invalidSrc = _fwSrcMgr.isValidValue().not();
-      assert !_invalidSrc.isZero();
+      assertThat(_invalidSrc, not(isZero()));
 
       _source1SrcMgr =
           BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(SOURCE1_IFACE, FAKE_IFACE));

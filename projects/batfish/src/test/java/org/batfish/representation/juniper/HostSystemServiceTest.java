@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -26,7 +27,7 @@ public class HostSystemServiceTest {
   public void testGetMatchExpr_bgp() {
     HostSystemService from = HostSystemService.DNS;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertTrue(matchExpr.isPresent());
 
     assertThat(
         matchExpr.get(),
@@ -43,7 +44,7 @@ public class HostSystemServiceTest {
   public void testGetMatchExpr_all_traceElement() {
     HostSystemService from = HostSystemService.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
-    assert matchExpr.isPresent();
+    assertTrue(matchExpr.isPresent());
 
     TraceElement expectedTraceElement = from.getTraceElement();
     assertThat(matchExpr.get().getTraceElement(), equalTo(expectedTraceElement));
