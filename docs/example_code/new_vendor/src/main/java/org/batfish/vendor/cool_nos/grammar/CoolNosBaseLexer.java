@@ -1,4 +1,4 @@
-package org.batfish.grammar.cool_nos.parsing;
+package org.batfish.vendor.cool_nos.grammar;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;

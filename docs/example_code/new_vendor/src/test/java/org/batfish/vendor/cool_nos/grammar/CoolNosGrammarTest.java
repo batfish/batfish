@@ -1,4 +1,4 @@
-package org.batfish.grammar.cool_nos;
+package org.batfish.vendor.cool_nos.grammar;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
@@ -21,11 +21,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
-import org.batfish.vendor.cool_nos.CoolNosConfiguration;
-import org.batfish.vendor.cool_nos.NextHopDiscard;
-import org.batfish.vendor.cool_nos.NextHopGateway;
-import org.batfish.vendor.cool_nos.NextHopInterface;
-import org.batfish.vendor.cool_nos.StaticRoute;
+import org.batfish.vendor.cool_nos.representation.CoolNosConfiguration;
+import org.batfish.vendor.cool_nos.representation.NextHopDiscard;
+import org.batfish.vendor.cool_nos.representation.NextHopGateway;
+import org.batfish.vendor.cool_nos.representation.NextHopInterface;
+import org.batfish.vendor.cool_nos.representation.StaticRoute;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -140,5 +140,6 @@ public final class CoolNosGrammarTest {
     return vendorConfiguration;
   }
 
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cool_nos/testconfigs/";
+  private static final String TESTCONFIGS_PREFIX =
+      "org/batfish/vendor/cool_nos/grammar/testconfigs/";
 }

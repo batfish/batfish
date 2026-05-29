@@ -1,4 +1,4 @@
-package org.batfish.vendor.cool_nos;
+package org.batfish.vendor.cool_nos.representation;
 
 /** Visitor of {@link NextHop} that returns a generic value of type {@code T}. */
 public interface NextHopVisitor<T> {

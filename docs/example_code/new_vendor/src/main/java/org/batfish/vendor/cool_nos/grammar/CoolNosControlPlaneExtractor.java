@@ -1,4 +1,4 @@
-package org.batfish.grammar.cool_nos;
+package org.batfish.vendor.cool_nos.grammar;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -10,10 +10,10 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.cool_nos.CoolNosParser.Cool_nos_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.vendor.cool_nos.CoolNosConfiguration;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Cool_nos_configurationContext;
+import org.batfish.vendor.cool_nos.representation.CoolNosConfiguration;
 
 /** Extracts data from Cool NOS parse tree into a {@link CoolNosConfiguration}. */
 public final class CoolNosControlPlaneExtractor implements ControlPlaneExtractor {

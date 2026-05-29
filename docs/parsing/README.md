@@ -52,28 +52,26 @@ purpose of this section, we will assume you are writing a parser for a format ca
 example [files](example_src) for this parser. In later sections we will explain how to get Batfish
 to use this parser on files in the "Cool NOS" format.
 
-- [`CoolNosLexer.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4)
+- [`CoolNosLexer.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNosLexer.g4)
   - lexer grammar file
-- [`CoolNosParser.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
+- [`CoolNosParser.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNosParser.g4)
   - main parser grammar file
-- [`CoolNos_common.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
+- [`CoolNos_common.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_common.g4)
   - subordinate parser grammar file containing rules referenced by the main and other subordinate
     parser grammars
-- [`CoolNos_static_routes.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
+- [`CoolNos_static_routes.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_static_routes.g4)
   - subordinate parser grammar file containing rules for defining static routes
-- [`CoolNos_system.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
+- [`CoolNos_system.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_system.g4)
   - subordinate parser grammar file containing rules for configuring system-level properties
-- [`CoolNosBaseLexer.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/CoolNosBaseLexer.java)
+- [`CoolNosBaseLexer.java`](../example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/grammar/CoolNosBaseLexer.java)
   - the base class for the generated lexer java class
-- [`CoolNosCombinedParser.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
+- [`CoolNosCombinedParser.java`](../example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/grammar/CoolNosCombinedParser.java)
   - Java class that wraps the functionality of the generated parser and lexer classes
-- [Java base lexer](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
-  - bazel package defining a library of base parser/lexer files which the generated
-    parser/lexer java classes extend
-- [`antlr4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/BUILD.bazel)
+- [`antlr4`](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/BUILD.bazel)
   - bazel package defining a library of generated ANTLR4 java classes
-- [Java combined parser, extractor](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
-  - bazel package defining a library of the combined parser and extractor classes
+- [Java grammar](../example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/grammar/BUILD.bazel)
+  - bazel package defining the base lexer library (which the generated lexer extends) and the
+    library of combined parser and extractor classes
 
 Read the rest of this section to learn about:
 
@@ -84,7 +82,7 @@ Read the rest of this section to learn about:
 ### Lexer
 
 The excerpts in this section are from the Cool NOS example lexer file, available
-[here](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4).
+[here](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNosLexer.g4).
 
 The job of the lexer is to convert the text of a DSL into a stream of tokens to be consumed by the
 parser. Each token may correspond to fixed text like a DSL keyword or piece of punctuation; or to
@@ -127,7 +125,7 @@ The lexer options should looks like the following:
 
 ```
 options {
-  superClass = 'org.batfish.grammar.cool_nos.parsing.CoolNosBaseLexer';
+  superClass = 'CoolNosBaseLexer';
 }
 ```
 
@@ -481,10 +479,10 @@ Note:
 
 The excerpts in this section are from the Cool NOS example parser files:
 
-- [CoolNosParser.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
-- [CoolNos_common.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
-- [CoolNos_static_routes.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
-- [CoolNos_system.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
+- [CoolNosParser.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNosParser.g4)
+- [CoolNos_common.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_common.g4)
+- [CoolNos_static_routes.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_static_routes.g4)
+- [CoolNos_system.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/vendor/cool_nos/grammar/CoolNos_system.g4)
 
 The job of a parser to is transform a stream of tokens produced by the lexer into a parse tree, to
 be acted on by the [extractor](../extraction/README.md).
@@ -881,7 +879,8 @@ To add a new vendor using this pattern, follow the structure of the A10 vendor:
 
 For tests, follow the pattern in:
 
-- [`test/java/org/batfish/vendor/a10/BUILD.bazel`](../../projects/batfish/src/test/java/org/batfish/vendor/a10/BUILD.bazel)
+- [`test/java/org/batfish/vendor/a10/grammar/BUILD.bazel`](../../projects/batfish/src/test/java/org/batfish/vendor/a10/grammar/BUILD.bazel)
+- [`test/java/org/batfish/vendor/a10/representation/BUILD.bazel`](../../projects/batfish/src/test/java/org/batfish/vendor/a10/representation/BUILD.bazel)
 
 #### Legacy flat pattern (existing vendors only)
 
@@ -933,7 +932,7 @@ parser grammar's start rule.
 It also dictates what recovery to mechanism Batfish should use in the face of errors parsing the
 input text.
 
-See [CoolNosCominbedParser.java](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
+See [CoolNosCominbedParser.java](../example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos/grammar/CoolNosCombinedParser.java)
 
 ### Adding a new DSL parser to Batfish
 
@@ -999,24 +998,29 @@ Parser tests in Batfish verify that configuration files are correctly parsed, ex
 
 #### Test Organization
 
-Parser tests are organized by vendor in `projects/batfish/src/test/java/org/batfish/grammar/{vendor_name}/`:
+For new vendors, parser tests are organized under the vendor-scoped path
+`projects/batfish/src/test/java/org/batfish/vendor/{vendor_name}/grammar/`:
 
 ```
-projects/batfish/src/test/java/org/batfish/grammar/
+projects/batfish/src/test/java/org/batfish/vendor/
+├── a10/
+│   └── grammar/
+│       └── A10GrammarTest.java
 ├── arista/
-│   └── AristaGrammarTest.java
-├── cisco/
-│   └── CiscoGrammarTest.java
+│   └── grammar/
+│       └── AristaGrammarTest.java
 ├── cisco_nxos/
-│   └── CiscoNxosGrammarTest.java
-├── juniper/
-│   └── JuniperGrammarTest.java
+│   └── grammar/
+│       └── CiscoNxosGrammarTest.java
 └── ...
 ```
 
+Older vendors keep their tests under the legacy flat path
+`projects/batfish/src/test/java/org/batfish/grammar/{vendor_name}/` (e.g. `cisco/`, `juniper/`).
+
 Test configurations are stored in corresponding resource directories:
 ```
-projects/batfish/src/test/resources/org/batfish/grammar/{vendor_name}/testconfigs/
+projects/batfish/src/test/resources/org/batfish/vendor/{vendor_name}/grammar/testconfigs/
 ├── config1/
 │   ├── config.cfg
 │   └── snapshot
@@ -1034,7 +1038,7 @@ A typical parser test follows this pattern:
 public class VendorGrammarTest {
 
   @BatfishTestConfig(name = "test-config-name")
-  private static final String TESTCONFIGS = "org/batfish/grammar/{vendor}/testconfigs";
+  private static final String TESTCONFIGS = "org/batfish/vendor/{vendor}/grammar/testconfigs";
 
   @Test
   public void testConfigurationParsing() {
@@ -1078,18 +1082,18 @@ testconfigs/
 
 **Run a specific test**:
 ```bash
-bazel test //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/{vendor}/grammar:tests
 ```
 
 **Run a specific test method**:
 ```bash
 bazel test --test_filter={VendorName}GrammarTest#testSpecificMethod \
-    //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+    //projects/batfish/src/test/java/org/batfish/vendor/{vendor}/grammar:tests
 ```
 
 **Run all parser tests**:
 ```bash
-bazel test //projects/batfish/src/test/java/org/batfish/grammar/...
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/...
 ```
 
 #### Test Snapshots

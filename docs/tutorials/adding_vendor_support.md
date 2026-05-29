@@ -76,11 +76,16 @@ router bgp 65001
 ```bash
 # Create vendor directory using vendor-scoped pattern
 mkdir -p projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar
-mkdir -p projects/batfish/src/main/java/org/batfish/vendor/acme
-mkdir -p projects/batfish/src/test/java/org/batfish/vendor/acme
+mkdir -p projects/batfish/src/main/java/org/batfish/vendor/acme/grammar
+mkdir -p projects/batfish/src/main/java/org/batfish/vendor/acme/representation
+mkdir -p projects/batfish/src/test/java/org/batfish/vendor/acme/grammar
 ```
 
-**Note**: This uses the vendor-scoped pattern recommended for new vendors. See [Vendor Code Organization](../parsing/README.md#vendor-code-organization) in the parsing documentation.
+**Note**: This uses the vendor-scoped pattern recommended for new vendors: all code lives under
+`org.batfish.vendor.acme`, with the grammar, parser, and extractor in the `grammar` subpackage and
+the vendor-specific data model in the `representation` subpackage. See
+[Vendor Code Organization](../parsing/README.md#vendor-code-organization) in the parsing
+documentation.
 
 ---
 
@@ -190,14 +195,12 @@ unrecognized_stmt_null:
 
 ## Step 5: Create Base Classes
 
-Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeCombinedParser.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/grammar/AcmeCombinedParser.java`
 
 ```java
-package org.batfish.vendor.acme;
+package org.batfish.vendor.acme.grammar;
 
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.vendor.acme.grammar.AcmeParser;
-import org.batfish.vendor.acme.grammar.AcmeLexer;
 
 public class AcmeCombinedParser
     extends BatfishCombinedParser<AcmeParser, AcmeLexer> {
@@ -208,14 +211,13 @@ public class AcmeCombinedParser
 }
 ```
 
-Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeBatfishLexer.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/grammar/AcmeBatfishLexer.java`
 
 ```java
-package org.batfish.vendor.acme;
+package org.batfish.vendor.acme.grammar;
 
 import org.antlr.v4.runtime.CharStream;
 import org.batfish.grammar.BatfishLexer;
-import org.batfish.vendor.acme.grammar.AcmeLexer;
 
 public class AcmeBatfishLexer extends BatfishLexer {
 
@@ -229,10 +231,10 @@ public class AcmeBatfishLexer extends BatfishLexer {
 
 ## Step 6: Create the Extractor
 
-Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeExtractor.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/grammar/AcmeExtractor.java`
 
 ```java
-package org.batfish.vendor.acme;
+package org.batfish.vendor.acme.grammar;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -357,16 +359,17 @@ java_library(
 )
 ```
 
-Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/BUILD.bazel`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/grammar/BUILD.bazel`
 
 ```python
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "acme_parser",
+    name = "grammar",
     srcs = glob(["*.java"]),
     deps = [
-        ":acme_grammar",
+        "//projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar:acme_grammar",
+        "//projects/batfish/src/main/java/org/batfish/vendor/acme/representation",
         "//projects/common/src/main/java/org/batfish/common",
         "//projects/batfish/src/main/java/org/batfish/datamodel",
         "//third_party/antlr:antlr-runtime",
@@ -375,14 +378,18 @@ java_library(
 )
 ```
 
+Place the vendor-specific data model classes (referenced by the extractor) under
+`projects/batfish/src/main/java/org/batfish/vendor/acme/representation/` with their own
+`BUILD.bazel` defining a `representation` library.
+
 ---
 
 ## Step 9: Write Tests
 
-Create: `projects/batfish/src/test/java/org/batfish/vendor/acme/AcmeGrammarTest.java`
+Create: `projects/batfish/src/test/java/org/batfish/vendor/acme/grammar/AcmeGrammarTest.java`
 
 ```java
-package org.batfish.vendor.acme;
+package org.batfish.vendor.acme.grammar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -423,7 +430,7 @@ public class AcmeGrammarTest {
 Run tests:
 
 ```bash
-bazel test //projects/batfish/src/test/java/org/batfish/vendor/acme:AcmeGrammarTest
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/acme/grammar:tests
 ```
 
 ---
@@ -604,10 +611,12 @@ projects/batfish/
 │   ├── AcmeLexer.g4
 │   └── AcmeParser.g4
 ├── src/main/java/org/batfish/vendor/acme/
-│   ├── AcmeExtractor.java
-│   ├── AcmeBatfishLexer.java
-│   └── AcmeCombinedParser.java
-└── src/test/java/org/batfish/vendor/acme/
+│   ├── grammar/
+│   │   ├── AcmeExtractor.java
+│   │   ├── AcmeBatfishLexer.java
+│   │   └── AcmeCombinedParser.java
+│   └── representation/                # Vendor-specific data model
+└── src/test/java/org/batfish/vendor/acme/grammar/
     └── AcmeGrammarTest.java
 ```
 

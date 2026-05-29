@@ -1,4 +1,4 @@
-package org.batfish.grammar.cool_nos;
+package org.batfish.vendor.cool_nos.grammar;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -18,31 +18,31 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.cool_nos.CoolNosParser.Host_nameContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Interface_nameContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_addressContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_prefixContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.S_lineContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ss_addContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ss_deleteContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ss_disableContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ss_enableContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ss_modifyContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_discardContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_gatewayContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_interfaceContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Ssy_host_nameContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.StringContext;
-import org.batfish.grammar.cool_nos.CoolNosParser.Uint16Context;
-import org.batfish.grammar.cool_nos.CoolNosParser.Uint8Context;
-import org.batfish.grammar.cool_nos.CoolNosParser.Vlan_numberContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.vendor.cool_nos.CoolNosConfiguration;
-import org.batfish.vendor.cool_nos.NextHop;
-import org.batfish.vendor.cool_nos.NextHopDiscard;
-import org.batfish.vendor.cool_nos.NextHopGateway;
-import org.batfish.vendor.cool_nos.NextHopInterface;
-import org.batfish.vendor.cool_nos.StaticRoute;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Host_nameContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Interface_nameContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ipv4_addressContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ipv4_prefixContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.S_lineContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ss_addContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ss_deleteContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ss_disableContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ss_enableContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ss_modifyContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ssa_discardContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ssa_gatewayContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ssa_interfaceContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Ssy_host_nameContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.StringContext;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Uint16Context;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Uint8Context;
+import org.batfish.vendor.cool_nos.grammar.CoolNosParser.Vlan_numberContext;
+import org.batfish.vendor.cool_nos.representation.CoolNosConfiguration;
+import org.batfish.vendor.cool_nos.representation.NextHop;
+import org.batfish.vendor.cool_nos.representation.NextHopDiscard;
+import org.batfish.vendor.cool_nos.representation.NextHopGateway;
+import org.batfish.vendor.cool_nos.representation.NextHopInterface;
+import org.batfish.vendor.cool_nos.representation.StaticRoute;
 
 @ParametersAreNonnullByDefault
 public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener

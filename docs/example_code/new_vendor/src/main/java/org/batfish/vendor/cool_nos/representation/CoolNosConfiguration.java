@@ -1,6 +1,6 @@
-package org.batfish.vendor.cool_nos;
+package org.batfish.vendor.cool_nos.representation;
 
-import static org.batfish.vendor.cool_nos.CoolNosConversions.convertStaticRoutes;
+import static org.batfish.vendor.cool_nos.representation.CoolNosConversions.convertStaticRoutes;
 
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
