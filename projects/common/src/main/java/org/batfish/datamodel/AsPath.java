@@ -4,10 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Predicates;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -53,10 +52,7 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (24 bytes seems smallest possible entry (list(set(long)), would be 1.5 MiB total).
   private static final LoadingCache<ImmutableList<AsSet>, AsPath> CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 16)
-          .build(CacheLoader.from(AsPath::new));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(AsPath::new);
 
   private AsPath(ImmutableList<AsSet> asSets) {
     _asSets = asSets;
@@ -83,7 +79,7 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
       return empty();
     }
     ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
-    return CACHE.getUnchecked(immutableValue);
+    return CACHE.get(immutableValue);
   }
 
   /**

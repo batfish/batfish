@@ -4,9 +4,8 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.ObjectStreamException;
@@ -41,10 +40,8 @@ public final class CommunitySet implements Serializable {
       return empty();
     }
     if (communities instanceof ImmutableSet) {
-      // Skip a cache operation if the input is immutable.
-      @SuppressWarnings("unchecked") // safe since you cannot insert into ImmutableSet
-      ImmutableSet<Community> immutableKey = (ImmutableSet<Community>) communities;
-      return CACHE.getUnchecked(immutableKey);
+      // Skip a copy if the input is already immutable.
+      return CACHE.get(communities);
     }
     // Skip a copy if a mutable copy of the key is already present.
     CommunitySet ret = CACHE.getIfPresent(communities);
@@ -135,16 +132,17 @@ public final class CommunitySet implements Serializable {
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^24: Just some upper bound on cache size, well less than GiB.
-  private static final LoadingCache<Set<Community>, CommunitySet> CACHE =
-      CacheBuilder.newBuilder()
+  private static final LoadingCache<Set<? extends Community>, CommunitySet> CACHE =
+      Caffeine.newBuilder()
           .softValues()
           .maximumSize(1 << 24)
           .build(
-              CacheLoader.from(
-                  set -> {
-                    assert set instanceof ImmutableSet;
-                    return new CommunitySet((ImmutableSet<Community>) set);
-                  }));
+              set -> {
+                assert set instanceof ImmutableSet;
+                @SuppressWarnings("unchecked") // only ImmutableSet keys are ever inserted
+                ImmutableSet<Community> immutableSet = (ImmutableSet<Community>) set;
+                return new CommunitySet(immutableSet);
+              });
 
   /** Re-intern after deserialization. */
   @Serial

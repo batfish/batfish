@@ -4,10 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.util.Objects;
@@ -30,7 +29,7 @@ public final class NextHopInterface implements NextHop {
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (long), would be 8 MiB total).
   private static final LoadingCache<NextHopInterface, NextHopInterface> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   /** The interface name to which the traffic should be routed */
   @JsonProperty(PROP_INTERFACE)
@@ -52,7 +51,7 @@ public final class NextHopInterface implements NextHop {
    *     Interface#NULL_INTERFACE_NAME}
    */
   public static @Nonnull NextHopInterface of(String interfaceName) {
-    return CACHE.getUnchecked(new NextHopInterface(interfaceName, null));
+    return CACHE.get(new NextHopInterface(interfaceName, null));
   }
 
   /**
@@ -64,7 +63,7 @@ public final class NextHopInterface implements NextHop {
    *     Interface#NULL_INTERFACE_NAME} or the IP is invalid, e.g., {@link Ip#AUTO}
    */
   public static @Nonnull NextHopInterface of(String interfaceName, Ip ip) {
-    return CACHE.getUnchecked(new NextHopInterface(interfaceName, ip));
+    return CACHE.get(new NextHopInterface(interfaceName, ip));
   }
 
   @Override
@@ -132,6 +131,6 @@ public final class NextHopInterface implements NextHop {
   /** Re-intern after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(this);
+    return CACHE.get(this);
   }
 }

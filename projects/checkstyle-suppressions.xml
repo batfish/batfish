@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+  <!--
+    IpSpaceToBDD relies on Guava cache behavior that Caffeine does not support: a loader that
+    recurses into the same cache, and a synchronous removalListener that frees evicted BDDs on
+    the calling thread. See the comment on the class. Exempt it from the com.google.common.cache
+    import ban.
+  -->
+  <suppress checks="IllegalImport"
+            files="org[\\/]batfish[\\/]common[\\/]bdd[\\/]IpSpaceToBDD\.java"/>
+</suppressions>

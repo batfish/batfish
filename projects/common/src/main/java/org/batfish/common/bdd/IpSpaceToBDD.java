@@ -42,6 +42,11 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * <p>For all implementations, it must be the case that all returned {@link BDD} objects are owned
  * by the caller and may be freed.
  */
+// Guava's cache is used here rather than Caffeine because this cache relies on behavior Caffeine
+// does not support: a loader that recurses into the same cache (Caffeine's get is built on
+// ConcurrentHashMap.computeIfAbsent, which forbids recursive updates) and a synchronous
+// removalListener that frees evicted BDDs on the calling thread (BDDFactory is not threadsafe).
+// The Guava cache imports are exempted from the IllegalImport ban in checkstyle-suppressions.xml.
 public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final BDDInteger _bddInteger;

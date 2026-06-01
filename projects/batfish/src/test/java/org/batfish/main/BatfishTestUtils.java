@@ -9,8 +9,8 @@ import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_SONIC_CONFIGS_DIR;
 import static org.batfish.common.util.Resources.readResourceBytes;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -63,7 +63,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> makeTestrigCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(5).build();
+    return Caffeine.newBuilder().softValues().maximumSize(5).build();
   }
 
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> makeEnvBgpCache() {
@@ -71,12 +71,12 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
+    return Caffeine.newBuilder().softValues().maximumSize(2).build();
   }
 
   private static Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
       makeVendorConfigurationCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
+    return Caffeine.newBuilder().softValues().maximumSize(2).build();
   }
 
   private static void setNextTestNetworkSnapshot(Settings settings) {
