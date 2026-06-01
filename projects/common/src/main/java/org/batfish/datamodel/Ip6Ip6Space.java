@@ -2,10 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import javax.annotation.Nonnull;
@@ -16,17 +15,14 @@ public class Ip6Ip6Space extends Ip6Space {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   private static final LoadingCache<Ip6, Ip6Ip6Space> CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 20)
-          .build(CacheLoader.from(Ip6Ip6Space::new));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(Ip6Ip6Space::new);
   private static final String PROP_IP6 = "ip6";
 
   private final Ip6 _ip6;
 
   @JsonCreator
   static Ip6Ip6Space create(@JsonProperty(PROP_IP6) Ip6 ip6) {
-    return CACHE.getUnchecked(ip6);
+    return CACHE.get(ip6);
   }
 
   private Ip6Ip6Space(Ip6 ip6) {
@@ -66,6 +62,6 @@ public class Ip6Ip6Space extends Ip6Space {
   /** Cache after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(_ip6);
+    return CACHE.get(_ip6);
   }
 }

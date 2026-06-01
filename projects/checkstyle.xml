@@ -37,6 +37,11 @@
   <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
   <module name="SuppressWarningsFilter"/>
 
+  <!-- File-scoped suppressions (e.g. exempting specific files from the com.google.common.cache ban) -->
+  <module name="SuppressionFilter">
+    <property name="file" value="projects/checkstyle-suppressions.xml"/>
+  </module>
+
   <module name="TreeWalker">
     <!-- Make the @SuppressWarnings annotations available to Checkstyle -->
     <module name="SuppressWarningsHolder"/>
@@ -44,7 +49,7 @@
     <module name="IllegalImport">
       <property name="illegalClasses"
                 value="com.google.common.io.Files,com.google.common.base.Objects,org.hamcrest.CoreMatchers,org.hamcrest.MatcherAssert,com.fasterxml.jackson.annotation.JsonPropertyDescription,com.google.common.collect.Sets.SetView"/>
-      <property name="illegalPkgs" value="sun.reflect,org.checkerframework.checker.nullness.qual,org.glassfish.jersey.internal"/>
+      <property name="illegalPkgs" value="sun.reflect,org.checkerframework.checker.nullness.qual,org.glassfish.jersey.internal,com.google.common.cache"/>
     </module>
 
     <!-- Repeated this module with regex filter for classes -->

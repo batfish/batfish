@@ -5,9 +5,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.io.Serializable;
@@ -23,7 +22,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (16 bytes seems smallest possible entry (long), would be 16 MiB total).
   private static final LoadingCache<IpWildcard, IpWildcard> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   private final @Nonnull Ip _ip;
   // Set bits are "don't care" bits
@@ -68,7 +67,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
    */
   public static IpWildcard ipWithWildcardMask(Ip address, long wildcardMask) {
     IpWildcard wildcard = new IpWildcard(address, wildcardMask);
-    return CACHE.getUnchecked(wildcard);
+    return CACHE.get(wildcard);
   }
 
   /**
@@ -223,6 +222,6 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   /** Cache after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(this);
+    return CACHE.get(this);
   }
 }

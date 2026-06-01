@@ -2,10 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -15,17 +14,14 @@ public class IpWildcardIpSpace extends IpSpace {
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).
   private static final LoadingCache<IpWildcard, IpWildcardIpSpace> CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 20)
-          .build(CacheLoader.from(IpWildcardIpSpace::new));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(IpWildcardIpSpace::new);
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
   private final IpWildcard _ipWildcard;
 
   @JsonCreator
   static IpWildcardIpSpace create(@JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard) {
-    return CACHE.getUnchecked(ipWildcard);
+    return CACHE.get(ipWildcard);
   }
 
   private IpWildcardIpSpace(IpWildcard ipWildcard) {
@@ -65,6 +61,6 @@ public class IpWildcardIpSpace extends IpSpace {
   /** Cache after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(_ipWildcard);
+    return CACHE.get(_ipWildcard);
   }
 }

@@ -2,10 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import javax.annotation.Nonnull;
@@ -15,17 +14,14 @@ public class Ip6WildcardIp6Space extends Ip6Space {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   private static final LoadingCache<Ip6Wildcard, Ip6WildcardIp6Space> CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 20)
-          .build(CacheLoader.from(Ip6WildcardIp6Space::new));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(Ip6WildcardIp6Space::new);
   private static final String PROP_IP6_WILDCARD = "ip6Wildcard";
 
   private final Ip6Wildcard _ip6Wildcard;
 
   @JsonCreator
   static Ip6WildcardIp6Space create(@JsonProperty(PROP_IP6_WILDCARD) Ip6Wildcard ip6Wildcard) {
-    return CACHE.getUnchecked(ip6Wildcard);
+    return CACHE.get(ip6Wildcard);
   }
 
   private Ip6WildcardIp6Space(Ip6Wildcard ip6Wildcard) {
@@ -65,6 +61,6 @@ public class Ip6WildcardIp6Space extends Ip6Space {
   /** Cache after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(_ip6Wildcard);
+    return CACHE.get(_ip6Wildcard);
   }
 }

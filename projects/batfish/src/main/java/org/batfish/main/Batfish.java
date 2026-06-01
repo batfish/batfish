@@ -31,9 +31,9 @@ import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.parseCheckpointManagementData;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -74,7 +74,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -1136,23 +1135,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
-    try {
-      return _cachedDataPlanes.get(
-          snapshot,
-          () -> {
-            LOGGER.info("Data plane cache miss on snapshot {}", snapshot);
-            long start = System.currentTimeMillis();
-            newBatch("Loading data plane from disk", 0);
-            DataPlane dp = _storage.loadDataPlane(snapshot);
-            LOGGER.info(
-                "Loading data plane for snapshot {} took {}ms",
-                snapshot,
-                System.currentTimeMillis() - start);
-            return dp;
-          });
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e);
-    }
+    return _cachedDataPlanes.get(
+        snapshot,
+        key -> {
+          LOGGER.info("Data plane cache miss on snapshot {}", key);
+          long start = System.currentTimeMillis();
+          newBatch("Loading data plane from disk", 0);
+          DataPlane dp;
+          try {
+            dp = _storage.loadDataPlane(key);
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+          LOGGER.info(
+              "Loading data plane for snapshot {} took {}ms",
+              key,
+              System.currentTimeMillis() - start);
+          return dp;
+        });
   }
 
   @Override

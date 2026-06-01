@@ -1,7 +1,7 @@
 package org.batfish.main;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
@@ -33,7 +33,7 @@ public final class BfCache {
   private BfCache() {}
 
   static Cache<NetworkSnapshot, DataPlane> buildDataPlaneCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_DATA_PLANES).build();
+    return Caffeine.newBuilder().softValues().maximumSize(MAX_CACHED_DATA_PLANES).build();
   }
 
   static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -42,13 +42,10 @@ public final class BfCache {
   }
 
   static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_TESTRIGS).build();
+    return Caffeine.newBuilder().softValues().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
   static Cache<NetworkSnapshot, Map<String, VendorConfiguration>> buildVendorConfigurationCache() {
-    return CacheBuilder.newBuilder()
-        .softValues()
-        .maximumSize(MAX_CACHED_VENDOR_CONFIGURATIONS)
-        .build();
+    return Caffeine.newBuilder().softValues().maximumSize(MAX_CACHED_VENDOR_CONFIGURATIONS).build();
   }
 }

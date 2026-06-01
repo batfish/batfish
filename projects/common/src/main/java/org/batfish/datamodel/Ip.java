@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.io.Serializable;
@@ -21,7 +20,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (4 bytes seems smallest possible entry (int), would be 4 MiB total).
   private static final LoadingCache<Ip, Ip> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   public static final Ip FIRST_CLASS_A_PRIVATE_IP = parse("10.0.0.0");
 
@@ -144,7 +143,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   /** Create an {@link Ip} from the unsigned 32-bit representation stored in an {@code int}. */
   public static Ip create(int ipAsInt) {
     Ip ip = new Ip(ipAsInt);
-    return CACHE.getUnchecked(ip);
+    return CACHE.get(ip);
   }
 
   public long asLong() {
@@ -250,6 +249,6 @@ public class Ip implements Comparable<Ip>, Serializable {
   /** Cache after deserialization. */
   @Serial
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(this);
+    return CACHE.get(this);
   }
 }
