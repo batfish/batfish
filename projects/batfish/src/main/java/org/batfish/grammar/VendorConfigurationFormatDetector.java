@@ -54,6 +54,17 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
 
+  // checkSros patterns (Nokia SR-OS / SR-SIM, MD-CLI). SR-OS configs are emitted by
+  // `admin show configuration` (brace/hierarchical, rooted at `configure {`) and can also
+  // be supplied in the absolute-path flat form (`/configure ...` lines, the Junos-`set`
+  // analog). The TiMOS banner and the "Configuration format version" header are
+  // SR-OS-specific tells that brace form alone (which collides with Juniper) is not.
+  private static final Pattern SROS_TIMOS_PATTERN = Pattern.compile("(?m)^# *TiMOS-");
+  private static final Pattern SROS_CONFIG_VERSION_PATTERN =
+      Pattern.compile("(?m)^# *Configuration format version \\d+\\.\\d+ revision \\d+");
+  private static final Pattern SROS_FLAT_CONFIGURE_PATTERN =
+      Pattern.compile("(?m)^\\s*/configure ");
+
   private static final Pattern RANCID_BASE_PATTERN =
       Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)");
 
@@ -393,6 +404,9 @@ public final class VendorConfigurationFormatDetector {
         return ConfigurationFormat.MRV;
       case "paloalto":
         return checkPaloAlto(true);
+      case "sros":
+      case "sros-md":
+        return ConfigurationFormat.NOKIA_SROS;
       case "agm":
       case "alteon":
       case "arbor":
@@ -432,8 +446,6 @@ public final class VendorConfigurationFormatDetector {
       case "riverstone":
       case "routeros":
       case "smc":
-      case "sros":
-      case "sros-md":
       case "vrp":
       case "xirrus":
       case "zebra":
@@ -442,6 +454,15 @@ public final class VendorConfigurationFormatDetector {
         // We don't recognize the RANCID string, assert this config is unknown.
         return ConfigurationFormat.UNKNOWN;
     }
+  }
+
+  private @Nullable ConfigurationFormat checkSros() {
+    if (fileTextMatches(SROS_TIMOS_PATTERN)
+        || fileTextMatches(SROS_CONFIG_VERSION_PATTERN)
+        || fileTextMatches(SROS_FLAT_CONFIGURE_PATTERN)) {
+      return ConfigurationFormat.NOKIA_SROS;
+    }
+    return null;
   }
 
   private static final Pattern RUCKUS_ICX_MODULE_PATTERN =
@@ -491,6 +512,10 @@ public final class VendorConfigurationFormatDetector {
     }
 
     format = (format == null) ? checkA10() : format;
+    // SR-OS must run before checkJuniper/checkCisco: an SR-OS brace config contains
+    // tokens (e.g. `policy-options {`, `interface ...`) that those heuristics would
+    // otherwise claim. checkSros keys on SR-OS-specific tells, so it is safe to run early.
+    format = (format == null) ? checkSros() : format;
     format = (format == null) ? checkCheckPoint() : format;
     format = (format == null) ? checkFortios() : format;
     format = (format == null) ? checkRuckusIcx() : format;

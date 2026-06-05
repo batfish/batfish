@@ -93,6 +93,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.METAMAKO,
           ConfigurationFormat.MRV_COMMANDS,
           ConfigurationFormat.MSS,
+          // NOKIA_SROS is registered and detected as of P2, but the parser/extractor land
+          // in P3. Until then it is routed here so detection is exercised without a crash.
+          ConfigurationFormat.NOKIA_SROS,
           ConfigurationFormat.RUCKUS_ICX,
           ConfigurationFormat.UNSUPPORTED,
           ConfigurationFormat.VXWORKS);

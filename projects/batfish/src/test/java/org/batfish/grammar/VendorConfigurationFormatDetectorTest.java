@@ -1,5 +1,7 @@
 package org.batfish.grammar;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
@@ -13,6 +15,7 @@ import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.IBM_BNT;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
+import static org.batfish.datamodel.ConfigurationFormat.NOKIA_SROS;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
@@ -322,6 +325,35 @@ public class VendorConfigurationFormatDetectorTest {
     String basic = "stack unit 2\n" + "  module 1 icx7450-48p-poe-management-module\n";
     for (String fileText : ImmutableList.of(basic)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
+    }
+  }
+
+  @Test
+  public void testSros() {
+    // The config captured from the SR-SIM lab (admin show configuration, MD-CLI brace form).
+    String capturedR1 =
+        readResource(
+            "org/batfish/vendor/sros/grammar/testconfigs/r1_admin_show_configuration.txt", UTF_8);
+
+    // A flat absolute-path form (the Junos-`set` analog) of the same kind of config.
+    String flat =
+        """
+        /configure router "Base" autonomous-system 65001
+        /configure router "Base" bgp group "ebgp" peer-as 65002
+        """;
+
+    // RANCID headers for the two SR-OS aliases (previously routed to UNSUPPORTED).
+    String rancidSros = "!RANCID-CONTENT-TYPE: sros\n";
+    String rancidSrosMd = "!RANCID-CONTENT-TYPE: sros-md\n";
+
+    // Minimal tells, absent any other vendor's brace/keyword tokens.
+    String timosOnly = "# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1\n";
+    String versionHeaderOnly = "# Configuration format version 26.3 revision 0\nconfigure {\n}\n";
+
+    for (String fileText :
+        ImmutableList.of(
+            capturedR1, flat, rancidSros, rancidSrosMd, timosOnly, versionHeaderOnly)) {
+      assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(NOKIA_SROS));
     }
   }
 
