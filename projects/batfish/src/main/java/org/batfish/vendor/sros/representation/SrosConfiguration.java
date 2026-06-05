@@ -108,7 +108,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     // Each SR-OS router instance is a VRF; the "Base" instance is the Batfish default VRF.
     for (Router router : _routers.values()) {
       Vrf vrf = vrfForRouter(router.getName(), c);
-      SrosConversions.convertInterfaces(router, c, vrf);
+      SrosConversions.convertInterfaces(this, router, c, vrf);
       SrosConversions.convertBgp(router, c, vrf, getWarnings());
     }
 
