@@ -6,6 +6,7 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -15,14 +16,17 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
@@ -34,10 +38,13 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
@@ -226,6 +233,13 @@ public final class SrosConversions {
       ConcreteInterfaceAddress address = ri.getPrimaryConcreteAddress();
       if (address != null) {
         ib.setAddress(address);
+        // SR-OS installs the connected (subnet) route for an interface address but NOT a
+        // local /32 host route for the interface's own IP — its route-table shows only the
+        // connected prefix. Batfish would otherwise synthesize a local /32; suppress it so the
+        // main RIB matches the device. (Verified against the lab route-table, P5-V.)
+        ib.setAddressMetadata(
+            ImmutableMap.of(
+                address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build()));
       }
       ib.build();
     }
@@ -323,8 +337,8 @@ public final class SrosConversions {
         generatedBgpPeerImportPolicyName(router.getName(), neighbor.getIpAddress());
     String exportPolicyName =
         generatedBgpPeerExportPolicyName(router.getName(), neighbor.getIpAddress());
-    buildPeerPolicy(importPolicyName, importPolicies, ebgp, c);
-    buildPeerPolicy(exportPolicyName, exportPolicies, ebgp, c);
+    buildPeerPolicy(importPolicyName, importPolicies, ebgp, /* isExport= */ false, c);
+    buildPeerPolicy(exportPolicyName, exportPolicies, ebgp, /* isExport= */ true, c);
 
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
@@ -337,11 +351,17 @@ public final class SrosConversions {
                     .build())
             .build();
 
+    // Leave local-IP unset: SR-OS auto-selects the source address per peer (the egress
+    // interface address for a directly-connected eBGP peer, the system address for a
+    // multi-hop/iBGP peer). The modeled subset has no explicit BGP local-address leaf, so we
+    // let Batfish resolve the source IP from the topology — for single-hop eBGP it picks the
+    // connected interface toward the peer, matching the device. (Forcing the system address
+    // here would put the local IP off the peering subnet and the session would never
+    // establish.) When local-address modeling is added, set it explicitly here.
     BgpActivePeerConfig.builder()
         .setPeerAddress(peerAddress)
         .setRemoteAsns(LongSpace.of(peerAs))
         .setLocalAs(localAs)
-        .setLocalIp(systemInterfaceIp(router))
         .setIpv4UnicastAddressFamily(af)
         .setBgpProcess(newProc)
         .build();
@@ -368,8 +388,19 @@ public final class SrosConversions {
    * (SR-OS eBGP default-reject). Mirrors the Junos generated-peer-policy idiom.
    */
   private static void buildPeerPolicy(
-      String name, List<String> policyNames, boolean ebgp, Configuration c) {
+      String name, List<String> policyNames, boolean ebgp, boolean isExport, Configuration c) {
     List<Statement> statements = new ArrayList<>();
+    // SR-OS originates locally-sourced routes (the system/connected prefixes advertised via an
+    // export policy) into BGP with origin IGP, like Junos. Set origin IGP for non-BGP routes at
+    // the head of the export policy so advertised local routes carry origin igp, not the Batfish
+    // redistribution default of incomplete. (Caught by lab validation against the eBGP peer, P5-V.)
+    if (isExport) {
+      statements.add(
+          new If(
+              new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+              ImmutableList.of(),
+              ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)))));
+    }
     // The default policy backs the chain when no named policy makes a terminal decision.
     String defaultPolicyName = ebgp ? defaultRejectPolicy(c) : defaultAcceptPolicy(c);
     statements.add(new SetDefaultPolicy(defaultPolicyName));

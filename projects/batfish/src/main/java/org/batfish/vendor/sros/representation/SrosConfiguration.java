@@ -93,7 +93,11 @@ public final class SrosConfiguration extends VendorConfiguration {
     c.setDeviceModel(DeviceModel.NOKIA_SROS_UNSPECIFIED);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDefaultInboundAction(LineAction.PERMIT);
-    // SR-OS, like Junos, runs the BGP export pipeline from the main RIB.
+    // SR-OS runs the BGP export pipeline from the main RIB (Junos-like): a route is advertised by
+    // an export policy matching a main-RIB route, not by origination into the BGP RIB. (The
+    // operational `show router bgp routes` table holds only routes learned from peers — the local
+    // entries that the `info /state … bgp rib local-rib` tree additionally lists are a state-tree
+    // display artifact, not BGP-originated routes; see findings.)
     c.setExportBgpFromBgpRib(false);
 
     // Routing policy is referenced by BGP, so convert it before BGP. Prefix-lists before the
