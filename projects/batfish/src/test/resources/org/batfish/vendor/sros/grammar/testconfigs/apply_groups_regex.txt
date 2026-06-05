@@ -1,0 +1,35 @@
+# Configuration format version 26.3 revision 0
+configure {
+    groups {
+        group "iface-defaults" {
+            router "Base" {
+                interface "<to-.*>" {
+                    ipv4 {
+                        primary {
+                            prefix-length 31
+                        }
+                    }
+                }
+            }
+        }
+    }
+    router "Base" {
+        interface "to-r2" {
+            apply-groups "iface-defaults"
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                }
+            }
+        }
+        interface "to-r3" {
+            apply-groups-exclude "iface-defaults"
+            apply-groups "iface-defaults"
+            ipv4 {
+                primary {
+                    address 10.0.0.2
+                }
+            }
+        }
+    }
+}

@@ -48,6 +48,12 @@ public final class SrosControlPlaneExtractor implements ControlPlaneExtractor {
     SrosConfigurationBuilder cb = new SrosConfigurationBuilder(_parser, _text, _w, _silentSyntax);
     new BatfishParseTreeWalker(_parser).walk(cb, tree);
     _configuration = cb.getConfiguration();
+
+    // P4: reduce the canonical statement tree (delete edits + apply-groups expansion), then
+    // populate the typed feature model from it.
+    SrosStatementTree root = cb.getTree();
+    SrosPreprocessor.preprocess(root, _w);
+    SrosFeatureExtractor.extract(root, _configuration, _w);
   }
 
   private org.batfish.vendor.sros.representation.SrosConfiguration _configuration;
