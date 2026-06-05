@@ -35,6 +35,7 @@ public enum ConfigurationFormat {
   MRV("mrv"),
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
+  NOKIA_SROS("nokia_sros"),
   SONIC("sonic"),
   PALO_ALTO("paloalto"),
   PALO_ALTO_NESTED("paloalto"),
