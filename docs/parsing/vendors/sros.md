@@ -150,3 +150,71 @@ leaf that matters, `system name`, becomes the Batfish hostname.
 asserts the full r1 feature model extracts with no warnings, the unmodeled
 subtrees are silently skipped, and the preprocessor handles apply-groups (incl.
 regex keys + exclude) and delete edits.
+
+## Conversion (P5)
+
+`SrosConfiguration.toVendorIndependentConfigurations()` converts the typed P4
+model into the vendor-independent `Configuration`. The conversion logic lives in
+[`SrosConversions`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/representation/SrosConversions.java).
+Three SR-OS-specific semantics drive the design:
+
+### Router instance ↔ VRF
+
+Each SR-OS `router "<name>"` instance becomes a VRF. The `Base` instance — the
+main routing instance — maps to the Batfish default VRF (`"default"`); any other
+instance maps to a VRF of the same name. Interfaces and the BGP process are
+attached to their instance's VRF.
+
+### Interfaces
+
+A router interface with no port binding (`system`, loopbacks) is modeled as
+`InterfaceType.LOOPBACK`; a port-bound interface is `InterfaceType.PHYSICAL`. The
+`ipv4 primary {address, prefix-length}` pair becomes the interface's
+`ConcreteInterfaceAddress`. The hardware tree (cards/MDAs/ports) does **not** map
+to the VI model — Batfish derives interfaces from the router instance, not the
+physical port tree — so it is left unconverted with a single red-flag warning
+(not a silent drop).
+
+### BGP group → neighbor inheritance
+
+P4 records only the neighbor's `group` leafref. Conversion resolves the
+inheritance: a neighbor's `peer-as` and `import`/`export` policy lists come from
+its own config if set, otherwise from its group (per-neighbor wins). Each
+neighbor becomes a `BgpActivePeerConfig` keyed by peer IP, with `local-as` from
+the router instance's `autonomous-system` and `local-ip`/router-id derived from
+the `system` interface address when not explicitly set.
+
+### eBGP default-reject (the policy chain)
+
+SR-OS drops eBGP routes in **both** directions unless an explicit policy accepts
+them (`ebgp-default-reject-policy` defaults true). "No policy" ≠ "permit all".
+This is realized with the Junos-style generated-peer-policy idiom:
+
+- Each `policy-statement` becomes a **chainable** `RoutingPolicy`. Its numbered
+  entries are walked in order; an entry's `from prefix-list` set is a
+  disjunction of `MatchPrefixSet`/`NamedPrefixSet` guards, and the matching
+  action (`accept`/`reject`/`next-entry`/`next-policy`) is emitted so the policy
+  behaves correctly both as a subroutine (`ReturnTrue`/`ReturnFalse` under
+  `CALL_EXPR_CONTEXT`) and standalone (`ExitAccept`/`ExitReject`). `next-policy`
+  maps to `Statements.FallThrough` so a `FirstMatchChain` advances to the next
+  policy; `next-entry` and an absent `default-action` emit nothing (fall
+  through).
+- Each peer gets a **generated** import and export `RoutingPolicy` that
+  `SetDefaultPolicy(...)` to a shared accept-all (iBGP) or reject-all (eBGP)
+  backstop, then evaluates a `FirstMatchChain` of `CallExpr`s over the peer's
+  named policies; if the chain reaches the default (no named policy made a
+  terminal decision), the eBGP backstop rejects.
+
+So an eBGP peer with no accepting policy rejects in both directions, while an
+iBGP peer defaults to accept — matching SR-OS.
+
+### Tests
+
+[`SrosConversionTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosConversionTest.java)
+parses r1 through the full pipeline and asserts: the VI `Configuration`
+(format/device-model/default VRF), interface types and addresses, the
+prefix-list → `RouteFilterList`, BGP group→neighbor inheritance (inherited
+`peer-as`, `local-as`, `local-ip`), **behavioral** eBGP default-reject (the
+generated export policy accepts the system prefix and rejects everything else;
+the import policy with a default-action accept permits all), and the
+hardware-not-converted red-flag warning.
