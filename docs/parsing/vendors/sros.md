@@ -165,15 +165,27 @@ main routing instance — maps to the Batfish default VRF (`"default"`); any oth
 instance maps to a VRF of the same name. Interfaces and the BGP process are
 attached to their instance's VRF.
 
-### Interfaces
+### Interfaces (the port / router-interface split)
 
-A router interface with no port binding (`system`, loopbacks) is modeled as
-`InterfaceType.LOOPBACK`; a port-bound interface is `InterfaceType.PHYSICAL`. The
-`ipv4 primary {address, prefix-length}` pair becomes the interface's
-`ConcreteInterfaceAddress`. The hardware tree (cards/MDAs/ports) does **not** map
-to the VI model — Batfish derives interfaces from the router instance, not the
-physical port tree — so it is left unconverted with a single red-flag warning
-(not a silent drop).
+SR-OS separates the physical **port** (e.g. `1/1/c1/1`) from the L3
+**router-interface** (e.g. `to-r2`) that binds it — the same physical/logical
+split as Junos (`ge-0/0/0` vs unit `ge-0/0/0.0`). Batfish models it the same way
+Junos is modeled, so a user-provided Layer-1 topology (which names the physical
+port) drives the router-interface's L3 adjacency:
+
+- A router interface with **no port binding** (`system`, loopbacks) is a single
+  `InterfaceType.LOOPBACK` holding the address.
+- A **port-bound** router interface becomes **two** VI interfaces: an addressless
+  `InterfaceType.PHYSICAL` interface named by the **port path** (the Layer-1
+  endpoint), and an `InterfaceType.LOGICAL` interface named by the
+  router-interface, which holds the `ipv4 primary {address, prefix-length}` and
+  carries a `DependencyType.BIND` dependency on the port.
+
+The hardware tree (cards/MDAs/ports) is otherwise **not** mapped to the VI model
+— Batfish derives the active port interface from the router-interface's port
+binding, not by walking the full physical port tree — so the cards/MDAs/ports are
+left unconverted with a single red-flag warning (not a silent drop). The port's
+`admin-state` is honored on the synthesized `PHYSICAL` interface.
 
 ### BGP group → neighbor inheritance
 
@@ -217,4 +229,47 @@ prefix-list → `RouteFilterList`, BGP group→neighbor inheritance (inherited
 `peer-as`, `local-as`, `local-ip`), **behavioral** eBGP default-reject (the
 generated export policy accepts the system prefix and rejects everything else;
 the import policy with a default-action accept permits all), and the
-hardware-not-converted red-flag warning.
+hardware-not-converted red-flag warning. It also asserts the port /
+router-interface split: `to-r2` is `LOGICAL` with a `BIND` dependency on the
+addressless `PHYSICAL` port `1/1/c1/1`.
+
+## Post-processing (P6)
+
+Post-processing (`Batfish.postProcessSnapshot`) is largely vendor-independent —
+interface dependency resolution, derived bandwidth/IGP costs, Layer-1 topology
+application, protocol-state init. The SR-OS-specific concern is that its
+constructs flow through it correctly. The single design decision that matters
+here is the **port / router-interface split** described under
+[Conversion → Interfaces](#interfaces-the-port--router-interface-split), and it
+exists *because of* post-processing:
+
+- **Layer-1 topology lines up with a real interface.** Collected SR-OS labs name
+  the Layer-1 endpoint by the **physical port path** (`1/1/c1/1`), not the L3
+  router-interface (`to-r2`) — the port path is what containerlab/the device
+  expose. Modeling the port as a distinct `PHYSICAL` interface means the L1 edge
+  canonicalizes to a real interface and survives into the *active logical* L1
+  topology. If the L3 interface were the only thing modeled (the pre-P6 design),
+  the L1 endpoint `1/1/c1/1` would resolve to `INVALID_INTERFACE`, the edge would
+  be silently dropped, and the cross-vendor adjacency would form only by the
+  same-subnet fallback in `HybridL3Adjacencies` (which holds only because the
+  cEOS side is never the `node1` of a resolved L1 edge — fragile and accidental).
+- **The L3 edge is driven by L1.** `PointToPointComputer` walks the `BIND`
+  dependency from `to-r2` to its port `1/1/c1/1`, so the user L1 edge between
+  ports yields the L3 edge between the router interfaces. This is the same
+  mechanism Junos relies on for its unit↔physical split.
+- **Interface activity is correct.** The port is admin-up (its `admin-state` is
+  honored), so interface-dependency resolution leaves both the port and the
+  bound `to-r2` active; `system` (loopback) stays active. No SR-OS interface is
+  spuriously deactivated.
+
+There are no SR-OS aggregate/redundant interfaces or OSPF/EIGRP in the current
+lab, so the bandwidth-sum and IGP-cost post-processing steps are not yet
+exercised; they will be when a later lab (P8+) introduces them.
+
+[`SrosPostProcessingTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosPostProcessingTest.java)
+loads the captured `sros_ceos_ebgp` lab (SR-OS r1 + cEOS r2 + the user L1
+topology) through the full pipeline and asserts, on the post-processed model:
+every r1 interface is active with the expected type and the `to-r2`→`1/1/c1/1`
+BIND dependency; the user L1 edge (named by the port) survives into the active
+logical L1; the cross-vendor L3 edge `r1:to-r2 ↔ r2:Ethernet1` forms; and the
+eBGP session between r1 and r2 is established.

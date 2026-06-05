@@ -1,0 +1,36 @@
+! Command: show running-config
+! device: r2 (cEOSLab, EOS-4.36.0.1F-47401373.43601F (engineering build))
+!
+no aaa root
+!
+username admin privilege 15 role network-admin secret sha512 $6$kUXjcgdL9Fb6h9hr$aNvZHTBTcQMJkpFyI1xbJaExLUudu1CJGqjm/v/cmCZ9gRRvQRicqOJB3NFM/1yZR3xKn.HrhVoAXeLYKs7Om0
+!
+no service interface inactive port-id allocation disabled
+!
+service routing protocols model multi-agent
+!
+hostname r2
+!
+spanning-tree mode mstp
+!
+aaa authorization exec default local
+!
+interface Ethernet1
+   no switchport
+   ip address 10.0.0.1/31
+!
+interface Loopback0
+   ip address 2.2.2.2/32
+!
+interface Management0
+   ip address 172.20.20.3/24
+   ipv6 address 3fff:172:20:20::3/64
+!
+ip routing
+!
+router bgp 65002
+   router-id 2.2.2.2
+   neighbor 10.0.0.0 remote-as 65001
+   network 2.2.2.2/32
+!
+end

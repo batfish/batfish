@@ -2,6 +2,7 @@ package org.batfish.vendor.sros.grammar;
 
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -50,16 +51,28 @@ public final class SrosConversionTest {
     // The "Base" router instance is the default VRF.
     assertThat(c.getVrfs(), hasKey(Configuration.DEFAULT_VRF_NAME));
 
-    // Interfaces: system (loopback, no port) and to-r2 (physical, port-bound).
-    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("system", "to-r2"));
+    // Interfaces: system (loopback, no port), the L3 router-interface to-r2 (LOGICAL, holds the
+    // address), and its physical port 1/1/c1/1 (PHYSICAL, addressless, the Layer-1 endpoint).
+    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("system", "to-r2", "1/1/c1/1"));
     Interface system = c.getAllInterfaces().get("system");
     assertThat(system.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
     assertThat(system.getConcreteAddress().toString(), equalTo("1.1.1.1/32"));
     assertThat(system.getVrfName(), equalTo(Configuration.DEFAULT_VRF_NAME));
     assertTrue(system.getAdminUp());
+
     Interface toR2 = c.getAllInterfaces().get("to-r2");
-    assertThat(toR2.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(toR2.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     assertThat(toR2.getConcreteAddress().toString(), equalTo("10.0.0.0/31"));
+    // The L3 interface binds its physical port: a BIND dependency lets a user Layer-1 topology
+    // (which names the port) drive this interface's L3 adjacency and fate. (P6.)
+    assertThat(
+        toR2.getDependencies(),
+        contains(new Interface.Dependency("1/1/c1/1", Interface.DependencyType.BIND)));
+
+    Interface port = c.getAllInterfaces().get("1/1/c1/1");
+    assertThat(port.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(port.getConcreteAddress(), nullValue());
+    assertTrue(port.getAdminUp());
 
     // SR-OS installs the connected route but not a local /32 host route for the interface IP;
     // the address metadata suppresses Batfish's local-route generation (P5-V finding).

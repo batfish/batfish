@@ -215,21 +215,46 @@ public final class SrosConversions {
 
   /**
    * Converts an SR-OS router instance's interfaces to VI {@link Interface}s, attaching each to
-   * {@code vrf} on {@code c}. The {@code system} interface and any port-less interface is modeled
-   * as {@link InterfaceType#LOOPBACK}; a port-bound interface is {@link InterfaceType#PHYSICAL}.
+   * {@code vrf} on {@code c}.
+   *
+   * <p>SR-OS separates the physical <em>port</em> (e.g. {@code 1/1/c1/1}) from the L3
+   * <em>router-interface</em> (e.g. {@code to-r2}) that binds it — the Junos physical/unit split.
+   * We model it the same way Batfish models Junos so that a user-provided Layer-1 topology, which
+   * names the physical port, drives the L3 adjacency of the router-interface:
+   *
+   * <ul>
+   *   <li>A port-less interface ({@code system}, loopbacks) is a single {@link
+   *       InterfaceType#LOOPBACK} holding the address.
+   *   <li>A port-bound interface becomes two VI interfaces: an addressless {@link
+   *       InterfaceType#PHYSICAL} interface named by the <em>port path</em> (the Layer-1 endpoint),
+   *       and a {@link InterfaceType#LOGICAL} interface named by the router-interface, holding the
+   *       address and carrying a {@link Interface.DependencyType#BIND} dependency on the port.
+   *       {@code PointToPointComputer} follows that BIND dependency to map the L3 interface back to
+   *       its physical port, so an L1 edge between ports yields the L3 edge between the router
+   *       interfaces (and the logical interface shares the port's fate).
+   * </ul>
    */
-  static void convertInterfaces(Router router, Configuration c, Vrf vrf) {
+  static void convertInterfaces(SrosConfiguration vc, Router router, Configuration c, Vrf vrf) {
     for (RouterInterface ri : router.getInterfaces().values()) {
-      InterfaceType type = ri.getPort() == null ? InterfaceType.LOOPBACK : InterfaceType.PHYSICAL;
+      String portPath = ri.getPort();
       Interface.Builder ib =
           Interface.builder()
               .setName(ri.getName())
               .setOwner(c)
               .setVrf(vrf)
-              .setType(type)
               // SR-OS router interfaces have no shutdown leaf in the modeled subset; they are up
-              // once configured (admin-state is provisioned at the port, modeled separately).
+              // once configured (port admin-state is modeled on the PHYSICAL port below).
               .setAdminUp(true);
+      if (portPath == null) {
+        // system / loopback: no port binding, a single loopback interface holds the address.
+        ib.setType(InterfaceType.LOOPBACK);
+      } else {
+        // Port-bound: the L3 router-interface is a LOGICAL interface bound to its physical port.
+        ib.setType(InterfaceType.LOGICAL);
+        ib.setDependencies(
+            ImmutableList.of(new Interface.Dependency(portPath, Interface.DependencyType.BIND)));
+        ensurePortInterface(vc, portPath, c, vrf);
+      }
       ConcreteInterfaceAddress address = ri.getPrimaryConcreteAddress();
       if (address != null) {
         ib.setAddress(address);
@@ -243,6 +268,29 @@ public final class SrosConversions {
       }
       ib.build();
     }
+  }
+
+  /**
+   * Creates the addressless {@link InterfaceType#PHYSICAL} VI interface for an SR-OS port if it
+   * does not already exist on {@code c}. This is the interface a user Layer-1 topology references;
+   * the L3 router-interface binds to it. The port is admin-up unless its {@code admin-state} is
+   * explicitly {@code disable} (an absent admin-state is treated as up to avoid spuriously
+   * deactivating a configured interface; SR-OS lab configs set it explicitly).
+   */
+  private static void ensurePortInterface(
+      SrosConfiguration vc, String portPath, Configuration c, Vrf vrf) {
+    if (c.getAllInterfaces().containsKey(portPath)) {
+      return;
+    }
+    Port port = vc.getPorts().get(portPath);
+    boolean adminUp = port == null || !Boolean.FALSE.equals(port.getAdminStateEnable());
+    Interface.builder()
+        .setName(portPath)
+        .setOwner(c)
+        .setVrf(vrf)
+        .setType(InterfaceType.PHYSICAL)
+        .setAdminUp(adminUp)
+        .build();
   }
 
   /**
