@@ -1,0 +1,7 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    system {
+        name "sros-r1"
+    }
+}

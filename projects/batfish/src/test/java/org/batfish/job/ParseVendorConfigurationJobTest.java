@@ -68,9 +68,9 @@ public class ParseVendorConfigurationJobTest {
   }
 
   @Test
-  public void testNokiaSrosDetectedButUnimplemented() {
-    // SR-OS is registered and detected as of P2; the parser/extractor land in P3, so for now
-    // the job routes a detected SR-OS config to the unsupported path rather than crashing.
+  public void testNokiaSrosDetectedAndParsed() {
+    // SR-OS is detected (P2) and, as of P3, parsed by the SR-OS grammar/extractor. A detected
+    // SR-OS config now flows through the job to a non-null vendor configuration with status PASSED.
     String sros = "# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1\nconfigure {\n}\n";
     ParseResult result =
         new ParseVendorConfigurationJob(
@@ -83,8 +83,8 @@ public class ParseVendorConfigurationJobTest {
             .parse();
     assertThat(result.getFormat(), equalTo(ConfigurationFormat.NOKIA_SROS));
     assertThat(result.getFailureCause(), nullValue());
-    assertThat(result.getConfig(), nullValue());
-    assertThat(result.getParseStatus("config"), equalTo(Optional.of(ParseStatus.UNSUPPORTED)));
+    assertThat(result.getConfig(), not(nullValue()));
+    assertThat(result.getParseStatus("config"), equalTo(Optional.of(ParseStatus.PASSED)));
   }
 
   // Tests that empty files are detected as empty, even when another format is provided.
