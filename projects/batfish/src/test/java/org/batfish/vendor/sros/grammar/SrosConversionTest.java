@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,6 +19,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -57,6 +60,12 @@ public final class SrosConversionTest {
     Interface toR2 = c.getAllInterfaces().get("to-r2");
     assertThat(toR2.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
     assertThat(toR2.getConcreteAddress().toString(), equalTo("10.0.0.0/31"));
+
+    // SR-OS installs the connected route but not a local /32 host route for the interface IP;
+    // the address metadata suppresses Batfish's local-route generation (P5-V finding).
+    ConnectedRouteMetadata toR2Meta = toR2.getAddressMetadata().get(toR2.getConcreteAddress());
+    assertThat(toR2Meta, not(nullValue()));
+    assertThat(toR2Meta.getGenerateLocalRoute(), equalTo(Boolean.FALSE));
   }
 
   /** The prefix-list converts to a RouteFilterList with an exact-length permit line. */
@@ -87,8 +96,11 @@ public final class SrosConversionTest {
     // peer-as 65002 inherited from group "ebgp"; local-as 65001 from the router instance.
     assertThat(peer.getRemoteAsns(), equalTo(org.batfish.datamodel.LongSpace.of(65002L)));
     assertThat(peer.getLocalAs(), equalTo(65001L));
-    // local-ip is the system interface address.
-    assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
+    // local-ip is left unset: SR-OS auto-selects the source address per peer, and for a
+    // directly-connected eBGP peer Batfish resolves it from the connected interface toward the
+    // peer. Forcing the system address (1.1.1.1) here would put the local IP off the peering
+    // subnet and the session would never establish (caught by lab validation, P5-V).
+    assertThat(peer.getLocalIp(), nullValue());
     assertNotNull(peer.getIpv4UnicastAddressFamily());
   }
 
