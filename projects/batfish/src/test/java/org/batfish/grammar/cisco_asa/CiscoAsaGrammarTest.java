@@ -1111,6 +1111,35 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
+  public void testAsaAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("asa-advertise-inactive");
+    assertTrue(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testAsaSuppressInactive() throws IOException {
+    // "bgp suppress-inactive" disables the default advertise-inactive behavior.
+    Configuration config = parseConfig("asa-suppress-inactive");
+    assertFalse(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  @Test
   public void testAggregateAddressConversion() throws IOException {
     String hostname = "asa-aggregate-address";
     Configuration c = parseConfig(hostname);

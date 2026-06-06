@@ -202,6 +202,7 @@ bgp_rb_stanza
    | bgp_redistribute_internal_rb_stanza
    | bgp_refresh_rb_stanza_null
    | bgp_regexp_rb_stanza_null
+   | bgp_suppress_inactive_rb_stanza
    | bgp_transport_rb_stanza_null
    | bgp_update_delay_rb_stanza_null
    | bgp_update_group_rb_stanza_null
@@ -282,6 +283,8 @@ bgp_log_neighbor_changes_rb_stanza_null: LOG_NEIGHBOR_CHANGES null_rest_of_line;
 bgp_maxas_limit_rb_stanza: MAXAS_LIMIT limit = dec NEWLINE;
 
 bgp_redistribute_internal_rb_stanza: REDISTRIBUTE_INTERNAL NEWLINE;
+
+bgp_suppress_inactive_rb_stanza: SUPPRESS_INACTIVE NEWLINE;
 
 bgp_refresh_rb_stanza_null: REFRESH null_rest_of_line;
 bgp_regexp_rb_stanza_null: REGEXP null_rest_of_line;

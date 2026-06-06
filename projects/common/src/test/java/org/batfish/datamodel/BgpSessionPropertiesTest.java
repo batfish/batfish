@@ -161,6 +161,44 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
+  public void testSessionCreationIbgpAdvertiseInactive() {
+    // advertiseInactive holds for iBGP sessions, not just eBGP.
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    long as = 1;
+    Ipv4UnicastAddressFamily addressFamily1 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+            .build();
+    Ipv4UnicastAddressFamily addressFamily2 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdvertiseInactive(false).build())
+            .build();
+    BgpActivePeerConfig p1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(as)
+            .setRemoteAs(as)
+            .setPeerAddress(ip2)
+            .setIpv4UnicastAddressFamily(addressFamily1)
+            .build();
+    BgpActivePeerConfig p2 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip2)
+            .setLocalAs(as)
+            .setRemoteAs(as)
+            .setPeerAddress(ip1)
+            .setIpv4UnicastAddressFamily(addressFamily2)
+            .build();
+    // Forward direction: sender p1 has advertiseInactive set, so it holds.
+    assertThat(BgpSessionProperties.from(p1, p2, false).getAdvertiseInactive(), equalTo(true));
+    // Reverse direction: sender p2 does not have it set.
+    assertThat(BgpSessionProperties.from(p1, p2, true).getAdvertiseInactive(), equalTo(false));
+  }
+
+  @Test
   public void testSessionCreationIbgpAcrossConfederation() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");

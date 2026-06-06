@@ -218,8 +218,6 @@ ADVERTISE_TO: 'advertise-to' -> pushMode(M_Word);
 
 ADVERTISEMENT_INTERVAL: 'advertisement-interval';
 
-ADVERTISE_INACTIVE: 'advertise-inactive';
-
 AES: 'aes';
 
 AESA: 'aesa';
