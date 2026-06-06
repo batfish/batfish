@@ -370,11 +370,10 @@ public final class BgpSessionProperties {
                             .getIpv4UnicastAddressFamily()
                             .getAddressFamilyCapabilities()
                             .getAdvertiseExternal(),
-                    SessionType.isEbgp(sessionType)
-                        && directionalSender
-                            .getIpv4UnicastAddressFamily()
-                            .getAddressFamilyCapabilities()
-                            .getAdvertiseInactive()))
+                    directionalSender
+                        .getIpv4UnicastAddressFamily()
+                        .getAddressFamilyCapabilities()
+                        .getAdvertiseInactive()))
             : ImmutableMap.of(),
         reverseDirection ? listenerLocalAs : initiatorLocalAs,
         reverseDirection ? initiatorLocalAs : listenerLocalAs,

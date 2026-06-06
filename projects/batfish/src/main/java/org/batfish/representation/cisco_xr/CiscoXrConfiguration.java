@@ -1048,14 +1048,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
               .setAllowLocalAsIn(lpg.getAllowAsIn())
               .setAllowRemoteAsOut(ALWAYS) // TODO: support 'as-path-loopcheck out disable'
-              /*
-               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
-               * "bgp suppress-inactive" command,
-               * which we currently do not parse/extract. So we choose the default value here.
-               *
-               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-               * we assume behavior to be identical to IOS family.
-               */
+              // IOS-XR advertises inactive routes and has no command to suppress that.
               .setAdvertiseInactive(true)
               .setSendCommunity(lpg.getSendCommunity())
               .setSendExtendedCommunity(lpg.getSendExtendedCommunity())

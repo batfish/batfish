@@ -1177,11 +1177,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAllowLocalAsIn(lpg.getAllowAsIn())
               .setAllowRemoteAsOut(ALWAYS) /* no outgoing remote-as check on IOS */
               /*
-               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
-               * "bgp suppress-inactive" command,
-               * which we currently do not parse/extract. So we choose the default value here.
+               * On Cisco IOS, advertise-inactive is true by default. The "bgp suppress-inactive"
+               * command disables it.
                */
-              .setAdvertiseInactive(true)
+              .setAdvertiseInactive(!firstNonNull(lpg.getSuppressInactive(), Boolean.FALSE))
               .setSendCommunity(lpg.getSendCommunity())
               .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();

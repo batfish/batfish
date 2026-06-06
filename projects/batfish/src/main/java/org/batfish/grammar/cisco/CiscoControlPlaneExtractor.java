@@ -497,6 +497,7 @@ import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_peers_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_enforce_first_as_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_suppress_inactive_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cd_match_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cd_set_peerContext;
@@ -1858,6 +1859,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNo_bgp_enforce_first_as_stanza(No_bgp_enforce_first_as_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.setEnforceFirstAs(false);
+  }
+
+  @Override
+  public void exitBgp_suppress_inactive_rb_stanza(Bgp_suppress_inactive_rb_stanzaContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    proc.getMasterBgpPeerGroup().setSuppressInactive(true);
   }
 
   @Override

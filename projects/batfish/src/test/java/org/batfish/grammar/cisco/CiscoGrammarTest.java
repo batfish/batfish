@@ -5956,6 +5956,21 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosSuppressInactive() throws IOException {
+    // "bgp suppress-inactive" disables the default advertise-inactive behavior.
+    Configuration config = parseConfig("ios-suppress-inactive");
+    assertFalse(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  @Test
   public void testTunnelTopologyNoReachability() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

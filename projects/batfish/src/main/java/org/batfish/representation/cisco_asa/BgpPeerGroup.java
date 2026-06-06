@@ -51,6 +51,7 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _sendCommunity;
   private boolean _sendExtendedCommunity;
   protected Boolean _shutdown;
+  protected Boolean _suppressInactive;
   protected String _updateSource;
 
   public BgpPeerGroup() {}
@@ -224,6 +225,10 @@ public abstract class BgpPeerGroup implements Serializable {
     return _shutdown;
   }
 
+  public Boolean getSuppressInactive() {
+    return _suppressInactive;
+  }
+
   public String getUpdateSource() {
     return _updateSource;
   }
@@ -318,6 +323,9 @@ public abstract class BgpPeerGroup implements Serializable {
     }
     if (_shutdown == null) {
       _shutdown = pg.getShutdown();
+    }
+    if (_suppressInactive == null) {
+      _suppressInactive = pg.getSuppressInactive();
     }
     if (_updateSource == null) {
       _updateSource = pg.getUpdateSource();
@@ -475,6 +483,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setShutdown(boolean shutdown) {
     _shutdown = shutdown;
+  }
+
+  public void setSuppressInactive(boolean suppressInactive) {
+    _suppressInactive = suppressInactive;
   }
 
   public void setUpdateSource(String updateSource) {

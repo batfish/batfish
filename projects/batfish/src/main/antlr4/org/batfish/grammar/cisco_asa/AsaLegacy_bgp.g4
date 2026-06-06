@@ -233,6 +233,11 @@ bgp_redistribute_internal_rb_stanza
    BGP REDISTRIBUTE_INTERNAL NEWLINE
 ;
 
+bgp_suppress_inactive_rb_stanza
+:
+   BGP SUPPRESS_INACTIVE NEWLINE
+;
+
 bgp_scan_time_bgp_tail
 :
    BGP SCAN_TIME secs = dec NEWLINE
@@ -859,6 +864,7 @@ router_bgp_stanza_tail
    | bgp_listen_range_rb_stanza
    | bgp_maxas_limit_rb_stanza
    | bgp_redistribute_internal_rb_stanza
+   | bgp_suppress_inactive_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza

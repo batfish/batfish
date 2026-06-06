@@ -5455,6 +5455,8 @@ SUPPRESS_ARP: 'suppress-arp';
 
 SUPPRESS_FIB_PENDING: 'suppress-fib-pending';
 
+SUPPRESS_INACTIVE: 'suppress-inactive';
+
 SUPPRESS_MAP: 'suppress-map';
 
 SUPPRESSED: 'suppressed';

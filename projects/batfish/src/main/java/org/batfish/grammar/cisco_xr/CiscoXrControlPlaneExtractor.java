@@ -397,7 +397,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_passes_throughContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_unique_lengthContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_address_familyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_advertise_inactive_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_listen_range_rb_stanzaContext;
@@ -3177,11 +3176,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       return null;
     }
-  }
-
-  @Override
-  public void exitBgp_advertise_inactive_rb_stanza(Bgp_advertise_inactive_rb_stanzaContext ctx) {
-    _currentPeerGroup.setAdvertiseInactive(true);
   }
 
   @Override

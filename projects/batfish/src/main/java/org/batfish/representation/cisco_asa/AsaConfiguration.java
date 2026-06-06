@@ -1403,14 +1403,10 @@ public final class AsaConfiguration extends VendorConfiguration {
               .setAllowLocalAsIn(lpg.getAllowAsIn())
               .setAllowRemoteAsOut(ALWAYS) /* no outgoing remote-as check on IOS */
               /*
-               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
-               * "bgp suppress-inactive" command,
-               * which we currently do not parse/extract. So we choose the default value here.
-               *
-               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-               * we assume behavior to be identical to IOS family.
+               * On Cisco ASA, advertise-inactive is true by default. The "bgp suppress-inactive"
+               * command disables it.
                */
-              .setAdvertiseInactive(true)
+              .setAdvertiseInactive(!firstNonNull(lpg.getSuppressInactive(), Boolean.FALSE))
               .setSendCommunity(lpg.getSendCommunity())
               .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();

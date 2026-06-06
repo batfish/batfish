@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-suppress-inactive
+!
+interface GigabitEthernet0/0
+ nameif outside
+ ip address 10.0.0.1 255.255.255.0
+!
+router bgp 1
+ bgp router-id 10.0.0.1
+ bgp suppress-inactive
+ address-family ipv4 unicast
+  neighbor 1.1.1.1 remote-as 1
+  neighbor 1.1.1.1 activate
+ exit-address-family
+!
