@@ -273,3 +273,53 @@ every r1 interface is active with the expected type and the `to-r2`→`1/1/c1/1`
 BIND dependency; the user L1 edge (named by the port) survives into the active
 logical L1; the cross-vendor L3 edge `r1:to-r2 ↔ r2:Ethernet1` forms; and the
 eBGP session between r1 and r2 is established.
+
+## RIB validation (P7)
+
+P7 validates the data-plane output of the SR-OS pipeline — r1's computed main
+RIB and BGP RIB — against the device's own operational state, captured as JSON
+from the MD-CLI state tree (`info json /state router "Base" route-table` and
+`… bgp rib`). This is the SR-OS-side counterpart to what the cEOS validator does
+for r2, and it closes the loop: every pipeline stage from parse through
+post-processing is now checked against ground truth, not just asserted in unit
+tests. The validation harness lives in the sibling `lab-validation` repo
+(`SrosValidator`); this section records the SR-OS modeling facts that make the
+comparison correct, since they constrain conversion.
+
+**Main RIB.** SR-OS reports the active route per prefix in
+`/state … route-table`, keyed by an owner protocol (`local`, `bgp`, `static`,
+`isis`, `ospf`) that maps to the Batfish protocol (`local` → `connected`). The
+route `preference` is the Batfish admin distance (a learned eBGP route is
+preference/admin **170** on SR-OS, not the 20 that IOS/EOS use), and a
+local/connected route reports preference 0 with an interface (not IP) next-hop.
+For the captured lab this is exactly three IPv4 routes: the system loopback
+`1.1.1.1/32` (connected), the peering `10.0.0.0/31` (connected), and the
+learned `2.2.2.2/32` (bgp, admin 170, next-hop 10.0.0.1) — and Batfish's r1
+main RIB matches all three.
+
+**BGP RIB.** The state `bgp rib local-rib` carries each route's attributes by
+reference: an `attr-id` indexing a top-level `attr-sets` table that holds
+origin, next-hop, MED, and the nested AS-path. The validator joins them. The
+critical modeling fact (grounded at P5-V, see below) is that the local-rib
+**over-lists** relative to the operational BGP table: it includes the device's
+own `owner == "local"` routes (the connected/loopback prefixes) alongside the
+`owner == "bgp"` learned ones. Those local entries carry `in-rtm: false` and are
+main-RIB routes that BGP can *advertise via an export policy* — they are **not**
+BGP-originated. The device's `show router bgp routes` shows exactly the one
+learned route (`2.2.2.2/32`), and Batfish's BGP RIB holds exactly that one route
+(as-path `65002`, origin `igp`, next-hop `10.0.0.1`). The validator therefore
+compares only the learned subset (`owner == "bgp"`, best) — like-for-like
+against Batfish's BGP RIB, not a workaround.
+
+**Why r1 advertises from the main RIB.** Because the local-rib over-lists,
+naively treating it as BGP-origination would lead to switching Batfish to
+BGP-RIB-based export. The evidence says otherwise: SR-OS advertises from the
+**main RIB** (Junos-like), so conversion keeps `setExportBgpFromBgpRib(false)`.
+This was the key conversion decision validated at P5-V and re-confirmed by the
+P7 RIB comparison passing without it.
+
+The comparison uses the same cost-based route matcher as every other vendor
+validator: unmatched routes on either side score infinite cost and surface as
+failures, so a green result means the device and Batfish RIBs are
+route-for-route equal — not that one side was empty. No r1 RIB check is
+sickbayed.
