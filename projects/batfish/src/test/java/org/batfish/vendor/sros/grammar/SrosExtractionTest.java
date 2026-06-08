@@ -209,6 +209,35 @@ public final class SrosExtractionTest {
         equalTo(6));
   }
 
+  /**
+   * An unrecognized prefix-list match type produces a line-stamped {@link ParseWarning} and the
+   * entry is dropped. {@code bad_prefix_type.txt} has {@code type bogus} on line 5.
+   */
+  @Test
+  public void testUnrecognizedPrefixTypeWarns() {
+    SrosConfiguration vc = parseVendorConfig("bad_prefix_type.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized prefix-list match type 'bogus'"), equalTo(5));
+    // The entry with the bad type is dropped, leaving the prefix-list empty.
+    assertThat(vc.getPrefixLists().get("system-pfx").getEntries(), empty());
+  }
+
+  /**
+   * Unrecognized enumerated values (port {@code admin-state}, policy {@code action-type}) warn with
+   * a line and leave the field unset, like the prefix-list match type. {@code bad_enums.txt} has
+   * {@code admin-state bogus-state} on line 4 and {@code action-type bogus-action} on line 10.
+   */
+  @Test
+  public void testUnrecognizedEnumsWarn() {
+    SrosConfiguration vc = parseVendorConfig("bad_enums.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized admin-state 'bogus-state'"), equalTo(4));
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized action-type 'bogus-action'"), equalTo(10));
+    // The unrecognized values leave the corresponding fields unset.
+    assertThat(vc.getPorts().get("1/1/c1/1").getAdminStateEnable(), nullValue());
+    assertThat(vc.getPolicyStatements().get("p").getEntries().get(10L).getAction(), nullValue());
+  }
+
   /** Returns the source line of the single parse warning with the given comment. */
   private static int warningOnLine(SrosConfiguration vc, String comment) {
     List<ParseWarning> matching =

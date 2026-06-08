@@ -1,5 +1,6 @@
 package org.batfish.vendor.sros.grammar;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,30 @@ public final class SrosFeatureExtractor {
 
   /** policy-statement {@code entry-id}: YANG {@code uint32 range "1..65535"}. */
   private static final LongSpace ENTRY_ID_SPACE = LongSpace.of(Range.closed(1L, 65535L));
+
+  /** Port {@code admin-state} enumeration: enable -> up, disable -> down. */
+  private static final Map<String, Boolean> ADMIN_STATE =
+      ImmutableMap.of("enable", Boolean.TRUE, "disable", Boolean.FALSE);
+
+  /** prefix-list entry {@code type} enumeration. */
+  private static final Map<String, PrefixListEntry.Type> PREFIX_LIST_TYPE =
+      ImmutableMap.<String, PrefixListEntry.Type>builder()
+          .put("exact", PrefixListEntry.Type.EXACT)
+          .put("longer", PrefixListEntry.Type.LONGER)
+          .put("through", PrefixListEntry.Type.THROUGH)
+          .put("range", PrefixListEntry.Type.RANGE)
+          .put("to", PrefixListEntry.Type.TO)
+          .put("address-mask", PrefixListEntry.Type.ADDRESS_MASK)
+          .build();
+
+  /** policy-statement entry/default {@code action-type} enumeration. */
+  private static final Map<String, PolicyAction> POLICY_ACTION =
+      ImmutableMap.<String, PolicyAction>builder()
+          .put("accept", PolicyAction.ACCEPT)
+          .put("reject", PolicyAction.REJECT)
+          .put("next-entry", PolicyAction.NEXT_ENTRY)
+          .put("next-policy", PolicyAction.NEXT_POLICY)
+          .build();
 
   public static void extract(
       SrosStatementTree root,
@@ -153,8 +178,8 @@ public final class SrosFeatureExtractor {
       String name = e.getKey();
       SrosStatementTree portNode = e.getValue();
       Port port = new Port(name);
-      Boolean adminState = parseAdminState(singleValue(portNode, "admin-state"));
-      port.setAdminStateEnable(adminState);
+      port.setAdminStateEnable(
+          toEnum(portNode.getChild("admin-state"), ADMIN_STATE, "admin-state"));
       SrosStatementTree connector = portNode.getChild("connector");
       if (connector != null) {
         port.setBreakout(singleValue(connector, "breakout"));
@@ -296,7 +321,8 @@ public final class SrosFeatureExtractor {
             if (prefix == null) {
               continue;
             }
-            PrefixListEntry.Type type = parsePrefixType(singleValue(pe.getValue(), "type"));
+            PrefixListEntry.Type type =
+                toEnum(pe.getValue().getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
             if (type == null) {
               continue;
             }
@@ -330,11 +356,14 @@ public final class SrosFeatureExtractor {
                 SrosStructureType.PREFIX_LIST,
                 fromPfx,
                 SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
-            entry.setAction(parseAction(navigate(entryNode, "action", "action-type")));
+            entry.setAction(
+                toEnum(navigate(entryNode, "action", "action-type"), POLICY_ACTION, "action-type"));
             ps.getEntries().put(entryId.get(), entry);
           }
         }
-        ps.setDefaultAction(parseAction(navigate(psNode, "default-action", "action-type")));
+        ps.setDefaultAction(
+            toEnum(
+                navigate(psNode, "default-action", "action-type"), POLICY_ACTION, "action-type"));
         _c.getPolicyStatements().put(name, ps);
       }
     }
@@ -470,59 +499,28 @@ public final class SrosFeatureExtractor {
     }
   }
 
-  private static @Nullable Boolean parseAdminState(@Nullable String text) {
-    if (text == null) {
+  /**
+   * Resolve the single value of {@code leafNode} (an enumerated leaf, e.g. {@code admin-state} or
+   * {@code action-type}) against {@code values}. Returns {@code null} with no warning if the leaf
+   * is absent or not single-valued (absent leaf == YANG default), and {@code null} with a
+   * line-stamped {@link Warnings.ParseWarning} ({@code what} names the leaf) if the value is
+   * outside the enumeration. The value node carries the source context, so the warning points at
+   * the value.
+   */
+  private <T> @Nullable T toEnum(
+      @Nullable SrosStatementTree leafNode, Map<String, T> values, String what) {
+    String value = singleKey(leafNode);
+    if (value == null) {
       return null;
     }
-    switch (text) {
-      case "enable":
-        return Boolean.TRUE;
-      case "disable":
-        return Boolean.FALSE;
-      default:
-        return null;
+    T result = values.get(value);
+    if (result == null) {
+      // leafNode is single-valued (singleKey returned non-null), so its one child is the value
+      // node.
+      SrosStatementTree valueNode = leafNode.getChildren().values().iterator().next();
+      warn(valueNode, String.format("SR-OS: unrecognized %s '%s'", what, value));
     }
-  }
-
-  private static @Nullable PrefixListEntry.Type parsePrefixType(@Nullable String text) {
-    if (text == null) {
-      return null;
-    }
-    switch (text) {
-      case "exact":
-        return PrefixListEntry.Type.EXACT;
-      case "longer":
-        return PrefixListEntry.Type.LONGER;
-      case "through":
-        return PrefixListEntry.Type.THROUGH;
-      case "range":
-        return PrefixListEntry.Type.RANGE;
-      case "to":
-        return PrefixListEntry.Type.TO;
-      case "address-mask":
-        return PrefixListEntry.Type.ADDRESS_MASK;
-      default:
-        return null;
-    }
-  }
-
-  private static @Nullable PolicyAction parseAction(@Nullable SrosStatementTree actionTypeNode) {
-    String text = singleKey(actionTypeNode);
-    if (text == null) {
-      return null;
-    }
-    switch (text) {
-      case "accept":
-        return PolicyAction.ACCEPT;
-      case "reject":
-        return PolicyAction.REJECT;
-      case "next-entry":
-        return PolicyAction.NEXT_ENTRY;
-      case "next-policy":
-        return PolicyAction.NEXT_POLICY;
-      default:
-        return null;
-    }
+    return result;
   }
 
   private static @Nonnull String unquote(String text) {
