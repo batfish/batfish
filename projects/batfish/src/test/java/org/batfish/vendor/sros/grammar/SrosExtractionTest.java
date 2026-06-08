@@ -10,14 +10,17 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -167,6 +170,53 @@ public final class SrosExtractionTest {
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     Router base = vc.getRouters().get("Base");
     assertThat(base.getInterfaces().keySet(), contains("system"));
+  }
+
+  /**
+   * A malformed/out-of-range value produces a line-stamped {@link ParseWarning} (annotate-visible),
+   * not a context-free red-flag. {@code bad_values.txt} has an out-of-range autonomous-system on
+   * line 4 and an out-of-range prefix-length on line 9.
+   */
+  @Test
+  public void testBadValuesWarnWithLines() {
+    SrosConfiguration vc = parseVendorConfig("bad_values.txt");
+
+    // No silent red-flags: the value problems are reported as ParseWarnings instead.
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+
+    assertThat(
+        warningOnLine(vc, "Expected autonomous-system in range 1-4294967295, but got '5000000000'"),
+        equalTo(4));
+    assertThat(warningOnLine(vc, "Expected prefix-length in range 0-32, but got '33'"), equalTo(9));
+
+    // The out-of-range values are dropped (not applied) on the model.
+    Router base = vc.getRouters().get("Base");
+    assertThat(base.getAutonomousSystem(), nullValue());
+    assertThat(base.getInterfaces().get("to-r2").getPrimaryPrefixLength(), nullValue());
+  }
+
+  /**
+   * A bad value inherited via apply-groups is cited to the group's source line (where the value is
+   * actually written), not the applying branch. {@code apply_groups_bad_value.txt} writes the
+   * out-of-range autonomous-system inside the group on line 6.
+   */
+  @Test
+  public void testApplyGroupsInheritedBadValueCitesGroupLine() {
+    SrosConfiguration vc = parseVendorConfig("apply_groups_bad_value.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(
+        warningOnLine(vc, "Expected autonomous-system in range 1-4294967295, but got '5000000000'"),
+        equalTo(6));
+  }
+
+  /** Returns the source line of the single parse warning with the given comment. */
+  private static int warningOnLine(SrosConfiguration vc, String comment) {
+    List<ParseWarning> matching =
+        vc.getWarnings().getParseWarnings().stream()
+            .filter(w -> w.getComment().equals(comment))
+            .collect(java.util.stream.Collectors.toList());
+    assertThat("exactly one warning with comment: " + comment, matching, hasSize(1));
+    return matching.get(0).getLine();
   }
 
   private static @Nonnull SrosConfiguration parseVendorConfig(String filename) {

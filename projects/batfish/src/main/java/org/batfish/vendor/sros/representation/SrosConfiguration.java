@@ -103,7 +103,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     // Routing policy is referenced by BGP, so convert it before BGP. Prefix-lists before the
     // policy-statements that reference them.
     SrosConversions.convertPrefixLists(this, c);
-    SrosConversions.convertPolicyStatements(this, c, getWarnings());
+    SrosConversions.convertPolicyStatements(this, c);
 
     // Each SR-OS router instance is a VRF; the "Base" instance is the Batfish default VRF.
     for (Router router : _routers.values()) {
@@ -113,6 +113,10 @@ public final class SrosConfiguration extends VendorConfiguration {
     }
 
     warnUnconvertedHardware();
+
+    // Mark all SR-OS structure types concrete so the structure manager reports definitions,
+    // undefined references, and unused structures (defined-but-never-referenced).
+    SrosStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
 
     return ImmutableList.of(c);
   }

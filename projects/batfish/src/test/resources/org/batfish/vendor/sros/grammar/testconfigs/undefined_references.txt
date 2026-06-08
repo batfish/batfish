@@ -1,0 +1,23 @@
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        policy-statement "export-system" {
+            entry 10 {
+                from {
+                    prefix-list ["missing-pfx"]
+                }
+                action {
+                    action-type accept
+                }
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+        bgp {
+            neighbor "10.0.0.1" {
+                group "missing-group"
+            }
+        }
+    }
+}

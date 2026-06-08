@@ -151,6 +151,52 @@ asserts the full r1 feature model extracts with no warnings, the unmodeled
 subtrees are silently skipped, and the preprocessor handles apply-groups (incl.
 regex keys + exclude) and delete edits.
 
+### Source provenance: line-stamped warnings + structure references
+
+Because extraction runs on the tree rather than on the parse tree, the tree must
+carry source provenance for warnings and reference tracking to work. Each
+`SrosStatementTree` node records the `ParserRuleContext`(s) of the statement(s)
+that created it (`addDefContext`). A statement's context lands on its **deepest**
+node — which for a single-valued leaf is the *value* node (`autonomous-system
+5000000000` → the `5000000000` node) and for a keyed list entry is the
+*structure-key* node, whose context spans the whole brace block (`start..stop`).
+This is the SR-OS analog of how Juniper threads `ParserRuleContext`s into its
+extractor; SR-OS differs from Juniper in needing **no** `FlattenerLineMap`,
+because it is not flattened — the hierarchical grammar parses brace, flat, and
+mixed input directly, so `parser.getLine(token)` is the true source line. A node
+may carry several contexts (the same path configured by mixed brace + flat input,
+or content inherited via `apply-groups`, which `copyInto` propagates so an
+inherited value or reference is attributed to the **group definition's** line).
+
+Two things ride on this provenance:
+
+- **Line-stamped value warnings.** Malformed or out-of-range values produce a
+  `ParseWarning` on the offending source line, not a context-free red-flag. The
+  range checks use the shared `toIntegerInSpace`/`toLongInSpace` idiom (as in
+  flatjuniper/palo_alto) bounded to the YANG-authoritative spaces:
+  `autonomous-system` 1–4294967295, interface `prefix-length` 0–32,
+  policy-statement `entry-id` 1–65535. Unlike grammar-driven extractors, the SR-OS
+  value is *not* grammar-guaranteed numeric (every leaf value is a generic word),
+  so a non-numeric value is warned here rather than assumed away. Because these are
+  `ParseWarning`s, the [`annotate`](../../../projects/batfish/src/main/java/org/batfish/main/annotate/Annotate.java)
+  tool renders them inline above the source line (with a `#` comment header, since
+  SR-OS uses `#` comments).
+- **Structure definitions and references.** `defineStructure` records each
+  `prefix-list`, `policy-statement`, and `bgp group` definition (with its
+  definition lines); `referenceStructure` records each use — a neighbor's `group`,
+  the BGP `import`/`export` policy lists, and a policy entry's
+  `from prefix-list` — keyed to the referring line. `SrosConfiguration.toVendorIndependentConfigurations`
+  finalizes with `markConcreteStructure`, so the `definedStructures`,
+  `undefinedReferences`, and unused-structure (zero-referrer) questions all work
+  for SR-OS. The conversion-time guards that skip an undefined prefix-list/group no
+  longer warn — the undefined reference is reported once, by the structure manager.
+
+`SrosExtractionTest` covers the line-stamped value warnings (including a value
+inherited from a group, cited to the group's line); `SrosConversionTest` covers
+definition lines (a multi-line brace block records >1 line), undefined references,
+and unused (zero-referrer) structures; `AnnotateTest#testSros` covers the
+end-to-end annotate output.
+
 ## Conversion (P5)
 
 `SrosConfiguration.toVendorIndependentConfigurations()` converts the typed P4

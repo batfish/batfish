@@ -1,0 +1,13 @@
+# Configuration format version 26.3 revision 0
+configure {
+    groups {
+        group "bad-as" {
+            router "Base" {
+                autonomous-system 5000000000
+            }
+        }
+    }
+    router "Base" {
+        apply-groups "bad-as"
+    }
+}

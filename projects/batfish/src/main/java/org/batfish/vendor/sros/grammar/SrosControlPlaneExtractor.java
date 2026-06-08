@@ -53,7 +53,7 @@ public final class SrosControlPlaneExtractor implements ControlPlaneExtractor {
     // populate the typed feature model from it.
     SrosStatementTree root = cb.getTree();
     SrosPreprocessor.preprocess(root, _w);
-    SrosFeatureExtractor.extract(root, _configuration, _w);
+    SrosFeatureExtractor.extract(root, _configuration, _w, _parser, _text);
   }
 
   private org.batfish.vendor.sros.representation.SrosConfiguration _configuration;

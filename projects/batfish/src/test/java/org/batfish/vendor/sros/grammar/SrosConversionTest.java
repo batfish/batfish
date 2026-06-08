@@ -1,12 +1,19 @@
 package org.batfish.vendor.sros.grammar;
 
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNoUndefinedReferences;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -32,6 +39,8 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.sros.representation.SrosStructureType;
+import org.batfish.vendor.sros.representation.SrosStructureUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -164,6 +173,95 @@ public final class SrosConversionTest {
         ccae,
         hasRedFlagWarning(
             "r1_admin_show_configuration.txt", containsString("hardware provisioning")));
+  }
+
+  /**
+   * The captured r1 config records its named structures with their definition lines, and the
+   * references that resolve (no undefined references): the BGP group {@code ebgp}, the prefix-list
+   * {@code system-pfx}, and the policy-statements are all defined and referenced.
+   */
+  @Test
+  public void testStructureDefinitionsAndReferences() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
+    String filename = "configs/r1_admin_show_configuration.txt";
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // The prefix-list is defined and referenced once (by export-system's entry 10).
+    assertThat(ccae, hasDefinedStructure(filename, SrosStructureType.PREFIX_LIST, "system-pfx"));
+    assertThat(ccae, hasNumReferrers(filename, SrosStructureType.PREFIX_LIST, "system-pfx", 1));
+    // The BGP group is defined and referenced once (by neighbor 10.0.0.1).
+    assertThat(ccae, hasDefinedStructure(filename, SrosStructureType.BGP_GROUP, "ebgp"));
+    assertThat(ccae, hasNumReferrers(filename, SrosStructureType.BGP_GROUP, "ebgp", 1));
+    // Both policy-statements are defined.
+    assertThat(
+        ccae, hasDefinedStructure(filename, SrosStructureType.POLICY_STATEMENT, "export-system"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, SrosStructureType.POLICY_STATEMENT, "import-all"));
+    // No dangling references in a well-formed config.
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * A multi-line brace block records more than one source line as the structure's definition lines
+   * (the {@code export-system} policy-statement is a multi-line brace block in r1).
+   */
+  @Test
+  public void testStructureDefinitionSpansBraceBlockLines() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
+    String filename = "configs/r1_admin_show_configuration.txt";
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    // The definition spans more than one line (a brace block), not a single line.
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename,
+            SrosStructureType.POLICY_STATEMENT,
+            "export-system",
+            hasSize(greaterThan(1))));
+  }
+
+  /** A reference to a non-existent group/prefix-list is reported as an undefined reference. */
+  @Test
+  public void testUndefinedReferences() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, TESTCONFIGS_PREFIX + "undefined_references.txt");
+    String filename = "configs/undefined_references.txt";
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            SrosStructureType.BGP_GROUP,
+            "missing-group",
+            SrosStructureUsage.BGP_NEIGHBOR_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            SrosStructureType.PREFIX_LIST,
+            "missing-pfx",
+            SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST));
+  }
+
+  /** A prefix-list defined but never referenced is recorded with zero referrers (unused). */
+  @Test
+  public void testUnusedStructure() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, TESTCONFIGS_PREFIX + "unused_structure.txt");
+    String filename = "configs/unused_structure.txt";
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, SrosStructureType.PREFIX_LIST, "unused-pfx"));
+    assertThat(ccae, hasNumReferrers(filename, SrosStructureType.PREFIX_LIST, "unused-pfx", 0));
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {

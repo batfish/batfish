@@ -246,6 +246,7 @@ public final class Annotate {
       case IPTABLES:
       case JUNIPER:
       case JUNIPER_SWITCH:
+      case NOKIA_SROS:
       case PALO_ALTO:
       case PALO_ALTO_NESTED:
       case VYOS:

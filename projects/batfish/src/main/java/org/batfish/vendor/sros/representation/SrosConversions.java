@@ -123,17 +123,16 @@ public final class SrosConversions {
    * (return when called as a subroutine, exit otherwise) mirrors the Junos conversion so these
    * policies compose correctly inside a {@link FirstMatchChain}.
    */
-  static void convertPolicyStatements(SrosConfiguration vc, Configuration c, Warnings w) {
+  static void convertPolicyStatements(SrosConfiguration vc, Configuration c) {
     for (PolicyStatement ps : vc.getPolicyStatements().values()) {
-      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(ps, c, w));
+      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(ps, c));
     }
   }
 
-  private static @Nonnull RoutingPolicy toRoutingPolicy(
-      PolicyStatement ps, Configuration c, Warnings w) {
+  private static @Nonnull RoutingPolicy toRoutingPolicy(PolicyStatement ps, Configuration c) {
     List<Statement> statements = new ArrayList<>();
     for (PolicyStatementEntry entry : ps.getEntries().values()) {
-      BooleanExpr guard = toGuard(ps, entry, c, w);
+      BooleanExpr guard = toGuard(entry, c);
       List<Statement> onMatch = actionStatements(entry.getAction());
       if (guard == BooleanExprs.TRUE) {
         // No from-criteria: the entry always matches. Emit its action unconditionally.
@@ -158,14 +157,13 @@ public final class SrosConversions {
    * references (a route matches if it is permitted by any referenced list). An entry with no
    * modeled from-criteria matches everything ({@link BooleanExprs#TRUE}).
    */
-  private static @Nonnull BooleanExpr toGuard(
-      PolicyStatement ps, PolicyStatementEntry entry, Configuration c, Warnings w) {
+  private static @Nonnull BooleanExpr toGuard(PolicyStatementEntry entry, Configuration c) {
     List<BooleanExpr> disjuncts = new ArrayList<>();
     for (String plName : entry.getFromPrefixLists()) {
       if (!c.getRouteFilterLists().containsKey(plName)) {
-        w.redFlagf(
-            "SR-OS: policy-statement '%s' entry %d references undefined prefix-list '%s'",
-            ps.getName(), entry.getEntryId(), plName);
+        // Undefined prefix-list: skip this disjunct. The undefined reference is reported by the
+        // structure manager (extraction records the reference; markConcreteStructure flags it), so
+        // no warning is emitted here to avoid duplicating it.
         continue;
       }
       disjuncts.add(new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(plName)));
@@ -357,12 +355,9 @@ public final class SrosConversions {
       return;
     }
 
+    // Undefined group (neighbor names a group that does not exist): the reference is reported by
+    // the structure manager (recorded at extraction), so no warning is emitted here.
     BgpGroup group = neighbor.getGroup() == null ? null : proc.getGroups().get(neighbor.getGroup());
-    if (neighbor.getGroup() != null && group == null) {
-      w.redFlagf(
-          "SR-OS: BGP neighbor %s references undefined group '%s'",
-          neighbor.getIpAddress(), neighbor.getGroup());
-    }
 
     // peer-as: per-neighbor wins, else inherited from the group.
     Long peerAs = neighbor.getPeerAs();
