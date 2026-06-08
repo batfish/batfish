@@ -41,6 +41,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources",
+        "//projects/batfish/src/test/resources/org/batfish/vendor/sros/grammar/testconfigs",
     ],
     tags = ["cpu:4"],
     deps = [

@@ -44,21 +44,69 @@ config contains tokens those heuristics would otherwise claim (e.g.
 `policy-options {`, `interface …`). RANCID content types `sros` and `sros-md`
 also map to `NOKIA_SROS` (previously routed to `UNSUPPORTED`).
 
-## Preprocessing decision
+## Parser (P3)
 
-SR-OS will follow the Junos two-grammar **flatten → preprocess** model (mirrors
-`juniper` → `JuniperFlattener` → `flatjuniper`), decided during
-characterization. The rationale:
+The parser lives under the vendor-scoped path
+[`org.batfish.vendor.sros.grammar`](../../../projects/batfish/src/main/antlr4/org/batfish/vendor/sros/grammar/):
+`SrosLexer.g4`, `SrosParser.g4`, `SrosCombinedParser`, `SrosBaseLexer`,
+`SrosControlPlaneExtractor`, and `SrosConfigurationBuilder`. It produces an
+`SrosConfiguration` (in the `representation` subpackage).
 
-- Both brace and flat forms are legitimate, mixable inputs, so an outer grammar
-  recognizes both and flattens braced blocks to one canonical absolute-path
-  `/configure …` stream.
-- Incremental edit verbs are grammar (`delete`/`-`/`~`/`insert before|after`/
-  `replace … with`/`copy`/`rename`); a preprocessor applies them in order.
-- `apply-groups` config-group inheritance must be expanded by Batfish (configs
-  ship unexpanded): regex/wildcard key match, first-listed-wins precedence,
+### Canonical form: one hierarchical grammar, not a flatten pass
+
+P1 left an open architecture question: flatten brace → flat `/configure …` lines
+(the Junos/Palo Alto pattern), or keep a single hierarchical grammar and treat
+flat lines as ordinary statements. **P3 chose the single-grammar
+hierarchical-canonical approach.** One grammar accepts all three input forms,
+because they are structurally the same token stream of statements:
+
+- the brace/hierarchical form from `admin show configuration` (`configure { … }`),
+- the absolute-path flat form, where each line is a `/configure …` statement, and
+- a mix of the two in one file.
+
+A flat `/configure …` line is simply a leaf `statement` whose first word begins
+with `/`. The `SrosConfigurationBuilder` walks the tree and normalizes **every**
+leaf (or empty block) to one canonical absolute-path string — the path words
+joined by spaces, with a leading `/configure` rewritten to `configure`. So all
+three forms yield the identical set of canonical statements; the mixed case (the
+one that breaks designs assuming one form per file) is correct by construction.
+
+Why this over the flatten pipeline:
+
+- **Mixed-form equivalence is the literal output**, with no second grammar and no
+  `FlattenerLineMap` round-trip.
+- **True source line numbers are preserved**, so parse warnings point at the
+  original config without offset bookkeeping.
+- **Fewest moving parts** for the P3 gate (parse the captured config with zero
+  FATAL warnings). The Palo Alto flattener already builds a `SetStatementTree`
+  internally, so the "flatten" and "tree" camps converge anyway.
+
+This mirrors the *spirit* of the Junos pipeline (one canonical statement form fed
+to extraction) while avoiding the text round-trip.
+
+### Deferred to extraction (P4+)
+
+The following were characterized in P1 and are deferred to the extraction phase,
+where feature-specific modeling needs them; they operate on the canonical
+statement tree this parser produces:
+
+- Incremental edit verbs (`delete`/`-`/`~`/`insert before|after`/`replace … with`/
+  `copy`/`rename`) — applied in order as a preprocessor stage.
+- `apply-groups` config-group inheritance — Batfish must expand it (configs ship
+  unexpanded): regex/wildcard key match, first-listed-wins precedence,
   `apply-groups-exclude`.
-- Per-list ordering comes from YANG `ordered-by`; an absent leaf means the YANG
-  default. BGP group→neighbor inheritance is resolved in extraction.
+- Per-list ordering from YANG `ordered-by`; absent leaf ⇒ YANG default. BGP
+  group→neighbor inheritance resolved in extraction.
 
-The grammar, preprocessor, and extractor are implemented in later phases (P3+).
+As of P3 the builder records the canonical statements and extracts the system
+name as the hostname; feature extraction and conversion are P4/P5.
+
+### Tests
+
+[`SrosGrammarTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosGrammarTest.java)
+covers the P3 gate and the mixed-form acceptance requirement:
+
+- the captured P0 lab r1 `admin show configuration` parses with zero FATAL
+  warnings and nothing unrecognized;
+- pure-brace, pure-flat, and mixed inputs describing the same configuration
+  produce the identical canonical statement list.

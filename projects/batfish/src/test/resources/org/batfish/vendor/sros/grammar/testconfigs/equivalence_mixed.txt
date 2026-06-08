@@ -1,0 +1,20 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+        autonomous-system 65001
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        bgp {
+            router-id 1.1.1.1
+        }
+    }
+}
+/configure router "Base" bgp group "ebgp" peer-as 65002
+/configure router "Base" bgp group "ebgp" import policy ["import-all"]
