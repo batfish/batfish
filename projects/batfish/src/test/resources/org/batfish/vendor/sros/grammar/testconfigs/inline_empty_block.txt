@@ -1,0 +1,12 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        prefix-list "to-list" {
+            prefix 10.20.0.0/16 type to {
+                to-prefix 10.20.0.0/20 { }
+                to-prefix 10.20.16.0/24 { }
+            }
+        }
+    }
+}

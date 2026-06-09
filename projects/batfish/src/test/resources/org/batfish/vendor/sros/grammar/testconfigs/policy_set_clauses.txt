@@ -22,16 +22,13 @@ configure {
         }
         prefix-list "to-list" {
             prefix 10.20.0.0/16 type to {
-                to-prefix 10.20.0.0/20 {
-                }
-                to-prefix 10.20.16.0/24 {
-                }
+                to-prefix 10.20.0.0/20 { }
+                to-prefix 10.20.16.0/24 { }
             }
         }
         prefix-list "mask-list" {
             prefix 172.16.0.0/16 type address-mask {
-                mask-pattern 255.255.0.0 {
-                }
+                mask-pattern 255.255.0.0 { }
             }
         }
         policy-statement "export-to-r2" {
