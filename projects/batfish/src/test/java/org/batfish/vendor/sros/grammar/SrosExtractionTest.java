@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
@@ -30,14 +31,17 @@ import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
+import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
+import org.batfish.vendor.sros.representation.PolicyStatementEntry;
 import org.batfish.vendor.sros.representation.PrefixList;
 import org.batfish.vendor.sros.representation.PrefixListEntry;
 import org.batfish.vendor.sros.representation.Router;
 import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
+import org.batfish.vendor.sros.representation.StaticRoute;
 import org.junit.Test;
 
 /** Tests of SR-OS feature extraction (P4): the canonical tree, the preprocessor, and the model. */
@@ -131,6 +135,180 @@ public final class SrosExtractionTest {
   public void testHostnameExtraction() {
     SrosConfiguration vc = parseVendorConfig("hostname.txt");
     assertThat(vc.getHostname(), equalTo("sros-r1"));
+  }
+
+  /**
+   * static-routes extraction: next-hop and blackhole routes, the admin-state-enable flag, and the
+   * preference/metric leaves (with their YANG defaults when absent).
+   */
+  @Test
+  public void testStaticRoutesExtraction() {
+    SrosConfiguration vc = parseVendorConfig("static_routes.txt");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    List<StaticRoute> routes = vc.getRouters().get("Base").getStaticRoutes();
+    assertThat(routes, hasSize(4));
+
+    // route 1: next-hop, admin-state enable, default preference 5 / metric 1.
+    StaticRoute nh = routes.get(0);
+    assertThat(nh.getPrefix(), equalTo(Prefix.parse("192.0.2.0/24")));
+    assertThat(nh.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(nh.getBlackhole(), equalTo(false));
+    assertThat(nh.getAdminStateEnable(), equalTo(true));
+    assertThat(nh.getPreference(), equalTo(StaticRoute.DEFAULT_PREFERENCE));
+    assertThat(nh.getMetric(), equalTo(StaticRoute.DEFAULT_METRIC));
+
+    // route 2: blackhole, admin-state enable.
+    StaticRoute bh = routes.get(1);
+    assertThat(bh.getPrefix(), equalTo(Prefix.parse("198.51.100.0/24")));
+    assertThat(bh.getNextHopIp(), nullValue());
+    assertThat(bh.getBlackhole(), equalTo(true));
+    assertThat(bh.getAdminStateEnable(), equalTo(true));
+
+    // route 3: next-hop with explicit preference 100 / metric 50.
+    StaticRoute nhPref = routes.get(2);
+    assertThat(nhPref.getPrefix(), equalTo(Prefix.parse("203.0.113.0/24")));
+    assertThat(nhPref.getPreference(), equalTo(100));
+    assertThat(nhPref.getMetric(), equalTo(50));
+
+    // route 4: next-hop with no admin-state -> not enabled (will not be installed in conversion).
+    StaticRoute nhNoAdmin = routes.get(3);
+    assertThat(nhNoAdmin.getPrefix(), equalTo(Prefix.parse("100.64.0.0/24")));
+    assertThat(nhNoAdmin.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(nhNoAdmin.getAdminStateEnable(), equalTo(false));
+  }
+
+  /**
+   * Policy set-clause + community-list + prefix-list-bound extraction: {@code action metric set},
+   * {@code as-path-prepend as-path/repeat}, {@code community add}, a {@code community} list, and
+   * the {@code through-length}/{@code start-length}/{@code end-length} prefix-list bounds.
+   */
+  @Test
+  public void testPolicySetClausesExtraction() {
+    SrosConfiguration vc = parseVendorConfig("policy_set_clauses.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+
+    // community list "comm-tag" with one member.
+    assertThat(vc.getCommunities(), hasKey("comm-tag"));
+    Community comm = vc.getCommunities().get("comm-tag");
+    assertThat(comm.getMembers(), contains("65001:100"));
+
+    // prefix-list bounds: through-length on lo-range, start/end-length on host-range.
+    PrefixListEntry through = vc.getPrefixLists().get("lo-range").getEntries().get(0);
+    assertThat(through.getType(), equalTo(PrefixListEntry.Type.THROUGH));
+    assertThat(through.getThroughLength(), equalTo(32));
+    PrefixListEntry range = vc.getPrefixLists().get("host-range").getEntries().get(0);
+    assertThat(range.getType(), equalTo(PrefixListEntry.Type.RANGE));
+    assertThat(range.getStartLength(), equalTo(24));
+    assertThat(range.getEndLength(), equalTo(32));
+
+    // entry 10 set-clauses: metric 50, as-path-prepend 65001 x2, community add comm-tag.
+    PolicyStatement ps = vc.getPolicyStatements().get("export-to-r2");
+    PolicyStatementEntry e10 = ps.getEntries().get(10L);
+    assertThat(e10.getSetMetric(), equalTo(50L));
+    assertThat(e10.getAsPathPrependAsn(), equalTo(65001L));
+    assertThat(e10.getAsPathPrependRepeat(), equalTo(2));
+    assertThat(e10.getCommunityAdds(), contains("comm-tag"));
+
+    // entry 20 set-clause: metric 200, no prepend (default repeat), no community.
+    PolicyStatementEntry e20 = ps.getEntries().get(20L);
+    assertThat(e20.getSetMetric(), equalTo(200L));
+    assertThat(e20.getAsPathPrependAsn(), nullValue());
+    assertThat(e20.getCommunityAdds(), empty());
+  }
+
+  /**
+   * OSPF extraction: instance, router-id, admin-state, areas, and per-area interface type/metric.
+   */
+  @Test
+  public void testOspfExtraction() {
+    SrosConfiguration vc = parseVendorConfig("ospf.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    org.batfish.vendor.sros.representation.OspfProcess proc =
+        vc.getRouters().get("Base").getOspfProcess();
+    assertThat(proc, notNullValue());
+    assertThat(proc.getInstance(), equalTo(0));
+    assertThat(proc.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(proc.getAdminStateEnable(), equalTo(true));
+    org.batfish.vendor.sros.representation.OspfArea area = proc.getAreas().get("0.0.0.0");
+    assertThat(area, notNullValue());
+    assertThat(area.getInterfaces().keySet(), containsInAnyOrder("system", "to-r3"));
+    org.batfish.vendor.sros.representation.OspfAreaInterface toR3 =
+        area.getInterfaces().get("to-r3");
+    assertThat(
+        toR3.getInterfaceType(),
+        equalTo(
+            org.batfish.vendor.sros.representation.OspfAreaInterface.InterfaceType.POINT_TO_POINT));
+    assertThat(toR3.getMetric(), equalTo(100));
+    assertThat(area.getInterfaces().get("system").getMetric(), nullValue());
+  }
+
+  /**
+   * VPRN extraction: a {@code service vprn "<name>"} becomes a {@link Router} with its interfaces.
+   */
+  @Test
+  public void testVprnExtraction() {
+    SrosConfiguration vc = parseVendorConfig("vprn.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(vc.getRouters().keySet(), containsInAnyOrder("Base", "red"));
+    Router red = vc.getRouters().get("red");
+    assertThat(red.getInterfaces(), hasKey("red-lo"));
+    assertThat(
+        red.getInterfaces().get("red-lo").getPrimaryAddress(), equalTo(Ip.parse("172.16.0.1")));
+    assertThat(red.getInterfaces().get("red-lo").getPort(), nullValue());
+  }
+
+  /** Route-reflector extraction: a group's cluster-id and next-hop-self inherit to its neighbor. */
+  @Test
+  public void testRouteReflectorExtraction() {
+    SrosConfiguration vc = parseVendorConfig("route_reflector.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    BgpGroup clients = vc.getRouters().get("Base").getBgpProcess().getGroups().get("clients");
+    assertThat(clients.getClusterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(clients.getNextHopSelf(), equalTo(true));
+    BgpNeighbor nbr = vc.getRouters().get("Base").getBgpProcess().getNeighbors().get("10.0.0.1");
+    // inherited from the group
+    assertThat(nbr.getClusterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(nbr.getNextHopSelf(), equalTo(true));
+  }
+
+  /** from-protocol extraction: {@code from protocol name [static]} on a policy entry. */
+  @Test
+  public void testFromProtocolExtraction() {
+    SrosConfiguration vc = parseVendorConfig("redistribute_static.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    PolicyStatement ps = vc.getPolicyStatements().get("export-redist");
+    assertThat(
+        ps.getEntries().get(20L).getFromProtocols(),
+        contains(org.batfish.vendor.sros.representation.FromProtocol.STATIC));
+  }
+
+  /**
+   * Extraction warns (never silently skips/defaults) on: static-route ECMP (multiple next-hops), an
+   * illegal prefix-list 'through' missing its length, an inverted 'range', an unrecognized
+   * from-protocol, and a non-boolean flag value. Each is a line-stamped parse warning.
+   */
+  @Test
+  public void testExtractionWarnings() {
+    SrosConfiguration vc = parseVendorConfig("warnings.txt");
+    // static route with two next-hops -> ECMP warning, only the first is modeled.
+    warningOnLine(
+        vc, "static route 192.0.2.0/24 has 2 next-hops (ECMP); only the first is modeled");
+    StaticRoute sr = vc.getRouters().get("Base").getStaticRoutes().get(0);
+    assertThat(sr.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    // through entry with no through-length, and an inverted range.
+    warningOnLine(vc, "prefix-list 'through' entry is missing through-length");
+    warningOnLine(vc, "prefix-list range start-length 30 is greater than end-length 24");
+    // unrecognized from-protocol is warned and dropped; the valid one is kept.
+    warningOnLine(vc, "unrecognized from-protocol 'bogusproto'");
+    assertThat(
+        vc.getPolicyStatements().get("p").getEntries().get(10L).getFromProtocols(),
+        contains(org.batfish.vendor.sros.representation.FromProtocol.STATIC));
+    // non-boolean next-hop-self value is warned, flag left unset (null).
+    warningOnLine(vc, "expected next-hop-self to be true or false but got 'bogus'");
+    assertThat(
+        vc.getRouters().get("Base").getBgpProcess().getGroups().get("g").getNextHopSelf(),
+        nullValue());
   }
 
   /**
@@ -235,7 +413,7 @@ public final class SrosExtractionTest {
   public void testUnrecognizedPrefixTypeWarns() {
     SrosConfiguration vc = parseVendorConfig("bad_prefix_type.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized prefix-list match type 'bogus'"), equalTo(8));
+    assertThat(warningOnLine(vc, "unrecognized prefix-list match type 'bogus'"), equalTo(8));
     // The entry with the bad type is dropped, leaving the prefix-list empty.
     assertThat(vc.getPrefixLists().get("system-pfx").getEntries(), empty());
   }
@@ -249,8 +427,8 @@ public final class SrosExtractionTest {
   public void testUnrecognizedEnumsWarn() {
     SrosConfiguration vc = parseVendorConfig("bad_enums.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized admin-state 'bogus-state'"), equalTo(7));
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized action-type 'bogus-action'"), equalTo(13));
+    assertThat(warningOnLine(vc, "unrecognized admin-state 'bogus-state'"), equalTo(7));
+    assertThat(warningOnLine(vc, "unrecognized action-type 'bogus-action'"), equalTo(13));
     // The unrecognized values leave the corresponding fields unset.
     assertThat(vc.getPorts().get("1/1/c1/1").getAdminStateEnable(), nullValue());
     assertThat(vc.getPolicyStatements().get("p").getEntries().get(10L).getAction(), nullValue());

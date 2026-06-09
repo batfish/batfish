@@ -1,0 +1,55 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        community "comm-tag" {
+            member "65001:100"
+        }
+        prefix-list "system-pfx" {
+            prefix 1.1.1.1/32 type exact {
+            }
+        }
+        prefix-list "lo-range" {
+            prefix 192.168.0.0/16 type through {
+                through-length 32
+            }
+        }
+        prefix-list "host-range" {
+            prefix 10.0.0.0/8 type range {
+                start-length 24
+                end-length 32
+            }
+        }
+        policy-statement "export-to-r2" {
+            entry 10 {
+                from {
+                    prefix-list ["system-pfx"]
+                }
+                action {
+                    action-type accept
+                    community {
+                        add ["comm-tag"]
+                    }
+                    metric {
+                        set 50
+                    }
+                    as-path-prepend {
+                        as-path 65001
+                        repeat 2
+                    }
+                }
+            }
+            entry 20 {
+                from {
+                    prefix-list ["lo-range"]
+                }
+                action {
+                    action-type accept
+                    metric {
+                        set 200
+                    }
+                }
+            }
+        }
+    }
+}

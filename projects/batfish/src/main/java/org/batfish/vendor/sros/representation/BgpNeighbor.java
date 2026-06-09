@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 
 /**
  * An SR-OS BGP neighbor (e.g. {@code bgp neighbor "10.0.0.1"}), keyed by peer IP string. A neighbor
@@ -61,6 +62,24 @@ public final class BgpNeighbor implements Serializable {
     return _exportPolicies;
   }
 
+  /** The route-reflector {@code cluster cluster-id}, or {@code null} if not an RR client. */
+  public @Nullable Ip getClusterId() {
+    return _clusterId;
+  }
+
+  public void setClusterId(@Nullable Ip clusterId) {
+    _clusterId = clusterId;
+  }
+
+  /** The {@code next-hop-self} flag, or {@code null} if unset. */
+  public @Nullable Boolean getNextHopSelf() {
+    return _nextHopSelf;
+  }
+
+  public void setNextHopSelf(@Nullable Boolean nextHopSelf) {
+    _nextHopSelf = nextHopSelf;
+  }
+
   /**
    * Fill any attribute not set directly on this neighbor from its {@code group} (per-neighbor
    * config wins). This resolves the SR-OS {@code group}→{@code neighbor} inheritance in the
@@ -84,6 +103,12 @@ public final class BgpNeighbor implements Serializable {
     if (_exportPolicies.isEmpty()) {
       _exportPolicies.addAll(group.getExportPolicies());
     }
+    if (_clusterId == null) {
+      _clusterId = group.getClusterId();
+    }
+    if (_nextHopSelf == null) {
+      _nextHopSelf = group.getNextHopSelf();
+    }
   }
 
   private final @Nonnull String _ipAddress;
@@ -92,4 +117,6 @@ public final class BgpNeighbor implements Serializable {
   private @Nullable Long _peerAs;
   private final @Nonnull List<String> _importPolicies;
   private final @Nonnull List<String> _exportPolicies;
+  private @Nullable Ip _clusterId;
+  private @Nullable Boolean _nextHopSelf;
 }

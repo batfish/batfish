@@ -385,3 +385,120 @@ validator: unmatched routes on either side score infinite cost and surface as
 failures, so a green result means the device and Batfish RIBs are
 route-for-route equal — not that one side was empty. No r1 RIB check is
 sickbayed.
+
+## Complexity ladder (P8)
+
+After the first eBGP lab validated end to end, the model was grown one feature
+"rung" at a time, each with its own live lab (in `lab-validation/snapshots/`)
+validated against ground truth. All eight rungs below are done — interfaces +
+static (L1), OSPF (L2), iBGP (L3), route reflection (L4), BGP policy depth (L5),
+redistribution (L6), multi-VRF/VPRN (L7), and deliberate misconfiguration (L8).
+The SR-OS facts each one pinned down:
+
+### L1 — static routes (`sros_static`)
+
+`router "<name>" static-routes route <prefix> route-type unicast` with a
+`next-hop <ip>` or a `blackhole` converts to a VI `StaticRoute` (`NextHopIp` /
+`NextHopDiscard`). The SR-OS `preference` is the admin distance and `metric` the
+route metric, with YANG defaults **5** and **1**. The decisive fact, confirmed
+on the live device: **SR-OS does not install a static route unless its
+next-hop/blackhole context is `admin-state enable`** — a route with no
+admin-state leaf is accepted into config but absent from the route-table, so
+conversion skips a non-enabled route. A `loopback` router-interface (no port)
+becomes a VI `LOOPBACK` and installs its connected prefix.
+
+### L3 — iBGP (`sros_ibgp`)
+
+A second SR-OS router peers iBGP (`group … type internal`, peer-as = local AS).
+This exercised the P5 iBGP default-accept path for the first time and forced a
+correction: **iBGP default-accept propagates BGP routes, it does not pull
+connected/static/IGP routes into BGP**. The generated default-accept policy was
+a blanket accept-all, which — combined with `setExportBgpFromBgpRib(false)`
+(export runs over the whole main RIB) — leaked a router's connected /31s into
+iBGP. The default-accept policy is now guarded on the route's protocol being
+BGP/iBGP (on import the route is always a received BGP route, so import
+default-accept is preserved). Validator note: SR-OS reports both eBGP and iBGP
+learned routes as protocol `bgp` in its route-table, while Batfish labels an
+iBGP-learned main-RIB route `ibgp`; the validator maps SR-OS `bgp` to either.
+iBGP-learned routes are admin **170**, same as eBGP on SR-OS.
+
+### L5 — BGP policy depth (`sros_bgp_policy`)
+
+Policy-statement entry `action` set-clauses now convert: `metric set <n>` →
+`SetMetric` (BGP MED), `as-path-prepend as-path <asn> [repeat <n>]` →
+`PrependAsPath` (the AS repeated `n` times), and `community add ["<name>"]` →
+`SetCommunities` unioning the named `policy-options community` list's members
+onto the route. Prefix-list match-type **bounds** are now captured:
+`through-length` / `start-length` / `end-length` nest in the block hanging off
+the type value word (`type <through|range> { … }`) in the canonical tree, so
+`through` converts to the exact window `[len, through-length]` and `range` to
+`[start-length, end-length]` — removing the P5 "this length or longer"
+over-approximation (and its warning) for those types (`to`/`address-mask` still
+over-approximate). Validated via the cEOS oracle: r2 learns r1's routes with the
+MED and prepended AS-path that r1's policy sets.
+
+### L2 — OSPF single area (`sros_ospf`)
+
+`router "<name>" ospf <instance>` converts to a VI `OspfProcess` (per VRF) with
+its areas and, on each OSPF interface, `OspfInterfaceSettings` (area, cost,
+network type, addresses). Batfish derives the adjacencies and neighbor configs
+from those interface settings in post-processing, so conversion only sets the
+interface settings and area membership. SR-OS facts: OSPF **internal** route
+preference (admin distance) is **10** (external 150) — not the Cisco 110; the
+default `reference-bandwidth` is 100 Gbps (so a 100 Gbps port derives cost 1); an
+explicit interface `metric` wins, a loopback is cost 0. The lab's two SR-OS
+routers form a point-to-point adjacency and each learns the other's system /32.
+
+### L4 — BGP route reflection (`sros_rr`)
+
+A BGP group/neighbor `cluster { cluster-id <ip> }` makes the peer a
+route-reflector client: conversion sets the VI peer's `clusterId` and the address
+family's `routeReflectorClient`, so Batfish reflects routes between clients.
+`next-hop-self true` prepends a `SetNextHop(self)` to the peer export policy.
+Both inherit group→neighbor. Lab finding: with no IGP underlay, an RR's clients
+**receive** a reflected route but mark it invalid (unresolvable originator
+next-hop) and don't install it — `next-hop-self` on the RR is what lets the
+clients resolve it. With it, each client installs the other's loopback.
+
+### L6 — redistribution (`sros_redist`)
+
+A policy entry `from { protocol { name [static direct bgp ospf isis] } }`
+converts to a `MatchProtocol` guard (ANDed with any `from prefix-list`). This
+also fixed a correctness bug: an entry whose only criterion was a (previously
+unmodeled) from-protocol guarded TRUE and leaked **every** route. Origin/MED on
+locally-sourced routes was refined here: a **connected/direct** route advertised
+by an export policy carries origin **IGP**, a **redistributed** route
+(static/OSPF/…) carries origin **INCOMPLETE**; and a non-BGP route is advertised
+with **MED 0** unless a policy explicitly sets the metric (an entry's `metric
+set` still wins). The cEOS oracle confirms the redistributed static prefix
+appears with origin incomplete and MED 0.
+
+### L7 — multi-VRF / VPRN (`sros_vprn`)
+
+`service vprn "<name>"` is a routing instance in its own VRF, modeled as a
+`Router` keyed by the service-name (reusing the interface/static/OSPF/BGP feature
+set), which conversion maps to a same-named VRF — exactly like a non-Base
+`router "<name>"`. So a VPRN's routes/interfaces land in their own VRF, separate
+from Base, with no leak. The validator was extended to validate VPRN VRFs:
+`info json /state service vprn "<name>" route-table`/`interface *` is captured
+and compared (routes tagged with the service-name as the VRF) against Batfish's
+corresponding VRF, so VRF separation is checked substantively, not just on Base.
+
+### L8 — deliberate misconfiguration (`sros_misconfig`)
+
+An AS-mismatch lab (r1's ebgp group sets peer-as 65099 while r2 is AS 65002) —
+no Batfish modeling change, this validates the **diagnostics**: Batfish predicts
+the eBGP session `NOT_COMPATIBLE` on both sides and learns no BGP routes,
+matching the device (r1's BGP RIB has 0 learned routes; r2 never learns r1's
+system prefix). Finding: **SR-OS enforces the BGP import/export policy leafref
+at commit** and rejects a reference to a non-existent policy-statement
+(`MGMT_CORE #224`), aborting the whole startup config — so a committed device
+config cannot carry an undefined policy reference. Batfish's `undefinedReferences`
+for SR-OS policies is therefore unit-testable but not lab-observable on a device.
+
+Tooling caveat: the `lab_builder` SR-OS `interface_up` precondition check is a
+false-negative on this lab — its heuristic ("`up` present and `down` absent" in
+the `show router interface` line) trips on the `Up/Down` column header, so it
+reports the (genuinely up) link interface as down. It is a collection-time
+precondition, not a lab test, so it does not affect the green result; the lab is
+collected regardless and validates 13/13.

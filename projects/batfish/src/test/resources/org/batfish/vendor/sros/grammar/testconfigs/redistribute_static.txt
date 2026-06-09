@@ -1,0 +1,57 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        policy-statement "export-redist" {
+            entry 20 {
+                from {
+                    protocol {
+                        name [static]
+                    }
+                }
+                action {
+                    action-type accept
+                }
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        interface "to-r2" {
+            port 1/1/c1/1
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                    prefix-length 31
+                }
+            }
+        }
+        static-routes {
+            route 192.0.2.0/24 route-type unicast {
+                next-hop 10.0.0.1 {
+                    admin-state enable
+                }
+            }
+        }
+        bgp {
+            router-id 1.1.1.1
+            group "ebgp" {
+                peer-as 65002
+                export {
+                    policy ["export-redist"]
+                }
+            }
+            neighbor "10.0.0.1" {
+                group "ebgp"
+            }
+        }
+    }
+}

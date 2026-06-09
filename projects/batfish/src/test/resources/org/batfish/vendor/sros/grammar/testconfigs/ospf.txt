@@ -1,0 +1,36 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        interface "to-r3" {
+            port 1/1/c1/1
+            ipv4 {
+                primary {
+                    address 10.0.1.0
+                    prefix-length 31
+                }
+            }
+        }
+        ospf 0 {
+            admin-state enable
+            router-id 1.1.1.1
+            area 0.0.0.0 {
+                interface "system" {
+                    interface-type point-to-point
+                }
+                interface "to-r3" {
+                    interface-type point-to-point
+                    metric 100
+                }
+            }
+        }
+    }
+}

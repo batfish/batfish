@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
+import com.google.errorprone.annotations.FormatMethod;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +25,12 @@ import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
+import org.batfish.vendor.sros.representation.Community;
+import org.batfish.vendor.sros.representation.FromProtocol;
 import org.batfish.vendor.sros.representation.Mda;
+import org.batfish.vendor.sros.representation.OspfArea;
+import org.batfish.vendor.sros.representation.OspfAreaInterface;
+import org.batfish.vendor.sros.representation.OspfProcess;
 import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
@@ -37,6 +43,7 @@ import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
 import org.batfish.vendor.sros.representation.SrosStructureType;
 import org.batfish.vendor.sros.representation.SrosStructureUsage;
+import org.batfish.vendor.sros.representation.StaticRoute;
 
 /**
  * Populates a {@link SrosConfiguration}'s typed feature model from the canonical, preprocessed
@@ -74,6 +81,21 @@ public final class SrosFeatureExtractor {
   /** policy-statement {@code entry-id}: YANG {@code uint32 range "1..65535"}. */
   private static final LongSpace ENTRY_ID_SPACE = LongSpace.of(Range.closed(1L, 65535L));
 
+  /** static-route next-hop/blackhole {@code metric}: YANG {@code uint32 range "0..65535"}. */
+  private static final IntegerSpace STATIC_METRIC_SPACE = IntegerSpace.of(new SubRange(0, 65535));
+
+  /**
+   * Route {@code preference} (admin distance): YANG {@code uint32 range "1..255"} across protocols.
+   */
+  private static final IntegerSpace ROUTE_PREFERENCE_SPACE = IntegerSpace.of(new SubRange(1, 255));
+
+  /** policy action {@code metric set}: BGP MED, YANG {@code int64 range "0..4294967295"}. */
+  private static final LongSpace POLICY_METRIC_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+
+  /** as-path-prepend {@code repeat}: YANG {@code uint32 range "1..6"}. */
+  private static final IntegerSpace AS_PATH_PREPEND_REPEAT_SPACE =
+      IntegerSpace.of(new SubRange(1, 6));
+
   /** Port {@code admin-state} enumeration: enable -> up, disable -> down. */
   private static final Map<String, Boolean> ADMIN_STATE =
       ImmutableMap.of("enable", Boolean.TRUE, "disable", Boolean.FALSE);
@@ -92,6 +114,16 @@ public final class SrosFeatureExtractor {
   /** BGP {@code type} enumeration (nokia-types-bgp:peer-type). */
   private static final Map<String, PeerType> PEER_TYPE =
       ImmutableMap.of("internal", PeerType.INTERNAL, "external", PeerType.EXTERNAL);
+
+  /** policy {@code from protocol name} enumeration (the modeled subset). */
+  private static final Map<String, FromProtocol> FROM_PROTOCOL =
+      ImmutableMap.<String, FromProtocol>builder()
+          .put("static", FromProtocol.STATIC)
+          .put("direct", FromProtocol.DIRECT)
+          .put("bgp", FromProtocol.BGP)
+          .put("ospf", FromProtocol.OSPF)
+          .put("isis", FromProtocol.ISIS)
+          .build();
 
   /** policy-statement entry/default {@code action-type} enumeration. */
   private static final Map<String, PolicyAction> POLICY_ACTION =
@@ -128,6 +160,7 @@ public final class SrosFeatureExtractor {
     extractCards(configure.getChild("card"));
     extractPorts(configure.getChild("port"));
     extractPolicyOptions(configure.getChild("policy-options"));
+    extractServices(configure.getChild("service"));
     extractRouters(configure.getChild("router"));
   }
 
@@ -212,7 +245,43 @@ public final class SrosFeatureExtractor {
               "autonomous-system")
           .ifPresent(router::setAutonomousSystem);
       extractInterfaces(router, routerNode.getChild("interface"));
+      extractStaticRoutes(router, routerNode.getChild("static-routes"));
+      extractOspf(router, routerNode.getChild("ospf"));
       extractBgp(router, routerNode.getChild("bgp"));
+      _c.getRouters().put(name, router);
+    }
+  }
+
+  /**
+   * Extract {@code service vprn "<name>"} instances. A VPRN is a routing instance in its own VRF,
+   * so it is modeled as a {@link Router} keyed by the VPRN service-name (which conversion maps to a
+   * same-named VRF, just like a non-Base {@code router "<name>"}). It carries the same
+   * interface/static-route/OSPF/BGP feature set as the Base router. Only VPRNs are read from the
+   * service tree; other service types (epipe, vpls, ies, ...) are not control-plane routers and are
+   * left unread.
+   */
+  private void extractServices(@Nullable SrosStatementTree service) {
+    if (service == null) {
+      return;
+    }
+    SrosStatementTree vprnList = service.getChild("vprn");
+    if (vprnList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : vprnList.getChildren().entrySet()) {
+      String name = unquote(e.getKey());
+      SrosStatementTree vprnNode = e.getValue();
+      Router router = new Router(name);
+      toLongInSpace(
+              singleValue(vprnNode, "autonomous-system"),
+              singleValueNode(vprnNode, "autonomous-system"),
+              AUTONOMOUS_SYSTEM_SPACE,
+              "autonomous-system")
+          .ifPresent(router::setAutonomousSystem);
+      extractInterfaces(router, vprnNode.getChild("interface"));
+      extractStaticRoutes(router, vprnNode.getChild("static-routes"));
+      extractOspf(router, vprnNode.getChild("ospf"));
+      extractBgp(router, vprnNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
   }
@@ -240,6 +309,222 @@ public final class SrosFeatureExtractor {
       }
       router.getInterfaces().put(name, iface);
     }
+  }
+
+  /**
+   * Extract {@code static-routes route <prefix> route-type <unicast|multicast>} entries. Each route
+   * is reached via a {@code next-hop <ip>} or a {@code blackhole}; both sub-contexts carry an
+   * {@code admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
+   * StaticRoute}), and optional {@code metric}/{@code preference}. Only the unicast IPv4 case is
+   * modeled here; a non-IPv4 prefix is warned and skipped by {@link #toPrefix}.
+   */
+  private void extractStaticRoutes(Router router, @Nullable SrosStatementTree staticRoutes) {
+    if (staticRoutes == null) {
+      return;
+    }
+    SrosStatementTree routeList = staticRoutes.getChild("route");
+    if (routeList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : routeList.getChildren().entrySet()) {
+      SrosStatementTree prefixNode = e.getValue();
+      Prefix prefix = toPrefix(e.getKey(), prefixNode);
+      if (prefix == null) {
+        continue;
+      }
+      // The route-type ("unicast"/"multicast") is the next path word and keys the route with the
+      // prefix in YANG; the next-hop/blackhole contexts hang under that route-type node.
+      SrosStatementTree routeType = prefixNode.getChild("route-type");
+      SrosStatementTree typeBody = routeType == null ? null : firstChild(routeType);
+      if (typeBody == null) {
+        continue;
+      }
+      StaticRoute route = new StaticRoute(prefix);
+      SrosStatementTree nextHop = typeBody.getChild("next-hop");
+      SrosStatementTree blackhole = typeBody.getChild("blackhole");
+      SrosStatementTree adminStateParent;
+      if (nextHop != null) {
+        // next-hop is a list keyed by the next-hop IP. The model holds a single next-hop; if the
+        // route configures more than one (ECMP), warn that only the first is modeled rather than
+        // silently dropping the rest. TODO: model ECMP static routes —
+        // https://github.com/batfish/batfish/issues/9989
+        if (nextHop.getChildren().size() > 1) {
+          warnf(
+              typeBody,
+              "static route %s has %d next-hops (ECMP); only the first is modeled",
+              prefix,
+              nextHop.getChildren().size());
+        }
+        SrosStatementTree nhEntry = firstChild(nextHop);
+        if (nhEntry != null) {
+          route.setNextHopIp(toIp(nhKey(nextHop), nhEntry, "static-route next-hop"));
+        }
+        adminStateParent = nhEntry;
+      } else if (blackhole != null) {
+        route.setBlackhole(true);
+        adminStateParent = blackhole;
+      } else {
+        // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
+        // Warn rather than silently skip.
+        warnf(
+            typeBody,
+            "static route %s has no modeled next-hop or blackhole; not converted",
+            prefix);
+        continue;
+      }
+      if (adminStateParent != null) {
+        Boolean adminUp =
+            toEnum(adminStateParent.getChild("admin-state"), ADMIN_STATE, "admin-state");
+        route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
+        toIntegerInSpace(
+                singleValue(adminStateParent, "metric"),
+                singleValueNode(adminStateParent, "metric"),
+                STATIC_METRIC_SPACE,
+                "static-route metric")
+            .ifPresent(route::setMetric);
+        toIntegerInSpace(
+                singleValue(adminStateParent, "preference"),
+                singleValueNode(adminStateParent, "preference"),
+                ROUTE_PREFERENCE_SPACE,
+                "static-route preference")
+            .ifPresent(route::setPreference);
+      }
+      router.getStaticRoutes().add(route);
+    }
+  }
+
+  /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
+  private static @Nullable String typeWord(SrosStatementTree entryNode) {
+    return singleValue(entryNode, "type");
+  }
+
+  /**
+   * Warn on illegal prefix-list length-bound combinations rather than silently building a bogus or
+   * over-approximated filter: a {@code through} entry without a {@code through-length}; a {@code
+   * range} entry missing {@code start-length} or {@code end-length}; an inverted range ({@code
+   * start-length > end-length}); or a bound shorter than the prefix's own length. The entry is
+   * still kept (conversion over-approximates a missing bound), but the warning makes it visible.
+   */
+  private void warnIllegalPrefixListBounds(PrefixListEntry ple, SrosStatementTree ctxNode) {
+    int len = ple.getPrefix().getPrefixLength();
+    switch (ple.getType()) {
+      case THROUGH -> {
+        Integer through = ple.getThroughLength();
+        if (through == null) {
+          warn(ctxNode, "prefix-list 'through' entry is missing through-length");
+        } else if (through < len) {
+          warnf(
+              ctxNode,
+              "prefix-list through-length %d is shorter than the prefix length %d",
+              through,
+              len);
+        }
+      }
+      case RANGE -> {
+        Integer start = ple.getStartLength();
+        Integer end = ple.getEndLength();
+        if (start == null || end == null) {
+          warn(ctxNode, "prefix-list 'range' entry is missing start-length or end-length");
+        } else if (start > end) {
+          warnf(
+              ctxNode,
+              "prefix-list range start-length %d is greater than end-length %d",
+              start,
+              end);
+        } else if (start < len) {
+          warnf(
+              ctxNode,
+              "prefix-list range start-length %d is shorter than the prefix length %d",
+              start,
+              len);
+        }
+      }
+      default -> {
+        // exact/longer/to/address-mask carry no through/range length bounds to validate here.
+      }
+    }
+  }
+
+  // --- ospf -------------------------------------------------------------------------------------
+
+  /** OSPF interface {@code metric} (cost): YANG {@code uint32 range "1..65535"}. */
+  private static final IntegerSpace OSPF_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 65535));
+
+  /** OSPF {@code interface-type} enumeration (the modeled subset). */
+  private static final Map<String, OspfAreaInterface.InterfaceType> OSPF_INTERFACE_TYPE =
+      ImmutableMap.of(
+          "broadcast", OspfAreaInterface.InterfaceType.BROADCAST,
+          "point-to-point", OspfAreaInterface.InterfaceType.POINT_TO_POINT);
+
+  /**
+   * Extract {@code router "<name>" ospf <instance>}: router-id, admin-state, and the per-area
+   * interfaces (with interface-type and metric/cost). Only the first/0 OSPF instance is modeled.
+   */
+  private void extractOspf(Router router, @Nullable SrosStatementTree ospfList) {
+    if (ospfList == null || ospfList.getChildren().isEmpty()) {
+      return;
+    }
+    // ospf is a list keyed by instance; model the first (typically instance 0).
+    Map.Entry<String, SrosStatementTree> e = ospfList.getChildren().entrySet().iterator().next();
+    int instance;
+    try {
+      instance = Integer.parseInt(e.getKey());
+    } catch (NumberFormatException ex) {
+      instance = 0;
+    }
+    SrosStatementTree ospfNode = e.getValue();
+    OspfProcess proc = new OspfProcess(instance);
+    proc.setRouterId(
+        toIp(
+            singleValue(ospfNode, "router-id"),
+            singleValueNode(ospfNode, "router-id"),
+            "ospf router-id"));
+    Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+
+    SrosStatementTree areaList = ospfNode.getChild("area");
+    if (areaList != null) {
+      for (Map.Entry<String, SrosStatementTree> ae : areaList.getChildren().entrySet()) {
+        String areaId = unquote(ae.getKey());
+        SrosStatementTree areaNode = ae.getValue();
+        OspfArea area = new OspfArea(areaId);
+        SrosStatementTree ifaceList = areaNode.getChild("interface");
+        if (ifaceList != null) {
+          for (Map.Entry<String, SrosStatementTree> ie : ifaceList.getChildren().entrySet()) {
+            String ifName = unquote(ie.getKey());
+            SrosStatementTree ifNode = ie.getValue();
+            OspfAreaInterface ospfIf = new OspfAreaInterface(ifName);
+            ospfIf.setInterfaceType(
+                toEnum(
+                    ifNode.getChild("interface-type"), OSPF_INTERFACE_TYPE, "ospf interface-type"));
+            toIntegerInSpace(
+                    singleValue(ifNode, "metric"),
+                    singleValueNode(ifNode, "metric"),
+                    OSPF_METRIC_SPACE,
+                    "ospf interface metric")
+                .ifPresent(ospfIf::setMetric);
+            area.getInterfaces().put(ifName, ospfIf);
+          }
+        }
+        proc.getAreas().put(areaId, area);
+      }
+    }
+    router.setOspfProcess(proc);
+  }
+
+  /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
+  private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
+    return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
+  }
+
+  /**
+   * The first child key of {@code node}, unquoted (e.g. the next-hop IP under the {@code next-hop}
+   * list — the device renders it quoted, {@code next-hop "10.0.0.1"}).
+   */
+  private static @Nullable String nhKey(SrosStatementTree node) {
+    return node.getChildren().isEmpty()
+        ? null
+        : unquote(node.getChildren().keySet().iterator().next());
   }
 
   private void extractBgp(Router router, @Nullable SrosStatementTree bgpNode) {
@@ -271,6 +556,15 @@ public final class SrosFeatureExtractor {
         group.getExportPolicies().addAll(policyNames(groupExport));
         referencePolicies(groupImport, SrosStructureUsage.BGP_GROUP_IMPORT_POLICY);
         referencePolicies(groupExport, SrosStructureUsage.BGP_GROUP_EXPORT_POLICY);
+        SrosStatementTree groupCluster = groupNode.getChild("cluster");
+        if (groupCluster != null) {
+          group.setClusterId(
+              toIp(
+                  singleValue(groupCluster, "cluster-id"),
+                  singleValueNode(groupCluster, "cluster-id"),
+                  "bgp cluster-id"));
+        }
+        group.setNextHopSelf(toBoolean(groupNode.getChild("next-hop-self"), "next-hop-self"));
         proc.getGroups().put(name, group);
       }
     }
@@ -304,6 +598,15 @@ public final class SrosFeatureExtractor {
         neighbor.getExportPolicies().addAll(policyNames(nbrExport));
         referencePolicies(nbrImport, SrosStructureUsage.BGP_NEIGHBOR_IMPORT_POLICY);
         referencePolicies(nbrExport, SrosStructureUsage.BGP_NEIGHBOR_EXPORT_POLICY);
+        SrosStatementTree nbrCluster = nbrNode.getChild("cluster");
+        if (nbrCluster != null) {
+          neighbor.setClusterId(
+              toIp(
+                  singleValue(nbrCluster, "cluster-id"),
+                  singleValueNode(nbrCluster, "cluster-id"),
+                  "bgp cluster-id"));
+        }
+        neighbor.setNextHopSelf(toBoolean(nbrNode.getChild("next-hop-self"), "next-hop-self"));
         proc.getNeighbors().put(ip, neighbor);
       }
     }
@@ -322,6 +625,23 @@ public final class SrosFeatureExtractor {
     if (po == null) {
       return;
     }
+    SrosStatementTree communities = po.getChild("community");
+    if (communities != null) {
+      for (Map.Entry<String, SrosStatementTree> e : communities.getChildren().entrySet()) {
+        String name = unquote(e.getKey());
+        SrosStatementTree commNode = e.getValue();
+        defineStructure(SrosStructureType.COMMUNITY, name, commNode);
+        Community community = new Community(name);
+        SrosStatementTree memberNode = commNode.getChild("member");
+        if (memberNode != null) {
+          for (String member : memberNode.getChildren().keySet()) {
+            community.getMembers().add(unquote(member));
+          }
+        }
+        _c.getCommunities().put(name, community);
+      }
+    }
+
     SrosStatementTree prefixLists = po.getChild("prefix-list");
     if (prefixLists != null) {
       for (Map.Entry<String, SrosStatementTree> e : prefixLists.getChildren().entrySet()) {
@@ -336,12 +656,40 @@ public final class SrosFeatureExtractor {
             if (prefix == null) {
               continue;
             }
+            SrosStatementTree entryNode = pe.getValue();
             PrefixListEntry.Type type =
-                toEnum(pe.getValue().getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
+                toEnum(entryNode.getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
             if (type == null) {
               continue;
             }
-            pl.getEntries().add(new PrefixListEntry(prefix, type));
+            PrefixListEntry ple = new PrefixListEntry(prefix, type);
+            // through/range carry length bounds in the block that hangs off the type value word,
+            // i.e. under `type <through|range> { ... }` -> entryNode.type.<value>.<bound>.
+            SrosStatementTree typeBody = navigate(entryNode, "type", typeWord(entryNode));
+            if (typeBody != null) {
+              toIntegerInSpace(
+                      singleValue(typeBody, "through-length"),
+                      singleValueNode(typeBody, "through-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list through-length")
+                  .ifPresent(ple::setThroughLength);
+              toIntegerInSpace(
+                      singleValue(typeBody, "start-length"),
+                      singleValueNode(typeBody, "start-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list start-length")
+                  .ifPresent(ple::setStartLength);
+              toIntegerInSpace(
+                      singleValue(typeBody, "end-length"),
+                      singleValueNode(typeBody, "end-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list end-length")
+                  .ifPresent(ple::setEndLength);
+            }
+            // Warn against the type value node (e.g. the `through`/`range` word), which carries a
+            // source context even when the entry's bound block is empty.
+            warnIllegalPrefixListBounds(ple, typeBody != null ? typeBody : entryNode);
+            pl.getEntries().add(ple);
           }
         }
         _c.getPrefixLists().put(name, pl);
@@ -371,8 +719,27 @@ public final class SrosFeatureExtractor {
                 SrosStructureType.PREFIX_LIST,
                 fromPfx,
                 SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
+            // from protocol name [static direct bgp ...] — the protocol(s) the route was learned
+            // from. Each value is resolved against the FromProtocol enum; an unrecognized protocol
+            // is warned and dropped (not silently kept as an unmatchable string).
+            SrosStatementTree fromProto = navigate(entryNode, "from", "protocol", "name");
+            if (fromProto != null) {
+              for (Map.Entry<String, SrosStatementTree> pe : fromProto.getChildren().entrySet()) {
+                FromProtocol fp = FROM_PROTOCOL.get(unquote(pe.getKey()));
+                if (fp == null) {
+                  warnf(pe.getValue(), "unrecognized from-protocol '%s'", unquote(pe.getKey()));
+                  continue;
+                }
+                entry.getFromProtocols().add(fp);
+              }
+            }
+            SrosStatementTree action = entryNode.getChild("action");
             entry.setAction(
-                toEnum(navigate(entryNode, "action", "action-type"), POLICY_ACTION, "action-type"));
+                toEnum(
+                    action == null ? null : action.getChild("action-type"),
+                    POLICY_ACTION,
+                    "action-type"));
+            extractEntrySetClauses(entry, action);
             ps.getEntries().put(entryId.get(), entry);
           }
         }
@@ -381,6 +748,56 @@ public final class SrosFeatureExtractor {
                 navigate(psNode, "default-action", "action-type"), POLICY_ACTION, "action-type"));
         _c.getPolicyStatements().put(name, ps);
       }
+    }
+  }
+
+  /**
+   * Extract the modeled {@code action} set-clauses of a policy entry: {@code metric set <n>} (BGP
+   * MED), {@code as-path-prepend as-path <asn> [repeat <n>]}, and {@code community add [...]}.
+   */
+  private void extractEntrySetClauses(
+      PolicyStatementEntry entry, @Nullable SrosStatementTree action) {
+    if (action == null) {
+      return;
+    }
+    // metric set <n>
+    SrosStatementTree metricSet = navigate(action, "metric", "set");
+    toLongInSpace(
+            singleKey(metricSet),
+            metricSet == null ? null : firstChild(metricSet),
+            POLICY_METRIC_SPACE,
+            "policy action metric")
+        .ifPresent(entry::setSetMetric);
+
+    // as-path-prepend as-path <asn> [repeat <n>]
+    SrosStatementTree prepend = action.getChild("as-path-prepend");
+    if (prepend != null) {
+      SrosStatementTree asPath = prepend.getChild("as-path");
+      toLongInSpace(
+              singleKey(asPath),
+              asPath == null ? null : firstChild(asPath),
+              AUTONOMOUS_SYSTEM_SPACE,
+              "as-path-prepend as-path")
+          .ifPresent(entry::setAsPathPrependAsn);
+      SrosStatementTree repeat = prepend.getChild("repeat");
+      toIntegerInSpace(
+              singleKey(repeat),
+              repeat == null ? null : firstChild(repeat),
+              AS_PATH_PREPEND_REPEAT_SPACE,
+              "as-path-prepend repeat")
+          .ifPresent(entry::setAsPathPrependRepeat);
+    }
+
+    // community add [...]
+    SrosStatementTree communityAdd = navigate(action, "community", "add");
+    if (communityAdd != null) {
+      for (String c : communityAdd.getChildren().keySet()) {
+        entry.getCommunityAdds().add(unquote(c));
+      }
+      referenceStructures(
+          SrosStructureType.COMMUNITY,
+          communityAdd,
+          SrosStructureUsage.POLICY_STATEMENT_ACTION_COMMUNITY);
     }
   }
 
@@ -456,11 +873,11 @@ public final class SrosFeatureExtractor {
     try {
       num = Integer.parseInt(text);
     } catch (NumberFormatException e) {
-      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warnf(node, "Expected %s in range %s, but got '%s'", name, space, text);
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warnf(node, "Expected %s in range %s, but got '%d'", name, space, num);
       return Optional.empty();
     }
     return Optional.of(num);
@@ -481,11 +898,11 @@ public final class SrosFeatureExtractor {
     try {
       num = Long.parseLong(text);
     } catch (NumberFormatException e) {
-      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warnf(node, "Expected %s in range %s, but got '%s'", name, space, text);
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warnf(node, "Expected %s in range %s, but got '%d'", name, space, num);
       return Optional.empty();
     }
     return Optional.of(num);
@@ -498,9 +915,7 @@ public final class SrosFeatureExtractor {
     }
     Optional<Ip> ip = Ip.tryParse(text);
     if (ip.isEmpty()) {
-      warn(
-          requireNonNull(ctxNode),
-          String.format("SR-OS: expected an IPv4 address %s but got '%s'", what, text));
+      warnf(requireNonNull(ctxNode), "expected an IPv4 address %s but got '%s'", what, text);
     }
     return ip.orElse(null);
   }
@@ -508,7 +923,7 @@ public final class SrosFeatureExtractor {
   private @Nullable Prefix toPrefix(String text, SrosStatementTree ctxNode) {
     Optional<Prefix> prefix = Prefix.tryParse(text);
     if (prefix.isEmpty()) {
-      warn(ctxNode, String.format("SR-OS: expected an IPv4 prefix but got '%s'", text));
+      warnf(ctxNode, "expected an IPv4 prefix but got '%s'", text);
     }
     return prefix.orElse(null);
   }
@@ -532,9 +947,35 @@ public final class SrosFeatureExtractor {
       // leafNode is single-valued (singleKey returned non-null), so its one child is the value
       // node.
       SrosStatementTree valueNode = leafNode.getChildren().values().iterator().next();
-      warn(valueNode, String.format("SR-OS: unrecognized %s '%s'", what, value));
+      warnf(valueNode, "unrecognized %s '%s'", what, value);
     }
     return result;
+  }
+
+  /**
+   * Interpret a boolean leaf ({@code true}/{@code false}): returns the boxed value, or {@code null}
+   * if the leaf is absent or not single-valued (so an unset flag stays {@code null} for
+   * inheritance). A value that is neither {@code true} nor {@code false} is warned (no silent
+   * fallback) and returns {@code null}.
+   */
+  private @Nullable Boolean toBoolean(@Nullable SrosStatementTree leafNode, String what) {
+    String value = singleKey(leafNode);
+    if (value == null) {
+      return null;
+    }
+    if (value.equals("true")) {
+      return Boolean.TRUE;
+    }
+    if (value.equals("false")) {
+      return Boolean.FALSE;
+    }
+    // leafNode is single-valued, so its one child is the value node carrying the source context.
+    warnf(
+        leafNode.getChildren().values().iterator().next(),
+        "expected %s to be true or false but got '%s'",
+        what,
+        value);
+    return null;
   }
 
   private static @Nonnull String unquote(String text) {
@@ -563,6 +1004,12 @@ public final class SrosFeatureExtractor {
     int end = ctx.getStop().getStopIndex();
     String fullText = _text.substring(start, end + 1);
     _w.addWarning(ctx, fullText, _parser, message);
+  }
+
+  /** {@link #warn} with a format string and args. */
+  @FormatMethod
+  private void warnf(SrosStatementTree valueNode, String format, Object... args) {
+    warn(valueNode, String.format(format, args));
   }
 
   /**

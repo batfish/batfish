@@ -8,7 +8,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -31,19 +34,32 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -92,20 +108,45 @@ public final class SrosConversions {
           switch (entry.getType()) {
             case EXACT -> SubRange.singleton(len);
             case LONGER -> new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH);
-            case THROUGH, RANGE, TO, ADDRESS_MASK -> {
-              // The upper/lower bound leaves for these types are not modeled in P4 yet; match this
-              // length or longer as a conservative over-approximation, and warn that the filter is
-              // broader than the device's until the bounds are modeled.
-              w.redFlagf(
-                  "SR-OS: prefix-list '%s' entry %s match type '%s' is not fully modeled; matching"
-                      + " '%s' or longer (over-approximation)",
-                  pl.getName(), prefix, entry.getType(), prefix);
-              yield new SubRange(len, Prefix.MAX_PREFIX_LENGTH);
+            case THROUGH -> {
+              // through-length: match this prefix's length through through-length (inclusive). If
+              // the bound is missing (older capture), fall back to "this length or longer" + warn.
+              Integer through = entry.getThroughLength();
+              if (through == null) {
+                yield overApproximate(pl, entry, w);
+              }
+              yield new SubRange(len, through);
+            }
+            case RANGE -> {
+              // range: match start-length through end-length (inclusive).
+              Integer start = entry.getStartLength();
+              Integer end = entry.getEndLength();
+              if (start == null || end == null) {
+                yield overApproximate(pl, entry, w);
+              }
+              yield new SubRange(start, end);
+            }
+            case TO, ADDRESS_MASK -> {
+              // The bound leaves for these types are not modeled yet; match this length or longer
+              // as a conservative over-approximation, and warn until the bounds are modeled.
+              // TODO: model to/address-mask bounds — https://github.com/batfish/batfish/issues/9990
+              yield overApproximate(pl, entry, w);
             }
           };
       lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, lengthRange));
     }
     return new RouteFilterList(pl.getName(), lines);
+  }
+
+  /** The "this length or longer" over-approximation + warning, for unmodeled match-type bounds. */
+  private static @Nonnull SubRange overApproximate(
+      PrefixList pl, PrefixListEntry entry, Warnings w) {
+    Prefix prefix = entry.getPrefix();
+    w.redFlagf(
+        "prefix-list '%s' entry %s match type '%s' is not fully modeled; matching '%s' or"
+            + " longer (over-approximation)",
+        pl.getName(), prefix, entry.getType(), prefix);
+    return new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH);
   }
 
   /**
@@ -118,15 +159,19 @@ public final class SrosConversions {
    */
   static void convertPolicyStatements(SrosConfiguration vc, Configuration c) {
     for (PolicyStatement ps : vc.getPolicyStatements().values()) {
-      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(ps, c));
+      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(vc, ps, c));
     }
   }
 
-  private static @Nonnull RoutingPolicy toRoutingPolicy(PolicyStatement ps, Configuration c) {
+  private static @Nonnull RoutingPolicy toRoutingPolicy(
+      SrosConfiguration vc, PolicyStatement ps, Configuration c) {
     List<Statement> statements = new ArrayList<>();
     for (PolicyStatementEntry entry : ps.getEntries().values()) {
       BooleanExpr guard = toGuard(entry, c);
-      List<Statement> onMatch = actionStatements(entry.getAction());
+      // On a match, apply the entry's set-clauses (metric/MED, as-path-prepend, community) before
+      // its terminal action, so the modifications take effect on the matched route.
+      List<Statement> onMatch = new ArrayList<>(setStatements(vc, entry));
+      onMatch.addAll(actionStatements(entry.getAction()));
       if (guard == BooleanExprs.TRUE) {
         // No from-criteria: the entry always matches. Emit its action unconditionally.
         statements.addAll(onMatch);
@@ -146,12 +191,57 @@ public final class SrosConversions {
   }
 
   /**
-   * The match condition for one policy entry: a disjunction over its {@code from prefix-list}
-   * references (a route matches if it is permitted by any referenced list). An entry with no
-   * modeled from-criteria matches everything ({@link BooleanExprs#TRUE}).
+   * The set-clause statements for one policy entry, applied (in SR-OS order) when the entry
+   * matches: {@code metric set} → {@link SetMetric}; {@code as-path-prepend} → {@link
+   * PrependAsPath} (the AS repeated {@code repeat} times); {@code community add} → {@link
+   * SetCommunities} unioning the named community members onto the route's existing communities.
+   */
+  private static @Nonnull List<Statement> setStatements(
+      SrosConfiguration vc, PolicyStatementEntry entry) {
+    List<Statement> statements = new ArrayList<>();
+    if (entry.getSetMetric() != null) {
+      statements.add(new SetMetric(new LiteralLong(entry.getSetMetric())));
+    }
+    if (entry.getAsPathPrependAsn() != null) {
+      List<AsExpr> ases = new ArrayList<>();
+      for (int i = 0; i < entry.getAsPathPrependRepeat(); i++) {
+        ases.add(new ExplicitAs(entry.getAsPathPrependAsn()));
+      }
+      statements.add(new PrependAsPath(new LiteralAsList(ases)));
+    }
+    List<org.batfish.datamodel.bgp.community.Community> communitiesToAdd = new ArrayList<>();
+    for (String commName : entry.getCommunityAdds()) {
+      Community community = vc.getCommunities().get(commName);
+      if (community == null) {
+        // Undefined community reference: reported by the structure manager; skip silently here.
+        continue;
+      }
+      for (String member : community.getMembers()) {
+        StandardCommunity.tryParse(member).ifPresent(communitiesToAdd::add);
+      }
+    }
+    if (!communitiesToAdd.isEmpty()) {
+      statements.add(
+          new SetCommunities(
+              CommunitySetUnion.of(
+                  InputCommunities.instance(),
+                  new LiteralCommunitySet(CommunitySet.of(communitiesToAdd)))));
+    }
+    return statements;
+  }
+
+  /**
+   * The match condition for one policy entry. SR-OS ANDs the distinct {@code from} criteria, so the
+   * guard is a conjunction of: the {@code from prefix-list} match (a disjunction over the
+   * referenced lists — a route matches if permitted by any), and the {@code from protocol} match (a
+   * disjunction over the named protocols). An entry with no modeled from-criteria matches
+   * everything ({@link BooleanExprs#TRUE}).
    */
   private static @Nonnull BooleanExpr toGuard(PolicyStatementEntry entry, Configuration c) {
-    List<BooleanExpr> disjuncts = new ArrayList<>();
+    List<BooleanExpr> conjuncts = new ArrayList<>();
+
+    // from prefix-list [...] — OR over the (defined) referenced lists.
+    List<BooleanExpr> pfxDisjuncts = new ArrayList<>();
     for (String plName : entry.getFromPrefixLists()) {
       if (!c.getRouteFilterLists().containsKey(plName)) {
         // Undefined prefix-list: skip this disjunct. The undefined reference is reported by the
@@ -159,15 +249,50 @@ public final class SrosConversions {
         // no warning is emitted here to avoid duplicating it.
         continue;
       }
-      disjuncts.add(new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(plName)));
+      pfxDisjuncts.add(
+          new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(plName)));
     }
-    if (disjuncts.isEmpty()) {
+    if (!pfxDisjuncts.isEmpty()) {
+      conjuncts.add(pfxDisjuncts.size() == 1 ? pfxDisjuncts.get(0) : new Disjunction(pfxDisjuncts));
+    }
+
+    // from protocol name [...] — OR over the named protocols the route was learned from. The
+    // protocols are already a validated enum (unknown values were warned + dropped at extraction).
+    List<RoutingProtocol> protocols = new ArrayList<>();
+    for (FromProtocol proto : entry.getFromProtocols()) {
+      protocols.addAll(toRoutingProtocols(proto));
+    }
+    if (!protocols.isEmpty()) {
+      conjuncts.add(new MatchProtocol(protocols));
+    }
+
+    if (conjuncts.isEmpty()) {
       return BooleanExprs.TRUE;
     }
-    if (disjuncts.size() == 1) {
-      return disjuncts.get(0);
+    if (conjuncts.size() == 1) {
+      return conjuncts.get(0);
     }
-    return new Disjunction(disjuncts);
+    return new Conjunction(conjuncts);
+  }
+
+  /**
+   * Maps a {@link FromProtocol} to the VI {@link RoutingProtocol}(s) it matches. {@code direct} is
+   * Batfish's CONNECTED; {@code bgp} matches both eBGP and iBGP; OSPF/ISIS expand to their
+   * sub-protocols.
+   */
+  private static @Nonnull List<RoutingProtocol> toRoutingProtocols(FromProtocol proto) {
+    return switch (proto) {
+      case STATIC -> ImmutableList.of(RoutingProtocol.STATIC);
+      case DIRECT -> ImmutableList.of(RoutingProtocol.CONNECTED);
+      case BGP -> ImmutableList.of(RoutingProtocol.BGP, RoutingProtocol.IBGP);
+      case OSPF ->
+          ImmutableList.of(
+              RoutingProtocol.OSPF,
+              RoutingProtocol.OSPF_IA,
+              RoutingProtocol.OSPF_E1,
+              RoutingProtocol.OSPF_E2);
+      case ISIS -> ImmutableList.of(RoutingProtocol.ISIS_L1, RoutingProtocol.ISIS_L2);
+    };
   }
 
   /**
@@ -262,6 +387,162 @@ public final class SrosConversions {
   }
 
   /**
+   * Converts a router instance's {@code ospf} process to a VI {@link
+   * org.batfish.datamodel.ospf.OspfProcess} on {@code vrf}, attaching {@link
+   * org.batfish.datamodel.ospf.OspfInterfaceSettings} to each OSPF-enabled interface. Batfish
+   * derives the OSPF adjacencies and neighbor configs from the interface settings (area +
+   * addresses) in post-processing, so only the interface settings and area membership are set here.
+   *
+   * <p>Interface cost: an explicit {@code metric} wins; otherwise the cost is derived from the
+   * reference bandwidth (SR-OS and Batfish both default to a 100 Gbps reference, so a 100 Gbps port
+   * derives cost 1). A loopback gets cost 0 (it has no bandwidth). The process is skipped when
+   * {@code admin-state} is not enable.
+   */
+  static void convertOspf(Router router, Configuration c, Vrf vrf, Warnings w) {
+    org.batfish.vendor.sros.representation.OspfProcess proc = router.getOspfProcess();
+    if (proc == null || !proc.getAdminStateEnable()) {
+      return;
+    }
+    Ip routerId = proc.getRouterId();
+    if (routerId == null) {
+      routerId = systemInterfaceIp(router);
+    }
+    if (routerId == null) {
+      w.redFlagf(
+          "router '%s' OSPF has no router-id and no system interface address; skipping OSPF",
+          router.getName());
+      return;
+    }
+    String procName = Integer.toString(proc.getInstance());
+    org.batfish.datamodel.ospf.OspfProcess newProc =
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setProcessId(procName)
+            .setRouterId(routerId)
+            .setReferenceBandwidth(OSPF_REFERENCE_BANDWIDTH)
+            // SR-OS OSPF route preference (admin distance): internal (intra/inter-area, summary)
+            // default 10, external default 150 — not the Cisco 110/110.
+            .setAdminCosts(OSPF_ADMIN_COSTS)
+            .setAreas(ImmutableMap.of())
+            .setVrf(vrf)
+            .build();
+
+    Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> areaBuilders = new LinkedHashMap<>();
+    for (OspfArea area : proc.getAreas().values()) {
+      long areaNum = Ip.parse(area.getAreaId()).asLong();
+      org.batfish.datamodel.ospf.OspfArea.Builder ab =
+          areaBuilders.computeIfAbsent(
+              areaNum,
+              n -> org.batfish.datamodel.ospf.OspfArea.builder().setNumber(n).setNonStub());
+      for (OspfAreaInterface ospfIf : area.getInterfaces().values()) {
+        Interface viIface = c.getAllInterfaces().get(ospfIf.getName());
+        if (viIface == null) {
+          w.redFlagf(
+              "router '%s' OSPF area %s references undefined interface '%s'; skipping",
+              router.getName(), area.getAreaId(), ospfIf.getName());
+          continue;
+        }
+        int cost = ospfInterfaceCost(ospfIf, viIface, newProc.getReferenceBandwidth());
+        viIface.setOspfSettings(
+            org.batfish.datamodel.ospf.OspfInterfaceSettings.builder()
+                .setProcess(procName)
+                .setAreaName(areaNum)
+                .setEnabled(true)
+                .setPassive(false)
+                .setNetworkType(toOspfNetworkType(ospfIf.getInterfaceType()))
+                .setCost(cost)
+                .setOspfAddresses(
+                    org.batfish.datamodel.ospf.OspfAddresses.of(viIface.getAllConcreteAddresses()))
+                .build());
+        ab.addInterface(ospfIf.getName());
+      }
+    }
+    Map<Long, org.batfish.datamodel.ospf.OspfArea> areas = new TreeMap<>();
+    for (Map.Entry<Long, org.batfish.datamodel.ospf.OspfArea.Builder> e : areaBuilders.entrySet()) {
+      areas.put(e.getKey(), e.getValue().setOspfProcess(newProc).build());
+    }
+    newProc.setAreas(ImmutableMap.copyOf(areas));
+  }
+
+  /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */
+  private static final double OSPF_REFERENCE_BANDWIDTH = 100E9D;
+
+  /**
+   * SR-OS OSPF route preferences (Batfish admin distances): internal routes (intra-area,
+   * inter-area, internal summary) default to {@code preference} 10; external routes (E1/E2) default
+   * to {@code external-preference} 150.
+   */
+  private static final java.util.Map<RoutingProtocol, Integer> OSPF_ADMIN_COSTS =
+      ImmutableMap.of(
+          RoutingProtocol.OSPF, 10,
+          RoutingProtocol.OSPF_IA, 10,
+          RoutingProtocol.OSPF_IS, 10,
+          RoutingProtocol.OSPF_E1, 150,
+          RoutingProtocol.OSPF_E2, 150);
+
+  /**
+   * The OSPF cost for an interface: an explicit {@code metric} wins; a loopback is 0; otherwise the
+   * cost is derived as {@code max(1, referenceBandwidth / interfaceBandwidth)}.
+   */
+  private static int ospfInterfaceCost(
+      OspfAreaInterface ospfIf, Interface viIface, double referenceBandwidth) {
+    if (ospfIf.getMetric() != null) {
+      return ospfIf.getMetric();
+    }
+    if (viIface.getInterfaceType() == InterfaceType.LOOPBACK) {
+      return 0;
+    }
+    Double bw = viIface.getBandwidth();
+    if (bw == null || bw <= 0) {
+      return 1;
+    }
+    return Math.max(1, (int) (referenceBandwidth / bw));
+  }
+
+  private static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfAreaInterface.InterfaceType type) {
+    if (type == OspfAreaInterface.InterfaceType.POINT_TO_POINT) {
+      return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    }
+    // SR-OS default and BROADCAST both map to the broadcast network type.
+    return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+  }
+
+  /**
+   * Converts a router instance's {@code static-routes} to VI {@link
+   * org.batfish.datamodel.StaticRoute}s on {@code vrf}. Only routes whose next-hop/blackhole
+   * context is {@code admin-state enable} are installed — SR-OS does not put a disabled (or
+   * admin-state unset) static route into the RIB (confirmed on SR-SIM 26.3.R1). A next-hop route
+   * maps to a {@link org.batfish.datamodel.route.nh.NextHopIp}; a blackhole maps to {@link
+   * org.batfish.datamodel.route.nh.NextHopDiscard}. The SR-OS {@code preference} is the Batfish
+   * admin distance and {@code metric} is the route metric (YANG defaults 5 and 1).
+   */
+  static void convertStaticRoutes(Router router, Vrf vrf, Warnings w) {
+    for (StaticRoute sr : router.getStaticRoutes()) {
+      if (!sr.getAdminStateEnable()) {
+        // Configured but not admin-state enable -> not installed on the device; skip it.
+        continue;
+      }
+      org.batfish.datamodel.StaticRoute.Builder b =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setNetwork(sr.getPrefix())
+              .setAdministrativeCost(sr.getPreference())
+              .setMetric(sr.getMetric());
+      if (sr.getBlackhole()) {
+        b.setNextHop(org.batfish.datamodel.route.nh.NextHopDiscard.instance());
+      } else {
+        Ip nhIp = sr.getNextHopIp();
+        if (nhIp == null) {
+          w.redFlagf(
+              "static route %s has neither a next-hop IP nor blackhole; skipping", sr.getPrefix());
+          continue;
+        }
+        b.setNextHop(org.batfish.datamodel.route.nh.NextHopIp.of(nhIp));
+      }
+      vrf.getStaticRoutes().add(b.build());
+    }
+  }
+
+  /**
    * Creates the addressless {@link InterfaceType#PHYSICAL} VI interface for an SR-OS port if it
    * does not already exist on {@code c}. This is the interface a user Layer-1 topology references;
    * the L3 router-interface binds to it. The port is admin-up unless its {@code admin-state} is
@@ -304,13 +585,13 @@ public final class SrosConversions {
     }
     if (routerId == null) {
       w.redFlagf(
-          "SR-OS: router '%s' BGP has no router-id and no system interface address; skipping BGP",
+          "router '%s' BGP has no router-id and no system interface address; skipping BGP",
           router.getName());
       return;
     }
     if (localAs == null) {
       w.redFlagf(
-          "SR-OS: router '%s' has BGP configured but no autonomous-system; skipping BGP",
+          "router '%s' has BGP configured but no autonomous-system; skipping BGP",
           router.getName());
       return;
     }
@@ -341,7 +622,7 @@ public final class SrosConversions {
       Warnings w) {
     Ip peerAddress = Ip.tryParse(neighbor.getIpAddress()).orElse(null);
     if (peerAddress == null) {
-      w.redFlagf("SR-OS: BGP neighbor has unparseable address '%s'", neighbor.getIpAddress());
+      w.redFlagf("BGP neighbor has unparseable address '%s'", neighbor.getIpAddress());
       return;
     }
 
@@ -350,7 +631,7 @@ public final class SrosConversions {
     Long peerAs = neighbor.getPeerAs();
     if (peerAs == null) {
       w.redFlagf(
-          "SR-OS: BGP neighbor %s has no peer-as (none configured or inherited); skipping",
+          "BGP neighbor %s has no peer-as (none configured or inherited); skipping",
           neighbor.getIpAddress());
       return;
     }
@@ -360,17 +641,22 @@ public final class SrosConversions {
     boolean ebgp =
         neighbor.getType() != null ? neighbor.getType() == PeerType.EXTERNAL : peerAs != localAs;
 
+    boolean nextHopSelf = Boolean.TRUE.equals(neighbor.getNextHopSelf());
     String importPolicyName =
         generatedBgpPeerImportPolicyName(router.getName(), neighbor.getIpAddress());
     String exportPolicyName =
         generatedBgpPeerExportPolicyName(router.getName(), neighbor.getIpAddress());
-    buildPeerPolicy(importPolicyName, neighbor.getImportPolicies(), ebgp, false, c);
-    buildPeerPolicy(exportPolicyName, neighbor.getExportPolicies(), ebgp, true, c);
+    buildPeerPolicy(importPolicyName, neighbor.getImportPolicies(), ebgp, false, false, c);
+    buildPeerPolicy(exportPolicyName, neighbor.getExportPolicies(), ebgp, true, nextHopSelf, c);
 
+    // Route-reflection: a neighbor with a cluster-id is a route-reflector client. Mark the address
+    // family as an RR client and set the cluster-id, so Batfish reflects routes between clients.
+    Ip clusterId = neighbor.getClusterId();
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
             .setImportPolicy(importPolicyName)
             .setExportPolicy(exportPolicyName)
+            .setRouteReflectorClient(clusterId != null)
             .setAddressFamilyCapabilities(
                 AddressFamilyCapabilities.builder()
                     .setSendCommunity(true)
@@ -389,6 +675,7 @@ public final class SrosConversions {
         .setPeerAddress(peerAddress)
         .setRemoteAsns(LongSpace.of(peerAs))
         .setLocalAs(localAs)
+        .setClusterId(clusterId == null ? null : clusterId.asLong())
         .setIpv4UnicastAddressFamily(af)
         .setBgpProcess(newProc)
         .build();
@@ -400,18 +687,41 @@ public final class SrosConversions {
    * (SR-OS eBGP default-reject). Mirrors the Junos generated-peer-policy idiom.
    */
   private static void buildPeerPolicy(
-      String name, List<String> policyNames, boolean ebgp, boolean isExport, Configuration c) {
+      String name,
+      List<String> policyNames,
+      boolean ebgp,
+      boolean isExport,
+      boolean nextHopSelf,
+      Configuration c) {
     List<Statement> statements = new ArrayList<>();
-    // SR-OS originates locally-sourced routes (the system/connected prefixes advertised via an
-    // export policy) into BGP with origin IGP, like Junos. Set origin IGP for non-BGP routes at
-    // the head of the export policy so advertised local routes carry origin igp, not the Batfish
-    // redistribution default of incomplete. (Caught by lab validation against the eBGP peer, P5-V.)
+    // next-hop-self: on export, rewrite the BGP next-hop to this router's address. Needed for an
+    // iBGP route reflector with no IGP underlay so its clients can resolve reflected routes (L4).
+    if (isExport && nextHopSelf) {
+      statements.add(
+          new org.batfish.datamodel.routing_policy.statement.SetNextHop(
+              org.batfish.datamodel.routing_policy.expr.SelfNextHop.getInstance()));
+    }
+    // SR-OS BGP origin on locally-sourced routes: a connected/direct route (e.g. the system or an
+    // interface prefix) advertised by an export policy carries origin IGP; a redistributed route
+    // (static/OSPF/etc.) carries origin INCOMPLETE. Set IGP for connected/local routes at the head
+    // of the export policy; leave everything else at Batfish's redistribution default (incomplete),
+    // which matches the device. (System-prefix IGP caught at P5-V; static=incomplete at L6.)
     if (isExport) {
+      statements.add(
+          new If(
+              new MatchProtocol(RoutingProtocol.CONNECTED, RoutingProtocol.LOCAL),
+              ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))),
+              ImmutableList.of()));
+      // SR-OS does not carry a non-BGP route's IGP/static metric into the advertised MED: a
+      // locally-sourced or redistributed route is advertised with MED 0 unless a policy explicitly
+      // sets the metric. Reset MED to 0 for non-BGP routes at the policy head; an entry's explicit
+      // `metric set` (modeled as SetMetric in the entry's set-clauses) runs later and overrides it.
+      // (L6: redistributed static appears on the peer with MED 0, not the route metric 1.)
       statements.add(
           new If(
               new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
               ImmutableList.of(),
-              ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)))));
+              ImmutableList.of(new SetMetric(new LiteralLong(0L)))));
     }
     // The default policy backs the chain when no named policy makes a terminal decision.
     String defaultPolicyName = ebgp ? defaultRejectPolicy(c) : defaultAcceptPolicy(c);
@@ -432,13 +742,32 @@ public final class SrosConversions {
     RoutingPolicy.builder().setName(name).setOwner(c).setStatements(statements).build();
   }
 
-  /** Lazily creates and returns the name of a shared "accept all" default policy on {@code c}. */
+  /**
+   * Lazily creates and returns the name of the shared iBGP default-accept policy on {@code c}.
+   *
+   * <p>SR-OS iBGP "default-accept" (no import/export policy on the group) accepts <em>BGP</em>
+   * routes — it propagates routes already in BGP, but does <em>not</em> pull connected/static/IGP
+   * routes into BGP. (A connected route like the system prefix is advertised only when an explicit
+   * export policy matches it; the default never does.) So the default-accept policy accepts iff the
+   * route's protocol is BGP/iBGP, and otherwise rejects. This matters on export: with {@code
+   * setExportBgpFromBgpRib(false)} Batfish runs the export policy over the whole main RIB, and a
+   * blanket accept-all would leak the connected /31s the device never advertises (confirmed on the
+   * L3 iBGP lab, where r1 advertises only 1.1.1.1/32 (explicit policy) and the eBGP-learned
+   * 2.2.2.2/32 to its iBGP peer, not its connected interface prefixes). On import the route being
+   * evaluated is always a received BGP route, so the protocol guard accepts everything — preserving
+   * iBGP default-accept on import.
+   */
   private static @Nonnull String defaultAcceptPolicy(Configuration c) {
     if (!c.getRoutingPolicies().containsKey(DEFAULT_BGP_ACCEPT_POLICY_NAME)) {
       RoutingPolicy.builder()
           .setName(DEFAULT_BGP_ACCEPT_POLICY_NAME)
           .setOwner(c)
-          .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
+          .setStatements(
+              ImmutableList.of(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+                      ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
           .build();
     }
     return DEFAULT_BGP_ACCEPT_POLICY_NAME;

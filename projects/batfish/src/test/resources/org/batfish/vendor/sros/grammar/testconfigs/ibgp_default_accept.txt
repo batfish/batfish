@@ -1,0 +1,53 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        prefix-list "system-pfx" {
+            prefix 1.1.1.1/32 type exact {
+            }
+        }
+        policy-statement "export-system" {
+            entry 10 {
+                from {
+                    prefix-list ["system-pfx"]
+                }
+                action {
+                    action-type accept
+                }
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        interface "to-r3" {
+            port 1/1/c2/1
+            ipv4 {
+                primary {
+                    address 10.0.1.0
+                    prefix-length 31
+                }
+            }
+        }
+        bgp {
+            router-id 1.1.1.1
+            group "ibgp" {
+                type internal
+                peer-as 65001
+                export {
+                    policy ["export-system"]
+                }
+            }
+            neighbor "10.0.1.1" {
+                group "ibgp"
+            }
+        }
+    }
+}

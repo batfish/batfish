@@ -1,0 +1,38 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+        autonomous-system 65001
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        interface "to-r2" {
+            port 1/1/c1/1
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                    prefix-length 31
+                }
+            }
+        }
+        bgp {
+            router-id 1.1.1.1
+            group "clients" {
+                type internal
+                peer-as 65001
+                next-hop-self true
+                cluster {
+                    cluster-id 1.1.1.1
+                }
+            }
+            neighbor "10.0.0.1" {
+                group "clients"
+            }
+        }
+    }
+}

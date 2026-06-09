@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 
 /**
  * An SR-OS BGP peer group (template), keyed by group-name (e.g. {@code bgp group "ebgp"}). Groups
@@ -52,9 +53,32 @@ public final class BgpGroup implements Serializable {
     return _exportPolicies;
   }
 
+  /**
+   * The route-reflector {@code cluster cluster-id} for this group, or {@code null} if not a route
+   * reflector. Peers in a group with a cluster-id are route-reflector clients.
+   */
+  public @Nullable Ip getClusterId() {
+    return _clusterId;
+  }
+
+  public void setClusterId(@Nullable Ip clusterId) {
+    _clusterId = clusterId;
+  }
+
+  /** The {@code next-hop-self} flag, or {@code null} if unset. */
+  public @Nullable Boolean getNextHopSelf() {
+    return _nextHopSelf;
+  }
+
+  public void setNextHopSelf(@Nullable Boolean nextHopSelf) {
+    _nextHopSelf = nextHopSelf;
+  }
+
   private final @Nonnull String _name;
   private @Nullable PeerType _type;
   private @Nullable Long _peerAs;
   private final @Nonnull List<String> _importPolicies;
   private final @Nonnull List<String> _exportPolicies;
+  private @Nullable Ip _clusterId;
+  private @Nullable Boolean _nextHopSelf;
 }

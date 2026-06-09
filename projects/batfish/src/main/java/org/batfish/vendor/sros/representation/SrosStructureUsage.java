@@ -9,7 +9,8 @@ public enum SrosStructureUsage implements StructureUsage {
   BGP_NEIGHBOR_GROUP("bgp neighbor group"),
   BGP_NEIGHBOR_IMPORT_POLICY("bgp neighbor import policy"),
   BGP_NEIGHBOR_EXPORT_POLICY("bgp neighbor export policy"),
-  POLICY_STATEMENT_FROM_PREFIX_LIST("policy-statement entry from prefix-list");
+  POLICY_STATEMENT_FROM_PREFIX_LIST("policy-statement entry from prefix-list"),
+  POLICY_STATEMENT_ACTION_COMMUNITY("policy-statement entry action community add");
 
   private final String _description;
 

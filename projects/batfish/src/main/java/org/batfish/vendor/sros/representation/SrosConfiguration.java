@@ -34,6 +34,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     _routers = new HashMap<>();
     _prefixLists = new HashMap<>();
     _policyStatements = new HashMap<>();
+    _communities = new HashMap<>();
   }
 
   /**
@@ -69,6 +70,11 @@ public final class SrosConfiguration extends VendorConfiguration {
   /** Routing-policy policy-statements, keyed by name. */
   public @Nonnull Map<String, PolicyStatement> getPolicyStatements() {
     return _policyStatements;
+  }
+
+  /** Routing-policy community lists, keyed by name. */
+  public @Nonnull Map<String, Community> getCommunities() {
+    return _communities;
   }
 
   @Override
@@ -109,6 +115,8 @@ public final class SrosConfiguration extends VendorConfiguration {
     for (Router router : _routers.values()) {
       Vrf vrf = vrfForRouter(router.getName(), c);
       SrosConversions.convertInterfaces(this, router, c, vrf);
+      SrosConversions.convertStaticRoutes(router, vrf, getWarnings());
+      SrosConversions.convertOspf(router, c, vrf, getWarnings());
       SrosConversions.convertBgp(router, c, vrf, getWarnings());
     }
 
@@ -140,7 +148,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     if (!_cards.isEmpty() || !_ports.isEmpty()) {
       getWarnings()
           .redFlagf(
-              "SR-OS: hardware provisioning (%d card(s), %d port(s)) is parsed but not converted to"
+              "hardware provisioning (%d card(s), %d port(s)) is parsed but not converted to"
                   + " the vendor-independent model",
               _cards.size(), _ports.size());
     }
@@ -152,6 +160,7 @@ public final class SrosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Router> _routers;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, PolicyStatement> _policyStatements;
+  private final @Nonnull Map<String, Community> _communities;
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _format;
 }
