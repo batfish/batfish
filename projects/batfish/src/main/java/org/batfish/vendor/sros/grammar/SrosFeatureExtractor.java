@@ -37,6 +37,7 @@ import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
 import org.batfish.vendor.sros.representation.SrosStructureType;
 import org.batfish.vendor.sros.representation.SrosStructureUsage;
+import org.batfish.vendor.sros.representation.StaticRoute;
 
 /**
  * Populates a {@link SrosConfiguration}'s typed feature model from the canonical, preprocessed
@@ -73,6 +74,12 @@ public final class SrosFeatureExtractor {
 
   /** policy-statement {@code entry-id}: YANG {@code uint32 range "1..65535"}. */
   private static final LongSpace ENTRY_ID_SPACE = LongSpace.of(Range.closed(1L, 65535L));
+
+  /** static-route next-hop/blackhole {@code metric}: YANG {@code uint32 range "0..65535"}. */
+  private static final IntegerSpace STATIC_METRIC_SPACE = IntegerSpace.of(new SubRange(0, 65535));
+
+  /** static-route next-hop/blackhole {@code preference}: YANG {@code uint32 range "1..255"}. */
+  private static final IntegerSpace STATIC_PREFERENCE_SPACE = IntegerSpace.of(new SubRange(1, 255));
 
   /** Port {@code admin-state} enumeration: enable -> up, disable -> down. */
   private static final Map<String, Boolean> ADMIN_STATE =
@@ -212,6 +219,7 @@ public final class SrosFeatureExtractor {
               "autonomous-system")
           .ifPresent(router::setAutonomousSystem);
       extractInterfaces(router, routerNode.getChild("interface"));
+      extractStaticRoutes(router, routerNode.getChild("static-routes"));
       extractBgp(router, routerNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
@@ -240,6 +248,88 @@ public final class SrosFeatureExtractor {
       }
       router.getInterfaces().put(name, iface);
     }
+  }
+
+  /**
+   * Extract {@code static-routes route <prefix> route-type <unicast|multicast>} entries. Each route
+   * is reached via a {@code next-hop <ip>} or a {@code blackhole}; both sub-contexts carry an
+   * {@code admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
+   * StaticRoute}), and optional {@code metric}/{@code preference}. Only the unicast IPv4 case is
+   * modeled here; a non-IPv4 prefix is warned and skipped by {@link #toPrefix}.
+   */
+  private void extractStaticRoutes(Router router, @Nullable SrosStatementTree staticRoutes) {
+    if (staticRoutes == null) {
+      return;
+    }
+    SrosStatementTree routeList = staticRoutes.getChild("route");
+    if (routeList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : routeList.getChildren().entrySet()) {
+      SrosStatementTree prefixNode = e.getValue();
+      Prefix prefix = toPrefix(e.getKey(), prefixNode);
+      if (prefix == null) {
+        continue;
+      }
+      // The route-type ("unicast"/"multicast") is the next path word and keys the route with the
+      // prefix in YANG; the next-hop/blackhole contexts hang under that route-type node.
+      SrosStatementTree routeType = prefixNode.getChild("route-type");
+      SrosStatementTree typeBody = routeType == null ? null : firstChild(routeType);
+      if (typeBody == null) {
+        continue;
+      }
+      StaticRoute route = new StaticRoute(prefix);
+      SrosStatementTree nextHop = typeBody.getChild("next-hop");
+      SrosStatementTree blackhole = typeBody.getChild("blackhole");
+      SrosStatementTree adminStateParent;
+      if (nextHop != null) {
+        // next-hop is itself keyed by the next-hop IP (a list); take the first (no ECMP in scope).
+        SrosStatementTree nhEntry = firstChild(nextHop);
+        if (nhEntry != null) {
+          route.setNextHopIp(toIp(nhKey(nextHop), nhEntry, "static-route next-hop"));
+        }
+        adminStateParent = nhEntry;
+      } else if (blackhole != null) {
+        route.setBlackhole(true);
+        adminStateParent = blackhole;
+      } else {
+        // Neither next-hop nor blackhole: not a modeled route shape; skip.
+        continue;
+      }
+      if (adminStateParent != null) {
+        Boolean adminUp =
+            toEnum(adminStateParent.getChild("admin-state"), ADMIN_STATE, "admin-state");
+        route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
+        toIntegerInSpace(
+                singleValue(adminStateParent, "metric"),
+                singleValueNode(adminStateParent, "metric"),
+                STATIC_METRIC_SPACE,
+                "static-route metric")
+            .ifPresent(route::setMetric);
+        toIntegerInSpace(
+                singleValue(adminStateParent, "preference"),
+                singleValueNode(adminStateParent, "preference"),
+                STATIC_PREFERENCE_SPACE,
+                "static-route preference")
+            .ifPresent(route::setPreference);
+      }
+      router.getStaticRoutes().add(route);
+    }
+  }
+
+  /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
+  private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
+    return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
+  }
+
+  /**
+   * The first child key of {@code node}, unquoted (e.g. the next-hop IP under the {@code next-hop}
+   * list — the device renders it quoted, {@code next-hop "10.0.0.1"}).
+   */
+  private static @Nullable String nhKey(SrosStatementTree node) {
+    return node.getChildren().isEmpty()
+        ? null
+        : unquote(node.getChildren().keySet().iterator().next());
   }
 
   private void extractBgp(Router router, @Nullable SrosStatementTree bgpNode) {

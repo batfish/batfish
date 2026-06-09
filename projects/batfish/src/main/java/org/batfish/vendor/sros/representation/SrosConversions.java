@@ -262,6 +262,42 @@ public final class SrosConversions {
   }
 
   /**
+   * Converts a router instance's {@code static-routes} to VI {@link
+   * org.batfish.datamodel.StaticRoute}s on {@code vrf}. Only routes whose next-hop/blackhole
+   * context is {@code admin-state enable} are installed — SR-OS does not put a disabled (or
+   * admin-state unset) static route into the RIB (confirmed on SR-SIM 26.3.R1). A next-hop route
+   * maps to a {@link org.batfish.datamodel.route.nh.NextHopIp}; a blackhole maps to {@link
+   * org.batfish.datamodel.route.nh.NextHopDiscard}. The SR-OS {@code preference} is the Batfish
+   * admin distance and {@code metric} is the route metric (YANG defaults 5 and 1).
+   */
+  static void convertStaticRoutes(Router router, Vrf vrf, Warnings w) {
+    for (StaticRoute sr : router.getStaticRoutes()) {
+      if (!sr.getAdminStateEnable()) {
+        // Configured but not admin-state enable -> not installed on the device; skip it.
+        continue;
+      }
+      org.batfish.datamodel.StaticRoute.Builder b =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setNetwork(sr.getPrefix())
+              .setAdministrativeCost(sr.getPreference())
+              .setMetric(sr.getMetric());
+      if (sr.getBlackhole()) {
+        b.setNextHop(org.batfish.datamodel.route.nh.NextHopDiscard.instance());
+      } else {
+        Ip nhIp = sr.getNextHopIp();
+        if (nhIp == null) {
+          w.redFlagf(
+              "SR-OS: static route %s has neither a next-hop IP nor blackhole; skipping",
+              sr.getPrefix());
+          continue;
+        }
+        b.setNextHop(org.batfish.datamodel.route.nh.NextHopIp.of(nhIp));
+      }
+      vrf.getStaticRoutes().add(b.build());
+    }
+  }
+
+  /**
    * Creates the addressless {@link InterfaceType#PHYSICAL} VI interface for an SR-OS port if it
    * does not already exist on {@code c}. This is the interface a user Layer-1 topology references;
    * the L3 router-interface binds to it. The port is admin-up unless its {@code admin-state} is

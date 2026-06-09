@@ -1,0 +1,38 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+        interface "to-r2" {
+            port 1/1/c1/1
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                    prefix-length 31
+                }
+            }
+        }
+        static-routes {
+            route 192.0.2.0/24 route-type unicast {
+                next-hop 10.0.0.1 {
+                    admin-state enable
+                }
+            }
+            route 198.51.100.0/24 route-type unicast {
+                blackhole {
+                    admin-state enable
+                }
+            }
+            route 203.0.113.0/24 route-type unicast {
+                next-hop 10.0.0.1 {
+                    admin-state enable
+                    preference 100
+                    metric 50
+                }
+            }
+            route 100.64.0.0/24 route-type unicast {
+                next-hop 10.0.0.1 {
+                }
+            }
+        }
+    }
+}

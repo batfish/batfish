@@ -38,6 +38,7 @@ import org.batfish.vendor.sros.representation.PrefixListEntry;
 import org.batfish.vendor.sros.representation.Router;
 import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
+import org.batfish.vendor.sros.representation.StaticRoute;
 import org.junit.Test;
 
 /** Tests of SR-OS feature extraction (P4): the canonical tree, the preprocessor, and the model. */
@@ -131,6 +132,47 @@ public final class SrosExtractionTest {
   public void testHostnameExtraction() {
     SrosConfiguration vc = parseVendorConfig("hostname.txt");
     assertThat(vc.getHostname(), equalTo("sros-r1"));
+  }
+
+  /**
+   * static-routes extraction: next-hop and blackhole routes, the admin-state-enable flag, and the
+   * preference/metric leaves (with their YANG defaults when absent).
+   */
+  @Test
+  public void testStaticRoutesExtraction() {
+    SrosConfiguration vc = parseVendorConfig("static_routes.txt");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    List<StaticRoute> routes = vc.getRouters().get("Base").getStaticRoutes();
+    assertThat(routes, hasSize(4));
+
+    // route 1: next-hop, admin-state enable, default preference 5 / metric 1.
+    StaticRoute nh = routes.get(0);
+    assertThat(nh.getPrefix(), equalTo(Prefix.parse("192.0.2.0/24")));
+    assertThat(nh.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(nh.getBlackhole(), equalTo(false));
+    assertThat(nh.getAdminStateEnable(), equalTo(true));
+    assertThat(nh.getPreference(), equalTo(StaticRoute.DEFAULT_PREFERENCE));
+    assertThat(nh.getMetric(), equalTo(StaticRoute.DEFAULT_METRIC));
+
+    // route 2: blackhole, admin-state enable.
+    StaticRoute bh = routes.get(1);
+    assertThat(bh.getPrefix(), equalTo(Prefix.parse("198.51.100.0/24")));
+    assertThat(bh.getNextHopIp(), nullValue());
+    assertThat(bh.getBlackhole(), equalTo(true));
+    assertThat(bh.getAdminStateEnable(), equalTo(true));
+
+    // route 3: next-hop with explicit preference 100 / metric 50.
+    StaticRoute nhPref = routes.get(2);
+    assertThat(nhPref.getPrefix(), equalTo(Prefix.parse("203.0.113.0/24")));
+    assertThat(nhPref.getPreference(), equalTo(100));
+    assertThat(nhPref.getMetric(), equalTo(50));
+
+    // route 4: next-hop with no admin-state -> not enabled (will not be installed in conversion).
+    StaticRoute nhNoAdmin = routes.get(3);
+    assertThat(nhNoAdmin.getPrefix(), equalTo(Prefix.parse("100.64.0.0/24")));
+    assertThat(nhNoAdmin.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(nhNoAdmin.getAdminStateEnable(), equalTo(false));
   }
 
   /**

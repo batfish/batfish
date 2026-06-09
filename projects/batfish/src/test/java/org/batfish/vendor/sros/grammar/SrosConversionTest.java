@@ -276,6 +276,46 @@ public final class SrosConversionTest {
         hasRedFlagWarning("bgp-type-and-inheritance", containsString("is not fully modeled")));
   }
 
+  /**
+   * static-routes conversion: an admin-state-enable next-hop route and a blackhole route become VI
+   * {@link org.batfish.datamodel.StaticRoute}s (NextHopIp / NextHopDiscard) with the SR-OS
+   * preference as admin distance and the metric; a route whose next-hop has no admin-state is NOT
+   * installed (matching the device).
+   */
+  @Test
+  public void testStaticRoutesConversion() throws IOException {
+    Configuration c = parseConfig("static_routes.txt");
+    Map<Prefix, org.batfish.datamodel.StaticRoute> byPrefix =
+        c.getDefaultVrf().getStaticRoutes().stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    org.batfish.datamodel.AbstractRoute::getNetwork, r -> r));
+
+    // The next-hop route (default preference 5 / metric 1).
+    org.batfish.datamodel.StaticRoute nh = byPrefix.get(Prefix.parse("192.0.2.0/24"));
+    assertNotNull(nh);
+    assertThat(
+        nh.getNextHop(),
+        equalTo(org.batfish.datamodel.route.nh.NextHopIp.of(Ip.parse("10.0.0.1"))));
+    assertThat(nh.getAdministrativeCost(), equalTo(5L));
+    assertThat(nh.getMetric(), equalTo(1L));
+
+    // The blackhole route -> discard next-hop.
+    org.batfish.datamodel.StaticRoute bh = byPrefix.get(Prefix.parse("198.51.100.0/24"));
+    assertNotNull(bh);
+    assertThat(bh.getNextHop(), equalTo(org.batfish.datamodel.route.nh.NextHopDiscard.instance()));
+
+    // The next-hop route with explicit preference 100 / metric 50.
+    org.batfish.datamodel.StaticRoute nhPref = byPrefix.get(Prefix.parse("203.0.113.0/24"));
+    assertNotNull(nhPref);
+    assertThat(nhPref.getAdministrativeCost(), equalTo(100L));
+    assertThat(nhPref.getMetric(), equalTo(50L));
+
+    // The route whose next-hop has no admin-state is not installed (SR-OS leaves it out of the
+    // RIB).
+    assertThat(byPrefix, not(hasKey(Prefix.parse("100.64.0.0/24"))));
+  }
+
   private @Nonnull Configuration parseConfig(String filename) throws IOException {
     SortedMap<String, Configuration> configs =
         BatfishTestUtils.parseTextConfigs(_folder, TESTCONFIGS_PREFIX + filename);
