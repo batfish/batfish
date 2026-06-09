@@ -385,3 +385,64 @@ validator: unmatched routes on either side score infinite cost and surface as
 failures, so a green result means the device and Batfish RIBs are
 route-for-route equal — not that one side was empty. No r1 RIB check is
 sickbayed.
+
+## Complexity ladder (P8)
+
+After the first eBGP lab validated end to end, the model was grown one feature
+"rung" at a time, each with its own live lab (in `lab-validation/snapshots/`)
+validated against ground truth. The rungs done so far, with the SR-OS facts
+each one pinned down:
+
+### L1 — static routes (`sros_static`)
+
+`router "<name>" static-routes route <prefix> route-type unicast` with a
+`next-hop <ip>` or a `blackhole` converts to a VI `StaticRoute` (`NextHopIp` /
+`NextHopDiscard`). The SR-OS `preference` is the admin distance and `metric` the
+route metric, with YANG defaults **5** and **1**. The decisive fact, confirmed
+on the live device: **SR-OS does not install a static route unless its
+next-hop/blackhole context is `admin-state enable`** — a route with no
+admin-state leaf is accepted into config but absent from the route-table, so
+conversion skips a non-enabled route. A `loopback` router-interface (no port)
+becomes a VI `LOOPBACK` and installs its connected prefix.
+
+### L3 — iBGP (`sros_ibgp`)
+
+A second SR-OS router peers iBGP (`group … type internal`, peer-as = local AS).
+This exercised the P5 iBGP default-accept path for the first time and forced a
+correction: **iBGP default-accept propagates BGP routes, it does not pull
+connected/static/IGP routes into BGP**. The generated default-accept policy was
+a blanket accept-all, which — combined with `setExportBgpFromBgpRib(false)`
+(export runs over the whole main RIB) — leaked a router's connected /31s into
+iBGP. The default-accept policy is now guarded on the route's protocol being
+BGP/iBGP (on import the route is always a received BGP route, so import
+default-accept is preserved). Validator note: SR-OS reports both eBGP and iBGP
+learned routes as protocol `bgp` in its route-table, while Batfish labels an
+iBGP-learned main-RIB route `ibgp`; the validator maps SR-OS `bgp` to either.
+iBGP-learned routes are admin **170**, same as eBGP on SR-OS.
+
+### L5 — BGP policy depth (`sros_bgp_policy`)
+
+Policy-statement entry `action` set-clauses now convert: `metric set <n>` →
+`SetMetric` (BGP MED), `as-path-prepend as-path <asn> [repeat <n>]` →
+`PrependAsPath` (the AS repeated `n` times), and `community add ["<name>"]` →
+`SetCommunities` unioning the named `policy-options community` list's members
+onto the route. Prefix-list match-type **bounds** are now captured:
+`through-length` / `start-length` / `end-length` nest in the block hanging off
+the type value word (`type <through|range> { … }`) in the canonical tree, so
+`through` converts to the exact window `[len, through-length]` and `range` to
+`[start-length, end-length]` — removing the P5 "this length or longer"
+over-approximation (and its warning) for those types (`to`/`address-mask` still
+over-approximate). Validated via the cEOS oracle: r2 learns r1's routes with the
+MED and prepended AS-path that r1's policy sets.
+
+### L8 — deliberate misconfiguration (`sros_misconfig`)
+
+An AS-mismatch lab (r1's ebgp group sets peer-as 65099 while r2 is AS 65002) —
+no Batfish modeling change, this validates the **diagnostics**: Batfish predicts
+the eBGP session `NOT_COMPATIBLE` on both sides and learns no BGP routes,
+matching the device (r1's BGP RIB has 0 learned routes; r2 never learns r1's
+system prefix). Finding: **SR-OS enforces the BGP import/export policy leafref
+at commit** and rejects a reference to a non-existent policy-statement
+(`MGMT_CORE #224`), aborting the whole startup config — so a committed device
+config cannot carry an undefined policy reference. Batfish's `undefinedReferences`
+for SR-OS policies is therefore unit-testable but not lab-observable on a device.
