@@ -92,11 +92,15 @@ public final class SrosConversions {
 
   /**
    * Converts an SR-OS {@code prefix-list} to a {@link RouteFilterList} (all lines permit; a
-   * route-policy decides accept/reject). The match {@code type} maps to a prefix-length {@link
-   * SubRange}: {@code exact} matches only the configured length; {@code longer} matches strictly
-   * longer. {@code through}/{@code range}/{@code to}/{@code address-mask} carry extra bounds the P4
-   * model does not yet capture, so they are over-approximated as "this length or longer" and a
-   * warning is emitted (the resulting filter is broader than the device's — see the warning).
+   * route-policy decides accept/reject). The match {@code type} determines the lines: {@code exact}
+   * matches only the configured length; {@code longer} matches strictly longer; {@code through}
+   * matches this length through {@code through-length}; {@code range} matches {@code
+   * start-length}..{@code end-length}. {@code to} matches, for each {@code to-prefix} (nested in
+   * the base), every ancestor prefix on the path from the base length down to the to-prefix length
+   * — emitted as one exact line per length (a line over the base prefix with a length range would
+   * wrongly match siblings off that path; confirmed on SR-SIM 26.3.R1). {@code address-mask} with a
+   * contiguous mask equal to the base length is an exact match; a non-contiguous mask cannot be a
+   * length {@link SubRange} and is over-approximated with a warning.
    */
   @VisibleForTesting
   static @Nonnull RouteFilterList toRouteFilterList(PrefixList pl, Warnings w) {
@@ -104,36 +108,83 @@ public final class SrosConversions {
     for (PrefixListEntry entry : pl.getEntries()) {
       Prefix prefix = entry.getPrefix();
       int len = prefix.getPrefixLength();
-      SubRange lengthRange =
-          switch (entry.getType()) {
-            case EXACT -> SubRange.singleton(len);
-            case LONGER -> new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH);
-            case THROUGH -> {
-              // through-length: match this prefix's length through through-length (inclusive). If
-              // the bound is missing (older capture), fall back to "this length or longer" + warn.
-              Integer through = entry.getThroughLength();
-              if (through == null) {
-                yield overApproximate(pl, entry, w);
-              }
-              yield new SubRange(len, through);
+      switch (entry.getType()) {
+        case EXACT ->
+            lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, SubRange.singleton(len)));
+        case LONGER ->
+            lines.add(
+                new RouteFilterLine(
+                    LineAction.PERMIT, prefix, new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH)));
+        case THROUGH -> {
+          // through-length: match this prefix's length through through-length (inclusive). If the
+          // bound is missing (older capture), fall back to "this length or longer" + warn.
+          Integer through = entry.getThroughLength();
+          lines.add(
+              new RouteFilterLine(
+                  LineAction.PERMIT,
+                  prefix,
+                  through == null ? overApproximate(pl, entry, w) : new SubRange(len, through)));
+        }
+        case RANGE -> {
+          // range: match start-length through end-length (inclusive).
+          Integer start = entry.getStartLength();
+          Integer end = entry.getEndLength();
+          lines.add(
+              new RouteFilterLine(
+                  LineAction.PERMIT,
+                  prefix,
+                  start == null || end == null
+                      ? overApproximate(pl, entry, w)
+                      : new SubRange(start, end)));
+        }
+        case TO -> {
+          // `to`: match the ancestors of each to-prefix at lengths [base-length .. to-length].
+          // Each is a distinct prefix (the to-prefix truncated to that length), so emit one exact
+          // line per length rather than a single base-prefix line (which would match off-path
+          // siblings). An empty to-prefix list (older capture) falls back to over-approximation.
+          if (entry.getToPrefixes().isEmpty()) {
+            lines.add(
+                new RouteFilterLine(LineAction.PERMIT, prefix, overApproximate(pl, entry, w)));
+            break;
+          }
+          for (Prefix toPrefix : entry.getToPrefixes()) {
+            for (int l = len; l <= toPrefix.getPrefixLength(); l++) {
+              Prefix ancestor = Prefix.create(toPrefix.getStartIp(), l);
+              lines.add(new RouteFilterLine(LineAction.PERMIT, ancestor, SubRange.singleton(l)));
             }
-            case RANGE -> {
-              // range: match start-length through end-length (inclusive).
-              Integer start = entry.getStartLength();
-              Integer end = entry.getEndLength();
-              if (start == null || end == null) {
-                yield overApproximate(pl, entry, w);
-              }
-              yield new SubRange(start, end);
+          }
+        }
+        case ADDRESS_MASK -> {
+          // address-mask: a route matches if (address & mask) equals the entry's masked prefix and
+          // the mask length matches. A contiguous mask is a prefix length; model it as an exact
+          // match at that length on the masked prefix. A non-contiguous mask is not a length range
+          // -> over-approximate + warn.
+          List<Ip> masks = entry.getMaskPatterns();
+          if (masks.isEmpty()) {
+            lines.add(
+                new RouteFilterLine(LineAction.PERMIT, prefix, overApproximate(pl, entry, w)));
+            break;
+          }
+          for (Ip mask : masks) {
+            int maskLen = mask.numSubnetBits();
+            if (!mask.equals(Ip.numSubnetBitsToSubnetMask(maskLen))) {
+              // Non-contiguous mask: cannot express as a prefix-length range.
+              w.redFlagf(
+                  "prefix-list '%s' entry %s address-mask '%s' is non-contiguous; not fully"
+                      + " modeled, matching '%s' or longer (over-approximation)",
+                  pl.getName(), prefix, mask, prefix);
+              lines.add(
+                  new RouteFilterLine(
+                      LineAction.PERMIT,
+                      prefix,
+                      new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH)));
+              continue;
             }
-            case TO, ADDRESS_MASK -> {
-              // The bound leaves for these types are not modeled yet; match this length or longer
-              // as a conservative over-approximation, and warn until the bounds are modeled.
-              // TODO: model to/address-mask bounds — https://github.com/batfish/batfish/issues/9990
-              yield overApproximate(pl, entry, w);
-            }
-          };
-      lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, lengthRange));
+            Prefix masked = Prefix.create(prefix.getStartIp(), maskLen);
+            lines.add(new RouteFilterLine(LineAction.PERMIT, masked, SubRange.singleton(maskLen)));
+          }
+        }
+      }
     }
     return new RouteFilterList(pl.getName(), lines);
   }

@@ -234,6 +234,31 @@ public final class SrosConversionTest {
     assertTrue(hostRange.permits(Prefix.parse("10.1.2.3/32")));
     assertFalse(hostRange.permits(Prefix.parse("10.1.0.0/16")));
 
+    // `to`: base 10.20.0.0/16 with to-prefixes /20 and 10.20.16.0/24. SR-SIM 26.3.R1 confirmed it
+    // matches the ANCESTORS of each to-prefix at lengths [base-length .. to-length], and nothing
+    // off that path.
+    RouteFilterList toList = c.getRouteFilterLists().get("to-list");
+    assertNotNull(toList);
+    // On-path ancestors of 10.20.0.0/20 (lengths 16..20):
+    assertTrue(toList.permits(Prefix.parse("10.20.0.0/16")));
+    assertTrue(toList.permits(Prefix.parse("10.20.0.0/17")));
+    assertTrue(toList.permits(Prefix.parse("10.20.0.0/18")));
+    assertTrue(toList.permits(Prefix.parse("10.20.0.0/20")));
+    // On-path ancestors of 10.20.16.0/24 (lengths 21..24, plus the shared 16..20 prefixes):
+    assertTrue(toList.permits(Prefix.parse("10.20.16.0/24")));
+    assertTrue(toList.permits(Prefix.parse("10.20.16.0/21")));
+    // Beyond the to-prefix length, off the base network, and longer than the deepest to-prefix:
+    assertFalse(toList.permits(Prefix.parse("10.20.0.0/21")));
+    assertFalse(toList.permits(Prefix.parse("10.20.128.0/17")));
+    assertFalse(toList.permits(Prefix.parse("10.20.16.0/25")));
+
+    // `address-mask`: 172.16.0.0/16 mask 255.255.0.0 -> exact match on 172.16.0.0/16 only.
+    RouteFilterList maskList = c.getRouteFilterLists().get("mask-list");
+    assertNotNull(maskList);
+    assertTrue(maskList.permits(Prefix.parse("172.16.0.0/16")));
+    assertFalse(maskList.permits(Prefix.parse("172.16.5.0/24")));
+    assertFalse(maskList.permits(Prefix.parse("172.17.0.0/16")));
+
     // entry 10 matches 1.1.1.1/32 (system-pfx) and applies metric 50 + prepend 65001 x2 +
     // community.
     RoutingPolicy exportPolicy = c.getRoutingPolicies().get("export-to-r2");
@@ -495,12 +520,19 @@ public final class SrosConversionTest {
                     allOf(
                         hasPrefix(Prefix.parse("203.0.113.0/24")),
                         hasAdministrativeCost(100),
-                        hasMetric(50L))))));
+                        hasMetric(50L)),
+                    // ECMP route: one VI static route per next-hop, each with its own metric
+                    // (batfish/batfish#9989). Equal preference (default 5) -> both install as ECMP.
+                    allOf(
+                        hasPrefix(Prefix.parse("192.0.2.128/25")),
+                        hasNextHop(NextHopIp.of(Ip.parse("10.0.0.1"))),
+                        hasMetric(10L)),
+                    allOf(
+                        hasPrefix(Prefix.parse("192.0.2.128/25")),
+                        hasNextHop(NextHopIp.of(Ip.parse("10.0.1.1"))),
+                        hasMetric(20L))))));
     // The route whose next-hop has no admin-state is not installed (SR-OS leaves it out of the
-    // RIB):
-    // exactly the three routes above are present (containsInAnyOrder is exhaustive), so
-    // 100.64.0.0/24
-    // is absent.
+    // RIB), so 100.64.0.0/24 is absent (containsInAnyOrder is exhaustive).
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {

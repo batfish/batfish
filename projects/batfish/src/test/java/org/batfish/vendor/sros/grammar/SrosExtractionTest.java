@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -147,7 +148,7 @@ public final class SrosExtractionTest {
     assertThat(vc.getWarnings().getParseWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     List<StaticRoute> routes = vc.getRouters().get("Base").getStaticRoutes();
-    assertThat(routes, hasSize(4));
+    assertThat(routes, hasSize(6));
 
     // route 1: next-hop, admin-state enable, default preference 5 / metric 1.
     StaticRoute nh = routes.get(0);
@@ -176,6 +177,21 @@ public final class SrosExtractionTest {
     assertThat(nhNoAdmin.getPrefix(), equalTo(Prefix.parse("100.64.0.0/24")));
     assertThat(nhNoAdmin.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
     assertThat(nhNoAdmin.getAdminStateEnable(), equalTo(false));
+
+    // routes 5-6: an ECMP route with two next-hops -> one StaticRoute per next-hop, each carrying
+    // its own metric (10 / 20). Confirmed on SR-SIM 26.3.R1: equal-preference next-hops both
+    // install (batfish/batfish#9989).
+    StaticRoute ecmp1 = routes.get(4);
+    StaticRoute ecmp2 = routes.get(5);
+    assertThat(ecmp1.getPrefix(), equalTo(Prefix.parse("192.0.2.128/25")));
+    assertThat(ecmp2.getPrefix(), equalTo(Prefix.parse("192.0.2.128/25")));
+    assertThat(
+        ImmutableSet.of(ecmp1.getNextHopIp(), ecmp2.getNextHopIp()),
+        equalTo(ImmutableSet.of(Ip.parse("10.0.0.1"), Ip.parse("10.0.1.1"))));
+    assertThat(ecmp1.getAdminStateEnable(), equalTo(true));
+    assertThat(ecmp2.getAdminStateEnable(), equalTo(true));
+    assertThat(
+        ImmutableSet.of(ecmp1.getMetric(), ecmp2.getMetric()), equalTo(ImmutableSet.of(10, 20)));
   }
 
   /**
@@ -201,6 +217,16 @@ public final class SrosExtractionTest {
     assertThat(range.getType(), equalTo(PrefixListEntry.Type.RANGE));
     assertThat(range.getStartLength(), equalTo(24));
     assertThat(range.getEndLength(), equalTo(32));
+
+    // `to` entry captures its to-prefix list; `address-mask` entry captures its mask-pattern.
+    PrefixListEntry to = vc.getPrefixLists().get("to-list").getEntries().get(0);
+    assertThat(to.getType(), equalTo(PrefixListEntry.Type.TO));
+    assertThat(
+        to.getToPrefixes(),
+        containsInAnyOrder(Prefix.parse("10.20.0.0/20"), Prefix.parse("10.20.16.0/24")));
+    PrefixListEntry mask = vc.getPrefixLists().get("mask-list").getEntries().get(0);
+    assertThat(mask.getType(), equalTo(PrefixListEntry.Type.ADDRESS_MASK));
+    assertThat(mask.getMaskPatterns(), contains(Ip.parse("255.255.0.0")));
 
     // entry 10 set-clauses: metric 50, as-path-prepend 65001 x2, community add comm-tag.
     PolicyStatement ps = vc.getPolicyStatements().get("export-to-r2");
@@ -284,18 +310,13 @@ public final class SrosExtractionTest {
   }
 
   /**
-   * Extraction warns (never silently skips/defaults) on: static-route ECMP (multiple next-hops), an
-   * illegal prefix-list 'through' missing its length, an inverted 'range', an unrecognized
-   * from-protocol, and a non-boolean flag value. Each is a line-stamped parse warning.
+   * Extraction warns (never silently skips/defaults) on: an illegal prefix-list 'through' missing
+   * its length, an inverted 'range', an unrecognized from-protocol, and a non-boolean flag value.
+   * Each is a line-stamped parse warning.
    */
   @Test
   public void testExtractionWarnings() {
     SrosConfiguration vc = parseVendorConfig("warnings.txt");
-    // static route with two next-hops -> ECMP warning, only the first is modeled.
-    warningOnLine(
-        vc, "static route 192.0.2.0/24 has 2 next-hops (ECMP); only the first is modeled");
-    StaticRoute sr = vc.getRouters().get("Base").getStaticRoutes().get(0);
-    assertThat(sr.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
     // through entry with no through-length, and an inverted range.
     warningOnLine(vc, "prefix-list 'through' entry is missing through-length");
     warningOnLine(vc, "prefix-list range start-length 30 is greater than end-length 24");

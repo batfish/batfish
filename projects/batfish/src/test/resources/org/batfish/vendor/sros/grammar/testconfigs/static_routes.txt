@@ -33,6 +33,16 @@ configure {
                 next-hop 10.0.0.1 {
                 }
             }
+            route 192.0.2.128/25 route-type unicast {
+                next-hop 10.0.0.1 {
+                    admin-state enable
+                    metric 10
+                }
+                next-hop 10.0.1.1 {
+                    admin-state enable
+                    metric 20
+                }
+            }
         }
     }
 }

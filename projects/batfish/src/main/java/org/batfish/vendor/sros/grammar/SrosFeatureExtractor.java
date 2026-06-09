@@ -313,8 +313,9 @@ public final class SrosFeatureExtractor {
 
   /**
    * Extract {@code static-routes route <prefix> route-type <unicast|multicast>} entries. Each route
-   * is reached via a {@code next-hop <ip>} or a {@code blackhole}; both sub-contexts carry an
-   * {@code admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
+   * is reached via one or more {@code next-hop <ip>} entries (multiple = ECMP, one VI {@link
+   * StaticRoute} per next-hop) or a {@code blackhole}; each sub-context carries an {@code
+   * admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
    * StaticRoute}), and optional {@code metric}/{@code preference}. Only the unicast IPv4 case is
    * modeled here; a non-IPv4 prefix is warned and skipped by {@link #toPrefix}.
    */
@@ -339,30 +340,28 @@ public final class SrosFeatureExtractor {
       if (typeBody == null) {
         continue;
       }
-      StaticRoute route = new StaticRoute(prefix);
       SrosStatementTree nextHop = typeBody.getChild("next-hop");
       SrosStatementTree blackhole = typeBody.getChild("blackhole");
-      SrosStatementTree adminStateParent;
       if (nextHop != null) {
-        // next-hop is a list keyed by the next-hop IP. The model holds a single next-hop; if the
-        // route configures more than one (ECMP), warn that only the first is modeled rather than
-        // silently dropping the rest. TODO: model ECMP static routes —
-        // https://github.com/batfish/batfish/issues/9989
-        if (nextHop.getChildren().size() > 1) {
-          warnf(
-              typeBody,
-              "static route %s has %d next-hops (ECMP); only the first is modeled",
-              prefix,
-              nextHop.getChildren().size());
+        // next-hop is a YANG list keyed by the next-hop IP; more than one entry is an ECMP route.
+        // Each entry carries its own admin-state/metric/preference, so emit one StaticRoute per
+        // next-hop — VI ECMP is the set of equal-preference legs to the same prefix, and Batfish's
+        // own best-preference selection installs the equal-best legs and drops worse-preference
+        // ones (confirmed on SR-SIM 26.3.R1: two equal-preference next-hops both install; an
+        // unequal pair installs only the lower-preference leg). See
+        // https://github.com/batfish/batfish/issues/9989.
+        for (Map.Entry<String, SrosStatementTree> nhe : nextHop.getChildren().entrySet()) {
+          SrosStatementTree nhEntry = nhe.getValue();
+          StaticRoute route = new StaticRoute(prefix);
+          route.setNextHopIp(toIp(unquote(nhe.getKey()), nhEntry, "static-route next-hop"));
+          applyAdminStateMetricPreference(route, nhEntry);
+          router.getStaticRoutes().add(route);
         }
-        SrosStatementTree nhEntry = firstChild(nextHop);
-        if (nhEntry != null) {
-          route.setNextHopIp(toIp(nhKey(nextHop), nhEntry, "static-route next-hop"));
-        }
-        adminStateParent = nhEntry;
       } else if (blackhole != null) {
+        StaticRoute route = new StaticRoute(prefix);
         route.setBlackhole(true);
-        adminStateParent = blackhole;
+        applyAdminStateMetricPreference(route, blackhole);
+        router.getStaticRoutes().add(route);
       } else {
         // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
         // Warn rather than silently skip.
@@ -370,27 +369,30 @@ public final class SrosFeatureExtractor {
             typeBody,
             "static route %s has no modeled next-hop or blackhole; not converted",
             prefix);
-        continue;
       }
-      if (adminStateParent != null) {
-        Boolean adminUp =
-            toEnum(adminStateParent.getChild("admin-state"), ADMIN_STATE, "admin-state");
-        route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
-        toIntegerInSpace(
-                singleValue(adminStateParent, "metric"),
-                singleValueNode(adminStateParent, "metric"),
-                STATIC_METRIC_SPACE,
-                "static-route metric")
-            .ifPresent(route::setMetric);
-        toIntegerInSpace(
-                singleValue(adminStateParent, "preference"),
-                singleValueNode(adminStateParent, "preference"),
-                ROUTE_PREFERENCE_SPACE,
-                "static-route preference")
-            .ifPresent(route::setPreference);
-      }
-      router.getStaticRoutes().add(route);
     }
+  }
+
+  /**
+   * Apply the {@code admin-state}/{@code metric}/{@code preference} leaves from a static-route
+   * next-hop or blackhole context onto {@code route}, defaulting metric/preference per YANG when
+   * absent.
+   */
+  private void applyAdminStateMetricPreference(StaticRoute route, SrosStatementTree ctx) {
+    Boolean adminUp = toEnum(ctx.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
+    toIntegerInSpace(
+            singleValue(ctx, "metric"),
+            singleValueNode(ctx, "metric"),
+            STATIC_METRIC_SPACE,
+            "static-route metric")
+        .ifPresent(route::setMetric);
+    toIntegerInSpace(
+            singleValue(ctx, "preference"),
+            singleValueNode(ctx, "preference"),
+            ROUTE_PREFERENCE_SPACE,
+            "static-route preference")
+        .ifPresent(route::setPreference);
   }
 
   /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
@@ -515,16 +517,6 @@ public final class SrosFeatureExtractor {
   /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
   private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
     return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
-  }
-
-  /**
-   * The first child key of {@code node}, unquoted (e.g. the next-hop IP under the {@code next-hop}
-   * list — the device renders it quoted, {@code next-hop "10.0.0.1"}).
-   */
-  private static @Nullable String nhKey(SrosStatementTree node) {
-    return node.getChildren().isEmpty()
-        ? null
-        : unquote(node.getChildren().keySet().iterator().next());
   }
 
   private void extractBgp(Router router, @Nullable SrosStatementTree bgpNode) {
@@ -685,6 +677,28 @@ public final class SrosFeatureExtractor {
                       IPV4_PREFIX_LENGTH_SPACE,
                       "prefix-list end-length")
                   .ifPresent(ple::setEndLength);
+              // `to` carries a to-prefix list (each nested in the base prefix); `address-mask`
+              // carries a mask-pattern list. Both key their list entries by the value word.
+              SrosStatementTree toPrefixes = typeBody.getChild("to-prefix");
+              if (toPrefixes != null) {
+                for (Map.Entry<String, SrosStatementTree> tpe :
+                    toPrefixes.getChildren().entrySet()) {
+                  Prefix tp = toPrefix(tpe.getKey(), tpe.getValue());
+                  if (tp != null) {
+                    ple.getToPrefixes().add(tp);
+                  }
+                }
+              }
+              SrosStatementTree maskPatterns = typeBody.getChild("mask-pattern");
+              if (maskPatterns != null) {
+                for (Map.Entry<String, SrosStatementTree> mpe :
+                    maskPatterns.getChildren().entrySet()) {
+                  Ip mask = toIp(unquote(mpe.getKey()), mpe.getValue(), "prefix-list mask-pattern");
+                  if (mask != null) {
+                    ple.getMaskPatterns().add(mask);
+                  }
+                }
+              }
             }
             // Warn against the type value node (e.g. the `through`/`range` word), which carries a
             // source context even when the entry's bound block is empty.
