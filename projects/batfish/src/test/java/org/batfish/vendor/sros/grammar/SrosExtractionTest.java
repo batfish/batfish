@@ -30,6 +30,7 @@ import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
+import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
 import org.batfish.vendor.sros.representation.PrefixList;
@@ -114,13 +115,13 @@ public final class SrosExtractionTest {
   }
 
   /**
-   * r1's security/ssh/user-params/persistent-indices subtrees are silently skipped (no warnings).
+   * r1's security/ssh/user-params/persistent-indices subtrees are silently skipped (no warnings);
+   * only {@code system name} is read from the system subtree.
    */
   @Test
   public void testR1UnmodeledSubtreesSilentlySkipped() {
     SrosConfiguration vc = parseVendorConfig("r1_admin_show_configuration.txt");
-    // No hostname configured in r1 (no `system name`); the system subtree is otherwise unread.
-    assertThat(vc.getHostname(), nullValue());
+    assertThat(vc.getHostname(), equalTo("r1"));
     assertThat(vc.getWarnings().getUnimplementedWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
   }
@@ -130,6 +131,22 @@ public final class SrosExtractionTest {
   public void testHostnameExtraction() {
     SrosConfiguration vc = parseVendorConfig("hostname.txt");
     assertThat(vc.getHostname(), equalTo("sros-r1"));
+  }
+
+  /**
+   * BGP group→neighbor inheritance is resolved on the model at extraction: a neighbor that sets
+   * none of {@code type}/{@code peer-as}/{@code import}/{@code export} inherits them from its
+   * group.
+   */
+  @Test
+  public void testBgpNeighborInheritsFromGroup() {
+    SrosConfiguration vc = parseVendorConfig("bgp_type_and_inheritance.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    BgpNeighbor neighbor =
+        vc.getRouters().get("Base").getBgpProcess().getNeighbors().get("10.0.0.1");
+    assertThat(neighbor.getType(), equalTo(PeerType.EXTERNAL));
+    assertThat(neighbor.getPeerAs(), equalTo(65002L));
+    assertThat(neighbor.getImportPolicies(), contains("imp"));
   }
 
   /**
@@ -186,8 +203,9 @@ public final class SrosExtractionTest {
 
     assertThat(
         warningOnLine(vc, "Expected autonomous-system in range 1-4294967295, but got '5000000000'"),
-        equalTo(4));
-    assertThat(warningOnLine(vc, "Expected prefix-length in range 0-32, but got '33'"), equalTo(9));
+        equalTo(7));
+    assertThat(
+        warningOnLine(vc, "Expected prefix-length in range 0-32, but got '33'"), equalTo(12));
 
     // The out-of-range values are dropped (not applied) on the model.
     Router base = vc.getRouters().get("Base");
@@ -198,7 +216,7 @@ public final class SrosExtractionTest {
   /**
    * A bad value inherited via apply-groups is cited to the group's source line (where the value is
    * actually written), not the applying branch. {@code apply_groups_bad_value.txt} writes the
-   * out-of-range autonomous-system inside the group on line 6.
+   * out-of-range autonomous-system inside the group on line 9.
    */
   @Test
   public void testApplyGroupsInheritedBadValueCitesGroupLine() {
@@ -206,18 +224,18 @@ public final class SrosExtractionTest {
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(
         warningOnLine(vc, "Expected autonomous-system in range 1-4294967295, but got '5000000000'"),
-        equalTo(6));
+        equalTo(9));
   }
 
   /**
    * An unrecognized prefix-list match type produces a line-stamped {@link ParseWarning} and the
-   * entry is dropped. {@code bad_prefix_type.txt} has {@code type bogus} on line 5.
+   * entry is dropped. {@code bad_prefix_type.txt} has {@code type bogus} on line 8.
    */
   @Test
   public void testUnrecognizedPrefixTypeWarns() {
     SrosConfiguration vc = parseVendorConfig("bad_prefix_type.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized prefix-list match type 'bogus'"), equalTo(5));
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized prefix-list match type 'bogus'"), equalTo(8));
     // The entry with the bad type is dropped, leaving the prefix-list empty.
     assertThat(vc.getPrefixLists().get("system-pfx").getEntries(), empty());
   }
@@ -225,14 +243,14 @@ public final class SrosExtractionTest {
   /**
    * Unrecognized enumerated values (port {@code admin-state}, policy {@code action-type}) warn with
    * a line and leave the field unset, like the prefix-list match type. {@code bad_enums.txt} has
-   * {@code admin-state bogus-state} on line 4 and {@code action-type bogus-action} on line 10.
+   * {@code admin-state bogus-state} on line 7 and {@code action-type bogus-action} on line 13.
    */
   @Test
   public void testUnrecognizedEnumsWarn() {
     SrosConfiguration vc = parseVendorConfig("bad_enums.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized admin-state 'bogus-state'"), equalTo(4));
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized action-type 'bogus-action'"), equalTo(10));
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized admin-state 'bogus-state'"), equalTo(7));
+    assertThat(warningOnLine(vc, "SR-OS: unrecognized action-type 'bogus-action'"), equalTo(13));
     // The unrecognized values leave the corresponding fields unset.
     assertThat(vc.getPorts().get("1/1/c1/1").getAdminStateEnable(), nullValue());
     assertThat(vc.getPolicyStatements().get("p").getEntries().get(10L).getAction(), nullValue());

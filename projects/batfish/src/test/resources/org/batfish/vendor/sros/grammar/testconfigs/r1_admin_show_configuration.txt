@@ -79,6 +79,7 @@ configure {
         }
     }
     system {
+        name "r1"
         security {
             aaa {
                 local-profiles {

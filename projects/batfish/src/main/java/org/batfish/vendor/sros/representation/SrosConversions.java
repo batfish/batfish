@@ -52,37 +52,25 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
  * Converts a {@link SrosConfiguration} (the typed P4 feature model) into the vendor-independent
  * {@link Configuration} model.
  *
- * <p>The non-obvious SR-OS semantics handled here:
- *
- * <ul>
- *   <li><b>Router instance ↔ VRF.</b> The SR-OS {@code Base} router is the main routing instance;
- *       it maps to the Batfish default VRF. Any other router instance maps to a VRF of the same
- *       name.
- *   <li><b>BGP {@code group} → {@code neighbor} inheritance.</b> A neighbor inherits {@code
- *       peer-as} and the {@code import}/{@code export} policy lists from its {@code group} when it
- *       does not configure them directly (per-neighbor config wins). This is resolved here, not in
- *       extraction (P4 only recorded the {@code group} leafref).
- *   <li><b>eBGP default-reject.</b> SR-OS drops eBGP routes in both directions unless an explicit
- *       policy accepts them ({@code ebgp-default-reject-policy} defaults true). Each peer therefore
- *       gets a generated import and export policy that chains its named policies and then defaults
- *       to <em>reject</em> for an eBGP session (and to <em>accept</em> for an iBGP session, which
- *       SR-OS does not default-reject).
- * </ul>
+ * <p>The SR-OS router instance maps to a VRF: the {@code Base} router is the main routing instance
+ * and maps to the Batfish default VRF; any other router instance maps to a VRF of the same name.
+ * Other non-obvious semantics (BGP group inheritance, eBGP default-reject) are documented on the
+ * functions that implement them.
  */
 @ParametersAreNonnullByDefault
 public final class SrosConversions {
 
   /**
-   * The default administrative distance Batfish assigns BGP routes. SR-OS uses route {@code
-   * preference} 170 for both eBGP and iBGP by default (eBGP and iBGP share one preference in SR-OS,
-   * unlike Cisco's 20/200 split).
+   * The default BGP route {@code preference} on SR-OS (the vendor's term for what Batfish models as
+   * administrative distance). SR-OS uses preference 170 for both eBGP and iBGP by default — they
+   * share one preference, unlike Cisco's 20/200 split.
    */
-  static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
+  static final int DEFAULT_BGP_PREFERENCE = 170;
 
   /** Converts every {@link PrefixList} into a {@link RouteFilterList} on {@code c}. */
-  static void convertPrefixLists(SrosConfiguration vc, Configuration c) {
+  static void convertPrefixLists(SrosConfiguration vc, Configuration c, Warnings w) {
     for (PrefixList pl : vc.getPrefixLists().values()) {
-      c.getRouteFilterLists().put(pl.getName(), toRouteFilterList(pl));
+      c.getRouteFilterLists().put(pl.getName(), toRouteFilterList(pl, w));
     }
   }
 
@@ -90,13 +78,12 @@ public final class SrosConversions {
    * Converts an SR-OS {@code prefix-list} to a {@link RouteFilterList} (all lines permit; a
    * route-policy decides accept/reject). The match {@code type} maps to a prefix-length {@link
    * SubRange}: {@code exact} matches only the configured length; {@code longer} matches strictly
-   * longer; {@code through}/{@code range}/{@code to}/{@code address-mask} carry extra bounds the P4
-   * model does not yet capture, so they are approximated as "this length or longer". Here we model
-   * the two types the lab exercises precisely ({@code exact}, {@code longer}) and over-approximate
-   * the rest.
+   * longer. {@code through}/{@code range}/{@code to}/{@code address-mask} carry extra bounds the P4
+   * model does not yet capture, so they are over-approximated as "this length or longer" and a
+   * warning is emitted (the resulting filter is broader than the device's — see the warning).
    */
   @VisibleForTesting
-  static @Nonnull RouteFilterList toRouteFilterList(PrefixList pl) {
+  static @Nonnull RouteFilterList toRouteFilterList(PrefixList pl, Warnings w) {
     List<RouteFilterLine> lines = new ArrayList<>();
     for (PrefixListEntry entry : pl.getEntries()) {
       Prefix prefix = entry.getPrefix();
@@ -105,10 +92,16 @@ public final class SrosConversions {
           switch (entry.getType()) {
             case EXACT -> SubRange.singleton(len);
             case LONGER -> new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH);
-            case THROUGH, RANGE, TO, ADDRESS_MASK ->
-                // The upper/lower bound leaves for these types are not modeled in P4 yet; match
-                // this length or longer as a conservative over-approximation.
-                new SubRange(len, Prefix.MAX_PREFIX_LENGTH);
+            case THROUGH, RANGE, TO, ADDRESS_MASK -> {
+              // The upper/lower bound leaves for these types are not modeled in P4 yet; match this
+              // length or longer as a conservative over-approximation, and warn that the filter is
+              // broader than the device's until the bounds are modeled.
+              w.redFlagf(
+                  "SR-OS: prefix-list '%s' entry %s match type '%s' is not fully modeled; matching"
+                      + " '%s' or longer (over-approximation)",
+                  pl.getName(), prefix, entry.getType(), prefix);
+              yield new SubRange(len, Prefix.MAX_PREFIX_LENGTH);
+            }
           };
       lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, lengthRange));
     }
@@ -294,8 +287,8 @@ public final class SrosConversions {
   /**
    * Converts an SR-OS {@link BgpProcess} on {@code router} to a VI {@link
    * org.batfish.datamodel.BgpProcess} attached to {@code vrf}, with one {@link BgpActivePeerConfig}
-   * per neighbor. Resolves group→neighbor inheritance and eBGP default-reject (see the class
-   * Javadoc).
+   * per neighbor. Group→neighbor inheritance has already been resolved on the model (see {@link
+   * BgpNeighbor#inheritFrom}); eBGP default-reject is realized by {@link #buildPeerPolicy}.
    */
   static void convertBgp(Router router, Configuration c, Vrf vrf, Warnings w) {
     BgpProcess proc = router.getBgpProcess();
@@ -325,9 +318,9 @@ public final class SrosConversions {
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.builder()
             .setRouterId(routerId)
-            .setEbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
-            .setIbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
-            .setLocalAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
+            .setEbgpAdminCost(DEFAULT_BGP_PREFERENCE)
+            .setIbgpAdminCost(DEFAULT_BGP_PREFERENCE)
+            .setLocalAdminCost(DEFAULT_BGP_PREFERENCE)
             .setLocalOriginationTypeTieBreaker(PREFER_NETWORK)
             .setNetworkNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
             .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
@@ -335,53 +328,44 @@ public final class SrosConversions {
             .build();
 
     for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
-      convertNeighbor(router, proc, neighbor, localAs, c, newProc, w);
+      convertNeighbor(router, neighbor, localAs, c, newProc, w);
     }
   }
 
   private static void convertNeighbor(
       Router router,
-      BgpProcess proc,
       BgpNeighbor neighbor,
       long localAs,
       Configuration c,
       org.batfish.datamodel.BgpProcess newProc,
       Warnings w) {
-    Ip peerAddress;
-    try {
-      peerAddress = Ip.parse(neighbor.getIpAddress());
-    } catch (IllegalArgumentException e) {
+    Ip peerAddress = Ip.tryParse(neighbor.getIpAddress()).orElse(null);
+    if (peerAddress == null) {
       w.redFlagf("SR-OS: BGP neighbor has unparseable address '%s'", neighbor.getIpAddress());
       return;
     }
 
-    // Undefined group (neighbor names a group that does not exist): the reference is reported by
-    // the structure manager (recorded at extraction), so no warning is emitted here.
-    BgpGroup group = neighbor.getGroup() == null ? null : proc.getGroups().get(neighbor.getGroup());
-
-    // peer-as: per-neighbor wins, else inherited from the group.
+    // The neighbor's attributes already include anything inherited from its group (resolved on the
+    // model). peer-as is still required to model the session.
     Long peerAs = neighbor.getPeerAs();
-    if (peerAs == null && group != null) {
-      peerAs = group.getPeerAs();
-    }
     if (peerAs == null) {
       w.redFlagf(
           "SR-OS: BGP neighbor %s has no peer-as (none configured or inherited); skipping",
           neighbor.getIpAddress());
       return;
     }
-    boolean ebgp = peerAs != localAs;
-
-    // import/export policy lists: per-neighbor wins, else inherited from the group.
-    List<String> importPolicies = inheritedPolicies(neighbor.getImportPolicies(), group, true);
-    List<String> exportPolicies = inheritedPolicies(neighbor.getExportPolicies(), group, false);
+    // eBGP vs iBGP: an explicit peer type wins (SR-OS, like Junos, lets a session be typed
+    // directly);
+    // otherwise infer from whether the peer-as differs from the local AS.
+    boolean ebgp =
+        neighbor.getType() != null ? neighbor.getType() == PeerType.EXTERNAL : peerAs != localAs;
 
     String importPolicyName =
         generatedBgpPeerImportPolicyName(router.getName(), neighbor.getIpAddress());
     String exportPolicyName =
         generatedBgpPeerExportPolicyName(router.getName(), neighbor.getIpAddress());
-    buildPeerPolicy(importPolicyName, importPolicies, ebgp, /* isExport= */ false, c);
-    buildPeerPolicy(exportPolicyName, exportPolicies, ebgp, /* isExport= */ true, c);
+    buildPeerPolicy(importPolicyName, neighbor.getImportPolicies(), ebgp, false, c);
+    buildPeerPolicy(exportPolicyName, neighbor.getExportPolicies(), ebgp, true, c);
 
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
@@ -408,21 +392,6 @@ public final class SrosConversions {
         .setIpv4UnicastAddressFamily(af)
         .setBgpProcess(newProc)
         .build();
-  }
-
-  /**
-   * Resolves a per-peer policy list with group inheritance: the neighbor's own list if non-empty,
-   * otherwise the group's list.
-   */
-  private static @Nonnull List<String> inheritedPolicies(
-      List<String> neighborPolicies, @Nullable BgpGroup group, boolean isImport) {
-    if (!neighborPolicies.isEmpty()) {
-      return neighborPolicies;
-    }
-    if (group == null) {
-      return ImmutableList.of();
-    }
-    return isImport ? group.getImportPolicies() : group.getExportPolicies();
   }
 
   /**

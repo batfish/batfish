@@ -1,5 +1,8 @@
 package org.batfish.vendor.sros.grammar;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import java.util.List;
@@ -22,6 +25,7 @@ import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Mda;
+import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
 import org.batfish.vendor.sros.representation.PolicyStatementEntry;
@@ -52,8 +56,7 @@ import org.batfish.vendor.sros.representation.SrosStructureUsage;
  * Warnings.ParseWarning}s for malformed or out-of-range values (via {@link #warn}) and records
  * structure definitions and references (via {@link #defineStructure}/{@link #referenceStructure}),
  * driving the {@code definedStructures}/{@code undefinedReferences}/unused-structure questions and
- * the {@code annotate} tool. A bad value with no associated context (should not happen for parsed
- * input) degrades to a context-free red-flag warning.
+ * the {@code annotate} tool.
  */
 @ParametersAreNonnullByDefault
 public final class SrosFeatureExtractor {
@@ -85,6 +88,10 @@ public final class SrosFeatureExtractor {
           .put("to", PrefixListEntry.Type.TO)
           .put("address-mask", PrefixListEntry.Type.ADDRESS_MASK)
           .build();
+
+  /** BGP {@code type} enumeration (nokia-types-bgp:peer-type). */
+  private static final Map<String, PeerType> PEER_TYPE =
+      ImmutableMap.of("internal", PeerType.INTERNAL, "external", PeerType.EXTERNAL);
 
   /** policy-statement entry/default {@code action-type} enumeration. */
   private static final Map<String, PolicyAction> POLICY_ACTION =
@@ -222,7 +229,7 @@ public final class SrosFeatureExtractor {
       SrosStatementTree primary = navigate(ifaceNode, "ipv4", "primary");
       if (primary != null) {
         iface.setPrimaryAddress(
-            parseIp(
+            toIp(
                 singleValue(primary, "address"), singleValueNode(primary, "address"), "interface"));
         toIntegerInSpace(
                 singleValue(primary, "prefix-length"),
@@ -241,7 +248,7 @@ public final class SrosFeatureExtractor {
     }
     BgpProcess proc = new BgpProcess();
     proc.setRouterId(
-        parseIp(
+        toIp(
             singleValue(bgpNode, "router-id"), singleValueNode(bgpNode, "router-id"), "router-id"));
 
     SrosStatementTree groupList = bgpNode.getChild("group");
@@ -251,6 +258,7 @@ public final class SrosFeatureExtractor {
         SrosStatementTree groupNode = e.getValue();
         defineStructure(SrosStructureType.BGP_GROUP, name, groupNode);
         BgpGroup group = new BgpGroup(name);
+        group.setType(toEnum(groupNode.getChild("type"), PEER_TYPE, "bgp peer type"));
         toLongInSpace(
                 singleValue(groupNode, "peer-as"),
                 singleValueNode(groupNode, "peer-as"),
@@ -283,6 +291,7 @@ public final class SrosFeatureExtractor {
               SrosStructureUsage.BGP_NEIGHBOR_GROUP,
               groupValue);
         }
+        neighbor.setType(toEnum(nbrNode.getChild("type"), PEER_TYPE, "bgp peer type"));
         toLongInSpace(
                 singleValue(nbrNode, "peer-as"),
                 singleValueNode(nbrNode, "peer-as"),
@@ -297,6 +306,12 @@ public final class SrosFeatureExtractor {
         referencePolicies(nbrExport, SrosStructureUsage.BGP_NEIGHBOR_EXPORT_POLICY);
         proc.getNeighbors().put(ip, neighbor);
       }
+    }
+    // Resolve group -> neighbor inheritance now, in the representation, so conversion reads
+    // fully-populated neighbors (NX-OS-style doInherit, not inline in conversion).
+    for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+      neighbor.inheritFrom(
+          neighbor.getGroup() == null ? null : proc.getGroups().get(neighbor.getGroup()));
     }
     router.setBgpProcess(proc);
   }
@@ -317,7 +332,7 @@ public final class SrosFeatureExtractor {
         SrosStatementTree prefixNode = plNode.getChild("prefix");
         if (prefixNode != null) {
           for (Map.Entry<String, SrosStatementTree> pe : prefixNode.getChildren().entrySet()) {
-            Prefix prefix = parsePrefix(pe.getKey(), pe.getValue());
+            Prefix prefix = toPrefix(pe.getKey(), pe.getValue());
             if (prefix == null) {
               continue;
             }
@@ -436,15 +451,16 @@ public final class SrosFeatureExtractor {
     if (text == null) {
       return Optional.empty();
     }
+    SrosStatementTree node = requireNonNull(ctxNode);
     int num;
     try {
       num = Integer.parseInt(text);
     } catch (NumberFormatException e) {
-      warn(ctxNode, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(ctxNode, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
     return Optional.of(num);
@@ -460,43 +476,41 @@ public final class SrosFeatureExtractor {
     if (text == null) {
       return Optional.empty();
     }
+    SrosStatementTree node = requireNonNull(ctxNode);
     long num;
     try {
       num = Long.parseLong(text);
     } catch (NumberFormatException e) {
-      warn(ctxNode, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(ctxNode, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
     return Optional.of(num);
   }
 
-  private @Nullable Ip parseIp(
+  private @Nullable Ip toIp(
       @Nullable String text, @Nullable SrosStatementTree ctxNode, String what) {
     if (text == null) {
       return null;
     }
-    try {
-      return Ip.parse(text);
-    } catch (IllegalArgumentException e) {
-      warn(ctxNode, String.format("SR-OS: expected an IPv4 address %s but got '%s'", what, text));
-      return null;
+    Optional<Ip> ip = Ip.tryParse(text);
+    if (ip.isEmpty()) {
+      warn(
+          requireNonNull(ctxNode),
+          String.format("SR-OS: expected an IPv4 address %s but got '%s'", what, text));
     }
+    return ip.orElse(null);
   }
 
-  private @Nullable Prefix parsePrefix(@Nullable String text, @Nullable SrosStatementTree ctxNode) {
-    if (text == null) {
-      return null;
-    }
-    try {
-      return Prefix.parse(text);
-    } catch (IllegalArgumentException e) {
+  private @Nullable Prefix toPrefix(String text, SrosStatementTree ctxNode) {
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isEmpty()) {
       warn(ctxNode, String.format("SR-OS: expected an IPv4 prefix but got '%s'", text));
-      return null;
     }
+    return prefix.orElse(null);
   }
 
   /**
@@ -534,17 +548,17 @@ public final class SrosFeatureExtractor {
 
   /**
    * Emit a line-stamped {@link Warnings.ParseWarning} for the statement that created {@code
-   * ctxNode} (the same channel as the parser's unrecognized-line warnings, so it is
-   * annotate-visible and carries a source line). If the node has no source context (should not
-   * happen for a parsed value), fall back to a context-free red-flag so the warning is never
-   * silently lost.
+   * valueNode} (the same channel as the parser's unrecognized-line warnings, so it is
+   * annotate-visible and carries a source line).
+   *
+   * <p>{@code valueNode} is a value node returned by {@link #singleValueNode} or a leaf-list child,
+   * which always carries a source context: {@link SrosConfigurationBuilder} records the statement
+   * context on its deepest (value) node, and the value-parse helpers only warn once they have a
+   * non-null value (so the value node exists). The context is therefore required, not optional.
    */
-  private void warn(@Nullable SrosStatementTree ctxNode, String message) {
-    ParserRuleContext ctx = ctxNode == null ? null : ctxNode.firstDefContext();
-    if (ctx == null) {
-      _w.redFlag(message);
-      return;
-    }
+  private void warn(SrosStatementTree valueNode, String message) {
+    ParserRuleContext ctx = valueNode.firstDefContext();
+    checkState(ctx != null, "value node for warning '%s' has no source context", message);
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
     String fullText = _text.substring(start, end + 1);

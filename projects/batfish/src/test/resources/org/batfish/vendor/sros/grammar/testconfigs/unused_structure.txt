@@ -1,5 +1,8 @@
 # Configuration format version 26.3 revision 0
 configure {
+    system {
+        name "unused-structure"
+    }
     policy-options {
         prefix-list "unused-pfx" {
             prefix 1.1.1.1/32 type exact {

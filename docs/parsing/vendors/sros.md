@@ -138,8 +138,11 @@ hardware (`Card`/`Mda`, `Port`), routers (`Router`, `RouterInterface`), BGP
 composite prefix+type entries, `PolicyStatement` with numbered entries and a
 default-action). List keys follow YANG: card by slot, mda by slot, port by path
 string, router/interface by name, BGP group by name, neighbor by IP,
-policy-statement entry by entry-id. BGP `neighbor/group` inheritance is recorded
-on the neighbor and resolved at conversion (P5).
+policy-statement entry by entry-id. BGP `group`→`neighbor` inheritance is
+resolved here, on the model (`BgpNeighbor.inheritFrom`): after both are
+extracted, each neighbor fills any unset `type`/`peer-as`/`import`/`export` from
+its group, so conversion reads a fully-populated neighbor (the NX-OS
+`doInherit`-style pattern).
 
 Subtrees that are valid config but not control-plane-relevant — `system
 security`/`ssh`/`user-params` and `persistent-indices` — are intentionally left
@@ -202,7 +205,7 @@ end-to-end annotate output.
 `SrosConfiguration.toVendorIndependentConfigurations()` converts the typed P4
 model into the vendor-independent `Configuration`. The conversion logic lives in
 [`SrosConversions`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/representation/SrosConversions.java).
-Three SR-OS-specific semantics drive the design:
+The SR-OS-specific semantics that shape it:
 
 ### Router instance ↔ VRF
 
@@ -233,14 +236,24 @@ binding, not by walking the full physical port tree — so the cards/MDAs/ports 
 left unconverted with a single red-flag warning (not a silent drop). The port's
 `admin-state` is honored on the synthesized `PHYSICAL` interface.
 
-### BGP group → neighbor inheritance
+### BGP group → neighbor inheritance and peer type
 
-P4 records only the neighbor's `group` leafref. Conversion resolves the
-inheritance: a neighbor's `peer-as` and `import`/`export` policy lists come from
-its own config if set, otherwise from its group (per-neighbor wins). Each
-neighbor becomes a `BgpActivePeerConfig` keyed by peer IP, with `local-as` from
-the router instance's `autonomous-system` and `local-ip`/router-id derived from
-the `system` interface address when not explicitly set.
+A neighbor inherits each per-peer attribute it does not set directly —
+`type`, `peer-as`, and the `import`/`export` policy lists — from its `group`
+(per-neighbor config wins). This is resolved **on the model at extraction**
+(`BgpNeighbor.inheritFrom`), mirroring how the NX-OS model resolves template
+inheritance with a `doInherit` pass before conversion rather than inline in
+conversion; conversion therefore reads a fully-populated neighbor.
+
+Each neighbor becomes a `BgpActivePeerConfig` keyed by peer IP, with `local-as`
+from the router instance's `autonomous-system` and router-id derived from the
+`system` interface address when not explicitly set. A session is iBGP or eBGP by
+the SR-OS `type` (`internal`/`external`) when configured — like Junos, the type
+is explicit and need not be inferred — otherwise by comparing `peer-as` to the
+local AS. `local-ip` is left unset so Batfish resolves the source address from
+the topology: for a directly-connected eBGP peer it picks the connected
+interface toward the peer (matching the device; forcing the system address would
+put the local IP off the peering subnet and the session would never establish).
 
 ### eBGP default-reject (the policy chain)
 
@@ -271,13 +284,16 @@ iBGP peer defaults to accept — matching SR-OS.
 [`SrosConversionTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosConversionTest.java)
 parses r1 through the full pipeline and asserts: the VI `Configuration`
 (format/device-model/default VRF), interface types and addresses, the
-prefix-list → `RouteFilterList`, BGP group→neighbor inheritance (inherited
-`peer-as`, `local-as`, `local-ip`), **behavioral** eBGP default-reject (the
-generated export policy accepts the system prefix and rejects everything else;
-the import policy with a default-action accept permits all), and the
-hardware-not-converted red-flag warning. It also asserts the port /
-router-interface split: `to-r2` is `LOGICAL` with a `BIND` dependency on the
-addressless `PHYSICAL` port `1/1/c1/1`.
+prefix-list → `RouteFilterList`, the neighbor's resolved `peer-as`/`local-as`
+and unset `local-ip`, **behavioral** eBGP default-reject (the generated export
+policy accepts the system prefix and rejects everything else; the import policy
+with a default-action accept permits all), and the hardware-not-converted
+red-flag warning. It also asserts the port / router-interface split (`to-r2` is
+`LOGICAL` with a `BIND` dependency on the addressless `PHYSICAL` port
+`1/1/c1/1`), the structure definitions/references and undefined/unused-structure
+detection, and the over-approximation warning for an unmodeled prefix-list match
+type. `SrosExtractionTest` covers group→neighbor inheritance on the model
+(`type`/`peer-as`/policies).
 
 ## Post-processing (P6)
 

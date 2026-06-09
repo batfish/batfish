@@ -102,7 +102,7 @@ public final class SrosConfiguration extends VendorConfiguration {
 
     // Routing policy is referenced by BGP, so convert it before BGP. Prefix-lists before the
     // policy-statements that reference them.
-    SrosConversions.convertPrefixLists(this, c);
+    SrosConversions.convertPrefixLists(this, c, getWarnings());
     SrosConversions.convertPolicyStatements(this, c);
 
     // Each SR-OS router instance is a VRF; the "Base" instance is the Batfish default VRF.

@@ -168,11 +168,7 @@ public final class SrosConversionTest {
             _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    // r1 has no `system name`, so the hostname is guessed from the filename.
-    assertThat(
-        ccae,
-        hasRedFlagWarning(
-            "r1_admin_show_configuration.txt", containsString("hardware provisioning")));
+    assertThat(ccae, hasRedFlagWarning("r1", containsString("hardware provisioning")));
   }
 
   /**
@@ -262,6 +258,22 @@ public final class SrosConversionTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasDefinedStructure(filename, SrosStructureType.PREFIX_LIST, "unused-pfx"));
     assertThat(ccae, hasNumReferrers(filename, SrosStructureType.PREFIX_LIST, "unused-pfx", 0));
+  }
+
+  /**
+   * A prefix-list match type whose bounds are not modeled (through/range/to/address-mask) converts
+   * as an over-approximation and emits a warning rather than silently broadening the filter.
+   */
+  @Test
+  public void testUnmodeledPrefixTypeWarns() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, TESTCONFIGS_PREFIX + "bgp_type_and_inheritance.txt");
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning("bgp-type-and-inheritance", containsString("is not fully modeled")));
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {

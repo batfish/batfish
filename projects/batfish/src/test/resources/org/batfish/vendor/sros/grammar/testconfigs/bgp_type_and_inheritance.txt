@@ -1,0 +1,40 @@
+# Configuration format version 26.3 revision 0
+configure {
+    system {
+        name "bgp-type-and-inheritance"
+    }
+    policy-options {
+        prefix-list "pfx" {
+            prefix 10.0.0.0/8 type through {
+            }
+        }
+        policy-statement "imp" {
+            default-action {
+                action-type accept
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+        bgp {
+            group "g" {
+                type external
+                peer-as 65002
+                import {
+                    policy ["imp"]
+                }
+            }
+            neighbor "10.0.0.1" {
+                group "g"
+            }
+        }
+    }
+}

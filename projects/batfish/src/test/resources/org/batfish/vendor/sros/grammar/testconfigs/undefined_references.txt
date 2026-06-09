@@ -1,5 +1,8 @@
 # Configuration format version 26.3 revision 0
 configure {
+    system {
+        name "undefined-references"
+    }
     policy-options {
         policy-statement "export-system" {
             entry 10 {

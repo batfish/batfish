@@ -9,8 +9,8 @@ import javax.annotation.Nullable;
 /**
  * An SR-OS BGP peer group (template), keyed by group-name (e.g. {@code bgp group "ebgp"}). Groups
  * and neighbors share the same per-peer leaf set; a neighbor inherits unset values from its group
- * (resolved at conversion). Import/export policy leaf-lists are {@code ordered-by user}, so order
- * is preserved.
+ * (see {@link BgpNeighbor#inheritFrom}). Import/export policy leaf-lists are {@code ordered-by
+ * user}, so order is preserved.
  */
 public final class BgpGroup implements Serializable {
 
@@ -22,6 +22,15 @@ public final class BgpGroup implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  /** The peer {@code type} (internal/external) for this group, or {@code null} if unset. */
+  public @Nullable PeerType getType() {
+    return _type;
+  }
+
+  public void setType(@Nullable PeerType type) {
+    _type = type;
   }
 
   /** The {@code peer-as} for this group, or {@code null} if unset. */
@@ -44,6 +53,7 @@ public final class BgpGroup implements Serializable {
   }
 
   private final @Nonnull String _name;
+  private @Nullable PeerType _type;
   private @Nullable Long _peerAs;
   private final @Nonnull List<String> _importPolicies;
   private final @Nonnull List<String> _exportPolicies;

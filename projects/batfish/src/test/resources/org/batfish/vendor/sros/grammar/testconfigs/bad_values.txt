@@ -1,5 +1,8 @@
 # Configuration format version 26.3 revision 0
 configure {
+    system {
+        name "bad-values"
+    }
     router "Base" {
         autonomous-system 5000000000
         interface "to-r2" {
