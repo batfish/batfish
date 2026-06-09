@@ -313,6 +313,13 @@ public final class SrosExtractionTest {
     assertThat(
         red.getInterfaces().get("red-lo").getPrimaryAddress(), equalTo(Ip.parse("172.16.0.1")));
     assertThat(red.getInterfaces().get("red-lo").getPort(), nullValue());
+
+    // bgp-ipvpn mpls: route-distinguisher + vrf-target (single community -> import + export).
+    org.batfish.vendor.sros.representation.BgpIpvpn ipvpn = red.getBgpIpvpn();
+    assertThat(ipvpn, notNullValue());
+    assertThat(ipvpn.getRouteDistinguisher(), equalTo("65000:1"));
+    assertThat(ipvpn.getImportRouteTargets(), contains("target:65000:1"));
+    assertThat(ipvpn.getExportRouteTargets(), contains("target:65000:1"));
   }
 
   /** Route-reflector extraction: a group's cluster-id and next-hop-self inherit to its neighbor. */

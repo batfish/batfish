@@ -22,6 +22,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.sros.representation.BgpGroup;
+import org.batfish.vendor.sros.representation.BgpIpvpn;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
@@ -286,8 +287,47 @@ public final class SrosFeatureExtractor {
       extractOspf(router, vprnNode.getChild("ospf"));
       extractIsis(router, vprnNode.getChild("isis"));
       extractBgp(router, vprnNode.getChild("bgp"));
+      extractBgpIpvpn(router, vprnNode.getChild("bgp-ipvpn"));
       _c.getRouters().put(name, router);
     }
+  }
+
+  /**
+   * Extract {@code service vprn "<name>" bgp-ipvpn mpls}: the {@code route-distinguisher} and the
+   * {@code vrf-target} route-targets (the single {@code community} form populates both import and
+   * export; the {@code import-community}/{@code export-community} form sets them separately). These
+   * drive MPLS L3VPN import/export on the device; only the route-distinguisher converts to the VI
+   * model (inter-PE VPN-IPv4 import is unmodeled — see {@link
+   * org.batfish.vendor.sros.representation.BgpIpvpn}).
+   */
+  private void extractBgpIpvpn(Router router, @Nullable SrosStatementTree bgpIpvpn) {
+    if (bgpIpvpn == null) {
+      return;
+    }
+    SrosStatementTree mpls = bgpIpvpn.getChild("mpls");
+    if (mpls == null) {
+      return;
+    }
+    BgpIpvpn ipvpn = new BgpIpvpn();
+    String rd = singleValue(mpls, "route-distinguisher");
+    ipvpn.setRouteDistinguisher(rd == null ? null : unquote(rd));
+    SrosStatementTree vrfTarget = mpls.getChild("vrf-target");
+    if (vrfTarget != null) {
+      String both = singleValue(vrfTarget, "community");
+      if (both != null) {
+        ipvpn.getImportRouteTargets().add(unquote(both));
+        ipvpn.getExportRouteTargets().add(unquote(both));
+      }
+      String imp = singleValue(vrfTarget, "import-community");
+      if (imp != null) {
+        ipvpn.getImportRouteTargets().add(unquote(imp));
+      }
+      String exp = singleValue(vrfTarget, "export-community");
+      if (exp != null) {
+        ipvpn.getExportRouteTargets().add(unquote(exp));
+      }
+    }
+    router.setBgpIpvpn(ipvpn);
   }
 
   private void extractInterfaces(Router router, @Nullable SrosStatementTree ifaceList) {

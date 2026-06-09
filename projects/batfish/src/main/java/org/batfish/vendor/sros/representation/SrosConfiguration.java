@@ -119,6 +119,7 @@ public final class SrosConfiguration extends VendorConfiguration {
       SrosConversions.convertOspf(router, c, vrf, getWarnings());
       SrosConversions.convertIsis(router, c, vrf, getWarnings());
       SrosConversions.convertBgp(router, c, vrf, getWarnings());
+      SrosConversions.convertBgpIpvpn(router, vrf, getWarnings());
     }
 
     warnUnconvertedHardware();

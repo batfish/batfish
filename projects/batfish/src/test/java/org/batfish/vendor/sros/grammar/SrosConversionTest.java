@@ -357,6 +357,10 @@ public final class SrosConversionTest {
     // No leak: the Base "system" interface is in the default VRF, not "red".
     assertThat(
         c.getAllInterfaces().get("system").getVrfName(), equalTo(Configuration.DEFAULT_VRF_NAME));
+    // The bgp-ipvpn route-distinguisher converts onto the VRF (the VI model stores an RD per VRF).
+    assertThat(
+        c.getVrfs().get("red").getRouteDistinguisher(),
+        equalTo(org.batfish.datamodel.bgp.RouteDistinguisher.parse("65000:1")));
   }
 
   /** Route-reflector conversion: an RR-client neighbor gets cluster-id + route-reflector-client. */

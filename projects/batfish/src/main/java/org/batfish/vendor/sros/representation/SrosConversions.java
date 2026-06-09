@@ -594,6 +594,29 @@ public final class SrosConversions {
     }
   }
 
+  /**
+   * Converts a VPRN's {@code bgp-ipvpn mpls} settings to the VI model. Only the {@code
+   * route-distinguisher} is applied (onto the VRF) — the VI model stores an RD per VRF. The {@code
+   * vrf-target} route-targets and inter-PE VPN-IPv4 (L3VPN) route import are NOT modeled: the VI
+   * datamodel has no VPNv4 address family and its cross-VRF leaking is intra-node only, so PE-to-PE
+   * MP-BGP L3VPN route exchange is not reproducible. See {@link BgpIpvpn} and the tracked
+   * follow-up.
+   */
+  static void convertBgpIpvpn(Router router, Vrf vrf, Warnings w) {
+    BgpIpvpn ipvpn = router.getBgpIpvpn();
+    if (ipvpn == null || ipvpn.getRouteDistinguisher() == null) {
+      return;
+    }
+    try {
+      vrf.setRouteDistinguisher(
+          org.batfish.datamodel.bgp.RouteDistinguisher.parse(ipvpn.getRouteDistinguisher()));
+    } catch (IllegalArgumentException e) {
+      w.redFlagf(
+          "VPRN '%s' route-distinguisher '%s' is invalid; not set",
+          router.getName(), ipvpn.getRouteDistinguisher());
+    }
+  }
+
   /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */
   private static final double OSPF_REFERENCE_BANDWIDTH = 100E9D;
 

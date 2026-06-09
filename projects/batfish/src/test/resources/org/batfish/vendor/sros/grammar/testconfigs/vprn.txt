@@ -9,6 +9,15 @@ configure {
             admin-state enable
             service-id 1
             customer "1"
+            bgp-ipvpn {
+                mpls {
+                    admin-state enable
+                    route-distinguisher "65000:1"
+                    vrf-target {
+                        community "target:65000:1"
+                    }
+                }
+            }
             interface "red-lo" {
                 loopback
                 ipv4 {
