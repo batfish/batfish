@@ -27,6 +27,8 @@ import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.FromProtocol;
+import org.batfish.vendor.sros.representation.IsisProcess;
+import org.batfish.vendor.sros.representation.IsisProcessInterface;
 import org.batfish.vendor.sros.representation.Mda;
 import org.batfish.vendor.sros.representation.OspfArea;
 import org.batfish.vendor.sros.representation.OspfAreaInterface;
@@ -247,6 +249,7 @@ public final class SrosFeatureExtractor {
       extractInterfaces(router, routerNode.getChild("interface"));
       extractStaticRoutes(router, routerNode.getChild("static-routes"));
       extractOspf(router, routerNode.getChild("ospf"));
+      extractIsis(router, routerNode.getChild("isis"));
       extractBgp(router, routerNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
@@ -281,6 +284,7 @@ public final class SrosFeatureExtractor {
       extractInterfaces(router, vprnNode.getChild("interface"));
       extractStaticRoutes(router, vprnNode.getChild("static-routes"));
       extractOspf(router, vprnNode.getChild("ospf"));
+      extractIsis(router, vprnNode.getChild("isis"));
       extractBgp(router, vprnNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
@@ -458,6 +462,19 @@ public final class SrosFeatureExtractor {
           "broadcast", OspfAreaInterface.InterfaceType.BROADCAST,
           "point-to-point", OspfAreaInterface.InterfaceType.POINT_TO_POINT);
 
+  /** IS-IS interface {@code interface-type} enumeration (nokia-types-isis:interface-type). */
+  private static final Map<String, IsisProcessInterface.InterfaceType> ISIS_INTERFACE_TYPE =
+      ImmutableMap.of(
+          "broadcast", IsisProcessInterface.InterfaceType.BROADCAST,
+          "point-to-point", IsisProcessInterface.InterfaceType.POINT_TO_POINT);
+
+  /** IS-IS {@code level-capability} enumeration (nokia-types-isis:level). */
+  private static final Map<String, IsisProcess.LevelCapability> ISIS_LEVEL_CAPABILITY =
+      ImmutableMap.of(
+          "1", IsisProcess.LevelCapability.LEVEL_1,
+          "2", IsisProcess.LevelCapability.LEVEL_2,
+          "1/2", IsisProcess.LevelCapability.LEVEL_1_2);
+
   /**
    * Extract {@code router "<name>" ospf <instance>}: router-id, admin-state, and the per-area
    * interfaces (with interface-type and metric/cost). Only the first/0 OSPF instance is modeled.
@@ -512,6 +529,52 @@ public final class SrosFeatureExtractor {
       }
     }
     router.setOspfProcess(proc);
+  }
+
+  /**
+   * Extract {@code router "<name>" isis <instance>}: admin-state, system-id, area-address(es),
+   * level-capability, and the per-interface {@code interface-type}/{@code passive}. Only the
+   * first/0 IS-IS instance is modeled.
+   */
+  private void extractIsis(Router router, @Nullable SrosStatementTree isisList) {
+    if (isisList == null || isisList.getChildren().isEmpty()) {
+      return;
+    }
+    // isis is a list keyed by instance; model the first (typically instance 0).
+    Map.Entry<String, SrosStatementTree> e = isisList.getChildren().entrySet().iterator().next();
+    int instance;
+    try {
+      instance = Integer.parseInt(e.getKey());
+    } catch (NumberFormatException ex) {
+      instance = 0;
+    }
+    SrosStatementTree isisNode = e.getValue();
+    IsisProcess proc = new IsisProcess(instance);
+    Boolean adminUp = toEnum(isisNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+    proc.setSystemId(singleValue(isisNode, "system-id"));
+    proc.getAreaAddresses().addAll(policyNames(isisNode.getChild("area-address")));
+    IsisProcess.LevelCapability level =
+        toEnum(
+            isisNode.getChild("level-capability"), ISIS_LEVEL_CAPABILITY, "isis level-capability");
+    if (level != null) {
+      proc.setLevelCapability(level);
+    }
+
+    SrosStatementTree ifaceList = isisNode.getChild("interface");
+    if (ifaceList != null) {
+      for (Map.Entry<String, SrosStatementTree> ie : ifaceList.getChildren().entrySet()) {
+        String ifName = unquote(ie.getKey());
+        SrosStatementTree ifNode = ie.getValue();
+        IsisProcessInterface isisIf = new IsisProcessInterface(ifName);
+        isisIf.setInterfaceType(
+            toEnum(ifNode.getChild("interface-type"), ISIS_INTERFACE_TYPE, "isis interface-type"));
+        Boolean passive = toBoolean(ifNode.getChild("passive"), "isis interface passive");
+        isisIf.setPassive(Boolean.TRUE.equals(passive));
+        proc.getInterfaces().put(ifName, isisIf);
+      }
+    }
+    router.setIsisProcess(proc);
   }
 
   /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */

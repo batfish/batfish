@@ -270,6 +270,37 @@ public final class SrosExtractionTest {
   }
 
   /**
+   * IS-IS extraction: instance, admin-state, system-id, area-address, level-capability, and the
+   * per-interface interface-type/passive.
+   */
+  @Test
+  public void testIsisExtraction() {
+    SrosConfiguration vc = parseVendorConfig("isis.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    org.batfish.vendor.sros.representation.IsisProcess proc =
+        vc.getRouters().get("Base").getIsisProcess();
+    assertThat(proc, notNullValue());
+    assertThat(proc.getInstance(), equalTo(0));
+    assertThat(proc.getAdminStateEnable(), equalTo(true));
+    assertThat(proc.getSystemId(), equalTo("0100.1000.0001"));
+    assertThat(proc.getAreaAddresses(), contains("49.0001"));
+    assertThat(
+        proc.getLevelCapability(),
+        equalTo(org.batfish.vendor.sros.representation.IsisProcess.LevelCapability.LEVEL_2));
+    assertThat(proc.getInterfaces().keySet(), containsInAnyOrder("system", "to-r3"));
+    // system is passive (advertised, no adjacency); to-r3 is point-to-point and active.
+    assertThat(proc.getInterfaces().get("system").getPassive(), equalTo(true));
+    org.batfish.vendor.sros.representation.IsisProcessInterface toR3 =
+        proc.getInterfaces().get("to-r3");
+    assertThat(toR3.getPassive(), equalTo(false));
+    assertThat(
+        toR3.getInterfaceType(),
+        equalTo(
+            org.batfish.vendor.sros.representation.IsisProcessInterface.InterfaceType
+                .POINT_TO_POINT));
+  }
+
+  /**
    * VPRN extraction: a {@code service vprn "<name>"} becomes a {@link Router} with its interfaces.
    */
   @Test

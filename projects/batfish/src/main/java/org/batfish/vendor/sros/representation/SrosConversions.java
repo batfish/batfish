@@ -23,6 +23,7 @@ import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -512,6 +513,85 @@ public final class SrosConversions {
       areas.put(e.getKey(), e.getValue().setOspfProcess(newProc).build());
     }
     newProc.setAreas(ImmutableMap.copyOf(areas));
+  }
+
+  /**
+   * Converts a router instance's {@code isis} process to a VI {@link
+   * org.batfish.datamodel.isis.IsisProcess} on {@code vrf}, attaching {@link
+   * org.batfish.datamodel.isis.IsisInterfaceSettings} to each IS-IS-enabled interface. The NET is
+   * built from the first {@code area-address} + {@code system-id} + an {@code 00} N-selector. A
+   * {@code passive} interface advertises its subnet but forms no adjacency (VI {@link
+   * org.batfish.datamodel.isis.IsisInterfaceMode#PASSIVE}). Admin distances come from the
+   * NOKIA_SROS {@link org.batfish.datamodel.RoutingProtocol} defaults (L1 15 / L2 18 internal).
+   */
+  static void convertIsis(Router router, Configuration c, Vrf vrf, Warnings w) {
+    org.batfish.vendor.sros.representation.IsisProcess proc = router.getIsisProcess();
+    if (proc == null || !proc.getAdminStateEnable()) {
+      return;
+    }
+    String systemId = proc.getSystemId();
+    if (systemId == null || proc.getAreaAddresses().isEmpty()) {
+      w.redFlagf(
+          "router '%s' IS-IS has no system-id or area-address; skipping IS-IS", router.getName());
+      return;
+    }
+    // NET = <area-address>.<system-id>.00 (e.g. 49.0001.0100.1000.0001.00). Build the IsoAddress
+    // from the dotted form, stripping the dots the IsoAddress parser does not expect.
+    String net = proc.getAreaAddresses().get(0) + "." + systemId + ".00";
+    IsoAddress netAddress;
+    try {
+      netAddress = new IsoAddress(net);
+    } catch (IllegalArgumentException e) {
+      w.redFlagf("router '%s' IS-IS NET '%s' is invalid; skipping IS-IS", router.getName(), net);
+      return;
+    }
+
+    boolean level1 =
+        proc.getLevelCapability()
+            != org.batfish.vendor.sros.representation.IsisProcess.LevelCapability.LEVEL_2;
+    boolean level2 =
+        proc.getLevelCapability()
+            != org.batfish.vendor.sros.representation.IsisProcess.LevelCapability.LEVEL_1;
+    org.batfish.datamodel.isis.IsisProcess.Builder newProc =
+        org.batfish.datamodel.isis.IsisProcess.builder().setNetAddress(netAddress).setVrf(vrf);
+    if (level1) {
+      newProc.setLevel1(org.batfish.datamodel.isis.IsisLevelSettings.builder().build());
+    }
+    if (level2) {
+      newProc.setLevel2(org.batfish.datamodel.isis.IsisLevelSettings.builder().build());
+    }
+    newProc.build();
+
+    for (org.batfish.vendor.sros.representation.IsisProcessInterface isisIf :
+        proc.getInterfaces().values()) {
+      Interface viIface = c.getAllInterfaces().get(isisIf.getName());
+      if (viIface == null) {
+        w.redFlagf(
+            "router '%s' IS-IS references undefined interface '%s'; skipping",
+            router.getName(), isisIf.getName());
+        continue;
+      }
+      org.batfish.datamodel.isis.IsisInterfaceMode mode =
+          isisIf.getPassive()
+              ? org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE
+              : org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE;
+      org.batfish.datamodel.isis.IsisInterfaceLevelSettings levelSettings =
+          org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder().setMode(mode).build();
+      org.batfish.datamodel.isis.IsisInterfaceSettings.Builder ifSettings =
+          org.batfish.datamodel.isis.IsisInterfaceSettings.builder()
+              .setIsoAddress(netAddress)
+              .setPointToPoint(
+                  isisIf.getInterfaceType()
+                      == org.batfish.vendor.sros.representation.IsisProcessInterface.InterfaceType
+                          .POINT_TO_POINT);
+      if (level1) {
+        ifSettings.setLevel1(levelSettings);
+      }
+      if (level2) {
+        ifSettings.setLevel2(levelSettings);
+      }
+      viIface.setIsis(ifSettings.build());
+    }
   }
 
   /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */

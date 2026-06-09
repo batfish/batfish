@@ -312,6 +312,38 @@ public final class SrosConversionTest {
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
   }
 
+  /**
+   * IS-IS conversion: a VI IsisProcess with the NET built from area-address + system-id + 00, a
+   * level-2 process, and per-interface settings (point-to-point, passive mode). SR-OS L2 internal
+   * admin distance is 18 (set via the NOKIA_SROS RoutingProtocol default).
+   */
+  @Test
+  public void testIsisConversion() throws IOException {
+    Configuration c = parseConfig("isis.txt");
+    org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
+    assertNotNull(proc);
+    // NET = 49.0001 (area) + 0100.1000.0001 (system-id) + 00 (n-sel).
+    assertThat(
+        proc.getNetAddress(),
+        equalTo(new org.batfish.datamodel.IsoAddress("49.0001.0100.1000.0001.00")));
+    // level-capability 2 -> only the level-2 process is set.
+    assertNotNull(proc.getLevel2());
+    assertThat(proc.getLevel1(), nullValue());
+
+    // The to-r3 interface is IS-IS-active and point-to-point; system is passive.
+    Interface toR3 = c.getAllInterfaces().get("to-r3");
+    assertNotNull(toR3.getIsis());
+    assertThat(toR3.getIsis().getPointToPoint(), equalTo(true));
+    assertThat(
+        toR3.getIsis().getLevel2().getMode(),
+        equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE));
+    Interface system = c.getAllInterfaces().get("system");
+    assertNotNull(system.getIsis());
+    assertThat(
+        system.getIsis().getLevel2().getMode(),
+        equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE));
+  }
+
   /** VPRN conversion: a {@code service vprn "red"} becomes a separate VRF holding its interface. */
   @Test
   public void testVprnConversion() throws IOException {

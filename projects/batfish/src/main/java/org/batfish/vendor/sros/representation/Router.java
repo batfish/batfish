@@ -62,10 +62,20 @@ public final class Router implements Serializable {
     _ospfProcess = ospfProcess;
   }
 
+  /** The IS-IS process for this router, or {@code null} if {@code isis} is not configured. */
+  public @Nullable IsisProcess getIsisProcess() {
+    return _isisProcess;
+  }
+
+  public void setIsisProcess(@Nullable IsisProcess isisProcess) {
+    _isisProcess = isisProcess;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Long _autonomousSystem;
   private final @Nonnull Map<String, RouterInterface> _interfaces;
   private final @Nonnull List<StaticRoute> _staticRoutes;
   private @Nullable BgpProcess _bgpProcess;
   private @Nullable OspfProcess _ospfProcess;
+  private @Nullable IsisProcess _isisProcess;
 }
