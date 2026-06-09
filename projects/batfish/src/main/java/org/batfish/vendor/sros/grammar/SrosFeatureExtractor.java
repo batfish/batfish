@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
+import com.google.errorprone.annotations.FormatMethod;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -345,13 +346,14 @@ public final class SrosFeatureExtractor {
       if (nextHop != null) {
         // next-hop is a list keyed by the next-hop IP. The model holds a single next-hop; if the
         // route configures more than one (ECMP), warn that only the first is modeled rather than
-        // silently dropping the rest.
+        // silently dropping the rest. TODO: model ECMP static routes —
+        // https://github.com/batfish/batfish/issues/9989
         if (nextHop.getChildren().size() > 1) {
-          warn(
+          warnf(
               typeBody,
-              String.format(
-                  "static route %s has %d next-hops (ECMP); only the first is modeled",
-                  prefix, nextHop.getChildren().size()));
+              "static route %s has %d next-hops (ECMP); only the first is modeled",
+              prefix,
+              nextHop.getChildren().size());
         }
         SrosStatementTree nhEntry = firstChild(nextHop);
         if (nhEntry != null) {
@@ -364,10 +366,10 @@ public final class SrosFeatureExtractor {
       } else {
         // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
         // Warn rather than silently skip.
-        warn(
+        warnf(
             typeBody,
-            String.format(
-                "static route %s has no modeled next-hop or blackhole; not converted", prefix));
+            "static route %s has no modeled next-hop or blackhole; not converted",
+            prefix);
         continue;
       }
       if (adminStateParent != null) {
@@ -411,11 +413,11 @@ public final class SrosFeatureExtractor {
         if (through == null) {
           warn(ctxNode, "prefix-list 'through' entry is missing through-length");
         } else if (through < len) {
-          warn(
+          warnf(
               ctxNode,
-              String.format(
-                  "prefix-list through-length %d is shorter than the prefix length %d",
-                  through, len));
+              "prefix-list through-length %d is shorter than the prefix length %d",
+              through,
+              len);
         }
       }
       case RANGE -> {
@@ -424,16 +426,17 @@ public final class SrosFeatureExtractor {
         if (start == null || end == null) {
           warn(ctxNode, "prefix-list 'range' entry is missing start-length or end-length");
         } else if (start > end) {
-          warn(
+          warnf(
               ctxNode,
-              String.format(
-                  "prefix-list range start-length %d is greater than end-length %d", start, end));
+              "prefix-list range start-length %d is greater than end-length %d",
+              start,
+              end);
         } else if (start < len) {
-          warn(
+          warnf(
               ctxNode,
-              String.format(
-                  "prefix-list range start-length %d is shorter than the prefix length %d",
-                  start, len));
+              "prefix-list range start-length %d is shorter than the prefix length %d",
+              start,
+              len);
         }
       }
       default -> {
@@ -724,9 +727,7 @@ public final class SrosFeatureExtractor {
               for (Map.Entry<String, SrosStatementTree> pe : fromProto.getChildren().entrySet()) {
                 FromProtocol fp = FROM_PROTOCOL.get(unquote(pe.getKey()));
                 if (fp == null) {
-                  warn(
-                      pe.getValue(),
-                      String.format("unrecognized from-protocol '%s'", unquote(pe.getKey())));
+                  warnf(pe.getValue(), "unrecognized from-protocol '%s'", unquote(pe.getKey()));
                   continue;
                 }
                 entry.getFromProtocols().add(fp);
@@ -872,11 +873,11 @@ public final class SrosFeatureExtractor {
     try {
       num = Integer.parseInt(text);
     } catch (NumberFormatException e) {
-      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warnf(node, "Expected %s in range %s, but got '%s'", name, space, text);
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warnf(node, "Expected %s in range %s, but got '%d'", name, space, num);
       return Optional.empty();
     }
     return Optional.of(num);
@@ -897,11 +898,11 @@ public final class SrosFeatureExtractor {
     try {
       num = Long.parseLong(text);
     } catch (NumberFormatException e) {
-      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      warnf(node, "Expected %s in range %s, but got '%s'", name, space, text);
       return Optional.empty();
     }
     if (!space.contains(num)) {
-      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warnf(node, "Expected %s in range %s, but got '%d'", name, space, num);
       return Optional.empty();
     }
     return Optional.of(num);
@@ -914,9 +915,7 @@ public final class SrosFeatureExtractor {
     }
     Optional<Ip> ip = Ip.tryParse(text);
     if (ip.isEmpty()) {
-      warn(
-          requireNonNull(ctxNode),
-          String.format("expected an IPv4 address %s but got '%s'", what, text));
+      warnf(requireNonNull(ctxNode), "expected an IPv4 address %s but got '%s'", what, text);
     }
     return ip.orElse(null);
   }
@@ -924,7 +923,7 @@ public final class SrosFeatureExtractor {
   private @Nullable Prefix toPrefix(String text, SrosStatementTree ctxNode) {
     Optional<Prefix> prefix = Prefix.tryParse(text);
     if (prefix.isEmpty()) {
-      warn(ctxNode, String.format("expected an IPv4 prefix but got '%s'", text));
+      warnf(ctxNode, "expected an IPv4 prefix but got '%s'", text);
     }
     return prefix.orElse(null);
   }
@@ -948,7 +947,7 @@ public final class SrosFeatureExtractor {
       // leafNode is single-valued (singleKey returned non-null), so its one child is the value
       // node.
       SrosStatementTree valueNode = leafNode.getChildren().values().iterator().next();
-      warn(valueNode, String.format("unrecognized %s '%s'", what, value));
+      warnf(valueNode, "unrecognized %s '%s'", what, value);
     }
     return result;
   }
@@ -971,9 +970,11 @@ public final class SrosFeatureExtractor {
       return Boolean.FALSE;
     }
     // leafNode is single-valued, so its one child is the value node carrying the source context.
-    warn(
+    warnf(
         leafNode.getChildren().values().iterator().next(),
-        String.format("expected %s to be true or false but got '%s'", what, value));
+        "expected %s to be true or false but got '%s'",
+        what,
+        value);
     return null;
   }
 
@@ -1003,6 +1004,12 @@ public final class SrosFeatureExtractor {
     int end = ctx.getStop().getStopIndex();
     String fullText = _text.substring(start, end + 1);
     _w.addWarning(ctx, fullText, _parser, message);
+  }
+
+  /** {@link #warn} with a format string and args. */
+  @FormatMethod
+  private void warnf(SrosStatementTree valueNode, String format, Object... args) {
+    warn(valueNode, String.format(format, args));
   }
 
   /**

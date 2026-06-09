@@ -129,6 +129,7 @@ public final class SrosConversions {
             case TO, ADDRESS_MASK -> {
               // The bound leaves for these types are not modeled yet; match this length or longer
               // as a conservative over-approximation, and warn until the bounds are modeled.
+              // TODO: model to/address-mask bounds — https://github.com/batfish/batfish/issues/9990
               yield overApproximate(pl, entry, w);
             }
           };
