@@ -1,12 +1,19 @@
 package org.batfish.vendor.sros.grammar;
 
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -35,6 +42,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
@@ -467,35 +476,31 @@ public final class SrosConversionTest {
   @Test
   public void testStaticRoutesConversion() throws IOException {
     Configuration c = parseConfig("static_routes.txt");
-    Map<Prefix, org.batfish.datamodel.StaticRoute> byPrefix =
-        c.getDefaultVrf().getStaticRoutes().stream()
-            .collect(
-                java.util.stream.Collectors.toMap(
-                    org.batfish.datamodel.AbstractRoute::getNetwork, r -> r));
-
-    // The next-hop route (default preference 5 / metric 1).
-    org.batfish.datamodel.StaticRoute nh = byPrefix.get(Prefix.parse("192.0.2.0/24"));
-    assertNotNull(nh);
     assertThat(
-        nh.getNextHop(),
-        equalTo(org.batfish.datamodel.route.nh.NextHopIp.of(Ip.parse("10.0.0.1"))));
-    assertThat(nh.getAdministrativeCost(), equalTo(5L));
-    assertThat(nh.getMetric(), equalTo(1L));
-
-    // The blackhole route -> discard next-hop.
-    org.batfish.datamodel.StaticRoute bh = byPrefix.get(Prefix.parse("198.51.100.0/24"));
-    assertNotNull(bh);
-    assertThat(bh.getNextHop(), equalTo(org.batfish.datamodel.route.nh.NextHopDiscard.instance()));
-
-    // The next-hop route with explicit preference 100 / metric 50.
-    org.batfish.datamodel.StaticRoute nhPref = byPrefix.get(Prefix.parse("203.0.113.0/24"));
-    assertNotNull(nhPref);
-    assertThat(nhPref.getAdministrativeCost(), equalTo(100L));
-    assertThat(nhPref.getMetric(), equalTo(50L));
-
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    // next-hop route, default preference 5 / metric 1
+                    allOf(
+                        hasPrefix(Prefix.parse("192.0.2.0/24")),
+                        hasNextHop(NextHopIp.of(Ip.parse("10.0.0.1"))),
+                        hasAdministrativeCost(5),
+                        hasMetric(1L)),
+                    // blackhole route -> discard next-hop
+                    allOf(
+                        hasPrefix(Prefix.parse("198.51.100.0/24")),
+                        hasNextHop(NextHopDiscard.instance())),
+                    // next-hop route with explicit preference 100 / metric 50
+                    allOf(
+                        hasPrefix(Prefix.parse("203.0.113.0/24")),
+                        hasAdministrativeCost(100),
+                        hasMetric(50L))))));
     // The route whose next-hop has no admin-state is not installed (SR-OS leaves it out of the
-    // RIB).
-    assertThat(byPrefix, not(hasKey(Prefix.parse("100.64.0.0/24"))));
+    // RIB):
+    // exactly the three routes above are present (containsInAnyOrder is exhaustive), so
+    // 100.64.0.0/24
+    // is absent.
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {

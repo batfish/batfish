@@ -278,7 +278,37 @@ public final class SrosExtractionTest {
     SrosConfiguration vc = parseVendorConfig("redistribute_static.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     PolicyStatement ps = vc.getPolicyStatements().get("export-redist");
-    assertThat(ps.getEntries().get(20L).getFromProtocols(), contains("static"));
+    assertThat(
+        ps.getEntries().get(20L).getFromProtocols(),
+        contains(org.batfish.vendor.sros.representation.FromProtocol.STATIC));
+  }
+
+  /**
+   * Extraction warns (never silently skips/defaults) on: static-route ECMP (multiple next-hops), an
+   * illegal prefix-list 'through' missing its length, an inverted 'range', an unrecognized
+   * from-protocol, and a non-boolean flag value. Each is a line-stamped parse warning.
+   */
+  @Test
+  public void testExtractionWarnings() {
+    SrosConfiguration vc = parseVendorConfig("warnings.txt");
+    // static route with two next-hops -> ECMP warning, only the first is modeled.
+    warningOnLine(
+        vc, "static route 192.0.2.0/24 has 2 next-hops (ECMP); only the first is modeled");
+    StaticRoute sr = vc.getRouters().get("Base").getStaticRoutes().get(0);
+    assertThat(sr.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    // through entry with no through-length, and an inverted range.
+    warningOnLine(vc, "prefix-list 'through' entry is missing through-length");
+    warningOnLine(vc, "prefix-list range start-length 30 is greater than end-length 24");
+    // unrecognized from-protocol is warned and dropped; the valid one is kept.
+    warningOnLine(vc, "unrecognized from-protocol 'bogusproto'");
+    assertThat(
+        vc.getPolicyStatements().get("p").getEntries().get(10L).getFromProtocols(),
+        contains(org.batfish.vendor.sros.representation.FromProtocol.STATIC));
+    // non-boolean next-hop-self value is warned, flag left unset (null).
+    warningOnLine(vc, "expected next-hop-self to be true or false but got 'bogus'");
+    assertThat(
+        vc.getRouters().get("Base").getBgpProcess().getGroups().get("g").getNextHopSelf(),
+        nullValue());
   }
 
   /**
@@ -383,7 +413,7 @@ public final class SrosExtractionTest {
   public void testUnrecognizedPrefixTypeWarns() {
     SrosConfiguration vc = parseVendorConfig("bad_prefix_type.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized prefix-list match type 'bogus'"), equalTo(8));
+    assertThat(warningOnLine(vc, "unrecognized prefix-list match type 'bogus'"), equalTo(8));
     // The entry with the bad type is dropped, leaving the prefix-list empty.
     assertThat(vc.getPrefixLists().get("system-pfx").getEntries(), empty());
   }
@@ -397,8 +427,8 @@ public final class SrosExtractionTest {
   public void testUnrecognizedEnumsWarn() {
     SrosConfiguration vc = parseVendorConfig("bad_enums.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized admin-state 'bogus-state'"), equalTo(7));
-    assertThat(warningOnLine(vc, "SR-OS: unrecognized action-type 'bogus-action'"), equalTo(13));
+    assertThat(warningOnLine(vc, "unrecognized admin-state 'bogus-state'"), equalTo(7));
+    assertThat(warningOnLine(vc, "unrecognized action-type 'bogus-action'"), equalTo(13));
     // The unrecognized values leave the corresponding fields unset.
     assertThat(vc.getPorts().get("1/1/c1/1").getAdminStateEnable(), nullValue());
     assertThat(vc.getPolicyStatements().get("p").getEntries().get(10L).getAction(), nullValue());

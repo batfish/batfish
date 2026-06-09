@@ -148,7 +148,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     if (!_cards.isEmpty() || !_ports.isEmpty()) {
       getWarnings()
           .redFlagf(
-              "SR-OS: hardware provisioning (%d card(s), %d port(s)) is parsed but not converted to"
+              "hardware provisioning (%d card(s), %d port(s)) is parsed but not converted to"
                   + " the vendor-independent model",
               _cards.size(), _ports.size());
     }

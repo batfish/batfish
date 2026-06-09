@@ -1,0 +1,63 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+# Exercises extraction warnings: static-route ECMP, illegal prefix-list bounds,
+# unrecognized from-protocol, and a non-boolean flag value.
+configure {
+    policy-options {
+        prefix-list "through-no-len" {
+            prefix 10.0.0.0/8 type through {
+            }
+        }
+        prefix-list "range-inverted" {
+            prefix 10.0.0.0/8 type range {
+                start-length 30
+                end-length 24
+            }
+        }
+        policy-statement "p" {
+            entry 10 {
+                from {
+                    protocol {
+                        name [static bogusproto]
+                    }
+                }
+                action {
+                    action-type accept
+                }
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+        interface "to-r2" {
+            port 1/1/c1/1
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                    prefix-length 31
+                }
+            }
+        }
+        static-routes {
+            route 192.0.2.0/24 route-type unicast {
+                next-hop 10.0.0.1 {
+                    admin-state enable
+                }
+                next-hop 10.0.0.2 {
+                    admin-state enable
+                }
+            }
+        }
+        bgp {
+            router-id 1.1.1.1
+            group "g" {
+                type internal
+                peer-as 65001
+                next-hop-self bogus
+            }
+            neighbor "10.0.0.1" {
+                group "g"
+            }
+        }
+    }
+}

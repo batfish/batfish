@@ -25,6 +25,7 @@ import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Community;
+import org.batfish.vendor.sros.representation.FromProtocol;
 import org.batfish.vendor.sros.representation.Mda;
 import org.batfish.vendor.sros.representation.OspfArea;
 import org.batfish.vendor.sros.representation.OspfAreaInterface;
@@ -82,8 +83,10 @@ public final class SrosFeatureExtractor {
   /** static-route next-hop/blackhole {@code metric}: YANG {@code uint32 range "0..65535"}. */
   private static final IntegerSpace STATIC_METRIC_SPACE = IntegerSpace.of(new SubRange(0, 65535));
 
-  /** static-route next-hop/blackhole {@code preference}: YANG {@code uint32 range "1..255"}. */
-  private static final IntegerSpace STATIC_PREFERENCE_SPACE = IntegerSpace.of(new SubRange(1, 255));
+  /**
+   * Route {@code preference} (admin distance): YANG {@code uint32 range "1..255"} across protocols.
+   */
+  private static final IntegerSpace ROUTE_PREFERENCE_SPACE = IntegerSpace.of(new SubRange(1, 255));
 
   /** policy action {@code metric set}: BGP MED, YANG {@code int64 range "0..4294967295"}. */
   private static final LongSpace POLICY_METRIC_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
@@ -110,6 +113,16 @@ public final class SrosFeatureExtractor {
   /** BGP {@code type} enumeration (nokia-types-bgp:peer-type). */
   private static final Map<String, PeerType> PEER_TYPE =
       ImmutableMap.of("internal", PeerType.INTERNAL, "external", PeerType.EXTERNAL);
+
+  /** policy {@code from protocol name} enumeration (the modeled subset). */
+  private static final Map<String, FromProtocol> FROM_PROTOCOL =
+      ImmutableMap.<String, FromProtocol>builder()
+          .put("static", FromProtocol.STATIC)
+          .put("direct", FromProtocol.DIRECT)
+          .put("bgp", FromProtocol.BGP)
+          .put("ospf", FromProtocol.OSPF)
+          .put("isis", FromProtocol.ISIS)
+          .build();
 
   /** policy-statement entry/default {@code action-type} enumeration. */
   private static final Map<String, PolicyAction> POLICY_ACTION =
@@ -330,7 +343,16 @@ public final class SrosFeatureExtractor {
       SrosStatementTree blackhole = typeBody.getChild("blackhole");
       SrosStatementTree adminStateParent;
       if (nextHop != null) {
-        // next-hop is itself keyed by the next-hop IP (a list); take the first (no ECMP in scope).
+        // next-hop is a list keyed by the next-hop IP. The model holds a single next-hop; if the
+        // route configures more than one (ECMP), warn that only the first is modeled rather than
+        // silently dropping the rest.
+        if (nextHop.getChildren().size() > 1) {
+          warn(
+              typeBody,
+              String.format(
+                  "static route %s has %d next-hops (ECMP); only the first is modeled",
+                  prefix, nextHop.getChildren().size()));
+        }
         SrosStatementTree nhEntry = firstChild(nextHop);
         if (nhEntry != null) {
           route.setNextHopIp(toIp(nhKey(nextHop), nhEntry, "static-route next-hop"));
@@ -340,7 +362,12 @@ public final class SrosFeatureExtractor {
         route.setBlackhole(true);
         adminStateParent = blackhole;
       } else {
-        // Neither next-hop nor blackhole: not a modeled route shape; skip.
+        // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
+        // Warn rather than silently skip.
+        warn(
+            typeBody,
+            String.format(
+                "static route %s has no modeled next-hop or blackhole; not converted", prefix));
         continue;
       }
       if (adminStateParent != null) {
@@ -356,7 +383,7 @@ public final class SrosFeatureExtractor {
         toIntegerInSpace(
                 singleValue(adminStateParent, "preference"),
                 singleValueNode(adminStateParent, "preference"),
-                STATIC_PREFERENCE_SPACE,
+                ROUTE_PREFERENCE_SPACE,
                 "static-route preference")
             .ifPresent(route::setPreference);
       }
@@ -367,6 +394,52 @@ public final class SrosFeatureExtractor {
   /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
   private static @Nullable String typeWord(SrosStatementTree entryNode) {
     return singleValue(entryNode, "type");
+  }
+
+  /**
+   * Warn on illegal prefix-list length-bound combinations rather than silently building a bogus or
+   * over-approximated filter: a {@code through} entry without a {@code through-length}; a {@code
+   * range} entry missing {@code start-length} or {@code end-length}; an inverted range ({@code
+   * start-length > end-length}); or a bound shorter than the prefix's own length. The entry is
+   * still kept (conversion over-approximates a missing bound), but the warning makes it visible.
+   */
+  private void warnIllegalPrefixListBounds(PrefixListEntry ple, SrosStatementTree ctxNode) {
+    int len = ple.getPrefix().getPrefixLength();
+    switch (ple.getType()) {
+      case THROUGH -> {
+        Integer through = ple.getThroughLength();
+        if (through == null) {
+          warn(ctxNode, "prefix-list 'through' entry is missing through-length");
+        } else if (through < len) {
+          warn(
+              ctxNode,
+              String.format(
+                  "prefix-list through-length %d is shorter than the prefix length %d",
+                  through, len));
+        }
+      }
+      case RANGE -> {
+        Integer start = ple.getStartLength();
+        Integer end = ple.getEndLength();
+        if (start == null || end == null) {
+          warn(ctxNode, "prefix-list 'range' entry is missing start-length or end-length");
+        } else if (start > end) {
+          warn(
+              ctxNode,
+              String.format(
+                  "prefix-list range start-length %d is greater than end-length %d", start, end));
+        } else if (start < len) {
+          warn(
+              ctxNode,
+              String.format(
+                  "prefix-list range start-length %d is shorter than the prefix length %d",
+                  start, len));
+        }
+      }
+      default -> {
+        // exact/longer/to/address-mask carry no through/range length bounds to validate here.
+      }
+    }
   }
 
   // --- ospf -------------------------------------------------------------------------------------
@@ -488,7 +561,7 @@ public final class SrosFeatureExtractor {
                   singleValueNode(groupCluster, "cluster-id"),
                   "bgp cluster-id"));
         }
-        group.setNextHopSelf(toBoolean(groupNode.getChild("next-hop-self")));
+        group.setNextHopSelf(toBoolean(groupNode.getChild("next-hop-self"), "next-hop-self"));
         proc.getGroups().put(name, group);
       }
     }
@@ -530,7 +603,7 @@ public final class SrosFeatureExtractor {
                   singleValueNode(nbrCluster, "cluster-id"),
                   "bgp cluster-id"));
         }
-        neighbor.setNextHopSelf(toBoolean(nbrNode.getChild("next-hop-self")));
+        neighbor.setNextHopSelf(toBoolean(nbrNode.getChild("next-hop-self"), "next-hop-self"));
         proc.getNeighbors().put(ip, neighbor);
       }
     }
@@ -610,6 +683,9 @@ public final class SrosFeatureExtractor {
                       "prefix-list end-length")
                   .ifPresent(ple::setEndLength);
             }
+            // Warn against the type value node (e.g. the `through`/`range` word), which carries a
+            // source context even when the entry's bound block is empty.
+            warnIllegalPrefixListBounds(ple, typeBody != null ? typeBody : entryNode);
             pl.getEntries().add(ple);
           }
         }
@@ -641,11 +717,19 @@ public final class SrosFeatureExtractor {
                 fromPfx,
                 SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
             // from protocol name [static direct bgp ...] — the protocol(s) the route was learned
-            // from. Modeled as plain enum words (no structure reference).
+            // from. Each value is resolved against the FromProtocol enum; an unrecognized protocol
+            // is warned and dropped (not silently kept as an unmatchable string).
             SrosStatementTree fromProto = navigate(entryNode, "from", "protocol", "name");
             if (fromProto != null) {
-              for (String p : fromProto.getChildren().keySet()) {
-                entry.getFromProtocols().add(unquote(p));
+              for (Map.Entry<String, SrosStatementTree> pe : fromProto.getChildren().entrySet()) {
+                FromProtocol fp = FROM_PROTOCOL.get(unquote(pe.getKey()));
+                if (fp == null) {
+                  warn(
+                      pe.getValue(),
+                      String.format("unrecognized from-protocol '%s'", unquote(pe.getKey())));
+                  continue;
+                }
+                entry.getFromProtocols().add(fp);
               }
             }
             SrosStatementTree action = entryNode.getChild("action");
@@ -832,7 +916,7 @@ public final class SrosFeatureExtractor {
     if (ip.isEmpty()) {
       warn(
           requireNonNull(ctxNode),
-          String.format("SR-OS: expected an IPv4 address %s but got '%s'", what, text));
+          String.format("expected an IPv4 address %s but got '%s'", what, text));
     }
     return ip.orElse(null);
   }
@@ -840,7 +924,7 @@ public final class SrosFeatureExtractor {
   private @Nullable Prefix toPrefix(String text, SrosStatementTree ctxNode) {
     Optional<Prefix> prefix = Prefix.tryParse(text);
     if (prefix.isEmpty()) {
-      warn(ctxNode, String.format("SR-OS: expected an IPv4 prefix but got '%s'", text));
+      warn(ctxNode, String.format("expected an IPv4 prefix but got '%s'", text));
     }
     return prefix.orElse(null);
   }
@@ -864,7 +948,7 @@ public final class SrosFeatureExtractor {
       // leafNode is single-valued (singleKey returned non-null), so its one child is the value
       // node.
       SrosStatementTree valueNode = leafNode.getChildren().values().iterator().next();
-      warn(valueNode, String.format("SR-OS: unrecognized %s '%s'", what, value));
+      warn(valueNode, String.format("unrecognized %s '%s'", what, value));
     }
     return result;
   }
@@ -872,14 +956,25 @@ public final class SrosFeatureExtractor {
   /**
    * Interpret a boolean leaf ({@code true}/{@code false}): returns the boxed value, or {@code null}
    * if the leaf is absent or not single-valued (so an unset flag stays {@code null} for
-   * inheritance).
+   * inheritance). A value that is neither {@code true} nor {@code false} is warned (no silent
+   * fallback) and returns {@code null}.
    */
-  private static @Nullable Boolean toBoolean(@Nullable SrosStatementTree leafNode) {
+  private @Nullable Boolean toBoolean(@Nullable SrosStatementTree leafNode, String what) {
     String value = singleKey(leafNode);
     if (value == null) {
       return null;
     }
-    return Boolean.valueOf("true".equals(value));
+    if (value.equals("true")) {
+      return Boolean.TRUE;
+    }
+    if (value.equals("false")) {
+      return Boolean.FALSE;
+    }
+    // leafNode is single-valued, so its one child is the value node carrying the source context.
+    warn(
+        leafNode.getChildren().values().iterator().next(),
+        String.format("expected %s to be true or false but got '%s'", what, value));
+    return null;
   }
 
   private static @Nonnull String unquote(String text) {

@@ -31,10 +31,10 @@ public final class PolicyStatementEntry implements Serializable {
   }
 
   /**
-   * The {@code from protocol name [...]} leaf-list — protocol names (e.g. {@code static}, {@code
-   * direct}, {@code bgp}, {@code ospf}) the route must have been learned from to match.
+   * The {@code from protocol name [...]} leaf-list — the protocols the route must have been learned
+   * from to match. Unrecognized protocol names are warned and dropped at extraction.
    */
-  public @Nonnull List<String> getFromProtocols() {
+  public @Nonnull List<FromProtocol> getFromProtocols() {
     return _fromProtocols;
   }
 
@@ -81,7 +81,7 @@ public final class PolicyStatementEntry implements Serializable {
 
   private final long _entryId;
   private final @Nonnull List<String> _fromPrefixLists;
-  private final @Nonnull List<String> _fromProtocols;
+  private final @Nonnull List<FromProtocol> _fromProtocols;
   private @Nullable PolicyAction _action;
   private @Nullable Long _setMetric;
   private @Nullable Long _asPathPrependAsn;

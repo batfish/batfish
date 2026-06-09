@@ -8,7 +8,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -42,6 +45,7 @@ import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
@@ -138,7 +142,7 @@ public final class SrosConversions {
       PrefixList pl, PrefixListEntry entry, Warnings w) {
     Prefix prefix = entry.getPrefix();
     w.redFlagf(
-        "SR-OS: prefix-list '%s' entry %s match type '%s' is not fully modeled; matching '%s' or"
+        "prefix-list '%s' entry %s match type '%s' is not fully modeled; matching '%s' or"
             + " longer (over-approximation)",
         pl.getName(), prefix, entry.getType(), prefix);
     return new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH);
@@ -251,9 +255,10 @@ public final class SrosConversions {
       conjuncts.add(pfxDisjuncts.size() == 1 ? pfxDisjuncts.get(0) : new Disjunction(pfxDisjuncts));
     }
 
-    // from protocol name [...] — OR over the named protocols the route was learned from.
+    // from protocol name [...] — OR over the named protocols the route was learned from. The
+    // protocols are already a validated enum (unknown values were warned + dropped at extraction).
     List<RoutingProtocol> protocols = new ArrayList<>();
-    for (String proto : entry.getFromProtocols()) {
+    for (FromProtocol proto : entry.getFromProtocols()) {
       protocols.addAll(toRoutingProtocols(proto));
     }
     if (!protocols.isEmpty()) {
@@ -266,27 +271,26 @@ public final class SrosConversions {
     if (conjuncts.size() == 1) {
       return conjuncts.get(0);
     }
-    return new org.batfish.datamodel.routing_policy.expr.Conjunction(conjuncts);
+    return new Conjunction(conjuncts);
   }
 
   /**
-   * Maps an SR-OS {@code from protocol name} value to the VI {@link RoutingProtocol}(s) it matches.
-   * {@code direct} is Batfish's CONNECTED; {@code bgp} matches both eBGP and iBGP; others map
-   * one-to-one. An unrecognized protocol maps to nothing (the entry simply won't match on it).
+   * Maps a {@link FromProtocol} to the VI {@link RoutingProtocol}(s) it matches. {@code direct} is
+   * Batfish's CONNECTED; {@code bgp} matches both eBGP and iBGP; OSPF/ISIS expand to their
+   * sub-protocols.
    */
-  private static @Nonnull List<RoutingProtocol> toRoutingProtocols(String proto) {
+  private static @Nonnull List<RoutingProtocol> toRoutingProtocols(FromProtocol proto) {
     return switch (proto) {
-      case "static" -> ImmutableList.of(RoutingProtocol.STATIC);
-      case "direct" -> ImmutableList.of(RoutingProtocol.CONNECTED);
-      case "bgp" -> ImmutableList.of(RoutingProtocol.BGP, RoutingProtocol.IBGP);
-      case "ospf" ->
+      case STATIC -> ImmutableList.of(RoutingProtocol.STATIC);
+      case DIRECT -> ImmutableList.of(RoutingProtocol.CONNECTED);
+      case BGP -> ImmutableList.of(RoutingProtocol.BGP, RoutingProtocol.IBGP);
+      case OSPF ->
           ImmutableList.of(
               RoutingProtocol.OSPF,
               RoutingProtocol.OSPF_IA,
               RoutingProtocol.OSPF_E1,
               RoutingProtocol.OSPF_E2);
-      case "isis" -> ImmutableList.of(RoutingProtocol.ISIS_L1, RoutingProtocol.ISIS_L2);
-      default -> ImmutableList.of();
+      case ISIS -> ImmutableList.of(RoutingProtocol.ISIS_L1, RoutingProtocol.ISIS_L2);
     };
   }
 
@@ -404,7 +408,7 @@ public final class SrosConversions {
     }
     if (routerId == null) {
       w.redFlagf(
-          "SR-OS: router '%s' OSPF has no router-id and no system interface address; skipping OSPF",
+          "router '%s' OSPF has no router-id and no system interface address; skipping OSPF",
           router.getName());
       return;
     }
@@ -421,8 +425,7 @@ public final class SrosConversions {
             .setVrf(vrf)
             .build();
 
-    java.util.Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> areaBuilders =
-        new java.util.LinkedHashMap<>();
+    Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> areaBuilders = new LinkedHashMap<>();
     for (OspfArea area : proc.getAreas().values()) {
       long areaNum = Ip.parse(area.getAreaId()).asLong();
       org.batfish.datamodel.ospf.OspfArea.Builder ab =
@@ -433,8 +436,8 @@ public final class SrosConversions {
         Interface viIface = c.getAllInterfaces().get(ospfIf.getName());
         if (viIface == null) {
           w.redFlagf(
-              "SR-OS: OSPF area %s references undefined interface '%s'; skipping",
-              area.getAreaId(), ospfIf.getName());
+              "router '%s' OSPF area %s references undefined interface '%s'; skipping",
+              router.getName(), area.getAreaId(), ospfIf.getName());
           continue;
         }
         int cost = ospfInterfaceCost(ospfIf, viIface, newProc.getReferenceBandwidth());
@@ -452,18 +455,14 @@ public final class SrosConversions {
         ab.addInterface(ospfIf.getName());
       }
     }
-    java.util.Map<Long, org.batfish.datamodel.ospf.OspfArea> areas = new java.util.TreeMap<>();
-    for (java.util.Map.Entry<Long, org.batfish.datamodel.ospf.OspfArea.Builder> e :
-        areaBuilders.entrySet()) {
+    Map<Long, org.batfish.datamodel.ospf.OspfArea> areas = new TreeMap<>();
+    for (Map.Entry<Long, org.batfish.datamodel.ospf.OspfArea.Builder> e : areaBuilders.entrySet()) {
       areas.put(e.getKey(), e.getValue().setOspfProcess(newProc).build());
     }
     newProc.setAreas(ImmutableMap.copyOf(areas));
   }
 
-  /**
-   * SR-OS OSPF default {@code reference-bandwidth} is 100,000,000 kilobps = 100 Gbps, expressed in
-   * bps for the VI reference bandwidth (matches the VI/FRR default).
-   */
+  /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */
   private static final double OSPF_REFERENCE_BANDWIDTH = 100E9D;
 
   /**
@@ -533,8 +532,7 @@ public final class SrosConversions {
         Ip nhIp = sr.getNextHopIp();
         if (nhIp == null) {
           w.redFlagf(
-              "SR-OS: static route %s has neither a next-hop IP nor blackhole; skipping",
-              sr.getPrefix());
+              "static route %s has neither a next-hop IP nor blackhole; skipping", sr.getPrefix());
           continue;
         }
         b.setNextHop(org.batfish.datamodel.route.nh.NextHopIp.of(nhIp));
@@ -586,13 +584,13 @@ public final class SrosConversions {
     }
     if (routerId == null) {
       w.redFlagf(
-          "SR-OS: router '%s' BGP has no router-id and no system interface address; skipping BGP",
+          "router '%s' BGP has no router-id and no system interface address; skipping BGP",
           router.getName());
       return;
     }
     if (localAs == null) {
       w.redFlagf(
-          "SR-OS: router '%s' has BGP configured but no autonomous-system; skipping BGP",
+          "router '%s' has BGP configured but no autonomous-system; skipping BGP",
           router.getName());
       return;
     }
@@ -623,7 +621,7 @@ public final class SrosConversions {
       Warnings w) {
     Ip peerAddress = Ip.tryParse(neighbor.getIpAddress()).orElse(null);
     if (peerAddress == null) {
-      w.redFlagf("SR-OS: BGP neighbor has unparseable address '%s'", neighbor.getIpAddress());
+      w.redFlagf("BGP neighbor has unparseable address '%s'", neighbor.getIpAddress());
       return;
     }
 
@@ -632,7 +630,7 @@ public final class SrosConversions {
     Long peerAs = neighbor.getPeerAs();
     if (peerAs == null) {
       w.redFlagf(
-          "SR-OS: BGP neighbor %s has no peer-as (none configured or inherited); skipping",
+          "BGP neighbor %s has no peer-as (none configured or inherited); skipping",
           neighbor.getIpAddress());
       return;
     }
@@ -650,9 +648,8 @@ public final class SrosConversions {
     buildPeerPolicy(importPolicyName, neighbor.getImportPolicies(), ebgp, false, false, c);
     buildPeerPolicy(exportPolicyName, neighbor.getExportPolicies(), ebgp, true, nextHopSelf, c);
 
-    // Route-reflection: a neighbor with a cluster-id (configured or inherited from its group) is a
-    // route-reflector client. Mark the address family as an RR client and set the cluster-id, so
-    // Batfish reflects routes between clients.
+    // Route-reflection: a neighbor with a cluster-id is a route-reflector client. Mark the address
+    // family as an RR client and set the cluster-id, so Batfish reflects routes between clients.
     Ip clusterId = neighbor.getClusterId();
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
