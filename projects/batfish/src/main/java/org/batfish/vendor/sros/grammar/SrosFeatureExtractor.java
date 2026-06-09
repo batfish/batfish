@@ -1,18 +1,31 @@
 package org.batfish.vendor.sros.grammar;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.vendor.StructureType;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Mda;
+import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
 import org.batfish.vendor.sros.representation.PolicyStatementEntry;
@@ -22,6 +35,8 @@ import org.batfish.vendor.sros.representation.PrefixListEntry;
 import org.batfish.vendor.sros.representation.Router;
 import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
+import org.batfish.vendor.sros.representation.SrosStructureType;
+import org.batfish.vendor.sros.representation.SrosStructureUsage;
 
 /**
  * Populates a {@link SrosConfiguration}'s typed feature model from the canonical, preprocessed
@@ -35,17 +50,73 @@ import org.batfish.vendor.sros.representation.SrosConfiguration;
  * {@code persistent-indices} — are control-plane-irrelevant and intentionally left unread; they are
  * not warnings (the device accepts them and so do we). The one system leaf that matters, {@code
  * system name}, becomes the Batfish hostname.
+ *
+ * <p>Because each tree node carries the parse-tree context of the statement(s) that created it (see
+ * {@link SrosStatementTree#getDefContexts}), the extractor emits line-stamped {@link
+ * Warnings.ParseWarning}s for malformed or out-of-range values (via {@link #warn}) and records
+ * structure definitions and references (via {@link #defineStructure}/{@link #referenceStructure}),
+ * driving the {@code definedStructures}/{@code undefinedReferences}/unused-structure questions and
+ * the {@code annotate} tool.
  */
 @ParametersAreNonnullByDefault
 public final class SrosFeatureExtractor {
 
-  public static void extract(SrosStatementTree root, SrosConfiguration c, Warnings w) {
-    new SrosFeatureExtractor(c, w).extractFrom(root);
+  /** AS number: YANG {@code autonomous-system} is {@code uint32 range "1..max"}. */
+  private static final LongSpace AUTONOMOUS_SYSTEM_SPACE =
+      LongSpace.of(Range.closed(1L, 4294967295L));
+
+  /** IPv4 prefix length: YANG {@code prefix-length} under a router interface is {@code 0..32}. */
+  private static final IntegerSpace IPV4_PREFIX_LENGTH_SPACE = IntegerSpace.of(new SubRange(0, 32));
+
+  /** Line-card and MDA slot numbers (YANG {@code uint32}; constrained to a sane positive range). */
+  private static final IntegerSpace SLOT_SPACE = IntegerSpace.of(new SubRange(1, 255));
+
+  /** policy-statement {@code entry-id}: YANG {@code uint32 range "1..65535"}. */
+  private static final LongSpace ENTRY_ID_SPACE = LongSpace.of(Range.closed(1L, 65535L));
+
+  /** Port {@code admin-state} enumeration: enable -> up, disable -> down. */
+  private static final Map<String, Boolean> ADMIN_STATE =
+      ImmutableMap.of("enable", Boolean.TRUE, "disable", Boolean.FALSE);
+
+  /** prefix-list entry {@code type} enumeration. */
+  private static final Map<String, PrefixListEntry.Type> PREFIX_LIST_TYPE =
+      ImmutableMap.<String, PrefixListEntry.Type>builder()
+          .put("exact", PrefixListEntry.Type.EXACT)
+          .put("longer", PrefixListEntry.Type.LONGER)
+          .put("through", PrefixListEntry.Type.THROUGH)
+          .put("range", PrefixListEntry.Type.RANGE)
+          .put("to", PrefixListEntry.Type.TO)
+          .put("address-mask", PrefixListEntry.Type.ADDRESS_MASK)
+          .build();
+
+  /** BGP {@code type} enumeration (nokia-types-bgp:peer-type). */
+  private static final Map<String, PeerType> PEER_TYPE =
+      ImmutableMap.of("internal", PeerType.INTERNAL, "external", PeerType.EXTERNAL);
+
+  /** policy-statement entry/default {@code action-type} enumeration. */
+  private static final Map<String, PolicyAction> POLICY_ACTION =
+      ImmutableMap.<String, PolicyAction>builder()
+          .put("accept", PolicyAction.ACCEPT)
+          .put("reject", PolicyAction.REJECT)
+          .put("next-entry", PolicyAction.NEXT_ENTRY)
+          .put("next-policy", PolicyAction.NEXT_POLICY)
+          .build();
+
+  public static void extract(
+      SrosStatementTree root,
+      SrosConfiguration c,
+      Warnings w,
+      SrosCombinedParser parser,
+      String text) {
+    new SrosFeatureExtractor(c, w, parser, text).extractFrom(root);
   }
 
-  private SrosFeatureExtractor(SrosConfiguration c, Warnings w) {
+  private SrosFeatureExtractor(
+      SrosConfiguration c, Warnings w, SrosCombinedParser parser, String text) {
     _c = c;
     _w = w;
+    _parser = parser;
+    _text = text;
   }
 
   private void extractFrom(SrosStatementTree root) {
@@ -81,26 +152,28 @@ public final class SrosFeatureExtractor {
       return;
     }
     for (Map.Entry<String, SrosStatementTree> e : cardList.getChildren().entrySet()) {
-      Integer slot = parseInt(e.getKey());
-      if (slot == null) {
+      SrosStatementTree cardNode = e.getValue();
+      Optional<Integer> slot = toIntegerInSpace(e.getKey(), cardNode, SLOT_SPACE, "card slot");
+      if (slot.isEmpty()) {
         continue;
       }
-      SrosStatementTree cardNode = e.getValue();
-      Card card = new Card(slot);
+      Card card = new Card(slot.get());
       card.setCardType(singleValue(cardNode, "card-type"));
       SrosStatementTree mdaList = cardNode.getChild("mda");
       if (mdaList != null) {
         for (Map.Entry<String, SrosStatementTree> me : mdaList.getChildren().entrySet()) {
-          Integer mdaSlot = parseInt(me.getKey());
-          if (mdaSlot == null) {
+          SrosStatementTree mdaNode = me.getValue();
+          Optional<Integer> mdaSlot =
+              toIntegerInSpace(me.getKey(), mdaNode, SLOT_SPACE, "mda slot");
+          if (mdaSlot.isEmpty()) {
             continue;
           }
-          Mda mda = new Mda(mdaSlot);
-          mda.setMdaType(singleValue(me.getValue(), "mda-type"));
-          card.getMdas().put(mdaSlot, mda);
+          Mda mda = new Mda(mdaSlot.get());
+          mda.setMdaType(singleValue(mdaNode, "mda-type"));
+          card.getMdas().put(mdaSlot.get(), mda);
         }
       }
-      _c.getCards().put(slot, card);
+      _c.getCards().put(slot.get(), card);
     }
   }
 
@@ -112,8 +185,8 @@ public final class SrosFeatureExtractor {
       String name = e.getKey();
       SrosStatementTree portNode = e.getValue();
       Port port = new Port(name);
-      Boolean adminState = parseAdminState(singleValue(portNode, "admin-state"));
-      port.setAdminStateEnable(adminState);
+      port.setAdminStateEnable(
+          toEnum(portNode.getChild("admin-state"), ADMIN_STATE, "admin-state"));
       SrosStatementTree connector = portNode.getChild("connector");
       if (connector != null) {
         port.setBreakout(singleValue(connector, "breakout"));
@@ -132,8 +205,12 @@ public final class SrosFeatureExtractor {
       String name = unquote(e.getKey());
       SrosStatementTree routerNode = e.getValue();
       Router router = new Router(name);
-      Long as = parseLong(singleValue(routerNode, "autonomous-system"));
-      router.setAutonomousSystem(as);
+      toLongInSpace(
+              singleValue(routerNode, "autonomous-system"),
+              singleValueNode(routerNode, "autonomous-system"),
+              AUTONOMOUS_SYSTEM_SPACE,
+              "autonomous-system")
+          .ifPresent(router::setAutonomousSystem);
       extractInterfaces(router, routerNode.getChild("interface"));
       extractBgp(router, routerNode.getChild("bgp"));
       _c.getRouters().put(name, router);
@@ -151,8 +228,15 @@ public final class SrosFeatureExtractor {
       iface.setPort(singleValue(ifaceNode, "port"));
       SrosStatementTree primary = navigate(ifaceNode, "ipv4", "primary");
       if (primary != null) {
-        iface.setPrimaryAddress(parseIp(singleValue(primary, "address")));
-        iface.setPrimaryPrefixLength(parseInt(singleValue(primary, "prefix-length")));
+        iface.setPrimaryAddress(
+            toIp(
+                singleValue(primary, "address"), singleValueNode(primary, "address"), "interface"));
+        toIntegerInSpace(
+                singleValue(primary, "prefix-length"),
+                singleValueNode(primary, "prefix-length"),
+                IPV4_PREFIX_LENGTH_SPACE,
+                "prefix-length")
+            .ifPresent(iface::setPrimaryPrefixLength);
       }
       router.getInterfaces().put(name, iface);
     }
@@ -163,17 +247,30 @@ public final class SrosFeatureExtractor {
       return;
     }
     BgpProcess proc = new BgpProcess();
-    proc.setRouterId(parseIp(singleValue(bgpNode, "router-id")));
+    proc.setRouterId(
+        toIp(
+            singleValue(bgpNode, "router-id"), singleValueNode(bgpNode, "router-id"), "router-id"));
 
     SrosStatementTree groupList = bgpNode.getChild("group");
     if (groupList != null) {
       for (Map.Entry<String, SrosStatementTree> e : groupList.getChildren().entrySet()) {
         String name = unquote(e.getKey());
         SrosStatementTree groupNode = e.getValue();
+        defineStructure(SrosStructureType.BGP_GROUP, name, groupNode);
         BgpGroup group = new BgpGroup(name);
-        group.setPeerAs(parseLong(singleValue(groupNode, "peer-as")));
-        group.getImportPolicies().addAll(policyNames(navigate(groupNode, "import", "policy")));
-        group.getExportPolicies().addAll(policyNames(navigate(groupNode, "export", "policy")));
+        group.setType(toEnum(groupNode.getChild("type"), PEER_TYPE, "bgp peer type"));
+        toLongInSpace(
+                singleValue(groupNode, "peer-as"),
+                singleValueNode(groupNode, "peer-as"),
+                AUTONOMOUS_SYSTEM_SPACE,
+                "peer-as")
+            .ifPresent(group::setPeerAs);
+        SrosStatementTree groupImport = navigate(groupNode, "import", "policy");
+        SrosStatementTree groupExport = navigate(groupNode, "export", "policy");
+        group.getImportPolicies().addAll(policyNames(groupImport));
+        group.getExportPolicies().addAll(policyNames(groupExport));
+        referencePolicies(groupImport, SrosStructureUsage.BGP_GROUP_IMPORT_POLICY);
+        referencePolicies(groupExport, SrosStructureUsage.BGP_GROUP_EXPORT_POLICY);
         proc.getGroups().put(name, group);
       }
     }
@@ -184,13 +281,37 @@ public final class SrosFeatureExtractor {
         String ip = unquote(e.getKey());
         SrosStatementTree nbrNode = e.getValue();
         BgpNeighbor neighbor = new BgpNeighbor(ip);
+        SrosStatementTree groupValue = singleValueNode(nbrNode, "group");
         String group = singleValue(nbrNode, "group");
-        neighbor.setGroup(group == null ? null : unquote(group));
-        neighbor.setPeerAs(parseLong(singleValue(nbrNode, "peer-as")));
-        neighbor.getImportPolicies().addAll(policyNames(navigate(nbrNode, "import", "policy")));
-        neighbor.getExportPolicies().addAll(policyNames(navigate(nbrNode, "export", "policy")));
+        if (group != null) {
+          neighbor.setGroup(unquote(group));
+          referenceStructure(
+              SrosStructureType.BGP_GROUP,
+              unquote(group),
+              SrosStructureUsage.BGP_NEIGHBOR_GROUP,
+              groupValue);
+        }
+        neighbor.setType(toEnum(nbrNode.getChild("type"), PEER_TYPE, "bgp peer type"));
+        toLongInSpace(
+                singleValue(nbrNode, "peer-as"),
+                singleValueNode(nbrNode, "peer-as"),
+                AUTONOMOUS_SYSTEM_SPACE,
+                "peer-as")
+            .ifPresent(neighbor::setPeerAs);
+        SrosStatementTree nbrImport = navigate(nbrNode, "import", "policy");
+        SrosStatementTree nbrExport = navigate(nbrNode, "export", "policy");
+        neighbor.getImportPolicies().addAll(policyNames(nbrImport));
+        neighbor.getExportPolicies().addAll(policyNames(nbrExport));
+        referencePolicies(nbrImport, SrosStructureUsage.BGP_NEIGHBOR_IMPORT_POLICY);
+        referencePolicies(nbrExport, SrosStructureUsage.BGP_NEIGHBOR_EXPORT_POLICY);
         proc.getNeighbors().put(ip, neighbor);
       }
+    }
+    // Resolve group -> neighbor inheritance now, in the representation, so conversion reads
+    // fully-populated neighbors (NX-OS-style doInherit, not inline in conversion).
+    for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+      neighbor.inheritFrom(
+          neighbor.getGroup() == null ? null : proc.getGroups().get(neighbor.getGroup()));
     }
     router.setBgpProcess(proc);
   }
@@ -205,15 +326,18 @@ public final class SrosFeatureExtractor {
     if (prefixLists != null) {
       for (Map.Entry<String, SrosStatementTree> e : prefixLists.getChildren().entrySet()) {
         String name = unquote(e.getKey());
+        SrosStatementTree plNode = e.getValue();
+        defineStructure(SrosStructureType.PREFIX_LIST, name, plNode);
         PrefixList pl = new PrefixList(name);
-        SrosStatementTree prefixNode = e.getValue().getChild("prefix");
+        SrosStatementTree prefixNode = plNode.getChild("prefix");
         if (prefixNode != null) {
           for (Map.Entry<String, SrosStatementTree> pe : prefixNode.getChildren().entrySet()) {
-            Prefix prefix = parsePrefix(pe.getKey());
+            Prefix prefix = toPrefix(pe.getKey(), pe.getValue());
             if (prefix == null) {
               continue;
             }
-            PrefixListEntry.Type type = parsePrefixType(singleValue(pe.getValue(), "type"));
+            PrefixListEntry.Type type =
+                toEnum(pe.getValue().getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
             if (type == null) {
               continue;
             }
@@ -229,24 +353,32 @@ public final class SrosFeatureExtractor {
       for (Map.Entry<String, SrosStatementTree> e : policyStatements.getChildren().entrySet()) {
         String name = unquote(e.getKey());
         SrosStatementTree psNode = e.getValue();
+        defineStructure(SrosStructureType.POLICY_STATEMENT, name, psNode);
         PolicyStatement ps = new PolicyStatement(name);
         SrosStatementTree entryList = psNode.getChild("entry");
         if (entryList != null) {
           for (Map.Entry<String, SrosStatementTree> ee : entryList.getChildren().entrySet()) {
-            Long entryId = parseLong(ee.getKey());
-            if (entryId == null) {
+            SrosStatementTree entryNode = ee.getValue();
+            Optional<Long> entryId =
+                toLongInSpace(ee.getKey(), entryNode, ENTRY_ID_SPACE, "policy entry-id");
+            if (entryId.isEmpty()) {
               continue;
             }
-            SrosStatementTree entryNode = ee.getValue();
-            PolicyStatementEntry entry = new PolicyStatementEntry(entryId);
-            entry
-                .getFromPrefixLists()
-                .addAll(policyNames(navigate(entryNode, "from", "prefix-list")));
-            entry.setAction(parseAction(navigate(entryNode, "action", "action-type")));
-            ps.getEntries().put(entryId, entry);
+            PolicyStatementEntry entry = new PolicyStatementEntry(entryId.get());
+            SrosStatementTree fromPfx = navigate(entryNode, "from", "prefix-list");
+            entry.getFromPrefixLists().addAll(policyNames(fromPfx));
+            referenceStructures(
+                SrosStructureType.PREFIX_LIST,
+                fromPfx,
+                SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
+            entry.setAction(
+                toEnum(navigate(entryNode, "action", "action-type"), POLICY_ACTION, "action-type"));
+            ps.getEntries().put(entryId.get(), entry);
           }
         }
-        ps.setDefaultAction(parseAction(navigate(psNode, "default-action", "action-type")));
+        ps.setDefaultAction(
+            toEnum(
+                navigate(psNode, "default-action", "action-type"), POLICY_ACTION, "action-type"));
         _c.getPolicyStatements().put(name, ps);
       }
     }
@@ -258,6 +390,22 @@ public final class SrosFeatureExtractor {
   private static @Nullable String singleValue(SrosStatementTree node, String leaf) {
     SrosStatementTree leafNode = node.getChild(leaf);
     return singleKey(leafNode);
+  }
+
+  /**
+   * The value node of a single-valued leaf — i.e. the (single) child of {@code node}'s {@code leaf}
+   * child. For {@code autonomous-system 5000000000} under a router node, this is the {@code
+   * 5000000000} node, which is the deepest node of that statement and so carries its source context
+   * (the leaf-name {@code autonomous-system} node, being an interior path word, does not). Returns
+   * {@code null} if the leaf is absent or not single-valued, in which case warnings degrade to a
+   * context-free red-flag.
+   */
+  private static @Nullable SrosStatementTree singleValueNode(SrosStatementTree node, String leaf) {
+    SrosStatementTree leafNode = node.getChild(leaf);
+    if (leafNode == null || leafNode.getChildren().size() != 1) {
+      return null;
+    }
+    return leafNode.getChildren().values().iterator().next();
   }
 
   private static @Nullable String singleKey(@Nullable SrosStatementTree node) {
@@ -288,107 +436,105 @@ public final class SrosFeatureExtractor {
     return node;
   }
 
-  private @Nullable Integer parseInt(@Nullable String text) {
+  /**
+   * Convert an integer leaf value to an {@link Integer} if it parses as a 32-bit decimal and is
+   * contained in {@code space}, else {@link Optional#empty} (with a {@link Warnings.ParseWarning}).
+   *
+   * <p>Unlike the equivalent helpers in grammar-driven extractors (e.g. flatjuniper's {@code
+   * toIntegerInSpace}), the value is NOT grammar-guaranteed numeric — every SR-OS leaf value is a
+   * generic word — so a malformed value is warned here rather than assumed away. {@code ctxNode} is
+   * the tree node whose source context locates the value for the warning; {@code name} names it. A
+   * {@code null} input is {@link Optional#empty} with no warning (absent leaf == YANG default).
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      @Nullable String text, @Nullable SrosStatementTree ctxNode, IntegerSpace space, String name) {
     if (text == null) {
-      return null;
+      return Optional.empty();
     }
+    SrosStatementTree node = requireNonNull(ctxNode);
+    int num;
     try {
-      return Integer.valueOf(text);
+      num = Integer.parseInt(text);
     } catch (NumberFormatException e) {
-      _w.redFlagf("SR-OS: expected an integer but got '%s'", text);
-      return null;
+      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      return Optional.empty();
     }
+    if (!space.contains(num)) {
+      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
-  private @Nullable Long parseLong(@Nullable String text) {
+  /**
+   * Convert an integer leaf value to a {@link Long} if it parses as a 64-bit decimal and is
+   * contained in {@code space}, else {@link Optional#empty} (with a {@link Warnings.ParseWarning}).
+   * See {@link #toIntegerInSpace} for why malformed input is warned rather than assumed away.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      @Nullable String text, @Nullable SrosStatementTree ctxNode, LongSpace space, String name) {
     if (text == null) {
-      return null;
+      return Optional.empty();
     }
+    SrosStatementTree node = requireNonNull(ctxNode);
+    long num;
     try {
-      return Long.valueOf(text);
+      num = Long.parseLong(text);
     } catch (NumberFormatException e) {
-      _w.redFlagf("SR-OS: expected an integer but got '%s'", text);
-      return null;
+      warn(node, String.format("Expected %s in range %s, but got '%s'", name, space, text));
+      return Optional.empty();
     }
+    if (!space.contains(num)) {
+      warn(node, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
-  private @Nullable Ip parseIp(@Nullable String text) {
+  private @Nullable Ip toIp(
+      @Nullable String text, @Nullable SrosStatementTree ctxNode, String what) {
     if (text == null) {
       return null;
     }
-    try {
-      return Ip.parse(text);
-    } catch (IllegalArgumentException e) {
-      _w.redFlagf("SR-OS: expected an IPv4 address but got '%s'", text);
-      return null;
+    Optional<Ip> ip = Ip.tryParse(text);
+    if (ip.isEmpty()) {
+      warn(
+          requireNonNull(ctxNode),
+          String.format("SR-OS: expected an IPv4 address %s but got '%s'", what, text));
     }
+    return ip.orElse(null);
   }
 
-  private @Nullable Prefix parsePrefix(@Nullable String text) {
-    if (text == null) {
-      return null;
+  private @Nullable Prefix toPrefix(String text, SrosStatementTree ctxNode) {
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isEmpty()) {
+      warn(ctxNode, String.format("SR-OS: expected an IPv4 prefix but got '%s'", text));
     }
-    try {
-      return Prefix.parse(text);
-    } catch (IllegalArgumentException e) {
-      _w.redFlagf("SR-OS: expected an IPv4 prefix but got '%s'", text);
-      return null;
-    }
+    return prefix.orElse(null);
   }
 
-  private static @Nullable Boolean parseAdminState(@Nullable String text) {
-    if (text == null) {
+  /**
+   * Resolve the single value of {@code leafNode} (an enumerated leaf, e.g. {@code admin-state} or
+   * {@code action-type}) against {@code values}. Returns {@code null} with no warning if the leaf
+   * is absent or not single-valued (absent leaf == YANG default), and {@code null} with a
+   * line-stamped {@link Warnings.ParseWarning} ({@code what} names the leaf) if the value is
+   * outside the enumeration. The value node carries the source context, so the warning points at
+   * the value.
+   */
+  private <T> @Nullable T toEnum(
+      @Nullable SrosStatementTree leafNode, Map<String, T> values, String what) {
+    String value = singleKey(leafNode);
+    if (value == null) {
       return null;
     }
-    switch (text) {
-      case "enable":
-        return Boolean.TRUE;
-      case "disable":
-        return Boolean.FALSE;
-      default:
-        return null;
+    T result = values.get(value);
+    if (result == null) {
+      // leafNode is single-valued (singleKey returned non-null), so its one child is the value
+      // node.
+      SrosStatementTree valueNode = leafNode.getChildren().values().iterator().next();
+      warn(valueNode, String.format("SR-OS: unrecognized %s '%s'", what, value));
     }
-  }
-
-  private static @Nullable PrefixListEntry.Type parsePrefixType(@Nullable String text) {
-    if (text == null) {
-      return null;
-    }
-    switch (text) {
-      case "exact":
-        return PrefixListEntry.Type.EXACT;
-      case "longer":
-        return PrefixListEntry.Type.LONGER;
-      case "through":
-        return PrefixListEntry.Type.THROUGH;
-      case "range":
-        return PrefixListEntry.Type.RANGE;
-      case "to":
-        return PrefixListEntry.Type.TO;
-      case "address-mask":
-        return PrefixListEntry.Type.ADDRESS_MASK;
-      default:
-        return null;
-    }
-  }
-
-  private static @Nullable PolicyAction parseAction(@Nullable SrosStatementTree actionTypeNode) {
-    String text = singleKey(actionTypeNode);
-    if (text == null) {
-      return null;
-    }
-    switch (text) {
-      case "accept":
-        return PolicyAction.ACCEPT;
-      case "reject":
-        return PolicyAction.REJECT;
-      case "next-entry":
-        return PolicyAction.NEXT_ENTRY;
-      case "next-policy":
-        return PolicyAction.NEXT_POLICY;
-      default:
-        return null;
-    }
+    return result;
   }
 
   private static @Nonnull String unquote(String text) {
@@ -398,6 +544,69 @@ public final class SrosFeatureExtractor {
     return text;
   }
 
+  // --- warning + structure helpers --------------------------------------------------------------
+
+  /**
+   * Emit a line-stamped {@link Warnings.ParseWarning} for the statement that created {@code
+   * valueNode} (the same channel as the parser's unrecognized-line warnings, so it is
+   * annotate-visible and carries a source line).
+   *
+   * <p>{@code valueNode} is a value node returned by {@link #singleValueNode} or a leaf-list child,
+   * which always carries a source context: {@link SrosConfigurationBuilder} records the statement
+   * context on its deepest (value) node, and the value-parse helpers only warn once they have a
+   * non-null value (so the value node exists). The context is therefore required, not optional.
+   */
+  private void warn(SrosStatementTree valueNode, String message) {
+    ParserRuleContext ctx = valueNode.firstDefContext();
+    checkState(ctx != null, "value node for warning '%s' has no source context", message);
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    String fullText = _text.substring(start, end + 1);
+    _w.addWarning(ctx, fullText, _parser, message);
+  }
+
+  /**
+   * Record a structure definition on every source context of {@code defNode} (so a structure
+   * configured by more than one statement — e.g. mixed brace + flat — accumulates all its lines).
+   */
+  private void defineStructure(StructureType type, String name, SrosStatementTree defNode) {
+    for (ParserRuleContext ctx : defNode.getDefContexts()) {
+      _c.defineStructure(type, name, ctx);
+    }
+  }
+
+  /** Record one reference to {@code name} on the line of {@code refNode}'s source context. */
+  private void referenceStructure(
+      StructureType type, String name, StructureUsage usage, @Nullable SrosStatementTree refNode) {
+    ParserRuleContext ctx = refNode == null ? null : refNode.firstDefContext();
+    if (ctx == null) {
+      return;
+    }
+    _c.referenceStructure(type, name, usage, _parser.getLine(ctx.getStart()));
+  }
+
+  /**
+   * Record one reference per (unquoted) child of a leaf-list node {@code refNode}, all at that
+   * node's line. Used for the {@code policy [a b]} import/export lists and {@code from
+   * prefix-list}.
+   */
+  private void referenceStructures(
+      StructureType type, @Nullable SrosStatementTree refNode, StructureUsage usage) {
+    if (refNode == null) {
+      return;
+    }
+    for (String child : refNode.getChildren().keySet()) {
+      referenceStructure(type, unquote(child), usage, refNode);
+    }
+  }
+
+  /** Reference each policy name in an import/export {@code policy [..]} leaf-list. */
+  private void referencePolicies(@Nullable SrosStatementTree policyLeafList, StructureUsage usage) {
+    referenceStructures(SrosStructureType.POLICY_STATEMENT, policyLeafList, usage);
+  }
+
   private final @Nonnull SrosConfiguration _c;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SrosCombinedParser _parser;
+  private final @Nonnull String _text;
 }

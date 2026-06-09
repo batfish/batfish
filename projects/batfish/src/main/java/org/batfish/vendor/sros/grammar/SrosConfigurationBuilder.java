@@ -59,11 +59,16 @@ public final class SrosConfigurationBuilder extends SrosParserBaseListener
     for (ParserRuleContext wordCtx : ctx.word()) {
       node = node.getOrAddChild(normalizeWord(wordCtx.getText()));
     }
+    // Record this statement's context on its deepest node, for source provenance. For a brace
+    // block (`router "Base" { ... }`) ctx spans start..stop (the whole block); for a flat leaf it
+    // is the single line. Extraction reads these to line-stamp warnings and record structures.
+    node.addDefContext(ctx);
     Bracketed_clauseContext bracket = ctx.bracketed_clause();
     if (bracket != null) {
-      // A leaf-list: each bracketed value is an ordered child of the leaf node.
+      // A leaf-list: each bracketed value is an ordered child of the leaf node, and each carries
+      // the statement context so a reference in the list can be cited to this line.
       for (ParserRuleContext wordCtx : bracket.word()) {
-        node.getOrAddChild(wordCtx.getText());
+        node.getOrAddChild(wordCtx.getText()).addDefContext(ctx);
       }
     }
     _nodeStack.addLast(node);

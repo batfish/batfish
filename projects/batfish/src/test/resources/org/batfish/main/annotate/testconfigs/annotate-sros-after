@@ -1,0 +1,7 @@
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+# WARNING: Expected autonomous-system in range 1-4294967295, but got '5000000000': autonomous-system 5000000000
+        autonomous-system 5000000000
+    }
+}

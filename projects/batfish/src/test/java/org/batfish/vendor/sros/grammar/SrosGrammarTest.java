@@ -63,6 +63,7 @@ public final class SrosGrammarTest {
     assertThat(
         brace.getStatements(),
         contains(
+            "configure system name \"equivalence\"",
             "configure router \"Base\" autonomous-system 65001",
             "configure router \"Base\" interface \"system\" ipv4 primary address 1.1.1.1",
             "configure router \"Base\" interface \"system\" ipv4 primary prefix-length 32",

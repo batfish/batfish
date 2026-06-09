@@ -1,0 +1,21 @@
+# Configuration format version 26.3 revision 0
+configure {
+    system {
+        name "bad-enums"
+    }
+    port 1/1/c1/1 {
+        admin-state bogus-state
+    }
+    policy-options {
+        policy-statement "p" {
+            entry 10 {
+                action {
+                    action-type bogus-action
+                }
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+    }
+}

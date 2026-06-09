@@ -138,8 +138,11 @@ hardware (`Card`/`Mda`, `Port`), routers (`Router`, `RouterInterface`), BGP
 composite prefix+type entries, `PolicyStatement` with numbered entries and a
 default-action). List keys follow YANG: card by slot, mda by slot, port by path
 string, router/interface by name, BGP group by name, neighbor by IP,
-policy-statement entry by entry-id. BGP `neighbor/group` inheritance is recorded
-on the neighbor and resolved at conversion (P5).
+policy-statement entry by entry-id. BGP `group`→`neighbor` inheritance is
+resolved here, on the model (`BgpNeighbor.inheritFrom`): after both are
+extracted, each neighbor fills any unset `type`/`peer-as`/`import`/`export` from
+its group, so conversion reads a fully-populated neighbor (the NX-OS
+`doInherit`-style pattern).
 
 Subtrees that are valid config but not control-plane-relevant — `system
 security`/`ssh`/`user-params` and `persistent-indices` — are intentionally left
@@ -150,3 +153,235 @@ leaf that matters, `system name`, becomes the Batfish hostname.
 asserts the full r1 feature model extracts with no warnings, the unmodeled
 subtrees are silently skipped, and the preprocessor handles apply-groups (incl.
 regex keys + exclude) and delete edits.
+
+### Source provenance: line-stamped warnings + structure references
+
+Because extraction runs on the tree rather than on the parse tree, the tree must
+carry source provenance for warnings and reference tracking to work. Each
+`SrosStatementTree` node records the `ParserRuleContext`(s) of the statement(s)
+that created it (`addDefContext`). A statement's context lands on its **deepest**
+node — which for a single-valued leaf is the *value* node (`autonomous-system
+5000000000` → the `5000000000` node) and for a keyed list entry is the
+*structure-key* node, whose context spans the whole brace block (`start..stop`).
+This is the SR-OS analog of how Juniper threads `ParserRuleContext`s into its
+extractor; SR-OS differs from Juniper in needing **no** `FlattenerLineMap`,
+because it is not flattened — the hierarchical grammar parses brace, flat, and
+mixed input directly, so `parser.getLine(token)` is the true source line. A node
+may carry several contexts (the same path configured by mixed brace + flat input,
+or content inherited via `apply-groups`, which `copyInto` propagates so an
+inherited value or reference is attributed to the **group definition's** line).
+
+Two things ride on this provenance:
+
+- **Line-stamped value warnings.** Malformed or out-of-range values produce a
+  `ParseWarning` on the offending source line, not a context-free red-flag. The
+  range checks use the shared `toIntegerInSpace`/`toLongInSpace` idiom (as in
+  flatjuniper/palo_alto) bounded to the YANG-authoritative spaces:
+  `autonomous-system` 1–4294967295, interface `prefix-length` 0–32,
+  policy-statement `entry-id` 1–65535. Unlike grammar-driven extractors, the SR-OS
+  value is *not* grammar-guaranteed numeric (every leaf value is a generic word),
+  so a non-numeric value is warned here rather than assumed away. Because these are
+  `ParseWarning`s, the [`annotate`](../../../projects/batfish/src/main/java/org/batfish/main/annotate/Annotate.java)
+  tool renders them inline above the source line (with a `#` comment header, since
+  SR-OS uses `#` comments).
+- **Structure definitions and references.** `defineStructure` records each
+  `prefix-list`, `policy-statement`, and `bgp group` definition (with its
+  definition lines); `referenceStructure` records each use — a neighbor's `group`,
+  the BGP `import`/`export` policy lists, and a policy entry's
+  `from prefix-list` — keyed to the referring line. `SrosConfiguration.toVendorIndependentConfigurations`
+  finalizes with `markConcreteStructure`, so the `definedStructures`,
+  `undefinedReferences`, and unused-structure (zero-referrer) questions all work
+  for SR-OS. The conversion-time guards that skip an undefined prefix-list/group no
+  longer warn — the undefined reference is reported once, by the structure manager.
+
+`SrosExtractionTest` covers the line-stamped value warnings (including a value
+inherited from a group, cited to the group's line); `SrosConversionTest` covers
+definition lines (a multi-line brace block records >1 line), undefined references,
+and unused (zero-referrer) structures; `AnnotateTest#testSros` covers the
+end-to-end annotate output.
+
+## Conversion (P5)
+
+`SrosConfiguration.toVendorIndependentConfigurations()` converts the typed P4
+model into the vendor-independent `Configuration`. The conversion logic lives in
+[`SrosConversions`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/representation/SrosConversions.java).
+The SR-OS-specific semantics that shape it:
+
+### Router instance ↔ VRF
+
+Each SR-OS `router "<name>"` instance becomes a VRF. The `Base` instance — the
+main routing instance — maps to the Batfish default VRF (`"default"`); any other
+instance maps to a VRF of the same name. Interfaces and the BGP process are
+attached to their instance's VRF.
+
+### Interfaces (the port / router-interface split)
+
+SR-OS separates the physical **port** (e.g. `1/1/c1/1`) from the L3
+**router-interface** (e.g. `to-r2`) that binds it — the same physical/logical
+split as Junos (`ge-0/0/0` vs unit `ge-0/0/0.0`). Batfish models it the same way
+Junos is modeled, so a user-provided Layer-1 topology (which names the physical
+port) drives the router-interface's L3 adjacency:
+
+- A router interface with **no port binding** (`system`, loopbacks) is a single
+  `InterfaceType.LOOPBACK` holding the address.
+- A **port-bound** router interface becomes **two** VI interfaces: an addressless
+  `InterfaceType.PHYSICAL` interface named by the **port path** (the Layer-1
+  endpoint), and an `InterfaceType.LOGICAL` interface named by the
+  router-interface, which holds the `ipv4 primary {address, prefix-length}` and
+  carries a `DependencyType.BIND` dependency on the port.
+
+The hardware tree (cards/MDAs/ports) is otherwise **not** mapped to the VI model
+— Batfish derives the active port interface from the router-interface's port
+binding, not by walking the full physical port tree — so the cards/MDAs/ports are
+left unconverted with a single red-flag warning (not a silent drop). The port's
+`admin-state` is honored on the synthesized `PHYSICAL` interface.
+
+### BGP group → neighbor inheritance and peer type
+
+A neighbor inherits each per-peer attribute it does not set directly —
+`type`, `peer-as`, and the `import`/`export` policy lists — from its `group`
+(per-neighbor config wins). This is resolved **on the model at extraction**
+(`BgpNeighbor.inheritFrom`), mirroring how the NX-OS model resolves template
+inheritance with a `doInherit` pass before conversion rather than inline in
+conversion; conversion therefore reads a fully-populated neighbor.
+
+Each neighbor becomes a `BgpActivePeerConfig` keyed by peer IP, with `local-as`
+from the router instance's `autonomous-system` and router-id derived from the
+`system` interface address when not explicitly set. A session is iBGP or eBGP by
+the SR-OS `type` (`internal`/`external`) when configured — like Junos, the type
+is explicit and need not be inferred — otherwise by comparing `peer-as` to the
+local AS. `local-ip` is left unset so Batfish resolves the source address from
+the topology: for a directly-connected eBGP peer it picks the connected
+interface toward the peer (matching the device; forcing the system address would
+put the local IP off the peering subnet and the session would never establish).
+
+### eBGP default-reject (the policy chain)
+
+SR-OS drops eBGP routes in **both** directions unless an explicit policy accepts
+them (`ebgp-default-reject-policy` defaults true). "No policy" ≠ "permit all".
+This is realized with the Junos-style generated-peer-policy idiom:
+
+- Each `policy-statement` becomes a **chainable** `RoutingPolicy`. Its numbered
+  entries are walked in order; an entry's `from prefix-list` set is a
+  disjunction of `MatchPrefixSet`/`NamedPrefixSet` guards, and the matching
+  action (`accept`/`reject`/`next-entry`/`next-policy`) is emitted so the policy
+  behaves correctly both as a subroutine (`ReturnTrue`/`ReturnFalse` under
+  `CALL_EXPR_CONTEXT`) and standalone (`ExitAccept`/`ExitReject`). `next-policy`
+  maps to `Statements.FallThrough` so a `FirstMatchChain` advances to the next
+  policy; `next-entry` and an absent `default-action` emit nothing (fall
+  through).
+- Each peer gets a **generated** import and export `RoutingPolicy` that
+  `SetDefaultPolicy(...)` to a shared accept-all (iBGP) or reject-all (eBGP)
+  backstop, then evaluates a `FirstMatchChain` of `CallExpr`s over the peer's
+  named policies; if the chain reaches the default (no named policy made a
+  terminal decision), the eBGP backstop rejects.
+
+So an eBGP peer with no accepting policy rejects in both directions, while an
+iBGP peer defaults to accept — matching SR-OS.
+
+### Tests
+
+[`SrosConversionTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosConversionTest.java)
+parses r1 through the full pipeline and asserts: the VI `Configuration`
+(format/device-model/default VRF), interface types and addresses, the
+prefix-list → `RouteFilterList`, the neighbor's resolved `peer-as`/`local-as`
+and unset `local-ip`, **behavioral** eBGP default-reject (the generated export
+policy accepts the system prefix and rejects everything else; the import policy
+with a default-action accept permits all), and the hardware-not-converted
+red-flag warning. It also asserts the port / router-interface split (`to-r2` is
+`LOGICAL` with a `BIND` dependency on the addressless `PHYSICAL` port
+`1/1/c1/1`), the structure definitions/references and undefined/unused-structure
+detection, and the over-approximation warning for an unmodeled prefix-list match
+type. `SrosExtractionTest` covers group→neighbor inheritance on the model
+(`type`/`peer-as`/policies).
+
+## Post-processing (P6)
+
+Post-processing (`Batfish.postProcessSnapshot`) is largely vendor-independent —
+interface dependency resolution, derived bandwidth/IGP costs, Layer-1 topology
+application, protocol-state init. The SR-OS-specific concern is that its
+constructs flow through it correctly. The single design decision that matters
+here is the **port / router-interface split** described under
+[Conversion → Interfaces](#interfaces-the-port--router-interface-split), and it
+exists *because of* post-processing:
+
+- **Layer-1 topology lines up with a real interface.** Collected SR-OS labs name
+  the Layer-1 endpoint by the **physical port path** (`1/1/c1/1`), not the L3
+  router-interface (`to-r2`) — the port path is what containerlab/the device
+  expose. Modeling the port as a distinct `PHYSICAL` interface means the L1 edge
+  canonicalizes to a real interface and survives into the *active logical* L1
+  topology. If the L3 interface were the only thing modeled (the pre-P6 design),
+  the L1 endpoint `1/1/c1/1` would resolve to `INVALID_INTERFACE`, the edge would
+  be silently dropped, and the cross-vendor adjacency would form only by the
+  same-subnet fallback in `HybridL3Adjacencies` (which holds only because the
+  cEOS side is never the `node1` of a resolved L1 edge — fragile and accidental).
+- **The L3 edge is driven by L1.** `PointToPointComputer` walks the `BIND`
+  dependency from `to-r2` to its port `1/1/c1/1`, so the user L1 edge between
+  ports yields the L3 edge between the router interfaces. This is the same
+  mechanism Junos relies on for its unit↔physical split.
+- **Interface activity is correct.** The port is admin-up (its `admin-state` is
+  honored), so interface-dependency resolution leaves both the port and the
+  bound `to-r2` active; `system` (loopback) stays active. No SR-OS interface is
+  spuriously deactivated.
+
+There are no SR-OS aggregate/redundant interfaces or OSPF/EIGRP in the current
+lab, so the bandwidth-sum and IGP-cost post-processing steps are not yet
+exercised; they will be when a later lab (P8+) introduces them.
+
+[`SrosPostProcessingTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosPostProcessingTest.java)
+loads the captured `sros_ceos_ebgp` lab (SR-OS r1 + cEOS r2 + the user L1
+topology) through the full pipeline and asserts, on the post-processed model:
+every r1 interface is active with the expected type and the `to-r2`→`1/1/c1/1`
+BIND dependency; the user L1 edge (named by the port) survives into the active
+logical L1; the cross-vendor L3 edge `r1:to-r2 ↔ r2:Ethernet1` forms; and the
+eBGP session between r1 and r2 is established.
+
+## RIB validation (P7)
+
+P7 validates the data-plane output of the SR-OS pipeline — r1's computed main
+RIB and BGP RIB — against the device's own operational state, captured as JSON
+from the MD-CLI state tree (`info json /state router "Base" route-table` and
+`… bgp rib`). This is the SR-OS-side counterpart to what the cEOS validator does
+for r2, and it closes the loop: every pipeline stage from parse through
+post-processing is now checked against ground truth, not just asserted in unit
+tests. The validation harness lives in the sibling `lab-validation` repo
+(`SrosValidator`); this section records the SR-OS modeling facts that make the
+comparison correct, since they constrain conversion.
+
+**Main RIB.** SR-OS reports the active route per prefix in
+`/state … route-table`, keyed by an owner protocol (`local`, `bgp`, `static`,
+`isis`, `ospf`) that maps to the Batfish protocol (`local` → `connected`). The
+route `preference` is the Batfish admin distance (a learned eBGP route is
+preference/admin **170** on SR-OS, not the 20 that IOS/EOS use), and a
+local/connected route reports preference 0 with an interface (not IP) next-hop.
+For the captured lab this is exactly three IPv4 routes: the system loopback
+`1.1.1.1/32` (connected), the peering `10.0.0.0/31` (connected), and the
+learned `2.2.2.2/32` (bgp, admin 170, next-hop 10.0.0.1) — and Batfish's r1
+main RIB matches all three.
+
+**BGP RIB.** The state `bgp rib local-rib` carries each route's attributes by
+reference: an `attr-id` indexing a top-level `attr-sets` table that holds
+origin, next-hop, MED, and the nested AS-path. The validator joins them. The
+critical modeling fact (grounded at P5-V, see below) is that the local-rib
+**over-lists** relative to the operational BGP table: it includes the device's
+own `owner == "local"` routes (the connected/loopback prefixes) alongside the
+`owner == "bgp"` learned ones. Those local entries carry `in-rtm: false` and are
+main-RIB routes that BGP can *advertise via an export policy* — they are **not**
+BGP-originated. The device's `show router bgp routes` shows exactly the one
+learned route (`2.2.2.2/32`), and Batfish's BGP RIB holds exactly that one route
+(as-path `65002`, origin `igp`, next-hop `10.0.0.1`). The validator therefore
+compares only the learned subset (`owner == "bgp"`, best) — like-for-like
+against Batfish's BGP RIB, not a workaround.
+
+**Why r1 advertises from the main RIB.** Because the local-rib over-lists,
+naively treating it as BGP-origination would lead to switching Batfish to
+BGP-RIB-based export. The evidence says otherwise: SR-OS advertises from the
+**main RIB** (Junos-like), so conversion keeps `setExportBgpFromBgpRib(false)`.
+This was the key conversion decision validated at P5-V and re-confirmed by the
+P7 RIB comparison passing without it.
+
+The comparison uses the same cost-based route matcher as every other vendor
+validator: unmatched routes on either side score infinite cost and surface as
+failures, so a green result means the device and Batfish RIBs are
+route-for-route equal — not that one side was empty. No r1 RIB check is
+sickbayed.

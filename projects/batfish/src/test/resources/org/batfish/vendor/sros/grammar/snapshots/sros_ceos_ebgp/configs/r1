@@ -3,8 +3,8 @@
 # Built on Wed Mar 11 20:17:13 UTC 2026 by builder in /builds/263B/R1/panos
 # Configuration format version 26.3 revision 0
 
-# Generated 2026-06-05T04:46:54.8+00:00 by admin from 172.20.20.1
-# Last modified 2026-06-05T04:36:26.6+00:00 by system (MD-CLI) from Console
+# Generated 2026-06-05T19:40:02.1+00:00 by admin from 172.20.20.1
+# Last modified 2026-06-05T19:38:19.9+00:00 by system (MD-CLI) from Console
 
 configure {
     card 1 {
@@ -79,7 +79,6 @@ configure {
         }
     }
     system {
-        name "r1"
         security {
             aaa {
                 local-profiles {
@@ -327,4 +326,4 @@ persistent-indices {
     }
 }
 
-# Finished 2026-06-05T04:46:54.8+00:00
+# Finished 2026-06-05T19:40:02.1+00:00

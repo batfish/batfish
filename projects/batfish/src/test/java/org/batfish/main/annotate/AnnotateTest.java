@@ -58,6 +58,16 @@ public final class AnnotateTest {
   }
 
   /**
+   * Nokia SR-OS is not flattened, so annotation inserts {@code #}-prefixed comments in-place above
+   * the offending source line. Here an out-of-range autonomous-system produces a line-stamped
+   * extraction {@link org.batfish.common.Warnings.ParseWarning}.
+   */
+  @Test
+  public void testSros() throws IOException {
+    assertValidPair("annotate-sros-before", "annotate-sros-after");
+  }
+
+  /**
    * Assert that running annotate on {@code before} as a direct file input (not a snapshot
    * directory) produces the content of {@code after}.
    */

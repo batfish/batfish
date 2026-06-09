@@ -1,0 +1,15 @@
+# Configuration format version 26.3 revision 0
+configure {
+    system {
+        name "bad-prefix-type"
+    }
+    policy-options {
+        prefix-list "system-pfx" {
+            prefix 1.1.1.1/32 type bogus {
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+    }
+}
