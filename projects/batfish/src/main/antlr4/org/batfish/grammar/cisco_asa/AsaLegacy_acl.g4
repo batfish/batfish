@@ -67,22 +67,6 @@ access_list_mac_range
    )
 ;
 
-appletalk_access_list_null_tail
-:
-   action = access_list_action
-   (
-      (
-         CABLE_RANGE ~NEWLINE*
-      )
-      | OTHER_ACCESS
-   )? NEWLINE
-;
-
-appletalk_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
-;
-
 aruba_access_list_action
 :
    action = access_list_action
@@ -267,10 +251,6 @@ extended_access_list_stanza
    (
       (
          IP ACCESS_LIST EXTENDED name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_EXTENDED
       )
       |
       (
@@ -628,16 +608,6 @@ ipv6_prefix_list_tail
    )* NEWLINE
 ;
 
-ipx_sap_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
-;
-
-ipx_sap_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
-;
-
 irs_stanza
 :
    bandwidth_irs_stanza
@@ -765,17 +735,6 @@ null_rs_stanza
    ) null_rest_of_line
 ;
 
-protocol_type_code_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
-;
-
-protocol_type_code_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
-   protocol_type_code_access_list_null_tail
-;
-
 rs_stanza
 :
    interface_rs_stanza
@@ -842,22 +801,10 @@ s_ip_access_list_session
    )*
 ;
 
-s_mac_access_list
-:
-   ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
-   MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL NEWLINE
-;
-
 s_mac_access_list_extended
 :
-   (
-      ACCESS_LIST num = ACL_NUM_EXTENDED_MAC s_mac_access_list_extended_tail
-   )
-   |
-   (
-      MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
-      s_mac_access_list_extended_tail*
-   )
+   MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
+   s_mac_access_list_extended_tail*
 ;
 
 s_mac_access_list_extended_tail
@@ -937,10 +884,6 @@ standard_access_list_stanza
    (
       (
          IP ACCESS_LIST STANDARD name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_STANDARD
       )
       |
       (
