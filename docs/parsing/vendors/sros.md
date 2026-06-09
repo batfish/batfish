@@ -495,3 +495,10 @@ at commit** and rejects a reference to a non-existent policy-statement
 (`MGMT_CORE #224`), aborting the whole startup config — so a committed device
 config cannot carry an undefined policy reference. Batfish's `undefinedReferences`
 for SR-OS policies is therefore unit-testable but not lab-observable on a device.
+
+Tooling caveat: the `lab_builder` SR-OS `interface_up` precondition check is a
+false-negative on this lab — its heuristic ("`up` present and `down` absent" in
+the `show router interface` line) trips on the `Up/Down` column header, so it
+reports the (genuinely up) link interface as down. It is a collection-time
+precondition, not a lab test, so it does not affect the green result; the lab is
+collected regardless and validates 13/13.
