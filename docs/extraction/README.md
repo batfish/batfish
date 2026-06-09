@@ -801,6 +801,76 @@ set interfaces ge-0/0/0 family ethernet-switching recovery-timeout 180
 
 ---
 
+## Production-readiness concerns for a new vendor
+
+A parser/extractor that produces the right model for clean input can still be
+missing capabilities that the rest of Batfish (questions, the `annotate` tool,
+operators reading warnings) relies on. These are easy to skip and easy to miss,
+because the happy path looks complete. The
+[production-readiness checklist](../tutorials/adding_vendor_support.md#before-you-ship-production-readiness-checklist)
+in the tutorial is the short form; the mechanics:
+
+### Parse values safely — never `parse`, always `tryParse`/in-space
+
+Raw `Integer.parseInt`, `Ip.parse`, `Prefix.parse` throw on malformed input. In
+extraction that surfaces as a crash or a swallowed exception, not a useful
+warning. Use the non-throwing forms and warn with a line:
+
+- numbers: `toIntegerInSpace` / `toLongInSpace` (see [Validation
+  Errors](#validation-errors) above) — they both **range-check** against an
+  `IntegerSpace`/`LongSpace` and warn on out-of-range, which raw parsing never
+  does. Source the ranges from the vendor's schema (YANG/XSD), not guesses.
+- addresses/prefixes: `Ip.tryParse` / `Prefix.tryParse` (return `Optional`).
+- enumerated leaves: look up in a static map and warn on an unknown value
+  instead of silently dropping it (see `SrosFeatureExtractor.toEnum`).
+
+The point is that a bad value becomes a **line-stamped `ParseWarning`**, not a
+silent drop or a crash.
+
+### Make warnings line-stamped `ParseWarning`s (so `annotate` works)
+
+The [`annotate`](../../projects/batfish/src/main/java/org/batfish/main/annotate/Annotate.java)
+tool rewrites a config with each warning inlined above the offending source
+line. It reads **`ParseWarning`s only** (keyed by line) — context-free red-flag
+`Warning`s are invisible to it. So emit value/extraction warnings via the
+`warn(ctx, …)` helper (which produces a `ParseWarning`), not `redFlagf`, whenever
+a source line is identifiable. Two things to wire for a new vendor:
+
+- add the vendor's `ConfigurationFormat` to `Annotate.getCommentHeader` so
+  annotations use the right comment character (`#` vs `!`);
+- preprocessing: most vendors fall through `Preprocessor.preprocess` unchanged
+  (correct for non-flattened vendors); flattened vendors (Juniper, Palo Alto)
+  have an explicit case.
+
+### Track named structures (see [Implementation Guide Pattern 4](../parsing/implementation_guide.md#pattern-4-structure-definition-and-reference-tracking))
+
+`defineStructure` + `referenceStructure` + `markConcreteStructure` are what power
+the `definedStructures` / `undefinedReferences` / unused-structure questions. A
+vendor that skips them ships with those questions empty.
+
+### Provenance for tree-based extractors
+
+If you extract from a *derived tree* rather than the ANTLR parse tree (the SR-OS
+approach), the `ParserRuleContext` is gone by extraction time — so both
+line-stamped warnings **and** structure tracking break unless you carry the
+context onto the tree as you build it. For a hierarchical/braced vendor, follow
+**Junos** for the structural model (path-identified structures, one statement
+spanning multiple lines; no `FlattenerLineMap` if you don't flatten) and the
+**NX-OS** `doInherit` pattern for inheritance (below). See
+[`vendors/sros.md`](../parsing/vendors/sros.md) §"Source provenance".
+
+### Resolve template/group inheritance on the model, before conversion
+
+Peer groups, templates, profiles, `apply-groups`, etc. should be resolved with a
+`doInherit`/`inheritFrom` pass **on the vendor model** (each child fills the
+attributes it does not set from its parent, child wins), so conversion reads a
+fully-populated object. Resolving inheritance inline in conversion (per property,
+per call site) is the anti-pattern — it scatters the precedence logic and is hard
+to get right as attributes are added. The NX-OS `BgpVrfNeighborConfiguration`
+`doInherit` and the SR-OS `BgpNeighbor.inheritFrom` are the models.
+
+---
+
 ## Related Documentation
 
 - [Parsing](../parsing/README.md): Converting configs to parse trees

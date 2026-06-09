@@ -576,8 +576,16 @@ Now that you have basic parsing working:
 
 ### Adding BGP Support
 
+The skeleton below shows the *shape* of BGP extraction. **It is deliberately
+naive** — `Long.parseLong`/`Ip.parse` throw on bad input, it extracts straight
+into the VI model, and it has no peer-group inheritance or reference tracking.
+Before using it for real, apply the
+[production-readiness checklist](#before-you-ship-production-readiness-checklist)
+below: parse values safely, resolve group→neighbor inheritance on the vendor
+model, and track structures.
+
 ```java
-// In extractor
+// In extractor — SKELETON ONLY; see the checklist before shipping
 @Override
 public void exitBgp_block(AcmeParser.Bgp_blockContext ctx) {
     String asn = ctx.NUMBER().getText();
@@ -598,6 +606,72 @@ public void exitNeighbor_stmt(AcmeParser.Neighbor_stmtContext ctx) {
     _configuration.getBgpProcess().getNeighbors().put(ip, neighbor);
 }
 ```
+
+---
+
+## Before you ship: production-readiness checklist
+
+This tutorial gets you a parser that produces a model for clean input. A real
+vendor needs more, and the gaps are easy to miss because the happy path looks
+done. Each item below is a capability the rest of Batfish (questions, the
+`annotate` tool, operators reading warnings) depends on; each was a real
+correction made while adding the first hierarchical vendor (Nokia SR-OS).
+
+1. **Separate the vendor representation from the VI model.** This tutorial
+   extracts straight into a VI `Configuration` to stay short. Real vendors extract
+   into a **vendor-specific representation** first, then convert to the VI model in
+   a distinct step. The split is where vendor quirks live — inheritance, default
+   policies, physical/logical interface splits — and keeps extraction free of
+   conversion logic. See [Extraction](../extraction/README.md) and
+   [Conversion](../conversion/README.md).
+
+2. **Characterize the OS before writing the grammar.** Understand the config
+   format (flat vs hierarchical, whether forms can be mixed), defaults (what
+   "absent" means), mutation/edit semantics, and inheritance (groups, templates,
+   `apply-groups`) up front — from the vendor's authoritative schema (YANG/XSD)
+   and docs, not guesses. This decides whether you need a preprocessing/flatten
+   pass at all.
+
+3. **Parse values safely — never `parse`, always `tryParse`/in-space.** Raw
+   `Integer.parseInt`/`Ip.parse`/`Prefix.parse` throw on malformed input. Use
+   `toIntegerInSpace`/`toLongInSpace` (range-checked against the schema's bounds),
+   `Ip.tryParse`/`Prefix.tryParse`, and a static map + warn for enumerated leaves.
+   A bad value should become a **line-stamped `ParseWarning`**, not a crash or a
+   silent drop.
+
+4. **Emit line-stamped `ParseWarning`s and wire `annotate`.** The
+   [`annotate`](../../projects/batfish/src/main/java/org/batfish/main/annotate/Annotate.java)
+   tool inlines warnings above their source line, reading `ParseWarning`s only —
+   context-free red-flags are invisible to it. Emit value/extraction warnings via
+   the `warn(ctx, …)` helper, and add your `ConfigurationFormat` to
+   `Annotate.getCommentHeader` with the right comment character.
+
+5. **Track named structures.** Every referenceable object (route-map, prefix-list,
+   peer group, ACL, …) must be recorded with `defineStructure` /
+   `referenceStructure` / `markConcreteStructure`. This powers the
+   `definedStructures`, `undefinedReferences`, and unused-structure questions —
+   which are silently empty for a vendor that skips it. See
+   [Implementation Guide Pattern 4](../parsing/implementation_guide.md#pattern-4-structure-definition-and-reference-tracking).
+
+6. **Carry source provenance if you extract from a derived tree.** If your
+   extractor walks a tree you built (not the ANTLR parse tree), the
+   `ParserRuleContext` is gone by extraction time — breaking **both** line-stamped
+   warnings and structure tracking — unless you carry the context onto the tree.
+   See [`vendors/sros.md`](../parsing/vendors/sros.md) §"Source provenance".
+
+7. **Resolve inheritance on the model, before conversion.** Resolve peer
+   group/template/`apply-groups` inheritance with a `doInherit`/`inheritFrom` pass
+   on the vendor model (child fills unset attributes from parent, child wins), so
+   conversion reads a fully-populated object. Per-property inline inheritance in
+   conversion is the anti-pattern. Models: NX-OS `BgpVrfNeighborConfiguration`,
+   SR-OS `BgpNeighbor.inheritFrom`.
+
+8. **Close the loop with validation.** Validate the converted model against real
+   device state (the lab-validation framework), and sickbay known gaps to issues
+   rather than leaving them silent.
+
+A worked example of all of the above on a real hierarchical vendor:
+[`docs/parsing/vendors/sros.md`](../parsing/vendors/sros.md).
 
 ---
 

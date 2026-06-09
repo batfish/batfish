@@ -184,17 +184,50 @@ For commands that are partially supported:
 
 ### Pattern 4: Structure Definition and Reference Tracking
 
-For commands that define named objects referenced elsewhere:
+**Any named object that can be referenced elsewhere (a route-map, prefix-list,
+peer group, ACL, policy, etc.) must be tracked as a structure.** This is not
+optional polish: it is what powers the `definedStructures`, `undefinedReferences`,
+and unused-structure (zero-referrer) questions. A vendor that skips it ships with
+those questions silently empty — a common and easily-missed gap (see the
+production-readiness checklist in
+[`tutorials/adding_vendor_support.md`](../tutorials/adding_vendor_support.md)).
 
-1. Add structure type to vendor's `StructureType` enum
-2. Add usage type(s) to vendor's `StructureUsage` enum (name should match command path)
-3. In extractor enter method: Call `defineStructure(type, name, ctx)`
-4. In extractor exit methods: Call `referenceStructure(type, name, usage, line)` at reference sites
-   - For hierarchical configs (Junos, Palo Alto): Use `getLine(token)` helper, not `token.getLine()`
-5. In conversion: Call `markConcreteStructure(type)`
-6. Test with `hasDefinedStructure()`, `hasNumReferrers()`, `hasUndefinedReference()` matchers
+Steps:
 
-**See**: CiscoControlPlaneExtractor methods `enterDtr_policy`, `exitIfdt_attach_policy`, `exitVlanc_device_tracking` and CiscoConfiguration method `toVendorIndependentConfiguration` for examples.
+1. Add the structure type to the vendor's `StructureType` enum, and collect the
+   concrete types in a `CONCRETE_STRUCTURES` set for the finalize step.
+2. Add usage type(s) to the vendor's `StructureUsage` enum (the description should
+   match the command path that makes the reference).
+3. At each **definition**, call one of:
+   - `defineStructure(type, name, ctx)` — records the range from `ctx.start` to
+     `ctx.stop` (a non-flattened, contiguous definition).
+   - `defineFlattenedStructure(type, name, ctx, parser)` — for **flattened**
+     inputs (Junos, Palo Alto): walks every token in `ctx` and maps each back to
+     its original pre-flattening line via the parser, so a structure whose
+     definition spans non-contiguous source lines records all of them.
+   - `defineSingleLineStructure(type, name, line)` — when you have only a line.
+4. At each **reference**, call `referenceStructure(type, name, usage, line)`.
+   - For hierarchical/flattened configs (Junos, Palo Alto): use the `getLine(token)`
+     helper, not `token.getLine()`, so the line maps back through flattening.
+5. In conversion (`toVendorIndependentConfiguration`), call
+   `markConcreteStructure(type)` for every concrete type (e.g.
+   `MyStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure)`).
+   This is what turns un-referenced references into `undefinedReferences` answers
+   and surfaces unused structures.
+6. Test with `hasDefinedStructure()`, `hasDefinedStructureWithDefinitionLines()`,
+   `hasNumReferrers()`, `hasUndefinedReference()`, and `hasNoUndefinedReferences()`.
+
+**Caveat for tree-based extractors (e.g. SR-OS):** if your extractor walks a
+*derived tree* rather than the ANTLR parse tree, the `ParserRuleContext` needed
+for `defineStructure`/`referenceStructure` is gone by the time you extract. You
+must carry the context onto the tree as you build it (see
+[`vendors/sros.md`](vendors/sros.md) §"Source provenance"); the same provenance
+also gives you line-stamped warnings. Losing the context loses **both**.
+
+**See**: CiscoControlPlaneExtractor methods `enterDtr_policy`,
+`exitIfdt_attach_policy`, `exitVlanc_device_tracking` and CiscoConfiguration
+method `toVendorIndependentConfiguration`; and `SrosFeatureExtractor` /
+`SrosConfiguration` for the tree-based variant.
 
 ## Extraction Best Practices
 
