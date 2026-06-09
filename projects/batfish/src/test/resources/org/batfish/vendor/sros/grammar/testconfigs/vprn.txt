@@ -1,0 +1,33 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    service {
+        customer "1" {
+            customer-id 1
+        }
+        vprn "red" {
+            admin-state enable
+            service-id 1
+            customer "1"
+            interface "red-lo" {
+                loopback
+                ipv4 {
+                    primary {
+                        address 172.16.0.1
+                        prefix-length 32
+                    }
+                }
+            }
+        }
+    }
+    router "Base" {
+        interface "system" {
+            ipv4 {
+                primary {
+                    address 1.1.1.1
+                    prefix-length 32
+                }
+            }
+        }
+    }
+}

@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
@@ -214,6 +215,70 @@ public final class SrosExtractionTest {
     assertThat(e20.getSetMetric(), equalTo(200L));
     assertThat(e20.getAsPathPrependAsn(), nullValue());
     assertThat(e20.getCommunityAdds(), empty());
+  }
+
+  /**
+   * OSPF extraction: instance, router-id, admin-state, areas, and per-area interface type/metric.
+   */
+  @Test
+  public void testOspfExtraction() {
+    SrosConfiguration vc = parseVendorConfig("ospf.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    org.batfish.vendor.sros.representation.OspfProcess proc =
+        vc.getRouters().get("Base").getOspfProcess();
+    assertThat(proc, notNullValue());
+    assertThat(proc.getInstance(), equalTo(0));
+    assertThat(proc.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(proc.getAdminStateEnable(), equalTo(true));
+    org.batfish.vendor.sros.representation.OspfArea area = proc.getAreas().get("0.0.0.0");
+    assertThat(area, notNullValue());
+    assertThat(area.getInterfaces().keySet(), containsInAnyOrder("system", "to-r3"));
+    org.batfish.vendor.sros.representation.OspfAreaInterface toR3 =
+        area.getInterfaces().get("to-r3");
+    assertThat(
+        toR3.getInterfaceType(),
+        equalTo(
+            org.batfish.vendor.sros.representation.OspfAreaInterface.InterfaceType.POINT_TO_POINT));
+    assertThat(toR3.getMetric(), equalTo(100));
+    assertThat(area.getInterfaces().get("system").getMetric(), nullValue());
+  }
+
+  /**
+   * VPRN extraction: a {@code service vprn "<name>"} becomes a {@link Router} with its interfaces.
+   */
+  @Test
+  public void testVprnExtraction() {
+    SrosConfiguration vc = parseVendorConfig("vprn.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(vc.getRouters().keySet(), containsInAnyOrder("Base", "red"));
+    Router red = vc.getRouters().get("red");
+    assertThat(red.getInterfaces(), hasKey("red-lo"));
+    assertThat(
+        red.getInterfaces().get("red-lo").getPrimaryAddress(), equalTo(Ip.parse("172.16.0.1")));
+    assertThat(red.getInterfaces().get("red-lo").getPort(), nullValue());
+  }
+
+  /** Route-reflector extraction: a group's cluster-id and next-hop-self inherit to its neighbor. */
+  @Test
+  public void testRouteReflectorExtraction() {
+    SrosConfiguration vc = parseVendorConfig("route_reflector.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    BgpGroup clients = vc.getRouters().get("Base").getBgpProcess().getGroups().get("clients");
+    assertThat(clients.getClusterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(clients.getNextHopSelf(), equalTo(true));
+    BgpNeighbor nbr = vc.getRouters().get("Base").getBgpProcess().getNeighbors().get("10.0.0.1");
+    // inherited from the group
+    assertThat(nbr.getClusterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(nbr.getNextHopSelf(), equalTo(true));
+  }
+
+  /** from-protocol extraction: {@code from protocol name [static]} on a policy entry. */
+  @Test
+  public void testFromProtocolExtraction() {
+    SrosConfiguration vc = parseVendorConfig("redistribute_static.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    PolicyStatement ps = vc.getPolicyStatements().get("export-redist");
+    assertThat(ps.getEntries().get(20L).getFromProtocols(), contains("static"));
   }
 
   /**

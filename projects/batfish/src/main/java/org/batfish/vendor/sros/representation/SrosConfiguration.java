@@ -116,6 +116,7 @@ public final class SrosConfiguration extends VendorConfiguration {
       Vrf vrf = vrfForRouter(router.getName(), c);
       SrosConversions.convertInterfaces(this, router, c, vrf);
       SrosConversions.convertStaticRoutes(router, vrf, getWarnings());
+      SrosConversions.convertOspf(router, c, vrf, getWarnings());
       SrosConversions.convertBgp(router, c, vrf, getWarnings());
     }
 

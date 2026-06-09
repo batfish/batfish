@@ -17,6 +17,7 @@ public final class PolicyStatementEntry implements Serializable {
   public PolicyStatementEntry(long entryId) {
     _entryId = entryId;
     _fromPrefixLists = new ArrayList<>();
+    _fromProtocols = new ArrayList<>();
     _communityAdds = new ArrayList<>();
   }
 
@@ -27,6 +28,14 @@ public final class PolicyStatementEntry implements Serializable {
   /** The ordered {@code from prefix-list [...]} leaf-list (names of {@link PrefixList}s). */
   public @Nonnull List<String> getFromPrefixLists() {
     return _fromPrefixLists;
+  }
+
+  /**
+   * The {@code from protocol name [...]} leaf-list — protocol names (e.g. {@code static}, {@code
+   * direct}, {@code bgp}, {@code ospf}) the route must have been learned from to match.
+   */
+  public @Nonnull List<String> getFromProtocols() {
+    return _fromProtocols;
   }
 
   /** The entry {@code action action-type}, or {@code null} if unset. */
@@ -72,6 +81,7 @@ public final class PolicyStatementEntry implements Serializable {
 
   private final long _entryId;
   private final @Nonnull List<String> _fromPrefixLists;
+  private final @Nonnull List<String> _fromProtocols;
   private @Nullable PolicyAction _action;
   private @Nullable Long _setMetric;
   private @Nullable Long _asPathPrependAsn;

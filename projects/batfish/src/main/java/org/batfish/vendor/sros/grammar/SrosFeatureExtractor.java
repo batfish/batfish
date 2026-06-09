@@ -26,6 +26,9 @@ import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.Mda;
+import org.batfish.vendor.sros.representation.OspfArea;
+import org.batfish.vendor.sros.representation.OspfAreaInterface;
+import org.batfish.vendor.sros.representation.OspfProcess;
 import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
@@ -143,6 +146,7 @@ public final class SrosFeatureExtractor {
     extractCards(configure.getChild("card"));
     extractPorts(configure.getChild("port"));
     extractPolicyOptions(configure.getChild("policy-options"));
+    extractServices(configure.getChild("service"));
     extractRouters(configure.getChild("router"));
   }
 
@@ -228,7 +232,42 @@ public final class SrosFeatureExtractor {
           .ifPresent(router::setAutonomousSystem);
       extractInterfaces(router, routerNode.getChild("interface"));
       extractStaticRoutes(router, routerNode.getChild("static-routes"));
+      extractOspf(router, routerNode.getChild("ospf"));
       extractBgp(router, routerNode.getChild("bgp"));
+      _c.getRouters().put(name, router);
+    }
+  }
+
+  /**
+   * Extract {@code service vprn "<name>"} instances. A VPRN is a routing instance in its own VRF,
+   * so it is modeled as a {@link Router} keyed by the VPRN service-name (which conversion maps to a
+   * same-named VRF, just like a non-Base {@code router "<name>"}). It carries the same
+   * interface/static-route/OSPF/BGP feature set as the Base router. Only VPRNs are read from the
+   * service tree; other service types (epipe, vpls, ies, ...) are not control-plane routers and are
+   * left unread.
+   */
+  private void extractServices(@Nullable SrosStatementTree service) {
+    if (service == null) {
+      return;
+    }
+    SrosStatementTree vprnList = service.getChild("vprn");
+    if (vprnList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : vprnList.getChildren().entrySet()) {
+      String name = unquote(e.getKey());
+      SrosStatementTree vprnNode = e.getValue();
+      Router router = new Router(name);
+      toLongInSpace(
+              singleValue(vprnNode, "autonomous-system"),
+              singleValueNode(vprnNode, "autonomous-system"),
+              AUTONOMOUS_SYSTEM_SPACE,
+              "autonomous-system")
+          .ifPresent(router::setAutonomousSystem);
+      extractInterfaces(router, vprnNode.getChild("interface"));
+      extractStaticRoutes(router, vprnNode.getChild("static-routes"));
+      extractOspf(router, vprnNode.getChild("ospf"));
+      extractBgp(router, vprnNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
   }
@@ -330,6 +369,73 @@ public final class SrosFeatureExtractor {
     return singleValue(entryNode, "type");
   }
 
+  // --- ospf -------------------------------------------------------------------------------------
+
+  /** OSPF interface {@code metric} (cost): YANG {@code uint32 range "1..65535"}. */
+  private static final IntegerSpace OSPF_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 65535));
+
+  /** OSPF {@code interface-type} enumeration (the modeled subset). */
+  private static final Map<String, OspfAreaInterface.InterfaceType> OSPF_INTERFACE_TYPE =
+      ImmutableMap.of(
+          "broadcast", OspfAreaInterface.InterfaceType.BROADCAST,
+          "point-to-point", OspfAreaInterface.InterfaceType.POINT_TO_POINT);
+
+  /**
+   * Extract {@code router "<name>" ospf <instance>}: router-id, admin-state, and the per-area
+   * interfaces (with interface-type and metric/cost). Only the first/0 OSPF instance is modeled.
+   */
+  private void extractOspf(Router router, @Nullable SrosStatementTree ospfList) {
+    if (ospfList == null || ospfList.getChildren().isEmpty()) {
+      return;
+    }
+    // ospf is a list keyed by instance; model the first (typically instance 0).
+    Map.Entry<String, SrosStatementTree> e = ospfList.getChildren().entrySet().iterator().next();
+    int instance;
+    try {
+      instance = Integer.parseInt(e.getKey());
+    } catch (NumberFormatException ex) {
+      instance = 0;
+    }
+    SrosStatementTree ospfNode = e.getValue();
+    OspfProcess proc = new OspfProcess(instance);
+    proc.setRouterId(
+        toIp(
+            singleValue(ospfNode, "router-id"),
+            singleValueNode(ospfNode, "router-id"),
+            "ospf router-id"));
+    Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+
+    SrosStatementTree areaList = ospfNode.getChild("area");
+    if (areaList != null) {
+      for (Map.Entry<String, SrosStatementTree> ae : areaList.getChildren().entrySet()) {
+        String areaId = unquote(ae.getKey());
+        SrosStatementTree areaNode = ae.getValue();
+        OspfArea area = new OspfArea(areaId);
+        SrosStatementTree ifaceList = areaNode.getChild("interface");
+        if (ifaceList != null) {
+          for (Map.Entry<String, SrosStatementTree> ie : ifaceList.getChildren().entrySet()) {
+            String ifName = unquote(ie.getKey());
+            SrosStatementTree ifNode = ie.getValue();
+            OspfAreaInterface ospfIf = new OspfAreaInterface(ifName);
+            ospfIf.setInterfaceType(
+                toEnum(
+                    ifNode.getChild("interface-type"), OSPF_INTERFACE_TYPE, "ospf interface-type"));
+            toIntegerInSpace(
+                    singleValue(ifNode, "metric"),
+                    singleValueNode(ifNode, "metric"),
+                    OSPF_METRIC_SPACE,
+                    "ospf interface metric")
+                .ifPresent(ospfIf::setMetric);
+            area.getInterfaces().put(ifName, ospfIf);
+          }
+        }
+        proc.getAreas().put(areaId, area);
+      }
+    }
+    router.setOspfProcess(proc);
+  }
+
   /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
   private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
     return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
@@ -374,6 +480,15 @@ public final class SrosFeatureExtractor {
         group.getExportPolicies().addAll(policyNames(groupExport));
         referencePolicies(groupImport, SrosStructureUsage.BGP_GROUP_IMPORT_POLICY);
         referencePolicies(groupExport, SrosStructureUsage.BGP_GROUP_EXPORT_POLICY);
+        SrosStatementTree groupCluster = groupNode.getChild("cluster");
+        if (groupCluster != null) {
+          group.setClusterId(
+              toIp(
+                  singleValue(groupCluster, "cluster-id"),
+                  singleValueNode(groupCluster, "cluster-id"),
+                  "bgp cluster-id"));
+        }
+        group.setNextHopSelf(toBoolean(groupNode.getChild("next-hop-self")));
         proc.getGroups().put(name, group);
       }
     }
@@ -407,6 +522,15 @@ public final class SrosFeatureExtractor {
         neighbor.getExportPolicies().addAll(policyNames(nbrExport));
         referencePolicies(nbrImport, SrosStructureUsage.BGP_NEIGHBOR_IMPORT_POLICY);
         referencePolicies(nbrExport, SrosStructureUsage.BGP_NEIGHBOR_EXPORT_POLICY);
+        SrosStatementTree nbrCluster = nbrNode.getChild("cluster");
+        if (nbrCluster != null) {
+          neighbor.setClusterId(
+              toIp(
+                  singleValue(nbrCluster, "cluster-id"),
+                  singleValueNode(nbrCluster, "cluster-id"),
+                  "bgp cluster-id"));
+        }
+        neighbor.setNextHopSelf(toBoolean(nbrNode.getChild("next-hop-self")));
         proc.getNeighbors().put(ip, neighbor);
       }
     }
@@ -516,6 +640,14 @@ public final class SrosFeatureExtractor {
                 SrosStructureType.PREFIX_LIST,
                 fromPfx,
                 SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
+            // from protocol name [static direct bgp ...] — the protocol(s) the route was learned
+            // from. Modeled as plain enum words (no structure reference).
+            SrosStatementTree fromProto = navigate(entryNode, "from", "protocol", "name");
+            if (fromProto != null) {
+              for (String p : fromProto.getChildren().keySet()) {
+                entry.getFromProtocols().add(unquote(p));
+              }
+            }
             SrosStatementTree action = entryNode.getChild("action");
             entry.setAction(
                 toEnum(
@@ -735,6 +867,19 @@ public final class SrosFeatureExtractor {
       warn(valueNode, String.format("SR-OS: unrecognized %s '%s'", what, value));
     }
     return result;
+  }
+
+  /**
+   * Interpret a boolean leaf ({@code true}/{@code false}): returns the boxed value, or {@code null}
+   * if the leaf is absent or not single-valued (so an unset flag stays {@code null} for
+   * inheritance).
+   */
+  private static @Nullable Boolean toBoolean(@Nullable SrosStatementTree leafNode) {
+    String value = singleKey(leafNode);
+    if (value == null) {
+      return null;
+    }
+    return Boolean.valueOf("true".equals(value));
   }
 
   private static @Nonnull String unquote(String text) {

@@ -253,6 +253,93 @@ public final class SrosConversionTest {
   }
 
   /**
+   * OSPF conversion: a VI OspfProcess on the default VRF with area 0, the OSPF interfaces carrying
+   * OspfInterfaceSettings (area, cost, network type), and SR-OS admin distance 10 for internal
+   * routes.
+   */
+  @Test
+  public void testOspfConversion() throws IOException {
+    Configuration c = parseConfig("ospf.txt");
+    org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("0");
+    assertNotNull(proc);
+    assertThat(proc.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    // SR-OS OSPF internal route preference is 10 (not the Cisco 110).
+    assertThat(proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF), equalTo(10));
+    assertThat(proc.getAreas(), hasKey(0L));
+    assertThat(proc.getAreas().get(0L).getInterfaces(), containsInAnyOrder("system", "to-r3"));
+
+    // The to-r3 interface has OSPF settings with the explicit metric 100 and p2p network type.
+    Interface toR3 = c.getAllInterfaces().get("to-r3");
+    assertNotNull(toR3.getOspfSettings());
+    assertThat(toR3.getOspfSettings().getAreaName(), equalTo(0L));
+    assertThat(toR3.getOspfSettings().getCost(), equalTo(100));
+    assertThat(
+        toR3.getOspfSettings().getNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  /** VPRN conversion: a {@code service vprn "red"} becomes a separate VRF holding its interface. */
+  @Test
+  public void testVprnConversion() throws IOException {
+    Configuration c = parseConfig("vprn.txt");
+    assertThat(c.getVrfs(), hasKey("red"));
+    // The VPRN interface is in the "red" VRF, not the default VRF.
+    Interface redLo = c.getAllInterfaces().get("red-lo");
+    assertNotNull(redLo);
+    assertThat(redLo.getVrfName(), equalTo("red"));
+    assertThat(redLo.getConcreteAddress().toString(), equalTo("172.16.0.1/32"));
+    // No leak: the Base "system" interface is in the default VRF, not "red".
+    assertThat(
+        c.getAllInterfaces().get("system").getVrfName(), equalTo(Configuration.DEFAULT_VRF_NAME));
+  }
+
+  /** Route-reflector conversion: an RR-client neighbor gets cluster-id + route-reflector-client. */
+  @Test
+  public void testRouteReflectorConversion() throws IOException {
+    Configuration c = parseConfig("route_reflector.txt");
+    BgpActivePeerConfig peer =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    assertNotNull(peer);
+    assertThat(peer.getClusterId(), equalTo(Ip.parse("1.1.1.1").asLong()));
+    assertTrue(peer.getIpv4UnicastAddressFamily().getRouteReflectorClient());
+  }
+
+  /**
+   * from-protocol conversion: a policy entry {@code from protocol name [static]} only matches
+   * static routes — a static route is accepted, a connected route is not (it falls through to the
+   * eBGP default-reject), so the connected interface prefix is not advertised.
+   */
+  @Test
+  public void testFromProtocolConversion() throws IOException {
+    Configuration c = parseConfig("redistribute_static.txt");
+    BgpActivePeerConfig peer =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    RoutingPolicy exportPolicy =
+        c.getRoutingPolicies().get(peer.getIpv4UnicastAddressFamily().getExportPolicy());
+    assertNotNull(exportPolicy);
+    // A static route to 192.0.2.0/24 is accepted (matches from protocol static).
+    assertTrue(staticRouteAccepted(exportPolicy, Prefix.parse("192.0.2.0/24")));
+    // A connected route is not matched by from-protocol-static, so eBGP default-reject drops it.
+    assertFalse(
+        connectedRouteAccepted(
+            exportPolicy, Prefix.parse("10.0.0.0/31"), Environment.Direction.OUT));
+  }
+
+  /** Whether {@code policy} accepts a static route for {@code network} on export. */
+  private static boolean staticRouteAccepted(RoutingPolicy policy, Prefix network) {
+    org.batfish.datamodel.StaticRoute route =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(network)
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopDiscard.instance())
+            .setAdministrativeCost(5)
+            .build();
+    return policy.process(
+        route,
+        Bgpv4Route.testBuilder().setNetwork(network).setOriginatorIp(Ip.parse("1.1.1.1")),
+        Environment.Direction.OUT);
+  }
+
+  /**
    * Hardware (cards/ports) is parsed but not converted; conversion emits a red-flag warning rather
    * than silently dropping it.
    */

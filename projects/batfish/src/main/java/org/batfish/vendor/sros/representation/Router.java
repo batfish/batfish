@@ -53,9 +53,19 @@ public final class Router implements Serializable {
     _bgpProcess = bgpProcess;
   }
 
+  /** The OSPF process for this router, or {@code null} if {@code ospf} is not configured. */
+  public @Nullable OspfProcess getOspfProcess() {
+    return _ospfProcess;
+  }
+
+  public void setOspfProcess(@Nullable OspfProcess ospfProcess) {
+    _ospfProcess = ospfProcess;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Long _autonomousSystem;
   private final @Nonnull Map<String, RouterInterface> _interfaces;
   private final @Nonnull List<StaticRoute> _staticRoutes;
   private @Nullable BgpProcess _bgpProcess;
+  private @Nullable OspfProcess _ospfProcess;
 }
