@@ -2782,14 +2782,9 @@ s_name
    NAME variable variable null_rest_of_line
 ;
 
-s_no_access_list_extended
+s_no_access_list
 :
-   NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
-;
-
-s_no_access_list_standard
-:
-   NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
+   NO ACCESS_LIST name = variable_aclname NEWLINE
 ;
 
 s_no_bfd
@@ -3464,8 +3459,7 @@ ssh_timeout
 
 stanza
 :
-   appletalk_access_list_stanza
-   | asa_comment_stanza
+   asa_comment_stanza
    | asa_access_group
    | community_list_expanded
    | community_list_standard
@@ -3476,14 +3470,12 @@ stanza
    | ip_as_path_regex_mode_stanza
    | ip_prefix_list_stanza
    | ipv6_prefix_list_stanza
-   | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | protocol_type_code_access_list_stanza
    | remark_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
@@ -3581,7 +3573,6 @@ stanza
    | s_logging
    | s_lpts
    | s_management
-   | s_mac_access_list
    | s_mac_access_list_extended
    | s_map_class
    | s_media_termination
@@ -3595,8 +3586,7 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
-   | s_no_access_list_extended
-   | s_no_access_list_standard
+   | s_no_access_list
    | s_no_bfd
    | s_no_enable
    | s_ntp

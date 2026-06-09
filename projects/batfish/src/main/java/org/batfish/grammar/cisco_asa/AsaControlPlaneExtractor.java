@@ -877,11 +877,9 @@ import org.batfish.grammar.cisco_asa.AsaParser.S_ip_tacacs_source_interfaceConte
 import org.batfish.grammar.cisco_asa.AsaParser.S_l2tp_classContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_lineContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_loggingContext;
-import org.batfish.grammar.cisco_asa.AsaParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_mac_access_list_extendedContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_mtuContext;
-import org.batfish.grammar.cisco_asa.AsaParser.S_no_access_list_extendedContext;
-import org.batfish.grammar.cisco_asa.AsaParser.S_no_access_list_standardContext;
+import org.batfish.grammar.cisco_asa.AsaParser.S_no_access_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_ntpContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_policy_mapContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_routeContext;
@@ -2135,8 +2133,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       name = ctx.name.getText();
     } else if (ctx.shortname != null) {
       name = ctx.shortname.getText();
-    } else if (ctx.num != null) {
-      name = ctx.num.getText();
     } else {
       throw new BatfishException("Could not determine acl name");
     }
@@ -3336,24 +3332,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void enterS_mac_access_list(S_mac_access_listContext ctx) {
-    String name = ctx.num.getText();
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
   public void enterS_mac_access_list_extended(S_mac_access_list_extendedContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine name of extended mac access-list");
-    }
+    String name = ctx.name.getText();
     _currentMacAccessList =
         _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
     _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
@@ -3578,8 +3558,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name;
     if (ctx.name != null) {
       name = ctx.name.getText();
-    } else if (ctx.num != null) {
-      name = ctx.num.getText();
     } else {
       throw new BatfishException("Invalid standard access-list name");
     }
@@ -8316,14 +8294,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
-    String name = ctx.ACL_NUM_EXTENDED().getText();
+  public void exitS_no_access_list(S_no_access_listContext ctx) {
+    String name = ctx.name.getText();
     _configuration.getExtendedAcls().remove(name);
-  }
-
-  @Override
-  public void exitS_no_access_list_standard(S_no_access_list_standardContext ctx) {
-    String name = ctx.ACL_NUM_STANDARD().getText();
     _configuration.getStandardAcls().remove(name);
   }
 
