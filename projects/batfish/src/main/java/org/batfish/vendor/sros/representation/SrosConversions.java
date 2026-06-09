@@ -468,13 +468,32 @@ public final class SrosConversions {
     RoutingPolicy.builder().setName(name).setOwner(c).setStatements(statements).build();
   }
 
-  /** Lazily creates and returns the name of a shared "accept all" default policy on {@code c}. */
+  /**
+   * Lazily creates and returns the name of the shared iBGP default-accept policy on {@code c}.
+   *
+   * <p>SR-OS iBGP "default-accept" (no import/export policy on the group) accepts <em>BGP</em>
+   * routes — it propagates routes already in BGP, but does <em>not</em> pull connected/static/IGP
+   * routes into BGP. (A connected route like the system prefix is advertised only when an explicit
+   * export policy matches it; the default never does.) So the default-accept policy accepts iff the
+   * route's protocol is BGP/iBGP, and otherwise rejects. This matters on export: with {@code
+   * setExportBgpFromBgpRib(false)} Batfish runs the export policy over the whole main RIB, and a
+   * blanket accept-all would leak the connected /31s the device never advertises (confirmed on the
+   * L3 iBGP lab, where r1 advertises only 1.1.1.1/32 (explicit policy) and the eBGP-learned
+   * 2.2.2.2/32 to its iBGP peer, not its connected interface prefixes). On import the route being
+   * evaluated is always a received BGP route, so the protocol guard accepts everything — preserving
+   * iBGP default-accept on import.
+   */
   private static @Nonnull String defaultAcceptPolicy(Configuration c) {
     if (!c.getRoutingPolicies().containsKey(DEFAULT_BGP_ACCEPT_POLICY_NAME)) {
       RoutingPolicy.builder()
           .setName(DEFAULT_BGP_ACCEPT_POLICY_NAME)
           .setOwner(c)
-          .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
+          .setStatements(
+              ImmutableList.of(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+                      ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
           .build();
     }
     return DEFAULT_BGP_ACCEPT_POLICY_NAME;

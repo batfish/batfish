@@ -158,6 +158,49 @@ public final class SrosConversionTest {
   }
 
   /**
+   * iBGP default-accept (an iBGP group with no import/export policy, or whose policy falls through)
+   * accepts BGP routes but does not pull connected/static routes into BGP. Verified behaviorally on
+   * the generated peer policies of an iBGP neighbor:
+   *
+   * <ul>
+   *   <li>import: a received BGP route is accepted by default (no import policy).
+   *   <li>export: a BGP route is accepted, but a connected route that no explicit export policy
+   *       matches is rejected by the default-accept backstop — so connected interface prefixes are
+   *       not leaked into iBGP (confirmed against the L3 lab, where SR-OS advertised only its
+   *       policy-matched system prefix and its BGP-learned routes, not its connected /31s).
+   * </ul>
+   */
+  @Test
+  public void testIbgpDefaultAcceptOnlyBgpRoutes() throws IOException {
+    Configuration c = parseConfig("ibgp_default_accept.txt");
+    BgpActivePeerConfig peer =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.1.1"));
+    assertNotNull(peer);
+
+    // import: no import policy on the iBGP group -> default-accept any received BGP route.
+    RoutingPolicy importPolicy =
+        c.getRoutingPolicies().get(peer.getIpv4UnicastAddressFamily().getImportPolicy());
+    assertNotNull(importPolicy);
+    assertTrue(
+        bgpRouteAccepted(importPolicy, Prefix.parse("9.9.9.9/32"), Environment.Direction.IN));
+
+    RoutingPolicy exportPolicy =
+        c.getRoutingPolicies().get(peer.getIpv4UnicastAddressFamily().getExportPolicy());
+    assertNotNull(exportPolicy);
+    // export: a BGP route is accepted by the iBGP default-accept backstop...
+    assertTrue(
+        bgpRouteAccepted(exportPolicy, Prefix.parse("2.2.2.2/32"), Environment.Direction.OUT));
+    // ...the explicit export-system policy still accepts the system prefix...
+    assertTrue(
+        connectedRouteAccepted(
+            exportPolicy, Prefix.parse("1.1.1.1/32"), Environment.Direction.OUT));
+    // ...but a connected route that no policy matches is NOT pulled into iBGP by default-accept.
+    assertFalse(
+        connectedRouteAccepted(
+            exportPolicy, Prefix.parse("10.0.1.0/31"), Environment.Direction.OUT));
+  }
+
+  /**
    * Hardware (cards/ports) is parsed but not converted; conversion emits a red-flag warning rather
    * than silently dropping it.
    */
@@ -325,9 +368,30 @@ public final class SrosConversionTest {
 
   private static boolean routeAccepted(
       RoutingPolicy policy, Prefix network, Environment.Direction direction) {
+    return bgpRouteAccepted(policy, network, direction);
+  }
+
+  /** Whether {@code policy} accepts a BGP route for {@code network}. */
+  private static boolean bgpRouteAccepted(
+      RoutingPolicy policy, Prefix network, Environment.Direction direction) {
     Bgpv4Route route =
         Bgpv4Route.testBuilder().setNetwork(network).setOriginatorIp(Ip.parse("1.1.1.1")).build();
     return policy.process(route, route.toBuilder(), direction);
+  }
+
+  /**
+   * Whether {@code policy} accepts a <em>connected</em> route for {@code network} (used to confirm
+   * the iBGP default-accept backstop does not pull non-BGP routes into BGP). The output builder is
+   * a BGP route builder, as in an export context.
+   */
+  private static boolean connectedRouteAccepted(
+      RoutingPolicy policy, Prefix network, Environment.Direction direction) {
+    org.batfish.datamodel.ConnectedRoute route =
+        new org.batfish.datamodel.ConnectedRoute(network, "iface");
+    return policy.process(
+        route,
+        Bgpv4Route.testBuilder().setNetwork(network).setOriginatorIp(Ip.parse("1.1.1.1")),
+        direction);
   }
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/sros/grammar/testconfigs/";
