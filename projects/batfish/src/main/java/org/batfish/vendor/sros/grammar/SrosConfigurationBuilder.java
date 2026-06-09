@@ -43,11 +43,30 @@ public final class SrosConfigurationBuilder extends SrosParserBaseListener
     _w = warnings;
     _silentSyntax = silentSyntax;
     _stack = new ArrayDeque<>();
+    _root = new SrosStatementTree();
+    _nodeStack = new ArrayDeque<>();
+    _nodeStack.addLast(_root);
   }
 
   @Override
   public void enterStatement(StatementContext ctx) {
     _stack.addLast(joinWords(ctx));
+
+    // Build the canonical path tree in parallel: descend one level per word from the enclosing
+    // statement's node. This consumes the same word stream as the canonical-line logic, so the
+    // brace, flat /configure, and mixed input forms all produce the identical tree.
+    SrosStatementTree node = _nodeStack.peekLast();
+    for (ParserRuleContext wordCtx : ctx.word()) {
+      node = node.getOrAddChild(normalizeWord(wordCtx.getText()));
+    }
+    Bracketed_clauseContext bracket = ctx.bracketed_clause();
+    if (bracket != null) {
+      // A leaf-list: each bracketed value is an ordered child of the leaf node.
+      for (ParserRuleContext wordCtx : bracket.word()) {
+        node.getOrAddChild(wordCtx.getText());
+      }
+    }
+    _nodeStack.addLast(node);
   }
 
   @Override
@@ -61,6 +80,17 @@ public final class SrosConfigurationBuilder extends SrosParserBaseListener
       _c.getStatements().add(canonicalLine(ctx));
     }
     _stack.removeLast();
+    _nodeStack.removeLast();
+  }
+
+  /** Normalize the flat form's leading {@code /configure} to the brace form's {@code configure}. */
+  private static @Nonnull String normalizeWord(String word) {
+    return word.startsWith("/") ? word.substring(1) : word;
+  }
+
+  /** The canonical path tree built from this configuration. */
+  public @Nonnull SrosStatementTree getTree() {
+    return _root;
   }
 
   /** Build the full canonical path string for a leaf/empty-block statement {@code ctx}. */
@@ -80,27 +110,11 @@ public final class SrosConfigurationBuilder extends SrosParserBaseListener
     if (line.startsWith("/")) {
       line = line.substring(1);
     }
-    maybeSetHostname(line);
     return line;
-  }
-
-  /** The SR-OS system name maps to the Batfish hostname: {@code configure system name "<name>"}. */
-  private void maybeSetHostname(String line) {
-    String prefix = "configure system name ";
-    if (line.startsWith(prefix)) {
-      _c.setHostname(unquote(line.substring(prefix.length()).trim()));
-    }
   }
 
   private static @Nonnull String joinWords(StatementContext ctx) {
     return ctx.word().stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
-  }
-
-  private static @Nonnull String unquote(String text) {
-    if (text.length() >= 2 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"') {
-      return text.substring(1, text.length() - 1);
-    }
-    return text;
   }
 
   @Override
@@ -160,4 +174,10 @@ public final class SrosConfigurationBuilder extends SrosParserBaseListener
 
   /** Stack of space-joined word segments for the currently-open statements, root first. */
   private final @Nonnull Deque<String> _stack;
+
+  /** Root of the canonical path tree (see {@link SrosStatementTree}). */
+  private final @Nonnull SrosStatementTree _root;
+
+  /** Stack of tree nodes for the currently-open statements; the root is always at the bottom. */
+  private final @Nonnull Deque<SrosStatementTree> _nodeStack;
 }

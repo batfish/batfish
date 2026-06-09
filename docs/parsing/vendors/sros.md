@@ -84,23 +84,6 @@ Why this over the flatten pipeline:
 This mirrors the *spirit* of the Junos pipeline (one canonical statement form fed
 to extraction) while avoiding the text round-trip.
 
-### Deferred to extraction (P4+)
-
-The following were characterized in P1 and are deferred to the extraction phase,
-where feature-specific modeling needs them; they operate on the canonical
-statement tree this parser produces:
-
-- Incremental edit verbs (`delete`/`-`/`~`/`insert before|after`/`replace … with`/
-  `copy`/`rename`) — applied in order as a preprocessor stage.
-- `apply-groups` config-group inheritance — Batfish must expand it (configs ship
-  unexpanded): regex/wildcard key match, first-listed-wins precedence,
-  `apply-groups-exclude`.
-- Per-list ordering from YANG `ordered-by`; absent leaf ⇒ YANG default. BGP
-  group→neighbor inheritance resolved in extraction.
-
-As of P3 the builder records the canonical statements and extracts the system
-name as the hostname; feature extraction and conversion are P4/P5.
-
 ### Tests
 
 [`SrosGrammarTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosGrammarTest.java)
@@ -110,3 +93,60 @@ covers the P3 gate and the mixed-form acceptance requirement:
   warnings and nothing unrecognized;
 - pure-brace, pure-flat, and mixed inputs describing the same configuration
   produce the identical canonical statement list.
+
+## Extraction (P4)
+
+Extraction turns the canonical statement stream into a navigable tree and then a
+typed feature model.
+
+### Canonical tree (`SrosStatementTree`)
+
+[`SrosConfigurationBuilder`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/grammar/SrosConfigurationBuilder.java)
+builds an
+[`SrosStatementTree`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/grammar/SrosStatementTree.java)
+alongside the P3 canonical statement list, from the **same word stream**, so the
+brace, flat `/configure …`, and mixed forms all produce an identical tree. Every
+word of every statement is one level of the tree, so a leaf's value is the single
+child key under the leaf node (`card 1 card-type iom-1` →
+`card → 1 → card-type → iom-1`), and a `policy [ a b ]` leaf-list is the ordered
+children of the `policy` node (order preserved for `ordered-by user` lists).
+
+### Preprocessor (`SrosPreprocessor`)
+
+The two mechanisms P1 deferred from the grammar run here, on the tree, before
+feature extraction:
+
+- **`apply-groups` expansion** — grafts the matching subtree of each
+  `groups group "<name>"` definition onto the branch that applied it. Replicates
+  the §4.13 rules: local config wins over inherited, first-listed group wins,
+  `apply-groups-exclude` suppresses a group at a branch, and group list keys may
+  be regexes (`interface "<to-.*>"`) matched against the branch path. Runs to
+  convergence so groups that themselves apply groups resolve.
+- **`delete`/`-` edits** — incremental mutations that remove the named subtree;
+  deleting an absent element is a silent no-op (§4.5). After expansion so a
+  delete can remove inherited content.
+
+The `groups` definition container is pruned afterward (it is inheritance source,
+not configuration).
+
+### Feature model (`SrosFeatureExtractor`)
+
+Walks the preprocessed tree into the typed
+[representation](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/representation/):
+hardware (`Card`/`Mda`, `Port`), routers (`Router`, `RouterInterface`), BGP
+(`BgpProcess`, `BgpGroup`, `BgpNeighbor`), and routing policy (`PrefixList` with
+composite prefix+type entries, `PolicyStatement` with numbered entries and a
+default-action). List keys follow YANG: card by slot, mda by slot, port by path
+string, router/interface by name, BGP group by name, neighbor by IP,
+policy-statement entry by entry-id. BGP `neighbor/group` inheritance is recorded
+on the neighbor and resolved at conversion (P5).
+
+Subtrees that are valid config but not control-plane-relevant — `system
+security`/`ssh`/`user-params` and `persistent-indices` — are intentionally left
+unread, with no warnings (the device accepts them and so do we). The one system
+leaf that matters, `system name`, becomes the Batfish hostname.
+
+[`SrosExtractionTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosExtractionTest.java)
+asserts the full r1 feature model extracts with no warnings, the unmodeled
+subtrees are silently skipped, and the preprocessor handles apply-groups (incl.
+regex keys + exclude) and delete edits.
