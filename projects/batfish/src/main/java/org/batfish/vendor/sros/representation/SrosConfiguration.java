@@ -34,6 +34,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     _routers = new HashMap<>();
     _prefixLists = new HashMap<>();
     _policyStatements = new HashMap<>();
+    _communities = new HashMap<>();
   }
 
   /**
@@ -69,6 +70,11 @@ public final class SrosConfiguration extends VendorConfiguration {
   /** Routing-policy policy-statements, keyed by name. */
   public @Nonnull Map<String, PolicyStatement> getPolicyStatements() {
     return _policyStatements;
+  }
+
+  /** Routing-policy community lists, keyed by name. */
+  public @Nonnull Map<String, Community> getCommunities() {
+    return _communities;
   }
 
   @Override
@@ -153,6 +159,7 @@ public final class SrosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Router> _routers;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, PolicyStatement> _policyStatements;
+  private final @Nonnull Map<String, Community> _communities;
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _format;
 }

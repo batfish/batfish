@@ -24,6 +24,7 @@ import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
+import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.Mda;
 import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
@@ -80,6 +81,13 @@ public final class SrosFeatureExtractor {
 
   /** static-route next-hop/blackhole {@code preference}: YANG {@code uint32 range "1..255"}. */
   private static final IntegerSpace STATIC_PREFERENCE_SPACE = IntegerSpace.of(new SubRange(1, 255));
+
+  /** policy action {@code metric set}: BGP MED, YANG {@code int64 range "0..4294967295"}. */
+  private static final LongSpace POLICY_METRIC_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+
+  /** as-path-prepend {@code repeat}: YANG {@code uint32 range "1..6"}. */
+  private static final IntegerSpace AS_PATH_PREPEND_REPEAT_SPACE =
+      IntegerSpace.of(new SubRange(1, 6));
 
   /** Port {@code admin-state} enumeration: enable -> up, disable -> down. */
   private static final Map<String, Boolean> ADMIN_STATE =
@@ -317,6 +325,11 @@ public final class SrosFeatureExtractor {
     }
   }
 
+  /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
+  private static @Nullable String typeWord(SrosStatementTree entryNode) {
+    return singleValue(entryNode, "type");
+  }
+
   /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
   private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
     return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
@@ -412,6 +425,23 @@ public final class SrosFeatureExtractor {
     if (po == null) {
       return;
     }
+    SrosStatementTree communities = po.getChild("community");
+    if (communities != null) {
+      for (Map.Entry<String, SrosStatementTree> e : communities.getChildren().entrySet()) {
+        String name = unquote(e.getKey());
+        SrosStatementTree commNode = e.getValue();
+        defineStructure(SrosStructureType.COMMUNITY, name, commNode);
+        Community community = new Community(name);
+        SrosStatementTree memberNode = commNode.getChild("member");
+        if (memberNode != null) {
+          for (String member : memberNode.getChildren().keySet()) {
+            community.getMembers().add(unquote(member));
+          }
+        }
+        _c.getCommunities().put(name, community);
+      }
+    }
+
     SrosStatementTree prefixLists = po.getChild("prefix-list");
     if (prefixLists != null) {
       for (Map.Entry<String, SrosStatementTree> e : prefixLists.getChildren().entrySet()) {
@@ -426,12 +456,37 @@ public final class SrosFeatureExtractor {
             if (prefix == null) {
               continue;
             }
+            SrosStatementTree entryNode = pe.getValue();
             PrefixListEntry.Type type =
-                toEnum(pe.getValue().getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
+                toEnum(entryNode.getChild("type"), PREFIX_LIST_TYPE, "prefix-list match type");
             if (type == null) {
               continue;
             }
-            pl.getEntries().add(new PrefixListEntry(prefix, type));
+            PrefixListEntry ple = new PrefixListEntry(prefix, type);
+            // through/range carry length bounds in the block that hangs off the type value word,
+            // i.e. under `type <through|range> { ... }` -> entryNode.type.<value>.<bound>.
+            SrosStatementTree typeBody = navigate(entryNode, "type", typeWord(entryNode));
+            if (typeBody != null) {
+              toIntegerInSpace(
+                      singleValue(typeBody, "through-length"),
+                      singleValueNode(typeBody, "through-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list through-length")
+                  .ifPresent(ple::setThroughLength);
+              toIntegerInSpace(
+                      singleValue(typeBody, "start-length"),
+                      singleValueNode(typeBody, "start-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list start-length")
+                  .ifPresent(ple::setStartLength);
+              toIntegerInSpace(
+                      singleValue(typeBody, "end-length"),
+                      singleValueNode(typeBody, "end-length"),
+                      IPV4_PREFIX_LENGTH_SPACE,
+                      "prefix-list end-length")
+                  .ifPresent(ple::setEndLength);
+            }
+            pl.getEntries().add(ple);
           }
         }
         _c.getPrefixLists().put(name, pl);
@@ -461,8 +516,13 @@ public final class SrosFeatureExtractor {
                 SrosStructureType.PREFIX_LIST,
                 fromPfx,
                 SrosStructureUsage.POLICY_STATEMENT_FROM_PREFIX_LIST);
+            SrosStatementTree action = entryNode.getChild("action");
             entry.setAction(
-                toEnum(navigate(entryNode, "action", "action-type"), POLICY_ACTION, "action-type"));
+                toEnum(
+                    action == null ? null : action.getChild("action-type"),
+                    POLICY_ACTION,
+                    "action-type"));
+            extractEntrySetClauses(entry, action);
             ps.getEntries().put(entryId.get(), entry);
           }
         }
@@ -471,6 +531,56 @@ public final class SrosFeatureExtractor {
                 navigate(psNode, "default-action", "action-type"), POLICY_ACTION, "action-type"));
         _c.getPolicyStatements().put(name, ps);
       }
+    }
+  }
+
+  /**
+   * Extract the modeled {@code action} set-clauses of a policy entry: {@code metric set <n>} (BGP
+   * MED), {@code as-path-prepend as-path <asn> [repeat <n>]}, and {@code community add [...]}.
+   */
+  private void extractEntrySetClauses(
+      PolicyStatementEntry entry, @Nullable SrosStatementTree action) {
+    if (action == null) {
+      return;
+    }
+    // metric set <n>
+    SrosStatementTree metricSet = navigate(action, "metric", "set");
+    toLongInSpace(
+            singleKey(metricSet),
+            metricSet == null ? null : firstChild(metricSet),
+            POLICY_METRIC_SPACE,
+            "policy action metric")
+        .ifPresent(entry::setSetMetric);
+
+    // as-path-prepend as-path <asn> [repeat <n>]
+    SrosStatementTree prepend = action.getChild("as-path-prepend");
+    if (prepend != null) {
+      SrosStatementTree asPath = prepend.getChild("as-path");
+      toLongInSpace(
+              singleKey(asPath),
+              asPath == null ? null : firstChild(asPath),
+              AUTONOMOUS_SYSTEM_SPACE,
+              "as-path-prepend as-path")
+          .ifPresent(entry::setAsPathPrependAsn);
+      SrosStatementTree repeat = prepend.getChild("repeat");
+      toIntegerInSpace(
+              singleKey(repeat),
+              repeat == null ? null : firstChild(repeat),
+              AS_PATH_PREPEND_REPEAT_SPACE,
+              "as-path-prepend repeat")
+          .ifPresent(entry::setAsPathPrependRepeat);
+    }
+
+    // community add [...]
+    SrosStatementTree communityAdd = navigate(action, "community", "add");
+    if (communityAdd != null) {
+      for (String c : communityAdd.getChildren().keySet()) {
+        entry.getCommunityAdds().add(unquote(c));
+      }
+      referenceStructures(
+          SrosStructureType.COMMUNITY,
+          communityAdd,
+          SrosStructureUsage.POLICY_STATEMENT_ACTION_COMMUNITY);
     }
   }
 

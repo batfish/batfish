@@ -31,19 +31,31 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -92,20 +104,44 @@ public final class SrosConversions {
           switch (entry.getType()) {
             case EXACT -> SubRange.singleton(len);
             case LONGER -> new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH);
-            case THROUGH, RANGE, TO, ADDRESS_MASK -> {
-              // The upper/lower bound leaves for these types are not modeled in P4 yet; match this
-              // length or longer as a conservative over-approximation, and warn that the filter is
-              // broader than the device's until the bounds are modeled.
-              w.redFlagf(
-                  "SR-OS: prefix-list '%s' entry %s match type '%s' is not fully modeled; matching"
-                      + " '%s' or longer (over-approximation)",
-                  pl.getName(), prefix, entry.getType(), prefix);
-              yield new SubRange(len, Prefix.MAX_PREFIX_LENGTH);
+            case THROUGH -> {
+              // through-length: match this prefix's length through through-length (inclusive). If
+              // the bound is missing (older capture), fall back to "this length or longer" + warn.
+              Integer through = entry.getThroughLength();
+              if (through == null) {
+                yield overApproximate(pl, entry, w);
+              }
+              yield new SubRange(len, through);
+            }
+            case RANGE -> {
+              // range: match start-length through end-length (inclusive).
+              Integer start = entry.getStartLength();
+              Integer end = entry.getEndLength();
+              if (start == null || end == null) {
+                yield overApproximate(pl, entry, w);
+              }
+              yield new SubRange(start, end);
+            }
+            case TO, ADDRESS_MASK -> {
+              // The bound leaves for these types are not modeled yet; match this length or longer
+              // as a conservative over-approximation, and warn until the bounds are modeled.
+              yield overApproximate(pl, entry, w);
             }
           };
       lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, lengthRange));
     }
     return new RouteFilterList(pl.getName(), lines);
+  }
+
+  /** The "this length or longer" over-approximation + warning, for unmodeled match-type bounds. */
+  private static @Nonnull SubRange overApproximate(
+      PrefixList pl, PrefixListEntry entry, Warnings w) {
+    Prefix prefix = entry.getPrefix();
+    w.redFlagf(
+        "SR-OS: prefix-list '%s' entry %s match type '%s' is not fully modeled; matching '%s' or"
+            + " longer (over-approximation)",
+        pl.getName(), prefix, entry.getType(), prefix);
+    return new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH);
   }
 
   /**
@@ -118,15 +154,19 @@ public final class SrosConversions {
    */
   static void convertPolicyStatements(SrosConfiguration vc, Configuration c) {
     for (PolicyStatement ps : vc.getPolicyStatements().values()) {
-      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(ps, c));
+      c.getRoutingPolicies().put(ps.getName(), toRoutingPolicy(vc, ps, c));
     }
   }
 
-  private static @Nonnull RoutingPolicy toRoutingPolicy(PolicyStatement ps, Configuration c) {
+  private static @Nonnull RoutingPolicy toRoutingPolicy(
+      SrosConfiguration vc, PolicyStatement ps, Configuration c) {
     List<Statement> statements = new ArrayList<>();
     for (PolicyStatementEntry entry : ps.getEntries().values()) {
       BooleanExpr guard = toGuard(entry, c);
-      List<Statement> onMatch = actionStatements(entry.getAction());
+      // On a match, apply the entry's set-clauses (metric/MED, as-path-prepend, community) before
+      // its terminal action, so the modifications take effect on the matched route.
+      List<Statement> onMatch = new ArrayList<>(setStatements(vc, entry));
+      onMatch.addAll(actionStatements(entry.getAction()));
       if (guard == BooleanExprs.TRUE) {
         // No from-criteria: the entry always matches. Emit its action unconditionally.
         statements.addAll(onMatch);
@@ -143,6 +183,46 @@ public final class SrosConversions {
         .setOwner(c)
         .setStatements(statements)
         .build();
+  }
+
+  /**
+   * The set-clause statements for one policy entry, applied (in SR-OS order) when the entry
+   * matches: {@code metric set} → {@link SetMetric}; {@code as-path-prepend} → {@link
+   * PrependAsPath} (the AS repeated {@code repeat} times); {@code community add} → {@link
+   * SetCommunities} unioning the named community members onto the route's existing communities.
+   */
+  private static @Nonnull List<Statement> setStatements(
+      SrosConfiguration vc, PolicyStatementEntry entry) {
+    List<Statement> statements = new ArrayList<>();
+    if (entry.getSetMetric() != null) {
+      statements.add(new SetMetric(new LiteralLong(entry.getSetMetric())));
+    }
+    if (entry.getAsPathPrependAsn() != null) {
+      List<AsExpr> ases = new ArrayList<>();
+      for (int i = 0; i < entry.getAsPathPrependRepeat(); i++) {
+        ases.add(new ExplicitAs(entry.getAsPathPrependAsn()));
+      }
+      statements.add(new PrependAsPath(new LiteralAsList(ases)));
+    }
+    List<org.batfish.datamodel.bgp.community.Community> communitiesToAdd = new ArrayList<>();
+    for (String commName : entry.getCommunityAdds()) {
+      Community community = vc.getCommunities().get(commName);
+      if (community == null) {
+        // Undefined community reference: reported by the structure manager; skip silently here.
+        continue;
+      }
+      for (String member : community.getMembers()) {
+        StandardCommunity.tryParse(member).ifPresent(communitiesToAdd::add);
+      }
+    }
+    if (!communitiesToAdd.isEmpty()) {
+      statements.add(
+          new SetCommunities(
+              CommunitySetUnion.of(
+                  InputCommunities.instance(),
+                  new LiteralCommunitySet(CommunitySet.of(communitiesToAdd)))));
+    }
+    return statements;
   }
 
   /**

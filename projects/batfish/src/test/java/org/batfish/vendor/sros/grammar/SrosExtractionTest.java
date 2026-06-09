@@ -30,9 +30,11 @@ import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
+import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.PeerType;
 import org.batfish.vendor.sros.representation.PolicyAction;
 import org.batfish.vendor.sros.representation.PolicyStatement;
+import org.batfish.vendor.sros.representation.PolicyStatementEntry;
 import org.batfish.vendor.sros.representation.PrefixList;
 import org.batfish.vendor.sros.representation.PrefixListEntry;
 import org.batfish.vendor.sros.representation.Router;
@@ -173,6 +175,45 @@ public final class SrosExtractionTest {
     assertThat(nhNoAdmin.getPrefix(), equalTo(Prefix.parse("100.64.0.0/24")));
     assertThat(nhNoAdmin.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
     assertThat(nhNoAdmin.getAdminStateEnable(), equalTo(false));
+  }
+
+  /**
+   * Policy set-clause + community-list + prefix-list-bound extraction: {@code action metric set},
+   * {@code as-path-prepend as-path/repeat}, {@code community add}, a {@code community} list, and
+   * the {@code through-length}/{@code start-length}/{@code end-length} prefix-list bounds.
+   */
+  @Test
+  public void testPolicySetClausesExtraction() {
+    SrosConfiguration vc = parseVendorConfig("policy_set_clauses.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+
+    // community list "comm-tag" with one member.
+    assertThat(vc.getCommunities(), hasKey("comm-tag"));
+    Community comm = vc.getCommunities().get("comm-tag");
+    assertThat(comm.getMembers(), contains("65001:100"));
+
+    // prefix-list bounds: through-length on lo-range, start/end-length on host-range.
+    PrefixListEntry through = vc.getPrefixLists().get("lo-range").getEntries().get(0);
+    assertThat(through.getType(), equalTo(PrefixListEntry.Type.THROUGH));
+    assertThat(through.getThroughLength(), equalTo(32));
+    PrefixListEntry range = vc.getPrefixLists().get("host-range").getEntries().get(0);
+    assertThat(range.getType(), equalTo(PrefixListEntry.Type.RANGE));
+    assertThat(range.getStartLength(), equalTo(24));
+    assertThat(range.getEndLength(), equalTo(32));
+
+    // entry 10 set-clauses: metric 50, as-path-prepend 65001 x2, community add comm-tag.
+    PolicyStatement ps = vc.getPolicyStatements().get("export-to-r2");
+    PolicyStatementEntry e10 = ps.getEntries().get(10L);
+    assertThat(e10.getSetMetric(), equalTo(50L));
+    assertThat(e10.getAsPathPrependAsn(), equalTo(65001L));
+    assertThat(e10.getAsPathPrependRepeat(), equalTo(2));
+    assertThat(e10.getCommunityAdds(), contains("comm-tag"));
+
+    // entry 20 set-clause: metric 200, no prepend (default repeat), no community.
+    PolicyStatementEntry e20 = ps.getEntries().get(20L);
+    assertThat(e20.getSetMetric(), equalTo(200L));
+    assertThat(e20.getAsPathPrependAsn(), nullValue());
+    assertThat(e20.getCommunityAdds(), empty());
   }
 
   /**

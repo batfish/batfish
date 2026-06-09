@@ -201,6 +201,58 @@ public final class SrosConversionTest {
   }
 
   /**
+   * Policy set-clauses convert and take effect when the entry matches: {@code metric set} sets the
+   * MED, {@code as-path-prepend} prepends the AS the configured number of times, {@code community
+   * add} unions the named community onto the route, and a {@code through} prefix-list converts to
+   * an exact length window (not the old over-approximation).
+   */
+  @Test
+  public void testPolicySetClausesConversion() throws IOException {
+    Configuration c = parseConfig("policy_set_clauses.txt");
+
+    // through-length 32 on a /16 -> exact window [16,32], so a /32 inside the block matches but a
+    // shorter (e.g. /15) does not. (Previously over-approximated to [16,32-or-longer] with a warn.)
+    RouteFilterList loRange = c.getRouteFilterLists().get("lo-range");
+    assertNotNull(loRange);
+    assertTrue(loRange.permits(Prefix.parse("192.168.1.0/24")));
+    assertTrue(loRange.permits(Prefix.parse("192.168.1.1/32")));
+    assertFalse(loRange.permits(Prefix.parse("192.0.0.0/15")));
+
+    // range start-length 24 end-length 32 on 10.0.0.0/8 -> window [24,32].
+    RouteFilterList hostRange = c.getRouteFilterLists().get("host-range");
+    assertNotNull(hostRange);
+    assertTrue(hostRange.permits(Prefix.parse("10.1.2.0/24")));
+    assertTrue(hostRange.permits(Prefix.parse("10.1.2.3/32")));
+    assertFalse(hostRange.permits(Prefix.parse("10.1.0.0/16")));
+
+    // entry 10 matches 1.1.1.1/32 (system-pfx) and applies metric 50 + prepend 65001 x2 +
+    // community.
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get("export-to-r2");
+    assertNotNull(exportPolicy);
+    Bgpv4Route in =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(org.batfish.datamodel.OriginType.IGP)
+            .setProtocol(org.batfish.datamodel.RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route.Builder out = in.toBuilder();
+    boolean permitted = exportPolicy.process(in, out, Environment.Direction.OUT);
+    assertTrue(permitted);
+    Bgpv4Route result = out.build();
+    assertThat(result.getMetric(), equalTo(50L));
+    // as-path: 65001 prepended twice.
+    assertThat(
+        result.getAsPath(),
+        equalTo(org.batfish.datamodel.AsPath.ofSingletonAsSets(65001L, 65001L)));
+    // community 65001:100 added.
+    assertThat(
+        result.getCommunities().getCommunities(),
+        org.hamcrest.Matchers.hasItem(
+            org.batfish.datamodel.bgp.community.StandardCommunity.parse("65001:100")));
+  }
+
+  /**
    * Hardware (cards/ports) is parsed but not converted; conversion emits a red-flag warning rather
    * than silently dropping it.
    */
