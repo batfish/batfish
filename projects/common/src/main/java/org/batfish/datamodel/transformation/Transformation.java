@@ -8,7 +8,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -162,5 +165,48 @@ public final class Transformation implements Serializable {
         .add("andThen", _andThen)
         .add("orElse", _orElse)
         .toString();
+  }
+
+  @Serial
+  private Object writeReplace() throws ObjectStreamException {
+    return new SerializedForm(this);
+  }
+
+  /**
+   * Serializable representation of a {@link Transformation} that avoids deep recursion.
+   *
+   * <p>A device's NAT rule-set is converted into a chain of {@link Transformation}s linked via
+   * {@code orElse} (one link per rule). Configs with thousands of NAT rules produce a chain
+   * thousands of links deep. Default Java serialization recurses once per link, so serializing or
+   * deserializing such a chain overflows the stack. This proxy flattens the {@code orElse} spine
+   * into a list, writing and reading it iteratively so chains of any depth survive a round trip.
+   */
+  private static final class SerializedForm implements Serializable {
+    private final @Nonnull List<AclLineMatchExpr> _guards;
+    private final @Nonnull List<List<TransformationStep>> _steps;
+    private final @Nonnull List<Transformation> _andThens;
+
+    SerializedForm(Transformation transformation) {
+      _guards = new ArrayList<>();
+      _steps = new ArrayList<>();
+      _andThens = new ArrayList<>();
+      // Walk the orElse spine iteratively; andThen sub-trees are not part of the spine and are
+      // serialized normally (they are not deep in practice).
+      for (Transformation t = transformation; t != null; t = t._orElse) {
+        _guards.add(t._guard);
+        _steps.add(t._transformationSteps);
+        _andThens.add(t._andThen);
+      }
+    }
+
+    @Serial
+    private Object readResolve() throws ObjectStreamException {
+      // Rebuild the orElse spine from the tail forward so each node's orElse is already built.
+      Transformation orElse = null;
+      for (int i = _guards.size() - 1; i >= 0; i--) {
+        orElse = new Transformation(_guards.get(i), _steps.get(i), _andThens.get(i), orElse);
+      }
+      return orElse;
+    }
   }
 }
