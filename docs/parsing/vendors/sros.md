@@ -583,3 +583,62 @@ from the computed main RIB; those two main-RIB checks are sickbayed to
 batfish/batfish#9991. Everything else (config/interfaces/BGP RIB/RD-on-VRF)
 validates green. Device-confirmed: BGP-VPN learned route preference 170,
 resolved over an LDP tunnel; VPRN `red` stays separate from Base.
+
+## Follow-up rungs (P10): aggregate routes, LAG, multi-area OSPF, policy depth
+
+A third pass added four more feature areas, each modeled against a live SR-SIM
+26.3.R1 lab.
+
+### Aggregate routes (`sros_aggregate`)
+
+`router "Base" aggregates aggregate <prefix>` converts to a discard {@code
+GeneratedRoute} at admin distance 130 (the device's aggregate preference).
+Batfish's generated-route activation matches SR-OS — the aggregate installs only
+when a contributing more-specific route exists — so no explicit contributor
+check is needed. Device-confirmed: with `summary-only`, the peer learns the /16
+aggregate but not the /24 contributors.
+
+### LAG (`sros_aggregate`)
+
+`lag "<name>"` converts to an `AGGREGATED` interface whose member ports are
+`AGGREGATE` dependencies (post-processing sums their bandwidth) and channel-group
+members; each member's `channelGroup` is set to the LAG. That channel-group
+linkage is essential: it lets the logical-Layer-1 computation collapse the
+members' per-port physical edges into a single `lag`↔`lag` edge, so the LAG
+comes up via a BIND dependency on its single logical neighbor. Without it, the
+members look like two separate L1 neighbors and the dependency logic deactivates
+the LAG as an LACP failure. The validator skips the synthetic `AGGREGATED` (and
+`PHYSICAL`) interfaces, which are not in the device's router-interface state.
+Note: the device interface state carries no bandwidth, so the lab validates the
+LAG interface's presence and the routes over it, not the bandwidth-sum value
+(that is unit-tested). A LACP `lag … { lacp { mode active } }` requires a
+mandatory `administrative-key`, or the whole startup config is rejected at boot
+("MGMT_CORE #236 … Missing mandatory fields").
+
+### Multi-area OSPF (`sros_ospf_multiarea`)
+
+No conversion change was needed — the existing OSPF area loop already converts N
+areas to N VI `OspfArea`s, making a router with interfaces in two areas an ABR.
+Batfish's dataplane then computes the inter-area (IA) routes; device-confirmed
+(each side learns the other area's prefixes as OSPF IA, preference 10, via the
+ABR). **OSPF external redistribution does not work via an `export-policy` on
+SR-SIM 26.3.R1**: an `ospf <n> export-policy [p]` accepting static/connected
+routes committed cleanly but never made the router an ASBR or originated any
+AS-external LSA (`show router ospf status` stayed `AS Border Router: False`,
+0 external LSAs), for static (by prefix-list and by `from protocol name
+[static]`) and for connected (`from protocol name [direct]`). BGP export of the
+same statics works (see `sros_redist`), so this is OSPF-export-specific. E1/E2
+redistribution is therefore left unmodeled pending a dedicated probe.
+
+### Policy depth (`sros_policy_depth`)
+
+Extends policy-statement matching and actions beyond the P8 set:
+- `from community { name <name> }` → match any member of the named community
+  list (`MatchCommunities` over `HasCommunity(CommunityIs(...))`).
+- `from as-path { name <name> }` → match the named as-path list's `expression`
+  regex (`MatchAsPath` / `AsPathMatchRegex`); a new `AsPathList` model holds it.
+- actions `local-preference`, `metric add` (→ `IncrementMetric`), and `origin`.
+Device-confirmed behaviorally: a community-tagged route is accepted with
+local-pref 250 and a community add; an AS-path-matched route gets its metric
+incremented and origin set; `next-entry` chaining and `default-action` work as
+configured.
