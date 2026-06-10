@@ -300,8 +300,14 @@ public final class SrosConversionTest {
     org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("0");
     assertNotNull(proc);
     assertThat(proc.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
-    // SR-OS OSPF internal route preference is 10 (not the Cisco 110).
-    assertThat(proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF), equalTo(10));
+    // The configured `preference 20` becomes the internal OSPF admin distance (default would be
+    // 10); this lab raises it above the IS-IS preference (18) so IS-IS is the preferred IGP.
+    assertThat(proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF), equalTo(20));
+    assertThat(
+        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_IA), equalTo(20));
+    // External preference is unchanged at the SR-OS default 150.
+    assertThat(
+        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_E2), equalTo(150));
     assertThat(proc.getAreas(), hasKey(0L));
     assertThat(proc.getAreas().get(0L).getInterfaces(), containsInAnyOrder("system", "to-r3"));
 
@@ -360,11 +366,46 @@ public final class SrosConversionTest {
     assertThat(
         toR3.getIsis().getLevel2().getMode(),
         equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE));
+    // The explicit `level 2 metric 100` becomes the level-2 IS-IS cost (default would be 10).
+    assertThat(toR3.getIsis().getLevel2().getCost(), equalTo(100L));
+    // No level-1 process (level-capability 2), so no level-1 interface settings.
+    assertThat(toR3.getIsis().getLevel1(), nullValue());
     Interface system = c.getAllInterfaces().get("system");
     assertNotNull(system.getIsis());
     assertThat(
         system.getIsis().getLevel2().getMode(),
         equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE));
+  }
+
+  /**
+   * IS-IS interface metric is configured per level; each level's metric is applied independently
+   * and a level with no configured metric falls back to the SR-OS default of 10. Here {@code level
+   * 1 metric 30} and {@code level 2 metric 100} on a level-1-and-2-capable process must produce
+   * distinct per-level costs (not the level-2 value on both).
+   */
+  @Test
+  public void testIsisPerLevelMetric() throws IOException {
+    Configuration c = parseConfig("isis_per_level_metric.txt");
+    Interface toR3 = c.getAllInterfaces().get("to-r3");
+    assertNotNull(toR3.getIsis());
+    assertThat(toR3.getIsis().getLevel1().getCost(), equalTo(30L));
+    assertThat(toR3.getIsis().getLevel2().getCost(), equalTo(100L));
+  }
+
+  /**
+   * IS-IS conversion when {@code system-id} is not explicitly configured: SR OS derives it from the
+   * system interface IPv4 address (10.10.10.10 -> 0100.1001.0010). Confirmed live on SR-SIM 26.3.R1
+   * (the Nokia service_config_qrg lab omits system-id on all six routers).
+   */
+  @Test
+  public void testIsisDerivedSystemId() throws IOException {
+    Configuration c = parseConfig("isis_derived_system_id.txt");
+    org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
+    assertNotNull(proc);
+    // NET = 49.0000 (area) + 0100.1001.0010 (derived from 10.10.10.10) + 00 (n-sel).
+    assertThat(
+        proc.getNetAddress(),
+        equalTo(new org.batfish.datamodel.IsoAddress("49.0000.0100.1001.0010.00")));
   }
 
   /** VPRN conversion: a {@code service vprn "red"} becomes a separate VRF holding its interface. */

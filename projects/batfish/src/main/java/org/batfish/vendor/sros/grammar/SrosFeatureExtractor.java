@@ -581,6 +581,9 @@ public final class SrosFeatureExtractor {
   /** OSPF interface {@code metric} (cost): YANG {@code uint32 range "1..65535"}. */
   private static final IntegerSpace OSPF_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 65535));
 
+  /** IS-IS interface {@code metric}: YANG wide-metric {@code uint32 range "1..16777215"}. */
+  private static final IntegerSpace ISIS_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 16777215));
+
   /** OSPF {@code interface-type} enumeration (the modeled subset). */
   private static final Map<String, OspfAreaInterface.InterfaceType> OSPF_INTERFACE_TYPE =
       ImmutableMap.of(
@@ -624,6 +627,13 @@ public final class SrosFeatureExtractor {
     Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
     // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
     proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
+    // OSPF route preference (admin distance) for internal routes; SR-OS default 10.
+    toIntegerInSpace(
+            singleValue(ospfNode, "preference"),
+            singleValueNode(ospfNode, "preference"),
+            ROUTE_PREFERENCE_SPACE,
+            "ospf preference")
+        .ifPresent(proc::setPreference);
 
     SrosStatementTree areaList = ospfNode.getChild("area");
     if (areaList != null) {
@@ -694,6 +704,25 @@ public final class SrosFeatureExtractor {
             toEnum(ifNode.getChild("interface-type"), ISIS_INTERFACE_TYPE, "isis interface-type"));
         Boolean passive = toBoolean(ifNode.getChild("passive"), "isis interface passive");
         isisIf.setPassive(firstNonNull(passive, Boolean.FALSE));
+        // Metric is configured per level (`interface "<name>" level <N> metric <M>`); SR-OS has no
+        // interface-wide metric leaf. Extract each level's metric independently; the default 10
+        // applies per level in conversion when unset.
+        SrosStatementTree ifLevelList = ifNode.getChild("level");
+        if (ifLevelList != null) {
+          for (int lvl : new int[] {1, 2}) {
+            SrosStatementTree levelNode = ifLevelList.getChild(Integer.toString(lvl));
+            if (levelNode == null) {
+              continue;
+            }
+            int metricLevel = lvl;
+            toIntegerInSpace(
+                    singleValue(levelNode, "metric"),
+                    singleValueNode(levelNode, "metric"),
+                    ISIS_METRIC_SPACE,
+                    "isis interface metric")
+                .ifPresent(m -> isisIf.setMetric(metricLevel, m));
+          }
+        }
         proc.getInterfaces().put(ifName, isisIf);
       }
     }

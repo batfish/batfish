@@ -21,14 +21,14 @@ configure {
         }
         isis 0 {
             admin-state enable
-            level-capability 2
+            level-capability 1/2
             system-id 0100.1000.0001
             area-address [49.0001]
-            interface "system" {
-                passive true
-            }
             interface "to-r3" {
                 interface-type point-to-point
+                level 1 {
+                    metric 30
+                }
                 level 2 {
                     metric 100
                 }

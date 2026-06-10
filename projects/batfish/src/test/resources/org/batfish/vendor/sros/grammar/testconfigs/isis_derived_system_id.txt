@@ -5,16 +5,16 @@ configure {
         interface "system" {
             ipv4 {
                 primary {
-                    address 1.1.1.1
+                    address 10.10.10.10
                     prefix-length 32
                 }
             }
         }
-        interface "to-r3" {
+        interface "to-pe1" {
             port 1/1/c1/1
             ipv4 {
                 primary {
-                    address 10.0.1.0
+                    address 172.16.10.0
                     prefix-length 31
                 }
             }
@@ -22,16 +22,12 @@ configure {
         isis 0 {
             admin-state enable
             level-capability 2
-            system-id 0100.1000.0001
-            area-address [49.0001]
+            area-address [49.0000]
             interface "system" {
                 passive true
             }
-            interface "to-r3" {
+            interface "to-pe1" {
                 interface-type point-to-point
-                level 2 {
-                    metric 100
-                }
             }
         }
     }
