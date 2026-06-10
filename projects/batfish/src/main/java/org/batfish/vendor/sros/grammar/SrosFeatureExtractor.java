@@ -1,5 +1,6 @@
 package org.batfish.vendor.sros.grammar;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
@@ -395,17 +396,12 @@ public final class SrosFeatureExtractor {
         // unequal pair installs only the lower-preference leg). See
         // https://github.com/batfish/batfish/issues/9989.
         for (Map.Entry<String, SrosStatementTree> nhe : nextHop.getChildren().entrySet()) {
-          SrosStatementTree nhEntry = nhe.getValue();
-          StaticRoute route = new StaticRoute(prefix);
-          route.setNextHopIp(toIp(unquote(nhe.getKey()), nhEntry, "static-route next-hop"));
-          applyAdminStateMetricPreference(route, nhEntry);
-          router.getStaticRoutes().add(route);
+          router
+              .getStaticRoutes()
+              .add(toStaticRoute(prefix, nhe.getValue(), unquote(nhe.getKey())));
         }
       } else if (blackhole != null) {
-        StaticRoute route = new StaticRoute(prefix);
-        route.setBlackhole(true);
-        applyAdminStateMetricPreference(route, blackhole);
-        router.getStaticRoutes().add(route);
+        router.getStaticRoutes().add(toStaticRoute(prefix, blackhole, null));
       } else {
         // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
         // Warn rather than silently skip.
@@ -418,13 +414,32 @@ public final class SrosFeatureExtractor {
   }
 
   /**
-   * Apply the {@code admin-state}/{@code metric}/{@code preference} leaves from a static-route
-   * next-hop or blackhole context onto {@code route}, defaulting metric/preference per YANG when
-   * absent.
+   * Build a {@link StaticRoute} for one leg: a {@code next-hop} entry (whose list key {@code
+   * nextHopKey} is the next-hop IP) or, when {@code nextHopKey} is {@code null}, a {@code
+   * blackhole}. Both shapes carry the same {@code admin-state}/{@code metric}/{@code preference}
+   * leaves on their context {@code leg}.
    */
-  private void applyAdminStateMetricPreference(StaticRoute route, SrosStatementTree ctx) {
-    Boolean adminUp = toEnum(ctx.getChild("admin-state"), ADMIN_STATE, "admin-state");
-    route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
+  private @Nonnull StaticRoute toStaticRoute(
+      Prefix prefix, SrosStatementTree leg, @Nullable String nextHopKey) {
+    StaticRoute route = new StaticRoute(prefix);
+    if (nextHopKey == null) {
+      route.setBlackhole(true);
+    } else {
+      route.setNextHopIp(toIp(nextHopKey, leg, "static-route next-hop"));
+    }
+    Boolean adminUp = toEnum(leg.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    // admin-state defaults to disable for a static route: it is installed only when explicitly
+    // enable.
+    route.setAdminStateEnable(firstNonNull(adminUp, Boolean.FALSE));
+    applyMetricPreference(route, leg);
+    return route;
+  }
+
+  /**
+   * Apply the {@code metric}/{@code preference} leaves from a static-route next-hop or blackhole
+   * context onto {@code route}, defaulting per YANG when absent.
+   */
+  private void applyMetricPreference(StaticRoute route, SrosStatementTree ctx) {
     toIntegerInSpace(
             singleValue(ctx, "metric"),
             singleValueNode(ctx, "metric"),
@@ -525,13 +540,11 @@ public final class SrosFeatureExtractor {
     }
     // ospf is a list keyed by instance; model the first (typically instance 0).
     Map.Entry<String, SrosStatementTree> e = ospfList.getChildren().entrySet().iterator().next();
-    int instance;
-    try {
-      instance = Integer.parseInt(e.getKey());
-    } catch (NumberFormatException ex) {
-      instance = 0;
-    }
     SrosStatementTree ospfNode = e.getValue();
+    Integer instance = toInstanceId(e.getKey(), ospfNode, "ospf");
+    if (instance == null) {
+      return;
+    }
     OspfProcess proc = new OspfProcess(instance);
     proc.setRouterId(
         toIp(
@@ -539,7 +552,8 @@ public final class SrosFeatureExtractor {
             singleValueNode(ospfNode, "router-id"),
             "ospf router-id"));
     Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
-    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+    // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
+    proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
 
     SrosStatementTree areaList = ospfNode.getChild("area");
     if (areaList != null) {
@@ -582,16 +596,15 @@ public final class SrosFeatureExtractor {
     }
     // isis is a list keyed by instance; model the first (typically instance 0).
     Map.Entry<String, SrosStatementTree> e = isisList.getChildren().entrySet().iterator().next();
-    int instance;
-    try {
-      instance = Integer.parseInt(e.getKey());
-    } catch (NumberFormatException ex) {
-      instance = 0;
-    }
     SrosStatementTree isisNode = e.getValue();
+    Integer instance = toInstanceId(e.getKey(), isisNode, "isis");
+    if (instance == null) {
+      return;
+    }
     IsisProcess proc = new IsisProcess(instance);
     Boolean adminUp = toEnum(isisNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
-    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+    // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
+    proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
     proc.setSystemId(singleValue(isisNode, "system-id"));
     proc.getAreaAddresses().addAll(policyNames(isisNode.getChild("area-address")));
     IsisProcess.LevelCapability level =
@@ -610,11 +623,25 @@ public final class SrosFeatureExtractor {
         isisIf.setInterfaceType(
             toEnum(ifNode.getChild("interface-type"), ISIS_INTERFACE_TYPE, "isis interface-type"));
         Boolean passive = toBoolean(ifNode.getChild("passive"), "isis interface passive");
-        isisIf.setPassive(Boolean.TRUE.equals(passive));
+        isisIf.setPassive(firstNonNull(passive, Boolean.FALSE));
         proc.getInterfaces().put(ifName, isisIf);
       }
     }
     router.setIsisProcess(proc);
+  }
+
+  /**
+   * Parse an IGP process instance-id (the list key, e.g. the {@code 0} in {@code ospf 0}). The YANG
+   * key is an integer; a non-numeric key is malformed input, so warn and return {@code null} (skip
+   * the process) rather than silently defaulting to instance 0.
+   */
+  private @Nullable Integer toInstanceId(String key, SrosStatementTree ctx, String protocol) {
+    try {
+      return Integer.parseInt(key);
+    } catch (NumberFormatException ex) {
+      warnf(ctx, "%s instance '%s' is not an integer; skipping", protocol, key);
+      return null;
+    }
   }
 
   /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */

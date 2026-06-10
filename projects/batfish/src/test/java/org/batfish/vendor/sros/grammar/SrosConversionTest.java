@@ -11,6 +11,8 @@ import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMa
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -106,8 +108,8 @@ public final class SrosConversionTest {
     assertThat(c.getRouteFilterLists(), hasKey("system-pfx"));
     RouteFilterList rfl = c.getRouteFilterLists().get("system-pfx");
     // exact type: matches 1.1.1.1/32 exactly, not a more-specific (no more-specific exists at /32).
-    assertTrue(rfl.permits(Prefix.parse("1.1.1.1/32")));
-    assertFalse(rfl.permits(Prefix.parse("2.2.2.2/32")));
+    assertThat(rfl, permits(Prefix.parse("1.1.1.1/32")));
+    assertThat(rfl, rejects(Prefix.parse("2.2.2.2/32")));
   }
 
   /**
@@ -223,16 +225,16 @@ public final class SrosConversionTest {
     // shorter (e.g. /15) does not. (Previously over-approximated to [16,32-or-longer] with a warn.)
     RouteFilterList loRange = c.getRouteFilterLists().get("lo-range");
     assertNotNull(loRange);
-    assertTrue(loRange.permits(Prefix.parse("192.168.1.0/24")));
-    assertTrue(loRange.permits(Prefix.parse("192.168.1.1/32")));
-    assertFalse(loRange.permits(Prefix.parse("192.0.0.0/15")));
+    assertThat(loRange, permits(Prefix.parse("192.168.1.0/24")));
+    assertThat(loRange, permits(Prefix.parse("192.168.1.1/32")));
+    assertThat(loRange, rejects(Prefix.parse("192.0.0.0/15")));
 
     // range start-length 24 end-length 32 on 10.0.0.0/8 -> window [24,32].
     RouteFilterList hostRange = c.getRouteFilterLists().get("host-range");
     assertNotNull(hostRange);
-    assertTrue(hostRange.permits(Prefix.parse("10.1.2.0/24")));
-    assertTrue(hostRange.permits(Prefix.parse("10.1.2.3/32")));
-    assertFalse(hostRange.permits(Prefix.parse("10.1.0.0/16")));
+    assertThat(hostRange, permits(Prefix.parse("10.1.2.0/24")));
+    assertThat(hostRange, permits(Prefix.parse("10.1.2.3/32")));
+    assertThat(hostRange, rejects(Prefix.parse("10.1.0.0/16")));
 
     // `to`: base 10.20.0.0/16 with to-prefixes /20 and 10.20.16.0/24. SR-SIM 26.3.R1 confirmed it
     // matches the ANCESTORS of each to-prefix at lengths [base-length .. to-length], and nothing
@@ -240,24 +242,24 @@ public final class SrosConversionTest {
     RouteFilterList toList = c.getRouteFilterLists().get("to-list");
     assertNotNull(toList);
     // On-path ancestors of 10.20.0.0/20 (lengths 16..20):
-    assertTrue(toList.permits(Prefix.parse("10.20.0.0/16")));
-    assertTrue(toList.permits(Prefix.parse("10.20.0.0/17")));
-    assertTrue(toList.permits(Prefix.parse("10.20.0.0/18")));
-    assertTrue(toList.permits(Prefix.parse("10.20.0.0/20")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/16")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/17")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/18")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/20")));
     // On-path ancestors of 10.20.16.0/24 (lengths 21..24, plus the shared 16..20 prefixes):
-    assertTrue(toList.permits(Prefix.parse("10.20.16.0/24")));
-    assertTrue(toList.permits(Prefix.parse("10.20.16.0/21")));
+    assertThat(toList, permits(Prefix.parse("10.20.16.0/24")));
+    assertThat(toList, permits(Prefix.parse("10.20.16.0/21")));
     // Beyond the to-prefix length, off the base network, and longer than the deepest to-prefix:
-    assertFalse(toList.permits(Prefix.parse("10.20.0.0/21")));
-    assertFalse(toList.permits(Prefix.parse("10.20.128.0/17")));
-    assertFalse(toList.permits(Prefix.parse("10.20.16.0/25")));
+    assertThat(toList, rejects(Prefix.parse("10.20.0.0/21")));
+    assertThat(toList, rejects(Prefix.parse("10.20.128.0/17")));
+    assertThat(toList, rejects(Prefix.parse("10.20.16.0/25")));
 
     // `address-mask`: 172.16.0.0/16 mask 255.255.0.0 -> exact match on 172.16.0.0/16 only.
     RouteFilterList maskList = c.getRouteFilterLists().get("mask-list");
     assertNotNull(maskList);
-    assertTrue(maskList.permits(Prefix.parse("172.16.0.0/16")));
-    assertFalse(maskList.permits(Prefix.parse("172.16.5.0/24")));
-    assertFalse(maskList.permits(Prefix.parse("172.17.0.0/16")));
+    assertThat(maskList, permits(Prefix.parse("172.16.0.0/16")));
+    assertThat(maskList, rejects(Prefix.parse("172.16.5.0/24")));
+    assertThat(maskList, rejects(Prefix.parse("172.17.0.0/16")));
 
     // entry 10 matches 1.1.1.1/32 (system-pfx) and applies metric 50 + prepend 65001 x2 +
     // community.
