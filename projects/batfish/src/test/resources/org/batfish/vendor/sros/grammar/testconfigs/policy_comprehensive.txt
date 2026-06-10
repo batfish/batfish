@@ -1,0 +1,48 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    policy-options {
+        community "from-r2-100" {
+            member "65002:100"
+        }
+        community "tag-local" {
+            member "65001:777"
+        }
+        as-path "via-65003" {
+            expression "65003"
+        }
+        policy-statement "import-rich" {
+            entry 10 {
+                from {
+                    community {
+                        name "from-r2-100"
+                    }
+                }
+                action {
+                    action-type accept
+                    local-preference 250
+                    community {
+                        add ["tag-local"]
+                    }
+                }
+            }
+            entry 20 {
+                from {
+                    as-path {
+                        name "via-65003"
+                    }
+                }
+                action {
+                    action-type accept
+                    metric {
+                        add 33
+                    }
+                    origin igp
+                }
+            }
+            default-action {
+                action-type accept
+            }
+        }
+    }
+}

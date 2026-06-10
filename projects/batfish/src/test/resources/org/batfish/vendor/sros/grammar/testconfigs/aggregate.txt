@@ -1,0 +1,18 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    router "Base" {
+        aggregates {
+            aggregate 10.100.0.0/16 {
+                summary-only true
+            }
+        }
+        static-routes {
+            route 10.100.1.0/24 route-type unicast {
+                blackhole {
+                    admin-state enable
+                }
+            }
+        }
+    }
+}

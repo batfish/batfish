@@ -1,0 +1,50 @@
+# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1
+# Configuration format version 26.3 revision 0
+configure {
+    card 1 {
+        card-type iom-1
+        mda 1 {
+            mda-type me6-100gb-qsfp28
+        }
+    }
+    port 1/1/c1 {
+        admin-state enable
+        connector {
+            breakout c1-100g
+        }
+    }
+    port 1/1/c1/1 {
+        admin-state enable
+    }
+    port 1/1/c2 {
+        admin-state enable
+        connector {
+            breakout c1-100g
+        }
+    }
+    port 1/1/c2/1 {
+        admin-state enable
+    }
+    lag "lag-1" {
+        admin-state enable
+        lacp {
+            mode active
+            administrative-key 1
+        }
+        port 1/1/c1/1 {
+        }
+        port 1/1/c2/1 {
+        }
+    }
+    router "Base" {
+        interface "to-peer" {
+            port lag-1
+            ipv4 {
+                primary {
+                    address 10.0.0.0
+                    prefix-length 31
+                }
+            }
+        }
+    }
+}

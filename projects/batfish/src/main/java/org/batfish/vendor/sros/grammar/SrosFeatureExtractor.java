@@ -22,6 +22,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
+import org.batfish.vendor.sros.representation.Aggregate;
+import org.batfish.vendor.sros.representation.AsPathList;
 import org.batfish.vendor.sros.representation.BgpGroup;
 import org.batfish.vendor.sros.representation.BgpIpvpn;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
@@ -31,6 +33,7 @@ import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.FromProtocol;
 import org.batfish.vendor.sros.representation.IsisProcess;
 import org.batfish.vendor.sros.representation.IsisProcessInterface;
+import org.batfish.vendor.sros.representation.Lag;
 import org.batfish.vendor.sros.representation.Mda;
 import org.batfish.vendor.sros.representation.OspfArea;
 import org.batfish.vendor.sros.representation.OspfAreaInterface;
@@ -95,6 +98,17 @@ public final class SrosFeatureExtractor {
 
   /** policy action {@code metric set}: BGP MED, YANG {@code int64 range "0..4294967295"}. */
   private static final LongSpace POLICY_METRIC_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+
+  /** policy action {@code local-preference}: BGP local-pref, YANG {@code uint32}. */
+  private static final LongSpace LOCAL_PREFERENCE_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
+
+  /** policy action {@code origin} enumeration. */
+  private static final Map<String, org.batfish.datamodel.OriginType> ORIGIN_TYPE =
+      ImmutableMap.of(
+          "igp", org.batfish.datamodel.OriginType.IGP,
+          "egp", org.batfish.datamodel.OriginType.EGP,
+          "incomplete", org.batfish.datamodel.OriginType.INCOMPLETE);
 
   /** as-path-prepend {@code repeat}: YANG {@code uint32 range "1..6"}. */
   private static final IntegerSpace AS_PATH_PREPEND_REPEAT_SPACE =
@@ -163,6 +177,7 @@ public final class SrosFeatureExtractor {
     extractSystem(configure.getChild("system"));
     extractCards(configure.getChild("card"));
     extractPorts(configure.getChild("port"));
+    extractLags(configure.getChild("lag"));
     extractPolicyOptions(configure.getChild("policy-options"));
     extractServices(configure.getChild("service"));
     extractRouters(configure.getChild("router"));
@@ -232,6 +247,31 @@ public final class SrosFeatureExtractor {
     }
   }
 
+  /**
+   * Extract {@code lag "<name>"} link-aggregation groups: the name, admin-state, and member port
+   * paths (the {@code port} list keyed by port-id). A router interface may bind a LAG by name; the
+   * LAG interface's bandwidth is the sum of its members' (see {@link Lag}).
+   */
+  private void extractLags(@Nullable SrosStatementTree lagList) {
+    if (lagList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : lagList.getChildren().entrySet()) {
+      String name = unquote(e.getKey());
+      SrosStatementTree lagNode = e.getValue();
+      Lag lag = new Lag(name);
+      Boolean adminUp = toEnum(lagNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
+      lag.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+      SrosStatementTree portList = lagNode.getChild("port");
+      if (portList != null) {
+        for (String portKey : portList.getChildren().keySet()) {
+          lag.getMemberPorts().add(unquote(portKey));
+        }
+      }
+      _c.getLags().put(name, lag);
+    }
+  }
+
   // --- routers, interfaces, bgp -----------------------------------------------------------------
 
   private void extractRouters(@Nullable SrosStatementTree routerList) {
@@ -250,6 +290,7 @@ public final class SrosFeatureExtractor {
           .ifPresent(router::setAutonomousSystem);
       extractInterfaces(router, routerNode.getChild("interface"));
       extractStaticRoutes(router, routerNode.getChild("static-routes"));
+      extractAggregates(router, routerNode.getChild("aggregates"));
       extractOspf(router, routerNode.getChild("ospf"));
       extractIsis(router, routerNode.getChild("isis"));
       extractBgp(router, routerNode.getChild("bgp"));
@@ -452,6 +493,35 @@ public final class SrosFeatureExtractor {
             ROUTE_PREFERENCE_SPACE,
             "static-route preference")
         .ifPresent(route::setPreference);
+  }
+
+  /**
+   * Extract {@code router "Base" aggregates aggregate <prefix>} entries: the prefix, {@code
+   * summary-only}, and any {@code community} values. An aggregate installs as a discard summary
+   * route (preference 130) only when a contributing more-specific exists (see {@link Aggregate}).
+   */
+  private void extractAggregates(Router router, @Nullable SrosStatementTree aggregates) {
+    if (aggregates == null) {
+      return;
+    }
+    SrosStatementTree aggList = aggregates.getChild("aggregate");
+    if (aggList == null) {
+      return;
+    }
+    for (Map.Entry<String, SrosStatementTree> e : aggList.getChildren().entrySet()) {
+      SrosStatementTree aggNode = e.getValue();
+      Prefix prefix = toPrefix(e.getKey(), aggNode);
+      if (prefix == null) {
+        continue;
+      }
+      Aggregate agg = new Aggregate(prefix);
+      Boolean summaryOnly = toBoolean(aggNode.getChild("summary-only"), "aggregate summary-only");
+      agg.setSummaryOnly(firstNonNull(summaryOnly, Boolean.FALSE));
+      for (String c : policyNames(aggNode.getChild("community"))) {
+        agg.getCommunities().add(c);
+      }
+      router.getAggregates().add(agg);
+    }
   }
 
   /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
@@ -764,6 +834,18 @@ public final class SrosFeatureExtractor {
       }
     }
 
+    SrosStatementTree asPaths = po.getChild("as-path");
+    if (asPaths != null) {
+      for (Map.Entry<String, SrosStatementTree> e : asPaths.getChildren().entrySet()) {
+        String name = unquote(e.getKey());
+        SrosStatementTree apNode = e.getValue();
+        AsPathList ap = new AsPathList(name);
+        String expr = singleValue(apNode, "expression");
+        ap.setExpression(expr == null ? null : unquote(expr));
+        _c.getAsPathLists().put(name, ap);
+      }
+    }
+
     SrosStatementTree prefixLists = po.getChild("prefix-list");
     if (prefixLists != null) {
       for (Map.Entry<String, SrosStatementTree> e : prefixLists.getChildren().entrySet()) {
@@ -877,6 +959,18 @@ public final class SrosFeatureExtractor {
                 entry.getFromProtocols().add(fp);
               }
             }
+            // from community name <name> — the route's communities must match the named list.
+            SrosStatementTree fromCommNode = navigate(entryNode, "from", "community");
+            String fromComm = fromCommNode == null ? null : singleValue(fromCommNode, "name");
+            if (fromComm != null) {
+              entry.getFromCommunities().add(unquote(fromComm));
+            }
+            // from as-path name <name> — the route's AS path must match the named as-path list.
+            SrosStatementTree fromApNode = navigate(entryNode, "from", "as-path");
+            String fromAsPath = fromApNode == null ? null : singleValue(fromApNode, "name");
+            if (fromAsPath != null) {
+              entry.getFromAsPaths().add(unquote(fromAsPath));
+            }
             SrosStatementTree action = entryNode.getChild("action");
             entry.setAction(
                 toEnum(
@@ -912,6 +1006,26 @@ public final class SrosFeatureExtractor {
             POLICY_METRIC_SPACE,
             "policy action metric")
         .ifPresent(entry::setSetMetric);
+
+    // metric add <n>
+    SrosStatementTree metricAdd = navigate(action, "metric", "add");
+    toLongInSpace(
+            singleKey(metricAdd),
+            metricAdd == null ? null : firstChild(metricAdd),
+            POLICY_METRIC_SPACE,
+            "policy action metric add")
+        .ifPresent(entry::setMetricAdd);
+
+    // local-preference <n>
+    toLongInSpace(
+            singleValue(action, "local-preference"),
+            singleValueNode(action, "local-preference"),
+            LOCAL_PREFERENCE_SPACE,
+            "policy action local-preference")
+        .ifPresent(entry::setSetLocalPreference);
+
+    // origin <igp|egp|incomplete>
+    entry.setSetOrigin(toEnum(action.getChild("origin"), ORIGIN_TYPE, "policy action origin"));
 
     // as-path-prepend as-path <asn> [repeat <n>]
     SrosStatementTree prepend = action.getChild("as-path-prepend");

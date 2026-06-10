@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
@@ -315,6 +316,26 @@ public final class SrosConversionTest {
   }
 
   /**
+   * Multi-area OSPF (ABR): two areas convert to two VI {@link
+   * org.batfish.datamodel.ospf.OspfArea}s, with each interface attached to its configured area.
+   * Batfish's dataplane computes the inter-area routes from this (device-confirmed in the
+   * sros_ospf_multiarea lab).
+   */
+  @Test
+  public void testOspfMultiAreaConversion() throws IOException {
+    Configuration c = parseConfig("ospf_multiarea.txt");
+    org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("0");
+    assertNotNull(proc);
+    // Two areas: backbone 0.0.0.0 (= 0L) and 0.0.0.1 (= 1L).
+    assertThat(proc.getAreas(), hasKey(0L));
+    assertThat(proc.getAreas(), hasKey(1L));
+    assertThat(proc.getAreas().get(0L).getInterfaces(), containsInAnyOrder("system", "to-r2"));
+    assertThat(proc.getAreas().get(1L).getInterfaces(), containsInAnyOrder("to-r3"));
+    // The to-r3 interface is in area 1, making this router an ABR.
+    assertThat(c.getAllInterfaces().get("to-r3").getOspfSettings().getAreaName(), equalTo(1L));
+  }
+
+  /**
    * IS-IS conversion: a VI IsisProcess with the NET built from area-address + system-id + 00, a
    * level-2 process, and per-interface settings (point-to-point, passive mode). SR-OS L2 internal
    * admin distance is 18 (set via the NOKIA_SROS RoutingProtocol default).
@@ -571,6 +592,98 @@ public final class SrosConversionTest {
                         hasMetric(20L))))));
     // The route whose next-hop has no admin-state is not installed (SR-OS leaves it out of the
     // RIB), so 100.64.0.0/24 is absent (containsInAnyOrder is exhaustive).
+  }
+
+  /**
+   * An {@code aggregates aggregate} converts to a discard {@link
+   * org.batfish.datamodel.GeneratedRoute} at admin distance 130 (SR-OS aggregate preference). It is
+   * generated only when a contributing more-specific exists — Batfish's generated-route semantics.
+   */
+  @Test
+  public void testAggregateConversion() throws IOException {
+    Configuration c = parseConfig("aggregate.txt");
+    java.util.Set<org.batfish.datamodel.GeneratedRoute> generated =
+        c.getDefaultVrf().getGeneratedRoutes();
+    assertThat(generated, hasSize(1));
+    org.batfish.datamodel.GeneratedRoute agg = generated.iterator().next();
+    assertThat(agg.getNetwork(), equalTo(Prefix.parse("10.100.0.0/16")));
+    assertThat(agg.getAdministrativeCost(), equalTo(130L));
+    assertTrue(agg.getDiscard());
+  }
+
+  /**
+   * A {@code lag} bound to a router interface converts to an AGGREGATED VI interface with AGGREGATE
+   * dependencies on its member ports, so post-processing sums their bandwidth into the bundle. The
+   * L3 router-interface binds the LAG interface (the port/router-interface split).
+   */
+  @Test
+  public void testLagConversion() throws IOException {
+    Configuration c = parseConfig("lag.txt");
+    Interface lag = c.getAllInterfaces().get("lag-1");
+    assertNotNull(lag);
+    assertThat(lag.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
+    assertThat(
+        lag.getDependencies(),
+        containsInAnyOrder(
+            new Interface.Dependency("1/1/c1/1", Interface.DependencyType.AGGREGATE),
+            new Interface.Dependency("1/1/c2/1", Interface.DependencyType.AGGREGATE)));
+    // The member ports exist as PHYSICAL interfaces.
+    assertThat(
+        c.getAllInterfaces().get("1/1/c1/1").getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    // The L3 router-interface binds the LAG (BIND dependency on lag-1).
+    Interface toPeer = c.getAllInterfaces().get("to-peer");
+    assertThat(toPeer.getConcreteAddress().toString(), equalTo("10.0.0.0/31"));
+    assertThat(
+        toPeer.getDependencies(),
+        hasItem(new Interface.Dependency("lag-1", Interface.DependencyType.BIND)));
+  }
+
+  /**
+   * Comprehensive import policy conversion, evaluated behaviorally: entry 10 ({@code from
+   * community}) accepts a 65002:100-tagged route and sets local-preference 250 + adds community
+   * 65001:777; entry 20 ({@code from as-path}) accepts a route whose AS path contains 65003 and
+   * adds 33 to its metric with origin IGP.
+   */
+  @Test
+  public void testComprehensivePolicyConversion() throws IOException {
+    Configuration c = parseConfig("policy_comprehensive.txt");
+    RoutingPolicy policy = c.getRoutingPolicies().get("import-rich");
+    assertNotNull(policy);
+
+    // entry 10: a route with community 65002:100 -> accept, local-pref 250, +community 65001:777.
+    Bgpv4Route inComm =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(org.batfish.datamodel.OriginType.IGP)
+            .setProtocol(org.batfish.datamodel.RoutingProtocol.BGP)
+            .setCommunities(
+                org.batfish.datamodel.routing_policy.communities.CommunitySet.of(
+                    org.batfish.datamodel.bgp.community.StandardCommunity.parse("65002:100")))
+            .build();
+    Bgpv4Route.Builder outComm = inComm.toBuilder();
+    assertTrue(policy.process(inComm, outComm, Environment.Direction.IN));
+    Bgpv4Route rComm = outComm.build();
+    assertThat(rComm.getLocalPreference(), equalTo(250L));
+    assertThat(
+        rComm.getCommunities().getCommunities(),
+        hasItem(org.batfish.datamodel.bgp.community.StandardCommunity.parse("65001:777")));
+
+    // entry 20: a route whose AS path contains 65003 -> accept, metric += 33, origin IGP.
+    Bgpv4Route inAsp =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("100.64.0.1/32"))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(org.batfish.datamodel.OriginType.EGP)
+            .setProtocol(org.batfish.datamodel.RoutingProtocol.BGP)
+            .setAsPath(org.batfish.datamodel.AsPath.ofSingletonAsSets(65003L))
+            .setMetric(10L)
+            .build();
+    Bgpv4Route.Builder outAsp = inAsp.toBuilder();
+    assertTrue(policy.process(inAsp, outAsp, Environment.Direction.IN));
+    Bgpv4Route rAsp = outAsp.build();
+    assertThat(rAsp.getMetric(), equalTo(43L));
+    assertThat(rAsp.getOriginType(), equalTo(org.batfish.datamodel.OriginType.IGP));
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {
