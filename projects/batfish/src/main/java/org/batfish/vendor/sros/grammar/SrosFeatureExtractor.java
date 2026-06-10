@@ -1,5 +1,6 @@
 package org.batfish.vendor.sros.grammar;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
@@ -22,11 +23,14 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.sros.representation.BgpGroup;
+import org.batfish.vendor.sros.representation.BgpIpvpn;
 import org.batfish.vendor.sros.representation.BgpNeighbor;
 import org.batfish.vendor.sros.representation.BgpProcess;
 import org.batfish.vendor.sros.representation.Card;
 import org.batfish.vendor.sros.representation.Community;
 import org.batfish.vendor.sros.representation.FromProtocol;
+import org.batfish.vendor.sros.representation.IsisProcess;
+import org.batfish.vendor.sros.representation.IsisProcessInterface;
 import org.batfish.vendor.sros.representation.Mda;
 import org.batfish.vendor.sros.representation.OspfArea;
 import org.batfish.vendor.sros.representation.OspfAreaInterface;
@@ -247,6 +251,7 @@ public final class SrosFeatureExtractor {
       extractInterfaces(router, routerNode.getChild("interface"));
       extractStaticRoutes(router, routerNode.getChild("static-routes"));
       extractOspf(router, routerNode.getChild("ospf"));
+      extractIsis(router, routerNode.getChild("isis"));
       extractBgp(router, routerNode.getChild("bgp"));
       _c.getRouters().put(name, router);
     }
@@ -281,9 +286,49 @@ public final class SrosFeatureExtractor {
       extractInterfaces(router, vprnNode.getChild("interface"));
       extractStaticRoutes(router, vprnNode.getChild("static-routes"));
       extractOspf(router, vprnNode.getChild("ospf"));
+      extractIsis(router, vprnNode.getChild("isis"));
       extractBgp(router, vprnNode.getChild("bgp"));
+      extractBgpIpvpn(router, vprnNode.getChild("bgp-ipvpn"));
       _c.getRouters().put(name, router);
     }
+  }
+
+  /**
+   * Extract {@code service vprn "<name>" bgp-ipvpn mpls}: the {@code route-distinguisher} and the
+   * {@code vrf-target} route-targets (the single {@code community} form populates both import and
+   * export; the {@code import-community}/{@code export-community} form sets them separately). These
+   * drive MPLS L3VPN import/export on the device; only the route-distinguisher converts to the VI
+   * model (inter-PE VPN-IPv4 import is unmodeled — see {@link
+   * org.batfish.vendor.sros.representation.BgpIpvpn}).
+   */
+  private void extractBgpIpvpn(Router router, @Nullable SrosStatementTree bgpIpvpn) {
+    if (bgpIpvpn == null) {
+      return;
+    }
+    SrosStatementTree mpls = bgpIpvpn.getChild("mpls");
+    if (mpls == null) {
+      return;
+    }
+    BgpIpvpn ipvpn = new BgpIpvpn();
+    String rd = singleValue(mpls, "route-distinguisher");
+    ipvpn.setRouteDistinguisher(rd == null ? null : unquote(rd));
+    SrosStatementTree vrfTarget = mpls.getChild("vrf-target");
+    if (vrfTarget != null) {
+      String both = singleValue(vrfTarget, "community");
+      if (both != null) {
+        ipvpn.getImportRouteTargets().add(unquote(both));
+        ipvpn.getExportRouteTargets().add(unquote(both));
+      }
+      String imp = singleValue(vrfTarget, "import-community");
+      if (imp != null) {
+        ipvpn.getImportRouteTargets().add(unquote(imp));
+      }
+      String exp = singleValue(vrfTarget, "export-community");
+      if (exp != null) {
+        ipvpn.getExportRouteTargets().add(unquote(exp));
+      }
+    }
+    router.setBgpIpvpn(ipvpn);
   }
 
   private void extractInterfaces(Router router, @Nullable SrosStatementTree ifaceList) {
@@ -313,8 +358,9 @@ public final class SrosFeatureExtractor {
 
   /**
    * Extract {@code static-routes route <prefix> route-type <unicast|multicast>} entries. Each route
-   * is reached via a {@code next-hop <ip>} or a {@code blackhole}; both sub-contexts carry an
-   * {@code admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
+   * is reached via one or more {@code next-hop <ip>} entries (multiple = ECMP, one VI {@link
+   * StaticRoute} per next-hop) or a {@code blackhole}; each sub-context carries an {@code
+   * admin-state} (a route is only RIB-installed when it is {@code enable} — see {@link
    * StaticRoute}), and optional {@code metric}/{@code preference}. Only the unicast IPv4 case is
    * modeled here; a non-IPv4 prefix is warned and skipped by {@link #toPrefix}.
    */
@@ -339,30 +385,23 @@ public final class SrosFeatureExtractor {
       if (typeBody == null) {
         continue;
       }
-      StaticRoute route = new StaticRoute(prefix);
       SrosStatementTree nextHop = typeBody.getChild("next-hop");
       SrosStatementTree blackhole = typeBody.getChild("blackhole");
-      SrosStatementTree adminStateParent;
       if (nextHop != null) {
-        // next-hop is a list keyed by the next-hop IP. The model holds a single next-hop; if the
-        // route configures more than one (ECMP), warn that only the first is modeled rather than
-        // silently dropping the rest. TODO: model ECMP static routes —
-        // https://github.com/batfish/batfish/issues/9989
-        if (nextHop.getChildren().size() > 1) {
-          warnf(
-              typeBody,
-              "static route %s has %d next-hops (ECMP); only the first is modeled",
-              prefix,
-              nextHop.getChildren().size());
+        // next-hop is a YANG list keyed by the next-hop IP; more than one entry is an ECMP route.
+        // Each entry carries its own admin-state/metric/preference, so emit one StaticRoute per
+        // next-hop — VI ECMP is the set of equal-preference legs to the same prefix, and Batfish's
+        // own best-preference selection installs the equal-best legs and drops worse-preference
+        // ones (confirmed on SR-SIM 26.3.R1: two equal-preference next-hops both install; an
+        // unequal pair installs only the lower-preference leg). See
+        // https://github.com/batfish/batfish/issues/9989.
+        for (Map.Entry<String, SrosStatementTree> nhe : nextHop.getChildren().entrySet()) {
+          router
+              .getStaticRoutes()
+              .add(toStaticRoute(prefix, nhe.getValue(), unquote(nhe.getKey())));
         }
-        SrosStatementTree nhEntry = firstChild(nextHop);
-        if (nhEntry != null) {
-          route.setNextHopIp(toIp(nhKey(nextHop), nhEntry, "static-route next-hop"));
-        }
-        adminStateParent = nhEntry;
       } else if (blackhole != null) {
-        route.setBlackhole(true);
-        adminStateParent = blackhole;
+        router.getStaticRoutes().add(toStaticRoute(prefix, blackhole, null));
       } else {
         // Neither next-hop nor blackhole: an unmodeled route shape (e.g. indirect, cpe-check).
         // Warn rather than silently skip.
@@ -370,27 +409,49 @@ public final class SrosFeatureExtractor {
             typeBody,
             "static route %s has no modeled next-hop or blackhole; not converted",
             prefix);
-        continue;
       }
-      if (adminStateParent != null) {
-        Boolean adminUp =
-            toEnum(adminStateParent.getChild("admin-state"), ADMIN_STATE, "admin-state");
-        route.setAdminStateEnable(Boolean.TRUE.equals(adminUp));
-        toIntegerInSpace(
-                singleValue(adminStateParent, "metric"),
-                singleValueNode(adminStateParent, "metric"),
-                STATIC_METRIC_SPACE,
-                "static-route metric")
-            .ifPresent(route::setMetric);
-        toIntegerInSpace(
-                singleValue(adminStateParent, "preference"),
-                singleValueNode(adminStateParent, "preference"),
-                ROUTE_PREFERENCE_SPACE,
-                "static-route preference")
-            .ifPresent(route::setPreference);
-      }
-      router.getStaticRoutes().add(route);
     }
+  }
+
+  /**
+   * Build a {@link StaticRoute} for one leg: a {@code next-hop} entry (whose list key {@code
+   * nextHopKey} is the next-hop IP) or, when {@code nextHopKey} is {@code null}, a {@code
+   * blackhole}. Both shapes carry the same {@code admin-state}/{@code metric}/{@code preference}
+   * leaves on their context {@code leg}.
+   */
+  private @Nonnull StaticRoute toStaticRoute(
+      Prefix prefix, SrosStatementTree leg, @Nullable String nextHopKey) {
+    StaticRoute route = new StaticRoute(prefix);
+    if (nextHopKey == null) {
+      route.setBlackhole(true);
+    } else {
+      route.setNextHopIp(toIp(nextHopKey, leg, "static-route next-hop"));
+    }
+    Boolean adminUp = toEnum(leg.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    // admin-state defaults to disable for a static route: it is installed only when explicitly
+    // enable.
+    route.setAdminStateEnable(firstNonNull(adminUp, Boolean.FALSE));
+    applyMetricPreference(route, leg);
+    return route;
+  }
+
+  /**
+   * Apply the {@code metric}/{@code preference} leaves from a static-route next-hop or blackhole
+   * context onto {@code route}, defaulting per YANG when absent.
+   */
+  private void applyMetricPreference(StaticRoute route, SrosStatementTree ctx) {
+    toIntegerInSpace(
+            singleValue(ctx, "metric"),
+            singleValueNode(ctx, "metric"),
+            STATIC_METRIC_SPACE,
+            "static-route metric")
+        .ifPresent(route::setMetric);
+    toIntegerInSpace(
+            singleValue(ctx, "preference"),
+            singleValueNode(ctx, "preference"),
+            ROUTE_PREFERENCE_SPACE,
+            "static-route preference")
+        .ifPresent(route::setPreference);
   }
 
   /** The {@code type} leaf's value word (e.g. {@code through}/{@code range}), or {@code null}. */
@@ -456,6 +517,19 @@ public final class SrosFeatureExtractor {
           "broadcast", OspfAreaInterface.InterfaceType.BROADCAST,
           "point-to-point", OspfAreaInterface.InterfaceType.POINT_TO_POINT);
 
+  /** IS-IS interface {@code interface-type} enumeration (nokia-types-isis:interface-type). */
+  private static final Map<String, IsisProcessInterface.InterfaceType> ISIS_INTERFACE_TYPE =
+      ImmutableMap.of(
+          "broadcast", IsisProcessInterface.InterfaceType.BROADCAST,
+          "point-to-point", IsisProcessInterface.InterfaceType.POINT_TO_POINT);
+
+  /** IS-IS {@code level-capability} enumeration (nokia-types-isis:level). */
+  private static final Map<String, IsisProcess.LevelCapability> ISIS_LEVEL_CAPABILITY =
+      ImmutableMap.of(
+          "1", IsisProcess.LevelCapability.LEVEL_1,
+          "2", IsisProcess.LevelCapability.LEVEL_2,
+          "1/2", IsisProcess.LevelCapability.LEVEL_1_2);
+
   /**
    * Extract {@code router "<name>" ospf <instance>}: router-id, admin-state, and the per-area
    * interfaces (with interface-type and metric/cost). Only the first/0 OSPF instance is modeled.
@@ -466,13 +540,11 @@ public final class SrosFeatureExtractor {
     }
     // ospf is a list keyed by instance; model the first (typically instance 0).
     Map.Entry<String, SrosStatementTree> e = ospfList.getChildren().entrySet().iterator().next();
-    int instance;
-    try {
-      instance = Integer.parseInt(e.getKey());
-    } catch (NumberFormatException ex) {
-      instance = 0;
-    }
     SrosStatementTree ospfNode = e.getValue();
+    Integer instance = toInstanceId(e.getKey(), ospfNode, "ospf");
+    if (instance == null) {
+      return;
+    }
     OspfProcess proc = new OspfProcess(instance);
     proc.setRouterId(
         toIp(
@@ -480,7 +552,8 @@ public final class SrosFeatureExtractor {
             singleValueNode(ospfNode, "router-id"),
             "ospf router-id"));
     Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
-    proc.setAdminStateEnable(!Boolean.FALSE.equals(adminUp));
+    // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
+    proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
 
     SrosStatementTree areaList = ospfNode.getChild("area");
     if (areaList != null) {
@@ -512,19 +585,68 @@ public final class SrosFeatureExtractor {
     router.setOspfProcess(proc);
   }
 
-  /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
-  private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
-    return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
+  /**
+   * Extract {@code router "<name>" isis <instance>}: admin-state, system-id, area-address(es),
+   * level-capability, and the per-interface {@code interface-type}/{@code passive}. Only the
+   * first/0 IS-IS instance is modeled.
+   */
+  private void extractIsis(Router router, @Nullable SrosStatementTree isisList) {
+    if (isisList == null || isisList.getChildren().isEmpty()) {
+      return;
+    }
+    // isis is a list keyed by instance; model the first (typically instance 0).
+    Map.Entry<String, SrosStatementTree> e = isisList.getChildren().entrySet().iterator().next();
+    SrosStatementTree isisNode = e.getValue();
+    Integer instance = toInstanceId(e.getKey(), isisNode, "isis");
+    if (instance == null) {
+      return;
+    }
+    IsisProcess proc = new IsisProcess(instance);
+    Boolean adminUp = toEnum(isisNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
+    // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
+    proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
+    proc.setSystemId(singleValue(isisNode, "system-id"));
+    proc.getAreaAddresses().addAll(policyNames(isisNode.getChild("area-address")));
+    IsisProcess.LevelCapability level =
+        toEnum(
+            isisNode.getChild("level-capability"), ISIS_LEVEL_CAPABILITY, "isis level-capability");
+    if (level != null) {
+      proc.setLevelCapability(level);
+    }
+
+    SrosStatementTree ifaceList = isisNode.getChild("interface");
+    if (ifaceList != null) {
+      for (Map.Entry<String, SrosStatementTree> ie : ifaceList.getChildren().entrySet()) {
+        String ifName = unquote(ie.getKey());
+        SrosStatementTree ifNode = ie.getValue();
+        IsisProcessInterface isisIf = new IsisProcessInterface(ifName);
+        isisIf.setInterfaceType(
+            toEnum(ifNode.getChild("interface-type"), ISIS_INTERFACE_TYPE, "isis interface-type"));
+        Boolean passive = toBoolean(ifNode.getChild("passive"), "isis interface passive");
+        isisIf.setPassive(firstNonNull(passive, Boolean.FALSE));
+        proc.getInterfaces().put(ifName, isisIf);
+      }
+    }
+    router.setIsisProcess(proc);
   }
 
   /**
-   * The first child key of {@code node}, unquoted (e.g. the next-hop IP under the {@code next-hop}
-   * list — the device renders it quoted, {@code next-hop "10.0.0.1"}).
+   * Parse an IGP process instance-id (the list key, e.g. the {@code 0} in {@code ospf 0}). The YANG
+   * key is an integer; a non-numeric key is malformed input, so warn and return {@code null} (skip
+   * the process) rather than silently defaulting to instance 0.
    */
-  private static @Nullable String nhKey(SrosStatementTree node) {
-    return node.getChildren().isEmpty()
-        ? null
-        : unquote(node.getChildren().keySet().iterator().next());
+  private @Nullable Integer toInstanceId(String key, SrosStatementTree ctx, String protocol) {
+    try {
+      return Integer.parseInt(key);
+    } catch (NumberFormatException ex) {
+      warnf(ctx, "%s instance '%s' is not an integer; skipping", protocol, key);
+      return null;
+    }
+  }
+
+  /** The first (insertion-order) child node of {@code node}, or {@code null} if it has none. */
+  private static @Nullable SrosStatementTree firstChild(SrosStatementTree node) {
+    return node.getChildren().isEmpty() ? null : node.getChildren().values().iterator().next();
   }
 
   private void extractBgp(Router router, @Nullable SrosStatementTree bgpNode) {
@@ -685,6 +807,28 @@ public final class SrosFeatureExtractor {
                       IPV4_PREFIX_LENGTH_SPACE,
                       "prefix-list end-length")
                   .ifPresent(ple::setEndLength);
+              // `to` carries a to-prefix list (each nested in the base prefix); `address-mask`
+              // carries a mask-pattern list. Both key their list entries by the value word.
+              SrosStatementTree toPrefixes = typeBody.getChild("to-prefix");
+              if (toPrefixes != null) {
+                for (Map.Entry<String, SrosStatementTree> tpe :
+                    toPrefixes.getChildren().entrySet()) {
+                  Prefix tp = toPrefix(tpe.getKey(), tpe.getValue());
+                  if (tp != null) {
+                    ple.getToPrefixes().add(tp);
+                  }
+                }
+              }
+              SrosStatementTree maskPatterns = typeBody.getChild("mask-pattern");
+              if (maskPatterns != null) {
+                for (Map.Entry<String, SrosStatementTree> mpe :
+                    maskPatterns.getChildren().entrySet()) {
+                  Ip mask = toIp(unquote(mpe.getKey()), mpe.getValue(), "prefix-list mask-pattern");
+                  if (mask != null) {
+                    ple.getMaskPatterns().add(mask);
+                  }
+                }
+              }
             }
             // Warn against the type value node (e.g. the `through`/`range` word), which carries a
             // source context even when the entry's bound block is empty.

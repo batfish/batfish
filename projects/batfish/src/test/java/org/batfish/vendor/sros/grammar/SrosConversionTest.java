@@ -11,6 +11,8 @@ import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMa
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -106,8 +108,8 @@ public final class SrosConversionTest {
     assertThat(c.getRouteFilterLists(), hasKey("system-pfx"));
     RouteFilterList rfl = c.getRouteFilterLists().get("system-pfx");
     // exact type: matches 1.1.1.1/32 exactly, not a more-specific (no more-specific exists at /32).
-    assertTrue(rfl.permits(Prefix.parse("1.1.1.1/32")));
-    assertFalse(rfl.permits(Prefix.parse("2.2.2.2/32")));
+    assertThat(rfl, permits(Prefix.parse("1.1.1.1/32")));
+    assertThat(rfl, rejects(Prefix.parse("2.2.2.2/32")));
   }
 
   /**
@@ -223,16 +225,41 @@ public final class SrosConversionTest {
     // shorter (e.g. /15) does not. (Previously over-approximated to [16,32-or-longer] with a warn.)
     RouteFilterList loRange = c.getRouteFilterLists().get("lo-range");
     assertNotNull(loRange);
-    assertTrue(loRange.permits(Prefix.parse("192.168.1.0/24")));
-    assertTrue(loRange.permits(Prefix.parse("192.168.1.1/32")));
-    assertFalse(loRange.permits(Prefix.parse("192.0.0.0/15")));
+    assertThat(loRange, permits(Prefix.parse("192.168.1.0/24")));
+    assertThat(loRange, permits(Prefix.parse("192.168.1.1/32")));
+    assertThat(loRange, rejects(Prefix.parse("192.0.0.0/15")));
 
     // range start-length 24 end-length 32 on 10.0.0.0/8 -> window [24,32].
     RouteFilterList hostRange = c.getRouteFilterLists().get("host-range");
     assertNotNull(hostRange);
-    assertTrue(hostRange.permits(Prefix.parse("10.1.2.0/24")));
-    assertTrue(hostRange.permits(Prefix.parse("10.1.2.3/32")));
-    assertFalse(hostRange.permits(Prefix.parse("10.1.0.0/16")));
+    assertThat(hostRange, permits(Prefix.parse("10.1.2.0/24")));
+    assertThat(hostRange, permits(Prefix.parse("10.1.2.3/32")));
+    assertThat(hostRange, rejects(Prefix.parse("10.1.0.0/16")));
+
+    // `to`: base 10.20.0.0/16 with to-prefixes /20 and 10.20.16.0/24. SR-SIM 26.3.R1 confirmed it
+    // matches the ANCESTORS of each to-prefix at lengths [base-length .. to-length], and nothing
+    // off that path.
+    RouteFilterList toList = c.getRouteFilterLists().get("to-list");
+    assertNotNull(toList);
+    // On-path ancestors of 10.20.0.0/20 (lengths 16..20):
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/16")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/17")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/18")));
+    assertThat(toList, permits(Prefix.parse("10.20.0.0/20")));
+    // On-path ancestors of 10.20.16.0/24 (lengths 21..24, plus the shared 16..20 prefixes):
+    assertThat(toList, permits(Prefix.parse("10.20.16.0/24")));
+    assertThat(toList, permits(Prefix.parse("10.20.16.0/21")));
+    // Beyond the to-prefix length, off the base network, and longer than the deepest to-prefix:
+    assertThat(toList, rejects(Prefix.parse("10.20.0.0/21")));
+    assertThat(toList, rejects(Prefix.parse("10.20.128.0/17")));
+    assertThat(toList, rejects(Prefix.parse("10.20.16.0/25")));
+
+    // `address-mask`: 172.16.0.0/16 mask 255.255.0.0 -> exact match on 172.16.0.0/16 only.
+    RouteFilterList maskList = c.getRouteFilterLists().get("mask-list");
+    assertNotNull(maskList);
+    assertThat(maskList, permits(Prefix.parse("172.16.0.0/16")));
+    assertThat(maskList, rejects(Prefix.parse("172.16.5.0/24")));
+    assertThat(maskList, rejects(Prefix.parse("172.17.0.0/16")));
 
     // entry 10 matches 1.1.1.1/32 (system-pfx) and applies metric 50 + prepend 65001 x2 +
     // community.
@@ -287,6 +314,38 @@ public final class SrosConversionTest {
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
   }
 
+  /**
+   * IS-IS conversion: a VI IsisProcess with the NET built from area-address + system-id + 00, a
+   * level-2 process, and per-interface settings (point-to-point, passive mode). SR-OS L2 internal
+   * admin distance is 18 (set via the NOKIA_SROS RoutingProtocol default).
+   */
+  @Test
+  public void testIsisConversion() throws IOException {
+    Configuration c = parseConfig("isis.txt");
+    org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
+    assertNotNull(proc);
+    // NET = 49.0001 (area) + 0100.1000.0001 (system-id) + 00 (n-sel).
+    assertThat(
+        proc.getNetAddress(),
+        equalTo(new org.batfish.datamodel.IsoAddress("49.0001.0100.1000.0001.00")));
+    // level-capability 2 -> only the level-2 process is set.
+    assertNotNull(proc.getLevel2());
+    assertThat(proc.getLevel1(), nullValue());
+
+    // The to-r3 interface is IS-IS-active and point-to-point; system is passive.
+    Interface toR3 = c.getAllInterfaces().get("to-r3");
+    assertNotNull(toR3.getIsis());
+    assertThat(toR3.getIsis().getPointToPoint(), equalTo(true));
+    assertThat(
+        toR3.getIsis().getLevel2().getMode(),
+        equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE));
+    Interface system = c.getAllInterfaces().get("system");
+    assertNotNull(system.getIsis());
+    assertThat(
+        system.getIsis().getLevel2().getMode(),
+        equalTo(org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE));
+  }
+
   /** VPRN conversion: a {@code service vprn "red"} becomes a separate VRF holding its interface. */
   @Test
   public void testVprnConversion() throws IOException {
@@ -300,6 +359,10 @@ public final class SrosConversionTest {
     // No leak: the Base "system" interface is in the default VRF, not "red".
     assertThat(
         c.getAllInterfaces().get("system").getVrfName(), equalTo(Configuration.DEFAULT_VRF_NAME));
+    // The bgp-ipvpn route-distinguisher converts onto the VRF (the VI model stores an RD per VRF).
+    assertThat(
+        c.getVrfs().get("red").getRouteDistinguisher(),
+        equalTo(org.batfish.datamodel.bgp.RouteDistinguisher.parse("65000:1")));
   }
 
   /** Route-reflector conversion: an RR-client neighbor gets cluster-id + route-reflector-client. */
@@ -495,12 +558,19 @@ public final class SrosConversionTest {
                     allOf(
                         hasPrefix(Prefix.parse("203.0.113.0/24")),
                         hasAdministrativeCost(100),
-                        hasMetric(50L))))));
+                        hasMetric(50L)),
+                    // ECMP route: one VI static route per next-hop, each with its own metric
+                    // (batfish/batfish#9989). Equal preference (default 5) -> both install as ECMP.
+                    allOf(
+                        hasPrefix(Prefix.parse("192.0.2.128/25")),
+                        hasNextHop(NextHopIp.of(Ip.parse("10.0.0.1"))),
+                        hasMetric(10L)),
+                    allOf(
+                        hasPrefix(Prefix.parse("192.0.2.128/25")),
+                        hasNextHop(NextHopIp.of(Ip.parse("10.0.1.1"))),
+                        hasMetric(20L))))));
     // The route whose next-hop has no admin-state is not installed (SR-OS leaves it out of the
-    // RIB):
-    // exactly the three routes above are present (containsInAnyOrder is exhaustive), so
-    // 100.64.0.0/24
-    // is absent.
+    // RIB), so 100.64.0.0/24 is absent (containsInAnyOrder is exhaustive).
   }
 
   private @Nonnull Configuration parseConfig(String filename) throws IOException {

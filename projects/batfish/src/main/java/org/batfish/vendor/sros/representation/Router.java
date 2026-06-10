@@ -62,10 +62,33 @@ public final class Router implements Serializable {
     _ospfProcess = ospfProcess;
   }
 
+  /** The IS-IS process for this router, or {@code null} if {@code isis} is not configured. */
+  public @Nullable IsisProcess getIsisProcess() {
+    return _isisProcess;
+  }
+
+  public void setIsisProcess(@Nullable IsisProcess isisProcess) {
+    _isisProcess = isisProcess;
+  }
+
+  /**
+   * The BGP-IPVPN (MPLS L3VPN) settings — route-distinguisher and route-targets — for a VPRN, or
+   * {@code null} if not configured. Only the {@code Base} router never has these.
+   */
+  public @Nullable BgpIpvpn getBgpIpvpn() {
+    return _bgpIpvpn;
+  }
+
+  public void setBgpIpvpn(@Nullable BgpIpvpn bgpIpvpn) {
+    _bgpIpvpn = bgpIpvpn;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Long _autonomousSystem;
   private final @Nonnull Map<String, RouterInterface> _interfaces;
   private final @Nonnull List<StaticRoute> _staticRoutes;
   private @Nullable BgpProcess _bgpProcess;
   private @Nullable OspfProcess _ospfProcess;
+  private @Nullable IsisProcess _isisProcess;
+  private @Nullable BgpIpvpn _bgpIpvpn;
 }

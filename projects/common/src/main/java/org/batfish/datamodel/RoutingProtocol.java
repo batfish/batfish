@@ -308,6 +308,7 @@ public enum RoutingProtocol {
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
+          case NOKIA_SROS:
             return 160;
           case FLAT_VYOS:
           case VYOS:
@@ -349,6 +350,7 @@ public enum RoutingProtocol {
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
+          case NOKIA_SROS:
             return 165;
           case FLAT_VYOS:
           case VYOS:
@@ -390,6 +392,7 @@ public enum RoutingProtocol {
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
+          case NOKIA_SROS:
             return 15;
           case FLAT_VYOS:
           case VYOS:
@@ -431,6 +434,7 @@ public enum RoutingProtocol {
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
+          case NOKIA_SROS:
             return 18;
           case FLAT_VYOS:
           case VYOS:

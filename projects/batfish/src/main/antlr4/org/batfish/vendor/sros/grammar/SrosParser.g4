@@ -33,10 +33,14 @@ statement
 ;
 
 // A brace-delimited block: `<words> { <newline> <statements> }`. The opening brace sits on
-// the same line as the leading words; the closing brace is on its own line.
+// the same line as the leading words; the closing brace is on its own line. A list entry with
+// no body is rendered by the device on a single line as `<words> { }` (open brace, optional
+// whitespace, close brace, no intervening newline) — e.g. `to-prefix 10.0.0.0/8 { }` — so an
+// empty same-line block is also accepted.
 block
 :
   OPEN_BRACE NEWLINE+ statement* CLOSE_BRACE statement_end
+  | OPEN_BRACE CLOSE_BRACE statement_end
 ;
 
 // A leaf-list value, e.g. `prefix-list ["a" "b"]` or `member ["administrative"]`.

@@ -23,6 +23,7 @@ import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -92,11 +93,15 @@ public final class SrosConversions {
 
   /**
    * Converts an SR-OS {@code prefix-list} to a {@link RouteFilterList} (all lines permit; a
-   * route-policy decides accept/reject). The match {@code type} maps to a prefix-length {@link
-   * SubRange}: {@code exact} matches only the configured length; {@code longer} matches strictly
-   * longer. {@code through}/{@code range}/{@code to}/{@code address-mask} carry extra bounds the P4
-   * model does not yet capture, so they are over-approximated as "this length or longer" and a
-   * warning is emitted (the resulting filter is broader than the device's — see the warning).
+   * route-policy decides accept/reject). The match {@code type} determines the lines: {@code exact}
+   * matches only the configured length; {@code longer} matches strictly longer; {@code through}
+   * matches this length through {@code through-length}; {@code range} matches {@code
+   * start-length}..{@code end-length}. {@code to} matches, for each {@code to-prefix} (nested in
+   * the base), every ancestor prefix on the path from the base length down to the to-prefix length
+   * — emitted as one exact line per length (a line over the base prefix with a length range would
+   * wrongly match siblings off that path; confirmed on SR-SIM 26.3.R1). {@code address-mask} with a
+   * contiguous mask equal to the base length is an exact match; a non-contiguous mask cannot be a
+   * length {@link SubRange} and is over-approximated with a warning.
    */
   @VisibleForTesting
   static @Nonnull RouteFilterList toRouteFilterList(PrefixList pl, Warnings w) {
@@ -104,36 +109,83 @@ public final class SrosConversions {
     for (PrefixListEntry entry : pl.getEntries()) {
       Prefix prefix = entry.getPrefix();
       int len = prefix.getPrefixLength();
-      SubRange lengthRange =
-          switch (entry.getType()) {
-            case EXACT -> SubRange.singleton(len);
-            case LONGER -> new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH);
-            case THROUGH -> {
-              // through-length: match this prefix's length through through-length (inclusive). If
-              // the bound is missing (older capture), fall back to "this length or longer" + warn.
-              Integer through = entry.getThroughLength();
-              if (through == null) {
-                yield overApproximate(pl, entry, w);
-              }
-              yield new SubRange(len, through);
+      switch (entry.getType()) {
+        case EXACT ->
+            lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, SubRange.singleton(len)));
+        case LONGER ->
+            lines.add(
+                new RouteFilterLine(
+                    LineAction.PERMIT, prefix, new SubRange(len + 1, Prefix.MAX_PREFIX_LENGTH)));
+        case THROUGH -> {
+          // through-length: match this prefix's length through through-length (inclusive). If the
+          // bound is missing (older capture), fall back to "this length or longer" + warn.
+          Integer through = entry.getThroughLength();
+          lines.add(
+              new RouteFilterLine(
+                  LineAction.PERMIT,
+                  prefix,
+                  through == null ? overApproximate(pl, entry, w) : new SubRange(len, through)));
+        }
+        case RANGE -> {
+          // range: match start-length through end-length (inclusive).
+          Integer start = entry.getStartLength();
+          Integer end = entry.getEndLength();
+          lines.add(
+              new RouteFilterLine(
+                  LineAction.PERMIT,
+                  prefix,
+                  start == null || end == null
+                      ? overApproximate(pl, entry, w)
+                      : new SubRange(start, end)));
+        }
+        case TO -> {
+          // `to`: match the ancestors of each to-prefix at lengths [base-length .. to-length].
+          // Each is a distinct prefix (the to-prefix truncated to that length), so emit one exact
+          // line per length rather than a single base-prefix line (which would match off-path
+          // siblings). An empty to-prefix list (older capture) falls back to over-approximation.
+          if (entry.getToPrefixes().isEmpty()) {
+            lines.add(
+                new RouteFilterLine(LineAction.PERMIT, prefix, overApproximate(pl, entry, w)));
+            break;
+          }
+          for (Prefix toPrefix : entry.getToPrefixes()) {
+            for (int l = len; l <= toPrefix.getPrefixLength(); l++) {
+              Prefix ancestor = Prefix.create(toPrefix.getStartIp(), l);
+              lines.add(new RouteFilterLine(LineAction.PERMIT, ancestor, SubRange.singleton(l)));
             }
-            case RANGE -> {
-              // range: match start-length through end-length (inclusive).
-              Integer start = entry.getStartLength();
-              Integer end = entry.getEndLength();
-              if (start == null || end == null) {
-                yield overApproximate(pl, entry, w);
-              }
-              yield new SubRange(start, end);
+          }
+        }
+        case ADDRESS_MASK -> {
+          // address-mask: a route matches if (address & mask) equals the entry's masked prefix and
+          // the mask length matches. A contiguous mask is a prefix length; model it as an exact
+          // match at that length on the masked prefix. A non-contiguous mask is not a length range
+          // -> over-approximate + warn.
+          List<Ip> masks = entry.getMaskPatterns();
+          if (masks.isEmpty()) {
+            lines.add(
+                new RouteFilterLine(LineAction.PERMIT, prefix, overApproximate(pl, entry, w)));
+            break;
+          }
+          for (Ip mask : masks) {
+            int maskLen = mask.numSubnetBits();
+            if (!mask.equals(Ip.numSubnetBitsToSubnetMask(maskLen))) {
+              // Non-contiguous mask: cannot express as a prefix-length range.
+              w.redFlagf(
+                  "prefix-list '%s' entry %s address-mask '%s' is non-contiguous; not fully"
+                      + " modeled, matching '%s' or longer (over-approximation)",
+                  pl.getName(), prefix, mask, prefix);
+              lines.add(
+                  new RouteFilterLine(
+                      LineAction.PERMIT,
+                      prefix,
+                      new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH)));
+              continue;
             }
-            case TO, ADDRESS_MASK -> {
-              // The bound leaves for these types are not modeled yet; match this length or longer
-              // as a conservative over-approximation, and warn until the bounds are modeled.
-              // TODO: model to/address-mask bounds — https://github.com/batfish/batfish/issues/9990
-              yield overApproximate(pl, entry, w);
-            }
-          };
-      lines.add(new RouteFilterLine(LineAction.PERMIT, prefix, lengthRange));
+            Prefix masked = Prefix.create(prefix.getStartIp(), maskLen);
+            lines.add(new RouteFilterLine(LineAction.PERMIT, masked, SubRange.singleton(maskLen)));
+          }
+        }
+      }
     }
     return new RouteFilterList(pl.getName(), lines);
   }
@@ -461,6 +513,108 @@ public final class SrosConversions {
       areas.put(e.getKey(), e.getValue().setOspfProcess(newProc).build());
     }
     newProc.setAreas(ImmutableMap.copyOf(areas));
+  }
+
+  /**
+   * Converts a router instance's {@code isis} process to a VI {@link
+   * org.batfish.datamodel.isis.IsisProcess} on {@code vrf}, attaching {@link
+   * org.batfish.datamodel.isis.IsisInterfaceSettings} to each IS-IS-enabled interface. The NET is
+   * built from the first {@code area-address} + {@code system-id} + an {@code 00} N-selector. A
+   * {@code passive} interface advertises its subnet but forms no adjacency (VI {@link
+   * org.batfish.datamodel.isis.IsisInterfaceMode#PASSIVE}). Admin distances come from the
+   * NOKIA_SROS {@link org.batfish.datamodel.RoutingProtocol} defaults (L1 15 / L2 18 internal).
+   */
+  static void convertIsis(Router router, Configuration c, Vrf vrf, Warnings w) {
+    org.batfish.vendor.sros.representation.IsisProcess proc = router.getIsisProcess();
+    if (proc == null || !proc.getAdminStateEnable()) {
+      return;
+    }
+    String systemId = proc.getSystemId();
+    if (systemId == null || proc.getAreaAddresses().isEmpty()) {
+      w.redFlagf(
+          "router '%s' IS-IS has no system-id or area-address; skipping IS-IS", router.getName());
+      return;
+    }
+    // NET = <area-address>.<system-id>.00 (e.g. 49.0001.0100.1000.0001.00). Build the IsoAddress
+    // from the dotted form, stripping the dots the IsoAddress parser does not expect.
+    String net = proc.getAreaAddresses().get(0) + "." + systemId + ".00";
+    IsoAddress netAddress;
+    try {
+      netAddress = new IsoAddress(net);
+    } catch (IllegalArgumentException e) {
+      w.redFlagf("router '%s' IS-IS NET '%s' is invalid; skipping IS-IS", router.getName(), net);
+      return;
+    }
+
+    boolean level1 =
+        proc.getLevelCapability()
+            != org.batfish.vendor.sros.representation.IsisProcess.LevelCapability.LEVEL_2;
+    boolean level2 =
+        proc.getLevelCapability()
+            != org.batfish.vendor.sros.representation.IsisProcess.LevelCapability.LEVEL_1;
+    org.batfish.datamodel.isis.IsisProcess.Builder newProc =
+        org.batfish.datamodel.isis.IsisProcess.builder().setNetAddress(netAddress).setVrf(vrf);
+    if (level1) {
+      newProc.setLevel1(org.batfish.datamodel.isis.IsisLevelSettings.builder().build());
+    }
+    if (level2) {
+      newProc.setLevel2(org.batfish.datamodel.isis.IsisLevelSettings.builder().build());
+    }
+    newProc.build();
+
+    for (org.batfish.vendor.sros.representation.IsisProcessInterface isisIf :
+        proc.getInterfaces().values()) {
+      Interface viIface = c.getAllInterfaces().get(isisIf.getName());
+      if (viIface == null) {
+        w.redFlagf(
+            "router '%s' IS-IS references undefined interface '%s'; skipping",
+            router.getName(), isisIf.getName());
+        continue;
+      }
+      org.batfish.datamodel.isis.IsisInterfaceMode mode =
+          isisIf.getPassive()
+              ? org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE
+              : org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE;
+      org.batfish.datamodel.isis.IsisInterfaceLevelSettings levelSettings =
+          org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder().setMode(mode).build();
+      org.batfish.datamodel.isis.IsisInterfaceSettings.Builder ifSettings =
+          org.batfish.datamodel.isis.IsisInterfaceSettings.builder()
+              .setIsoAddress(netAddress)
+              .setPointToPoint(
+                  isisIf.getInterfaceType()
+                      == org.batfish.vendor.sros.representation.IsisProcessInterface.InterfaceType
+                          .POINT_TO_POINT);
+      if (level1) {
+        ifSettings.setLevel1(levelSettings);
+      }
+      if (level2) {
+        ifSettings.setLevel2(levelSettings);
+      }
+      viIface.setIsis(ifSettings.build());
+    }
+  }
+
+  /**
+   * Converts a VPRN's {@code bgp-ipvpn mpls} settings to the VI model. Only the {@code
+   * route-distinguisher} is applied (onto the VRF) — the VI model stores an RD per VRF. The {@code
+   * vrf-target} route-targets and inter-PE VPN-IPv4 (L3VPN) route import are NOT modeled: the VI
+   * datamodel has no VPNv4 address family and its cross-VRF leaking is intra-node only, so PE-to-PE
+   * MP-BGP L3VPN route exchange is not reproducible. See {@link BgpIpvpn} and the tracked
+   * follow-up.
+   */
+  static void convertBgpIpvpn(Router router, Vrf vrf, Warnings w) {
+    BgpIpvpn ipvpn = router.getBgpIpvpn();
+    if (ipvpn == null || ipvpn.getRouteDistinguisher() == null) {
+      return;
+    }
+    try {
+      vrf.setRouteDistinguisher(
+          org.batfish.datamodel.bgp.RouteDistinguisher.parse(ipvpn.getRouteDistinguisher()));
+    } catch (IllegalArgumentException e) {
+      w.redFlagf(
+          "VPRN '%s' route-distinguisher '%s' is invalid; not set",
+          router.getName(), ipvpn.getRouteDistinguisher());
+    }
   }
 
   /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */

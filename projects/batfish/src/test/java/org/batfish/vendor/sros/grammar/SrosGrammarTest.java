@@ -91,6 +91,24 @@ public final class SrosGrammarTest {
     assertThat(vc.getHostname(), equalTo("sros-r1"));
   }
 
+  /**
+   * The device renders a list entry with no body as an empty same-line block — {@code <words> { }}
+   * (open brace, optional whitespace, close brace, no intervening newline), e.g. the {@code
+   * to-prefix}es of a {@code prefix-list ... type to}. This must parse with no FATAL error and the
+   * entry must still appear as a canonical statement.
+   */
+  @Test
+  public void testInlineEmptyBlockParses() {
+    SrosConfiguration vc = parseVendorConfig("inline_empty_block.txt");
+    assertThat(vc.getUnrecognized(), equalTo(false));
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+    assertThat(
+        vc.getStatements(),
+        hasItem(
+            "configure policy-options prefix-list \"to-list\" prefix 10.20.0.0/16 type to to-prefix"
+                + " 10.20.0.0/20"));
+  }
+
   private static @Nonnull SrosConfiguration parseVendorConfig(String filename) {
     String src = readResource(TESTCONFIGS_PREFIX + filename, UTF_8);
     Settings settings = new Settings();

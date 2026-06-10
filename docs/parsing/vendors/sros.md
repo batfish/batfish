@@ -502,3 +502,84 @@ the `show router interface` line) trips on the `Up/Down` column header, so it
 reports the (genuinely up) link interface as down. It is a collection-time
 precondition, not a lab test, so it does not affect the green result; the lab is
 collected regardless and validates 13/13.
+
+## Follow-up rungs (P9): ECMP, prefix-list bounds, communities, IS-IS, L3VPN
+
+A second pass closed the two deferred review bugs and added three more rungs,
+each modeled against a fresh live SR-SIM 26.3.R1 collection.
+
+### Empty same-line block `{ }` (grammar)
+
+The device renders a list entry with no body inline as `<words> { }` (open
+brace, optional whitespace, close brace, no newline) — e.g. the `to-prefix`es
+of a `prefix-list ... type to`, `mask-pattern`s, or a community `member`. The
+`block` rule required `OPEN_BRACE NEWLINE+ ...` and rejected `{ }` with a FATAL
+"extraneous input '}' expecting NEWLINE", corrupting any empty-body list entry;
+the rule now also accepts `OPEN_BRACE CLOSE_BRACE`. Lesson banked: test fixtures
+must mirror device-rendered output (inline empty blocks), not idealized
+hand-written multi-line form — the bug was masked by a `{ \n }` fixture and
+exposed only by a device-collected config.
+
+### ECMP static routes (`sros_ecmp`, batfish/batfish#9989)
+
+A `static-routes route <prefix>` with multiple `next-hop` entries is an ECMP
+route. Extraction now emits one VI `StaticRoute` per next-hop (each with its own
+admin-state/metric/preference) instead of taking the first and warning;
+Batfish's best-preference selection installs the equal-preference legs as ECMP
+and drops worse ones. Device-confirmed: two equal-preference next-hops both
+install (route-table `nexthop` list has two entries); two unequal-preference
+next-hops install only the lower-preference leg.
+
+### prefix-list `to` / `address-mask` bounds (batfish/batfish#9990)
+
+Both were over-approximated as "this length or longer" and warned. Device
+probing settled the semantics. `type to` is a **length-range match**: a route
+matches iff it is contained in the base network and its length is in
+`[base-length .. to-prefix-length]` — the to-prefix supplies the upper length
+bound (the sibling of `through`), and must be nested in the base (commit rejects
+a non-nested to-prefix: `PLCY #1001 ... does not share same most significant
+bits`). It is modeled as one exact `RouteFilterLine` per ancestor length of each
+to-prefix, so off-path siblings do not match (a single base-prefix line with a
+length range would wrongly match them). `address-mask` with a contiguous mask
+equal to the base length is an exact match; a non-contiguous mask cannot be a
+length `SubRange` and is over-approximated with a warning.
+
+### BGP communities + complex attributes (`sros_bgp_comm_in`)
+
+The cEOS oracle (r2) advertises three loopbacks to r1 tagged with standard
+communities, MED, and AS-path prepend; r1 imports all, so its BGP RIB carries
+non-empty attributes validated on both sides. Finding: **SR-OS renders
+well-known communities symbolically** (`no-export`), so the validator
+canonicalizes them to numeric (`no-export` → `65535:65281`, etc.) to match
+Batfish, raising on an unknown symbolic name rather than masking. Also: for a
+BGP route the device's main-RIB metric is the IGP cost to the next-hop (0 for a
+directly-connected peer) while Batfish carries the MED into the main-RIB metric,
+so the validator compares the BGP MED on the BGP RIB and skips the main-RIB
+metric for BGP-protocol routes.
+
+### IS-IS single area (`sros_isis`)
+
+`router "<name>" isis <instance>` is parsed into a typed `IsisProcess`
+(system-id, area-address, level-capability, per-interface interface-type/passive)
+and converted to a VI `IsisProcess`: the NET is the first area-address +
+system-id + an `00` N-selector, a passive interface advertises its subnet but
+forms no adjacency (VI `PASSIVE` mode), and per-level interface settings carry
+the point-to-point flag. SR-OS IS-IS route preferences (admin distances) were
+added to the `NOKIA_SROS` `RoutingProtocol` defaults — L1 15 / L2 18 internal,
+L1 160 / L2 165 external — confirmed on device (an L2 internal route installs at
+preference 18, default interface metric 10). Validated with a two-SR-SIM L2
+adjacency: each router learns the other's system loopback via IS-IS.
+
+### Multi-VRF L3VPN (`sros_vprn_bgp`, partial — batfish/batfish#9991)
+
+A real MPLS L3VPN between two SR-SIM PEs (OSPF+LDP underlay, MP-BGP `vpn-ipv4`
+between loopbacks, VPRN `red` with RD + shared `vrf-target`). SR-OS extraction
+captures `bgp-ipvpn mpls` route-distinguisher + vrf-target import/export
+route-targets (`BgpIpvpn`), and conversion sets the route-distinguisher on the
+VI VRF. The PE-to-PE vpn-ipv4 route import is **not** modeled — the VI datamodel
+has no VPNv4 address family and its cross-VRF leaking is intra-node only — so the
+VPRN's RT-imported routes (e.g. pe1 `red` learning `172.16.2.1/32`) are absent
+from the computed main RIB; those two main-RIB checks are sickbayed to
+batfish/batfish#9991. Everything else (config/interfaces/BGP RIB/RD-on-VRF)
+validates green. Device-confirmed: BGP-VPN learned route preference 170,
+resolved over an LDP tunnel; VPRN `red` stays separate from Base.
