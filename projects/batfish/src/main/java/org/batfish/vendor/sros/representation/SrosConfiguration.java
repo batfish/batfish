@@ -31,10 +31,12 @@ public final class SrosConfiguration extends VendorConfiguration {
     _statements = new ArrayList<>();
     _cards = new HashMap<>();
     _ports = new HashMap<>();
+    _lags = new HashMap<>();
     _routers = new HashMap<>();
     _prefixLists = new HashMap<>();
     _policyStatements = new HashMap<>();
     _communities = new HashMap<>();
+    _asPathLists = new HashMap<>();
   }
 
   /**
@@ -57,6 +59,11 @@ public final class SrosConfiguration extends VendorConfiguration {
     return _ports;
   }
 
+  /** Link aggregation groups, keyed by LAG name (e.g. {@code lag-1}). */
+  public @Nonnull Map<String, Lag> getLags() {
+    return _lags;
+  }
+
   /** Routing instances, keyed by router-name (e.g. {@code Base}). */
   public @Nonnull Map<String, Router> getRouters() {
     return _routers;
@@ -75,6 +82,11 @@ public final class SrosConfiguration extends VendorConfiguration {
   /** Routing-policy community lists, keyed by name. */
   public @Nonnull Map<String, Community> getCommunities() {
     return _communities;
+  }
+
+  /** Routing-policy as-path lists, keyed by name. */
+  public @Nonnull Map<String, AsPathList> getAsPathLists() {
+    return _asPathLists;
   }
 
   @Override
@@ -116,6 +128,7 @@ public final class SrosConfiguration extends VendorConfiguration {
       Vrf vrf = vrfForRouter(router.getName(), c);
       SrosConversions.convertInterfaces(this, router, c, vrf);
       SrosConversions.convertStaticRoutes(router, vrf, getWarnings());
+      SrosConversions.convertAggregates(router, vrf);
       SrosConversions.convertOspf(router, c, vrf, getWarnings());
       SrosConversions.convertIsis(router, c, vrf, getWarnings());
       SrosConversions.convertBgp(router, c, vrf, getWarnings());
@@ -159,10 +172,12 @@ public final class SrosConfiguration extends VendorConfiguration {
   private final @Nonnull List<String> _statements;
   private final @Nonnull Map<Integer, Card> _cards;
   private final @Nonnull Map<String, Port> _ports;
+  private final @Nonnull Map<String, Lag> _lags;
   private final @Nonnull Map<String, Router> _routers;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, PolicyStatement> _policyStatements;
   private final @Nonnull Map<String, Community> _communities;
+  private final @Nonnull Map<String, AsPathList> _asPathLists;
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _format;
 }

@@ -194,6 +194,60 @@ public final class SrosExtractionTest {
         ImmutableSet.of(ecmp1.getMetric(), ecmp2.getMetric()), equalTo(ImmutableSet.of(10, 20)));
   }
 
+  /** aggregates extraction: the aggregate prefix and its {@code summary-only} flag. */
+  @Test
+  public void testAggregateExtraction() {
+    SrosConfiguration vc = parseVendorConfig("aggregate.txt");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    List<org.batfish.vendor.sros.representation.Aggregate> aggs =
+        vc.getRouters().get("Base").getAggregates();
+    assertThat(aggs, hasSize(1));
+    assertThat(aggs.get(0).getPrefix(), equalTo(Prefix.parse("10.100.0.0/16")));
+    assertThat(aggs.get(0).getSummaryOnly(), equalTo(true));
+  }
+
+  /**
+   * Comprehensive policy extraction: {@code from community name}, {@code from as-path name}, and
+   * the {@code action} clauses local-preference / metric add / origin; plus the as-path list
+   * expression.
+   */
+  @Test
+  public void testComprehensivePolicyExtraction() {
+    SrosConfiguration vc = parseVendorConfig("policy_comprehensive.txt");
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(vc.getAsPathLists(), hasKey("via-65003"));
+    assertThat(vc.getAsPathLists().get("via-65003").getExpression(), equalTo("65003"));
+
+    PolicyStatement ps = vc.getPolicyStatements().get("import-rich");
+    PolicyStatementEntry e10 = ps.getEntries().get(10L);
+    assertThat(e10.getFromCommunities(), contains("from-r2-100"));
+    assertThat(e10.getSetLocalPreference(), equalTo(250L));
+    assertThat(e10.getCommunityAdds(), contains("tag-local"));
+
+    PolicyStatementEntry e20 = ps.getEntries().get(20L);
+    assertThat(e20.getFromAsPaths(), contains("via-65003"));
+    assertThat(e20.getMetricAdd(), equalTo(33L));
+    assertThat(e20.getSetOrigin(), equalTo(org.batfish.datamodel.OriginType.IGP));
+
+    assertThat(ps.getDefaultAction(), equalTo(PolicyAction.ACCEPT));
+  }
+
+  /** LAG extraction: the lag name, admin-state, and its member ports. */
+  @Test
+  public void testLagExtraction() {
+    SrosConfiguration vc = parseVendorConfig("lag.txt");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+    assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
+    assertThat(vc.getLags(), hasKey("lag-1"));
+    org.batfish.vendor.sros.representation.Lag lag = vc.getLags().get("lag-1");
+    assertThat(lag.getAdminStateEnable(), equalTo(true));
+    assertThat(lag.getMemberPorts(), containsInAnyOrder("1/1/c1/1", "1/1/c2/1"));
+    // The router interface binds the LAG by name.
+    assertThat(
+        vc.getRouters().get("Base").getInterfaces().get("to-peer").getPort(), equalTo("lag-1"));
+  }
+
   /**
    * Policy set-clause + community-list + prefix-list-bound extraction: {@code action metric set},
    * {@code as-path-prepend as-path/repeat}, {@code community add}, a {@code community} list, and

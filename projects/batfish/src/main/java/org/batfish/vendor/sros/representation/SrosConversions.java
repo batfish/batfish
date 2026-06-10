@@ -219,7 +219,7 @@ public final class SrosConversions {
       SrosConfiguration vc, PolicyStatement ps, Configuration c) {
     List<Statement> statements = new ArrayList<>();
     for (PolicyStatementEntry entry : ps.getEntries().values()) {
-      BooleanExpr guard = toGuard(entry, c);
+      BooleanExpr guard = toGuard(vc, entry, c);
       // On a match, apply the entry's set-clauses (metric/MED, as-path-prepend, community) before
       // its terminal action, so the modifications take effect on the matched route.
       List<Statement> onMatch = new ArrayList<>(setStatements(vc, entry));
@@ -253,6 +253,19 @@ public final class SrosConversions {
     List<Statement> statements = new ArrayList<>();
     if (entry.getSetMetric() != null) {
       statements.add(new SetMetric(new LiteralLong(entry.getSetMetric())));
+    }
+    if (entry.getMetricAdd() != null) {
+      statements.add(
+          new SetMetric(
+              new org.batfish.datamodel.routing_policy.expr.IncrementMetric(entry.getMetricAdd())));
+    }
+    if (entry.getSetLocalPreference() != null) {
+      statements.add(
+          new org.batfish.datamodel.routing_policy.statement.SetLocalPreference(
+              new LiteralLong(entry.getSetLocalPreference())));
+    }
+    if (entry.getSetOrigin() != null) {
+      statements.add(new SetOrigin(new LiteralOrigin(entry.getSetOrigin(), null)));
     }
     if (entry.getAsPathPrependAsn() != null) {
       List<AsExpr> ases = new ArrayList<>();
@@ -289,7 +302,8 @@ public final class SrosConversions {
    * disjunction over the named protocols). An entry with no modeled from-criteria matches
    * everything ({@link BooleanExprs#TRUE}).
    */
-  private static @Nonnull BooleanExpr toGuard(PolicyStatementEntry entry, Configuration c) {
+  private static @Nonnull BooleanExpr toGuard(
+      SrosConfiguration vc, PolicyStatementEntry entry, Configuration c) {
     List<BooleanExpr> conjuncts = new ArrayList<>();
 
     // from prefix-list [...] — OR over the (defined) referenced lists.
@@ -316,6 +330,48 @@ public final class SrosConversions {
     }
     if (!protocols.isEmpty()) {
       conjuncts.add(new MatchProtocol(protocols));
+    }
+
+    // from community name <name> — the route must carry any member of the named community list.
+    for (String commName : entry.getFromCommunities()) {
+      Community comm = vc.getCommunities().get(commName);
+      if (comm == null) {
+        continue;
+      }
+      List<org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr> members =
+          new ArrayList<>();
+      for (String member : comm.getMembers()) {
+        members.add(
+            new org.batfish.datamodel.routing_policy.communities.CommunityIs(
+                StandardCommunity.parse(member)));
+      }
+      if (!members.isEmpty()) {
+        conjuncts.add(
+            new org.batfish.datamodel.routing_policy.communities.MatchCommunities(
+                InputCommunities.instance(),
+                new org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny(
+                    members.stream()
+                        .map(
+                            m ->
+                                (org.batfish.datamodel.routing_policy.communities
+                                        .CommunitySetMatchExpr)
+                                    new org.batfish.datamodel.routing_policy.communities
+                                        .HasCommunity(m))
+                        .collect(ImmutableList.toImmutableList()))));
+      }
+    }
+
+    // from as-path name <name> — the route's AS path must match the named list's regex.
+    for (String apName : entry.getFromAsPaths()) {
+      AsPathList ap = vc.getAsPathLists().get(apName);
+      if (ap == null || ap.getExpression() == null) {
+        continue;
+      }
+      conjuncts.add(
+          org.batfish.datamodel.routing_policy.as_path.MatchAsPath.of(
+              org.batfish.datamodel.routing_policy.as_path.InputAsPath.instance(),
+              org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex.of(
+                  ap.getExpression())));
     }
 
     if (conjuncts.isEmpty()) {
@@ -697,6 +753,27 @@ public final class SrosConversions {
   }
 
   /**
+   * Converts a router instance's {@code aggregates} to VI {@link
+   * org.batfish.datamodel.GeneratedRoute}s on {@code vrf}. SR-OS installs an aggregate as a discard
+   * summary route (preference 130) only when a contributing more-specific exists; Batfish's
+   * generated-route mechanism has the same activation semantics (a generated route is installed
+   * only when a contributing route is present), so each aggregate maps to a discard generated route
+   * at admin distance 130. {@code summary-only}/{@code community} affect advertisement, not RIB
+   * installation, and are not modeled here.
+   */
+  static void convertAggregates(Router router, Vrf vrf) {
+    for (Aggregate agg : router.getAggregates()) {
+      vrf.getGeneratedRoutes()
+          .add(
+              org.batfish.datamodel.GeneratedRoute.builder()
+                  .setNetwork(agg.getPrefix())
+                  .setAdmin(Aggregate.PREFERENCE)
+                  .setDiscard(true)
+                  .build());
+    }
+  }
+
+  /**
    * Creates the addressless {@link InterfaceType#PHYSICAL} VI interface for an SR-OS port if it
    * does not already exist on {@code c}. This is the interface a user Layer-1 topology references;
    * the L3 router-interface binds to it. The port is admin-up unless its {@code admin-state} is
@@ -706,6 +783,38 @@ public final class SrosConversions {
   private static void ensurePortInterface(
       SrosConfiguration vc, String portPath, Configuration c, Vrf vrf) {
     if (c.getAllInterfaces().containsKey(portPath)) {
+      return;
+    }
+    // A LAG (lag-N): model it as an AGGREGATED interface whose member ports are AGGREGATE
+    // dependencies, so post-processing sums their bandwidth into the bundle. Each member port gets
+    // its own PHYSICAL interface and is marked as part of this channel-group; the LAG records its
+    // members as channel-group members. The channel-group linkage is what lets the logical-Layer-1
+    // computation collapse the members' physical edges into a single lag<->lag edge — without it,
+    // the two member edges look like two L1 neighbors and the dependency logic deactivates the LAG
+    // as an LACP failure. With it, the LAG gets a BIND dependency on its single logical neighbor
+    // and comes up when its members are up.
+    Lag lag = vc.getLags().get(portPath);
+    if (lag != null) {
+      for (String member : lag.getMemberPorts()) {
+        ensurePortInterface(vc, member, c, vrf);
+        Interface memberIface = c.getAllInterfaces().get(member);
+        if (memberIface != null) {
+          memberIface.setChannelGroup(portPath);
+        }
+      }
+      Interface lagIface =
+          Interface.builder()
+              .setName(portPath)
+              .setOwner(c)
+              .setVrf(vrf)
+              .setType(InterfaceType.AGGREGATED)
+              .setAdminUp(lag.getAdminStateEnable())
+              .setChannelGroupMembers(lag.getMemberPorts())
+              .build();
+      lagIface.setDependencies(
+          lag.getMemberPorts().stream()
+              .map(m -> new Interface.Dependency(m, Interface.DependencyType.AGGREGATE))
+              .collect(ImmutableList.toImmutableList()));
       return;
     }
     Port port = vc.getPorts().get(portPath);

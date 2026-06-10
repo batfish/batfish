@@ -19,6 +19,7 @@ public final class Router implements Serializable {
     _name = name;
     _interfaces = new HashMap<>();
     _staticRoutes = new ArrayList<>();
+    _aggregates = new ArrayList<>();
   }
 
   public @Nonnull String getName() {
@@ -42,6 +43,11 @@ public final class Router implements Serializable {
   /** The {@code static-routes route} entries in this router, in configuration order. */
   public @Nonnull List<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
+  }
+
+  /** The {@code aggregates aggregate} entries in this router, in configuration order. */
+  public @Nonnull List<Aggregate> getAggregates() {
+    return _aggregates;
   }
 
   /** The BGP process for this router, or {@code null} if {@code bgp} is not configured. */
@@ -87,6 +93,7 @@ public final class Router implements Serializable {
   private @Nullable Long _autonomousSystem;
   private final @Nonnull Map<String, RouterInterface> _interfaces;
   private final @Nonnull List<StaticRoute> _staticRoutes;
+  private final @Nonnull List<Aggregate> _aggregates;
   private @Nullable BgpProcess _bgpProcess;
   private @Nullable OspfProcess _ospfProcess;
   private @Nullable IsisProcess _isisProcess;
