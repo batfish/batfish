@@ -5,14 +5,19 @@ This directory contains hands-on tutorials for common Batfish development tasks.
 ## Available Tutorials
 
 ### 1. [Adding Your First Vendor Support](adding_vendor_support.md)
-**Time**: 2-4 hours | **Difficulty**: Intermediate
+**Time**: a weekend to a first parse; weeks to a validated vendor | **Difficulty**: Intermediate
 
-Learn how to add support for a new network vendor or device type. Covers:
+Learn the end-to-end workflow for adding a new network vendor or device type, from
+characterizing the OS to validating against a real device. Covers the full pipeline:
+- Characterizing the config format, defaults, and inheritance before writing a grammar
+- Registering and detecting the format
 - Creating ANTLR4 lexer and parser grammars
-- Implementing the extractor
-- Converting to vendor-independent format
-- Writing tests
-- Running and validating
+- Extracting into a **vendor-specific** representation (with safe parsing, line-stamped
+  warnings, structure tracking, and provenance)
+- Converting to the vendor-independent model
+- Post-processing and validating against device ground truth
+
+Uses the worked [Nokia SR-OS guide](../parsing/vendors/sros.md) as the real-vendor reference.
 
 **Prerequisites**:
 - Familiarity with ANTLR4 grammars
