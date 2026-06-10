@@ -528,8 +528,9 @@ public final class SrosConversions {
             .setRouterId(routerId)
             .setReferenceBandwidth(OSPF_REFERENCE_BANDWIDTH)
             // SR-OS OSPF route preference (admin distance): internal (intra/inter-area, summary)
-            // default 10, external default 150 — not the Cisco 110/110.
-            .setAdminCosts(OSPF_ADMIN_COSTS)
+            // default 10, external default 150 — not the Cisco 110/110. An explicit `preference`
+            // overrides the internal default (the lab raises it to 20 so IS-IS, pref 18, wins).
+            .setAdminCosts(ospfAdminCosts(proc.getPreference()))
             .setAreas(ImmutableMap.of())
             .setVrf(vrf)
             .build();
@@ -586,9 +587,18 @@ public final class SrosConversions {
       return;
     }
     String systemId = proc.getSystemId();
+    if (systemId == null) {
+      // SR OS derives the IS-IS system-id from the system interface IPv4 address when it is not
+      // explicitly configured: each of the four octets is zero-padded to three decimal digits and
+      // the resulting twelve digits are regrouped as XXXX.XXXX.XXXX (e.g. 10.10.10.10 ->
+      // 010.010.010.010 -> 0100.1001.0010). Confirmed live on SR-SIM 26.3.R1 (sros_services lab).
+      systemId = deriveIsisSystemId(systemInterfaceIp(router));
+    }
     if (systemId == null || proc.getAreaAddresses().isEmpty()) {
       w.redFlagf(
-          "router '%s' IS-IS has no system-id or area-address; skipping IS-IS", router.getName());
+          "router '%s' IS-IS has no system-id (and none derivable from the system interface) or no"
+              + " area-address; skipping IS-IS",
+          router.getName());
       return;
     }
     // NET = <area-address>.<system-id>.00 (e.g. 49.0001.0100.1000.0001.00). Build the IsoAddress
@@ -631,8 +641,13 @@ public final class SrosConversions {
           isisIf.getPassive()
               ? org.batfish.datamodel.isis.IsisInterfaceMode.PASSIVE
               : org.batfish.datamodel.isis.IsisInterfaceMode.ACTIVE;
+      // SR-OS default IS-IS interface metric is 10 (wide metrics); an explicit `metric` overrides.
+      long isisCost = isisIf.getMetric() == null ? ISIS_DEFAULT_METRIC : isisIf.getMetric();
       org.batfish.datamodel.isis.IsisInterfaceLevelSettings levelSettings =
-          org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder().setMode(mode).build();
+          org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
+              .setMode(mode)
+              .setCost(isisCost)
+              .build();
       org.batfish.datamodel.isis.IsisInterfaceSettings.Builder ifSettings =
           org.batfish.datamodel.isis.IsisInterfaceSettings.builder()
               .setIsoAddress(netAddress)
@@ -676,18 +691,31 @@ public final class SrosConversions {
   /** OSPF default {@code reference-bandwidth}: 100,000,000 kilobps (100 Gbps), expressed in bps. */
   private static final double OSPF_REFERENCE_BANDWIDTH = 100E9D;
 
+  /** SR-OS default IS-IS interface metric (wide metrics). */
+  private static final long ISIS_DEFAULT_METRIC = 10L;
+
+  /** SR-OS default OSPF internal route preference (intra-area, inter-area, internal summary). */
+  private static final int OSPF_DEFAULT_INTERNAL_PREFERENCE = 10;
+
+  /** SR-OS default OSPF external route preference (E1/E2). */
+  private static final int OSPF_DEFAULT_EXTERNAL_PREFERENCE = 150;
+
   /**
-   * SR-OS OSPF route preferences (Batfish admin distances): internal routes (intra-area,
-   * inter-area, internal summary) default to {@code preference} 10; external routes (E1/E2) default
-   * to {@code external-preference} 150.
+   * SR-OS OSPF route preferences (Batfish admin distances) for a process: internal routes
+   * (intra-area, inter-area, internal summary) use the configured {@code preference} (default 10);
+   * external routes (E1/E2) use the {@code external-preference} default 150. Not the Cisco 110/110.
    */
-  private static final java.util.Map<RoutingProtocol, Integer> OSPF_ADMIN_COSTS =
-      ImmutableMap.of(
-          RoutingProtocol.OSPF, 10,
-          RoutingProtocol.OSPF_IA, 10,
-          RoutingProtocol.OSPF_IS, 10,
-          RoutingProtocol.OSPF_E1, 150,
-          RoutingProtocol.OSPF_E2, 150);
+  private static java.util.Map<RoutingProtocol, Integer> ospfAdminCosts(
+      @Nullable Integer internalPreference) {
+    int internal =
+        internalPreference == null ? OSPF_DEFAULT_INTERNAL_PREFERENCE : internalPreference;
+    return ImmutableMap.of(
+        RoutingProtocol.OSPF, internal,
+        RoutingProtocol.OSPF_IA, internal,
+        RoutingProtocol.OSPF_IS, internal,
+        RoutingProtocol.OSPF_E1, OSPF_DEFAULT_EXTERNAL_PREFERENCE,
+        RoutingProtocol.OSPF_E2, OSPF_DEFAULT_EXTERNAL_PREFERENCE);
+  }
 
   /**
    * The OSPF cost for an interface: an explicit {@code metric} wins; a loopback is 0; otherwise the
@@ -1052,6 +1080,25 @@ public final class SrosConversions {
   private static @Nullable Ip systemInterfaceIp(Router router) {
     RouterInterface system = router.getInterfaces().get("system");
     return system == null ? null : system.getPrimaryAddress();
+  }
+
+  /**
+   * Derives the IS-IS system-id from an IPv4 address the way SR OS does when {@code system-id} is
+   * not explicitly configured: zero-pad each octet to three decimal digits, concatenate the twelve
+   * digits, and regroup as {@code XXXX.XXXX.XXXX} (e.g. {@code 10.10.10.10} -> {@code
+   * 0100.1001.0010}). Returns {@code null} if {@code ip} is null.
+   */
+  @VisibleForTesting
+  static @Nullable String deriveIsisSystemId(@Nullable Ip ip) {
+    if (ip == null) {
+      return null;
+    }
+    long bits = ip.asLong();
+    String digits =
+        String.format(
+            "%03d%03d%03d%03d",
+            (bits >> 24) & 0xFF, (bits >> 16) & 0xFF, (bits >> 8) & 0xFF, bits & 0xFF);
+    return digits.substring(0, 4) + "." + digits.substring(4, 8) + "." + digits.substring(8, 12);
   }
 
   static @Nonnull String generatedBgpPeerImportPolicyName(String router, String peer) {

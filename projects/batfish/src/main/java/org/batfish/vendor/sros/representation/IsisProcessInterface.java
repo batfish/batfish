@@ -44,7 +44,20 @@ public final class IsisProcessInterface implements Serializable {
     _interfaceType = interfaceType;
   }
 
+  /**
+   * The IS-IS interface {@code metric} (the level-2 metric in this lab), or {@code null} when unset
+   * (then the SR-OS default of 10 applies).
+   */
+  public @Nullable Integer getMetric() {
+    return _metric;
+  }
+
+  public void setMetric(@Nullable Integer metric) {
+    _metric = metric;
+  }
+
   private final @Nonnull String _name;
   private boolean _passive;
   private @Nullable InterfaceType _interfaceType;
+  private @Nullable Integer _metric;
 }

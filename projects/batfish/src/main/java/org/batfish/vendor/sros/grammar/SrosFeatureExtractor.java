@@ -581,6 +581,9 @@ public final class SrosFeatureExtractor {
   /** OSPF interface {@code metric} (cost): YANG {@code uint32 range "1..65535"}. */
   private static final IntegerSpace OSPF_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 65535));
 
+  /** IS-IS interface {@code metric}: YANG wide-metric {@code uint32 range "1..16777215"}. */
+  private static final IntegerSpace ISIS_METRIC_SPACE = IntegerSpace.of(new SubRange(1, 16777215));
+
   /** OSPF {@code interface-type} enumeration (the modeled subset). */
   private static final Map<String, OspfAreaInterface.InterfaceType> OSPF_INTERFACE_TYPE =
       ImmutableMap.of(
@@ -624,6 +627,14 @@ public final class SrosFeatureExtractor {
     Boolean adminUp = toEnum(ospfNode.getChild("admin-state"), ADMIN_STATE, "admin-state");
     // admin-state defaults to enable for an OSPF/IS-IS process: enabled unless explicitly disable.
     proc.setAdminStateEnable(firstNonNull(adminUp, Boolean.TRUE));
+    // OSPF route preference (admin distance) for internal routes; SR-OS default 10. The lab raises
+    // it above the IS-IS preference (18) so IS-IS wins, which changes which IGP populates the RIB.
+    toIntegerInSpace(
+            singleValue(ospfNode, "preference"),
+            singleValueNode(ospfNode, "preference"),
+            ROUTE_PREFERENCE_SPACE,
+            "ospf preference")
+        .ifPresent(proc::setPreference);
 
     SrosStatementTree areaList = ospfNode.getChild("area");
     if (areaList != null) {
@@ -694,6 +705,21 @@ public final class SrosFeatureExtractor {
             toEnum(ifNode.getChild("interface-type"), ISIS_INTERFACE_TYPE, "isis interface-type"));
         Boolean passive = toBoolean(ifNode.getChild("passive"), "isis interface passive");
         isisIf.setPassive(firstNonNull(passive, Boolean.FALSE));
+        // Metric: a per-interface `metric` applies to both levels; SR-OS also allows a per-level
+        // `level <N> metric <M>` (this lab uses `level 2 metric 100`). Prefer the top-level metric,
+        // else take the level-2 metric. Default 10 applies in conversion when neither is set.
+        SrosStatementTree metricNode = singleValueNode(ifNode, "metric");
+        String metricVal = singleValue(ifNode, "metric");
+        SrosStatementTree levelList = ifNode.getChild("level");
+        if (metricVal == null && levelList != null) {
+          SrosStatementTree level2 = levelList.getChild("2");
+          if (level2 != null) {
+            metricVal = singleValue(level2, "metric");
+            metricNode = singleValueNode(level2, "metric");
+          }
+        }
+        toIntegerInSpace(metricVal, metricNode, ISIS_METRIC_SPACE, "isis interface metric")
+            .ifPresent(isisIf::setMetric);
         proc.getInterfaces().put(ifName, isisIf);
       }
     }
