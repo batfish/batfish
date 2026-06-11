@@ -45,7 +45,7 @@ import org.batfish.vendor.sros.representation.SrosConfiguration;
 import org.batfish.vendor.sros.representation.StaticRoute;
 import org.junit.Test;
 
-/** Tests of SR-OS feature extraction (P4): the canonical tree, the preprocessor, and the model. */
+/** Tests of SR-OS feature extraction: the canonical tree, the preprocessor, and the model. */
 public final class SrosExtractionTest {
 
   /** The captured r1 config extracts the full characterized feature set with no warnings. */

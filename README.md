@@ -109,6 +109,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * Free-Range Routing (FRR)
 * [iptables (on hosts)](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-host-json-files)
 * Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
+* Nokia (SR OS / SR-SIM, MD-CLI)
 * Palo Alto Networks
 * SONiC
 

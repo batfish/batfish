@@ -36,7 +36,7 @@ You do not finish all of one stage before the next. The realistic loop is: get t
 simplest config through *all* stages, validate it, then climb a complexity ladder
 (interfaces → static → OSPF → eBGP → iBGP → route reflection → policy → misconfig),
 re-running the pipeline for each newly-exercised feature. SR-OS was built this way; see
-[`vendors/sros.md` §Complexity ladder](../parsing/vendors/sros.md#complexity-ladder-p8).
+[`vendors/sros.md` §Feature coverage](../parsing/vendors/sros.md#feature-coverage).
 
 ---
 
@@ -589,7 +589,7 @@ not in unit tests. Principles, learned the hard way:
   exit), then model locally. On a collection failure, sickbay that rung and continue;
   never abandon teardown.
 
-See [`vendors/sros.md` §RIB validation](../parsing/vendors/sros.md#rib-validation-p7) for
+See [`vendors/sros.md` §RIB validation](../parsing/vendors/sros.md#rib-validation) for
 the SR-OS modeling facts that made the device comparison correct (e.g. learned-eBGP admin
 distance is 170 on SR-OS, not 20; the device's local-rib over-lists connected routes).
 

@@ -37,8 +37,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Post-processing (P6) tests for SR-OS. Loads the captured {@code sros_ceos_ebgp} lab — an SR-OS r1
- * and a cEOS r2 with the user-provided Layer-1 topology — through the full Batfish pipeline (parse,
+ * Post-processing tests for SR-OS. Loads the captured {@code sros_ceos_ebgp} lab — an SR-OS r1 and
+ * a cEOS r2 with the user-provided Layer-1 topology — through the full Batfish pipeline (parse,
  * convert, and {@code Batfish.postProcessSnapshot}) and asserts that SR-OS constructs flow through
  * post-processing correctly:
  *

@@ -58,12 +58,12 @@ import org.batfish.vendor.sros.representation.StaticRoute;
  *
  * <p>Each leaf's value is the single child key under its leaf node (e.g. {@code card 1 card-type
  * iom-1} is {@code card -> 1 -> card-type -> iom-1}); leaf-lists ({@code policy [a b]}) are the
- * ordered children of the leaf node. The extractor reads only the paths characterized for P4
- * (hardware provisioning, router interfaces, BGP peering, routing-policy). Other configured
- * subtrees present in real configs — {@code system security}/{@code ssh}/{@code user-params},
- * {@code persistent-indices} — are control-plane-irrelevant and intentionally left unread; they are
- * not warnings (the device accepts them and so do we). The one system leaf that matters, {@code
- * system name}, becomes the Batfish hostname.
+ * ordered children of the leaf node. The extractor reads only the characterized paths (hardware
+ * provisioning, router interfaces, BGP peering, routing-policy). Other configured subtrees present
+ * in real configs — {@code system security}/{@code ssh}/{@code user-params}, {@code
+ * persistent-indices} — are control-plane-irrelevant and intentionally left unread; they are not
+ * warnings (the device accepts them and so do we). The one system leaf that matters, {@code system
+ * name}, becomes the Batfish hostname.
  *
  * <p>Because each tree node carries the parse-tree context of the statement(s) that created it (see
  * {@link SrosStatementTree#getDefContexts}), the extractor emits line-stamped {@link

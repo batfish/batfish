@@ -26,7 +26,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
  * identical across all three forms. Children preserve insertion order (a {@link LinkedHashMap}),
  * which matters for {@code ordered-by user} leaf-lists such as BGP import/export policies.
  *
- * <p>The mutators ({@link #removeChild}, {@link #copyInto}) support the P4 preprocessor: applying
+ * <p>The mutators ({@link #removeChild}, {@link #copyInto}) support the preprocessor: applying
  * {@code delete} edits and grafting {@code apply-groups} subtrees onto their inheriting branches.
  *
  * <p>Each node records the {@link ParserRuleContext}(s) of the statement(s) that created it (see

@@ -66,8 +66,8 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /**
- * Converts a {@link SrosConfiguration} (the typed P4 feature model) into the vendor-independent
- * {@link Configuration} model.
+ * Converts a {@link SrosConfiguration} (the typed feature model) into the vendor-independent {@link
+ * Configuration} model.
  *
  * <p>The SR-OS router instance maps to a VRF: the {@code Base} router is the main routing instance
  * and maps to the Batfish default VRF; any other router instance maps to a VRF of the same name.
@@ -489,7 +489,7 @@ public final class SrosConversions {
         // SR-OS installs the connected (subnet) route for an interface address but NOT a
         // local /32 host route for the interface's own IP — its route-table shows only the
         // connected prefix. Batfish would otherwise synthesize a local /32; suppress it so the
-        // main RIB matches the device. (Verified against the lab route-table, P5-V.)
+        // main RIB matches the device. (Verified against the lab route-table.)
         ib.setAddressMetadata(
             ImmutableMap.of(
                 address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build()));
@@ -997,7 +997,7 @@ public final class SrosConversions {
       Configuration c) {
     List<Statement> statements = new ArrayList<>();
     // next-hop-self: on export, rewrite the BGP next-hop to this router's address. Needed for an
-    // iBGP route reflector with no IGP underlay so its clients can resolve reflected routes (L4).
+    // iBGP route reflector with no IGP underlay so its clients can resolve reflected routes.
     if (isExport && nextHopSelf) {
       statements.add(
           new org.batfish.datamodel.routing_policy.statement.SetNextHop(
@@ -1007,7 +1007,8 @@ public final class SrosConversions {
     // interface prefix) advertised by an export policy carries origin IGP; a redistributed route
     // (static/OSPF/etc.) carries origin INCOMPLETE. Set IGP for connected/local routes at the head
     // of the export policy; leave everything else at Batfish's redistribution default (incomplete),
-    // which matches the device. (System-prefix IGP caught at P5-V; static=incomplete at L6.)
+    // which matches the device. (System-prefix origin IGP and redistributed-static origin
+    // INCOMPLETE are both confirmed against the labs.)
     if (isExport) {
       statements.add(
           new If(
@@ -1018,7 +1019,7 @@ public final class SrosConversions {
       // locally-sourced or redistributed route is advertised with MED 0 unless a policy explicitly
       // sets the metric. Reset MED to 0 for non-BGP routes at the policy head; an entry's explicit
       // `metric set` (modeled as SetMetric in the entry's set-clauses) runs later and overrides it.
-      // (L6: redistributed static appears on the peer with MED 0, not the route metric 1.)
+      // (Redistributed static appears on the peer with MED 0, not the route metric 1.)
       statements.add(
           new If(
               new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
@@ -1054,10 +1055,10 @@ public final class SrosConversions {
    * route's protocol is BGP/iBGP, and otherwise rejects. This matters on export: with {@code
    * setExportBgpFromBgpRib(false)} Batfish runs the export policy over the whole main RIB, and a
    * blanket accept-all would leak the connected /31s the device never advertises (confirmed on the
-   * L3 iBGP lab, where r1 advertises only 1.1.1.1/32 (explicit policy) and the eBGP-learned
-   * 2.2.2.2/32 to its iBGP peer, not its connected interface prefixes). On import the route being
-   * evaluated is always a received BGP route, so the protocol guard accepts everything — preserving
-   * iBGP default-accept on import.
+   * iBGP lab, where r1 advertises only 1.1.1.1/32 (explicit policy) and the eBGP-learned 2.2.2.2/32
+   * to its iBGP peer, not its connected interface prefixes). On import the route being evaluated is
+   * always a received BGP route, so the protocol guard accepts everything — preserving iBGP
+   * default-accept on import.
    */
   private static @Nonnull String defaultAcceptPolicy(Configuration c) {
     if (!c.getRoutingPolicies().containsKey(DEFAULT_BGP_ACCEPT_POLICY_NAME)) {

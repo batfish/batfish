@@ -9,9 +9,9 @@ import org.batfish.datamodel.OriginType;
 
 /**
  * One numbered entry of an SR-OS {@code policy-statement}, keyed by {@code entry-id}. Holds the
- * {@code from} match criteria modeled for P4 (prefix-list references), the entry {@code action}'s
- * {@code action-type}, and the modeled {@code action} set-clauses (metric/MED, as-path-prepend,
- * community add).
+ * {@code from} match criteria (prefix-list references), the entry {@code action}'s {@code
+ * action-type}, and the modeled {@code action} set-clauses (metric/MED, as-path-prepend, community
+ * add).
  */
 public final class PolicyStatementEntry implements Serializable {
 
