@@ -1,9 +1,12 @@
 package org.batfish.vendor.sros.grammar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,31 +39,55 @@ import org.antlr.v4.runtime.ParserRuleContext;
  * configured by more than one statement (mixed brace + flat input, or apply-groups inheritance,
  * which copies the source group's contexts via {@link #copyInto}). The contexts are transient: this
  * tree is built per-parse and discarded after extraction, never serialized into the configuration.
+ *
+ * <p><b>Visit tracking.</b> To let the {@code annotate} tool report SR-OS statements that are
+ * silently ignored (parsed and accepted, but never read by {@link SrosFeatureExtractor}), every
+ * tree shares a {@link VisitRecorder}. While the recorder is {@linkplain #beginVisitTracking()
+ * active} the read accessors ({@link #getChild}, {@link #getChildren}, {@link #hasChildren}) record
+ * the nodes they touch. The extractor's normal reads thus mark visited nodes automatically — it
+ * needs no visit-tracking code of its own. Tracking is activated only for the feature-extraction
+ * pass (not the build or the {@link SrosPreprocessor} walk, whose accesses must not count as
+ * "read"), after which {@link SrosSilentSyntax} sweeps the tree for unvisited subtrees. The
+ * recorder is transient, like the contexts: it is per-parse and never serialized.
  */
 @ParametersAreNonnullByDefault
 public final class SrosStatementTree {
 
+  /** Creates a root node, with a fresh (inactive) visit recorder shared by the whole tree. */
   public SrosStatementTree() {
-    _children = new LinkedHashMap<>();
-    _defContexts = new ArrayList<>(1);
+    this(new VisitRecorder());
   }
 
-  /** Returns the child subtree for {@code word}, creating it if absent. */
+  private SrosStatementTree(VisitRecorder recorder) {
+    _children = new LinkedHashMap<>();
+    _defContexts = new ArrayList<>(1);
+    _recorder = recorder;
+  }
+
+  /** Returns the child subtree for {@code word}, creating it (sharing the recorder) if absent. */
   public @Nonnull SrosStatementTree getOrAddChild(String word) {
-    return _children.computeIfAbsent(word, w -> new SrosStatementTree());
+    return _children.computeIfAbsent(word, w -> new SrosStatementTree(_recorder));
   }
 
   /** Returns the child subtree for {@code word}, or {@code null} if absent. */
   public @Nullable SrosStatementTree getChild(String word) {
-    return _children.get(word);
+    _recorder.record(this);
+    SrosStatementTree child = _children.get(word);
+    if (child != null) {
+      _recorder.record(child);
+    }
+    return child;
   }
 
   /** The children of this node, keyed by path word, in insertion order. */
   public @Nonnull Map<String, SrosStatementTree> getChildren() {
+    _recorder.record(this);
+    _children.values().forEach(_recorder::record);
     return _children;
   }
 
   public boolean hasChildren() {
+    _recorder.record(this);
     return !_children.isEmpty();
   }
 
@@ -117,6 +144,62 @@ public final class SrosStatementTree {
     }
   }
 
+  // --- visit tracking (annotate-only; see class javadoc) ----------------------------------------
+
+  /**
+   * Begins recording read accesses on this whole tree. Call once, on the root, immediately before
+   * the feature-extraction pass so that {@link SrosFeatureExtractor}'s reads mark visited nodes.
+   */
+  public void beginVisitTracking() {
+    _recorder.activate();
+  }
+
+  /**
+   * Stops recording read accesses. Call before {@link SrosSilentSyntax} sweeps the tree, so the
+   * sweep's own accessor calls do not mark nodes as visited.
+   */
+  public void endVisitTracking() {
+    _recorder.deactivate();
+  }
+
+  /** Whether this node was read while visit tracking was active. */
+  public boolean wasVisited() {
+    return _recorder.isVisited(this);
+  }
+
   private final @Nonnull Map<String, SrosStatementTree> _children;
   private final @Nonnull List<ParserRuleContext> _defContexts;
+
+  /** The visit recorder shared by every node of one tree. */
+  private final @Nonnull VisitRecorder _recorder;
+
+  /**
+   * Records which {@link SrosStatementTree} nodes are read while {@linkplain #active active}. One
+   * instance is shared by all nodes of a tree (threaded through {@link #getOrAddChild}). Recording
+   * is by object identity; it is a no-op until {@link #activate} is called, so the build and the
+   * {@link SrosPreprocessor} walk do not count as reads.
+   */
+  private static final class VisitRecorder {
+    private boolean _active;
+    private final @Nonnull Set<SrosStatementTree> _visited =
+        Collections.newSetFromMap(new IdentityHashMap<>());
+
+    void activate() {
+      _active = true;
+    }
+
+    void deactivate() {
+      _active = false;
+    }
+
+    void record(SrosStatementTree node) {
+      if (_active) {
+        _visited.add(node);
+      }
+    }
+
+    boolean isVisited(SrosStatementTree node) {
+      return _visited.contains(node);
+    }
+  }
 }

@@ -53,7 +53,21 @@ public final class SrosControlPlaneExtractor implements ControlPlaneExtractor {
     // populate the typed feature model from it.
     SrosStatementTree root = cb.getTree();
     SrosPreprocessor.preprocess(root, _w);
+
+    // For the annotate tool, track which tree nodes the feature extractor reads (it has no
+    // visit-tracking code of its own — see SrosStatementTree), then report the rest as silently
+    // ignored. SR-OS has no `_null` grammar rules, so this replaces the parse-time mechanism that
+    // grammar-driven vendors use. Tracking starts after preprocessing so that the preprocessor's
+    // tree walk does not count as "read".
+    boolean annotate = _parser.getSettings().getPrintParseTree();
+    if (annotate) {
+      root.beginVisitTracking();
+    }
     SrosFeatureExtractor.extract(root, _configuration, _w, _parser, _text);
+    if (annotate) {
+      root.endVisitTracking();
+      SrosSilentSyntax.sweep(root, _silentSyntax, _text);
+    }
   }
 
   private org.batfish.vendor.sros.representation.SrosConfiguration _configuration;
