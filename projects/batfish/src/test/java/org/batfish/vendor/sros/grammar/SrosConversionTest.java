@@ -57,7 +57,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests of SR-OS conversion (P5) from the typed feature model to the vendor-independent model. */
+/** Tests of SR-OS conversion from the typed feature model to the vendor-independent model. */
 public final class SrosConversionTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -85,7 +85,8 @@ public final class SrosConversionTest {
     assertThat(toR2.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     assertThat(toR2.getConcreteAddress().toString(), equalTo("10.0.0.0/31"));
     // The L3 interface binds its physical port: a BIND dependency lets a user Layer-1 topology
-    // (which names the port) drive this interface's L3 adjacency and fate. (P6.)
+    // (which names the port) drive this interface's L3 adjacency and fate (resolved in
+    // post-processing).
     assertThat(
         toR2.getDependencies(),
         contains(new Interface.Dependency("1/1/c1/1", Interface.DependencyType.BIND)));
@@ -96,7 +97,7 @@ public final class SrosConversionTest {
     assertTrue(port.getAdminUp());
 
     // SR-OS installs the connected route but not a local /32 host route for the interface IP;
-    // the address metadata suppresses Batfish's local-route generation (P5-V finding).
+    // the address metadata suppresses Batfish's local-route generation (lab-validated).
     ConnectedRouteMetadata toR2Meta = toR2.getAddressMetadata().get(toR2.getConcreteAddress());
     assertThat(toR2Meta, not(nullValue()));
     assertThat(toR2Meta.getGenerateLocalRoute(), equalTo(Boolean.FALSE));
@@ -133,7 +134,7 @@ public final class SrosConversionTest {
     // local-ip is left unset: SR-OS auto-selects the source address per peer, and for a
     // directly-connected eBGP peer Batfish resolves it from the connected interface toward the
     // peer. Forcing the system address (1.1.1.1) here would put the local IP off the peering
-    // subnet and the session would never establish (caught by lab validation, P5-V).
+    // subnet and the session would never establish (caught by lab validation).
     assertThat(peer.getLocalIp(), nullValue());
     assertNotNull(peer.getIpv4UnicastAddressFamily());
   }
@@ -178,7 +179,7 @@ public final class SrosConversionTest {
    *   <li>import: a received BGP route is accepted by default (no import policy).
    *   <li>export: a BGP route is accepted, but a connected route that no explicit export policy
    *       matches is rejected by the default-accept backstop — so connected interface prefixes are
-   *       not leaked into iBGP (confirmed against the L3 lab, where SR-OS advertised only its
+   *       not leaked into iBGP (confirmed against the iBGP lab, where SR-OS advertised only its
    *       policy-matched system prefix and its BGP-learned routes, not its connected /31s).
    * </ul>
    */

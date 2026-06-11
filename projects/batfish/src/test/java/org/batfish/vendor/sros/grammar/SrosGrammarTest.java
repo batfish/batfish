@@ -26,10 +26,10 @@ import org.junit.Test;
 public final class SrosGrammarTest {
 
   /**
-   * The captured P0 lab r1 config (full {@code admin show configuration} output) must parse with no
+   * The captured lab r1 config (full {@code admin show configuration} output) must parse with no
    * FATAL parse errors. {@link #parseVendorConfig} runs with {@code throwOnParserError} + {@code
    * throwOnLexerError} set, so any FATAL would throw; reaching the assertions proves the zero-FATAL
-   * P3 gate, and we additionally assert nothing was left unrecognized.
+   * parse goal, and we additionally assert nothing was left unrecognized.
    */
   @Test
   public void testR1ConfigParsesCleanly() {
@@ -46,10 +46,9 @@ public final class SrosGrammarTest {
   }
 
   /**
-   * The P3 acceptance test (findings "OPEN ARCH QUESTION", dhalperi 2026-06-04): the brace form,
-   * the flat {@code /configure ...} form, and a mix of the two describing the same configuration
-   * must all yield the same extracted model. The mixed case is the one that breaks designs assuming
-   * one form per file, so it is exercised explicitly.
+   * The mixed-form acceptance test: the brace form, the flat {@code /configure ...} form, and a mix
+   * of the two describing the same configuration must all yield the same extracted model. The mixed
+   * case is the one that breaks designs assuming one form per file, so it is exercised explicitly.
    */
   @Test
   public void testBraceFlatMixedEquivalence() {

@@ -1,8 +1,14 @@
 # Nokia SR-OS-Specific Parsing and Extraction
 
 This document covers the unique aspects of parsing and extracting Nokia SR-OS
-(SR-SIM) configurations in Batfish. It is written incrementally as support is
-built; sections appear as the corresponding pipeline stage lands.
+(SR-SIM) configurations in Batfish, following the pipeline from format detection
+through parsing, extraction, conversion, post-processing, and RIB validation.
+
+The baseline validation lab, referenced throughout, is a Nokia SR-OS router
+(`r1`) peered over eBGP with an Arista cEOS router (`r2`); because cEOS is
+already fully modeled, r2 acts as an independent oracle for the SR-OS side.
+Later feature labs add more SR-OS routers (`r3`, PEs) and are linked under
+[Feature coverage](#feature-coverage).
 
 ## Configuration format
 
@@ -42,21 +48,23 @@ alone (which collides with Juniper/Palo Alto heuristics):
 `checkSros` runs **before** `checkJuniper`/`checkCisco` because an SR-OS brace
 config contains tokens those heuristics would otherwise claim (e.g.
 `policy-options {`, `interface …`). RANCID content types `sros` and `sros-md`
-also map to `NOKIA_SROS` (previously routed to `UNSUPPORTED`).
+also map to `NOKIA_SROS`.
 
-## Parser (P3)
+## Parser
 
 The parser lives under the vendor-scoped path
 [`org.batfish.vendor.sros.grammar`](../../../projects/batfish/src/main/antlr4/org/batfish/vendor/sros/grammar/):
 `SrosLexer.g4`, `SrosParser.g4`, `SrosCombinedParser`, `SrosBaseLexer`,
-`SrosControlPlaneExtractor`, and `SrosConfigurationBuilder`. It produces an
-`SrosConfiguration` (in the `representation` subpackage).
+`SrosControlPlaneExtractor`, and `SrosConfigurationBuilder`. The builder produces
+the canonical statement tree; the extraction-stage classes that turn it into the
+typed `SrosConfiguration` (in the `representation` subpackage) are covered under
+[Extraction](#extraction).
 
 ### Canonical form: one hierarchical grammar, not a flatten pass
 
-P1 left an open architecture question: flatten brace → flat `/configure …` lines
+There are two viable architectures: flatten brace → flat `/configure …` lines
 (the Junos/Palo Alto pattern), or keep a single hierarchical grammar and treat
-flat lines as ordinary statements. **P3 chose the single-grammar
+flat lines as ordinary statements. SR-OS uses the **single-grammar
 hierarchical-canonical approach.** One grammar accepts all three input forms,
 because they are structurally the same token stream of statements:
 
@@ -77,8 +85,8 @@ Why this over the flatten pipeline:
   `FlattenerLineMap` round-trip.
 - **True source line numbers are preserved**, so parse warnings point at the
   original config without offset bookkeeping.
-- **Fewest moving parts** for the P3 gate (parse the captured config with zero
-  FATAL warnings). The Palo Alto flattener already builds a `SetStatementTree`
+- **Fewest moving parts** to parse the captured config with zero FATAL
+  warnings. The Palo Alto flattener already builds a `SetStatementTree`
   internally, so the "flatten" and "tree" camps converge anyway.
 
 This mirrors the *spirit* of the Junos pipeline (one canonical statement form fed
@@ -87,14 +95,15 @@ to extraction) while avoiding the text round-trip.
 ### Tests
 
 [`SrosGrammarTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosGrammarTest.java)
-covers the P3 gate and the mixed-form acceptance requirement:
+covers parsing the captured config with zero FATAL warnings and the mixed-form
+acceptance requirement:
 
-- the captured P0 lab r1 `admin show configuration` parses with zero FATAL
+- the captured lab r1 `admin show configuration` parses with zero FATAL
   warnings and nothing unrecognized;
 - pure-brace, pure-flat, and mixed inputs describing the same configuration
   produce the identical canonical statement list.
 
-## Extraction (P4)
+## Extraction
 
 Extraction turns the canonical statement stream into a navigable tree and then a
 typed feature model.
@@ -104,7 +113,8 @@ typed feature model.
 [`SrosConfigurationBuilder`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/grammar/SrosConfigurationBuilder.java)
 builds an
 [`SrosStatementTree`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/grammar/SrosStatementTree.java)
-alongside the P3 canonical statement list, from the **same word stream**, so the
+alongside the canonical statement list, from the [same word
+stream](#canonical-form-one-hierarchical-grammar-not-a-flatten-pass), so the
 brace, flat `/configure …`, and mixed forms all produce an identical tree. Every
 word of every statement is one level of the tree, so a leaf's value is the single
 child key under the leaf node (`card 1 card-type iom-1` →
@@ -113,18 +123,20 @@ children of the `policy` node (order preserved for `ordered-by user` lists).
 
 ### Preprocessor (`SrosPreprocessor`)
 
-The two mechanisms P1 deferred from the grammar run here, on the tree, before
+Two mechanisms kept out of the grammar run here, on the tree, before
 feature extraction:
 
 - **`apply-groups` expansion** — grafts the matching subtree of each
   `groups group "<name>"` definition onto the branch that applied it. Replicates
-  the §4.13 rules: local config wins over inherited, first-listed group wins,
+  the apply-groups precedence rules (MD-CLI User Guide §4.13, "Using
+  configuration groups"): local config wins over inherited, first-listed group wins,
   `apply-groups-exclude` suppresses a group at a branch, and group list keys may
   be regexes (`interface "<to-.*>"`) matched against the branch path. Runs to
   convergence so groups that themselves apply groups resolve.
 - **`delete`/`-` edits** — incremental mutations that remove the named subtree;
-  deleting an absent element is a silent no-op (§4.5). After expansion so a
-  delete can remove inherited content.
+  deleting an absent element is a silent no-op (MD-CLI User Guide §4.5,
+  "Deleting configuration elements"). After expansion so a delete can remove
+  inherited content.
 
 The `groups` definition container is pruned afterward (it is inheritance source,
 not configuration).
@@ -200,10 +212,10 @@ definition lines (a multi-line brace block records >1 line), undefined reference
 and unused (zero-referrer) structures; `AnnotateTest#testSros` covers the
 end-to-end annotate output.
 
-## Conversion (P5)
+## Conversion
 
-`SrosConfiguration.toVendorIndependentConfigurations()` converts the typed P4
-model into the vendor-independent `Configuration`. The conversion logic lives in
+`SrosConfiguration.toVendorIndependentConfigurations()` converts the typed
+feature model into the vendor-independent `Configuration`. The conversion logic lives in
 [`SrosConversions`](../../../projects/batfish/src/main/java/org/batfish/vendor/sros/representation/SrosConversions.java).
 The SR-OS-specific semantics that shape it:
 
@@ -292,10 +304,11 @@ red-flag warning. It also asserts the port / router-interface split (`to-r2` is
 `LOGICAL` with a `BIND` dependency on the addressless `PHYSICAL` port
 `1/1/c1/1`), the structure definitions/references and undefined/unused-structure
 detection, and the over-approximation warning for an unmodeled prefix-list match
-type. `SrosExtractionTest` covers group→neighbor inheritance on the model
+type (see [Prefix-list match-type bounds](#prefix-list-match-type-bounds-sros_prefix_bounds-batfishbatfish9990)).
+`SrosExtractionTest` covers group→neighbor inheritance on the model
 (`type`/`peer-as`/policies).
 
-## Post-processing (P6)
+## Post-processing
 
 Post-processing (`Batfish.postProcessSnapshot`) is largely vendor-independent —
 interface dependency resolution, derived bandwidth/IGP costs, Layer-1 topology
@@ -310,7 +323,7 @@ exists *because of* post-processing:
   router-interface (`to-r2`) — the port path is what containerlab/the device
   expose. Modeling the port as a distinct `PHYSICAL` interface means the L1 edge
   canonicalizes to a real interface and survives into the *active logical* L1
-  topology. If the L3 interface were the only thing modeled (the pre-P6 design),
+  topology. If the L3 interface were the only thing modeled,
   the L1 endpoint `1/1/c1/1` would resolve to `INVALID_INTERFACE`, the edge would
   be silently dropped, and the cross-vendor adjacency would form only by the
   same-subnet fallback in `HybridL3Adjacencies` (which holds only because the
@@ -324,9 +337,10 @@ exists *because of* post-processing:
   bound `to-r2` active; `system` (loopback) stays active. No SR-OS interface is
   spuriously deactivated.
 
-There are no SR-OS aggregate/redundant interfaces or OSPF/EIGRP in the current
-lab, so the bandwidth-sum and IGP-cost post-processing steps are not yet
-exercised; they will be when a later lab (P8+) introduces them.
+The bandwidth-sum and IGP-cost post-processing steps are exercised by later
+features: OSPF derives per-interface cost from `reference-bandwidth` (see
+[OSPF](#ospf-sros_ospf-sros_ospf_multiarea)), and a LAG sums its member-port
+bandwidth (see [LAG](#lag-sros_aggregate)).
 
 [`SrosPostProcessingTest`](../../../projects/batfish/src/test/java/org/batfish/vendor/sros/grammar/SrosPostProcessingTest.java)
 loads the captured `sros_ceos_ebgp` lab (SR-OS r1 + cEOS r2 + the user L1
@@ -336,15 +350,15 @@ BIND dependency; the user L1 edge (named by the port) survives into the active
 logical L1; the cross-vendor L3 edge `r1:to-r2 ↔ r2:Ethernet1` forms; and the
 eBGP session between r1 and r2 is established.
 
-## RIB validation (P7)
+## RIB validation
 
-P7 validates the data-plane output of the SR-OS pipeline — r1's computed main
-RIB and BGP RIB — against the device's own operational state, captured as JSON
+RIB validation checks the data-plane output of the SR-OS pipeline — r1's
+computed main RIB and BGP RIB — against the device's own operational state, captured as JSON
 from the MD-CLI state tree (`info json /state router "Base" route-table` and
 `… bgp rib`). This is the SR-OS-side counterpart to what the cEOS validator does
-for r2, and it closes the loop: every pipeline stage from parse through
-post-processing is now checked against ground truth, not just asserted in unit
-tests. The validation harness lives in the sibling `lab-validation` repo
+for r2: it checks the data-plane output of every pipeline stage from parse
+through post-processing against device ground truth, complementing the
+per-stage unit tests. The validation harness lives in the sibling `lab-validation` repo
 (`SrosValidator`); this section records the SR-OS modeling facts that make the
 comparison correct, since they constrain conversion.
 
@@ -362,7 +376,7 @@ main RIB matches all three.
 **BGP RIB.** The state `bgp rib local-rib` carries each route's attributes by
 reference: an `attr-id` indexing a top-level `attr-sets` table that holds
 origin, next-hop, MED, and the nested AS-path. The validator joins them. The
-critical modeling fact (grounded at P5-V, see below) is that the local-rib
+critical modeling fact is that the local-rib
 **over-lists** relative to the operational BGP table: it includes the device's
 own `owner == "local"` routes (the connected/loopback prefixes) alongside the
 `owner == "bgp"` learned ones. Those local entries carry `in-rtm: false` and are
@@ -373,12 +387,11 @@ learned route (`2.2.2.2/32`), and Batfish's BGP RIB holds exactly that one route
 compares only the learned subset (`owner == "bgp"`, best) — like-for-like
 against Batfish's BGP RIB, not a workaround.
 
-**Why r1 advertises from the main RIB.** Because the local-rib over-lists,
-naively treating it as BGP-origination would lead to switching Batfish to
-BGP-RIB-based export. The evidence says otherwise: SR-OS advertises from the
-**main RIB** (Junos-like), so conversion keeps `setExportBgpFromBgpRib(false)`.
-This was the key conversion decision validated at P5-V and re-confirmed by the
-P7 RIB comparison passing without it.
+**Why r1 advertises from the main RIB.** SR-OS advertises from the **main RIB**
+(Junos-like), not by origination into the BGP RIB, so conversion sets
+`setExportBgpFromBgpRib(false)`. The local-rib over-listing above is what makes
+this non-obvious — taken at face value it would suggest BGP-RIB-based export —
+but the RIB comparison passes with main-RIB export and confirms it.
 
 The comparison uses the same cost-based route matcher as every other vendor
 validator: unmatched routes on either side score infinite cost and surface as
@@ -386,16 +399,15 @@ failures, so a green result means the device and Batfish RIBs are
 route-for-route equal — not that one side was empty. No r1 RIB check is
 sickbayed.
 
-## Complexity ladder (P8)
+## Feature coverage
 
-After the first eBGP lab validated end to end, the model was grown one feature
-"rung" at a time, each with its own live lab (in `lab-validation/snapshots/`)
-validated against ground truth. All eight rungs below are done — interfaces +
-static (L1), OSPF (L2), iBGP (L3), route reflection (L4), BGP policy depth (L5),
-redistribution (L6), multi-VRF/VPRN (L7), and deliberate misconfiguration (L8).
-The SR-OS facts each one pinned down:
+The model covers the features below, each validated against device ground truth
+captured from a live SR-SIM lab. The parenthesized name in each heading links to
+that lab's snapshot in the separate
+[`batfish/lab-validation`](https://github.com/batfish/lab-validation) repo. The
+sections record the SR-OS facts that shaped conversion.
 
-### L1 — static routes (`sros_static`)
+### Static routes ([`sros_static`][sros_static], [`sros_ecmp`][sros_ecmp])
 
 `router "<name>" static-routes route <prefix> route-type unicast` with a
 `next-hop <ip>` or a `blackhole` converts to a VI `StaticRoute` (`NextHopIp` /
@@ -407,37 +419,24 @@ admin-state leaf is accepted into config but absent from the route-table, so
 conversion skips a non-enabled route. A `loopback` router-interface (no port)
 becomes a VI `LOOPBACK` and installs its connected prefix.
 
-### L3 — iBGP (`sros_ibgp`)
+A `static-routes route <prefix>` with multiple `next-hop` entries is an **ECMP**
+route. Extraction emits one VI `StaticRoute` per next-hop (each with its own
+admin-state/metric/preference) instead of taking the first and warning;
+Batfish's best-preference selection installs the equal-preference legs as ECMP
+and drops worse ones. Device-confirmed: two equal-preference next-hops both
+install (route-table `nexthop` list has two entries); two unequal-preference
+next-hops install only the lower-preference leg.
 
-A second SR-OS router peers iBGP (`group … type internal`, peer-as = local AS).
-This exercised the P5 iBGP default-accept path for the first time and forced a
-correction: **iBGP default-accept propagates BGP routes, it does not pull
-connected/static/IGP routes into BGP**. The generated default-accept policy was
-a blanket accept-all, which — combined with `setExportBgpFromBgpRib(false)`
-(export runs over the whole main RIB) — leaked a router's connected /31s into
-iBGP. The default-accept policy is now guarded on the route's protocol being
-BGP/iBGP (on import the route is always a received BGP route, so import
-default-accept is preserved). Validator note: SR-OS reports both eBGP and iBGP
-learned routes as protocol `bgp` in its route-table, while Batfish labels an
-iBGP-learned main-RIB route `ibgp`; the validator maps SR-OS `bgp` to either.
-iBGP-learned routes are admin **170**, same as eBGP on SR-OS.
+### Aggregate routes ([`sros_aggregate`][sros_aggregate])
 
-### L5 — BGP policy depth (`sros_bgp_policy`)
+`router "Base" aggregates aggregate <prefix>` converts to a discard
+`GeneratedRoute` at admin distance 130 (the device's aggregate preference).
+Batfish's generated-route activation matches SR-OS — the aggregate installs only
+when a contributing more-specific route exists — so no explicit contributor
+check is needed. Device-confirmed: with `summary-only`, the peer learns the /16
+aggregate but not the /24 contributors.
 
-Policy-statement entry `action` set-clauses now convert: `metric set <n>` →
-`SetMetric` (BGP MED), `as-path-prepend as-path <asn> [repeat <n>]` →
-`PrependAsPath` (the AS repeated `n` times), and `community add ["<name>"]` →
-`SetCommunities` unioning the named `policy-options community` list's members
-onto the route. Prefix-list match-type **bounds** are now captured:
-`through-length` / `start-length` / `end-length` nest in the block hanging off
-the type value word (`type <through|range> { … }`) in the canonical tree, so
-`through` converts to the exact window `[len, through-length]` and `range` to
-`[start-length, end-length]` — removing the P5 "this length or longer"
-over-approximation (and its warning) for those types (`to`/`address-mask` still
-over-approximate). Validated via the cEOS oracle: r2 learns r1's routes with the
-MED and prepended AS-path that r1's policy sets.
-
-### L2 — OSPF single area (`sros_ospf`)
+### OSPF ([`sros_ospf`][sros_ospf], [`sros_ospf_multiarea`][sros_ospf_multiarea])
 
 `router "<name>" ospf <instance>` converts to a VI `OspfProcess` (per VRF) with
 its areas and, on each OSPF interface, `OspfInterfaceSettings` (area, cost,
@@ -446,159 +445,44 @@ from those interface settings in post-processing, so conversion only sets the
 interface settings and area membership. SR-OS facts: OSPF **internal** route
 preference (admin distance) is **10** (external 150) — not the Cisco 110; the
 default `reference-bandwidth` is 100 Gbps (so a 100 Gbps port derives cost 1); an
-explicit interface `metric` wins, a loopback is cost 0. The lab's two SR-OS
-routers form a point-to-point adjacency and each learns the other's system /32.
+explicit interface `metric` wins, a loopback is cost 0. Two SR-OS routers form a
+point-to-point adjacency and each learns the other's system /32.
 
-### L4 — BGP route reflection (`sros_rr`)
+**Multi-area** uses the same path — the area loop converts N areas to N VI
+`OspfArea`s, making a router with interfaces in two areas an ABR, and Batfish's
+dataplane computes the inter-area (IA) routes. Device-confirmed:
+each side learns the other area's prefixes as OSPF IA, preference 10, via the
+ABR.
 
-A BGP group/neighbor `cluster { cluster-id <ip> }` makes the peer a
-route-reflector client: conversion sets the VI peer's `clusterId` and the address
-family's `routeReflectorClient`, so Batfish reflects routes between clients.
-`next-hop-self true` prepends a `SetNextHop(self)` to the peer export policy.
-Both inherit group→neighbor. Lab finding: with no IGP underlay, an RR's clients
-**receive** a reflected route but mark it invalid (unresolvable originator
-next-hop) and don't install it — `next-hop-self` on the RR is what lets the
-clients resolve it. With it, each client installs the other's loopback.
+**OSPF external redistribution does not work via an `export-policy` on SR-SIM
+26.3.R1**: an `ospf <n> export-policy [p]` accepting static/connected routes
+committed cleanly but never made the router an ASBR or originated any AS-external
+LSA (`show router ospf status` stayed `AS Border Router: False`, 0 external
+LSAs), for static (by prefix-list and by `from protocol name [static]`) and for
+connected (`from protocol name [direct]`). BGP export of the same statics works
+(see [Redistribution](#redistribution-and-route-origin-sros_redist)), so this is
+OSPF-export-specific. Because the emulator produced no external LSAs to validate
+against, OSPF-external (E1/E2) redistribution is left unmodeled and `ospf
+export-policy` is not converted — this is a missing feature, not a Batfish bug to
+fix, and would need the device (or a newer SR-OS release) to actually redistribute
+before it could be modeled. (Generic OSPF external admin-distance defaults
+`OSPF_E1`/`OSPF_E2` exist in the `RoutingProtocol` defaults, but no SR-OS path
+currently produces such routes.)
 
-### L6 — redistribution (`sros_redist`)
-
-A policy entry `from { protocol { name [static direct bgp ospf isis] } }`
-converts to a `MatchProtocol` guard (ANDed with any `from prefix-list`). This
-also fixed a correctness bug: an entry whose only criterion was a (previously
-unmodeled) from-protocol guarded TRUE and leaked **every** route. Origin/MED on
-locally-sourced routes was refined here: a **connected/direct** route advertised
-by an export policy carries origin **IGP**, a **redistributed** route
-(static/OSPF/…) carries origin **INCOMPLETE**; and a non-BGP route is advertised
-with **MED 0** unless a policy explicitly sets the metric (an entry's `metric
-set` still wins). The cEOS oracle confirms the redistributed static prefix
-appears with origin incomplete and MED 0.
-
-### L7 — multi-VRF / VPRN (`sros_vprn`)
-
-`service vprn "<name>"` is a routing instance in its own VRF, modeled as a
-`Router` keyed by the service-name (reusing the interface/static/OSPF/BGP feature
-set), which conversion maps to a same-named VRF — exactly like a non-Base
-`router "<name>"`. So a VPRN's routes/interfaces land in their own VRF, separate
-from Base, with no leak. The validator was extended to validate VPRN VRFs:
-`info json /state service vprn "<name>" route-table`/`interface *` is captured
-and compared (routes tagged with the service-name as the VRF) against Batfish's
-corresponding VRF, so VRF separation is checked substantively, not just on Base.
-
-### L8 — deliberate misconfiguration (`sros_misconfig`)
-
-An AS-mismatch lab (r1's ebgp group sets peer-as 65099 while r2 is AS 65002) —
-no Batfish modeling change, this validates the **diagnostics**: Batfish predicts
-the eBGP session `NOT_COMPATIBLE` on both sides and learns no BGP routes,
-matching the device (r1's BGP RIB has 0 learned routes; r2 never learns r1's
-system prefix). Finding: **SR-OS enforces the BGP import/export policy leafref
-at commit** and rejects a reference to a non-existent policy-statement
-(`MGMT_CORE #224`), aborting the whole startup config — so a committed device
-config cannot carry an undefined policy reference. Batfish's `undefinedReferences`
-for SR-OS policies is therefore unit-testable but not lab-observable on a device.
-
-Tooling caveat: the `lab_builder` SR-OS `interface_up` precondition check is a
-false-negative on this lab — its heuristic ("`up` present and `down` absent" in
-the `show router interface` line) trips on the `Up/Down` column header, so it
-reports the (genuinely up) link interface as down. It is a collection-time
-precondition, not a lab test, so it does not affect the green result; the lab is
-collected regardless and validates 13/13.
-
-## Follow-up rungs (P9): ECMP, prefix-list bounds, communities, IS-IS, L3VPN
-
-A second pass closed the two deferred review bugs and added three more rungs,
-each modeled against a fresh live SR-SIM 26.3.R1 collection.
-
-### Empty same-line block `{ }` (grammar)
-
-The device renders a list entry with no body inline as `<words> { }` (open
-brace, optional whitespace, close brace, no newline) — e.g. the `to-prefix`es
-of a `prefix-list ... type to`, `mask-pattern`s, or a community `member`. The
-`block` rule required `OPEN_BRACE NEWLINE+ ...` and rejected `{ }` with a FATAL
-"extraneous input '}' expecting NEWLINE", corrupting any empty-body list entry;
-the rule now also accepts `OPEN_BRACE CLOSE_BRACE`. Lesson banked: test fixtures
-must mirror device-rendered output (inline empty blocks), not idealized
-hand-written multi-line form — the bug was masked by a `{ \n }` fixture and
-exposed only by a device-collected config.
-
-### ECMP static routes (`sros_ecmp`, batfish/batfish#9989)
-
-A `static-routes route <prefix>` with multiple `next-hop` entries is an ECMP
-route. Extraction now emits one VI `StaticRoute` per next-hop (each with its own
-admin-state/metric/preference) instead of taking the first and warning;
-Batfish's best-preference selection installs the equal-preference legs as ECMP
-and drops worse ones. Device-confirmed: two equal-preference next-hops both
-install (route-table `nexthop` list has two entries); two unequal-preference
-next-hops install only the lower-preference leg.
-
-### prefix-list `to` / `address-mask` bounds (batfish/batfish#9990)
-
-Both were over-approximated as "this length or longer" and warned. Device
-probing settled the semantics. `type to` is a **length-range match**: a route
-matches iff it is contained in the base network and its length is in
-`[base-length .. to-prefix-length]` — the to-prefix supplies the upper length
-bound (the sibling of `through`), and must be nested in the base (commit rejects
-a non-nested to-prefix: `PLCY #1001 ... does not share same most significant
-bits`). It is modeled as one exact `RouteFilterLine` per ancestor length of each
-to-prefix, so off-path siblings do not match (a single base-prefix line with a
-length range would wrongly match them). `address-mask` with a contiguous mask
-equal to the base length is an exact match; a non-contiguous mask cannot be a
-length `SubRange` and is over-approximated with a warning.
-
-### BGP communities + complex attributes (`sros_bgp_comm_in`)
-
-The cEOS oracle (r2) advertises three loopbacks to r1 tagged with standard
-communities, MED, and AS-path prepend; r1 imports all, so its BGP RIB carries
-non-empty attributes validated on both sides. Finding: **SR-OS renders
-well-known communities symbolically** (`no-export`), so the validator
-canonicalizes them to numeric (`no-export` → `65535:65281`, etc.) to match
-Batfish, raising on an unknown symbolic name rather than masking. Also: for a
-BGP route the device's main-RIB metric is the IGP cost to the next-hop (0 for a
-directly-connected peer) while Batfish carries the MED into the main-RIB metric,
-so the validator compares the BGP MED on the BGP RIB and skips the main-RIB
-metric for BGP-protocol routes.
-
-### IS-IS single area (`sros_isis`)
+### IS-IS ([`sros_isis`][sros_isis])
 
 `router "<name>" isis <instance>` is parsed into a typed `IsisProcess`
 (system-id, area-address, level-capability, per-interface interface-type/passive)
 and converted to a VI `IsisProcess`: the NET is the first area-address +
 system-id + an `00` N-selector, a passive interface advertises its subnet but
 forms no adjacency (VI `PASSIVE` mode), and per-level interface settings carry
-the point-to-point flag. SR-OS IS-IS route preferences (admin distances) were
-added to the `NOKIA_SROS` `RoutingProtocol` defaults — L1 15 / L2 18 internal,
-L1 160 / L2 165 external — confirmed on device (an L2 internal route installs at
-preference 18, default interface metric 10). Validated with a two-SR-SIM L2
-adjacency: each router learns the other's system loopback via IS-IS.
+the point-to-point flag. SR-OS IS-IS route preferences (admin distances) are in
+the `NOKIA_SROS` `RoutingProtocol` defaults — L1 15 / L2 18 internal, L1 160 / L2
+165 external — confirmed on device (an L2 internal route installs at preference
+18, default interface metric 10). Validated with a two-SR-SIM L2 adjacency: each
+router learns the other's system loopback via IS-IS.
 
-### Multi-VRF L3VPN (`sros_vprn_bgp`, partial — batfish/batfish#9991)
-
-A real MPLS L3VPN between two SR-SIM PEs (OSPF+LDP underlay, MP-BGP `vpn-ipv4`
-between loopbacks, VPRN `red` with RD + shared `vrf-target`). SR-OS extraction
-captures `bgp-ipvpn mpls` route-distinguisher + vrf-target import/export
-route-targets (`BgpIpvpn`), and conversion sets the route-distinguisher on the
-VI VRF. The PE-to-PE vpn-ipv4 route import is **not** modeled — the VI datamodel
-has no VPNv4 address family and its cross-VRF leaking is intra-node only — so the
-VPRN's RT-imported routes (e.g. pe1 `red` learning `172.16.2.1/32`) are absent
-from the computed main RIB; those two main-RIB checks are sickbayed to
-batfish/batfish#9991. Everything else (config/interfaces/BGP RIB/RD-on-VRF)
-validates green. Device-confirmed: BGP-VPN learned route preference 170,
-resolved over an LDP tunnel; VPRN `red` stays separate from Base.
-
-## Follow-up rungs (P10): aggregate routes, LAG, multi-area OSPF, policy depth
-
-A third pass added four more feature areas, each modeled against a live SR-SIM
-26.3.R1 lab.
-
-### Aggregate routes (`sros_aggregate`)
-
-`router "Base" aggregates aggregate <prefix>` converts to a discard {@code
-GeneratedRoute} at admin distance 130 (the device's aggregate preference).
-Batfish's generated-route activation matches SR-OS — the aggregate installs only
-when a contributing more-specific route exists — so no explicit contributor
-check is needed. Device-confirmed: with `summary-only`, the peer learns the /16
-aggregate but not the /24 contributors.
-
-### LAG (`sros_aggregate`)
+### LAG ([`sros_aggregate`][sros_aggregate])
 
 `lag "<name>"` converts to an `AGGREGATED` interface whose member ports are
 `AGGREGATE` dependencies (post-processing sums their bandwidth) and channel-group
@@ -615,30 +499,171 @@ LAG interface's presence and the routes over it, not the bandwidth-sum value
 mandatory `administrative-key`, or the whole startup config is rejected at boot
 ("MGMT_CORE #236 … Missing mandatory fields").
 
-### Multi-area OSPF (`sros_ospf_multiarea`)
+### iBGP ([`sros_ibgp`][sros_ibgp])
 
-No conversion change was needed — the existing OSPF area loop already converts N
-areas to N VI `OspfArea`s, making a router with interfaces in two areas an ABR.
-Batfish's dataplane then computes the inter-area (IA) routes; device-confirmed
-(each side learns the other area's prefixes as OSPF IA, preference 10, via the
-ABR). **OSPF external redistribution does not work via an `export-policy` on
-SR-SIM 26.3.R1**: an `ospf <n> export-policy [p]` accepting static/connected
-routes committed cleanly but never made the router an ASBR or originated any
-AS-external LSA (`show router ospf status` stayed `AS Border Router: False`,
-0 external LSAs), for static (by prefix-list and by `from protocol name
-[static]`) and for connected (`from protocol name [direct]`). BGP export of the
-same statics works (see `sros_redist`), so this is OSPF-export-specific. E1/E2
-redistribution is therefore left unmodeled pending a dedicated probe.
+A second SR-OS router peers iBGP (`group … type internal`, peer-as = local AS).
+**iBGP default-accept propagates BGP routes; it does not pull connected/static/IGP
+routes into BGP.** The default-accept policy is guarded on the route's protocol
+being BGP/iBGP — a blanket accept-all, combined with `setExportBgpFromBgpRib(false)`
+(export runs over the whole main RIB), would leak a router's connected /31s into
+iBGP. On import the route is always a received BGP route, so the protocol guard
+preserves import default-accept. Validator note: SR-OS reports both eBGP and iBGP
+learned routes as protocol `bgp` in its route-table, while Batfish labels an
+iBGP-learned main-RIB route `ibgp`; the validator maps SR-OS `bgp` to either.
+iBGP-learned routes are admin **170**, same as eBGP on SR-OS.
 
-### Policy depth (`sros_policy_depth`)
+### BGP route reflection ([`sros_rr`][sros_rr])
 
-Extends policy-statement matching and actions beyond the P8 set:
+A BGP group/neighbor `cluster { cluster-id <ip> }` makes the peer a
+route-reflector client: conversion sets the VI peer's `clusterId` and the address
+family's `routeReflectorClient`, so Batfish reflects routes between clients.
+`next-hop-self true` prepends a `SetNextHop(self)` to the peer export policy.
+Both inherit group→neighbor. Lab finding: with no IGP underlay, an RR's clients
+**receive** a reflected route but mark it invalid (unresolvable originator
+next-hop) and don't install it — `next-hop-self` on the RR is what lets the
+clients resolve it. With it, each client installs the other's loopback.
+
+### BGP communities and complex attributes ([`sros_bgp_comm_in`][sros_bgp_comm_in])
+
+The cEOS oracle (r2) advertises three loopbacks to r1 tagged with standard
+communities, MED, and AS-path prepend; r1 imports all, so its BGP RIB carries
+non-empty attributes validated on both sides. Finding: **SR-OS renders
+well-known communities symbolically** (`no-export`), so the validator
+canonicalizes them to numeric (`no-export` → `65535:65281`, etc.) to match
+Batfish, raising on an unknown symbolic name rather than masking. Also: for a
+BGP route the device's main-RIB metric is the IGP cost to the next-hop (0 for a
+directly-connected peer) while Batfish carries the MED into the main-RIB metric,
+so the validator compares the BGP MED on the BGP RIB and skips the main-RIB
+metric for BGP-protocol routes.
+
+### Routing-policy match and action clauses ([`sros_bgp_policy`][sros_bgp_policy], [`sros_policy_depth`][sros_policy_depth])
+
+A `policy-statement` entry's match (`from`) and action clauses convert as
+follows. Match clauses:
+
+- `from prefix-list` → a disjunction of `MatchPrefixSet`/`NamedPrefixSet` guards
+  (see [Conversion → eBGP default-reject](#ebgp-default-reject-the-policy-chain)).
+- `from { protocol { name [static direct bgp ospf isis] } }` → a `MatchProtocol`
+  guard (see [Redistribution](#redistribution-and-route-origin-sros_redist)).
 - `from community { name <name> }` → match any member of the named community
   list (`MatchCommunities` over `HasCommunity(CommunityIs(...))`).
 - `from as-path { name <name> }` → match the named as-path list's `expression`
-  regex (`MatchAsPath` / `AsPathMatchRegex`); a new `AsPathList` model holds it.
-- actions `local-preference`, `metric add` (→ `IncrementMetric`), and `origin`.
-Device-confirmed behaviorally: a community-tagged route is accepted with
-local-pref 250 and a community add; an AS-path-matched route gets its metric
-incremented and origin set; `next-entry` chaining and `default-action` work as
-configured.
+  regex (`MatchAsPath` / `AsPathMatchRegex`; an `AsPathList` model holds it).
+
+Action set-clauses: `metric set <n>` → `SetMetric` (BGP MED); `metric add` →
+`IncrementMetric`; `as-path-prepend as-path <asn> [repeat <n>]` → `PrependAsPath`
+(the AS repeated `n` times); `community add ["<name>"]` → `SetCommunities`
+unioning the named `policy-options community` list's members onto the route; and
+`local-preference` and `origin`. Flow control: `next-entry` falls through to the
+next entry, `next-policy` advances to the next policy, and a `default-action`
+sets the policy's fall-through decision. Device-confirmed behaviorally: a
+community-tagged route is accepted with local-pref 250 and a community add; an
+AS-path-matched route gets its metric incremented and origin set; r2 learns r1's
+routes with the MED and prepended AS-path r1's policy sets.
+
+### Prefix-list match-type bounds ([`sros_prefix_bounds`][sros_prefix_bounds], batfish/batfish#9990)
+
+A prefix-list entry's match-type window is captured exactly where the type
+supports it. `through-length` / `start-length` / `end-length` nest in the block
+hanging off the type value word (`type <through|range> { … }`) in the canonical
+tree, so `through` converts to the exact window `[len, through-length]` and
+`range` to `[start-length, end-length]`.
+
+`type to` is a **length-range match**: a route matches iff it is contained in the
+base network and its length is in `[base-length .. to-prefix-length]` — the
+to-prefix supplies the upper length bound (the sibling of `through`), and must be
+nested in the base (commit rejects a non-nested to-prefix: `PLCY #1001 ... does
+not share same most significant bits`). It is modeled as one exact
+`RouteFilterLine` per ancestor length of each to-prefix, so off-path siblings do
+not match (a single base-prefix line with a length range would wrongly match
+them). `address-mask` with a contiguous mask equal to the base length is an exact
+match; a non-contiguous mask cannot be a length `SubRange` and is
+over-approximated with a warning.
+
+### Redistribution and route origin ([`sros_redist`][sros_redist])
+
+A policy entry `from { protocol { name [static direct bgp ospf isis] } }`
+converts to a `MatchProtocol` guard (ANDed with any `from prefix-list`). An entry
+whose only criterion is a from-protocol clause therefore matches only that
+protocol's routes — without the guard it would match TRUE and leak **every**
+route. Origin/MED on locally-sourced routes: a **connected/direct** route
+advertised by an export policy carries origin **IGP**, a **redistributed** route
+(static/OSPF/…) carries origin **INCOMPLETE**; and a non-BGP route is advertised
+with **MED 0** unless a policy explicitly sets the metric (an entry's `metric
+set` still wins). The cEOS
+oracle confirms the redistributed static prefix appears with origin incomplete
+and MED 0.
+
+### Multi-VRF / VPRN ([`sros_vprn`][sros_vprn])
+
+`service vprn "<name>"` is a routing instance in its own VRF, modeled as a
+`Router` keyed by the service-name (reusing the interface/static/OSPF/BGP feature
+set), which conversion maps to a same-named VRF — exactly like a non-Base
+`router "<name>"`. So a VPRN's routes/interfaces land in their own VRF, separate
+from Base, with no leak. The validator validates VPRN VRFs:
+`info json /state service vprn "<name>" route-table`/`interface *` is captured
+and compared (routes tagged with the service-name as the VRF) against Batfish's
+corresponding VRF, so VRF separation is checked substantively, not just on Base.
+
+### Multi-VRF L3VPN ([`sros_vprn_bgp`][sros_vprn_bgp], partial — batfish/batfish#9991)
+
+A real MPLS L3VPN between two SR-SIM PEs (OSPF+LDP underlay, MP-BGP `vpn-ipv4`
+between loopbacks, VPRN `red` with RD + shared `vrf-target`). SR-OS extraction
+captures `bgp-ipvpn mpls` route-distinguisher + vrf-target import/export
+route-targets (`BgpIpvpn`), and conversion sets the route-distinguisher on the
+VI VRF. The PE-to-PE vpn-ipv4 route import is **not** modeled — the VI datamodel
+has no VPNv4 address family and its cross-VRF leaking is intra-node only — so the
+VPRN's RT-imported routes (e.g. pe1 `red` learning `172.16.2.1/32`) are absent
+from the computed main RIB; those two main-RIB checks are sickbayed to
+batfish/batfish#9991. Everything else (config/interfaces/BGP RIB/RD-on-VRF)
+validates green. Device-confirmed: BGP-VPN learned route preference 170,
+resolved over an LDP tunnel; VPRN `red` stays separate from Base.
+
+### Diagnostics: deliberate misconfiguration ([`sros_misconfig`][sros_misconfig])
+
+An AS-mismatch lab (r1's ebgp group sets peer-as 65099 while r2 is AS 65002)
+exercises the **diagnostics** rather than any new conversion: Batfish predicts
+the eBGP session `NOT_COMPATIBLE` on both sides and learns no BGP routes,
+matching the device (r1's BGP RIB has 0 learned routes; r2 never learns r1's
+system prefix). Finding: **SR-OS enforces the BGP import/export policy
+leafref at commit** and rejects a reference to a non-existent policy-statement
+(`MGMT_CORE #224`), aborting the whole startup config — so a committed device
+config cannot carry an undefined policy reference. Batfish's `undefinedReferences`
+for SR-OS policies is therefore unit-testable but not lab-observable on a device.
+
+Tooling caveat: the `lab_builder` SR-OS `interface_up` precondition check is a
+false-negative on this lab — its heuristic ("`up` present and `down` absent" in
+the `show router interface` line) trips on the `Up/Down` column header, so it
+reports the (genuinely up) link interface as down. It is a collection-time
+precondition, not a lab test, so it does not affect the green result; the lab is
+collected regardless and validates 13/13.
+
+### Grammar: empty same-line block `{ }`
+
+The device renders a list entry with no body inline as `<words> { }` (open
+brace, optional whitespace, close brace, no newline) — e.g. the `to-prefix`es
+of a `prefix-list ... type to`, `mask-pattern`s, or a community `member`. The
+`block` rule originally required `OPEN_BRACE NEWLINE+ ...` and rejected `{ }`
+with a FATAL "extraneous input '}' expecting NEWLINE", corrupting any empty-body
+list entry; the rule also accepts `OPEN_BRACE CLOSE_BRACE`. Note: test fixtures
+must mirror device-rendered output (inline empty blocks), not idealized
+hand-written multi-line form — an idealized `{ \n }` fixture masks this case,
+which only a device-collected config exposes.
+
+<!-- Validation-lab snapshots in the batfish/lab-validation repo. -->
+[sros_static]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_static
+[sros_ecmp]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_ecmp
+[sros_aggregate]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_aggregate
+[sros_ospf]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_ospf
+[sros_ospf_multiarea]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_ospf_multiarea
+[sros_isis]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_isis
+[sros_ibgp]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_ibgp
+[sros_rr]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_rr
+[sros_bgp_comm_in]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_bgp_comm_in
+[sros_bgp_policy]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_bgp_policy
+[sros_policy_depth]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_policy_depth
+[sros_prefix_bounds]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_prefix_bounds
+[sros_redist]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_redist
+[sros_vprn]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_vprn
+[sros_vprn_bgp]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_vprn_bgp
+[sros_misconfig]: https://github.com/batfish/lab-validation/tree/main/snapshots/sros_misconfig

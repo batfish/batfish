@@ -20,10 +20,10 @@ import org.batfish.vendor.VendorConfiguration;
 /**
  * Vendor-specific data model for a Nokia SR-OS (MD-CLI) configuration.
  *
- * <p>The configuration is first reduced (P3) to a canonical absolute-path statement tree that
- * unifies the brace/hierarchical form, the flat {@code /configure ...} form, and a mix of the two.
- * P4 extraction populates the typed feature maps below (hardware, routers/interfaces, BGP, policy)
- * from that tree. Conversion to the vendor-independent {@link Configuration} model is P5 work.
+ * <p>The configuration is first reduced to a canonical absolute-path statement tree that unifies
+ * the brace/hierarchical form, the flat {@code /configure ...} form, and a mix of the two.
+ * Extraction populates the typed feature maps below (hardware, routers/interfaces, BGP, policy)
+ * from that tree. Conversion then produces the vendor-independent {@link Configuration} model.
  */
 public final class SrosConfiguration extends VendorConfiguration {
 
@@ -115,7 +115,7 @@ public final class SrosConfiguration extends VendorConfiguration {
     // an export policy matching a main-RIB route, not by origination into the BGP RIB. (The
     // operational `show router bgp routes` table holds only routes learned from peers — the local
     // entries that the `info /state … bgp rib local-rib` tree additionally lists are a state-tree
-    // display artifact, not BGP-originated routes; see findings.)
+    // display artifact, not BGP-originated routes.)
     c.setExportBgpFromBgpRib(false);
 
     // Routing policy is referenced by BGP, so convert it before BGP. Prefix-lists before the

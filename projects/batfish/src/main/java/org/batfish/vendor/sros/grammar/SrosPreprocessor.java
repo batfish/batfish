@@ -16,9 +16,9 @@ import org.batfish.common.Warnings;
 
 /**
  * Preprocesses the canonical {@link SrosStatementTree} before feature extraction, applying the two
- * SR-OS mechanisms that were characterized in P1 and deferred to P4 (see {@code
- * docs/parsing/vendors/sros.md}). Both operate purely on the tree, so they are independent of
- * whether the input was the brace, flat, or mixed form.
+ * SR-OS mechanisms kept out of the grammar (see {@code docs/parsing/vendors/sros.md}). Both operate
+ * purely on the tree, so they are independent of whether the input was the brace, flat, or mixed
+ * form.
  *
  * <p>Order (documented so it is stable):
  *
@@ -58,10 +58,10 @@ public final class SrosPreprocessor {
   /**
    * Expands every {@code apply-groups [...]} reference by grafting the matching subtree of the
    * named {@code groups group "<name>"} definition onto the branch that applied it. Replicates the
-   * SR-OS inheritance rules characterized in P1 (MD-CLI Guide §4.13): local config wins over
-   * inherited; first-listed group wins over later ones; {@code apply-groups-exclude} suppresses a
-   * group at a branch; group list keys may be regexes ({@code "<int-.*>"}) matched against the
-   * branch's path. Runs to convergence so groups that themselves apply groups are fully resolved.
+   * SR-OS inheritance rules (MD-CLI Guide §4.13): local config wins over inherited; first-listed
+   * group wins over later ones; {@code apply-groups-exclude} suppresses a group at a branch; group
+   * list keys may be regexes ({@code "<int-.*>"}) matched against the branch's path. Runs to
+   * convergence so groups that themselves apply groups are fully resolved.
    */
   private void expandApplyGroups() {
     SrosStatementTree configure = _root.getChild("configure");

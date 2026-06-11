@@ -36,7 +36,7 @@ NEWLINE: F_Newline;
 // whitespace. This deliberately includes `/`, `.`, `:`, `-`, and digits so that IP
 // addresses/prefixes (1.1.1.1, 1.1.1.1/32), port paths (1/1/c1/1), and the leading
 // `/configure` of the flat form all lex as a single WORD. Type-level validation of
-// these (parsing an IP, an integer range, etc.) happens in extraction (P4).
+// these (parsing an IP, an integer range, etc.) happens in extraction.
 WORD: F_WordChar+;
 
 WS: F_Whitespace -> channel(HIDDEN);
