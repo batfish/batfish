@@ -1,0 +1,14 @@
+# Configuration format version 26.3 revision 0
+configure {
+    system {
+        name "r1"
+        security {
+            ssh {
+                preserve-key true
+            }
+        }
+    }
+    router "Base" {
+        autonomous-system 65001
+    }
+}
