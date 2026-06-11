@@ -457,13 +457,17 @@ public final class SrosConversions {
    *       its physical port, so an L1 edge between ports yields the L3 edge between the router
    *       interfaces (and the logical interface shares the port's fate).
    * </ul>
+   *
+   * <p>A non-Base (VPRN) interface's VI name is qualified with its VRF — see {@link
+   * #viInterfaceName} — because SR-OS scopes interface names per router instance and Batfish keys
+   * interfaces by name per node.
    */
   static void convertInterfaces(SrosConfiguration vc, Router router, Configuration c, Vrf vrf) {
     for (RouterInterface ri : router.getInterfaces().values()) {
       String portPath = ri.getPort();
       Interface.Builder ib =
           Interface.builder()
-              .setName(ri.getName())
+              .setName(viInterfaceName(router, ri.getName()))
               .setOwner(c)
               .setVrf(vrf)
               // SR-OS router interfaces have no shutdown leaf in the modeled subset; they are up
@@ -543,7 +547,8 @@ public final class SrosConversions {
               areaNum,
               n -> org.batfish.datamodel.ospf.OspfArea.builder().setNumber(n).setNonStub());
       for (OspfAreaInterface ospfIf : area.getInterfaces().values()) {
-        Interface viIface = c.getAllInterfaces().get(ospfIf.getName());
+        String viName = viInterfaceName(router, ospfIf.getName());
+        Interface viIface = c.getAllInterfaces().get(viName);
         if (viIface == null) {
           w.redFlagf(
               "router '%s' OSPF area %s references undefined interface '%s'; skipping",
@@ -562,7 +567,7 @@ public final class SrosConversions {
                 .setOspfAddresses(
                     org.batfish.datamodel.ospf.OspfAddresses.of(viIface.getAllConcreteAddresses()))
                 .build());
-        ab.addInterface(ospfIf.getName());
+        ab.addInterface(viName);
       }
     }
     Map<Long, org.batfish.datamodel.ospf.OspfArea> areas = new TreeMap<>();
@@ -630,7 +635,7 @@ public final class SrosConversions {
 
     for (org.batfish.vendor.sros.representation.IsisProcessInterface isisIf :
         proc.getInterfaces().values()) {
-      Interface viIface = c.getAllInterfaces().get(isisIf.getName());
+      Interface viIface = c.getAllInterfaces().get(viInterfaceName(router, isisIf.getName()));
       if (viIface == null) {
         w.redFlagf(
             "router '%s' IS-IS references undefined interface '%s'; skipping",
@@ -1080,6 +1085,20 @@ public final class SrosConversions {
           .build();
     }
     return DEFAULT_BGP_REJECT_POLICY_NAME;
+  }
+
+  /**
+   * The VI {@link Interface} name for an SR-OS router-interface. Batfish keys interfaces by name
+   * within a node, but SR-OS scopes interface names to the router instance: the same name (e.g.
+   * {@code to-cea}) can be configured in two different VPRNs, each a separate VRF. To keep both, a
+   * non-Base (VPRN) interface is qualified with its router (VRF) name as {@code <vrf>.<name>}; the
+   * {@code Base} instance's interfaces keep their bare names. The qualification is applied
+   * uniformly to every VPRN interface (not only on a detected collision) so the VI name is a
+   * deterministic function of the VPRN and interface alone — independent of what other VPRNs
+   * configure.
+   */
+  static @Nonnull String viInterfaceName(Router router, String interfaceName) {
+    return router.getName().equals("Base") ? interfaceName : router.getName() + "." + interfaceName;
   }
 
   /** The {@code system} interface's primary IP, used as router-id fallback and BGP local-ip. */
