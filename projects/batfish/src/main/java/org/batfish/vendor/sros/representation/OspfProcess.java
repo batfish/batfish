@@ -43,6 +43,19 @@ public final class OspfProcess implements Serializable {
     _adminStateEnable = adminStateEnable;
   }
 
+  /**
+   * The configured route {@code preference} (admin distance) for internal OSPF routes, or {@code
+   * null} when unset (then the SR-OS default of 10 applies). The lab raises this above the IS-IS
+   * preference (18) to make IS-IS the preferred IGP.
+   */
+  public @Nullable Integer getPreference() {
+    return _preference;
+  }
+
+  public void setPreference(@Nullable Integer preference) {
+    _preference = preference;
+  }
+
   /** OSPF areas, keyed by area-id (a dotted-quad string as configured, e.g. {@code 0.0.0.0}). */
   public @Nonnull Map<String, OspfArea> getAreas() {
     return _areas;
@@ -51,5 +64,6 @@ public final class OspfProcess implements Serializable {
   private final int _instance;
   private @Nullable Ip _routerId;
   private boolean _adminStateEnable = true;
+  private @Nullable Integer _preference;
   private final @Nonnull Map<String, OspfArea> _areas;
 }

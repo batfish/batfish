@@ -44,7 +44,26 @@ public final class IsisProcessInterface implements Serializable {
     _interfaceType = interfaceType;
   }
 
+  /**
+   * The IS-IS interface IPv4 {@code metric} for the given level (the SR-OS {@code interface level
+   * <N> metric} leaf), or {@code null} when unset (then the SR-OS default of 10 applies at
+   * conversion). SR-OS has no interface-wide metric leaf — metric is configured per level.
+   */
+  public @Nullable Integer getMetric(int level) {
+    return level == 1 ? _level1Metric : _level2Metric;
+  }
+
+  public void setMetric(int level, @Nullable Integer metric) {
+    if (level == 1) {
+      _level1Metric = metric;
+    } else {
+      _level2Metric = metric;
+    }
+  }
+
   private final @Nonnull String _name;
   private boolean _passive;
   private @Nullable InterfaceType _interfaceType;
+  private @Nullable Integer _level1Metric;
+  private @Nullable Integer _level2Metric;
 }

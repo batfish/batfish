@@ -22,6 +22,7 @@ configure {
         ospf 0 {
             admin-state enable
             router-id 1.1.1.1
+            preference 20
             area 0.0.0.0 {
                 interface "system" {
                     interface-type point-to-point
