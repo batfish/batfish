@@ -413,18 +413,45 @@ public final class SrosConversionTest {
   public void testVprnConversion() throws IOException {
     Configuration c = parseConfig("vprn.txt");
     assertThat(c.getVrfs(), hasKey("red"));
-    // The VPRN interface is in the "red" VRF, not the default VRF.
-    Interface redLo = c.getAllInterfaces().get("red-lo");
+    // The VPRN interface is in the "red" VRF, not the default VRF, and its VI name is qualified
+    // with the VRF ("red.red-lo") since SR-OS scopes interface names per router instance.
+    Interface redLo = c.getAllInterfaces().get("red.red-lo");
     assertNotNull(redLo);
     assertThat(redLo.getVrfName(), equalTo("red"));
     assertThat(redLo.getConcreteAddress().toString(), equalTo("172.16.0.1/32"));
-    // No leak: the Base "system" interface is in the default VRF, not "red".
+    // No leak: the Base "system" interface is in the default VRF, not "red", and keeps its bare
+    // name (Base interfaces are not qualified).
     assertThat(
         c.getAllInterfaces().get("system").getVrfName(), equalTo(Configuration.DEFAULT_VRF_NAME));
     // The bgp-ipvpn route-distinguisher converts onto the VRF (the VI model stores an RD per VRF).
     assertThat(
         c.getVrfs().get("red").getRouteDistinguisher(),
         equalTo(org.batfish.datamodel.bgp.RouteDistinguisher.parse("65000:1")));
+  }
+
+  /**
+   * The same interface name configured in two different VPRNs is modeled in both VRFs: SR-OS scopes
+   * interface names per router instance, so a non-Base interface's VI name is qualified with its
+   * VRF ({@code <vrf>.<name>}). Without that, Batfish would key both by the bare name and keep only
+   * the first-configured one. (lab-validation#203 — pe1 reuses {@code to-cea} across RED and BLUE.)
+   */
+  @Test
+  public void testVprnReusedInterfaceName() throws IOException {
+    Configuration c = parseConfig("vprn_reused_interface.txt");
+    assertThat(c.getVrfs(), allOf(hasKey("RED"), hasKey("BLUE")));
+
+    Interface red = c.getAllInterfaces().get("RED.to-cea");
+    assertNotNull(red);
+    assertThat(red.getVrfName(), equalTo("RED"));
+    assertThat(red.getConcreteAddress().toString(), equalTo("192.168.30.254/24"));
+
+    Interface blue = c.getAllInterfaces().get("BLUE.to-cea");
+    assertNotNull(blue);
+    assertThat(blue.getVrfName(), equalTo("BLUE"));
+    assertThat(blue.getConcreteAddress().toString(), equalTo("192.168.40.254/24"));
+
+    // The bare name is not present — both copies survive under their qualified names.
+    assertThat(c.getAllInterfaces(), not(hasKey("to-cea")));
   }
 
   /** Route-reflector conversion: an RR-client neighbor gets cluster-id + route-reflector-client. */
