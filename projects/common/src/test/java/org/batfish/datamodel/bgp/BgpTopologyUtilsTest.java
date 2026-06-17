@@ -175,8 +175,11 @@ public class BgpTopologyUtilsTest {
     _node2BgpProcess.setNeighbors(ImmutableSortedMap.of(ip1, peer2));
 
     // Set node1's VRF to use UseConstantIp (simulates Junos default-address-selection)
-    _configs.get(NODE1).getVrfs().get(DEFAULT_VRF_NAME).setSourceIpInference(
-        UseConstantIp.create(ip1));
+    _configs
+        .get(NODE1)
+        .getVrfs()
+        .get(DEFAULT_VRF_NAME)
+        .setSourceIpInference(UseConstantIp.create(ip1));
 
     Map<Ip, Map<String, Set<String>>> ipOwners =
         ImmutableMap.of(
