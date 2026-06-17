@@ -160,7 +160,7 @@ public final class BgpTopologyUtils {
                 sourceVrfName.equals(vrfName)
                     ? fib
                     : fibs.getOrDefault(hostname, ImmutableMap.of()).get(sourceVrfName);
-            if (sourceVrf != null && sourceFib != null) {
+            if (sourceVrf != null) {
               localIpsBuilder.putAll(
                   neighborId,
                   sourceVrf
