@@ -37,6 +37,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
@@ -134,6 +135,65 @@ public class BgpTopologyUtilsTest {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, false, null).getGraph();
     assertThat(bgpTopology.nodes(), hasSize(1));
+  }
+
+  /**
+   * A peer with no explicit local IP whose VRF uses {@link UseConstantIp} should resolve its local
+   * IP even when no FIBs are available. Regression test for allowing source IP inference without a
+   * FIB.
+   */
+  @Test
+  public void testInitTopologySourceIpInferenceWithoutFib() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+
+    // Peer on node1 with no explicit local IP; peer address is ip2
+    BgpActivePeerConfig peer1 =
+        BgpActivePeerConfig.builder()
+            .setLocalAs(1L)
+            .setPeerAddress(ip2)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
+
+    // Peer on node2 with explicit local IP ip2, peering back to ip1
+    BgpActivePeerConfig peer2 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip2)
+            .setLocalAs(2L)
+            .setPeerAddress(ip1)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .build())
+            .build();
+    _node2BgpProcess.setNeighbors(ImmutableSortedMap.of(ip1, peer2));
+
+    // Set node1's VRF to use UseConstantIp (simulates Junos default-address-selection)
+    _configs.get(NODE1).getVrfs().get(DEFAULT_VRF_NAME).setSourceIpInference(
+        UseConstantIp.create(ip1));
+
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)));
+
+    // No FIBs provided, but UseConstantIp should still resolve ip1 as the local IP,
+    // allowing the session to establish.
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
+    assertThat(bgpTopology.edges(), hasSize(2));
+    EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
+    assertThat(
+        ImmutableSet.of(edge.source().getHostname(), edge.target().getHostname()),
+        equalTo(ImmutableSet.of(NODE1, NODE2)));
   }
 
   @Test
