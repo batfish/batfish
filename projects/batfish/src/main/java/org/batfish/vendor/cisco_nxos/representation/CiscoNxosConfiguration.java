@@ -135,6 +135,11 @@ import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -325,6 +330,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
       IntegerSpace.of(Range.closed(3968, 4094));
 
+  /** Default NX-OS IS-IS (wide) interface metric on non-loopback interfaces. */
+  private static final long DEFAULT_ISIS_METRIC = 40L;
+
+  /** Default NX-OS IS-IS (wide) interface metric on loopback interfaces. */
+  private static final long DEFAULT_LOOPBACK_ISIS_METRIC = 1L;
+
   private static final int MAX_FRAGMENT_OFFSET = (1 << 13) - 1;
   private static final AclLineMatchExpr MATCH_INITIAL_FRAGMENT_OFFSET =
       match(
@@ -427,6 +438,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
+  private final @Nonnull Map<String, IsisProcess> _isisProcesses;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private @Nullable String _loggingSourceInterface;
   private @Nonnull NxosMajorVersion _majorVersion;
@@ -462,6 +474,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipPrefixLists = new HashMap<>();
     _ipv6AccessLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
+    _isisProcesses = new HashMap<>();
     _loggingServers = new HashMap<>();
     _majorVersion = NxosMajorVersion.UNKNOWN;
     _ntpServers = new HashMap<>();
@@ -916,6 +929,33 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void convertEigrp() {
     getEigrpProcesses().forEach(this::convertEigrpProcess);
+  }
+
+  /**
+   * Convert IS-IS processes. Only the default VRF is modeled; each process must have a {@code net}
+   * address to form adjacencies.
+   */
+  private void convertIsis() {
+    _isisProcesses.values().forEach(this::convertIsisProcess);
+  }
+
+  private void convertIsisProcess(IsisProcess proc) {
+    if (proc.getNetAddress() == null) {
+      _w.redFlagf("Cannot create IS-IS process %s without specifying a net address", proc.getTag());
+      return;
+    }
+    org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
+        org.batfish.datamodel.isis.IsisProcess.builder().setNetAddress(proc.getNetAddress());
+    IsisLevelSettings levelSettings = IsisLevelSettings.builder().build();
+    switch (proc.getLevel()) {
+      case LEVEL_1 -> newProcess.setLevel1(levelSettings);
+      case LEVEL_2 -> newProcess.setLevel2(levelSettings);
+      case LEVEL_1_2 -> {
+        newProcess.setLevel1(levelSettings);
+        newProcess.setLevel2(levelSettings);
+      }
+    }
+    _c.getDefaultVrf().setIsisProcess(newProcess.build());
   }
 
   private void convertEigrpProcess(String procName, EigrpProcessConfiguration processConfig) {
@@ -1717,6 +1757,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _eigrpProcesses.computeIfAbsent(processTag, name -> new EigrpProcessConfiguration());
   }
 
+  public @Nonnull Map<String, IsisProcess> getIsisProcesses() {
+    return Collections.unmodifiableMap(_isisProcesses);
+  }
+
+  public @Nullable IsisProcess getIsisProcess(String processTag) {
+    return _isisProcesses.get(processTag);
+  }
+
+  public @Nonnull IsisProcess getOrCreateIsisProcess(String processTag) {
+    return _isisProcesses.computeIfAbsent(processTag, IsisProcess::new);
+  }
+
   public @Nullable Evpn getEvpn() {
     return _evpn;
   }
@@ -2313,8 +2365,56 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       }
     }
 
+    // IS-IS: an interface running `ip router isis <tag>` for a defined process gets IS-IS settings.
+    String isisProcessTag = iface.getIsisProcess();
+    if (isisProcessTag != null) {
+      IsisProcess isisProcess = _isisProcesses.get(isisProcessTag);
+      // Only the default VRF is modeled for IS-IS (see convertIsis).
+      if (isisProcess != null
+          && vrfName.equals(DEFAULT_VRF_NAME)
+          && isisProcess.getNetAddress() != null) {
+        IsisInterfaceSettings isis = toIsisInterfaceSettings(iface, isisProcess, newIface);
+        if (isis != null) {
+          newIface.setIsis(isis);
+        }
+      }
+    }
+
     newIface.setOwner(_c);
     return newIface;
+  }
+
+  /**
+   * Build VI {@link IsisInterfaceSettings} for an interface enrolled in the given IS-IS {@code
+   * process}. The active level is the process's {@code is-type} intersected with any per-interface
+   * {@code isis circuit-type}. Returns {@code null} if the resulting level set is empty.
+   */
+  private static @Nullable IsisInterfaceSettings toIsisInterfaceSettings(
+      Interface iface, IsisProcess process, org.batfish.datamodel.Interface viIface) {
+    // The interface circuit-type narrows the process level; when unset, the interface uses the
+    // process level directly.
+    IsisLevel circuitType = iface.getIsisInterfaceCircuitType();
+    IsisLevel level =
+        circuitType == null
+            ? process.getLevel()
+            : IsisLevel.intersection(process.getLevel(), circuitType);
+    if (level == null) {
+      return null;
+    }
+    // NX-OS uses wide metrics by default: a default metric of 40 on most interfaces, and 1 on
+    // loopbacks.
+    long cost = viIface.isLoopback() ? DEFAULT_LOOPBACK_ISIS_METRIC : DEFAULT_ISIS_METRIC;
+    IsisInterfaceLevelSettings levelSettings =
+        IsisInterfaceLevelSettings.builder().setCost(cost).setMode(IsisInterfaceMode.ACTIVE).build();
+    IsisInterfaceSettings.Builder builder =
+        IsisInterfaceSettings.builder().setPointToPoint(iface.getIsisNetworkPointToPoint());
+    if (level.includes(IsisLevel.LEVEL_1)) {
+      builder.setLevel1(levelSettings);
+    }
+    if (level.includes(IsisLevel.LEVEL_2)) {
+      builder.setLevel2(levelSettings);
+    }
+    return builder.build();
   }
 
   /**
@@ -3904,6 +4004,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertNves();
     convertBgp();
     convertEigrp();
+    convertIsis();
     makeLeakConfigs();
 
     markStructures();
