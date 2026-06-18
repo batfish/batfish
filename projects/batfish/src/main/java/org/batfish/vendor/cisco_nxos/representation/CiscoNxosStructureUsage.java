@@ -75,6 +75,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_IP_RIP_ROUTE_FILTER_PREFIX_LIST("interface ip rip route-filter prefix-list"),
   INTERFACE_IP_RIP_ROUTE_FILTER_ROUTE_MAP("interface ip rip route-filter route-map"),
   INTERFACE_IP_ROUTER_EIGRP("interface ip router eigrp"),
+  INTERFACE_IP_ROUTER_ISIS("interface ip router isis"),
   INTERFACE_IP_ROUTER_OSPF("interface ip router ospf"),
   INTERFACE_IP_ROUTER_RIP("interface ip router rip"),
   INTERFACE_IPV6_ROUTER_OSPFV3("interface ipv6 router ospfv3"),

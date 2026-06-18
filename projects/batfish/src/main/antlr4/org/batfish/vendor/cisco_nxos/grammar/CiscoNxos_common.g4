@@ -422,6 +422,13 @@ isis_instance
   ISIS router_isis_process_tag
 ;
 
+isis_level
+:
+  LEVEL_1
+  | LEVEL_1_2
+  | LEVEL_2
+;
+
 ospf_instance
 :
   OSPF router_ospf_name

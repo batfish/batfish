@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.isis.IsisLevel;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
@@ -162,6 +163,9 @@ public final class Interface implements Serializable {
   private boolean _ipv6AddressDhcp;
   private final @Nonnull Set<InterfaceIpv6AddressWithAttributes> _ipv6AddressSecondaries;
   private @Nullable Boolean _ipProxyArp;
+  private @Nullable String _isisProcess;
+  private @Nullable IsisLevel _isisInterfaceCircuitType;
+  private boolean _isisNetworkPointToPoint;
   private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
@@ -329,6 +333,33 @@ public final class Interface implements Serializable {
 
   public void setIpProxyArp(@Nullable Boolean ipProxyArp) {
     _ipProxyArp = ipProxyArp;
+  }
+
+  /** The tag of the IS-IS process this interface participates in via {@code ip router isis}. */
+  public @Nullable String getIsisProcess() {
+    return _isisProcess;
+  }
+
+  public void setIsisProcess(@Nullable String isisProcess) {
+    _isisProcess = isisProcess;
+  }
+
+  /** The per-interface {@code isis circuit-type}, or {@code null} if not configured. */
+  public @Nullable IsisLevel getIsisInterfaceCircuitType() {
+    return _isisInterfaceCircuitType;
+  }
+
+  public void setIsisInterfaceCircuitType(@Nullable IsisLevel isisInterfaceCircuitType) {
+    _isisInterfaceCircuitType = isisInterfaceCircuitType;
+  }
+
+  /** Whether {@code isis network point-to-point} is configured on this interface. */
+  public boolean getIsisNetworkPointToPoint() {
+    return _isisNetworkPointToPoint;
+  }
+
+  public void setIsisNetworkPointToPoint(boolean isisNetworkPointToPoint) {
+    _isisNetworkPointToPoint = isisNetworkPointToPoint;
   }
 
   public @Nullable Lacp getLacp() {

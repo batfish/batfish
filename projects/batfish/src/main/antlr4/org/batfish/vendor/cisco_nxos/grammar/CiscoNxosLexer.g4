@@ -9,6 +9,7 @@ tokens {
   BANNER_DELIMITER,
   HSRP_VERSION_1,
   HSRP_VERSION_2,
+  ISO_ADDRESS,
   MAC_ADDRESS_LITERAL,
   MOTD,
   PASSWORD_0,
@@ -107,6 +108,8 @@ ADDRGROUP
 ;
 
 ADJACENCY: 'adjacency';
+
+ADJACENCY_CHECK: 'adjacency-check';
 
 ADJMGR: 'adjmgr';
 
@@ -218,6 +221,10 @@ AUTH: 'auth';
 AUTHENTICATE: 'authenticate';
 
 AUTHENTICATION: 'authentication';
+
+AUTHENTICATION_CHECK: 'authentication-check';
+
+AUTHENTICATION_TYPE: 'authentication-type';
 
 AUTHENTICATION_KEY
 :
@@ -337,6 +344,8 @@ CHANNEL_GROUP: 'channel-group';
 CHARGEN: 'chargen';
 
 CIR: 'cir';
+
+CIRCUIT_TYPE: 'circuit-type';
 
 CLASS
 :
@@ -460,6 +469,8 @@ CRITICAL: 'critical';
 CRON: 'cron';
 
 CRYPTO: 'crypto';
+
+CSNP_INTERVAL: 'csnp-interval';
 
 CS1: 'cs1';
 
@@ -873,6 +884,10 @@ HELLO_AUTHENTICATION: 'hello-authentication';
 
 HELLO_INTERVAL: 'hello-interval';
 
+HELLO_MULTIPLIER: 'hello-multiplier';
+
+HELLO_PADDING: 'hello-padding';
+
 HELPER_DISABLE: 'helper-disable';
 
 HEX_UINT32
@@ -1043,10 +1058,20 @@ ISAKMP: 'isakmp';
 
 ISIS
 :
-  'isis' -> pushMode ( M_Word )
+  'isis'
+  // A process tag follows in `router isis <tag>`, `ip router isis <tag>`, and
+  // `redistribute isis <tag>`. Interface lines like `isis circuit-type ...`
+  // are followed by keywords in the default mode.
+  {
+    if (lastTokenType() == ROUTER || lastTokenType() == REDISTRIBUTE) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 ISOLATE: 'isolate';
+
+IS_TYPE: 'is-type';
 
 JP_INTERVAL: 'jp-interval';
 
@@ -1147,6 +1172,12 @@ LE: 'le';
 
 LEVEL: 'level';
 
+LEVEL_1: 'level-1';
+
+LEVEL_1_2: 'level-1-2';
+
+LEVEL_2: 'level-2';
+
 LICENSE: 'license';
 
 LIMIT_RESOURCE: 'limit-resource' -> pushMode ( M_Remark );
@@ -1217,6 +1248,8 @@ LOCATION
   'location' -> pushMode ( M_Remark )
 ;
 
+LOCATOR: 'locator' -> pushMode ( M_Word );
+
 LOG: 'log';
 
 LOG_ADJACENCY_CHANGES: 'log-adjacency-changes';
@@ -1262,6 +1295,12 @@ LSA_ARRIVAL: 'lsa-arrival';
 
 LSA_GROUP_PACING: 'lsa-group-pacing';
 
+LSP_GEN_INTERVAL: 'lsp-gen-interval';
+
+LSP_INTERVAL: 'lsp-interval';
+
+LSP_MTU: 'lsp-mtu';
+
 LT: 'lt';
 
 MAC: 'mac';
@@ -1299,6 +1338,8 @@ MAX_LENGTH: 'max-length';
 MAX_LINKS: 'max-links';
 
 MAX_LSA: 'max-lsa';
+
+MAX_LSP_LIFETIME: 'max-lsp-lifetime';
 
 MAX_METRIC: 'max-metric';
 
@@ -1360,6 +1401,8 @@ MEMBER
 
 MERGE_FAILURE: 'merge-failure';
 
+MESH_GROUP: 'mesh-group';
+
 MESSAGE_DIGEST: 'message-digest';
 
 MESSAGE_DIGEST_KEY: 'message-digest-key';
@@ -1367,6 +1410,8 @@ MESSAGE_DIGEST_KEY: 'message-digest-key';
 METHOD: 'method';
 
 METRIC: 'metric';
+
+METRIC_STYLE: 'metric-style';
 
 METRIC_TYPE: 'metric-type';
 
@@ -1427,9 +1472,13 @@ MST: 'mst';
 
 MTU: 'mtu';
 
+MTU_CHECK: 'mtu-check';
+
 MTU_FAILURE: 'mtu-failure';
 
 MULTICAST: 'multicast';
+
+MULTI_TOPOLOGY: 'multi-topology';
 
 MULTIPATH_RELAX: 'multipath-relax';
 
@@ -1477,6 +1526,11 @@ NEIGHBOR_POLICY
 ;
 
 NEQ: 'neq';
+
+// IS-IS NET (network entity title). The address that follows is lexed in
+// M_ISO_Address. Longer 'net*' tokens (NETWORK, NET_REDIRECT, ...) win by
+// ANTLR's longest-match rule, so only a standalone `net` enters this mode.
+NET: 'net' -> pushMode ( M_ISO_Address );
 
 NETBIOS_DGM: 'netbios-dgm';
 
@@ -1773,6 +1827,8 @@ PREEMPT: 'preempt';
 
 PREFER: 'prefer';
 
+PREFIX_ATTRIBUTES: 'prefix-attributes';
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
@@ -1932,6 +1988,8 @@ RETAIN: 'retain';
 
 RETRANSMIT_INTERVAL: 'retransmit-interval';
 
+RETRANSMIT_THROTTLE_INTERVAL: 'retransmit-throttle-interval';
+
 RIP
 :
   'rip'
@@ -2027,6 +2085,8 @@ SECURE: 'secure';
 
 SECURITY_VIOLATION: 'security-violation';
 
+SEGMENT_ROUTING: 'segment-routing';
+
 SELECTION: 'selection';
 
 SEND: 'send';
@@ -2058,6 +2118,10 @@ SESSION: 'session';
 SESSION_LIMIT: 'session-limit';
 
 SET: 'set';
+
+SET_ATTACHED_BIT: 'set-attached-bit';
+
+SET_OVERLOAD_BIT: 'set-overload-bit';
 
 SFLOW: 'sflow';
 
@@ -2135,11 +2199,15 @@ SPEED: 'speed';
 
 SPF: 'spf';
 
+SPF_INTERVAL: 'spf-interval';
+
 SPINE_ANYCAST_GATEWAY: 'spine-anycast-gateway';
 
 SRC_IP: 'src-ip';
 
 SRC_MAC: 'src-mac';
+
+SRV6: 'srv6';
 
 SSH: 'ssh';
 
@@ -2207,6 +2275,8 @@ SUPPRESS_INACTIVE: 'suppress-inactive';
 SUPPRESS_MAP: 'suppress-map' -> pushMode(M_Word);
 
 SUPPRESS_RA: 'suppress-ra';
+
+SUPPRESSED: 'suppressed';
 
 // sic
 SUPRESS_FA: 'supress-fa';
@@ -2334,6 +2404,8 @@ TRAFFIC_FILTER
 :
   'traffic-filter' -> pushMode ( M_Word )
 ;
+
+TRANSITION: 'transition';
 
 TRANSLATE: 'translate';
 
@@ -3756,6 +3828,21 @@ M_TwoWords_WORD
 ;
 
 M_TwoWords_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ISO_Address;
+
+M_ISO_Address_ISO_ADDRESS
+:
+  F_HexDigit+
+  (
+    '.' F_HexDigit+
+  )+ -> type ( ISO_ADDRESS ) , popMode
+;
+
+M_ISO_Address_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

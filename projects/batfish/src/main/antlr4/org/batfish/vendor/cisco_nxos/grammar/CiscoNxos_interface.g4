@@ -47,6 +47,7 @@ s_interface_regular
     | i_hsrp
     | i_ip
     | i_ipv6
+    | i_isis
     | i_lacp
     | i_mac_address
     | i_mtu
@@ -850,6 +851,7 @@ i_ip_router
   ROUTER
   (
     iipr_eigrp
+    | iipr_isis
     | iipr_ospf
     | iipr_rip
   )
@@ -858,6 +860,11 @@ i_ip_router
 iipr_eigrp
 :
   eigrp_instance NEWLINE
+;
+
+iipr_isis
+:
+  ISIS tag = router_isis_process_tag NEWLINE
 ;
 
 iipr_ospf
@@ -919,8 +926,14 @@ iip6_router
 :
   ROUTER
   (
-    iip6r_ospfv3
+    iip6r_isis
+    | iip6r_ospfv3
   )
+;
+
+iip6r_isis
+:
+  ISIS tag = router_isis_process_tag NEWLINE
 ;
 
 iip6_traffic_filter
@@ -935,6 +948,279 @@ iip6_traffic_filter
 iip6r_ospfv3
 :
   ospfv3_instance AREA area = ospf_area_id NEWLINE
+;
+
+i_isis
+:
+  ISIS
+  (
+    iisis_authentication_null
+    | iisis_authentication_check_null
+    | iisis_authentication_type_null
+    | iisis_bfd_null
+    | iisis_circuit_type
+    | iisis_csnp_interval_null
+    | iisis_hello_interval_null
+    | iisis_hello_multiplier_null
+    | iisis_hello_padding_null
+    | iisis_ipv6_null
+    | iisis_lsp_interval_null
+    | iisis_mesh_group_null
+    | iisis_metric_null
+    | iisis_mtu_check_null
+    | iisis_network
+    | iisis_no
+    | iisis_passive_interface_null
+    | iisis_prefix_attributes_null
+    | iisis_priority_null
+    | iisis_retransmit_interval_null
+    | iisis_retransmit_throttle_interval_null
+    | iisis_shutdown_null
+    | iisis_suppressed_null
+  )
+;
+
+iisis_authentication_null
+:
+  AUTHENTICATION null_rest_of_line
+;
+
+iisis_authentication_check_null
+:
+  AUTHENTICATION_CHECK null_rest_of_line
+;
+
+iisis_authentication_type_null
+:
+  AUTHENTICATION_TYPE null_rest_of_line
+;
+
+iisis_bfd_null
+:
+  BFD null_rest_of_line
+;
+
+iisis_circuit_type
+:
+  CIRCUIT_TYPE level = isis_level NEWLINE
+;
+
+iisis_csnp_interval_null
+:
+  CSNP_INTERVAL null_rest_of_line
+;
+
+iisis_hello_interval_null
+:
+  HELLO_INTERVAL null_rest_of_line
+;
+
+iisis_hello_multiplier_null
+:
+  HELLO_MULTIPLIER null_rest_of_line
+;
+
+iisis_hello_padding_null
+:
+  HELLO_PADDING null_rest_of_line
+;
+
+iisis_ipv6_null
+:
+  IPV6 null_rest_of_line
+;
+
+iisis_lsp_interval_null
+:
+  LSP_INTERVAL null_rest_of_line
+;
+
+iisis_mesh_group_null
+:
+  MESH_GROUP null_rest_of_line
+;
+
+iisis_metric_null
+:
+  METRIC null_rest_of_line
+;
+
+iisis_mtu_check_null
+:
+  MTU_CHECK null_rest_of_line
+;
+
+iisis_network
+:
+  NETWORK POINT_TO_POINT null_rest_of_line
+;
+
+iisis_passive_interface_null
+:
+  PASSIVE_INTERFACE null_rest_of_line
+;
+
+iisis_prefix_attributes_null
+:
+  PREFIX_ATTRIBUTES null_rest_of_line
+;
+
+iisis_priority_null
+:
+  PRIORITY null_rest_of_line
+;
+
+iisis_retransmit_interval_null
+:
+  RETRANSMIT_INTERVAL null_rest_of_line
+;
+
+iisis_retransmit_throttle_interval_null
+:
+  RETRANSMIT_THROTTLE_INTERVAL null_rest_of_line
+;
+
+iisis_shutdown_null
+:
+  SHUTDOWN null_rest_of_line
+;
+
+iisis_suppressed_null
+:
+  SUPPRESSED null_rest_of_line
+;
+
+iisis_no
+:
+  NO
+  (
+    iisisno_authentication_null
+    | iisisno_authentication_check_null
+    | iisisno_authentication_type_null
+    | iisisno_bfd_null
+    | iisisno_csnp_interval_null
+    | iisisno_hello_interval_null
+    | iisisno_hello_multiplier_null
+    | iisisno_hello_padding_null
+    | iisisno_ipv6_null
+    | iisisno_lsp_interval_null
+    | iisisno_mesh_group_null
+    | iisisno_metric_null
+    | iisisno_mtu_check_null
+    | iisisno_network_null
+    | iisisno_passive_interface_null
+    | iisisno_prefix_attributes_null
+    | iisisno_priority_null
+    | iisisno_retransmit_interval_null
+    | iisisno_retransmit_throttle_interval_null
+    | iisisno_shutdown_null
+    | iisisno_suppressed_null
+  )
+;
+
+iisisno_authentication_null
+:
+  AUTHENTICATION null_rest_of_line
+;
+
+iisisno_authentication_check_null
+:
+  AUTHENTICATION_CHECK null_rest_of_line
+;
+
+iisisno_authentication_type_null
+:
+  AUTHENTICATION_TYPE null_rest_of_line
+;
+
+iisisno_bfd_null
+:
+  BFD null_rest_of_line
+;
+
+iisisno_csnp_interval_null
+:
+  CSNP_INTERVAL null_rest_of_line
+;
+
+iisisno_hello_interval_null
+:
+  HELLO_INTERVAL null_rest_of_line
+;
+
+iisisno_hello_multiplier_null
+:
+  HELLO_MULTIPLIER null_rest_of_line
+;
+
+iisisno_hello_padding_null
+:
+  HELLO_PADDING null_rest_of_line
+;
+
+iisisno_ipv6_null
+:
+  IPV6 null_rest_of_line
+;
+
+iisisno_lsp_interval_null
+:
+  LSP_INTERVAL null_rest_of_line
+;
+
+iisisno_mesh_group_null
+:
+  MESH_GROUP null_rest_of_line
+;
+
+iisisno_metric_null
+:
+  METRIC null_rest_of_line
+;
+
+iisisno_mtu_check_null
+:
+  MTU_CHECK null_rest_of_line
+;
+
+iisisno_network_null
+:
+  NETWORK null_rest_of_line
+;
+
+iisisno_passive_interface_null
+:
+  PASSIVE_INTERFACE null_rest_of_line
+;
+
+iisisno_prefix_attributes_null
+:
+  PREFIX_ATTRIBUTES null_rest_of_line
+;
+
+iisisno_priority_null
+:
+  PRIORITY null_rest_of_line
+;
+
+iisisno_retransmit_interval_null
+:
+  RETRANSMIT_INTERVAL null_rest_of_line
+;
+
+iisisno_retransmit_throttle_interval_null
+:
+  RETRANSMIT_THROTTLE_INTERVAL null_rest_of_line
+;
+
+iisisno_shutdown_null
+:
+  SHUTDOWN null_rest_of_line
+;
+
+iisisno_suppressed_null
+:
+  SUPPRESSED null_rest_of_line
 ;
 
 i_lacp
