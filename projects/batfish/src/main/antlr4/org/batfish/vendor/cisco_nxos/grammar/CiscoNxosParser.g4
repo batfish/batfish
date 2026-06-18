@@ -18,6 +18,7 @@ import
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
   CiscoNxos_ipv6_prefix_list,
+  CiscoNxos_isis,
   CiscoNxos_lacp,
   CiscoNxos_line,
   CiscoNxos_logging,
@@ -485,6 +486,7 @@ s_router
   (
     router_bgp
     | router_eigrp
+    | router_isis
     | router_ospf
     | router_ospfv3
     | router_rip
