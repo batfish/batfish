@@ -1,0 +1,43 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_isis
+!
+feature isis
+!
+interface Ethernet1/1
+  no switchport
+  ip address 10.0.0.0/31
+  isis network point-to-point
+  isis circuit-type level-2
+  ip router isis UNDERLAY
+  no shutdown
+!
+interface loopback0
+  ip address 1.1.1.1/32
+  ip router isis UNDERLAY
+!
+router isis UNDERLAY
+  net 49.0001.0000.0000.0011.00
+  is-type level-2
+  log-adjacency-changes
+  metric-style transition
+  set-overload-bit on-startup 120
+  lsp-gen-interval 50 50 50
+  max-lsp-lifetime 65535
+  graceful-restart
+  passive-interface default level-2
+  address-family ipv4 unicast
+    bfd
+    distance 115
+    maximum-paths 8
+    summary-address 10.0.0.0/8 level-2
+  address-family ipv6 unicast
+    multi-topology
+    set-attached-bit
+    segment-routing srv6
+      locator MY_LOCATOR
+  vrf TENANT
+    net 49.0001.0000.0000.0099.00
+    is-type level-1-2
+    address-family ipv4 unicast
+      distance 116

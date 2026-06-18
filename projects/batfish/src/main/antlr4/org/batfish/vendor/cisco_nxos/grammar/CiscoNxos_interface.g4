@@ -47,6 +47,7 @@ s_interface_regular
     | i_hsrp
     | i_ip
     | i_ipv6
+    | i_isis
     | i_lacp
     | i_mac_address
     | i_mtu
@@ -850,6 +851,7 @@ i_ip_router
   ROUTER
   (
     iipr_eigrp
+    | iipr_isis
     | iipr_ospf
     | iipr_rip
   )
@@ -858,6 +860,11 @@ i_ip_router
 iipr_eigrp
 :
   eigrp_instance NEWLINE
+;
+
+iipr_isis
+:
+  ISIS tag = router_isis_process_tag NEWLINE
 ;
 
 iipr_ospf
@@ -919,8 +926,14 @@ iip6_router
 :
   ROUTER
   (
-    iip6r_ospfv3
+    iip6r_isis
+    | iip6r_ospfv3
   )
+;
+
+iip6r_isis
+:
+  ISIS tag = router_isis_process_tag NEWLINE
 ;
 
 iip6_traffic_filter
@@ -935,6 +948,86 @@ iip6_traffic_filter
 iip6r_ospfv3
 :
   ospfv3_instance AREA area = ospf_area_id NEWLINE
+;
+
+i_isis
+:
+  ISIS
+  (
+    iisis_circuit_type
+    | iisis_network
+    | iisis_null
+    | iisis_no
+  )
+;
+
+// Modeled
+
+iisis_circuit_type
+:
+  CIRCUIT_TYPE level = isis_level NEWLINE
+;
+
+iisis_network
+:
+  NETWORK POINT_TO_POINT null_rest_of_line
+;
+
+// Ignored interface-level `isis ...` commands (parsed, not modeled). The
+// `use-allIS-mac` modifier on `isis network point-to-point` is consumed by
+// that rule's null_rest_of_line.
+iisis_null
+:
+  (
+    AUTHENTICATION
+    | AUTHENTICATION_CHECK
+    | AUTHENTICATION_TYPE
+    | BFD
+    | CSNP_INTERVAL
+    | HELLO_INTERVAL
+    | HELLO_MULTIPLIER
+    | HELLO_PADDING
+    | IPV6
+    | LSP_INTERVAL
+    | MESH_GROUP
+    | METRIC
+    | MTU_CHECK
+    | PASSIVE_INTERFACE
+    | PREFIX_ATTRIBUTES
+    | PRIORITY
+    | RETRANSMIT_INTERVAL
+    | RETRANSMIT_THROTTLE_INTERVAL
+    | SHUTDOWN
+    | SUPPRESSED
+  ) null_rest_of_line
+;
+
+iisis_no
+:
+  NO
+  (
+    AUTHENTICATION
+    | AUTHENTICATION_CHECK
+    | AUTHENTICATION_TYPE
+    | BFD
+    | CSNP_INTERVAL
+    | HELLO_INTERVAL
+    | HELLO_MULTIPLIER
+    | HELLO_PADDING
+    | IPV6
+    | LSP_INTERVAL
+    | MESH_GROUP
+    | METRIC
+    | MTU_CHECK
+    | NETWORK
+    | PASSIVE_INTERFACE
+    | PREFIX_ATTRIBUTES
+    | PRIORITY
+    | RETRANSMIT_INTERVAL
+    | RETRANSMIT_THROTTLE_INTERVAL
+    | SHUTDOWN
+    | SUPPRESSED
+  ) null_rest_of_line
 ;
 
 i_lacp
