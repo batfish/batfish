@@ -491,6 +491,7 @@ import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
+import org.batfish.representation.juniper.PsThenAddPathSendCount;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
@@ -1818,6 +1819,55 @@ public final class FlatJuniperGrammarTest {
             POLICY_STATEMENT,
             "appp",
             JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY));
+  }
+
+  @Test
+  public void testPolicyAddPathSendCountExtraction() {
+    String hostname = "juniper-policy-add-path-send-count";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    PsTerm term =
+        vc.getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("ADD-PATH-POLICY")
+            .getTerms()
+            .get("t1");
+    assertThat(term.getThens().getAllThens(), hasItem(new PsThenAddPathSendCount(16)));
+  }
+
+  @Test
+  public void testPolicyAddPathSendCountConversionWarning() throws IOException {
+    String hostname = "juniper-policy-add-path-send-count";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    SortedSet<Warning> riskyWarnings = ccae.getWarnings().get(hostname).getRiskyRedFlagWarnings();
+
+    // Group g1 applies the policy without group-level add-path send: dead config -> warning.
+    assertThat(
+        riskyWarnings,
+        hasItem(
+            WarningMatchers.hasText(
+                "RISK: policy-statement ADD-PATH-POLICY term t1: 'then add-path send-count 16' has"
+                    + " no effect because add-path send is not enabled at the BGP group level for"
+                    + " neighbor 10.0.0.1/32")));
+    // Group g2 enables group-level add-path send, so no warning is emitted for 10.0.0.2/32.
+    assertThat(
+        riskyWarnings,
+        not(
+            hasItem(
+                WarningMatchers.hasText(
+                    "RISK: policy-statement ADD-PATH-POLICY term t1: 'then add-path send-count 16'"
+                        + " has no effect because add-path send is not enabled at the BGP group"
+                        + " level for neighbor 10.0.0.2/32"))));
+    // Group g3 reaches the directive only through a `from policy` subroutine call: the warning
+    // names the inner policy that actually contains the directive.
+    assertThat(
+        riskyWarnings,
+        hasItem(
+            WarningMatchers.hasText(
+                "RISK: policy-statement SUBROUTINE-POLICY term t1: 'then add-path send-count 8' has"
+                    + " no effect because add-path send is not enabled at the BGP group level for"
+                    + " neighbor 10.0.0.3/32")));
   }
 
   @Test

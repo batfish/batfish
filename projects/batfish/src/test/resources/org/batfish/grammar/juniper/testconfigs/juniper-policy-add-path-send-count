@@ -1,0 +1,39 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name juniper-policy-add-path-send-count
+
+# Boilerplate
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.254/24
+set routing-options autonomous-system 65500
+set routing-options router-id 10.0.0.254
+
+# Export policy that attempts to enable add-path send per-route. This is silently
+# ignored by Junos unless add-path send is enabled at the BGP group/neighbor level.
+set policy-options policy-statement ADD-PATH-POLICY term t1 then add-path send-count 16
+set policy-options policy-statement ADD-PATH-POLICY term t1 then accept
+
+# Group g1: applies the policy but does NOT enable add-path send at the group level.
+# The policy directive is dead config here -> risky warning expected.
+set protocols bgp group g1 type internal
+set protocols bgp group g1 peer-as 65500
+set protocols bgp group g1 export ADD-PATH-POLICY
+set protocols bgp group g1 neighbor 10.0.0.1
+
+# Group g2: applies the policy AND enables add-path send at the group level.
+# The policy directive takes effect here -> no warning expected.
+set protocols bgp group g2 family inet unicast add-path send path-count 16
+set protocols bgp group g2 type internal
+set protocols bgp group g2 peer-as 65500
+set protocols bgp group g2 export ADD-PATH-POLICY
+set protocols bgp group g2 neighbor 10.0.0.2
+
+# Outer policy that reaches the directive only via a `from policy` subroutine call.
+# Group g3 exports OUTER without group-level add-path send -> warning expected naming
+# the inner policy SUBROUTINE-POLICY.
+set policy-options policy-statement SUBROUTINE-POLICY term t1 then add-path send-count 8
+set policy-options policy-statement OUTER-POLICY term t1 from policy SUBROUTINE-POLICY
+set policy-options policy-statement OUTER-POLICY term t1 then accept
+set protocols bgp group g3 type internal
+set protocols bgp group g3 peer-as 65500
+set protocols bgp group g3 export OUTER-POLICY
+set protocols bgp group g3 neighbor 10.0.0.3
+#

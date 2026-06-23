@@ -533,6 +533,11 @@ popst_accept
    ACCEPT
 ;
 
+popst_add_path
+:
+   ADD_PATH SEND_COUNT count = send_path_count
+;
+
 popst_aigp_originate: AIGP_ORIGINATE (distance = uint32)?;
 
 popst_as_path_expand
@@ -581,6 +586,7 @@ popst_color2
 popst_common
 :
    popst_accept
+   | popst_add_path
    | popst_aigp_originate
    | popst_as_path_expand
    | popst_as_path_prepend
