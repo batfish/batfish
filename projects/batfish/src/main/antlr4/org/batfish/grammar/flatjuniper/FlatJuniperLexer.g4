@@ -2663,6 +2663,8 @@ SELF_PING_DURATION: 'self-ping-duration';
 
 SEND: 'send';
 
+SEND_COUNT: 'send-count';
+
 SERVER: 'server' -> pushMode(M_NameOrIp);
 
 SERVER_GROUP: 'server-group' -> pushMode(M_Name);
