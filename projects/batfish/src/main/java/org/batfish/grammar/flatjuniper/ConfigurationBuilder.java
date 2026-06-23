@@ -655,6 +655,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_add_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_aigp_originateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
@@ -1192,6 +1193,7 @@ import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAddPathSendCount;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpand;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
@@ -6749,6 +6751,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_accept(Popst_acceptContext ctx) {
     addPsThen(PsThenAccept.INSTANCE, ctx);
+  }
+
+  @Override
+  public void exitPopst_add_path(Popst_add_pathContext ctx) {
+    toInteger(ctx, ctx.count).ifPresent(count -> addPsThen(new PsThenAddPathSendCount(count), ctx));
   }
 
   @Override

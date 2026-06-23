@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
@@ -703,6 +704,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 prefix);
           }
         }
+      }
+      // `then add-path send-count` in an export policy is silently ignored by Junos unless add-path
+      // send is enabled at the BGP group/neighbor level. Warn if an export policy uses it but this
+      // neighbor does not have add-path send enabled (path-count set).
+      boolean addPathSendEnabled =
+          addPath != null && addPath.getSend() != null && addPath.getSend().getPathCount() != null;
+      if (!addPathSendEnabled) {
+        warnUnreachableAddPathSendCount(ig.getExportPolicies(), prefix);
       }
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
@@ -4878,6 +4887,39 @@ public final class JuniperConfiguration extends VendorConfiguration {
       PrefixList prefixList = e.getValue();
       if (!prefixList.getHasIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
+      }
+    }
+  }
+
+  /**
+   * Warns if any of the given export policies uses {@code then add-path send-count} while add-path
+   * send is not enabled at the BGP group/neighbor level. Junos silently ignores the policy-level
+   * directive in that case, so the action is dead config.
+   *
+   * @param exportPolicies names of policies exported toward the neighbor
+   * @param neighbor the neighbor prefix, for the warning message
+   */
+  private void warnUnreachableAddPathSendCount(List<String> exportPolicies, Prefix neighbor) {
+    for (String exportPolicyName : exportPolicies) {
+      PolicyStatement exportPolicy =
+          _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
+      if (exportPolicy == null) {
+        continue;
+      }
+      for (PsTerm term :
+          Iterables.concat(
+              ImmutableList.of(exportPolicy.getDefaultTerm()), exportPolicy.getTerms().values())) {
+        for (PsThen then : term.getThens().getAllThens()) {
+          if (then instanceof PsThenAddPathSendCount) {
+            _w.riskyRedFlag(
+                "policy-statement %s term %s: 'then add-path send-count %d' has no effect because"
+                    + " add-path send is not enabled at the BGP group level for neighbor %s",
+                exportPolicyName,
+                term.getName(),
+                ((PsThenAddPathSendCount) then).getSendCount(),
+                neighbor);
+          }
+        }
       }
     }
   }

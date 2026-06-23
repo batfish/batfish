@@ -778,4 +778,28 @@ public class PsThensTest {
         contains("default-action (dead-with-bare-terminator)"));
     assertThat(ps.getAllThens(), containsInAnyOrder(PsThenAccept.INSTANCE, defaultReject));
   }
+
+  // ==========================================================================
+  // add-path send-count — scalar last-wins family
+  // ==========================================================================
+
+  @Test
+  public void testAddPathSendCountDedup() {
+    PsThens ps = new PsThens();
+    PsThenAddPathSendCount c16 = new PsThenAddPathSendCount(16);
+    assertThat(ps.addPsThen(c16), empty());
+    assertThat(
+        ps.addPsThen(new PsThenAddPathSendCount(16)), contains("add-path send-count (dedup)"));
+    assertEquals(ImmutableList.of(c16), ps.getAllThens());
+  }
+
+  @Test
+  public void testAddPathSendCountLastWins() {
+    PsThens ps = new PsThens();
+    PsThenAddPathSendCount c16 = new PsThenAddPathSendCount(16);
+    PsThenAddPathSendCount c32 = new PsThenAddPathSendCount(32);
+    assertThat(ps.addPsThen(c16), empty());
+    assertThat(ps.addPsThen(c32), contains("add-path send-count"));
+    assertEquals(ImmutableList.of(c32), ps.getAllThens());
+  }
 }

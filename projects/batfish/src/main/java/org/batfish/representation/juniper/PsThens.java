@@ -127,7 +127,8 @@ public final class PsThens implements Serializable {
           "load-balance",
           "source-class",
           "tunnel-attribute set",
-          "tunnel-attribute remove");
+          "tunnel-attribute remove",
+          "add-path send-count");
 
   // --- Family classification (scalar last-wins families only) ---
 
@@ -169,6 +170,8 @@ public final class PsThens implements Serializable {
       return "tunnel-attribute remove";
     } else if (then instanceof PsThenSourceClass) {
       return "source-class";
+    } else if (then instanceof PsThenAddPathSendCount) {
+      return "add-path send-count";
     }
     return null;
   }
