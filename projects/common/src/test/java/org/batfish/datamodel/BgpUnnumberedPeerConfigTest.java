@@ -14,6 +14,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.junit.Test;
@@ -90,7 +91,7 @@ public final class BgpUnnumberedPeerConfigTest {
             builder.setEvpnAddressFamily(
                 EvpnAddressFamily.builder().setPropagateUnmatched(true).build()))
         .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
-        .addEqualityGroup(builder.setSessionVrf("default").build())
+        .addEqualityGroup(builder.setSessionVrfScope(new SpecificVrf("default")).build())
         .testEquals();
   }
 
@@ -125,7 +126,7 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
-            .setSessionVrf("default")
+            .setSessionVrfScope(new SpecificVrf("default"))
             .build();
 
     assertThat(
@@ -165,7 +166,7 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
-            .setSessionVrf("default")
+            .setSessionVrfScope(new SpecificVrf("default"))
             .build();
 
     assertThat(SerializationUtils.clone(bgpUnnumberedPeerConfig), equalTo(bgpUnnumberedPeerConfig));

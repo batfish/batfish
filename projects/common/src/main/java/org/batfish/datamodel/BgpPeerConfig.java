@@ -19,6 +19,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.SessionVrfScope;
+import org.batfish.datamodel.bgp.SessionVrfScope.OwnVrf;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /** Represents a configured BGP peering, at the control plane level */
@@ -96,13 +98,11 @@ public abstract class BgpPeerConfig implements Serializable {
   private final boolean _replaceNonLocalAsesOnExport;
 
   /**
-   * The VRF from which this peer's BGP TCP session is sourced, if different from the VRF in which
-   * the peer is configured. When {@code null}, the session is sourced from the peer's own VRF.
-   *
-   * <p>For example, Junos {@code forwarding-context master} causes a BGP session in a VRF to source
-   * its TCP connection from the default routing instance.
+   * Which ingress VRF(s) this peer's BGP TCP session accepts from, and which VRF it sources an
+   * outbound connection from. Defaults to {@link OwnVrf} (the peer's own VRF). See {@link
+   * SessionVrfScope}.
    */
-  private final @Nullable String _sessionVrf;
+  private final @Nonnull SessionVrfScope _sessionVrf;
 
   protected BgpPeerConfig(
       @Nullable RibGroup appliedRibGroup,
@@ -122,7 +122,7 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily,
       boolean replaceNonLocalAsesOnExport,
-      @Nullable String sessionVrf) {
+      @Nullable SessionVrfScope sessionVrf) {
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
     _checkLocalIpOnAccept = firstNonNull(checkLocalIpOnAccept, true);
@@ -140,7 +140,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
     _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
-    _sessionVrf = sessionVrf;
+    _sessionVrf = firstNonNull(sessionVrf, OwnVrf.instance());
   }
 
   /** Return the {@link RibGroup} applied to this config */
@@ -294,12 +294,21 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   /**
-   * The VRF in which this peer's BGP TCP session takes place, if different from the VRF in which
-   * the peer is configured. When {@code null}, the session uses the peer's own VRF.
+   * Which ingress VRF(s) this peer's BGP TCP session accepts from, and which VRF it sources an
+   * outbound connection from. Never {@code null}; defaults to {@link OwnVrf}.
+   */
+  @JsonIgnore
+  public @Nonnull SessionVrfScope getSessionVrf() {
+    return _sessionVrf;
+  }
+
+  /**
+   * JSON view of {@link #getSessionVrf()}: {@code null} (omitted) for {@link OwnVrf}, so the common
+   * case adds nothing to serialized output.
    */
   @JsonProperty(PROP_SESSION_VRF)
-  public @Nullable String getSessionVrf() {
-    return _sessionVrf;
+  private @Nullable SessionVrfScope getSessionVrfJson() {
+    return _sessionVrf instanceof OwnVrf ? null : _sessionVrf;
   }
 
   @Override
@@ -401,7 +410,7 @@ public abstract class BgpPeerConfig implements Serializable {
     protected @Nullable String _hostname;
 
     protected boolean _replaceNonLocalAsesOnExport;
-    protected @Nullable String _sessionVrf;
+    protected @Nonnull SessionVrfScope _sessionVrf = OwnVrf.instance();
 
     protected Builder() {
       _remoteAsns = LongSpace.EMPTY;
@@ -521,7 +530,7 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setSessionVrf(@Nullable String sessionVrf) {
+    public S setSessionVrfScope(@Nonnull SessionVrfScope sessionVrf) {
       _sessionVrf = sessionVrf;
       return getThis();
     }

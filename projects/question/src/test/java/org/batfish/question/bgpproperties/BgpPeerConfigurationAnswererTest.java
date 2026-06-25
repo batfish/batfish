@@ -43,6 +43,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
@@ -68,7 +69,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .setConfederation(1L)
             .setDescription("desc1")
             .setGroup("g1")
-            .setSessionVrf("otherVrf")
+            .setSessionVrfScope(new SpecificVrf("otherVrf"))
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setImportPolicySources(ImmutableSortedSet.of("p1"))

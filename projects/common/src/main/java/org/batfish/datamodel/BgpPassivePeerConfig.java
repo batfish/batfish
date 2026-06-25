@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.SessionVrfScope;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /**
@@ -44,7 +45,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
           Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily,
       @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT) boolean replaceNonLocalAsesOnExport,
-      @JsonProperty(PROP_SESSION_VRF) @Nullable String sessionVrf) {
+      @JsonProperty(PROP_SESSION_VRF) @Nullable SessionVrfScope sessionVrf) {
     return new BgpPassivePeerConfig(
         appliedRibGroup,
         authenticationSettings,
@@ -86,7 +87,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily,
       boolean replaceNonLocalAsesOnExport,
-      @Nullable String sessionVrf) {
+      @Nullable SessionVrfScope sessionVrf) {
     super(
         appliedRibGroup,
         authenticationSettings,

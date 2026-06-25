@@ -1,7 +1,5 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -66,7 +64,9 @@ public final class BgpSessionAnswererUtils {
     Ip localIp = activePeerConfig.getLocalIp();
     Ip remoteIp = activePeerConfig.getPeerAddress();
 
-    String sourceVrf = firstNonNull(activePeerConfig.getSessionVrf(), peerId.getVrfName());
+    // INVALID_LOCAL_IP is an initiator-side check: the active peer originates from its config VRF
+    // (AnyVrf collapses to it), so this stays per-VRF.
+    String sourceVrf = activePeerConfig.getSessionVrf().originVrf(peerId.getVrfName());
     if (!ipVrfOwners
         .getOrDefault(localIp, ImmutableMap.of())
         .getOrDefault(peerId.getHostname(), ImmutableSet.of())

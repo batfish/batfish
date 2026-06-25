@@ -347,6 +347,8 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.SessionVrfScope.OwnVrf;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1378,26 +1380,26 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testBgpForwardingContextConversion() {
-    // Test VI conversion: forwarding-context master → sessionVrf = "default"
+    // Test VI conversion: forwarding-context master → sessionVrf = SpecificVrf("default")
     Configuration c = parseConfig("bgp-forwarding-context");
 
     // VRF1 peer (protocol-level forwarding-context)
     BgpActivePeerConfig vrf1Peer =
         c.getVrfs().get("VRF1").getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.2"));
     assertThat(vrf1Peer, notNullValue());
-    assertThat(vrf1Peer.getSessionVrf(), equalTo(Configuration.DEFAULT_VRF_NAME));
+    assertThat(vrf1Peer.getSessionVrf(), equalTo(new SpecificVrf(Configuration.DEFAULT_VRF_NAME)));
 
     // VRF2 peer (group-level forwarding-context)
     BgpActivePeerConfig vrf2Peer =
         c.getVrfs().get("VRF2").getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.3"));
     assertThat(vrf2Peer, notNullValue());
-    assertThat(vrf2Peer.getSessionVrf(), equalTo(Configuration.DEFAULT_VRF_NAME));
+    assertThat(vrf2Peer.getSessionVrf(), equalTo(new SpecificVrf(Configuration.DEFAULT_VRF_NAME)));
 
-    // Default VRF peers should not have sessionVrf set
+    // Default VRF peers should not have sessionVrf set (own VRF)
     BgpProcess defaultProc = c.getDefaultVrf().getBgpProcess();
     if (defaultProc != null) {
       for (BgpActivePeerConfig peer : defaultProc.getActiveNeighbors().values()) {
-        assertThat(peer.getSessionVrf(), nullValue());
+        assertThat(peer.getSessionVrf(), equalTo(OwnVrf.instance()));
       }
     }
   }

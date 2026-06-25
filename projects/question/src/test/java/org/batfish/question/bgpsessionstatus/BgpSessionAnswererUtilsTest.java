@@ -22,6 +22,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -182,7 +183,7 @@ public final class BgpSessionAnswererUtilsTest {
             .setPeerAddress(remoteIp)
             .setLocalAs(1L)
             .setRemoteAs(2L)
-            .setSessionVrf("default")
+            .setSessionVrfScope(new SpecificVrf("default"))
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
