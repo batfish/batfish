@@ -1,6 +1,5 @@
 package org.batfish.datamodel.bgp;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
@@ -153,8 +152,8 @@ public final class BgpTopologyUtils {
             localIpsBuilder.put(neighborId, config.getLocalIp());
           } else {
             // No explicitly configured local IP. Check for dynamically resolvable local IPs.
-            // If sessionVrf is set, resolve from that VRF's FIB instead.
-            String sourceVrfName = firstNonNull(config.getSessionVrf(), vrfName);
+            // Resolve from the VRF the session originates from (own VRF unless overridden).
+            String sourceVrfName = config.getSessionVrf().originVrf(vrfName);
             Vrf sourceVrf = sourceVrfName.equals(vrfName) ? vrf : node.getVrfs().get(sourceVrfName);
             Fib sourceFib =
                 sourceVrfName.equals(vrfName)
@@ -199,14 +198,23 @@ public final class BgpTopologyUtils {
       }
       Multimap<String, BgpPeerConfigId> hostReceivers =
           receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
-      // Register under sessionVrf if set (the VRF where the TCP session lives), otherwise
-      // the peer's own VRF.
+      // Register the peer under each VRF its listening socket accepts from. Normally just the
+      // peer's own VRF (or a specific sessionVrf), but an AnyVrf listener (tcp_l3mdev_accept)
+      // registers under every VRF on the node so initiators whose peer address is owned in a
+      // non-config VRF can still find it.
       BgpPeerConfig peerConfig = networkConfigurations.getBgpPeerConfig(peer);
-      String receiverVrf =
+      Set<String> nodeVrfs =
+          networkConfigurations
+              .get(peer.getHostname())
+              .map(c -> c.getVrfs().keySet())
+              .orElse(ImmutableSet.of(peer.getVrfName()));
+      Set<String> receiverVrfs =
           peerConfig != null
-              ? firstNonNull(peerConfig.getSessionVrf(), peer.getVrfName())
-              : peer.getVrfName();
-      hostReceivers.put(receiverVrf, peer);
+              ? peerConfig.getSessionVrf().listenVrfs(peer.getVrfName(), nodeVrfs)
+              : ImmutableSet.of(peer.getVrfName());
+      for (String receiverVrf : receiverVrfs) {
+        hostReceivers.put(receiverVrf, peer);
+      }
     }
     SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
 
@@ -430,7 +438,7 @@ public final class BgpTopologyUtils {
     }
 
     Ip localIp = config.getLocalIp();
-    String sourceVrf = firstNonNull(config.getSessionVrf(), vrfName);
+    String sourceVrf = config.getSessionVrf().originVrf(vrfName);
     return localIp == null
         || (ipOwners.containsKey(localIp)
             && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(sourceVrf));
@@ -591,7 +599,7 @@ public final class BgpTopologyUtils {
             .setIpProtocol(IpProtocol.TCP)
             .setTcpFlagsSyn(true)
             .setIngressNode(initiatorId.getHostname())
-            .setIngressVrf(firstNonNull(initiator.getSessionVrf(), initiatorId.getVrfName()))
+            .setIngressVrf(initiator.getSessionVrf().originVrf(initiatorId.getVrfName()))
             .setSrcIp(initiatorLocalIp)
             .setDstIp(initiator.getPeerAddress())
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
@@ -621,11 +629,11 @@ public final class BgpTopologyUtils {
               Flow reverseFlow = traceAndReverseFlow.getReverseFlow();
               assert traceAndReverseFlow.getReverseFlow() != null; // success implies return flow
               assert reverseFlow.getIngressVrf() != null; // accepted
-              String listenerSessionVrf =
-                  firstNonNull(listener.getSessionVrf(), listenerId.getVrfName());
               if (!reverseFlow.getIngressNode().equals(listenerId.getHostname())
-                  || !reverseFlow.getIngressVrf().equals(listenerSessionVrf)) {
-                // This trace is success at the wrong device or in the wrong VRF.
+                  || !listener
+                      .getSessionVrf()
+                      .acceptsIngressVrf(reverseFlow.getIngressVrf(), listenerId.getVrfName())) {
+                // This trace is success at the wrong device or in a VRF the listener won't accept.
                 return false;
               } else if (listener.getCheckLocalIpOnAccept() && listener.getLocalIp() != null) {
                 // The destination IP must match the listener's local IP, otherwise the listener
