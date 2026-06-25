@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary")
+load("@batfish//skylark:thin_jar.bzl", "thin_jar")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,6 +13,16 @@ java_binary(
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
+)
+
+# A "thin" library JAR bundling only Batfish's own modules (the allinone library
+# and its transitive batfish deps, which include all vendor parsers and the data
+# plane), excluding all third-party dependencies. Intended for embedding Batfish
+# as a library in a build that supplies the third-party dependencies itself (e.g.
+# a Maven project).
+thin_jar(
+    name = "batfish_thin.jar",
+    deps = ["//projects/allinone/src/main/java/org/batfish/allinone"],
 )
 
 # Deprecated
