@@ -89,6 +89,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.SessionVrfScope.AnyVrf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -492,6 +493,9 @@ public final class CumulusConversions {
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(c, neighbor, bgpVrf);
 
+    // Cumulus runs BGP over a listening socket that is not bound to a particular VRF and relies on
+    // the kernel sysctl tcp_l3mdev_accept=1 to accept connections arriving on any VRF.
+    peerConfigBuilder.setSessionVrfScope(AnyVrf.instance());
     peerConfigBuilder
         .setBgpProcess(newProc)
         .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, localAs))

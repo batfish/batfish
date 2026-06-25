@@ -139,6 +139,7 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -876,10 +877,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // forwarding-context: resolve the VRF from which the BGP TCP session is sourced
       String forwardingContext = ig.getForwardingContext();
       if (forwardingContext != null) {
-        neighbor.setSessionVrf(
-            forwardingContext.equals(DEFAULT_ROUTING_INSTANCE_NAME)
-                ? Configuration.DEFAULT_VRF_NAME
-                : forwardingContext);
+        neighbor.setSessionVrfScope(
+            new SpecificVrf(
+                forwardingContext.equals(DEFAULT_ROUTING_INSTANCE_NAME)
+                    ? Configuration.DEFAULT_VRF_NAME
+                    : forwardingContext));
       }
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(

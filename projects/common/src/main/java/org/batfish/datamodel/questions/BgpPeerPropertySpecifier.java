@@ -153,7 +153,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               SESSION_VRF,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getSessionVrf,
+                  p -> p.getSessionVrf().displayString(),
                   Schema.STRING,
                   "The VRF in which the BGP TCP session takes place, if different from VRF"))
           .build();

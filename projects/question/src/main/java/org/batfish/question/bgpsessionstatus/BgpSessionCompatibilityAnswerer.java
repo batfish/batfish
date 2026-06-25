@@ -210,7 +210,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
-        .put(COL_SESSION_VRF, activePeer.getSessionVrf())
+        .put(COL_SESSION_VRF, activePeer.getSessionVrf().displayString())
         .put(COL_SESSION_TYPE, getSessionType(activePeer))
         .put(COL_VRF, activeId.getVrfName())
         .build();
@@ -238,7 +238,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             .put(
                 COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
-            .put(COL_SESSION_VRF, passivePeer.getSessionVrf())
+            .put(COL_SESSION_VRF, passivePeer.getSessionVrf().displayString())
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, passiveId.getVrfName());
 
@@ -316,7 +316,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .put(COL_REMOTE_INTERFACE, remoteInterface)
         .put(COL_REMOTE_IP, null)
         .put(COL_ADDRESS_FAMILIES, addressFamilies)
-        .put(COL_SESSION_VRF, unnumPeer.getSessionVrf())
+        .put(COL_SESSION_VRF, unnumPeer.getSessionVrf().displayString())
         .put(COL_SESSION_TYPE, getSessionType(unnumPeer))
         .put(COL_VRF, unnumId.getVrfName())
         .build();

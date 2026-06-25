@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.io.IOException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.questions.BgpSessionStatus;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
@@ -107,6 +108,6 @@ public class BgpForwardingContextTest {
             .iterator()
             .next()
             .getSessionVrf(),
-        equalTo("default"));
+        equalTo(new SpecificVrf("default")));
   }
 }
