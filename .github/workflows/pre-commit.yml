@@ -42,6 +42,8 @@ jobs:
             ${{runner.os}}-bazel-format-
       - name: Java Formatting
         run: bazel run //tools/format:format.check
+      - name: Buildifier
+        run: bazel run //:buildifier.check
   json_template:
     runs-on: ubuntu-latest
     steps:
