@@ -22,6 +22,8 @@ public class RoutingInformationBase implements Serializable {
   private final String _name;
   private final Map<Prefix, StaticRouteV4> _staticRoutes;
   private final Map<Prefix6, StaticRouteV6> _staticRoutesV6;
+  private final StaticRouteV4 _staticRouteDefaults;
+  private final StaticRouteV6 _staticRouteDefaultsV6;
 
   public RoutingInformationBase(@Nonnull String name) {
     _name = name;
@@ -29,6 +31,10 @@ public class RoutingInformationBase implements Serializable {
     _generatedRoutes = new TreeMap<>();
     _staticRoutes = new TreeMap<>();
     _staticRoutesV6 = new TreeMap<>();
+    // Attributes from this RIB's "static defaults" block, inherited by its static routes. The
+    // defaults route has no parent defaults of its own.
+    _staticRouteDefaults = new StaticRouteV4(Prefix.ZERO, null);
+    _staticRouteDefaultsV6 = new StaticRouteV6(Prefix6.ZERO, null);
   }
 
   public @Nonnull Map<Prefix, AggregateRoute> getAggregateRoutes() {
@@ -49,5 +55,15 @@ public class RoutingInformationBase implements Serializable {
 
   public @Nonnull Map<Prefix6, StaticRouteV6> getStaticRoutesV6() {
     return _staticRoutesV6;
+  }
+
+  /** Default attributes inherited by IPv4 static routes in this RIB. */
+  public @Nonnull StaticRouteV4 getStaticRouteDefaults() {
+    return _staticRouteDefaults;
+  }
+
+  /** Default attributes inherited by IPv6 static routes in this RIB. */
+  public @Nonnull StaticRouteV6 getStaticRouteDefaultsV6() {
+    return _staticRouteDefaultsV6;
   }
 }

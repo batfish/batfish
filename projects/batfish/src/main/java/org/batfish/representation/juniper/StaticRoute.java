@@ -16,13 +16,25 @@ public abstract class StaticRoute<T> implements Serializable {
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
 
-  private Set<Community> _communities;
+  private static final int DEFAULT_METRIC = 0;
 
-  private int _distance;
+  /**
+   * The enclosing {@code static {}} block's {@code defaults} route, whose attributes this route
+   * inherits for any field it does not set itself, or null if this route IS the defaults route.
+   * Resolving inheritance lazily in the getters (rather than copying fields in) keeps a route's own
+   * unset/explicit distinction intact and means callers need no separate inheritance step.
+   */
+  private final @Nullable StaticRoute<T> _defaults;
+
+  private final Set<Community> _communities;
+
+  // Null distinguishes "unset" (inherit from defaults) from an explicit value. An unset field with
+  // no defaults to inherit reads as the Junos default via the getter.
+  private @Nullable Integer _distance;
 
   private boolean _drop;
 
-  private int _metric;
+  private @Nullable Integer _metric;
 
   private @Nonnull Set<String> _nextHopInterface;
 
@@ -44,26 +56,45 @@ public abstract class StaticRoute<T> implements Serializable {
 
   private @Nullable Boolean _resolve;
 
-  private Long _tag;
+  private @Nullable Long _tag;
 
   private @Nullable Long _tag2;
 
-  public StaticRoute() {
+  public StaticRoute(@Nullable StaticRoute<T> defaults) {
+    _defaults = defaults;
     _communities = new TreeSet<>();
     _policies = new ArrayList<>();
-    // default admin costs for static routes in Juniper
-    _distance = DEFAULT_ADMIN_DISTANCE;
     _qualifiedNextHops = new HashMap<>();
     _nextHopInterface = new HashSet<>();
     _nextHopIp = new HashSet<>();
   }
 
+  /**
+   * The route's communities: its own if it sets any, otherwise those inherited from the {@code
+   * defaults} block. Junos replaces (does not merge) the defaults' communities when a route sets
+   * its own.
+   */
   public Set<Community> getCommunities() {
+    if (_communities.isEmpty() && _defaults != null) {
+      return _defaults.getCommunities();
+    }
     return _communities;
   }
 
+  /** Adds a community to this route's own set (used while parsing). */
+  public void addCommunity(Community community) {
+    _communities.add(community);
+  }
+
+  /**
+   * The route's administrative distance (Junos "preference"): its own if set, else inherited from
+   * the {@code defaults} block, else the Junos default.
+   */
   public int getDistance() {
-    return _distance;
+    if (_distance != null) {
+      return _distance;
+    }
+    return _defaults != null ? _defaults.getDistance() : DEFAULT_ADMIN_DISTANCE;
   }
 
   public boolean getDrop() {
@@ -71,15 +102,19 @@ public abstract class StaticRoute<T> implements Serializable {
   }
 
   public @Nullable Boolean getInstall() {
-    return _install;
+    return _install != null ? _install : (_defaults != null ? _defaults.getInstall() : null);
   }
 
   public void setInstall(@Nullable Boolean install) {
     _install = install;
   }
 
+  /** The route's metric: its own if set, else inherited from the {@code defaults} block, else 0. */
   public int getMetric() {
-    return _metric;
+    if (_metric != null) {
+      return _metric;
+    }
+    return _defaults != null ? _defaults.getMetric() : DEFAULT_METRIC;
   }
 
   public Set<String> getNextHopInterface() {
@@ -103,15 +138,17 @@ public abstract class StaticRoute<T> implements Serializable {
   }
 
   public @Nullable Boolean getReadvertise() {
-    return _readvertise;
+    return _readvertise != null
+        ? _readvertise
+        : (_defaults != null ? _defaults.getReadvertise() : null);
   }
 
   public void setReadvertise(@Nullable Boolean readvertise) {
     _readvertise = readvertise;
   }
 
-  public Long getTag() {
-    return _tag;
+  public @Nullable Long getTag() {
+    return _tag != null ? _tag : (_defaults != null ? _defaults.getTag() : null);
   }
 
   public void setTag(long tag) {
@@ -119,7 +156,7 @@ public abstract class StaticRoute<T> implements Serializable {
   }
 
   public @Nullable Long getTag2() {
-    return _tag2;
+    return _tag2 != null ? _tag2 : (_defaults != null ? _defaults.getTag2() : null);
   }
 
   public void setTag2(@Nullable Long tag2) {
@@ -155,7 +192,7 @@ public abstract class StaticRoute<T> implements Serializable {
   }
 
   public @Nullable Boolean getResolve() {
-    return _resolve;
+    return _resolve != null ? _resolve : (_defaults != null ? _defaults.getResolve() : null);
   }
 
   public void setResolve(@Nullable Boolean resolve) {

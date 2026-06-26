@@ -715,6 +715,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro6_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
@@ -758,6 +759,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_defaultsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route4Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roslrg_srlg_costContext;
@@ -3828,14 +3830,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void enterRos_route4(Ros_route4Context ctx) {
     Prefix prefix = toNormalizedPrefix(ctx.prefix, "Static route destination");
     Map<Prefix, StaticRouteV4> staticRoutes = _currentRib.getStaticRoutes();
-    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV4::new);
+    // Each route points at this RIB's "static defaults" so unset fields resolve through it.
+    _currentStaticRoute =
+        staticRoutes.computeIfAbsent(
+            prefix, p -> new StaticRouteV4(p, _currentRib.getStaticRouteDefaults()));
   }
 
   @Override
   public void enterRos_route6(Ros_route6Context ctx) {
     Prefix6 prefix = toNormalizedPrefix6(ctx.prefix, "Static route destination");
     Map<Prefix6, StaticRouteV6> staticRoutes = _currentRib.getStaticRoutesV6();
-    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV6::new);
+    _currentStaticRoute =
+        staticRoutes.computeIfAbsent(
+            prefix, p -> new StaticRouteV6(p, _currentRib.getStaticRouteDefaultsV6()));
+  }
+
+  @Override
+  public void enterRos_defaults(Ros_defaultsContext ctx) {
+    // The shared "DEFAULTS rosr_common" rule is reached from both the v4 ("static") and v6 ("rib
+    // inet6.0 { static }") paths; the parent rule tells them apart. The rosr_* attribute handlers
+    // populate _currentStaticRoute, so point it at this RIB's static-route defaults object.
+    _currentStaticRoute =
+        ctx.getParent() instanceof Ro6_staticContext
+            ? _currentRib.getStaticRouteDefaultsV6()
+            : _currentRib.getStaticRouteDefaults();
+  }
+
+  @Override
+  public void exitRos_defaults(Ros_defaultsContext ctx) {
+    _currentStaticRoute = null;
   }
 
   @Override
@@ -7419,7 +7442,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_community(Rosr_communityContext ctx) {
-    _currentStaticRoute.getCommunities().add(toStandardCommunity(ctx.standard_community()));
+    _currentStaticRoute.addCommunity(toStandardCommunity(ctx.standard_community()));
   }
 
   @Override

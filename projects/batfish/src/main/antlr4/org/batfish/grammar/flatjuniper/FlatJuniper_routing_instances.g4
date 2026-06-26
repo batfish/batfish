@@ -332,6 +332,7 @@ ro_static
    STATIC
    (
       apply
+      | ros_defaults
       | ros_rib_group
       | ros_route4
    )
@@ -342,9 +343,17 @@ ro6_static
    STATIC
    (
       apply
+      | ros_defaults
       | ros_rib_group
       | ros_route6
    )
+;
+
+// Default attributes inherited by all static routes in this RIB. The attribute set matches that of
+// an individual static route; an empty "defaults {}" block matches via rosr_common -> apply.
+ros_defaults
+:
+   DEFAULTS rosr_common
 ;
 
 ro_validation
