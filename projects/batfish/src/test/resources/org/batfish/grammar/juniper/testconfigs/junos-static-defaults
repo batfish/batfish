@@ -1,0 +1,17 @@
+#
+# "static defaults" sets attributes inherited by every static route in the RIB.
+#
+set system host-name junos-static-defaults
+
+set routing-options static defaults metric 50
+set routing-options static defaults preference 200
+set routing-options static defaults tag 1000
+set routing-options static defaults community 65000:1
+
+# Inherits all four defaults.
+set routing-options static route 10.0.0.0/24 next-hop 10.255.0.1
+
+# Overrides metric and community; inherits preference and tag.
+set routing-options static route 10.1.0.0/24 next-hop 10.255.0.1
+set routing-options static route 10.1.0.0/24 metric 5
+set routing-options static route 10.1.0.0/24 community 65000:2

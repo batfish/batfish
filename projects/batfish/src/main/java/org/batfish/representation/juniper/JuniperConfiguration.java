@@ -3852,7 +3852,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // static routes
-      for (StaticRouteV4 route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
+      RoutingInformationBase rib = ri.getRibs().get(RIB_IPV4_UNICAST);
+      StaticRouteV4 staticDefaults = rib.getStaticRouteDefaults();
+      for (StaticRouteV4 route : rib.getStaticRoutes().values()) {
+        // Inherit from the RIB's "static defaults" before conversion. This mutates the stored
+        // route, so the BGP static-route community setters (created later) also see the result.
+        route.inheritUnsetFields(staticDefaults);
         vrf.getStaticRoutes().addAll(toStaticRoutes(route));
       }
 

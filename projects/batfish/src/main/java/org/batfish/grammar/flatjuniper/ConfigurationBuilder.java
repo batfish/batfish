@@ -715,6 +715,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro6_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
@@ -758,6 +759,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_defaultsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route4Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roslrg_srlg_costContext;
@@ -3836,6 +3838,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Prefix6 prefix = toNormalizedPrefix6(ctx.prefix, "Static route destination");
     Map<Prefix6, StaticRouteV6> staticRoutes = _currentRib.getStaticRoutesV6();
     _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV6::new);
+  }
+
+  @Override
+  public void enterRos_defaults(Ros_defaultsContext ctx) {
+    // The rosr_* attribute handlers populate _currentStaticRoute; point it at this RIB's static
+    // defaults. v4 vs v6 is determined by whether this is under "static" or "rib inet6 { static }".
+    _currentStaticRoute =
+        ctx.getParent() instanceof Ro6_staticContext
+            ? _currentRib.getStaticRouteDefaultsV6()
+            : _currentRib.getStaticRouteDefaults();
+  }
+
+  @Override
+  public void exitRos_defaults(Ros_defaultsContext ctx) {
+    _currentStaticRoute = null;
   }
 
   @Override

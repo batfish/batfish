@@ -7557,6 +7557,53 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testStaticRouteDefaultsExtraction() {
+    // "static defaults" attributes are captured on the RIB but not yet merged into routes;
+    // inheritance happens at conversion.
+    JuniperConfiguration c = parseJuniperConfig("junos-static-defaults");
+    RoutingInformationBase rib =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get(DEFAULT_VRF_NAME)
+            .getRibs()
+            .get(RIB_IPV4_UNICAST);
+
+    StaticRouteV4 defaults = rib.getStaticRouteDefaults();
+    assertThat(defaults.getMetric(), equalTo(50));
+    assertThat(defaults.getDistance(), equalTo(200));
+    assertThat(defaults.getTag(), equalTo(1000L));
+    assertThat(defaults.getCommunities(), contains(StandardCommunity.of(65000, 1)));
+
+    // The route with its own metric/community keeps them; unset fields remain unset pre-conversion.
+    StaticRouteV4 overrides = rib.getStaticRoutes().get(Prefix.parse("10.1.0.0/24"));
+    assertThat(overrides.getMetric(), equalTo(5));
+    assertThat(overrides.getCommunities(), contains(StandardCommunity.of(65000, 2)));
+  }
+
+  @Test
+  public void testStaticRouteDefaultsConversion() {
+    // At conversion, each static route inherits the RIB's "static defaults" for unset fields.
+    Configuration c = parseConfig("junos-static-defaults");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    // Inherits metric 50, preference (admin) 200, tag 1000.
+                    allOf(
+                        hasPrefix(Prefix.parse("10.0.0.0/24")),
+                        AbstractRouteDecoratorMatchers.hasMetric(50L),
+                        hasAdministrativeCost(200),
+                        hasTag(1000L)),
+                    // Keeps its own metric 5; inherits preference 200 and tag 1000.
+                    allOf(
+                        hasPrefix(Prefix.parse("10.1.0.0/24")),
+                        AbstractRouteDecoratorMatchers.hasMetric(5L),
+                        hasAdministrativeCost(200),
+                        hasTag(1000L))))));
+  }
+
+  @Test
   public void testStaticRouteConversion() {
     Configuration c = parseConfig("static-routes");
     assertThat(

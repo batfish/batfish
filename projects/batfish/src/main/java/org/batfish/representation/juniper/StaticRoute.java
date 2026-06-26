@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,13 +18,17 @@ public abstract class StaticRoute<T> implements Serializable {
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
 
+  private static final int DEFAULT_METRIC = 0;
+
   private Set<Community> _communities;
 
-  private int _distance;
+  // Null distinguishes "unset" (so a value can be inherited from static defaults) from an explicit
+  // value. Unset reads as the Junos default via the getter.
+  private @Nullable Integer _distance;
 
   private boolean _drop;
 
-  private int _metric;
+  private @Nullable Integer _metric;
 
   private @Nonnull Set<String> _nextHopInterface;
 
@@ -51,8 +57,6 @@ public abstract class StaticRoute<T> implements Serializable {
   public StaticRoute() {
     _communities = new TreeSet<>();
     _policies = new ArrayList<>();
-    // default admin costs for static routes in Juniper
-    _distance = DEFAULT_ADMIN_DISTANCE;
     _qualifiedNextHops = new HashMap<>();
     _nextHopInterface = new HashSet<>();
     _nextHopIp = new HashSet<>();
@@ -62,8 +66,9 @@ public abstract class StaticRoute<T> implements Serializable {
     return _communities;
   }
 
+  /** The route's administrative distance (Junos "preference"), or the Junos default if unset. */
   public int getDistance() {
-    return _distance;
+    return firstNonNull(_distance, DEFAULT_ADMIN_DISTANCE);
   }
 
   public boolean getDrop() {
@@ -78,8 +83,9 @@ public abstract class StaticRoute<T> implements Serializable {
     _install = install;
   }
 
+  /** The route's metric, or the Junos default if unset. */
   public int getMetric() {
-    return _metric;
+    return firstNonNull(_metric, DEFAULT_METRIC);
   }
 
   public Set<String> getNextHopInterface() {
@@ -184,5 +190,37 @@ public abstract class StaticRoute<T> implements Serializable {
     _nextHopInterface.clear();
     _nextTable = null;
     _drop = false;
+  }
+
+  /**
+   * Inherit attributes from {@code defaults} (the RIB's {@code static defaults} block) for any
+   * attribute this route does not set explicitly. A route's own value always wins; this only fills
+   * in unset fields.
+   */
+  public void inheritUnsetFields(StaticRoute<T> defaults) {
+    if (_distance == null) {
+      _distance = defaults._distance;
+    }
+    if (_metric == null) {
+      _metric = defaults._metric;
+    }
+    if (_tag == null) {
+      _tag = defaults._tag;
+    }
+    if (_tag2 == null) {
+      _tag2 = defaults._tag2;
+    }
+    if (_install == null) {
+      _install = defaults._install;
+    }
+    if (_readvertise == null) {
+      _readvertise = defaults._readvertise;
+    }
+    if (_resolve == null) {
+      _resolve = defaults._resolve;
+    }
+    if (_communities.isEmpty()) {
+      _communities.addAll(defaults._communities);
+    }
   }
 }
