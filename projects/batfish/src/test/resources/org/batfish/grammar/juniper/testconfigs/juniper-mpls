@@ -21,6 +21,7 @@ set protocols mpls optimize-adaptive-teardown delay 360
 set protocols mpls optimize-aggressive
 set protocols mpls optimize-timer 300
 set protocols mpls path-mtu rsvp mtu-signaling
+set protocols mpls preference 7
 set protocols mpls record
 set protocols mpls smart-optimize-timer 100
 #

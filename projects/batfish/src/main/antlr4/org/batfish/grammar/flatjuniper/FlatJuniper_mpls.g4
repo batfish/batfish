@@ -45,6 +45,7 @@ p_mpls
        | mpls_optimize_timer_null
        | mpls_path
        | mpls_path_mtu_null
+       | mpls_preference_null
        | mpls_record_null
        | mpls_smart_optimize_timer_null
        | mpls_statistics_null
@@ -378,6 +379,11 @@ mpls_optimize_timer_null
 mpls_path_mtu_null
 :
    PATH_MTU null_filler
+;
+
+mpls_preference_null
+:
+   PREFERENCE uint32
 ;
 
 mpls_record_null
