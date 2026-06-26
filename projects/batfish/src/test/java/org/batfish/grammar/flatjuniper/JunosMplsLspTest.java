@@ -57,4 +57,27 @@ public class JunosMplsLspTest {
     // Verify undefined path reference
     assertThat(ccae, hasUndefinedReference(filename, MPLS_PATH, "SEC", MPLS_LSP_SECONDARY_PATH));
   }
+
+  /**
+   * Junos permits {@code >} in config object names, e.g. MPLS LSP names like {@code WASH->ATLA}.
+   * Such names must lex as a single token so the LSP body parses, and must not interfere with
+   * wildcard tokens (which are anchored by a leading {@code <}).
+   *
+   * <p>Under the default test settings ({@code disableUnrecognized=true}) an unlexable name would
+   * throw a parser error, so reaching the assertions at all proves the name lexed. The assertions
+   * then confirm the LSP body parsed: the {@code primary PRI} statement inside the {@code
+   * WASH->ATLA} block resolves to the defined MPLS path, and the interface/unit wildcards in the
+   * same config still tokenize as wildcards (otherwise they too would throw).
+   */
+  @Test
+  public void testLspNameWithArrowParsing() throws IOException {
+    String hostname = "junos-lsp-name-with-arrow";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, MPLS_PATH, "PRI"));
+    assertThat(ccae, hasReferencedStructure(filename, MPLS_PATH, "PRI", MPLS_LSP_PRIMARY_PATH));
+  }
 }

@@ -3675,6 +3675,9 @@ F_NameChar
   | ','
   | '.'
   | ':'
+  // Junos permits '>' in config object names, e.g. MPLS LSP names like "WASH->ATLA".
+  // This cannot conflict with F_Wildcard, which is anchored by a leading '<'.
+  | '>'
 ;
 
 // Any number of newlines, allowing whitespace in between

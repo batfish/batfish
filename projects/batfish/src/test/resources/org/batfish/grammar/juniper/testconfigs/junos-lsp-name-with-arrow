@@ -1,0 +1,20 @@
+#
+# Regression test: Junos config object names may contain '>'.
+# MPLS LSP names like "WASH->ATLA" must lex as a single NAME, and must not
+# interfere with wildcard tokens (which are anchored by a leading '<').
+#
+
+set system host-name junos-lsp-name-with-arrow
+
+# LSP whose name contains '->'. The body statements (to, admin-group exclude,
+# primary) must be parsed, not dropped along with an unlexable name.
+set protocols mpls label-switched-path WASH->ATLA to 64.57.28.243
+set protocols mpls label-switched-path WASH->ATLA admin-group exclude RED
+set protocols mpls label-switched-path WASH->ATLA primary PRI
+
+set protocols mpls path PRI
+set protocols mpls admin-groups RED 1
+
+# Interface/unit wildcards must still tokenize as wildcards, not names, after adding '>'.
+set class-of-service interfaces xe-* scheduler-map SCHED
+set class-of-service interfaces ae* unit * output-traffic-control-profile TCP
