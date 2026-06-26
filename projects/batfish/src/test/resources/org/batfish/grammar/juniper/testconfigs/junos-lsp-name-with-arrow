@@ -1,0 +1,12 @@
+#
+# Junos config object names may contain '>', e.g. MPLS LSP names like "WASH->ATLA".
+#
+
+set system host-name junos-lsp-name-with-arrow
+
+set protocols mpls label-switched-path WASH->ATLA to 64.57.28.243
+set protocols mpls label-switched-path WASH->ATLA admin-group exclude RED
+set protocols mpls label-switched-path WASH->ATLA primary PRI
+
+set protocols mpls path PRI
+set protocols mpls admin-groups RED 1

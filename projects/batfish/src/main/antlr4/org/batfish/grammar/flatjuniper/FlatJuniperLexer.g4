@@ -3675,6 +3675,8 @@ F_NameChar
   | ','
   | '.'
   | ':'
+  // Junos allows '>' in names, e.g. LSP name "WASH->ATLA".
+  | '>'
 ;
 
 // Any number of newlines, allowing whitespace in between

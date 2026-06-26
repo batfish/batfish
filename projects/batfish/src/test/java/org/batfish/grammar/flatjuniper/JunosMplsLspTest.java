@@ -57,4 +57,17 @@ public class JunosMplsLspTest {
     // Verify undefined path reference
     assertThat(ccae, hasUndefinedReference(filename, MPLS_PATH, "SEC", MPLS_LSP_SECONDARY_PATH));
   }
+
+  /** Names containing {@code >}, e.g. LSP name "WASH->ATLA", lex so the LSP body parses. */
+  @Test
+  public void testLspNameWithArrowParsing() throws IOException {
+    String hostname = "junos-lsp-name-with-arrow";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, MPLS_PATH, "PRI"));
+    assertThat(ccae, hasReferencedStructure(filename, MPLS_PATH, "PRI", MPLS_LSP_PRIMARY_PATH));
+  }
 }
