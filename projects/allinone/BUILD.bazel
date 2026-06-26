@@ -1,5 +1,5 @@
-load("@rules_java//java:defs.bzl", "java_binary")
 load("@batfish//skylark:thin_jar.bzl", "thin_jar")
+load("@rules_java//java:defs.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 
