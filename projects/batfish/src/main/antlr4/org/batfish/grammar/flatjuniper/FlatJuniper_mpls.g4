@@ -95,6 +95,7 @@ mpls_label_switched_path
       | mplslsp_bandwidth_null
       | mplslsp_conditional_metric_null
       | mplslsp_cross_credibility_cspf_null
+      | mplslsp_fast_reroute_null
       | mplslsp_hop_limit_null
       | mplslsp_in_place_lsp_bandwidth_update_null
       | mplslsp_install_null
@@ -263,6 +264,11 @@ mplslsp_bandwidth_null
 mplslsp_cross_credibility_cspf_null
 :
    CROSS_CREDIBILITY_CSPF null_filler
+;
+
+mplslsp_fast_reroute_null
+:
+   FAST_REROUTE null_filler
 ;
 
 mplslsp_hop_limit_null
