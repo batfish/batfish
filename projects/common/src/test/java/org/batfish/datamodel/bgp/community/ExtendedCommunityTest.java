@@ -87,9 +87,46 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOfWithInvalidType() {
+  public void testParseHighTypeOctet() {
+    // A bare numeric first field whose type octet has the high bit set must
+    // parse as an opaque/unknown extended community rather than being rejected
+    // by signed-byte arithmetic. Junos emits these via the generic
+    // "type:ga:la" literal, e.g. "65000:672277L:36867" -> type 0xFD, subtype
+    // 0xE8, 4-byte GA 672277 (L suffix), 2-byte LA 36867.
+    ExtendedCommunity ec = ExtendedCommunity.parse("65000:672277L:36867");
+    assertThat(ec, equalTo(ExtendedCommunity.of(0xFDE8, 672277L, 36867L)));
+    assertThat(ec.getGlobalAdministrator(), equalTo(672277L));
+    assertThat(ec.getLocalAdministrator(), equalTo(36867L));
+    // Unknown type: none of the type-specific predicates should match.
+    assertFalse(ec.isRouteTarget());
+    assertFalse(ec.isRouteOrigin());
+    // Round-trips through string form.
+    assertThat(ExtendedCommunity.parse(ec.toString()), equalTo(ec));
+  }
+
+  @Test
+  public void testOfHighTypeOctet() {
+    // of() must not reject a type octet >= 0x80 via signed-byte arithmetic.
+    ExtendedCommunity ec = ExtendedCommunity.of(0xFDE8, 672277L, 36867L);
+    assertThat(ec.getSubtype(), equalTo(0xE8));
+    assertThat(ec.getGlobalAdministrator(), equalTo(672277L));
+    assertThat(ec.getLocalAdministrator(), equalTo(36867L));
+  }
+
+  @Test
+  public void testOfTypeOutOfRange() {
+    // A combined type+subtype must fit in 2 bytes (0-0xFFFF).
     thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.of(4 << 8, 1, 1);
+    ExtendedCommunity.of(0x10000, 1, 1);
+  }
+
+  @Test
+  public void testOfUnknownTypeAccepted() {
+    // Type octets we do not specifically recognize (e.g. 0x04) are modeled as
+    // opaque values rather than rejected.
+    ExtendedCommunity ec = ExtendedCommunity.of(4 << 8, 1, 1);
+    assertThat(ec.getGlobalAdministrator(), equalTo(1L));
+    assertThat(ec.getLocalAdministrator(), equalTo(1L));
   }
 
   @Test
@@ -141,10 +178,11 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testInvalidType() {
-    thrown.expect(IllegalArgumentException.class);
-    // this will make typeByte 0x04
-    ExtendedCommunity.parse("1024:1:1");
+  public void testParseUnknownTypeAccepted() {
+    // "1024" makes type octet 0x04, which we do not specifically recognize;
+    // it is modeled as an opaque value rather than rejected.
+    ExtendedCommunity ec = ExtendedCommunity.parse("1024:1:1");
+    assertThat(ec, equalTo(ExtendedCommunity.of(0x0400, 1L, 1L)));
   }
 
   @Test

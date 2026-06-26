@@ -5,12 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import java.math.BigInteger;
 import java.util.Optional;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,9 +22,6 @@ import org.batfish.datamodel.Ip;
 public final class ExtendedCommunity extends Community {
   /** The max value that can be stored in 6 bytes. */
   private static final long VALUE_MAX = 0xFFFF_FFFF_FFFFL;
-
-  private static final Set<Integer> VALID_TYPES =
-      ImmutableSet.of(0x00, 0x01, 0x02, 0x03, 0x40, 0x41, 0x43);
 
   /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
   public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_VALID =
@@ -54,9 +49,15 @@ public final class ExtendedCommunity extends Community {
   private transient @Nullable String _regexStr;
 
   private ExtendedCommunity(int type, int subType, long value) {
-    checkArgument(VALID_TYPES.contains(type), "Not a valid BGP extended community type: %s", type);
+    // Type and subtype are each a single byte. We do not restrict the type to
+    // the IANA-assigned values we recognize: extended communities observed on
+    // real devices may use experimental or vendor-specific types (e.g. Junos
+    // accepts a generic "type:ga:la" literal with an arbitrary type octet),
+    // and we model them as opaque values. The type-specific predicates
+    // (isRouteTarget, isRouteOrigin, etc.) return false for unrecognized types.
+    checkArgument(type >= 0 && type <= 0xFF, "Type not within accepted 0-0xFF range: %s", type);
     checkArgument(
-        subType >= 0 && type <= 0xFF, "Subtype not within accepted 0-0xFF range: %s", type);
+        subType >= 0 && subType <= 0xFF, "Subtype not within accepted 0-0xFF range: %s", subType);
     checkArgument(
         value >= 0 && value <= VALUE_MAX, "Value %s is not within the accepted range", value);
 
@@ -174,7 +175,10 @@ public final class ExtendedCommunity extends Community {
         }
       }
     }
-    return of((int) typeByte << 8 | (int) subTypeByte, gaLong, laLong);
+    // Mask each byte to its unsigned value: typeByte/subTypeByte are signed
+    // bytes, so a type or subtype octet >= 0x80 would otherwise sign-extend to
+    // a negative int and be rejected (e.g. Junos "65000:..." has type 0xFD).
+    return of((typeByte & 0xFF) << 8 | (subTypeByte & 0xFF), gaLong, laLong);
   }
 
   public static @Nonnull Optional<ExtendedCommunity> tryParse(String text) {
@@ -190,7 +194,7 @@ public final class ExtendedCommunity extends Community {
         type >= 0 && type <= 0xFFFF,
         "Extended community type %s is not within the allowed range",
         type);
-    byte typeByte = (byte) (type >> 8);
+    int typeByte = (type >> 8) & 0xFF;
     checkArgument(
         globalAdministrator >= 0 && localAdministrator >= 0,
         "Administrator values must be positive");
