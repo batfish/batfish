@@ -781,6 +781,8 @@ FAMILY: 'family';
 
 FAST_INTERVAL: 'fast-interval';
 
+FAST_REROUTE: 'fast-reroute';
+
 FASTETHER_OPTIONS: 'fastether-options';
 
 FILE: 'file';

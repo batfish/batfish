@@ -40,6 +40,10 @@ set protocols mpls label-switched-path no-decrement-ttl no-decrement-ttl
 set protocols mpls label-switched-path link-protection to 192.0.2.8
 set protocols mpls label-switched-path link-protection link-protection
 
+# Fast-reroute property
+set protocols mpls label-switched-path fast-reroute-lsp to 192.0.2.18
+set protocols mpls label-switched-path fast-reroute-lsp fast-reroute
+
 # Combinations of multiple properties
 set protocols mpls label-switched-path multi-property to 192.0.2.9
 set protocols mpls label-switched-path multi-property install 10.0.0.0/24
