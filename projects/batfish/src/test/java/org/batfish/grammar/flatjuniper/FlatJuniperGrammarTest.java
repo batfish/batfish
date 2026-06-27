@@ -1068,6 +1068,42 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testClassOfServiceImport() throws IOException {
+    // "import default" under a dscp/exp classifier and exp rewrite-rule references the built-in
+    // "default" classifier/rewrite-rule.
+    String hostname = "class-of-service-comprehensive";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CLASSIFIER,
+            "default",
+            org.batfish.representation.juniper.JuniperStructureUsage
+                .CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CLASSIFIER,
+            "default",
+            org.batfish.representation.juniper.JuniperStructureUsage
+                .CLASS_OF_SERVICE_CLASSIFIERS_EXP_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_REWRITE_RULE,
+            "default",
+            org.batfish.representation.juniper.JuniperStructureUsage
+                .CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT));
+  }
+
+  @Test
   public void testClassOfServiceBuiltinForwardingClasses() throws IOException {
     String hostname = "class-of-service-builtin-forwarding-classes";
     String filename = "configs/" + hostname;
