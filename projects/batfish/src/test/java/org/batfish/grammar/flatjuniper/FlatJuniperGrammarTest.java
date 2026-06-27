@@ -7557,6 +7557,98 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testStaticRouteDefaultsExtraction() {
+    // "static defaults" attributes are captured per-RIB; inheritance into the routes happens at
+    // conversion. Defaults are scoped to the enclosing "static {}" block (per routing table and
+    // per routing-instance).
+    JuniperConfiguration c = parseJuniperConfig("junos-static-defaults");
+    Map<String, RoutingInstance> instances = c.getMasterLogicalSystem().getRoutingInstances();
+    Map<String, RoutingInformationBase> masterRibs = instances.get(DEFAULT_VRF_NAME).getRibs();
+
+    // Master inet.0 defaults.
+    StaticRouteV4 inet0Defaults = masterRibs.get(RIB_IPV4_UNICAST).getStaticRouteDefaults();
+    assertThat(inet0Defaults.getMetric(), equalTo(100));
+    assertThat(inet0Defaults.getDistance(), equalTo(50));
+    assertThat(inet0Defaults.getTag(), equalTo(1000L));
+    assertThat(inet0Defaults.getCommunities(), contains(StandardCommunity.of(65000, 1)));
+
+    // Master inet6.0 defaults are independent of inet.0 (different preference/tag, no community).
+    StaticRouteV6 inet6Defaults = masterRibs.get(RIB_IPV6_UNICAST).getStaticRouteDefaultsV6();
+    assertThat(inet6Defaults.getDistance(), equalTo(60));
+    assertThat(inet6Defaults.getTag(), equalTo(2000L));
+
+    // BLUE routing-instance has its own defaults, independent of the master instance.
+    StaticRouteV4 blueDefaults =
+        instances.get("BLUE").getRibs().get(RIB_IPV4_UNICAST).getStaticRouteDefaults();
+    assertThat(blueDefaults.getDistance(), equalTo(80));
+    assertThat(blueDefaults.getTag(), equalTo(3000L));
+
+    // RED routing-instance has no defaults block: its defaults object is empty (unset preference
+    // reads as the Junos system default 5).
+    StaticRouteV4 redDefaults =
+        instances.get("RED").getRibs().get(RIB_IPV4_UNICAST).getStaticRouteDefaults();
+    assertThat(redDefaults.getDistance(), equalTo(5));
+    assertThat(redDefaults.getTag(), nullValue());
+
+    // A route resolves inheritance through its getters (no separate inheritance step). The route
+    // that overrides only preference keeps its own preference but reads metric/tag/community from
+    // the inet.0 defaults.
+    StaticRouteV4 overridesPref =
+        masterRibs.get(RIB_IPV4_UNICAST).getStaticRoutes().get(Prefix.parse("10.200.2.0/24"));
+    assertThat(overridesPref.getDistance(), equalTo(7));
+    assertThat(overridesPref.getMetric(), equalTo(100));
+    assertThat(overridesPref.getTag(), equalTo(1000L));
+    assertThat(overridesPref.getCommunities(), contains(StandardCommunity.of(65000, 1)));
+  }
+
+  @Test
+  public void testStaticRouteDefaultsConversion() {
+    // At conversion, each static route inherits its RIB's "static defaults" for any field it does
+    // not set itself.
+    Configuration c = parseConfig("junos-static-defaults");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    // Inherits all of metric 100, preference 50, tag 1000.
+                    allOf(
+                        hasPrefix(Prefix.parse("10.200.1.0/24")),
+                        AbstractRouteDecoratorMatchers.hasMetric(100L),
+                        hasAdministrativeCost(50),
+                        hasTag(1000L)),
+                    // Overrides only preference (7); still inherits metric 100 and tag 1000.
+                    allOf(
+                        hasPrefix(Prefix.parse("10.200.2.0/24")),
+                        AbstractRouteDecoratorMatchers.hasMetric(100L),
+                        hasAdministrativeCost(7),
+                        hasTag(1000L))))));
+    // RED has no defaults: preference falls to the system default 5, and with no tag set the
+    // converted route carries Batfish's "no tag" sentinel (-1).
+    assertThat(
+        c,
+        hasVrf(
+            "RED",
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(Prefix.parse("10.210.1.0/24")),
+                        hasAdministrativeCost(5),
+                        hasTag(-1L))))));
+    // BLUE inherits its own defaults, not the master instance's.
+    assertThat(
+        c,
+        hasVrf(
+            "BLUE",
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(Prefix.parse("10.220.1.0/24")),
+                        hasAdministrativeCost(80),
+                        hasTag(3000L))))));
+  }
+
+  @Test
   public void testStaticRouteConversion() {
     Configuration c = parseConfig("static-routes");
     assertThat(

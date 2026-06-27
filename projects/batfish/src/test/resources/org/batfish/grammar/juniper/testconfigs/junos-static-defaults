@@ -1,0 +1,36 @@
+#
+# "static defaults" sets baseline attributes (preference/metric/tag/...)
+# inherited by every static route in the same "static {}" block, unless the
+# route overrides them per-field. Inheritance is scoped to the enclosing
+# block: no cascade between inet.0 and inet6.0, and no cascade from the master
+# instance into routing-instances. Mirrors lab junos_static_route_defaults.
+#
+set system host-name junos-static-defaults
+
+# Master instance, inet.0 defaults.
+set routing-options static defaults metric 100
+set routing-options static defaults preference 50
+set routing-options static defaults tag 1000
+set routing-options static defaults community 65000:1
+# Inherits all four defaults.
+set routing-options static route 10.200.1.0/24 discard
+# Overrides only preference; still inherits metric, tag, community.
+set routing-options static route 10.200.2.0/24 discard
+set routing-options static route 10.200.2.0/24 preference 7
+
+# Master instance, inet6.0 defaults: different values, proving per-table scope.
+set routing-options rib inet6.0 static defaults preference 60
+set routing-options rib inet6.0 static defaults tag 2000
+set routing-options rib inet6.0 static route 2001:db8:200::/48 discard
+
+# RED: routing-instance with a static route but NO defaults block. Its route
+# falls back to the system default preference (5), proving the master
+# instance's defaults do not cascade into a routing-instance.
+set routing-instances RED instance-type virtual-router
+set routing-instances RED routing-options static route 10.210.1.0/24 discard
+
+# BLUE: routing-instance with its own defaults, independent of the master.
+set routing-instances BLUE instance-type virtual-router
+set routing-instances BLUE routing-options static defaults preference 80
+set routing-instances BLUE routing-options static defaults tag 3000
+set routing-instances BLUE routing-options static route 10.220.1.0/24 discard

@@ -3851,7 +3851,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getSnmpTrapServers().addAll(snmpServer.getHosts().keySet());
       }
 
-      // static routes
+      // static routes. Each route's getters resolve "static defaults" inheritance on read, so no
+      // explicit inheritance step is needed here.
       for (StaticRouteV4 route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         vrf.getStaticRoutes().addAll(toStaticRoutes(route));
       }
