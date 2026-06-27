@@ -10072,6 +10072,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisLevelIpv6Metric() {
+    // IS-IS per-level ipv6/ipv4 metric variants should not crash.
+    parseConfig("isis-level-ipv6-metric");
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
