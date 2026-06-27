@@ -50,11 +50,8 @@ scoscl_dscp
 
 scoscld_import
 :
-    IMPORT
-    (
-        DEFAULT
-        | name = junos_name
-    )
+    // "import" enters policy-expression lexer mode, so "default" arrives as a name.
+    IMPORT name = junos_name
 ;
 
 scoscld_forwarding_class
@@ -187,7 +184,14 @@ scoscl_exp
     EXP name = junos_name
     (
         scoscle_forwarding_class
+        | scoscle_import
     )
+;
+
+scoscle_import
+:
+    // "import" enters policy-expression lexer mode, so "default" arrives as a name.
+    IMPORT name = junos_name
 ;
 
 scoscl_ieee_802_1
@@ -532,7 +536,14 @@ scosrr_exp
     EXP name = junos_name
     (
         scosrre_forwarding_class
+        | scosrre_import
     )
+;
+
+scosrre_import
+:
+    // "import" enters policy-expression lexer mode, so "default" arrives as a name.
+    IMPORT name = junos_name
 ;
 
 scosrre_forwarding_class

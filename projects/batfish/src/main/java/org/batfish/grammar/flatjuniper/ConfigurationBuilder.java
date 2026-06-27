@@ -81,10 +81,12 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DO
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_DSCP_CODE_POINTS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_DSCP_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_CODE_POINTS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_EXP_CODE_POINTS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_EXP_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_CODE_POINTS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_CODE_POINTS;
@@ -111,6 +113,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_DSCP_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_EXP_CODE_POINT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_EXP_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS;
@@ -821,8 +824,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscl_inet_precedenceC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscld6_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscld6fc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscld_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscld_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscldfc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscle_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscle_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosclefc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscli_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosclifc_loss_priorityContext;
@@ -859,6 +864,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrd6fc_loss_priorit
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrd_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrdfc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrre_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrre_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrefc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrri_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrifc_loss_priorityContext;
@@ -8140,6 +8146,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitScoscld_import(Scoscld_importContext ctx) {
+    // The imported name may be "default", which is a built-in classifier.
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_CLASSIFIER, CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IMPORT);
+  }
+
+  @Override
   public void exitScoscld6_forwarding_class(Scoscld6_forwarding_classContext ctx) {
     referenceBuiltIn(
         ctx.fc,
@@ -8153,6 +8166,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ctx.fc,
         CLASS_OF_SERVICE_FORWARDING_CLASS,
         CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS);
+  }
+
+  @Override
+  public void exitScoscle_import(Scoscle_importContext ctx) {
+    // The imported name may be "default", which is a built-in classifier.
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_CLASSIFIER, CLASS_OF_SERVICE_CLASSIFIERS_EXP_IMPORT);
   }
 
   @Override
@@ -8193,6 +8213,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ctx.fc,
         CLASS_OF_SERVICE_FORWARDING_CLASS,
         CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS);
+  }
+
+  @Override
+  public void exitScosrre_import(Scosrre_importContext ctx) {
+    // The imported name may be "default", which is a built-in rewrite-rule.
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_REWRITE_RULE, CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT);
   }
 
   @Override
