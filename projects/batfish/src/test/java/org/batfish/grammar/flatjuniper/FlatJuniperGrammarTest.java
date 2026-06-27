@@ -9981,6 +9981,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesVlanTags() {
+    // Q-in-Q vlan-tags outer/inner should not crash.
+    parseConfig("interfaces-vlan-tags");
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
