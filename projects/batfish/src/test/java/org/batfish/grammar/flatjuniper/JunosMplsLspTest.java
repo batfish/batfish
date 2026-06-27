@@ -3,7 +3,9 @@ package org.batfish.grammar.flatjuniper;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_POLICING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,6 +58,12 @@ public class JunosMplsLspTest {
 
     // Verify undefined path reference
     assertThat(ccae, hasUndefinedReference(filename, MPLS_PATH, "SEC", MPLS_LSP_SECONDARY_PATH));
+
+    // LSP policing references a firewall filter.
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, FIREWALL_FILTER, "signaled-lsp-filter", MPLS_LSP_POLICING_FILTER));
   }
 
   /** Names containing {@code >}, e.g. LSP name "WASH->ATLA", lex so the LSP body parses. */
