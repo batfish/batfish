@@ -344,6 +344,7 @@ if_bridge
       | if_storm_control
       | ifbr_filter
       | ifbr_interface_mode
+      | ifbr_vlan_id
       | ifbr_vlan_id_list
    )
 ;
@@ -489,6 +490,11 @@ ifbr_filter
 ifbr_interface_mode
 :
    INTERFACE_MODE interface_mode
+;
+
+ifbr_vlan_id
+:
+   VLAN_ID id = vlan_number
 ;
 
 ifbr_vlan_id_list
@@ -785,7 +791,8 @@ int_null
 
 interface_mode
 :
-   TRUNK
+   ACCESS
+   | TRUNK
 ;
 
 intir_member

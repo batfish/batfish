@@ -472,8 +472,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ieee_802_1_code_pointContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_bridgeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_primaryContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifbr_interface_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifbr_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
@@ -3081,6 +3084,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(INTERFACE, unitFullName, ctx, _parser);
     _configuration.referenceStructure(
         INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num.start));
+  }
+
+  @Override
+  public void enterIf_bridge(If_bridgeContext ctx) {
+    // family bridge is an L2 switching family; reuse the EthernetSwitching model.
+    _currentInterfaceOrRange.initEthernetSwitching();
+  }
+
+  @Override
+  public void exitIfbr_interface_mode(Ifbr_interface_modeContext ctx) {
+    if (ctx.interface_mode().ACCESS() != null) {
+      _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.ACCESS);
+    } else if (ctx.interface_mode().TRUNK() != null) {
+      _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.TRUNK);
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitIfbr_vlan_id(Ifbr_vlan_idContext ctx) {
+    Optional<Integer> maybeVlan = toInteger(ctx, ctx.id);
+    if (!maybeVlan.isPresent()) {
+      return;
+    }
+    _currentInterfaceOrRange
+        .getEthernetSwitching()
+        .getVlanMembers()
+        .add(new VlanRange(IntegerSpace.of(maybeVlan.get())));
   }
 
   @Override
