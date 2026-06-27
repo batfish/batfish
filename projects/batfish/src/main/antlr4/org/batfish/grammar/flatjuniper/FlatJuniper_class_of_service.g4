@@ -187,6 +187,7 @@ scoscl_exp
     EXP name = junos_name
     (
         scoscle_forwarding_class
+        | scoscld_import
     )
 ;
 
@@ -502,6 +503,16 @@ scosrr_exp
     EXP name = junos_name
     (
         scosrre_forwarding_class
+        | scosrr_import
+    )
+;
+
+scosrr_import
+:
+    IMPORT
+    (
+        DEFAULT
+        | name = junos_name
     )
 ;
 
