@@ -203,6 +203,7 @@ i_family
       | if_iso
       | if_primary
       | if_mpls
+      | if_vpls_null
    )
 ;
 
@@ -460,6 +461,12 @@ if_mpls
 if_primary
 :
    PRIMARY
+;
+
+// family vpls (Layer 2 pseudowire). Contents (filter, etc.) are not modeled.
+if_vpls_null
+:
+   VPLS null_filler
 ;
 
 if_storm_control

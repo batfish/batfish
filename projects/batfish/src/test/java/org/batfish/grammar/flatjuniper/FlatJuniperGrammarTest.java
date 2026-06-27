@@ -9981,6 +9981,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesFamilyVpls() {
+    // family vpls and empty family bridge should not crash.
+    parseConfig("interfaces-family-vpls");
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
