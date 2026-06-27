@@ -1811,6 +1811,8 @@ LOGIN: 'login';
 
 LONGER: 'longer';
 
+LOOSE: 'loose';
+
 LOOPBACK: 'loopback';
 
 LOOPS: 'loops';
@@ -2850,6 +2852,7 @@ STP: 'stp';
 
 STREAM_ID: 'stream-id';
 STREAM_OPTION: 'stream-option';
+STRICT: 'strict';
 STRICT_HIGH: 'strict-high';
 STRICT_SOURCE_ROUTE: 'strict-source-route';
 STRICT_SOURCE_ROUTE_OPTION: 'strict-source-route-option';
