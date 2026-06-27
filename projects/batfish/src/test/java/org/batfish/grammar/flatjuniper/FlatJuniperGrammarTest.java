@@ -4547,6 +4547,17 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceInet6Ndp() {
+    // A static NDP entry under an inet6 address parses; the address still converts normally.
+    JuniperConfiguration jc = parseJuniperConfig("interfaces-inet6-ndp");
+    Map<String, org.batfish.representation.juniper.Interface> units =
+        jc.getMasterLogicalSystem().getInterfaces().get("xe-0/2/2").getUnits();
+    assertThat(
+        units.get("xe-0/2/2.80").getAllAddresses6(),
+        contains(ConcreteInterfaceAddress6.parse("2001:468:ff:909::1/64")));
+  }
+
+  @Test
   public void testIrbInterfaces() {
     String hostname = "irb-interfaces";
     Configuration c = parseConfig(hostname);

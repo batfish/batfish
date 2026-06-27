@@ -2004,6 +2004,8 @@ NBMA: 'nbma';
 
 NEAREST: 'nearest';
 
+NDP: 'ndp';
+
 NEIGHBOR: 'neighbor';
 
 NEIGHBOR_ADVERTISEMENT: 'neighbor-advertisement';
@@ -2360,6 +2362,8 @@ PROTOCOL_VERSION: 'protocol-version';
 PROTOCOLS: 'protocols';
 
 PROVIDER_TUNNEL: 'provider-tunnel';
+
+PUBLISH: 'publish';
 
 PROXY_ARP: 'proxy-arp';
 

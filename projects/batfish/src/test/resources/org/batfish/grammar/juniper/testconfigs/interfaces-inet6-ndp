@@ -1,0 +1,6 @@
+#
+# Static NDP (IPv6 neighbor) entry under an interface family inet6 address.
+#
+set system host-name interfaces-inet6-ndp
+
+set interfaces xe-0/2/2 unit 80 family inet6 address 2001:468:ff:909::1/64 ndp 2001:468:ff:909::2 mac 00:de:ad:be:ef:00
