@@ -63,6 +63,20 @@ mpls_admin_groups
 mpls_path
 :
    PATH name = junos_name
+   (
+      apply
+      | mplsp_hop
+   )
+;
+
+// A path hop: (address | hostname) <loose | strict>. Hops are not modeled.
+mplsp_hop
+:
+   (ip_address | ipv6_address)
+   (
+      LOOSE
+      | STRICT
+   )?
 ;
 
 mpls_interface
