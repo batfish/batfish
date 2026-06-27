@@ -139,6 +139,9 @@ isi_level
     | isil_hello_authentication_type
     | isil_hello_interval
     | isil_hold_time
+    | isil_ipv4_multicast_metric
+    | isil_ipv6_multicast_metric
+    | isil_ipv6_unicast_metric
     | isil_metric
     | isil_passive
     | isil_priority
@@ -200,6 +203,21 @@ isil_hello_interval
 isil_hold_time
 :
   HOLD_TIME dec
+;
+
+isil_ipv4_multicast_metric
+:
+  IPV4_MULTICAST_METRIC dec
+;
+
+isil_ipv6_multicast_metric
+:
+  IPV6_MULTICAST_METRIC dec
+;
+
+isil_ipv6_unicast_metric
+:
+  IPV6_UNICAST_METRIC dec
 ;
 
 isil_metric

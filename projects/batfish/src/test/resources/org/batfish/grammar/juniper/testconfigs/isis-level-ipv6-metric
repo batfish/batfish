@@ -1,0 +1,10 @@
+#
+# IS-IS per-level metric variants: ipv6-unicast-metric, ipv6-multicast-metric,
+# ipv4-multicast-metric (alongside the plain metric). Not modeled.
+#
+set system host-name isis-level-ipv6-metric
+
+set protocols isis interface et-5/0/0.81 level 2 metric 1
+set protocols isis interface et-5/0/0.81 level 2 ipv6-unicast-metric 99999
+set protocols isis interface et-5/0/0.81 level 2 ipv6-multicast-metric 1
+set protocols isis interface et-5/0/0.81 level 2 ipv4-multicast-metric 50
