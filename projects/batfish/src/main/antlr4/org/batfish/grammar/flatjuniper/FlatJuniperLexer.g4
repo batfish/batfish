@@ -3089,9 +3089,9 @@ VPN_MONITOR: 'vpn-monitor';
 
 VRF: 'vrf';
 
-VRF_EXPORT: 'vrf-export' -> pushMode(M_Name);
+VRF_EXPORT: 'vrf-export' -> pushMode(M_NameList);
 
-VRF_IMPORT: 'vrf-import' -> pushMode(M_Name);
+VRF_IMPORT: 'vrf-import' -> pushMode(M_NameList);
 
 VRF_TABLE_LABEL: 'vrf-table-label';
 
