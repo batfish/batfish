@@ -2104,6 +2104,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.adminDown();
     }
     EthernetSwitching es = iface.getEthernetSwitching();
+    BridgeSwitching bs = iface.getBridgeSwitching();
+    // family ethernet-switching and family bridge are mutually exclusive L2 switching families;
+    // both map to the same VI switchport attributes.
+    SwitchportMode switchingMode =
+        es != null ? es.getSwitchportMode() : bs != null ? bs.getSwitchportMode() : null;
+    List<VlanMember> switchingVlanMembers =
+        es != null ? es.getVlanMembers() : bs != null ? bs.getVlanMembers() : ImmutableList.of();
+    Integer switchingNativeVlan = es != null ? es.getNativeVlan() : null;
     if (_indirectAccessPorts.containsKey(name)) {
       newIface.setSwitchport(true);
       newIface.setSwitchportMode(SwitchportMode.ACCESS);
@@ -2112,9 +2120,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .getNamedVlans()
               .get(_indirectAccessPorts.get(name).getName())
               .getVlanId());
-    } else if (es != null) {
-      if (es.getSwitchportMode() == null || es.getSwitchportMode() == SwitchportMode.ACCESS) {
-        Integer accessVlan = computeAccessVlan(iface.getName(), es.getVlanMembers());
+    } else if (es != null || bs != null) {
+      if (switchingMode == null || switchingMode == SwitchportMode.ACCESS) {
+        Integer accessVlan = computeAccessVlan(iface.getName(), switchingVlanMembers);
         newIface.setAccessVlan(accessVlan);
         if (accessVlan != null) {
           newIface.setSwitchport(true);
@@ -2124,12 +2132,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
           newIface.setSwitchportMode(SwitchportMode.NONE);
         }
       }
-      if (es.getSwitchportMode() == SwitchportMode.TRUNK) {
+      if (switchingMode == SwitchportMode.TRUNK) {
         newIface.setSwitchportTrunkEncapsulation(SwitchportEncapsulationType.DOT1Q);
-        newIface.setAllowedVlans(vlanMembersToIntegerSpace(es.getVlanMembers()));
+        newIface.setAllowedVlans(vlanMembersToIntegerSpace(switchingVlanMembers));
         // default is no native vlan, untagged are dropped.
         // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/native-vlan-id-edit-interfaces-qfx-series.html
-        newIface.setNativeVlan(es.getNativeVlan());
+        newIface.setNativeVlan(switchingNativeVlan);
         newIface.setSwitchport(true);
         newIface.setSwitchportMode(SwitchportMode.TRUNK);
       }

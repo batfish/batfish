@@ -1,0 +1,11 @@
+#
+# family bridge with switching attributes: interface-mode (access/trunk) and a
+# single vlan-id.
+#
+set system host-name interfaces-family-bridge-switching
+
+set interfaces ge-10/1/0 unit 0 family bridge interface-mode access
+set interfaces ge-10/1/0 unit 0 family bridge vlan-id 620
+
+set interfaces ge-10/1/1 unit 0 family bridge interface-mode trunk
+set interfaces ge-10/1/1 unit 0 family bridge vlan-id-list 100-200

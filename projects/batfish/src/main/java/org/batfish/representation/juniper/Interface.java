@@ -144,6 +144,16 @@ public class Interface implements Serializable {
     }
   }
 
+  public @Nullable BridgeSwitching getBridgeSwitching() {
+    return _bridgeSwitching;
+  }
+
+  public void initBridgeSwitching() {
+    if (_bridgeSwitching == null) {
+      _bridgeSwitching = new BridgeSwitching();
+    }
+  }
+
   private boolean _active;
   private Set<Ip> _additionalArpIps;
   private final Set<ConcreteInterfaceAddress> _allAddresses;
@@ -156,6 +166,7 @@ public class Interface implements Serializable {
   private double _bandwidth;
   private String _description;
   private boolean _defined;
+  private @Nullable BridgeSwitching _bridgeSwitching;
   private @Nullable EthernetSwitching _ethernetSwitching;
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
