@@ -217,7 +217,8 @@ i_gigether_options
 
 i_input_vlan_map
 :
-   INPUT_VLAN_MAP i_vlan_action
+   // The rewrite action is optional; Junos accepts an empty "input-vlan-map {}" block.
+   INPUT_VLAN_MAP i_vlan_action?
 ;
 
 i_link_mode
@@ -265,7 +266,8 @@ i_null
 
 i_output_vlan_map
 :
-   OUTPUT_VLAN_MAP i_vlan_action
+   // The rewrite action is optional; Junos accepts an empty "output-vlan-map {}" block.
+   OUTPUT_VLAN_MAP i_vlan_action?
 ;
 
 i_peer_unit
