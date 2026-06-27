@@ -1,0 +1,11 @@
+#
+# route-filter with an inline "then" action of "next-hop self". The match type
+# (exact/longer/orlonger) precedes "next-hop", so the lexer must not treat
+# "self" as an interface name.
+#
+set system host-name route-filter-then-next-hop
+
+set policy-options policy-statement P term send-default from route-filter 0.0.0.0/0 exact next-hop self
+set policy-options policy-statement P term longer-route from route-filter 10.0.0.0/8 orlonger next-hop self
+set policy-options policy-statement P term longer-only from route-filter 10.0.0.0/8 longer next-hop self
+set policy-options policy-statement P term then-accept then accept
