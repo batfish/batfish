@@ -1,0 +1,11 @@
+#
+# Layer 2 interface families: family vpls, and empty family bridge.
+#
+set system host-name interfaces-family-vpls
+
+set interfaces xe-0/2/0 unit 2000 encapsulation vlan-vpls
+set interfaces xe-0/2/0 unit 2000 vlan-id 2000
+set interfaces xe-0/2/0 unit 2000 family vpls
+
+# Empty family bridge.
+set interfaces xe-0/2/1 unit 0 family bridge
