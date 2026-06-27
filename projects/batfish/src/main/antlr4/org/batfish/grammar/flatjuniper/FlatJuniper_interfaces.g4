@@ -305,6 +305,7 @@ i_unit
       | i_input_vlan_map
       | i_output_vlan_map
       | i_peer_unit
+      | i_vlan_tags_null
    )
 ;
 
@@ -326,6 +327,12 @@ i_vlan_id_list
 i_vlan_tagging
 :
    VLAN_TAGGING
+;
+
+// Dual-tagged (Q-in-Q) outer/inner VLAN IDs. Not modeled.
+i_vlan_tags_null
+:
+   VLAN_TAGS OUTER outer = vlan_number (INNER inner = vlan_number)?
 ;
 
 if_bridge
