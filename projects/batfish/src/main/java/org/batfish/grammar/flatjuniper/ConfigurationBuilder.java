@@ -875,6 +875,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrripfc_loss_priorit
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scossm_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_toleranceContext;
@@ -917,6 +918,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipv_bind_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sekc_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
@@ -4233,6 +4235,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             .getKeys()
             .computeIfAbsent(name, JuniperAuthenticationKey::new);
     _currentAuthenticationKey = authenticationkey;
+  }
+
+  @Override
+  public void enterSe_key_chain(Se_key_chainContext ctx) {
+    // Legacy form of authentication-key-chains key-chain; same data model.
+    String name = toString(ctx.name);
+    int line = getLine(ctx.getStart());
+    _currentAuthenticationKeyChain =
+        _currentLogicalSystem
+            .getAuthenticationKeyChains()
+            .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
+    _configuration.defineFlattenedStructure(AUTHENTICATION_KEY_CHAIN, name, ctx, _parser);
+  }
+
+  @Override
+  public void enterSekc_key(Sekc_keyContext ctx) {
+    String name = toString(ctx.name);
+    _currentAuthenticationKey =
+        _currentAuthenticationKeyChain
+            .getKeys()
+            .computeIfAbsent(name, JuniperAuthenticationKey::new);
   }
 
   @Override
