@@ -285,12 +285,39 @@ scos_host_outbound_traffic
     HOST_OUTBOUND_TRAFFIC
     (
         scoshob_forwarding_class
+        | scoshob_ieee_802_1
     )
 ;
 
 scoshob_forwarding_class
 :
     FORWARDING_CLASS name = junos_name
+;
+
+// IEEE 802.1p marking of host (Routing Engine) outbound traffic.
+scoshob_ieee_802_1
+:
+    IEEE_802_1
+    (
+        scoshobi_default
+        | scoshobi_override_firewall
+        | scoshobi_rewrite_rules
+    )
+;
+
+scoshobi_default
+:
+    DEFAULT value = dec
+;
+
+scoshobi_override_firewall
+:
+    OVERRIDE_FIREWALL
+;
+
+scoshobi_rewrite_rules
+:
+    REWRITE_RULES
 ;
 
 scos_interfaces

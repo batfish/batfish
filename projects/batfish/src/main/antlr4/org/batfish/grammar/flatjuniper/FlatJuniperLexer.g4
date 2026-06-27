@@ -1007,6 +1007,8 @@ IEEE_802_1
   {
     if (lastTokenType() == CODE_POINT_ALIASES) {
       pushMode(M_CodePointAlias3Bit);
+    } else if (lastTokenType() == HOST_OUTBOUND_TRAFFIC) {
+      // Under host-outbound-traffic, ieee-802.1 is a block of keywords, not a named reference.
     } else {
       pushMode(M_Name);
     }
@@ -2128,6 +2130,7 @@ OUTPUT_TRAFFIC_CONTROL_PROFILE: 'output-traffic-control-profile' -> pushMode(M_N
 OUTPUT_VLAN_MAP: 'output-vlan-map';
 OVERLAY_ECMP: 'overlay-ecmp';
 OVERLOAD: 'overload';
+OVERRIDE_FIREWALL: 'override-firewall';
 OVERRIDE_METRIC: 'override-metric';
 OVERRIDES: 'overrides';
 P2MP: 'p2mp';
