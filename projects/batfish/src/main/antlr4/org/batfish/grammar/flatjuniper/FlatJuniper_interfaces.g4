@@ -403,9 +403,20 @@ ifi6_address
       | wildcard
    )
    (
-      ifi6a_preferred
+      ifi6a_ndp
+      | ifi6a_preferred
       | ifi6a_primary
    )?
+;
+
+// Static NDP entry: ndp <ip> (mac | multicast-mac) <mac> [publish]. Mirrors v4 static arp.
+ifi6a_ndp
+:
+   NDP ip = ipv6_address
+   (
+      MAC
+      | MULTICAST_MAC
+   ) MAC_ADDRESS PUBLISH?
 ;
 
 ifi6a_preferred: PREFERRED;
