@@ -1,0 +1,12 @@
+#
+# gigether-options ethernet-switch-profile, both empty and with nested children.
+#
+set system host-name interfaces-ethernet-switch-profile
+
+# Empty block (as seen in the wild).
+set interfaces xe-0/0/0 gigether-options ethernet-switch-profile
+
+# Nested children documented under the profile.
+set interfaces xe-0/0/1 gigether-options ethernet-switch-profile mac-learn-enable
+set interfaces xe-0/0/1 gigether-options ethernet-switch-profile tag-protocol-id 0x8100
+set interfaces xe-0/0/2 gigether-options ethernet-switch-profile ethernet-policer-profile input-priority-map ieee802.1p premium 0

@@ -9964,6 +9964,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesEthernetSwitchProfile() {
+    // gigether-options ethernet-switch-profile (empty and with nested children) should not crash.
+    parseConfig("interfaces-ethernet-switch-profile");
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");

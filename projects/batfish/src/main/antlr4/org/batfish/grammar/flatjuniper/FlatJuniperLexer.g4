@@ -727,6 +727,8 @@ ETHER_TYPE: 'ether-type';
 ETHERNET: 'ethernet';
 ETHERNET_SWITCHING: 'ethernet-switching';
 
+ETHERNET_SWITCH_PROFILE: 'ethernet-switch-profile';
+
 ETHERNET_SWITCHING_OPTIONS: 'ethernet-switching-options';
 
 EVENT_OPTIONS: 'event-options';
