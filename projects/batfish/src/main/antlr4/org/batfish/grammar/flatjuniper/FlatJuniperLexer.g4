@@ -1236,7 +1236,11 @@ IPSEC_POLICY: 'ipsec-policy' -> pushMode(M_Name);
 
 IPSEC_VPN: 'ipsec-vpn' -> pushMode(M_Name);
 
+IPV4_MULTICAST_METRIC: 'ipv4-multicast-metric';
+
 IPV6: 'ipv6';
+IPV6_MULTICAST_METRIC: 'ipv6-multicast-metric';
+IPV6_UNICAST_METRIC: 'ipv6-unicast-metric';
 IPV6_TUNNELING: 'ipv6-tunneling';
 
 IPV6_EXTENSION_HEADER: 'ipv6-extension-header';

@@ -543,6 +543,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isis_level_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_addressContext;
@@ -1301,6 +1302,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace SRLG_COST_RANGE = IntegerSpace.of(new SubRange(1, 65535));
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+
+  // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
+  private static final IntegerSpace ISIS_LEVEL_METRIC_RANGE =
+      IntegerSpace.of(new SubRange(1, 16777215));
 
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
 
@@ -6157,8 +6162,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsil_metric(Isil_metricContext ctx) {
-    int metric = toInt(ctx.dec());
-    _currentIsisInterfaceLevelSettings.setMetric(metric);
+    toInteger(ctx, ctx.isis_level_metric())
+        .ifPresent(metric -> _currentIsisInterfaceLevelSettings.setMetric(metric));
   }
 
   @Override
@@ -9196,6 +9201,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vlan_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "vlan number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Isis_level_metricContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, ISIS_LEVEL_METRIC_RANGE, "isis level metric");
   }
 
   @Override
