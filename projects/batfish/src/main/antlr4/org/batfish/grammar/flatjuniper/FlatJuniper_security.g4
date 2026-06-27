@@ -458,6 +458,7 @@ s_security
       | se_certificates
       | se_ike
       | se_ipsec
+      | se_key_chain
       | se_nat
       | se_null
       | se_policies
@@ -493,6 +494,31 @@ se_certificates
    CERTIFICATES
    (
       sec_local
+   )
+;
+
+// Legacy form of "security authentication-key-chains key-chain". Mirrors
+// se_authentication_key_chain, but a key may be empty.
+se_key_chain
+:
+   KEY_CHAIN name = junos_name
+   (
+      apply
+      | sea_description
+      | sea_tolerance
+      | sekc_key
+   )
+;
+
+sekc_key
+:
+   KEY name = junos_name
+   (
+      apply
+      | seak_algorithm
+      | seak_options
+      | seak_secret
+      | seak_start_time
    )
 ;
 
