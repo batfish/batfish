@@ -121,4 +121,19 @@ set protocols mpls label-switched-path params-lsp hop-limit 3
 set protocols mpls label-switched-path params-lsp optimize-timer 65535
 set protocols mpls label-switched-path params-lsp revert-timer 900
 
+# from / no-cspf / description / metric / policing
+set protocols mpls label-switched-path signaled-lsp from 192.0.2.18
+set protocols mpls label-switched-path signaled-lsp to 192.0.2.19
+set protocols mpls label-switched-path signaled-lsp no-cspf
+set protocols mpls label-switched-path signaled-lsp description "TR-CPS to gigapop L2Circuit"
+set protocols mpls label-switched-path signaled-lsp metric 65535
+set protocols mpls label-switched-path signaled-lsp policing filter signaled-lsp-filter
+
+# from with an IPv6 source
+set protocols mpls label-switched-path v6-from from 2001:db8::18
+set protocols mpls label-switched-path v6-from to 2001:db8::19
+
+# Firewall filter referenced by the LSP policing statement above.
+set firewall filter signaled-lsp-filter term t1 then accept
+
 #

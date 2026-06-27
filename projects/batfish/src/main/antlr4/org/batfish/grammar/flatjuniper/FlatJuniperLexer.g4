@@ -2068,8 +2068,10 @@ NO_ADVERTISE: 'no-advertise';
 NO_ANTI_REPLAY: 'no-anti-replay';
 NO_ARP: 'no-arp';
 NO_AUTO_NEGOTIATION: 'no-auto-negotiation';
+NO_AUTO_POLICING: 'no-auto-policing';
 NO_CHALLENGE_RESPONSE: 'no-challenge-response';
 NO_CLIENT_REFLECT: 'no-client-reflect';
+NO_CSPF: 'no-cspf';
 NO_DECREMENT_TTL: 'no-decrement-ttl';
 NO_ECMP_FAST_REROUTE: 'no-ecmp-fast-reroute';
 NO_EXPORT: 'no-export';
@@ -2211,6 +2213,7 @@ POE: 'poe';
 POINT_TO_POINT: 'point-to-point';
 POLICER: 'policer' -> pushMode(M_Name);
 POLICIES: 'policies';
+POLICING: 'policing';
 POLICY
 :
   'policy'

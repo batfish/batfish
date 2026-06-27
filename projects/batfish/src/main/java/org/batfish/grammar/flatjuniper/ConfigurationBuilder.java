@@ -161,6 +161,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_POLICING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL;
@@ -561,6 +562,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_secondaryContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_allContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_anyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppol_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_allContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_anyContext;
@@ -9226,6 +9228,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         name,
         MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY,
         getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslsppol_filter(Mplslsppol_filterContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        FIREWALL_FILTER, name, MPLS_LSP_POLICING_FILTER, getLine(ctx.name.getStart()));
   }
 
   @Override
