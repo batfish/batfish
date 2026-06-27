@@ -2042,8 +2042,17 @@ NEXT_HOP
 :
    'next-hop'
    {
-     if (lastTokenType() != THEN) {
-       pushMode(M_Interface);
+     // "next-hop" takes an interface name (M_Interface) only as a "then" action whose value can be
+     // an interface. In a policy "then" it follows THEN; in a route-filter inline action it follows
+     // the match type (exact/longer/orlonger), e.g. "route-filter 0.0.0.0/0 exact next-hop self".
+     switch (lastTokenType()) {
+       case THEN:
+       case EXACT:
+       case LONGER:
+       case ORLONGER:
+         break;
+       default:
+         pushMode(M_Interface);
      }
    }
 ;

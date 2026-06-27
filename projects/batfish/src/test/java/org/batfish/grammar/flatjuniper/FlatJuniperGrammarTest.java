@@ -7357,6 +7357,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRouteFilterThenNextHop() {
+    // route-filter "<prefix> <match-type> next-hop self": match type precedes next-hop, so "self"
+    // must lex as the keyword (not an interface name). Should not crash.
+    parseConfig("route-filter-then-next-hop");
+  }
+
+  @Test
   public void testRoutingInstanceType() {
     Configuration c = parseConfig("routing-instance-type");
 
