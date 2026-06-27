@@ -10072,6 +10072,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesFamilyBridgeSwitching() {
+    // family bridge interface-mode (access/trunk) and single vlan-id should not crash.
+    parseConfig("interfaces-family-bridge-switching");
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
