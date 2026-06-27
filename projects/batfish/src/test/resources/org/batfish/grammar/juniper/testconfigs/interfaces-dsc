@@ -1,0 +1,7 @@
+#
+# The discard (dsc) interface is a fixed-name internal interface, like irb/vlan/vme.
+#
+set system host-name interfaces-dsc
+
+set interfaces dsc unit 0 description "Discard Interface"
+set interfaces dsc unit 0 family inet address 198.32.11.6/32

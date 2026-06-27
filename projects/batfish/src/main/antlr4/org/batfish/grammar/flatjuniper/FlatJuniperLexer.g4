@@ -3898,6 +3898,8 @@ F_InterfaceName
     // optional channel  
     (':' F_Digit+)?
   )
+  // Fixed-name internal interfaces.
+  | 'dsc'
   | 'irb'
   | 'vlan'
   | 'vme'
