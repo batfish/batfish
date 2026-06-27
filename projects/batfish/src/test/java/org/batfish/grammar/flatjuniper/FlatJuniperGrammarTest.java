@@ -9975,9 +9975,9 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfacesEthernetSwitchProfile() {
-    // gigether-options ethernet-switch-profile (empty and with nested children) should not crash.
-    parseConfig("interfaces-ethernet-switch-profile");
+  public void testInterfacesVlanTags() {
+    // Q-in-Q vlan-tags outer/inner should not crash.
+    parseConfig("interfaces-vlan-tags");
   }
 
   @Test
