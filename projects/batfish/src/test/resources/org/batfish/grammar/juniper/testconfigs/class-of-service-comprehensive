@@ -43,6 +43,7 @@ set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-cla
 set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-class FC-CLASS2 loss-priority low code-point 010
 set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-class FC-CLASS3 loss-priority high code-point af11
 set class-of-service interfaces ae1 unit 0 rewrite-rules exp REWRITE-EXP protocol mpls-any
+set class-of-service interfaces ae2 unit 0 rewrite-rules exp REWRITE-EXP
 set class-of-service interfaces ae1 unit 0 classifiers dscp-ipv6 DSCP-IPV6-BA
 set class-of-service interfaces ae1 unit 0 classifiers ieee-802.1 IEEE-BA
 set class-of-service interfaces ae1 unit 0 classifiers inet-precedence IPPREC-BA

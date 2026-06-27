@@ -444,7 +444,9 @@ scosiiu_dscp_ipv6_rw
 
 scosiiu_exp_rw
 :
-    EXP name = junos_name PROTOCOL proto = scos_protocol_type
+    // The protocol clause is optional in practice: Junos accepts a bare "exp rewrite-name", even
+    // though the CLI reference lists protocol in the canonical syntax.
+    EXP name = junos_name (PROTOCOL proto = scos_protocol_type)?
 ;
 
 scos_protocol_type
