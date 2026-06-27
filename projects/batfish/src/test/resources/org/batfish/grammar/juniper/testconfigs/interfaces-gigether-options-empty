@@ -1,0 +1,7 @@
+#
+# Empty gigether-options / ether-options blocks.
+#
+set system host-name interfaces-gigether-options-empty
+
+set interfaces xe-8/0/3 gigether-options
+set interfaces xe-8/0/4 ether-options

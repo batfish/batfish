@@ -69,7 +69,8 @@ eo8023ad_lacp
 
 ether_options
 :
-   eo_802_3ad
+   apply
+   | eo_802_3ad
    | eo_null
    | eo_redundant_parent
    | eo_speed

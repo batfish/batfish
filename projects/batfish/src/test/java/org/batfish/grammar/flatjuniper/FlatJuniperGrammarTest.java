@@ -10042,6 +10042,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesGigetherOptionsEmpty() {
+    // Empty gigether-options / ether-options blocks should not crash.
+    parseConfig("interfaces-gigether-options-empty");
+  }
+
+  @Test
   public void testForwardingTableTraceoptions() {
     // routing-options forwarding-table traceoptions should not crash.
     parseConfig("forwarding-table-traceoptions");
