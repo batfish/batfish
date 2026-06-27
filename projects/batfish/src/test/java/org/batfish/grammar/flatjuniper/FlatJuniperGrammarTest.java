@@ -9918,6 +9918,16 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacesDsc() {
+    // The fixed-name discard (dsc) interface parses and converts like any other interface.
+    Configuration c = parseConfig("interfaces-dsc");
+    assertThat(
+        c,
+        hasInterface(
+            "dsc.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("198.32.11.6/32")))));
+  }
+
+  @Test
   public void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
