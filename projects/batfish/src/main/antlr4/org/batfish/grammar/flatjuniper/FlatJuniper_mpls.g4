@@ -96,15 +96,20 @@ mpls_label_switched_path
       | mplslsp_bandwidth_null
       | mplslsp_conditional_metric_null
       | mplslsp_cross_credibility_cspf_null
+      | mplslsp_description_null
       | mplslsp_fast_reroute_null
+      | mplslsp_from_null
       | mplslsp_hop_limit_null
       | mplslsp_in_place_lsp_bandwidth_update_null
       | mplslsp_install_null
       | mplslsp_link_protection_null
+      | mplslsp_metric_null
+      | mplslsp_no_cspf_null
       | mplslsp_no_decrement_ttl_null
       | mplslsp_no_self_ping_null
       | mplslsp_optimize_hold_dead_delay_null
       | mplslsp_optimize_timer_null
+      | mplslsp_policing_null
       | mplslsp_primary
       | mplslsp_priority_null
       | mplslsp_random_null
@@ -265,6 +270,33 @@ mplslsp_bandwidth_null
 mplslsp_cross_credibility_cspf_null
 :
    CROSS_CREDIBILITY_CSPF null_filler
+;
+
+mplslsp_description_null
+:
+   DESCRIPTION null_filler
+;
+
+mplslsp_from_null
+:
+   FROM (ip_address | ipv6_address)
+;
+
+mplslsp_metric_null
+:
+   METRIC uint32
+;
+
+mplslsp_no_cspf_null
+:
+   NO_CSPF null_filler
+;
+
+// policing { filter <name>; no-auto-policing; } — ignored. null_filler absorbs
+// the flattened "filter <name>" (FILTER pushes M_Filter, lexing the name as NAME).
+mplslsp_policing_null
+:
+   POLICING null_filler
 ;
 
 mplslsp_fast_reroute_null
