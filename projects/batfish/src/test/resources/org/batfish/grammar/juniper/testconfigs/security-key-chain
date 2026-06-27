@@ -1,0 +1,12 @@
+#
+# Legacy "security key-chain" (pre authentication-key-chains) with empty keys.
+#
+set system host-name security-key-chain
+
+set security key-chain BFD-BGP-MERIT key 0
+set security key-chain BFD-BGP-OARNET key 0
+
+# Key with attributes, plus chain-level options.
+set security key-chain BFD-BGP-MERIT tolerance 30
+set security key-chain BFD-BGP-OARNET key 1 algorithm md5
+set security key-chain BFD-BGP-OARNET key 1 start-time "2020-1-1.00:00:00 -0800"

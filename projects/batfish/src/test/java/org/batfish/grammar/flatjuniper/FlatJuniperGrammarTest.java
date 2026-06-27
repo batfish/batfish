@@ -453,6 +453,7 @@ import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
+import org.batfish.representation.juniper.JuniperAuthenticationKeyChain;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
@@ -9961,6 +9962,18 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "dsc.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("198.32.11.6/32")))));
+  }
+
+  @Test
+  public void testSecurityKeyChain() {
+    // Legacy "security key-chain" form (pre authentication-key-chains) extracts the same
+    // JuniperAuthenticationKeyChain model, including empty keys.
+    JuniperConfiguration jc = parseJuniperConfig("security-key-chain");
+    Map<String, JuniperAuthenticationKeyChain> keyChains =
+        jc.getMasterLogicalSystem().getAuthenticationKeyChains();
+    assertThat(keyChains.keySet(), containsInAnyOrder("BFD-BGP-MERIT", "BFD-BGP-OARNET"));
+    assertThat(keyChains.get("BFD-BGP-MERIT").getTolerance(), equalTo(30));
+    assertThat(keyChains.get("BFD-BGP-OARNET").getKeys().keySet(), containsInAnyOrder("0", "1"));
   }
 
   @Test
