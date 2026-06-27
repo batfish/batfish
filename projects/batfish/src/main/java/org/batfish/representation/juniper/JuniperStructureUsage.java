@@ -77,6 +77,8 @@ public enum JuniperStructureUsage implements StructureUsage {
       "class-of-service rewrite-rules ieee-802.1 forwarding-class"),
   CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT(
       "class-of-service rewrite-rules ieee-802.1 code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_IMPORT(
+      "class-of-service rewrite-rules ieee-802.1 import"),
   CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_FORWARDING_CLASS(
       "class-of-service rewrite-rules inet-precedence forwarding-class"),
   CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_CODE_POINT(

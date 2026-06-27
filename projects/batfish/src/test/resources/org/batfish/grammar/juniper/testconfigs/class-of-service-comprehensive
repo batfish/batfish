@@ -41,6 +41,7 @@ set class-of-service rewrite-rules exp REWRITE-EXP import default
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS3 loss-priority low code-point ALIAS3
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS1 loss-priority high code-point 001
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS2 loss-priority low code-point be
+set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P import default
 set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS1 loss-priority high code-point ALIAS-8021P
 set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS2 loss-priority low code-point 010
 set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS3 loss-priority high code-point be
