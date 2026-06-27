@@ -24,6 +24,9 @@ set class-of-service forwarding-classes class FC-CLASS1 queue-num 0
 set class-of-service forwarding-classes class FC-CLASS2 queue-num 1
 set class-of-service forwarding-classes queue 3 FC-CLASS3
 set class-of-service host-outbound-traffic forwarding-class FC-CLASS1
+set class-of-service host-outbound-traffic ieee-802.1 default 111
+set class-of-service host-outbound-traffic ieee-802.1 rewrite-rules
+set class-of-service host-outbound-traffic ieee-802.1 override-firewall
 set class-of-service interfaces ae1 scheduler-map SCHED-MAP1
 set class-of-service interfaces ae1 unit 0 forwarding-class FC-CLASS1
 set class-of-service interfaces ae1 unit 0 classifiers dscp DSCP-BA

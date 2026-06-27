@@ -507,7 +507,18 @@ DEAD_PEER_DETECTION: 'dead-peer-detection';
 
 DECAPSULATE: 'decapsulate';
 
-DEFAULT: 'default';
+DEFAULT
+:
+  'default'
+  {
+    // Under host-outbound-traffic ieee-802.1, "default" takes a 3-bit code point or alias. In
+    // classifier/rewrite contexts ieee-802.1 pushes M_Name, so "default" lexes as NAME there, not
+    // as this DEFAULT token; a DEFAULT directly after IEEE_802_1 only occurs in that block.
+    if (lastTokenType() == IEEE_802_1) {
+      pushMode(M_CodePointOrAlias);
+    }
+  }
+;
 
 DEFAULT_ACTION: 'default-action';
 
@@ -1007,6 +1018,8 @@ IEEE_802_1
   {
     if (lastTokenType() == CODE_POINT_ALIASES) {
       pushMode(M_CodePointAlias3Bit);
+    } else if (lastTokenType() == HOST_OUTBOUND_TRAFFIC) {
+      // Under host-outbound-traffic, ieee-802.1 is a block of keywords, not a named reference.
     } else {
       pushMode(M_Name);
     }
@@ -2128,6 +2141,7 @@ OUTPUT_TRAFFIC_CONTROL_PROFILE: 'output-traffic-control-profile' -> pushMode(M_N
 OUTPUT_VLAN_MAP: 'output-vlan-map';
 OVERLAY_ECMP: 'overlay-ecmp';
 OVERLOAD: 'overload';
+OVERRIDE_FIREWALL: 'override-firewall';
 OVERRIDE_METRIC: 'override-metric';
 OVERRIDES: 'overrides';
 P2MP: 'p2mp';
