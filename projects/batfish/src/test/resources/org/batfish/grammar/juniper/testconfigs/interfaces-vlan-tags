@@ -1,0 +1,12 @@
+#
+# Dual-tagged (Q-in-Q) unit with vlan-tags outer/inner. Tags are parsed and ignored.
+#
+set system host-name interfaces-vlan-tags
+
+set interfaces xe-0/1/2 flexible-vlan-tagging
+set interfaces xe-0/1/2 encapsulation flexible-ethernet-services
+set interfaces xe-0/1/2 unit 10898 encapsulation vlan-ccc
+set interfaces xe-0/1/2 unit 10898 vlan-tags outer 992 inner 898
+
+# outer-only form
+set interfaces xe-0/1/2 unit 10899 vlan-tags outer 993
