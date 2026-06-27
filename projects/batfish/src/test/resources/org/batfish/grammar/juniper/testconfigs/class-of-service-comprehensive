@@ -11,6 +11,7 @@ set class-of-service classifiers dscp DSCP-BA forwarding-class FC-CLASS3 loss-pr
 set class-of-service classifiers dscp DSCP-BA import default
 set class-of-service classifiers dscp-ipv6 DSCP-IPV6-BA forwarding-class FC-CLASS2 loss-priority high code-points 000000
 set class-of-service classifiers dscp-ipv6 DSCP-IPV6-BA forwarding-class FC-CLASS1 loss-priority low code-points ALIAS2
+set class-of-service classifiers exp EXP-BA import default
 set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS3 loss-priority high code-points 000
 set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS1 loss-priority low code-points ALIAS3
 set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS2 loss-priority high code-points be
@@ -33,6 +34,7 @@ set class-of-service rewrite-rules dscp REWRITE-DSCP forwarding-class FC-CLASS2 
 set class-of-service rewrite-rules dscp REWRITE-DSCP forwarding-class FC-CLASS3 loss-priority high code-point af11
 set class-of-service rewrite-rules dscp-ipv6 REWRITE-DSCP-IPV6 forwarding-class FC-CLASS2 loss-priority low code-point ALIAS2
 set class-of-service rewrite-rules dscp-ipv6 REWRITE-DSCP-IPV6 forwarding-class FC-CLASS1 loss-priority high code-point 000000
+set class-of-service rewrite-rules exp REWRITE-EXP import default
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS3 loss-priority low code-point ALIAS3
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS1 loss-priority high code-point 001
 set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS2 loss-priority low code-point be

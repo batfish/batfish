@@ -26,6 +26,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS(
       "class-of-service classifiers exp forwarding-class"),
   CLASS_OF_SERVICE_CLASSIFIERS_EXP_CODE_POINTS("class-of-service classifiers exp code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_EXP_IMPORT("class-of-service classifiers exp import"),
   CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS(
       "class-of-service classifiers ieee-802.1 forwarding-class"),
   CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_CODE_POINTS(
@@ -70,6 +71,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS(
       "class-of-service rewrite-rules exp forwarding-class"),
   CLASS_OF_SERVICE_REWRITE_RULES_EXP_CODE_POINT("class-of-service rewrite-rules exp code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT("class-of-service rewrite-rules exp import"),
   CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS(
       "class-of-service rewrite-rules ieee-802.1 forwarding-class"),
   CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT(
