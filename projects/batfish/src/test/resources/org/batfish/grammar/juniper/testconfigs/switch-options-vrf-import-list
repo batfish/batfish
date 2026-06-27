@@ -1,0 +1,21 @@
+#
+# switch-options vrf-import/vrf-export reference policy-statements, both as a
+# single name (GH-6305) and as a bracketed list. Referenced policies must not be
+# flagged as orphans/undefined.
+#
+set system host-name switch-options-vrf-import-list
+
+set policy-options policy-statement SINGLE_IMPORT term t1 then accept
+set policy-options policy-statement SINGLE_EXPORT term t1 then accept
+set policy-options policy-statement LIST_IMPORT_A term t1 then accept
+set policy-options policy-statement LIST_IMPORT_B term t1 then accept
+set policy-options policy-statement LIST_EXPORT_A term t1 then accept
+set policy-options policy-statement LIST_EXPORT_B term t1 then accept
+
+# Single name (the case from the issue).
+set switch-options vrf-import SINGLE_IMPORT
+set switch-options vrf-export SINGLE_EXPORT
+
+# Bracketed list form, per the CLI reference: vrf-import (policy-name | [policy-names]).
+set switch-options vrf-import [ LIST_IMPORT_A LIST_IMPORT_B ]
+set switch-options vrf-export [ LIST_EXPORT_A LIST_EXPORT_B ]

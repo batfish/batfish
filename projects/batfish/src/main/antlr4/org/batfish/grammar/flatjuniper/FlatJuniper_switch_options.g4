@@ -61,12 +61,12 @@ sovt_import
 
 so_vrf_export
 :
-  VRF_EXPORT name = junos_name
+  VRF_EXPORT names = junos_name_list
 ;
 
 so_vrf_import
 :
-  VRF_IMPORT name = junos_name
+  VRF_IMPORT names = junos_name_list
 ;
 
 so_interface

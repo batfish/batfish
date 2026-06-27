@@ -41457,7 +41457,7 @@
             "              (ri_vrf_import",
             "                VRF_IMPORT:'vrf-import'",
             "                name = (junos_name*",
-            "                  NAME:'fabric'  <== mode:M_Name)))))))",
+            "                  NAME:'fabric'  <== mode:M_NameList)))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -68952,7 +68952,7 @@
             "              (ri_vrf_import",
             "                VRF_IMPORT:'vrf-import'",
             "                name = (junos_name*",
-            "                  NAME:'policy1'  <== mode:M_Name)))))))",
+            "                  NAME:'policy1'  <== mode:M_NameList)))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]

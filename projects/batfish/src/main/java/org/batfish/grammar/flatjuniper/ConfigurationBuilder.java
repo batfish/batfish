@@ -3989,18 +3989,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSo_vrf_export(So_vrf_exportContext ctx) {
-    String policyName = toString(ctx.name);
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(policyName);
-    _configuration.referenceStructure(
-        POLICY_STATEMENT, policyName, SWITCH_OPTIONS_VRF_EXPORT, getLine(ctx.start));
+    // vrf-export accepts a single policy or a bracketed list; reference each.
+    for (Junos_nameContext nameCtx : ctx.names.junos_name()) {
+      String policyName = toString(nameCtx);
+      _currentLogicalSystem.getOrInitSwitchOptions().setVrfExportPolicy(policyName);
+      _configuration.referenceStructure(
+          POLICY_STATEMENT, policyName, SWITCH_OPTIONS_VRF_EXPORT, getLine(nameCtx.getStart()));
+    }
   }
 
   @Override
   public void exitSo_vrf_import(So_vrf_importContext ctx) {
-    String policyName = toString(ctx.name);
-    _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(policyName);
-    _configuration.referenceStructure(
-        POLICY_STATEMENT, policyName, SWITCH_OPTIONS_VRF_IMPORT, getLine(ctx.start));
+    // vrf-import accepts a single policy or a bracketed list; reference each.
+    for (Junos_nameContext nameCtx : ctx.names.junos_name()) {
+      String policyName = toString(nameCtx);
+      _currentLogicalSystem.getOrInitSwitchOptions().setVrfImportPolicy(policyName);
+      _configuration.referenceStructure(
+          POLICY_STATEMENT, policyName, SWITCH_OPTIONS_VRF_IMPORT, getLine(nameCtx.getStart()));
+    }
   }
 
   @Override

@@ -197,6 +197,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_IMPORT;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV6_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
@@ -8706,6 +8708,55 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipPrefixRoutes.getVni(), equalTo(1011));
     assertThat(ipPrefixRoutes.getImportPolicy(), equalTo("FOO-vrf-import"));
     assertThat(ipPrefixRoutes.getExportPolicy(), equalTo("FOO-vrf-export"));
+  }
+
+  @Test
+  public void testSwitchOptionsVrfImportExportReferences() throws IOException {
+    // GH-6305: policy-statements used by switch-options vrf-import/vrf-export must be marked as
+    // referenced (not orphans), for both the single-name and bracketed-list forms.
+    String hostname = "switch-options-vrf-import-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "SINGLE_IMPORT", SWITCH_OPTIONS_VRF_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "SINGLE_EXPORT", SWITCH_OPTIONS_VRF_EXPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "LIST_IMPORT_A", SWITCH_OPTIONS_VRF_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "LIST_IMPORT_B", SWITCH_OPTIONS_VRF_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "LIST_EXPORT_A", SWITCH_OPTIONS_VRF_EXPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, POLICY_STATEMENT, "LIST_EXPORT_B", SWITCH_OPTIONS_VRF_EXPORT));
+
+    // Every referenced policy is defined, so none are flagged as undefined references.
+    for (String policy :
+        new String[] {
+          "SINGLE_IMPORT",
+          "SINGLE_EXPORT",
+          "LIST_IMPORT_A",
+          "LIST_IMPORT_B",
+          "LIST_EXPORT_A",
+          "LIST_EXPORT_B"
+        }) {
+      assertThat(ccae, hasNumReferrers(filename, POLICY_STATEMENT, policy, 1));
+    }
   }
 
   @Test
