@@ -532,6 +532,7 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.TunnelAttribute;
+import org.batfish.representation.juniper.VlanMember;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VniOptions;
@@ -10081,6 +10082,32 @@ public final class FlatJuniperGrammarTest {
   public void testIsisLevelIpv6Metric() {
     // IS-IS per-level ipv6/ipv4 metric variants should not crash.
     parseConfig("isis-level-ipv6-metric");
+  }
+
+  @Test
+  public void testInterfacesFamilyBridgeSwitching() {
+    // family bridge interface-mode (access/trunk) and single vlan-id populate EthernetSwitching.
+    JuniperConfiguration c = parseJuniperConfig("interfaces-family-bridge-switching");
+    Map<String, org.batfish.representation.juniper.Interface> ifaces =
+        c.getMasterLogicalSystem().getInterfaces();
+
+    org.batfish.representation.juniper.Interface accessUnit =
+        ifaces.get("ge-10/1/0").getUnits().get("ge-10/1/0.0");
+    assertThat(
+        accessUnit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+    List<VlanMember> accessVlans = accessUnit.getEthernetSwitching().getVlanMembers();
+    assertThat(accessVlans, hasSize(1));
+    assertThat(((VlanRange) accessVlans.get(0)).getRange(), equalTo(IntegerSpace.of(620)));
+
+    org.batfish.representation.juniper.Interface trunkUnit =
+        ifaces.get("ge-10/1/1").getUnits().get("ge-10/1/1.0");
+    assertThat(trunkUnit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+
+    // Conversion: the access unit becomes a switchport access port on vlan 620.
+    Configuration vi = parseConfig("interfaces-family-bridge-switching");
+    org.batfish.datamodel.Interface viAccess = vi.getAllInterfaces().get("ge-10/1/0.0");
+    assertThat(viAccess.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+    assertThat(viAccess.getAccessVlan(), equalTo(620));
   }
 
   @Test
