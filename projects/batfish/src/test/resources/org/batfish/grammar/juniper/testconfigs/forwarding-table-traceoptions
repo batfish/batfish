@@ -1,0 +1,7 @@
+#
+# routing-options forwarding-table traceoptions (ignored).
+#
+set system host-name forwarding-table-traceoptions
+
+set routing-options forwarding-table traceoptions file fib-trace
+set routing-options forwarding-table traceoptions flag all
