@@ -4,3 +4,8 @@ set system host-name interfaces-vlan-map
 set interfaces ae1 unit 1000 output-vlan-map pop
 #
 set interfaces ae2 unit 1000 input-vlan-map push
+#
+# Empty "input-vlan-map {}" / "output-vlan-map {}" blocks flatten to a bare statement with no
+# rewrite action.
+set interfaces ae3 unit 507 input-vlan-map
+set interfaces ae3 unit 507 output-vlan-map
