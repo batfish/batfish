@@ -1104,6 +1104,14 @@ public final class FlatJuniperGrammarTest {
             "default",
             org.batfish.representation.juniper.JuniperStructureUsage
                 .CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_REWRITE_RULE,
+            "default",
+            org.batfish.representation.juniper.JuniperStructureUsage
+                .CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_IMPORT));
   }
 
   @Test

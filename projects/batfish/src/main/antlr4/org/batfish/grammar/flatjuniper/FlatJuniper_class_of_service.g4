@@ -564,7 +564,14 @@ scosrr_ieee_802_1
     IEEE_802_1 name = junos_name
     (
         scosrri_forwarding_class
+        | scosrri_import
     )
+;
+
+scosrri_import
+:
+    // "import" enters policy-expression lexer mode, so "default" arrives as a name.
+    IMPORT name = junos_name
 ;
 
 scosrri_forwarding_class

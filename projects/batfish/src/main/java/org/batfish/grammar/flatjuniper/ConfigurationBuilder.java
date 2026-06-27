@@ -117,6 +117,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_EXP_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_CODE_POINT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_FORWARDING_CLASS;
@@ -869,6 +870,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrre_forwarding_clas
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrre_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrefc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrri_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrri_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrifc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrip_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrripfc_loss_priorityContext;
@@ -8251,6 +8253,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     // The imported name may be "default", which is a built-in rewrite-rule.
     referenceBuiltIn(
         ctx.name, CLASS_OF_SERVICE_REWRITE_RULE, CLASS_OF_SERVICE_REWRITE_RULES_EXP_IMPORT);
+  }
+
+  @Override
+  public void exitScosrri_import(Scosrri_importContext ctx) {
+    // The imported name may be "default", which is a built-in rewrite-rule.
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_REWRITE_RULE, CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_IMPORT);
   }
 
   @Override
