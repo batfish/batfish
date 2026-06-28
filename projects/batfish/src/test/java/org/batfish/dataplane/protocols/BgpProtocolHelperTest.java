@@ -11,6 +11,7 @@ import static org.batfish.dataplane.protocols.BgpProtocolHelper.allowAsPathOut;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.isReflectable;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.receivedFromPeer;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.removeNonTransitiveExtendedCommunities;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -367,6 +368,106 @@ public class BgpProtocolHelperTest {
         null,
         false);
     assertThat("All communities", builder.getCommunities(), equalTo(mixedComms));
+  }
+
+  @Test
+  public void testRemoveNonTransitiveExtendedCommunities() {
+    StandardCommunity standard = StandardCommunity.of(5);
+    // Transitive bit clear (type octet high bit 0x40 == 0): crosses AS boundaries.
+    ExtendedCommunity transitiveExt = ExtendedCommunity.target(65000, 100);
+    assertTrue(transitiveExt.isTransitive());
+    // Transitive bit set (non-transitive): the generic Junos literal "65000:672277L:36867" whose
+    // type octet 0xFD has 0x40 set.
+    ExtendedCommunity nonTransitiveExt = ExtendedCommunity.parse("65000:672277L:36867");
+    assertFalse(nonTransitiveExt.isTransitive());
+
+    // Non-transitive extended community is removed; standard and transitive extended remain.
+    assertThat(
+        removeNonTransitiveExtendedCommunities(
+            CommunitySet.of(standard, transitiveExt, nonTransitiveExt)),
+        equalTo(CommunitySet.of(standard, transitiveExt)));
+
+    // No non-transitive extended communities: returns the same instance (no allocation).
+    CommunitySet allTransitive = CommunitySet.of(standard, transitiveExt);
+    assertThat(removeNonTransitiveExtendedCommunities(allTransitive), equalTo(allTransitive));
+
+    // Empty set is unchanged.
+    assertThat(
+        removeNonTransitiveExtendedCommunities(CommunitySet.empty()),
+        equalTo(CommunitySet.empty()));
+  }
+
+  @Test
+  public void testTransformPostExportNonTransitiveExtendedCommunities() {
+    ExtendedCommunity transitiveExt = ExtendedCommunity.target(65000, 100);
+    ExtendedCommunity nonTransitiveExt = ExtendedCommunity.parse("65000:672277L:36867");
+    CommunitySet comms = CommunitySet.of(StandardCommunity.of(5), transitiveExt, nonTransitiveExt);
+
+    // eBGP outside a confederation: non-transitive extended community is dropped.
+    Builder builder = _baseBgpRouteBuilder.setCommunities(comms).build().toBuilder();
+    transformBgpRoutePostExport(
+        builder,
+        true,
+        true,
+        true,
+        true,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat(
+        builder.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(5), transitiveExt)));
+
+    // eBGP within a confederation: all communities preserved.
+    builder = _baseBgpRouteBuilder.setCommunities(comms).build().toBuilder();
+    transformBgpRoutePostExport(
+        builder,
+        true,
+        true,
+        true,
+        true,
+        ConfedSessionType.WITHIN_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat(builder.getCommunities(), equalTo(comms));
+
+    // eBGP across a confederation border (true AS boundary): non-transitive dropped.
+    builder = _baseBgpRouteBuilder.setCommunities(comms).build().toBuilder();
+    transformBgpRoutePostExport(
+        builder,
+        true,
+        true,
+        true,
+        true,
+        ConfedSessionType.ACROSS_CONFED_BORDER,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat(
+        builder.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(5), transitiveExt)));
+
+    // iBGP: all communities preserved.
+    builder = _baseBgpRouteBuilder.setCommunities(comms).build().toBuilder();
+    transformBgpRoutePostExport(
+        builder,
+        false,
+        true,
+        true,
+        true,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat(builder.getCommunities(), equalTo(comms));
   }
 
   @Test
