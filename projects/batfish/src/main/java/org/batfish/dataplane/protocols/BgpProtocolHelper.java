@@ -41,6 +41,8 @@ import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -533,6 +535,14 @@ public final class BgpProtocolHelper {
       routeBuilder.setCommunities(routeBuilder.getCommunities().getStandardCommunities());
     } // else preserve all communities as-is.
 
+    // Non-transitive extended communities (Transitive bit set in the type octet; see RFC 4360
+    // section 2) do not cross AS boundaries. Drop them when exporting over a true eBGP session
+    // (outside a confederation), consistent with how weight / local-pref / tag are cleared above.
+    if (isEbgp && confedSessionType != ConfedSessionType.WITHIN_CONFED) {
+      routeBuilder.setCommunities(
+          removeNonTransitiveExtendedCommunities(routeBuilder.getCommunities()));
+    }
+
     // Skip setting our own next hop if it has already been set by the routing policy
     // TODO: When sending out a BGP route with a NextHopVtep, should that next hop be preserved?
     //  If so, this should step be skipped for such routes.
@@ -563,6 +573,26 @@ public final class BgpProtocolHelper {
     if (routeBuilder.getProtocol() == RoutingProtocol.AGGREGATE) {
       routeBuilder.setProtocol(isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     }
+  }
+
+  /**
+   * Return a {@link CommunitySet} with any non-transitive extended communities removed. Standard
+   * and large communities, and transitive extended communities, are preserved.
+   *
+   * <p>This runs on every BGP route export. It avoids streams (hot path), but does not bother with
+   * a separate scan to preserve the input instance: {@link CommunitySet#of} interns its result, so
+   * when nothing is removed the cache returns the same interned {@link CommunitySet}.
+   */
+  @VisibleForTesting
+  static @Nonnull CommunitySet removeNonTransitiveExtendedCommunities(CommunitySet communities) {
+    Set<Community> all = communities.getCommunities();
+    ImmutableSet.Builder<Community> kept = ImmutableSet.builderWithExpectedSize(all.size());
+    for (Community c : all) {
+      if (!(c instanceof ExtendedCommunity ec) || ec.isTransitive()) {
+        kept.add(c);
+      }
+    }
+    return CommunitySet.of(kept.build());
   }
 
   /**
