@@ -41,6 +41,8 @@ import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -533,6 +535,14 @@ public final class BgpProtocolHelper {
       routeBuilder.setCommunities(routeBuilder.getCommunities().getStandardCommunities());
     } // else preserve all communities as-is.
 
+    // Non-transitive extended communities (Transitive bit set in the type octet; see RFC 4360
+    // section 2) do not cross AS boundaries. Drop them when exporting over a true eBGP session
+    // (outside a confederation), consistent with how weight / local-pref / tag are cleared above.
+    if (isEbgp && confedSessionType != ConfedSessionType.WITHIN_CONFED) {
+      routeBuilder.setCommunities(
+          removeNonTransitiveExtendedCommunities(routeBuilder.getCommunities()));
+    }
+
     // Skip setting our own next hop if it has already been set by the routing policy
     // TODO: When sending out a BGP route with a NextHopVtep, should that next hop be preserved?
     //  If so, this should step be skipped for such routes.
@@ -563,6 +573,39 @@ public final class BgpProtocolHelper {
     if (routeBuilder.getProtocol() == RoutingProtocol.AGGREGATE) {
       routeBuilder.setProtocol(isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     }
+  }
+
+  /**
+   * Return a {@link CommunitySet} with any non-transitive extended communities removed. Standard
+   * and large communities, and transitive extended communities, are preserved. Returns the input
+   * {@code communities} instance when there is nothing to remove.
+   *
+   * <p>This runs on every BGP route export, so it avoids streams and allocates nothing on the
+   * common path: most routes carry no extended communities at all, and {@link
+   * CommunitySet#getExtendedCommunities()} caches its result, so it only builds a new set (the one
+   * case that must allocate) when a non-transitive extended community is found.
+   */
+  @VisibleForTesting
+  static @Nonnull CommunitySet removeNonTransitiveExtendedCommunities(CommunitySet communities) {
+    Set<ExtendedCommunity> extended = communities.getExtendedCommunities();
+    if (extended.isEmpty()) {
+      return communities;
+    }
+    for (ExtendedCommunity ec : extended) {
+      if (!ec.isTransitive()) {
+        // Found one to remove. Rebuild the set, keeping everything else.
+        Set<Community> all = communities.getCommunities();
+        ImmutableSet.Builder<Community> kept = ImmutableSet.builderWithExpectedSize(all.size() - 1);
+        for (Community keep : all) {
+          if (!(keep instanceof ExtendedCommunity keepEc) || keepEc.isTransitive()) {
+            kept.add(keep);
+          }
+        }
+        return CommunitySet.of(kept.build());
+      }
+    }
+    // No non-transitive extended communities: nothing to do, no allocation.
+    return communities;
   }
 
   /**
