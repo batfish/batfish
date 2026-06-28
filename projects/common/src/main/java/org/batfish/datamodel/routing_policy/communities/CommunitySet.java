@@ -59,6 +59,25 @@ public final class CommunitySet implements Serializable {
     return _communities;
   }
 
+  /**
+   * Returns {@code true} if this set contains any {@link ExtendedCommunity}. Cheaper than {@link
+   * #getExtendedCommunities()} when only presence matters: it scans without materializing (or
+   * caching) the extended-community subset.
+   */
+  public boolean hasExtendedCommunities() {
+    Set<ExtendedCommunity> extended = _extendedCommunities;
+    if (extended != null) {
+      // Subset already computed; reuse it.
+      return !extended.isEmpty();
+    }
+    for (Community c : _communities) {
+      if (c instanceof ExtendedCommunity) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public @Nonnull Set<ExtendedCommunity> getExtendedCommunities() {
     Set<ExtendedCommunity> extended = _extendedCommunities;
     if (extended == null) {
