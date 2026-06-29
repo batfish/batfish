@@ -314,8 +314,8 @@
     },
     "@@rules_python+//python/uv:uv.bzl%uv": {
       "general": {
-        "bzlTransitiveDigest": "I8FPZMevE2oI/peSpMBRVIN++WOtfjtJVjbPsBZQ87A=",
-        "usagesDigest": "R0pij/Kri0Z/7GcM2UBot6XmOqgduje0j8y9wNMWjLA=",
+        "bzlTransitiveDigest": "46RcxJnhOapMeaxdcMm3RmVdNp1nPCewOOXoZyIbQ20=",
+        "usagesDigest": "1JOmDwgl7WhepSMqXUu3CmcVEyz+HD66v+Zfj0b5S7Y=",
         "recordedInputs": [
           "REPO_MAPPING:rules_python+,bazel_tools bazel_tools",
           "REPO_MAPPING:rules_python+,platforms platforms"
