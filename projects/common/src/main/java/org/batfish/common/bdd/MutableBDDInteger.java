@@ -251,6 +251,22 @@ public final class MutableBDDInteger extends BDDInteger {
   }
 
   /**
+   * Produces a new bitvector by composing each bit's formula through the given pairing (see {@link
+   * BDD#veccompose(BDDPairing)}). Used to functionally compose this integer, viewed as a function
+   * of some input variables, with another symbolic route that supplies those variables.
+   *
+   * @param pairing a pairing from input variables to their replacement formulas
+   * @return the composed bitvector
+   */
+  public MutableBDDInteger veccompose(BDDPairing pairing) {
+    BDD[] newBitvec = new BDD[_bitvec.length];
+    for (int i = 0; i < _bitvec.length; i++) {
+      newBitvec[i] = _bitvec[i].veccompose(pairing);
+    }
+    return new MutableBDDInteger(_factory, newBitvec);
+  }
+
+  /**
    * Produces a BDD whose models represent all possible differences between the two BDDIntegers --
    * valuations of the BDD variables that cause the two BDDIntegers to have different values. The
    * two BDDIntegers are assumed to have the same length.

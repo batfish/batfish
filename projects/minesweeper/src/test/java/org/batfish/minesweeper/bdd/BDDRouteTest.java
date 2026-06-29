@@ -353,4 +353,46 @@ public class BDDRouteTest {
     pairing.reset();
     attrPairing.reset();
   }
+
+  @Test
+  public void testVeccomposeIdentity() {
+    // Composing any route through an identity pairing (each input variable mapped to itself) leaves
+    // the route unchanged.
+    BDDFactory factory = JFactory.init(10000, 1000);
+    BDDRoute orig = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    // Build a non-trivial route by setting some attributes to constants.
+    BDDRoute route = new BDDRoute(orig);
+    route.getLocalPref().setValue(300);
+    route.getOriginType().setValue(OriginType.EGP);
+
+    // A fresh route's formulas are just the canonical input variables, so pairing it with itself
+    // yields the identity pairing.
+    BDDPairing pairing = factory.makePair();
+    BDDRoute fresh = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    fresh.augmentPairing(fresh, pairing);
+
+    assertEquals(route, route.veccompose(pairing));
+  }
+
+  @Test
+  public void testVeccomposeSubstitutesInput() {
+    // veccompose feeds one route's attribute formulas in as another's input variables: composing a
+    // route whose local-pref is its input variable through a pairing that pins local-pref to a
+    // constant yields that constant.
+    BDDFactory factory = JFactory.init(10000, 1000);
+
+    // The "input" route fixes local-pref to 250.
+    BDDRoute input = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    input.getLocalPref().setValue(250);
+
+    // Pair the canonical variables (from a fresh route) with the input's formulas.
+    BDDPairing pairing = factory.makePair();
+    BDDRoute fresh = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    input.augmentPairing(fresh, pairing);
+
+    // The fresh route is the identity on the canonical input variables, so composing it through the
+    // pairing simply substitutes the input route's formulas: the result equals the input route.
+    BDDRoute composed = fresh.veccompose(pairing);
+    assertEquals(input, composed);
+  }
 }
