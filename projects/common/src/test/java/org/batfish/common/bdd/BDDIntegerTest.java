@@ -106,6 +106,75 @@ public class BDDIntegerTest {
   }
 
   @Test
+  public void testSymbolicComparisons() {
+    // Two independent 4-bit integers over disjoint variables; exhaustively check every (a, b).
+    BDDFactory factory = BDDUtils.bddFactory(8);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 4, 0);
+    ImmutableBDDInteger y = ImmutableBDDInteger.makeFromIndex(factory, 4, 4);
+    for (int a = 0; a < 16; a++) {
+      for (int b = 0; b < 16; b++) {
+        // Restricting every variable to this concrete assignment collapses the comparison to a
+        // terminal: it is one iff the relation holds.
+        BDD assignment = x.value(a).and(y.value(b));
+        assertThat("x=" + a + " lt y=" + b, x.lt(y).restrict(assignment).isOne(), equalTo(a < b));
+        assertThat(
+            "x=" + a + " leq y=" + b, x.leq(y).restrict(assignment).isOne(), equalTo(a <= b));
+        assertThat("x=" + a + " gt y=" + b, x.gt(y).restrict(assignment).isOne(), equalTo(a > b));
+        assertThat(
+            "x=" + a + " geq y=" + b, x.geq(y).restrict(assignment).isOne(), equalTo(a >= b));
+        assertThat("x=" + a + " eq y=" + b, x.eq(y).restrict(assignment).isOne(), equalTo(a == b));
+      }
+    }
+  }
+
+  @Test
+  public void testSymbolicComparisonsAgainstConstantForm() {
+    // For a fixed constant c, comparing the symbolic var against a constant-valued BDDInteger must
+    // agree with the existing constant-comparison methods.
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
+    ImmutableBDDInteger y = ImmutableBDDInteger.makeFromIndex(factory, 5, 5);
+    for (int c = 0; c < 32; c++) {
+      BDD yIsC = y.value(c);
+      assertThat(x.lt(y).and(yIsC), equalTo(x.leq(c).and(x.value(c).not()).and(yIsC)));
+      assertThat(x.leq(y).and(yIsC), equalTo(x.leq(c).and(yIsC)));
+      assertThat(x.geq(y).and(yIsC), equalTo(x.geq(c).and(yIsC)));
+      assertThat(x.eq(y).and(yIsC), equalTo(x.value(c).and(yIsC)));
+    }
+  }
+
+  @Test
+  public void testSymbolicComparisonsMutable() {
+    // Same exhaustive check as testSymbolicComparisons, but over MutableBDDIntegers whose bits are
+    // compound formulas (sums) rather than plain variables, to exercise the general case.
+    BDDFactory factory = BDDUtils.bddFactory(8);
+    MutableBDDInteger p = MutableBDDInteger.makeFromIndex(factory, 4, 0, false);
+    MutableBDDInteger q = MutableBDDInteger.makeFromIndex(factory, 4, 4, false);
+    MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 4, 1);
+    // x = p + 1 (mod 16) and y = q + 1 (mod 16); each bit is an adder formula, not a variable.
+    MutableBDDInteger x = p.add(one);
+    MutableBDDInteger y = q.add(one);
+    for (int a = 0; a < 16; a++) {
+      for (int b = 0; b < 16; b++) {
+        // Restrict the underlying variables p=a, q=b; x and y then take the values (a+1) and (b+1).
+        BDD assignment = p.value(a).and(q.value(b));
+        int xv = (a + 1) % 16;
+        int yv = (b + 1) % 16;
+        assertThat(
+            "x=" + xv + " lt y=" + yv, x.lt(y).restrict(assignment).isOne(), equalTo(xv < yv));
+        assertThat(
+            "x=" + xv + " leq y=" + yv, x.leq(y).restrict(assignment).isOne(), equalTo(xv <= yv));
+        assertThat(
+            "x=" + xv + " gt y=" + yv, x.gt(y).restrict(assignment).isOne(), equalTo(xv > yv));
+        assertThat(
+            "x=" + xv + " geq y=" + yv, x.geq(y).restrict(assignment).isOne(), equalTo(xv >= yv));
+        assertThat(
+            "x=" + xv + " eq y=" + yv, x.eq(y).restrict(assignment).isOne(), equalTo(xv == yv));
+      }
+    }
+  }
+
+  @Test
   public void testRangeBounds() {
     {
       BDDFactory factory = BDDUtils.bddFactory(32);
