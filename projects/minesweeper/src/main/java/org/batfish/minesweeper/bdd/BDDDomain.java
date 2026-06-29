@@ -101,6 +101,16 @@ public final class BDDDomain<T> {
     _integer.augmentPairing(other._integer, pairing);
   }
 
+  /**
+   * Produces a new domain by composing this one's underlying integer through the given pairing (see
+   * {@link BDD#veccompose(BDDPairing)}), for functional composition of symbolic routes.
+   */
+  public BDDDomain<T> veccompose(BDDPairing pairing) {
+    BDDDomain<T> result = new BDDDomain<>(this);
+    result._integer = _integer.veccompose(pairing);
+    return result;
+  }
+
   /** Produces a BDD that represents the support (i.e., the set of BDD variables) of this domain. */
   public BDD support() {
     return _integer.support();

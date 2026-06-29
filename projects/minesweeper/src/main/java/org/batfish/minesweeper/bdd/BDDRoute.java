@@ -429,6 +429,52 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
   }
 
+  /**
+   * Constructs a new BDDRoute by composing every attribute formula of the given route through the
+   * given pairing (see {@link BDD#veccompose(BDDPairing)}). Used to functionally compose two
+   * symbolic routes; see {@link #veccompose(BDDPairing)}. Concrete (non-BDD) state is carried over
+   * unchanged.
+   *
+   * @param pairing a pairing from input variables to their replacement formulas
+   * @param route the symbolic route to compose
+   */
+  public BDDRoute(BDDPairing pairing, BDDRoute route) {
+    _factory = route._factory;
+
+    BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
+    for (int i = 0; i < communityAtomicPredicates.length; i++) {
+      communityAtomicPredicates[i] = route._communityAtomicPredicates[i].veccompose(pairing);
+    }
+    _communityAtomicPredicates = communityAtomicPredicates;
+    _asPathRegexAtomicPredicates = route._asPathRegexAtomicPredicates.veccompose(pairing);
+    _clusterListLength = route._clusterListLength.veccompose(pairing);
+    _prefixLength = route._prefixLength.veccompose(pairing);
+    _prefix = route._prefix.veccompose(pairing);
+    _nextHop = route._nextHop.veccompose(pairing);
+    _adminDist = route._adminDist.veccompose(pairing);
+    _med = route._med.veccompose(pairing);
+    _tag = route._tag.veccompose(pairing);
+    _localPref = route._localPref.veccompose(pairing);
+    _weight = route._weight.veccompose(pairing);
+    _protocolHistory = route._protocolHistory.veccompose(pairing);
+    _originType = route._originType.veccompose(pairing);
+    _ospfMetric = route._ospfMetric.veccompose(pairing);
+    _nextHopInterfaces = route._nextHopInterfaces.veccompose(pairing);
+    _peerAddress = route._peerAddress.veccompose(pairing);
+    _sourceVrfs = route._sourceVrfs.veccompose(pairing);
+    _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.veccompose(pairing);
+    BDD[] tracks = new BDD[route._tracks.length];
+    for (int i = 0; i < tracks.length; i++) {
+      tracks[i] = route._tracks[i].veccompose(pairing);
+    }
+    _tracks = tracks;
+    _bitNames = route._bitNames;
+    _nextHopSet = route._nextHopSet;
+    _nextHopType = route._nextHopType;
+    _unsupported = route._unsupported;
+    _prependedASes = new ArrayList<>(route._prependedASes);
+  }
+
   /*
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
@@ -537,6 +583,25 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _sourceVrfs.augmentPairing(other._sourceVrfs, pairing);
     pairing.set(other._tracks, _tracks);
     _tunnelEncapsulationAttribute.augmentPairing(other._tunnelEncapsulationAttribute, pairing);
+  }
+
+  /**
+   * Produces a new {@link BDDRoute} by composing every attribute formula through the given pairing
+   * (see {@link BDD#veccompose(BDDPairing)}). This route is viewed as a function of some input
+   * variables; composing it through a pairing that maps those input variables to the formulas of
+   * another symbolic route yields the functional composition of the two -- the route that results
+   * from feeding the other route's output as this route's input.
+   *
+   * <p>The pairing is typically built by {@link TransferBDDUtils#makeRoutePairing} from the route
+   * supplying the inputs. Concrete (non-BDD) state -- the prepended-AS list, next-hop type/set
+   * flags, and the unsupported flag -- is carried over unchanged; callers that compose chains of
+   * routes are responsible for combining those (e.g. concatenating prepended ASes).
+   *
+   * @param pairing a pairing from input variables to their replacement formulas
+   * @return the composed route
+   */
+  public BDDRoute veccompose(BDDPairing pairing) {
+    return new BDDRoute(pairing, this);
   }
 
   /*

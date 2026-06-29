@@ -353,4 +353,43 @@ public class BDDRouteTest {
     pairing.reset();
     attrPairing.reset();
   }
+
+  @Test
+  public void testVeccomposeIdentity() {
+    // Composing a route through the pairing built from a fresh (identity) route is the identity.
+    BDDFactory factory = JFactory.init(10000, 1000);
+    BDDRoute orig = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    // Build a non-trivial route by setting some attributes to constants.
+    BDDRoute route = new BDDRoute(orig);
+    route.getLocalPref().setValue(300);
+    route.getOriginType().setValue(OriginType.EGP);
+
+    BDDPairing pairing = factory.makePair();
+    BDDRoute fresh = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    route.augmentPairing(fresh, pairing);
+
+    assertEquals(route, route.veccompose(pairing));
+  }
+
+  @Test
+  public void testVeccomposeSubstitutesInput() {
+    // veccompose feeds one route's attribute formulas in as another's input variables: composing a
+    // route whose local-pref is its input variable through a pairing that pins local-pref to a
+    // constant yields that constant.
+    BDDFactory factory = JFactory.init(10000, 1000);
+
+    // The "input" route fixes local-pref to 250.
+    BDDRoute input = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    input.getLocalPref().setValue(250);
+
+    // Pair the canonical variables (from a fresh route) with the input's formulas.
+    BDDPairing pairing = factory.makePair();
+    BDDRoute fresh = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    input.augmentPairing(fresh, pairing);
+
+    // The fresh route's local-pref is just its (canonical) input variable; after composition it
+    // should equal the input's local-pref, i.e. the constant 250.
+    BDDRoute composed = fresh.veccompose(pairing);
+    assertEquals(composed.getLocalPref().value(250), factory.one());
+  }
 }
