@@ -229,7 +229,7 @@ public class CumulusConcatenatedConfigurationTest {
         .initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey("swp1"));
     // this interface is put in the default vrf
-    assertEquals(c.getAllInterfaces().get("swp1").getVrfName(), DEFAULT_VRF_NAME);
+    assertEquals(DEFAULT_VRF_NAME, c.getAllInterfaces().get("swp1").getVrfName());
   }
 
   @Test
@@ -441,12 +441,12 @@ public class CumulusConcatenatedConfigurationTest {
 
     // unset means default
     vc.populateCommonInterfaceProperties(vsIface, viIface);
-    assertEquals(viIface.getMtu(), DEFAULT_MTU);
+    assertEquals(DEFAULT_MTU, viIface.getMtu());
 
     // should get the set value
     vsIface.setMtu(42);
     vc.populateCommonInterfaceProperties(vsIface, viIface);
-    assertEquals(viIface.getMtu(), 42);
+    assertEquals(42, viIface.getMtu());
   }
 
   @Test

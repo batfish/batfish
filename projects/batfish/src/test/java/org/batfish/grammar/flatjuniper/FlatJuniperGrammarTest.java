@@ -2198,7 +2198,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
-    assertEquals(pvcae.getWarnings().size(), 1);
+    assertEquals(1, pvcae.getWarnings().size());
     assertThat(
         pvcae,
         hasParseWarning(
@@ -9143,15 +9143,15 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
     assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     Layer2Vni vni10 = c.getDefaultVrf().getLayer2Vnis().get(5010);
-    assertEquals(vni10.getVlan(), 10);
+    assertEquals(10, vni10.getVlan());
     assertEquals(vni10.getSourceAddress(), Ip.parse("10.84.249.26"));
-    assertEquals(vni10.getSrcVrf(), "default");
-    assertEquals(vni10.getUdpPort(), 4789);
+    assertEquals("default", vni10.getSrcVrf());
+    assertEquals(4789, vni10.getUdpPort());
     Layer2Vni vni20 = c.getDefaultVrf().getLayer2Vnis().get(5020);
-    assertEquals(vni20.getVlan(), 20);
+    assertEquals(20, vni20.getVlan());
     assertEquals(vni20.getSourceAddress(), Ip.parse("10.84.249.26"));
-    assertEquals(vni20.getSrcVrf(), "default");
-    assertEquals(vni20.getUdpPort(), 4789);
+    assertEquals("default", vni20.getSrcVrf());
+    assertEquals(4789, vni20.getUdpPort());
   }
 
   @Test

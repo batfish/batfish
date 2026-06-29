@@ -236,13 +236,13 @@ public final class PaloAltoConfigurationTest {
 
     // no lines should be returned since fromZone does not point to externalVsys
     assertEquals(
+        0L,
         generateCrossZoneCallsFromExternal(
                 fromZone,
                 new Zone(TO_ZONE_NAME, vsys),
                 ImmutableList.of(),
                 ImmutableList.of(externalVsys, vsys))
-            .count(),
-        0L);
+            .count());
   }
 
   @Test
@@ -295,10 +295,10 @@ public final class PaloAltoConfigurationTest {
 
     // no lines should be returned since fromZone is a layer-2 zone
     assertEquals(
+        0L,
         generateCrossZoneCalls(
                 fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(), ImmutableList.of(vsys))
-            .count(),
-        0L);
+            .count());
   }
 
   @Test
@@ -422,10 +422,10 @@ public final class PaloAltoConfigurationTest {
     externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
     // no lines should be returned since externalVsys has no external zones
     assertEquals(
+        0L,
         generateInterVsysCrossZoneCalls(
                 new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
-            .count(),
-        0L);
+            .count());
   }
 
   @Test
@@ -443,10 +443,10 @@ public final class PaloAltoConfigurationTest {
 
     // no lines should be returned since externalVsys has no external zone pointing to vsys
     assertEquals(
+        0L,
         generateInterVsysCrossZoneCalls(
                 new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
-            .count(),
-        0L);
+            .count());
   }
 
   @Test
@@ -509,7 +509,7 @@ public final class PaloAltoConfigurationTest {
     Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
 
     // no lines should be returned since there are no interfaces in ingressSharedGateway
-    assertEquals(generateSgSgLines(sharedGateway, ingressSharedGateway).count(), 0L);
+    assertEquals(0L, generateSgSgLines(sharedGateway, ingressSharedGateway).count());
   }
 
   @Test
@@ -618,7 +618,7 @@ public final class PaloAltoConfigurationTest {
     vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
     // no lines should be returned since externalToZone does not point to sharedGateway
-    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+    assertEquals(0L, generateVsysSharedGatewayCalls(sharedGateway, vsys).count());
   }
 
   @Test
@@ -633,7 +633,7 @@ public final class PaloAltoConfigurationTest {
     // missing external zone on vsys
 
     // no lines should be returned since vsys has no external zone
-    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+    assertEquals(0L, generateVsysSharedGatewayCalls(sharedGateway, vsys).count());
   }
 
   @Test
@@ -647,7 +647,7 @@ public final class PaloAltoConfigurationTest {
     vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
     // no lines should be returned since externalToZone has no layer-3 zone
-    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+    assertEquals(0L, generateVsysSharedGatewayCalls(sharedGateway, vsys).count());
   }
 
   /** Covers universal and default case of no rule-type */

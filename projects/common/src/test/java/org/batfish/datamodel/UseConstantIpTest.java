@@ -36,6 +36,6 @@ public class UseConstantIpTest extends TestCase {
 
   @Test
   public void testToString() {
-    assertEquals(UseConstantIp.create(Ip.parse("1.1.1.1")).toString(), "UseConstantIp(1.1.1.1)");
+    assertEquals("UseConstantIp(1.1.1.1)", UseConstantIp.create(Ip.parse("1.1.1.1")).toString());
   }
 }

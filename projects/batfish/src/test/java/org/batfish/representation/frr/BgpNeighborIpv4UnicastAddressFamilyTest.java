@@ -37,7 +37,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     // Inherit settings correctly
     _empty.inheritFrom(_withSettings);
     assertTrue(_empty.getActivated());
-    assertEquals(_empty.getAllowAsIn().intValue(), 5);
+    assertEquals(5, _empty.getAllowAsIn().intValue());
     assertTrue(_empty.getDefaultOriginate());
     assertEquals("RM", _empty.getDefaultOriginateRouteMap());
     assertEquals(_empty.getRemovePrivateAsMode(), RemovePrivateAsMode.REPLACE_AS);
