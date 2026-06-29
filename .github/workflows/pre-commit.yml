@@ -29,12 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Bazelisk cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazelisk"
           key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
       - name: Bazel cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-format-${{ hashFiles('.bazelversion', 'MODULE.bazel', 'maven_install.json') }}
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Checkstyle cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/checkstyle"
           key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
@@ -78,12 +78,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Bazelisk cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazelisk"
           key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
       - name: Bazel cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
@@ -121,12 +121,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Bazelisk cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazelisk"
           key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
       - name: Bazel cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
