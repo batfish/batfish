@@ -785,7 +785,14 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
 
   @Override
   public int hashCode() {
-    // does not include all fields, but that's okay as hash code doesn't need to be perfect.
+    // Does not include every field, but must include the fields that distinguish routes in
+    // practice. The community atomic predicates in particular are included: when a BDDRoute is
+    // used as a symbolic route function, the scalar attribute integers (prefix, local-pref, MED,
+    // ...) are often left as their free identity functions (the constraint lives in an external
+    // guard), so communities are the axis that distinguishes most distinct route functions.
+    // Omitting them collapsed distinct functions into a handful of hash buckets, treeifying
+    // HashMaps keyed on BDDRoute and turning every insert into a chain of full structural
+    // equals() calls.
     return Objects.hash(
         _adminDist,
         _originType,
@@ -798,6 +805,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         _prefix,
         _prefixLength,
         _asPathRegexAtomicPredicates,
-        _prependedASes);
+        _prependedASes,
+        Arrays.hashCode(_communityAtomicPredicates),
+        Arrays.hashCode(_tracks));
   }
 }
