@@ -106,6 +106,41 @@ public class BDDIntegerTest {
   }
 
   @Test
+  public void testSymbolicComparisons() {
+    // Two independent 4-bit integers over disjoint variables; exhaustively check every (a, b).
+    BDDFactory factory = BDDUtils.bddFactory(8);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 4, 0);
+    ImmutableBDDInteger y = ImmutableBDDInteger.makeFromIndex(factory, 4, 4);
+    for (int a = 0; a < 16; a++) {
+      for (int b = 0; b < 16; b++) {
+        BDD assignment = x.value(a).and(y.value(b));
+        // Each comparison restricted to this concrete assignment is one iff the relation holds.
+        assertThat("x=" + a + " lt y=" + b, x.lt(y).and(assignment).isZero(), equalTo(!(a < b)));
+        assertThat("x=" + a + " leq y=" + b, x.leq(y).and(assignment).isZero(), equalTo(!(a <= b)));
+        assertThat("x=" + a + " gt y=" + b, x.gt(y).and(assignment).isZero(), equalTo(!(a > b)));
+        assertThat("x=" + a + " geq y=" + b, x.geq(y).and(assignment).isZero(), equalTo(!(a >= b)));
+        assertThat("x=" + a + " eq y=" + b, x.eq(y).and(assignment).isZero(), equalTo(!(a == b)));
+      }
+    }
+  }
+
+  @Test
+  public void testSymbolicComparisonsAgainstConstantForm() {
+    // For a fixed constant c, comparing the symbolic var against a constant-valued BDDInteger must
+    // agree with the existing constant-comparison methods.
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
+    ImmutableBDDInteger y = ImmutableBDDInteger.makeFromIndex(factory, 5, 5);
+    for (int c = 0; c < 32; c++) {
+      BDD yIsC = y.value(c);
+      assertThat(x.lt(y).and(yIsC), equalTo(x.leq(c).and(x.value(c).not()).and(yIsC)));
+      assertThat(x.leq(y).and(yIsC), equalTo(x.leq(c).and(yIsC)));
+      assertThat(x.geq(y).and(yIsC), equalTo(x.geq(c).and(yIsC)));
+      assertThat(x.eq(y).and(yIsC), equalTo(x.value(c).and(yIsC)));
+    }
+  }
+
+  @Test
   public void testRangeBounds() {
     {
       BDDFactory factory = BDDUtils.bddFactory(32);
