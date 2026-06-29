@@ -38,8 +38,8 @@
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
     "jakarta.xml.bind:jakarta.xml.bind-api": 952929903,
     "junit:junit": -744267592,
-    "net.sourceforge.pmd:pmd-cli": -523444158,
-    "net.sourceforge.pmd:pmd-java": 380189246,
+    "net.sourceforge.pmd:pmd-cli": 1974571779,
+    "net.sourceforge.pmd:pmd-java": -1416762113,
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": 1132363499,
@@ -176,14 +176,14 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": -560158028,
     "net.sf.saxon:Saxon-HE:jar:sources": 134942547,
-    "net.sourceforge.pmd:pmd-cli": -1045749316,
-    "net.sourceforge.pmd:pmd-cli:jar:sources": 1442646810,
-    "net.sourceforge.pmd:pmd-core": 1695082763,
-    "net.sourceforge.pmd:pmd-core:jar:sources": -738511708,
-    "net.sourceforge.pmd:pmd-designer": -1899777465,
-    "net.sourceforge.pmd:pmd-designer:jar:sources": 1263048820,
-    "net.sourceforge.pmd:pmd-java": 698351677,
-    "net.sourceforge.pmd:pmd-java:jar:sources": 2045124175,
+    "net.sourceforge.pmd:pmd-cli": -1865254145,
+    "net.sourceforge.pmd:pmd-cli:jar:sources": 600662739,
+    "net.sourceforge.pmd:pmd-core": 1971699998,
+    "net.sourceforge.pmd:pmd-core:jar:sources": 1231275042,
+    "net.sourceforge.pmd:pmd-designer": 906775713,
+    "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
+    "net.sourceforge.pmd:pmd-java": -1187257638,
+    "net.sourceforge.pmd:pmd-java:jar:sources": -2007781449,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
     "org.antlr:antlr4:jar:complete": -609884220,
@@ -210,8 +210,8 @@
     "org.apfloat:apfloat:jar:sources": -1889003084,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
-    "org.checkerframework:checker-qual": -805622774,
-    "org.checkerframework:checker-qual:jar:sources": 1303991860,
+    "org.checkerframework:checker-qual": -2134103876,
+    "org.checkerframework:checker-qual:jar:sources": 11073524,
     "org.codehaus.jettison:jettison": -1830180768,
     "org.codehaus.jettison:jettison:jar:sources": -1639170826,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
@@ -699,31 +699,31 @@
     },
     "net.sourceforge.pmd:pmd-cli": {
       "shasums": {
-        "jar": "fd304a3a0a6bbc386706d07bc8bcce16211a10bd76c8a51a440a8fc33ff546d3",
-        "sources": "f4e7ac2850ec73f2f1d7eb60da3fcae4ba22b4adbd75303dc160ebc4704db609"
+        "jar": "b246662ee8e8c474cbe3b1d7fd1ba8d6d22f381c284ea20359c2c717394665d0",
+        "sources": "1a495dde7f73231d955b963aa75e017b21789ac0a71978d315f339b9bc1b2cd7"
       },
-      "version": "7.25.0"
+      "version": "7.26.0"
     },
     "net.sourceforge.pmd:pmd-core": {
       "shasums": {
-        "jar": "eb11a97f4bf92a22e7e59151f4d0fb5231424eea22fec7cf525c3ad502854277",
-        "sources": "6b61592a60c9c3292b82702e9b5d87be810d4406b262d053a85367b6dd085194"
+        "jar": "92fe6f87ed747c558599a6601003e525d4eda4801eb7c132686d7d074d5c2b6e",
+        "sources": "9ebb8e16fc43bac857525ff1fe85c4f4381bf83d00110a8906d0585626498e16"
       },
-      "version": "7.25.0"
+      "version": "7.26.0"
     },
     "net.sourceforge.pmd:pmd-designer": {
       "shasums": {
-        "jar": "545a6fc6e6ccd4d1b52a93a69315a708b675014c00881e34245f24a9c68521cf",
-        "sources": "8ec6f541c038d9f7d3f085e3463aceaa4f8389b3ba0d16925024554ab9f4b654"
+        "jar": "4a0e0569413ab62f1c6feef6a6243dcbbeb9f095fd4a990b528d4acfb90641b4",
+        "sources": "f0b7b168ae4acbc816b4ffe886740f1e9c0f38686739c68dedbfd4fe6630f4ed"
       },
-      "version": "7.19.2"
+      "version": "7.19.3"
     },
     "net.sourceforge.pmd:pmd-java": {
       "shasums": {
-        "jar": "2adbdab917049fcc3809bf1ff3bf136d7ba00a30b751d1b1f2e2085ad2fa8b6e",
-        "sources": "f2e5e27d0d479da5209225c375b5e22e3c5265500bac887d9357633f3a7c8232"
+        "jar": "e1afa552042a0ef8d8c85f800a00d70ff233baae928c84111ca6599f44e53db5",
+        "sources": "66a8cacd18e7d44c83faaf7cb342582040fae67e26294cd48400eb6539d47548"
       },
-      "version": "7.25.0"
+      "version": "7.26.0"
     },
     "org.antlr:antlr4": {
       "shasums": {
@@ -818,10 +818,10 @@
     },
     "org.checkerframework:checker-qual": {
       "shasums": {
-        "jar": "a7e08a5400f6e1d97818ed01a8624473fee90b0ded941a44d190f1210c081790",
-        "sources": "25fe5d48d0b230b4c88cce90379fd3d21d6186df98c44db3d315938971a30774"
+        "jar": "30bb4494b13f41cbd1502b094caafeb2b1d1f347311c72e7c74f83160acbdf0e",
+        "sources": "cd0abd821e0672baba7c3f1af7001056afcc79b7d975e774726a395c7ed12908"
       },
-      "version": "4.1.0"
+      "version": "4.2.0"
     },
     "org.codehaus.jettison:jettison": {
       "shasums": {
