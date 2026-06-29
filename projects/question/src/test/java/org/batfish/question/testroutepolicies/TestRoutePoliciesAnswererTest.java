@@ -607,7 +607,7 @@ public class TestRoutePoliciesAnswererTest {
     TableAnswerElement diffAnswer =
         (TableAnswerElement)
             answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
-    assertEquals(diffAnswer.getRows().size(), 0);
+    assertEquals(0, diffAnswer.getRows().size());
   }
 
   @Test
@@ -641,7 +641,7 @@ public class TestRoutePoliciesAnswererTest {
     TableAnswerElement diffAnswer =
         (TableAnswerElement)
             answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
-    assertEquals(diffAnswer.getRows().size(), 0);
+    assertEquals(0, diffAnswer.getRows().size());
   }
 
   @Test

@@ -427,7 +427,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -798,7 +798,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -1075,7 +1075,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -1716,7 +1716,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -1743,7 +1743,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -3108,7 +3108,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -3232,7 +3232,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -3358,7 +3358,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -3594,7 +3594,7 @@ public class SearchRoutePoliciesAnswererTest {
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     // paths that are only taken by non-BGP input routes are ignored
-    assertEquals(answer.getRows().size(), 0);
+    assertEquals(0, answer.getRows().size());
   }
 
   @Test
@@ -3650,7 +3650,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
 
-    assertEquals(answer.getRows().size(), 2);
+    assertEquals(2, answer.getRows().size());
     assertThat(
         answer.getRows().getData(),
         Matchers.containsInAnyOrder(
@@ -3717,7 +3717,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
 
-    assertEquals(answer.getRows().size(), 2);
+    assertEquals(2, answer.getRows().size());
     assertThat(
         answer.getRows().getData(),
         Matchers.containsInAnyOrder(
@@ -3781,7 +3781,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
-    assertEquals(answer.getRows().size(), 2);
+    assertEquals(2, answer.getRows().size());
     assertThat(
         answer.getRows().getData(),
         Matchers.containsInAnyOrder(

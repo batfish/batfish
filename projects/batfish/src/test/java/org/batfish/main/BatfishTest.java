@@ -137,7 +137,7 @@ public class BatfishTest {
     Answer answer = batfish.answer();
     assertThat(answer.getQuestion(), is(nullValue()));
     assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
-    assertEquals(answer.getAnswerElements().size(), 1);
+    assertEquals(1, answer.getAnswerElements().size());
     assertThat(
         answer.getAnswerElements().get(0).toString(), containsString("Could not parse question"));
   }

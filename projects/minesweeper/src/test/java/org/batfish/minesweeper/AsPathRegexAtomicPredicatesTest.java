@@ -60,7 +60,7 @@ public class AsPathRegexAtomicPredicatesTest {
     AsPathRegexAtomicPredicates oneAP = new AsPathRegexAtomicPredicates(ImmutableSet.of());
     oneAP.prependAPs(ImmutableList.of(10L, 20L));
     Map<Integer, Automaton> automataMap = oneAP.getAtomicPredicateAutomata();
-    assertEquals(automataMap.keySet().size(), 1);
+    assertEquals(1, automataMap.keySet().size());
     assertEquals(
         automataMap.get(0),
         new RegExp("^^10 20$")
@@ -80,7 +80,7 @@ public class AsPathRegexAtomicPredicatesTest {
     AsPathRegexAtomicPredicates copy2 = new AsPathRegexAtomicPredicates(twoAPs);
     copy2.prependAPs(ImmutableList.of(10L, 20L));
     Map<Integer, Automaton> copy2AutomataMap = copy2.getAtomicPredicateAutomata();
-    assertEquals(copy2AutomataMap.keySet().size(), 2);
+    assertEquals(2, copy2AutomataMap.keySet().size());
     assertThat(
         copy2AutomataMap,
         allOf(
@@ -107,7 +107,7 @@ public class AsPathRegexAtomicPredicatesTest {
             ImmutableList.of(
                 new RegexConstraint("^40 ", false), new RegexConstraint("^50 ", false))));
     Map<Integer, Automaton> copy2AutomataMap = copy2.getAtomicPredicateAutomata();
-    assertEquals(copy2AutomataMap.keySet().size(), 2);
+    assertEquals(2, copy2AutomataMap.keySet().size());
     assertThat(
         copy2AutomataMap,
         allOf(
@@ -124,7 +124,7 @@ public class AsPathRegexAtomicPredicatesTest {
             ImmutableList.of(
                 new RegexConstraint("^40 ", true), new RegexConstraint("^50 ", true))));
     Map<Integer, Automaton> copy3AutomataMap = copy3.getAtomicPredicateAutomata();
-    assertEquals(copy3AutomataMap.keySet().size(), 2);
+    assertEquals(2, copy3AutomataMap.keySet().size());
     assertThat(
         copy3AutomataMap,
         allOf(

@@ -29,7 +29,7 @@ public class RegexAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs =
         new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
 
-    assertEquals(commAPs.getNumAtomicPredicates(), 6);
+    assertEquals(6, commAPs.getNumAtomicPredicates());
 
     Automaton a1 = new RegExp("^20:40$").toAutomaton();
     Automaton a2 = new RegExp("^21:40$").toAutomaton();
@@ -37,14 +37,14 @@ public class RegexAtomicPredicatesTest {
     Automaton a4 = new RegExp("^21:4[1-3]$").toAutomaton();
     Automaton a5 = new RegExp("^22:22$").toAutomaton();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 6);
+    assertEquals(6, commAPs.getAtomicPredicateAutomata().size());
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a2));
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a3));
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a4));
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a5));
 
-    assertEquals(commAPs.getRegexAtomicPredicates().size(), 5);
+    assertEquals(5, commAPs.getRegexAtomicPredicates().size());
     assertThat(
         commAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(CommunityVar.from("^2[0-3]:40$")), iterableWithSize(3)));
@@ -77,14 +77,14 @@ public class RegexAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs =
         new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
 
-    assertEquals(commAPs.getNumAtomicPredicates(), 2);
+    assertEquals(2, commAPs.getNumAtomicPredicates());
 
     Automaton a1 = new RegExp("^12345:67$").toAutomaton();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 2);
+    assertEquals(2, commAPs.getAtomicPredicateAutomata().size());
     assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
 
-    assertEquals(commAPs.getRegexAtomicPredicates().size(), 3);
+    assertEquals(3, commAPs.getRegexAtomicPredicates().size());
     assertThat(
         commAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(CommunityVar.from("12345:67$")), iterableWithSize(1)));
@@ -107,7 +107,7 @@ public class RegexAtomicPredicatesTest {
     RegexAtomicPredicates<SymbolicAsPathRegex> asPathAPs =
         new RegexAtomicPredicates<>(asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
 
-    assertEquals(asPathAPs.getNumAtomicPredicates(), 5);
+    assertEquals(5, asPathAPs.getNumAtomicPredicates());
 
     Automaton a1 = new RegExp("^^$").toAutomaton();
     // starts with 5 and ends with 4
@@ -127,13 +127,13 @@ public class RegexAtomicPredicatesTest {
         new RegExp("^^5( " + AS_NUM_REGEX + ")* (([0-3]|[5-9]|[1-9][0-9]+)&" + AS_NUM_REGEX + ")$")
             .toAutomaton();
 
-    assertEquals(asPathAPs.getAtomicPredicateAutomata().size(), 5);
+    assertEquals(5, asPathAPs.getAtomicPredicateAutomata().size());
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a2));
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a3));
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a4));
 
-    assertEquals(asPathAPs.getRegexAtomicPredicates().size(), 4);
+    assertEquals(4, asPathAPs.getRegexAtomicPredicates().size());
     assertThat(
         asPathAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(new SymbolicAsPathRegex("^$")), iterableWithSize(1)));
@@ -157,7 +157,7 @@ public class RegexAtomicPredicatesTest {
     RegexAtomicPredicates<SymbolicAsPathRegex> asPathAPs =
         new RegexAtomicPredicates<>(asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
 
-    assertEquals(asPathAPs.getNumAtomicPredicates(), 3);
+    assertEquals(3, asPathAPs.getNumAtomicPredicates());
 
     // only 10 3s
     Automaton a1 = new RegExp("^^3333333333$").toAutomaton();
@@ -166,11 +166,11 @@ public class RegexAtomicPredicatesTest {
     Automaton a2 =
         new RegExp("^^(" + AS_NUM_REGEX + " )*" + AS_NUM_REGEX + " 3333333333$").toAutomaton();
 
-    assertEquals(asPathAPs.getAtomicPredicateAutomata().size(), 3);
+    assertEquals(3, asPathAPs.getAtomicPredicateAutomata().size());
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a2));
 
-    assertEquals(asPathAPs.getRegexAtomicPredicates().size(), 3);
+    assertEquals(3, asPathAPs.getRegexAtomicPredicates().size());
     assertThat(
         asPathAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(new SymbolicAsPathRegex("3333333333$")), iterableWithSize(2)));

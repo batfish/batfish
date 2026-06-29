@@ -94,12 +94,12 @@ public class ConfigAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
+    assertEquals(1, commAPs.getAtomicPredicateAutomata().size());
     assertThat(
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.ALL_STANDARD_COMMUNITIES.toAutomaton()));
 
-    assertEquals(asAPs.getAtomicPredicateAutomata().size(), 1);
+    assertEquals(1, asAPs.getAtomicPredicateAutomata().size());
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
@@ -114,14 +114,14 @@ public class ConfigAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
+    assertEquals(1, commAPs.getAtomicPredicateAutomata().size());
     assertThat(
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.ALL_STANDARD_COMMUNITIES.toAutomaton()));
 
-    assertEquals(cap.getNonStandardCommunityLiterals().size(), 0);
+    assertEquals(0, cap.getNonStandardCommunityLiterals().size());
 
-    assertEquals(asAPs.getAtomicPredicateAutomata().size(), 1);
+    assertEquals(1, asAPs.getAtomicPredicateAutomata().size());
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
@@ -140,14 +140,14 @@ public class ConfigAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 2);
+    assertEquals(2, commAPs.getAtomicPredicateAutomata().size());
     assertThat(
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.from(StandardCommunity.parse("30:40")).toAutomaton()));
 
-    assertEquals(cap.getNonStandardCommunityLiterals().size(), 0);
+    assertEquals(0, cap.getNonStandardCommunityLiterals().size());
 
-    assertEquals(asAPs.getAtomicPredicateAutomata().size(), 2);
+    assertEquals(2, asAPs.getAtomicPredicateAutomata().size());
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(new SymbolicAsPathRegex("^$").toAutomaton()));
@@ -166,17 +166,17 @@ public class ConfigAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
-    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
+    assertEquals(1, commAPs.getAtomicPredicateAutomata().size());
     assertThat(
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.ALL_STANDARD_COMMUNITIES.toAutomaton()));
 
-    assertEquals(cap.getNonStandardCommunityLiterals().size(), 1);
+    assertEquals(1, cap.getNonStandardCommunityLiterals().size());
     assertThat(
         cap.getNonStandardCommunityLiterals().values(),
         hasItem(CommunityVar.from(ExtendedCommunity.parse("0:30:40"))));
 
-    assertEquals(asAPs.getAtomicPredicateAutomata().size(), 2);
+    assertEquals(2, asAPs.getAtomicPredicateAutomata().size());
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(new SymbolicAsPathRegex("^$").toAutomaton()));

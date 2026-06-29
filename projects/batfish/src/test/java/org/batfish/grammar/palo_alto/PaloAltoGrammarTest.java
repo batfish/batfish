@@ -2817,7 +2817,7 @@ public final class PaloAltoGrammarTest {
     StaticRoute sr = vc.getVirtualRouters().get(vrName).getStaticRoutes().get("ROUTE2");
 
     assertEquals(sr.getDestination(), Prefix.ZERO);
-    assertEquals(sr.getNextVr(), "fakevr");
+    assertEquals("fakevr", sr.getNextVr());
   }
 
   @Test

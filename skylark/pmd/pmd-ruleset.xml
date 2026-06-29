@@ -76,6 +76,13 @@
         </properties>
     </rule>
 
+    <!-- The codebase uses JUnit 4, not the rule's default of JUnit Jupiter. -->
+    <rule ref="category/java/errorprone.xml/WrongTestAnnotation">
+        <properties>
+            <property name="testFrameworks" value="jUnit4"/>
+        </properties>
+    </rule>
+
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">
         <properties>
             <!-- Ignore @JsonProperty methods -->

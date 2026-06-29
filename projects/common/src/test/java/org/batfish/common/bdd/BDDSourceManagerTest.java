@@ -222,6 +222,6 @@ public class BDDSourceManagerTest {
     assertFalse(mgr.allSourcesTracked());
     assertThat(
         mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
-    assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 1);
+    assertEquals(1, mgr.getSourceBDDs().values().stream().distinct().count());
   }
 }
