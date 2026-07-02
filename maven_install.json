@@ -48,9 +48,9 @@
     "org.apache.commons:commons-text": -1886494041,
     "org.apache.httpcomponents:httpclient": 1643860045,
     "org.apache.httpcomponents:httpcore": -1696303652,
-    "org.apache.logging.log4j:log4j-api": 802756642,
-    "org.apache.logging.log4j:log4j-core": 2067797603,
-    "org.apache.logging.log4j:log4j-slf4j-impl": -878637298,
+    "org.apache.logging.log4j:log4j-api": -1004697821,
+    "org.apache.logging.log4j:log4j-core": 260343140,
+    "org.apache.logging.log4j:log4j-slf4j-impl": 1608875535,
     "org.codehaus.jettison:jettison": -1598601714,
     "org.glassfish.grizzly:grizzly-framework": 1869934097,
     "org.glassfish.grizzly:grizzly-http-server": -292995845,
@@ -200,12 +200,12 @@
     "org.apache.httpcomponents:httpclient:jar:sources": -779528763,
     "org.apache.httpcomponents:httpcore": 67453319,
     "org.apache.httpcomponents:httpcore:jar:sources": 2134002822,
-    "org.apache.logging.log4j:log4j-api": -79106511,
-    "org.apache.logging.log4j:log4j-api:jar:sources": 146262782,
-    "org.apache.logging.log4j:log4j-core": -1819849470,
-    "org.apache.logging.log4j:log4j-core:jar:sources": 1398564243,
-    "org.apache.logging.log4j:log4j-slf4j-impl": 555486058,
-    "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources": -430518995,
+    "org.apache.logging.log4j:log4j-api": -1175312709,
+    "org.apache.logging.log4j:log4j-api:jar:sources": 682344680,
+    "org.apache.logging.log4j:log4j-core": -771291131,
+    "org.apache.logging.log4j:log4j-core:jar:sources": -625900064,
+    "org.apache.logging.log4j:log4j-slf4j-impl": 731614719,
+    "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources": 670996594,
     "org.apfloat:apfloat": -1689392346,
     "org.apfloat:apfloat:jar:sources": -1889003084,
     "org.apiguardian:apiguardian-api": 1279798469,
@@ -783,24 +783,24 @@
     },
     "org.apache.logging.log4j:log4j-api": {
       "shasums": {
-        "jar": "820de7bbaf430eaf2e3e5ccb92f23e2085797c5ac4d4f7fc6c8b660fbefa1dbc",
-        "sources": "1d99b59e4eb2b28d88ac61928f7d0a1baa259bb0590ba1de1f33012b47e3ebbb"
+        "jar": "f1810a4704ccce019d02bba029dc02a4f2ac0c997f647b465e7d409c1927f822",
+        "sources": "d136436fb50076930f99aa5f45a83c661f71b84c4bb99d08ba3850ff794281bd"
       },
-      "version": "2.26.0"
+      "version": "2.26.1"
     },
     "org.apache.logging.log4j:log4j-core": {
       "shasums": {
-        "jar": "406bb3132c47a5d322e5c571feb0787ca84496469f346eb51f1ef2ee45499902",
-        "sources": "03358928efb94f10484d8ec3f28ad8f4ff3226de9b7c606fcb1ebdb24b9fd0dd"
+        "jar": "2ec8c3bf5a6d7c89be8620116a2fc973f7dda1ad0261ad393c4d4726edfd3dcb",
+        "sources": "b17be9b1618ecf0f9792d5eebcf224815a4f209cfa6d0bee1fb81a20dd50f539"
       },
-      "version": "2.26.0"
+      "version": "2.26.1"
     },
     "org.apache.logging.log4j:log4j-slf4j-impl": {
       "shasums": {
-        "jar": "6eab649c5f854ca91d857e3746b495aede27a21bb08c9f7cb172dce29612849e",
-        "sources": "ae90260999534b79fc2aa8e551784bcd0dd69254a5099b6bdad8676429e4f3c1"
+        "jar": "1afc7b00db35d6bdc309b35cee01dd114b292c2d903975f2987da870b24cea6e",
+        "sources": "db8d6042e0527ee3ec1262b6c031d55fc0e0fb3041c249d1070f31b48cb71b94"
       },
-      "version": "2.26.0"
+      "version": "2.26.1"
     },
     "org.apfloat:apfloat": {
       "shasums": {
