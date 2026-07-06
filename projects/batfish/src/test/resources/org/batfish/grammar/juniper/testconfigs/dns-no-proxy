@@ -1,0 +1,3 @@
+#
+set system host-name dns-no-proxy
+set system services dns forwarders 8.8.8.8

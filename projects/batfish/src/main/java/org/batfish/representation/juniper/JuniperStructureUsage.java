@@ -192,6 +192,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   TACPLUS_SERVER_ROUTING_INSTANCE("tacplus-server routing-instance"),
   RSTP_INTERFACE("rstp interface"),
   STP_INTERFACE("stp interface"),
+  SYSTEM_SERVICES_DNS_PROXY_INTERFACE("system services dns dns-proxy interface"),
   VLAN_INTERFACE("vlan interface"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
   VSTP_INTERFACE("vstp interface"),

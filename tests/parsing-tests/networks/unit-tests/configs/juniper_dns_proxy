@@ -1,0 +1,21 @@
+#
+#
+set system host-name juniper_dns_proxy
+#
+set interfaces ge-0/0/0 unit 0
+set interfaces ge-0/0/1 unit 0
+#
+#
+set system services dns dns-proxy interface ge-0/0/0.0
+set system services dns dns-proxy interface ge-0/0/1.0
+set system services dns dns-proxy cache foo inet 9.9.9.9
+set system services dns dns-proxy default-domain example.com forwarders 8.8.8.8
+set system services dns dns-proxy propogate-setting enable
+set system services dns dns-proxy view v1 match-clients 10.0.0.0/8
+#
+#
+set system services dns dnssec disable
+set system services dns forwarders 8.8.4.4
+set system services dns max-cache-ttl 3600
+set system services dns max-ncache-ttl 600
+set system services dns traceoptions flag all

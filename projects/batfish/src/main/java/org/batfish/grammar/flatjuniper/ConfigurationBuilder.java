@@ -216,6 +216,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.STP_INTER
 import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HOST_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SYSTEM_SERVICES_DNS_PROXY_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
@@ -1003,6 +1004,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_ftpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_sshContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_telnetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syservddp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
@@ -3996,6 +3998,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
     _currentLogicalSystem.getOrInitSwitchOptions().setVtepSourceInterface(ifaceName);
+  }
+
+  @Override
+  public void exitSyservddp_interface(Syservddp_interfaceContext ctx) {
+    String ifaceName = getInterfaceFullName(ctx.iface);
+    _currentLogicalSystem.setDnsProxyEnabled(true);
+    _currentLogicalSystem.getDnsProxyInterfaces().add(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, SYSTEM_SERVICES_DNS_PROXY_INTERFACE, getLine(ctx.iface.getStart()));
   }
 
   @Override

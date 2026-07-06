@@ -254,11 +254,56 @@ sy_services
 :
    SERVICES
    (
-      syserv_ftp
+      syserv_dns
+      | syserv_ftp
       | syserv_ssh
       | syserv_telnet
       | syserv_null
    )
+;
+
+syserv_dns
+:
+   DNS
+   (
+      syservd_dns_proxy
+      | syservd_null
+   )
+;
+
+syservd_dns_proxy
+:
+   DNS_PROXY
+   (
+      syservddp_interface
+      | syservddp_null
+   )
+;
+
+syservd_null
+:
+   (
+      DNSSEC
+      | FORWARDERS
+      | MAX_CACHE_TTL
+      | MAX_NCACHE_TTL
+      | TRACEOPTIONS
+   ) null_filler
+;
+
+syservddp_interface
+:
+   INTERFACE iface = interface_id
+;
+
+syservddp_null
+:
+   (
+      CACHE
+      | DEFAULT_DOMAIN
+      | PROPOGATE_SETTING
+      | VIEW
+   ) null_filler
 ;
 
 syserv_ftp
@@ -307,7 +352,6 @@ syserv_null
       DATABASE_REPLICATION
       | DHCP
       | DHCP_LOCAL_SERVER
-      | DNS
       | DTCP_ONLY
       | DYNAMIC_DNS
       | EXTENSIBLE_SUBSCRIBER

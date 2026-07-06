@@ -192,6 +192,7 @@
         "configs/juniper_bgp_disable" : "FLAT_JUNIPER",
         "configs/juniper_bgp_enforce_fist_as" : "FLAT_JUNIPER",
         "configs/juniper_bgp_remove_private_as" : "FLAT_JUNIPER",
+        "configs/juniper_dns_proxy" : "FLAT_JUNIPER",
         "configs/juniper_extended_community" : "FLAT_JUNIPER",
         "configs/juniper_firewall" : "FLAT_JUNIPER",
         "configs/juniper_forwarding_options" : "FLAT_JUNIPER",
@@ -837,6 +838,9 @@
         "juniper_bgp_remove_private_as" : [
           "configs/juniper_bgp_remove_private_as"
         ],
+        "juniper_dns_proxy" : [
+          "configs/juniper_dns_proxy"
+        ],
         "juniper_extended_community" : [
           "configs/juniper_extended_community"
         ],
@@ -1283,6 +1287,7 @@
         "configs/juniper_bgp_disable" : "PASSED",
         "configs/juniper_bgp_enforce_fist_as" : "PASSED",
         "configs/juniper_bgp_remove_private_as" : "PASSED",
+        "configs/juniper_dns_proxy" : "PASSED",
         "configs/juniper_extended_community" : "PASSED",
         "configs/juniper_firewall" : "PASSED",
         "configs/juniper_forwarding_options" : "PASSED",
@@ -51557,6 +51562,253 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_dns_proxy" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              name = (junos_name*",
+            "                NAME:'juniper_dns_proxy'  <== mode:M_Name))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_interfaces*",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id*",
+            "                INTERFACE_ID:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = (dec*",
+            "                  UINT8:'0')",
+            "                (i_common*",
+            "                  (apply*))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_interfaces*",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id*",
+            "                INTERFACE_ID:'ge-0/0/1'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = (dec*",
+            "                  UINT8:'0')",
+            "                (i_common*",
+            "                  (apply*))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_interface",
+            "                    INTERFACE:'interface'",
+            "                    iface = (interface_id*",
+            "                      INTERFACE_ID:'ge-0/0/0.0'  <== mode:M_Interface)))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_interface",
+            "                    INTERFACE:'interface'",
+            "                    iface = (interface_id*",
+            "                      INTERFACE_ID:'ge-0/0/1.0'  <== mode:M_Interface)))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_null*",
+            "                    CACHE:'cache'",
+            "                    (null_filler*",
+            "                      UNRECOGNIZED_WORD:'foo'",
+            "                      INET:'inet'",
+            "                      IP_ADDRESS:'9.9.9.9')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_null*",
+            "                    DEFAULT_DOMAIN:'default-domain'",
+            "                    (null_filler*",
+            "                      UNRECOGNIZED_WORD:'example.com'",
+            "                      FORWARDERS:'forwarders'",
+            "                      IP_ADDRESS:'8.8.8.8')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_null*",
+            "                    PROPOGATE_SETTING:'propogate-setting'",
+            "                    (null_filler*",
+            "                      ENABLE:'enable')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_dns_proxy*",
+            "                  DNS_PROXY:'dns-proxy'",
+            "                  (syservddp_null*",
+            "                    VIEW:'view'",
+            "                    (null_filler*",
+            "                      UNRECOGNIZED_WORD:'v1'",
+            "                      UNRECOGNIZED_WORD:'match-clients'",
+            "                      IP_PREFIX:'10.0.0.0/8')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_null*",
+            "                  DNSSEC:'dnssec'",
+            "                  (null_filler*",
+            "                    DISABLE:'disable'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_null*",
+            "                  FORWARDERS:'forwarders'",
+            "                  (null_filler*",
+            "                    IP_ADDRESS:'8.8.4.4'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_null*",
+            "                  MAX_CACHE_TTL:'max-cache-ttl'",
+            "                  (null_filler*",
+            "                    UINT16:'3600'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_null*",
+            "                  MAX_NCACHE_TTL:'max-ncache-ttl'",
+            "                  (null_filler*",
+            "                    UINT16:'600'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_services*",
+            "              SERVICES:'services'",
+            "              (syserv_dns*",
+            "                DNS:'dns'",
+            "                (syservd_null*",
+            "                  TRACEOPTIONS:'traceoptions'",
+            "                  (null_filler*",
+            "                    UNRECOGNIZED_WORD:'flag'",
+            "                    ALL:'all'))))))))",
+            "    NEWLINE:'\\n\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_extended_community" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -72192,6 +72444,7 @@
         "juniper_bgp" : "WARNINGS",
         "juniper_bgp_authentication" : "WARNINGS",
         "juniper_bgp_remove_private_as" : "PASSED",
+        "juniper_dns_proxy" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
@@ -75479,6 +75732,32 @@
             }
           }
         },
+        "configs/juniper_dns_proxy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : "5",
+              "numReferrers" : 2
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : "6",
+              "numReferrers" : 2
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_extended_community" : {
           "community" : {
             "COMM_ALL" : {
@@ -77878,6 +78157,9 @@
         ],
         "configs/juniper_bgp_remove_private_as" : [
           "juniper_bgp_remove_private_as"
+        ],
+        "configs/juniper_dns_proxy" : [
+          "juniper_dns_proxy"
         ],
         "configs/juniper_extended_community" : [
           "juniper_extended_community"
@@ -82803,6 +83085,43 @@
             }
           }
         },
+        "configs/juniper_dns_proxy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                5
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                5
+              ],
+              "system services dns dns-proxy interface" : [
+                9
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                6
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "interface" : [
+                6
+              ],
+              "system services dns dns-proxy interface" : [
+                10
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
         "configs/juniper_extended_community" : {
           "routing-instance" : {
             "master" : {
@@ -87318,6 +87637,7 @@
         "configs/juniper_bgp_disable" : { },
         "configs/juniper_bgp_enforce_fist_as" : { },
         "configs/juniper_bgp_remove_private_as" : { },
+        "configs/juniper_dns_proxy" : { },
         "configs/juniper_extended_community" : { },
         "configs/juniper_firewall" : {
           "routing-instance" : {
@@ -88562,6 +88882,7 @@
         "configs/juniper_bgp_disable" : "PASSED",
         "configs/juniper_bgp_enforce_fist_as" : "PASSED",
         "configs/juniper_bgp_remove_private_as" : "PASSED",
+        "configs/juniper_dns_proxy" : "PASSED",
         "configs/juniper_extended_community" : "PASSED",
         "configs/juniper_firewall" : "PASSED",
         "configs/juniper_forwarding_options" : "PASSED",

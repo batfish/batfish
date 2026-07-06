@@ -372,6 +372,8 @@ BUNDLE: 'bundle';
 BURST_SIZE_LIMIT: 'burst-size-limit' -> pushMode(M_Bandwidth);
 C: 'c';
 
+CACHE: 'cache';
+
 CALIPSO_OPTION: 'CALIPSO-option';
 
 CATEGORIES: 'categories';
@@ -524,6 +526,8 @@ DEFAULT_ACTION: 'default-action';
 
 DEFAULT_ADDRESS_SELECTION: 'default-address-selection';
 
+DEFAULT_DOMAIN: 'default-domain';
+
 DEFAULT_GATEWAY: 'default-gateway';
 
 DEFAULT_LSA: 'default-lsa';
@@ -624,6 +628,10 @@ DISABLE_4BYTE_AS: 'disable-4byte-as';
 DISCARD: 'discard';
 
 DNS: 'dns';
+
+DNS_PROXY: 'dns-proxy';
+
+DNSSEC: 'dnssec';
 
 DOMAIN: 'domain';
 
@@ -831,6 +839,8 @@ FORCE_UP: 'force-up';
 FOREVER: 'forever';
 
 FORWARD_SNOOPED_CLIENTS: 'forward-snooped-clients';
+
+FORWARDERS: 'forwarders';
 
 FORWARDING: 'forwarding';
 
@@ -1866,9 +1876,13 @@ MASTER_ONLY: 'master-only';
 
 MATCH: 'match';
 
+MAX_CACHE_TTL: 'max-cache-ttl';
+
 MAX_CONFIGURATIONS_ON_FLASH: 'max-configurations-on-flash';
 
 MAX_CONFIGURATION_ROLLBACKS: 'max-configuration-rollbacks';
+
+MAX_NCACHE_TTL: 'max-ncache-ttl';
 
 MAX_PRE_AUTHENTICATION_PACKETS: 'max-pre-authentication-packets';
 
@@ -2364,6 +2378,8 @@ PROBE_IDLE_TUNNEL: 'probe-idle-tunnel';
 PROCESSES: 'processes';
 PROFILE1: 'profile1';
 PROFILE2: 'profile2';
+
+PROPOGATE_SETTING: 'propogate-setting';
 
 PROPOSAL: 'proposal' -> pushMode(M_Name);
 
