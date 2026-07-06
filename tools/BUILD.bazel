@@ -47,6 +47,7 @@ java_binary(
 py_binary(
     name = "generate_pan_apps",
     srcs = ["generate_pan_apps.py"],
+    legacy_create_init = 0,
     deps = [
         requirement("xmltodict"),
     ],
