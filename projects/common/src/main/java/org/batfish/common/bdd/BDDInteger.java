@@ -239,9 +239,22 @@ public abstract class BDDInteger implements Serializable {
    * must have the same width.
    */
   public BDD eq(BDDInteger other) {
+    return firstBitsEqual(other, _bitvec.length);
+  }
+
+  /**
+   * The set of assignments under which this integer and {@code other} agree on their first {@code
+   * numBits} (most-significant) bits, ignoring the lower bits. For an IP-valued integer this is
+   * "the two addresses are in the same {@code /numBits} subnet". {@code numBits == } the width
+   * reduces to {@link #eq}; {@code numBits == 0} is unconstrained ({@code one}). Both integers must
+   * have the same width.
+   */
+  public BDD firstBitsEqual(BDDInteger other, int numBits) {
     checkArgument(_bitvec.length == other._bitvec.length, "operands must have equal width");
+    checkArgument(numBits >= 0 && numBits <= _bitvec.length, "numBits out of range: %s", numBits);
+    // _bitvec is most-significant-bit first, so the first numBits entries are the high bits.
     BDD acc = _factory.one();
-    for (int i = 0; i < _bitvec.length; i++) {
+    for (int i = 0; i < numBits; i++) {
       // bit-i equal: biimp is the xnor, computed directly and preserving both operands.
       acc = acc.andWith(_bitvec[i].biimp(other._bitvec[i]));
     }

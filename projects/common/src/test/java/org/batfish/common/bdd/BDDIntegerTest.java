@@ -128,6 +128,31 @@ public class BDDIntegerTest {
   }
 
   @Test
+  public void testFirstBitsEqual() {
+    // Two independent 4-bit integers; firstBitsEqual(n) holds iff the top n (most-significant) bits
+    // match. Exhaustive over every (a, b) and every n in [0, 4].
+    BDDFactory factory = BDDUtils.bddFactory(8);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 4, 0);
+    ImmutableBDDInteger y = ImmutableBDDInteger.makeFromIndex(factory, 4, 4);
+    for (int a = 0; a < 16; a++) {
+      for (int b = 0; b < 16; b++) {
+        BDD assignment = x.value(a).and(y.value(b));
+        for (int n = 0; n <= 4; n++) {
+          // The top n of 4 bits are the value shifted right by (4 - n).
+          boolean topNMatch = (a >> (4 - n)) == (b >> (4 - n));
+          assertThat(
+              "x=" + a + " firstBits" + n + " y=" + b,
+              x.firstBitsEqual(y, n).restrict(assignment).isOne(),
+              equalTo(topNMatch));
+        }
+      }
+    }
+    // n == width reduces to eq; n == 0 is unconstrained.
+    assertThat(x.firstBitsEqual(y, 4), equalTo(x.eq(y)));
+    assertThat(x.firstBitsEqual(y, 0).isOne(), equalTo(true));
+  }
+
+  @Test
   public void testSymbolicComparisonsAgainstConstantForm() {
     // For a fixed constant c, comparing the symbolic var against a constant-valued BDDInteger must
     // agree with the existing constant-comparison methods.
