@@ -65,5 +65,6 @@ filegroup(
 py_binary(
     name = "analyze_profile",
     srcs = ["analyze_profile.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
 )
