@@ -353,11 +353,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     assert idx != 0; // unnecessary, but needed to avoid unused comment
   }
 
-  /*
-   * Create a BDDRecord from another. Because BDDs are immutable, there is no need for a deep
-   * copy of any single BDD -- but every field must still get its own independently owned
-   * reference, matching MutableBDDInteger's own per-bit copy.
-   */
+  /** A copy constructor. Every field of the copy is independently owned. */
   public BDDRoute(BDDRoute other) {
     _factory = other._factory;
 
