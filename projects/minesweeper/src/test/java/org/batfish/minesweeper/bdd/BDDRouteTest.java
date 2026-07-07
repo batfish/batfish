@@ -3,12 +3,15 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
+import java.util.function.Consumer;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -18,6 +21,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.minesweeper.OspfType;
+import org.batfish.minesweeper.bdd.BDDRoute.Attribute;
+import org.batfish.minesweeper.bdd.BDDRoute.Field;
 import org.batfish.minesweeper.bdd.BDDRoute.NextHopType;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.junit.Test;
@@ -419,5 +424,176 @@ public class BDDRouteTest {
 
     copy.free();
     original.free();
+  }
+
+  @Test
+  public void testNegativePrefixStartIdxRejected() {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new BDDRoute(
+                factory,
+                3,
+                4,
+                5,
+                6,
+                7,
+                2,
+                ImmutableList.of(),
+                /* prefixStartIdx= */ -1,
+                /* startIdx= */ 38));
+  }
+
+  @Test
+  public void testStartIdxBeforeEndOfPrefixBlockRejected() {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new BDDRoute(
+                factory,
+                3,
+                4,
+                5,
+                6,
+                7,
+                2,
+                ImmutableList.of(),
+                /* prefixStartIdx= */ 0,
+                /* startIdx= */ 37));
+  }
+
+  @Test
+  public void testEqualsRelationDoesNotLeak() {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    BDDRoute route = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    BDDRoute other = new BDDRoute(route);
+    long baseline = factory.numOutstandingBDDs();
+
+    BDD relation = route.equalsRelation(other);
+    relation.free();
+
+    assertEquals(baseline, factory.numOutstandingBDDs());
+  }
+
+  @Test
+  public void testEqualsRelationOnDoesNotLeak() {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    BDDRoute route = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    BDDRoute other = new BDDRoute(route);
+    long baseline = factory.numOutstandingBDDs();
+
+    BDD relation =
+        route.equalsRelationOn(
+            other, ImmutableSet.of(BDDRoute.Attribute.TUNNEL_ENCAPSULATION_ATTRIBUTE));
+    relation.free();
+
+    assertEquals(baseline, factory.numOutstandingBDDs());
+  }
+
+  /**
+   * For each scalar {@link Attribute}, mutates exactly that attribute on a copy of the identity
+   * route and checks {@link BDDRoute#touchedFields}/{@link BDDRoute#fieldSupport}/{@link
+   * BDDRoute#augmentPairingOn}/{@link Field#eq} all agree it -- and only it -- was touched.
+   */
+  @Test
+  public void testTouchedFieldsAndFieldOperationsPerAttribute() {
+    BDDFactory factory = JFactory.init(1000, 1000);
+    BDDRoute identity =
+        new BDDRoute(
+            factory,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            ImmutableList.of(new TunnelEncapsulationAttribute(Ip.create(1))));
+
+    ImmutableList<Consumer<BDDRoute>> mutators =
+        ImmutableList.of(
+            x -> x.getAdminDist().setValue(1),
+            x -> x.getAsPathRegexAtomicPredicates().setValue(1),
+            x -> x.getClusterListLength().setValue(3),
+            x -> x.getLocalPref().setValue(100),
+            x -> x.getMed().setValue(50),
+            x -> x.getNextHop().setValue(12345),
+            x -> x.getNextHopInterfaces().setValue(1),
+            x -> x.getOriginType().setValue(OriginType.IGP),
+            x -> x.getOspfMetric().setValue(OspfType.E1),
+            x -> x.getPeerAddress().setValue(1),
+            x -> x.getProtocolHistory().setValue(RoutingProtocol.BGP),
+            x -> x.getSourceVrfs().setValue(1),
+            x -> x.getTag().setValue(300),
+            x ->
+                x.getTunnelEncapsulationAttribute()
+                    .setValue(Value.literal(new TunnelEncapsulationAttribute(Ip.create(1)))),
+            x -> x.getWeight().setValue(200));
+
+    for (Consumer<BDDRoute> mutator : mutators) {
+      BDDRoute mutated = new BDDRoute(identity);
+      mutator.accept(mutated);
+
+      assertEquals(1, mutated.touchedFields(identity).size());
+      Field touched = mutated.touchedFields(identity).iterator().next();
+
+      // identity's field is a free variable, so its support/fieldSupportOn are nonzero (mutated's
+      // field is now a fixed value, so its own support would trivially be one()).
+      BDD identitySupport = identity.fieldSupport(touched);
+      assertEquals(identitySupport, identity.fieldSupportOn(ImmutableSet.of(touched)));
+      assertThat(identitySupport.isOne(), equalTo(false));
+
+      // augmentPairingOn(identity, touched, ...), applied to just the touched field, must agree
+      // with the full-route augmentPairing on that same field's variables -- checked by composing
+      // the same probe (identity's touched-field support) through both.
+      BDDPairing pairingOnField = factory.makePair();
+      mutated.augmentPairingOn(identity, touched, pairingOnField);
+      BDDPairing fullPairing = factory.makePair();
+      mutated.augmentPairing(identity, fullPairing);
+      assertEquals(
+          identitySupport.veccompose(pairingOnField), identitySupport.veccompose(fullPairing));
+
+      // mutated's field is a fixed value but identity's is a free variable, so eq between them is
+      // not the tautology it is between a route and itself.
+      assertThat(touched.eq(mutated, identity).isOne(), equalTo(false));
+      assertEquals(factory.one(), touched.eq(mutated, mutated));
+    }
+  }
+
+  @Test
+  public void testTouchedFieldsAndFieldOperationsPerCommunityAndTrack() {
+    BDDFactory factory = JFactory.init(1000, 1000);
+    BDDRoute identity = new BDDRoute(factory, 3, 2, 2, 2, 2, 3, ImmutableList.of());
+
+    BDDRoute community = new BDDRoute(identity);
+    community.getCommunityAtomicPredicates()[1] = factory.one();
+    assertEquals(ImmutableSet.of(BDDRoute.community(1)), community.touchedFields(identity));
+
+    // identity's cell is a free variable, so its support/fieldSupportOn are nonzero (community's
+    // cell is now the constant true, so its own support would trivially be one()).
+    BDD identityCommunitySupport = identity.fieldSupport(BDDRoute.community(1));
+    assertEquals(
+        identityCommunitySupport, identity.fieldSupportOn(ImmutableSet.of(BDDRoute.community(1))));
+    assertThat(identityCommunitySupport.isOne(), equalTo(false));
+    assertThat(BDDRoute.community(1).eq(community, identity).isOne(), equalTo(false));
+    assertEquals(factory.one(), BDDRoute.community(1).eq(community, community));
+
+    BDDRoute track = new BDDRoute(identity);
+    track.getTracks()[2] = factory.one();
+    assertEquals(ImmutableSet.of(BDDRoute.track(2)), track.touchedFields(identity));
+
+    BDD identityTrackSupport = identity.fieldSupport(BDDRoute.track(2));
+    assertEquals(identityTrackSupport, identity.fieldSupportOn(ImmutableSet.of(BDDRoute.track(2))));
+    assertThat(identityTrackSupport.isOne(), equalTo(false));
+    assertThat(BDDRoute.track(2).eq(track, identity).isOne(), equalTo(false));
+    assertEquals(factory.one(), BDDRoute.track(2).eq(track, track));
+  }
+
+  @Test
+  public void testTouchedFieldsIsEmptyForIdentity() {
+    BDDFactory factory = JFactory.init(1000, 1000);
+    BDDRoute identity = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    assertEquals(ImmutableSet.of(), identity.touchedFields(identity));
   }
 }

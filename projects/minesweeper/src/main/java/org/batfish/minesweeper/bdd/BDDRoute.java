@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.minesweeper.bdd.BDDDomain.numBits;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -59,6 +60,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     allMetricTypes.add(OspfType.E1);
     allMetricTypes.add(OspfType.E2);
   }
+
+  // need 6 bits for prefix length because there are 33 possible values, 0 - 32
+  static final int PREFIX_LENGTH_BITS = 6;
+  static final int PREFIX_BITS = 32;
 
   private final BDDFactory _factory;
 
@@ -169,6 +174,13 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
   private boolean _unsupported;
 
   /**
+   * Every {@link Field} of this route: every {@link Attribute} plus every community/track cell.
+   * Fixed once and for all at construction, since {@link #_communityAtomicPredicates}/{@link
+   * #_tracks}' lengths never change afterward.
+   */
+  private final ImmutableSet<Field> _allFields;
+
+  /**
    * The routing protocols allowed in a BGP route announcement (see {@link
    * org.batfish.datamodel.BgpRoute}).
    */
@@ -208,6 +220,47 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       int numSourceVrfs,
       int numTracks,
       List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
+    this(
+        factory,
+        numCommAtomicPredicates,
+        numAsPathRegexAtomicPredicates,
+        numNextHopInterfaces,
+        numPeerAddresses,
+        numSourceVrfs,
+        numTracks,
+        tunnelEncapsulationAttributes,
+        /* prefixStartIdx= */ 0,
+        /* startIdx= */ PREFIX_LENGTH_BITS + PREFIX_BITS);
+  }
+
+  /**
+   * Like the constructor above, but the destination prefix/prefix-length are allocated starting at
+   * BDD variable index {@code prefixStartIdx}, and the "other" (non-prefix) attribute formulas at
+   * {@code startIdx}, rather than both being implicitly at index 0. Every {@link BDDRoute} built in
+   * the same factory must be given the same {@code prefixStartIdx} (whether freshly allocating
+   * those variables there, for the very first {@link BDDRoute} built in a factory, or re-deriving
+   * the ones already allocated there by an earlier one), so every {@link BDDRoute} sharing a
+   * factory shares the literal same prefix/prefix-length variables: no route policy can ever change
+   * a route's destination, so there is nothing to distinguish per block. Used by {@link
+   * BDDRouteFactory} to build additional, disjoint (except for prefix/prefix-length) routes in the
+   * same factory, and optionally to offset {@code prefixStartIdx} itself past a block of
+   * caller-defined shared bits allocated before it.
+   */
+  BDDRoute(
+      BDDFactory factory,
+      int numCommAtomicPredicates,
+      int numAsPathRegexAtomicPredicates,
+      int numNextHopInterfaces,
+      int numPeerAddresses,
+      int numSourceVrfs,
+      int numTracks,
+      List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes,
+      int prefixStartIdx,
+      int startIdx) {
+    checkArgument(prefixStartIdx >= 0, "prefixStartIdx must be non-negative");
+    checkArgument(
+        startIdx >= prefixStartIdx + PREFIX_LENGTH_BITS + PREFIX_BITS,
+        "startIdx must be at or past the end of the prefix/prefix-length block");
     _factory = factory;
 
     int bitsToRepresentAdmin =
@@ -215,11 +268,16 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     // or else we need to do tricks in the BDDInteger.
     assert LongMath.isPowerOfTwo(1L + AbstractRoute.MAX_ADMIN_DISTANCE);
     int numVars = factory.varNum();
+    // startIdx is always at or past prefixStartIdx + PREFIX_LENGTH_BITS + PREFIX_BITS (every
+    // caller places the OTHER fields after the prefix/prefix-length block), so sizing off startIdx
+    // alone already accounts for the prefix/prefix-length variables too.
     int numNeeded =
-        32 * 6
+        startIdx
+            // med, nextHop, tag, localPref, clusterListLength (32 bits each; prefix is separate,
+            // allocated/re-derived at prefixStartIdx instead)
+            + 32 * 5
             + 16
             + bitsToRepresentAdmin
-            + 6
             + numCommAtomicPredicates
             + numBits(numAsPathRegexAtomicPredicates)
             // we track one extra value for the next-hop interfaces and source VRFs, to represent
@@ -239,7 +297,20 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     }
     _bitNames = new HashMap<>();
 
-    int idx = 0;
+    // No route policy can ever change a route's destination (there is no setPrefix on this
+    // class), so every BDDRoute built in this factory is given the SAME prefixStartIdx, whether
+    // this is the very first one (freshly allocating the variables there) or a later one
+    // re-deriving them -- either way this is the same call, just possibly a repeat of an earlier
+    // one at that index. See BDDRouteFactory. startIdx (where the OTHER fields begin) is separate
+    // and always its own fresh allocation.
+    _prefixLength =
+        MutableBDDInteger.makeFromIndex(factory, PREFIX_LENGTH_BITS, prefixStartIdx, true);
+    addBitNames("pfxLen", PREFIX_LENGTH_BITS, prefixStartIdx, true);
+    _prefix =
+        MutableBDDInteger.makeFromIndex(
+            factory, PREFIX_BITS, prefixStartIdx + PREFIX_LENGTH_BITS, true);
+    addBitNames("pfx", PREFIX_BITS, prefixStartIdx + PREFIX_LENGTH_BITS, true);
+    int idx = startIdx;
     // Initialize one BDD per community atomic predicate, each of which has a corresponding
     // BDD variable
     _communityAtomicPredicates = new BDD[numCommAtomicPredicates];
@@ -280,13 +351,6 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     idx += 32;
     _clusterListLength = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("clusterListLength", 32, idx, false);
-    idx += 32;
-    // need 6 bits for prefix length because there are 33 possible values, 0 - 32
-    _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
-    addBitNames("pfxLen", 6, idx, true);
-    idx += 6;
-    _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
-    addBitNames("pfx", 32, idx, true);
     idx += 32;
 
     _asPathRegexAtomicPredicates =
@@ -350,7 +414,22 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     // Initially there are no unsupported statements encountered
     _unsupported = false;
 
+    _allFields = computeAllFields(numCommAtomicPredicates, numTracks);
+
     assert idx != 0; // unnecessary, but needed to avoid unused comment
+  }
+
+  /** Every {@link Field} of a route with this many community/track cells. */
+  private static ImmutableSet<Field> computeAllFields(int numCommAtomicPredicates, int numTracks) {
+    ImmutableSet.Builder<Field> fields = ImmutableSet.builder();
+    fields.add(Attribute.values());
+    for (int i = 0; i < numCommAtomicPredicates; i++) {
+      fields.add(community(i));
+    }
+    for (int i = 0; i < numTracks; i++) {
+      fields.add(track(i));
+    }
+    return fields.build();
   }
 
   /** A copy constructor. Every field of the copy is independently owned. */
@@ -388,6 +467,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _tunnelEncapsulationAttribute =
         BDDTunnelEncapsulationAttribute.copyOf(other._tunnelEncapsulationAttribute);
     _unsupported = other._unsupported;
+    _allFields = other._allFields;
   }
 
   /*
@@ -430,6 +510,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
     _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
+    _allFields = route._allFields;
   }
 
   /**
@@ -476,6 +557,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopType = route._nextHopType;
     _unsupported = route._unsupported;
     _prependedASes = new ArrayList<>(route._prependedASes);
+    _allFields = route._allFields;
   }
 
   /*
@@ -561,31 +643,32 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
 
   /**
    * Augments a given pairing to pair corresponding BDDs from the given BDDRoute with this one. The
-   * BDDs in the given BDDRoute should all be variables.
+   * BDDs in the given BDDRoute must all be variables -- i.e. {@code identity} must be a route of
+   * pure identity-variable formulas (see {@link #touchedFields}), not an arbitrary route.
    *
-   * @param other the BDDRoute of variables
+   * @param identity the BDDRoute of variables
    * @param pairing the existing pairing
    */
-  public void augmentPairing(BDDRoute other, BDDPairing pairing) {
-    _asPathRegexAtomicPredicates.augmentPairing(other._asPathRegexAtomicPredicates, pairing);
-    _clusterListLength.augmentPairing(other._clusterListLength, pairing);
-    pairing.set(other._communityAtomicPredicates, _communityAtomicPredicates);
-    _prefixLength.augmentPairing(other._prefixLength, pairing);
-    _prefix.augmentPairing(other._prefix, pairing);
-    _nextHop.augmentPairing(other._nextHop, pairing);
-    _adminDist.augmentPairing(other._adminDist, pairing);
-    _med.augmentPairing(other._med, pairing);
-    _tag.augmentPairing(other._tag, pairing);
-    _weight.augmentPairing(other._weight, pairing);
-    _localPref.augmentPairing(other._localPref, pairing);
-    _protocolHistory.augmentPairing(other._protocolHistory, pairing);
-    _originType.augmentPairing(other._originType, pairing);
-    _ospfMetric.augmentPairing(other._ospfMetric, pairing);
-    _nextHopInterfaces.augmentPairing(other._nextHopInterfaces, pairing);
-    _peerAddress.augmentPairing(other._peerAddress, pairing);
-    _sourceVrfs.augmentPairing(other._sourceVrfs, pairing);
-    pairing.set(other._tracks, _tracks);
-    _tunnelEncapsulationAttribute.augmentPairing(other._tunnelEncapsulationAttribute, pairing);
+  public void augmentPairing(BDDRoute identity, BDDPairing pairing) {
+    _asPathRegexAtomicPredicates.augmentPairing(identity._asPathRegexAtomicPredicates, pairing);
+    _clusterListLength.augmentPairing(identity._clusterListLength, pairing);
+    pairing.set(identity._communityAtomicPredicates, _communityAtomicPredicates);
+    _prefixLength.augmentPairing(identity._prefixLength, pairing);
+    _prefix.augmentPairing(identity._prefix, pairing);
+    _nextHop.augmentPairing(identity._nextHop, pairing);
+    _adminDist.augmentPairing(identity._adminDist, pairing);
+    _med.augmentPairing(identity._med, pairing);
+    _tag.augmentPairing(identity._tag, pairing);
+    _weight.augmentPairing(identity._weight, pairing);
+    _localPref.augmentPairing(identity._localPref, pairing);
+    _protocolHistory.augmentPairing(identity._protocolHistory, pairing);
+    _originType.augmentPairing(identity._originType, pairing);
+    _ospfMetric.augmentPairing(identity._ospfMetric, pairing);
+    _nextHopInterfaces.augmentPairing(identity._nextHopInterfaces, pairing);
+    _peerAddress.augmentPairing(identity._peerAddress, pairing);
+    _sourceVrfs.augmentPairing(identity._sourceVrfs, pairing);
+    pairing.set(identity._tracks, _tracks);
+    _tunnelEncapsulationAttribute.augmentPairing(identity._tunnelEncapsulationAttribute, pairing);
   }
 
   /**
@@ -605,6 +688,474 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute veccompose(BDDPairing pairing) {
     return new BDDRoute(pairing, this);
+  }
+
+  /** The set of BDD variables that appear in any attribute formula of this route. */
+  public BDD support() {
+    return _factory.andAllAndFree(
+        ImmutableList.of(_prefixLength.support(), _prefix.support(), mutableSupport()));
+  }
+
+  /**
+   * Like {@link #support}, but excludes the destination prefix/prefix-length variables. Since no
+   * route policy can ever change a route's destination, every {@link BDDRoute} built alongside a
+   * given one shares those variables rather than getting its own copy (see {@link BDDRouteFactory})
+   * -- so a caller existentially quantifying a whole block away (e.g. to eliminate an original,
+   * pre-image route once a relation over it is built) must use this, not {@link #support}:
+   * quantifying out the full support would erase the prefix/prefix-length variables from every
+   * other formula that mentions them too, not just this block's copy.
+   */
+  public BDD mutableSupport() {
+    ImmutableList.Builder<BDD> supports = ImmutableList.builder();
+    for (Attribute attribute : Attribute.values()) {
+      supports.add(attribute.support(this));
+    }
+    // COMMUNITIES/TRACKS have no Attribute of their own -- each cell is independently addressed
+    // via Field.Community/Field.Track instead (see Field's doc) -- so they're covered here
+    // per-cell rather than by a single Attribute member.
+    Arrays.stream(_communityAtomicPredicates).map(BDD::support).forEach(supports::add);
+    Arrays.stream(_tracks).map(BDD::support).forEach(supports::add);
+    return _factory.andAllAndFree(supports.build());
+  }
+
+  /**
+   * Every scalar attribute of a {@link BDDRoute} -- every composable attribute other than
+   * prefix/prefix-length (which every {@link BDDRoute} in the same variable domain shares as the
+   * literal same BDD variables, see {@link #makeAt}, since no route policy can ever change a
+   * route's destination) and other than {@code COMMUNITIES}/{@code TRACKS} (each many independent
+   * BDD variables -- one per atomic predicate / tracked name -- addressed instead by {@link
+   * Field.Community}/{@link Field.Track}, since e.g. a policy term that adds one community out of
+   * many touches only that community's {@link Field}, not the whole array; see {@link Field}'s
+   * doc). Used to name which fields a step actually WRITES (see {@link #touchedFields}), so a
+   * caller can scope both the relation it builds (see {@link #equalsRelationOn}) and the push that
+   * composes it (the exist-set and relabel pairing) to exactly those fields -- a field a step never
+   * writes is never mentioned by the relation, never quantified, and never relabeled, so it passes
+   * through the incoming route's correlation with the origin completely unconstrained by this step
+   * (not equated to anything -- there is nothing to model).
+   */
+  public enum Attribute implements Field {
+    AS_PATH_REGEX {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._asPathRegexAtomicPredicates.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._asPathRegexAtomicPredicates.augmentPairing(
+            identity._asPathRegexAtomicPredicates, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route
+            ._asPathRegexAtomicPredicates
+            .getInteger()
+            .eq(other._asPathRegexAtomicPredicates.getInteger());
+      }
+    },
+    CLUSTER_LIST_LENGTH {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._clusterListLength.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._clusterListLength.augmentPairing(identity._clusterListLength, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._clusterListLength.eq(other._clusterListLength);
+      }
+    },
+    NEXT_HOP {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._nextHop.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._nextHop.augmentPairing(identity._nextHop, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._nextHop.eq(other._nextHop);
+      }
+    },
+    ADMIN_DIST {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._adminDist.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._adminDist.augmentPairing(identity._adminDist, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._adminDist.eq(other._adminDist);
+      }
+    },
+    MED {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._med.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._med.augmentPairing(identity._med, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._med.eq(other._med);
+      }
+    },
+    TAG {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._tag.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._tag.augmentPairing(identity._tag, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._tag.eq(other._tag);
+      }
+    },
+    WEIGHT {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._weight.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._weight.augmentPairing(identity._weight, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._weight.eq(other._weight);
+      }
+    },
+    LOCAL_PREF {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._localPref.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._localPref.augmentPairing(identity._localPref, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._localPref.eq(other._localPref);
+      }
+    },
+    PROTOCOL_HISTORY {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._protocolHistory.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._protocolHistory.augmentPairing(identity._protocolHistory, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._protocolHistory.getInteger().eq(other._protocolHistory.getInteger());
+      }
+    },
+    ORIGIN_TYPE {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._originType.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._originType.augmentPairing(identity._originType, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._originType.getInteger().eq(other._originType.getInteger());
+      }
+    },
+    OSPF_METRIC {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._ospfMetric.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._ospfMetric.augmentPairing(identity._ospfMetric, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._ospfMetric.getInteger().eq(other._ospfMetric.getInteger());
+      }
+    },
+    NEXT_HOP_INTERFACES {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._nextHopInterfaces.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._nextHopInterfaces.augmentPairing(identity._nextHopInterfaces, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._nextHopInterfaces.getInteger().eq(other._nextHopInterfaces.getInteger());
+      }
+    },
+    PEER_ADDRESS {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._peerAddress.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._peerAddress.augmentPairing(identity._peerAddress, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._peerAddress.getInteger().eq(other._peerAddress.getInteger());
+      }
+    },
+    SOURCE_VRFS {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._sourceVrfs.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._sourceVrfs.augmentPairing(identity._sourceVrfs, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._sourceVrfs.getInteger().eq(other._sourceVrfs.getInteger());
+      }
+    },
+    TUNNEL_ENCAPSULATION_ATTRIBUTE {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._tunnelEncapsulationAttribute.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._tunnelEncapsulationAttribute.augmentPairing(
+            identity._tunnelEncapsulationAttribute, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route
+            ._tunnelEncapsulationAttribute
+            .allDifferences(other._tunnelEncapsulationAttribute)
+            .notEq();
+      }
+    };
+  }
+
+  /**
+   * A single independently-touchable/scopable BDD-variable-bearing piece of a {@link BDDRoute}:
+   * either a whole {@link Attribute} (every scalar attribute is indivisible -- e.g. {@code MED} is
+   * always one 32-bit integer, so writing it always touches all 32 bits together), or one single
+   * community atomic predicate / tracked name -- see {@link #community}/{@link #track}.
+   *
+   * <p>This finer granularity than a whole {@code COMMUNITIES}/{@code TRACKS} attribute matters for
+   * a policy like a tag-dispatch export policy where every term does {@code community add SELF}
+   * plus one term-specific community: at whole-attribute granularity, every term touches "some
+   * community", so every term's relation (and the push it feeds) must constrain/quantify ALL ~30+
+   * community atomic predicates, even the ~28 neither this term nor most others ever mention. At
+   * per-community granularity, each term touches only the 2-3 {@link Field}s it actually writes, so
+   * the relation, the OR across terms, and the push are all narrower by the same factor. {@link
+   * Attribute} has no such array to index into, so it implements {@link Field} directly rather than
+   * needing an indexed sibling of its own.
+   */
+  public sealed interface Field permits Attribute, Field.Community, Field.Track {
+    /** The support (BDD variable set) of this field on {@code route}. */
+    BDD support(BDDRoute route);
+
+    /**
+     * Augments {@code pairing} to map {@code identity}'s variable(s) for this field to {@code
+     * route}'s corresponding variable(s). {@code identity} must be a route of pure
+     * identity-variable formulas -- see {@link #touchedFields}.
+     */
+    void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing);
+
+    /** The relation {@code route}'s formula for this field equals {@code other}'s. */
+    BDD eq(BDDRoute route, BDDRoute other);
+
+    /** The {@code index}-th community atomic predicate. */
+    record Community(int index) implements Field {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._communityAtomicPredicates[index].support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        pairing.set(
+            identity._communityAtomicPredicates[index].var(),
+            route._communityAtomicPredicates[index]);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._communityAtomicPredicates[index].biimp(
+            other._communityAtomicPredicates[index]);
+      }
+    }
+
+    /** The {@code index}-th tracked name. */
+    record Track(int index) implements Field {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._tracks[index].support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        pairing.set(identity._tracks[index].var(), route._tracks[index]);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._tracks[index].biimp(other._tracks[index]);
+      }
+    }
+  }
+
+  /** {@link Field.Community} for {@code index}. Convenience constructor. */
+  public static Field community(int index) {
+    return new Field.Community(index);
+  }
+
+  /** {@link Field.Track} for {@code index}. Convenience constructor. */
+  public static Field track(int index) {
+    return new Field.Track(index);
+  }
+
+  /**
+   * The support (BDD variable set) of a single {@link Field} of this route. Used to build a push's
+   * exist-set/relabel-pairing scoped to only the fields a step relation actually writes -- see
+   * {@link Field}'s javadoc.
+   */
+  public BDD fieldSupport(Field field) {
+    return field.support(this);
+  }
+
+  /** The union of {@link #fieldSupport} over each of {@code fields}. */
+  public BDD fieldSupportOn(Set<Field> fields) {
+    return _factory.andAllAndFree(fields.stream().map(this::fieldSupport).toList());
+  }
+
+  /**
+   * Augments {@code pairing} to map {@code identity}'s variable(s) for a single {@link Field} to
+   * this route's corresponding variable(s). Same contract as {@link #augmentPairing}, scoped to one
+   * field -- see {@link Field}'s javadoc.
+   */
+  public void augmentPairingOn(BDDRoute identity, Field field, BDDPairing pairing) {
+    field.augmentPairing(this, identity, pairing);
+  }
+
+  /**
+   * The fields on which this route's formulas differ from {@code identity}'s -- i.e. the fields a
+   * step's output function actually WRITES, as opposed to leaving as the identity (which a route
+   * policy achieves simply by never mentioning/setting that field). See {@link Field}'s javadoc for
+   * why this matters: a caller building a step's relation should constrain and push only these
+   * fields, leaving every other field of the incoming route to pass through unconstrained -- not
+   * equated to itself, just never touched.
+   *
+   * @param identity a route of pure identity-variable formulas over the same domain as this route
+   *     (e.g. a fresh block from {@link BDDRouteFactory}, itself)
+   */
+  public Set<Field> touchedFields(BDDRoute identity) {
+    Set<Field> touched = new HashSet<>();
+    if (!_asPathRegexAtomicPredicates.equals(identity._asPathRegexAtomicPredicates)) {
+      touched.add(Attribute.AS_PATH_REGEX);
+    }
+    if (!_clusterListLength.equals(identity._clusterListLength)) {
+      touched.add(Attribute.CLUSTER_LIST_LENGTH);
+    }
+    for (int i = 0; i < _communityAtomicPredicates.length; i++) {
+      if (!_communityAtomicPredicates[i].equals(identity._communityAtomicPredicates[i])) {
+        touched.add(community(i));
+      }
+    }
+    if (!_nextHop.equals(identity._nextHop)) {
+      touched.add(Attribute.NEXT_HOP);
+    }
+    if (!_adminDist.equals(identity._adminDist)) {
+      touched.add(Attribute.ADMIN_DIST);
+    }
+    if (!_med.equals(identity._med)) {
+      touched.add(Attribute.MED);
+    }
+    if (!_tag.equals(identity._tag)) {
+      touched.add(Attribute.TAG);
+    }
+    if (!_weight.equals(identity._weight)) {
+      touched.add(Attribute.WEIGHT);
+    }
+    if (!_localPref.equals(identity._localPref)) {
+      touched.add(Attribute.LOCAL_PREF);
+    }
+    if (!_protocolHistory.equals(identity._protocolHistory)) {
+      touched.add(Attribute.PROTOCOL_HISTORY);
+    }
+    if (!_originType.equals(identity._originType)) {
+      touched.add(Attribute.ORIGIN_TYPE);
+    }
+    if (!_ospfMetric.equals(identity._ospfMetric)) {
+      touched.add(Attribute.OSPF_METRIC);
+    }
+    if (!_nextHopInterfaces.equals(identity._nextHopInterfaces)) {
+      touched.add(Attribute.NEXT_HOP_INTERFACES);
+    }
+    if (!_peerAddress.equals(identity._peerAddress)) {
+      touched.add(Attribute.PEER_ADDRESS);
+    }
+    if (!_sourceVrfs.equals(identity._sourceVrfs)) {
+      touched.add(Attribute.SOURCE_VRFS);
+    }
+    for (int i = 0; i < _tracks.length; i++) {
+      if (!_tracks[i].equals(identity._tracks[i])) {
+        touched.add(track(i));
+      }
+    }
+    if (!_tunnelEncapsulationAttribute.equals(identity._tunnelEncapsulationAttribute)) {
+      touched.add(Attribute.TUNNEL_ENCAPSULATION_ATTRIBUTE);
+    }
+    return touched;
   }
 
   /**
@@ -635,6 +1186,33 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       track.free();
     }
     _tunnelEncapsulationAttribute.free();
+  }
+
+  /**
+   * Produces the relation {@code this == other}: a BDD over the union of this route's and {@code
+   * other}'s variables that holds exactly when every attribute formula of this route agrees with
+   * the corresponding formula of {@code other}. Combined with a guard and existential
+   * quantification, this turns a {@code (BDDRoute, BDD guard)} pair -- a function plus a path
+   * condition -- into a flat BDD describing the set of possible outputs (a relational image
+   * computation).
+   *
+   * @param other a route over the same or a disjoint set of variables
+   */
+  public BDD equalsRelation(BDDRoute other) {
+    return equalsRelationOn(other, _allFields);
+  }
+
+  /**
+   * Like {@link #equalsRelation}, but constrains only {@code fields}; every other field is left
+   * completely unmentioned (not merely "unconstrained" via a trivial term -- genuinely absent from
+   * the returned BDD's support). Pairing this with a push whose exist-set/relabel pairing are
+   * scoped to the same {@code fields} means a field this step doesn't write is never quantified and
+   * never relabeled, so it passes through the incoming relation's correlation with the origin
+   * completely untouched -- no equality term is needed to model "preserved", because omission from
+   * both the relation and the push's scope already achieves it. See {@link Field}'s javadoc.
+   */
+  public BDD equalsRelationOn(BDDRoute other, Set<Field> fields) {
+    return _factory.andAllAndFree(fields.stream().map(f -> f.eq(this, other)).toList());
   }
 
   /*
