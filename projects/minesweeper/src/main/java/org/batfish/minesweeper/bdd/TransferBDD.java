@@ -191,13 +191,27 @@ public class TransferBDD {
   }
 
   public TransferBDD(BDDFactory factory, ConfigAtomicPredicates aps) {
+    this(factory, new BDDRoute(factory, aps), aps);
+  }
+
+  /**
+   * Like {@link #TransferBDD(BDDFactory, ConfigAtomicPredicates)}, but reuses an already-built
+   * {@code originalRoute} (over {@code factory}'s canonical input variables) instead of building
+   * its own. Useful for a caller that also needs fresh {@link BDDRoute} blocks interleaved with the
+   * canonical route (see {@link BDDRouteFactory}), since those must be built from the same
+   * canonical route this analysis operates over.
+   *
+   * @param originalRoute must be a {@code new BDDRoute(factory, aps)} over the same {@code factory}
+   *     and {@code aps} given here.
+   */
+  public TransferBDD(BDDFactory factory, BDDRoute originalRoute, ConfigAtomicPredicates aps) {
     _configAtomicPredicates = aps;
     _unsupportedAlreadyWarned = new HashSet<>();
 
     _factory = factory;
     _factory.setCacheRatio(64);
 
-    _originalRoute = new BDDRoute(_factory, aps);
+    _originalRoute = originalRoute;
     RegexAtomicPredicates<CommunityVar> standardCommAPs =
         _configAtomicPredicates.getStandardCommunityAtomicPredicates();
     _communityAtomicPredicates = new HashMap<>(standardCommAPs.getRegexAtomicPredicates());
