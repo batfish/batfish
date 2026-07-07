@@ -116,6 +116,13 @@ public final class BDDDomain<T> {
     return _integer.support();
   }
 
+  /**
+   * Frees every BDD backing this domain's underlying integer; see {@link MutableBDDInteger#free}.
+   */
+  public void free() {
+    _integer.free();
+  }
+
   public MutableBDDInteger getInteger() {
     return _integer;
   }

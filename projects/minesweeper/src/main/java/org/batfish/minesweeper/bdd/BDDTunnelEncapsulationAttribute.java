@@ -140,6 +140,11 @@ public final class BDDTunnelEncapsulationAttribute {
     return _domain.getIsValidConstraint();
   }
 
+  /** Frees every BDD backing this attribute's underlying domain; see {@link BDDDomain#free}. */
+  public void free() {
+    _domain.free();
+  }
+
   public int getNumBits() {
     return _domain.getInteger().size();
   }
