@@ -408,4 +408,16 @@ public class BDDRouteTest {
     route.free();
     assertEquals(baseline, factory.numOutstandingBDDs());
   }
+
+  @Test
+  public void testCopyConstructorFieldsAreIndependentlyOwned() {
+    // If any field of the copy aliased the original's BDD object, free()-ing both routes would
+    // free that field's BDD twice -- an error JFactory throws on.
+    BDDFactory factory = JFactory.init(10000, 1000);
+    BDDRoute original = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    BDDRoute copy = new BDDRoute(original);
+
+    copy.free();
+    original.free();
+  }
 }
