@@ -354,15 +354,19 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /*
-   * Create a BDDRecord from another. Because BDDs are immutable,
-   * there is no need for a deep copy.
+   * Create a BDDRecord from another. Because BDDs are immutable, there is no need for a deep
+   * copy of any single BDD -- but every field must still get its own independently owned
+   * reference, matching MutableBDDInteger's own per-bit copy.
    */
   public BDDRoute(BDDRoute other) {
     _factory = other._factory;
 
     _asPathRegexAtomicPredicates = new BDDDomain<>(other._asPathRegexAtomicPredicates);
     _clusterListLength = new MutableBDDInteger(other._clusterListLength);
-    _communityAtomicPredicates = other._communityAtomicPredicates.clone();
+    _communityAtomicPredicates = new BDD[other._communityAtomicPredicates.length];
+    for (int i = 0; i < _communityAtomicPredicates.length; i++) {
+      _communityAtomicPredicates[i] = other._communityAtomicPredicates[i].id();
+    }
     _prefixLength = new MutableBDDInteger(other._prefixLength);
     _prefix = new MutableBDDInteger(other._prefix);
     _nextHop = new MutableBDDInteger(other._nextHop);
@@ -381,7 +385,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopInterfaces = new BDDDomain<>(other._nextHopInterfaces);
     _peerAddress = new BDDDomain<>(other._peerAddress);
     _sourceVrfs = new BDDDomain<>(other._sourceVrfs);
-    _tracks = other._tracks.clone();
+    _tracks = new BDD[other._tracks.length];
+    for (int i = 0; i < _tracks.length; i++) {
+      _tracks[i] = other._tracks[i].id();
+    }
     _tunnelEncapsulationAttribute =
         BDDTunnelEncapsulationAttribute.copyOf(other._tunnelEncapsulationAttribute);
     _unsupported = other._unsupported;
