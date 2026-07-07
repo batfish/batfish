@@ -3,6 +3,7 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -394,5 +395,17 @@ public class BDDRouteTest {
     // pairing simply substitutes the input route's formulas: the result equals the input route.
     BDDRoute composed = fresh.veccompose(pairing);
     assertEquals(input, composed);
+  }
+
+  @Test
+  public void testFreeReturnsToBaselineOutstandingBDDs() {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    long baseline = factory.numOutstandingBDDs();
+
+    BDDRoute route = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
+    assertThat(factory.numOutstandingBDDs(), greaterThan(baseline));
+
+    route.free();
+    assertEquals(baseline, factory.numOutstandingBDDs());
   }
 }

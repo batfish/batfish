@@ -604,6 +604,36 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     return new BDDRoute(pairing, this);
   }
 
+  /**
+   * Frees every BDD backing this route's attribute formulas. This route must not be used after this
+   * call.
+   */
+  public void free() {
+    _asPathRegexAtomicPredicates.free();
+    _clusterListLength.free();
+    _prefixLength.free();
+    _prefix.free();
+    for (BDD communityAtomicPredicate : _communityAtomicPredicates) {
+      communityAtomicPredicate.free();
+    }
+    _nextHop.free();
+    _adminDist.free();
+    _med.free();
+    _tag.free();
+    _weight.free();
+    _localPref.free();
+    _protocolHistory.free();
+    _originType.free();
+    _ospfMetric.free();
+    _nextHopInterfaces.free();
+    _peerAddress.free();
+    _sourceVrfs.free();
+    for (BDD track : _tracks) {
+      track.free();
+    }
+    _tunnelEncapsulationAttribute.free();
+  }
+
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */
