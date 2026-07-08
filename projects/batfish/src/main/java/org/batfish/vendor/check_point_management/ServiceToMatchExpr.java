@@ -31,7 +31,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
+import org.batfish.vendor.check_point_management.parsing.serviceother.EmptyAstNode;
 
 /** Generates an {@link AclLineMatchExpr} for the specified {@link Service}. */
 public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Boolean> {

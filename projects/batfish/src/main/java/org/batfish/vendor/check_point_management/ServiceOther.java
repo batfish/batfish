@@ -9,9 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.vendor.check_point_management.parsing.parboiled.BooleanExprAstNode;
-import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
-import org.batfish.vendor.check_point_management.parsing.parboiled.ServiceOtherMatchExpr;
+import org.batfish.vendor.check_point_management.parsing.serviceother.BooleanExprAstNode;
+import org.batfish.vendor.check_point_management.parsing.serviceother.EmptyAstNode;
+import org.batfish.vendor.check_point_management.parsing.serviceother.ServiceOtherMatchExpr;
 
 /**
  * A custom {@link Service} matching packets by protocol number, and an optional program in INSPECT

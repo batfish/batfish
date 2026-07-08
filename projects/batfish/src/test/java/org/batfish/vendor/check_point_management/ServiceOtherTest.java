@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.vendor.check_point_management.parsing.parboiled.UnhandledAstNode;
+import org.batfish.vendor.check_point_management.parsing.serviceother.UnhandledAstNode;
 import org.junit.Test;
 
 /** Test of {@link ServiceOther}. */

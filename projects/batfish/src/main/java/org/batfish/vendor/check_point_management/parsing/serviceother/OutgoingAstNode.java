@@ -1,0 +1,31 @@
+package org.batfish.vendor.check_point_management.parsing.serviceother;
+
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+/**
+ * An {@link AstNode} representing the condition that the packet direction is classified as {@code
+ * outgoing}.
+ */
+@ParametersAreNonnullByDefault
+public final class OutgoingAstNode extends VariableInspectTextBooleanExprAstNode {
+
+  public OutgoingAstNode(String inspectText) {
+    super(inspectText);
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitOutgoingAstNode(this, arg);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return baseEquals(obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return baseHashCode();
+  }
+}
