@@ -8,8 +8,3 @@ build --tool_java_runtime_version=17
 build --javacopt "-Xep:WildcardImport:ERROR"
 build --javacopt "-Xep:RemoveUnusedImports:ERROR"
 
-# Do not instrument Bazel packages that contain parboiled parsers, as this crashes.
-# TODO: this does not seem to work, but passing the exact same argument on the command line
-# makes it take effect.
-coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
-

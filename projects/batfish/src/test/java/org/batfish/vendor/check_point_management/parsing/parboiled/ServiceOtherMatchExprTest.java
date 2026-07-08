@@ -106,23 +106,23 @@ public final class ServiceOtherMatchExprTest {
 
   @Test
   public void testComparator() {
-    assertThat(parse("<", ServiceOtherMatchExpr::Comparator), equalTo(LessThanAstNode.instance()));
+    assertThat(parse("<", ServiceOtherMatchExpr::comparator), equalTo(LessThanAstNode.instance()));
     assertThat(
-        parse(">", ServiceOtherMatchExpr::Comparator), equalTo(GreaterThanAstNode.instance()));
+        parse(">", ServiceOtherMatchExpr::comparator), equalTo(GreaterThanAstNode.instance()));
     assertThat(
-        parse("<=", ServiceOtherMatchExpr::Comparator),
+        parse("<=", ServiceOtherMatchExpr::comparator),
         equalTo(LessThanOrEqualsAstNode.instance()));
     assertThat(
-        parse(">=", ServiceOtherMatchExpr::Comparator),
+        parse(">=", ServiceOtherMatchExpr::comparator),
         equalTo(GreaterThanOrEqualsAstNode.instance()));
-    assertThat(parse("=", ServiceOtherMatchExpr::Comparator), equalTo(EqualsAstNode.instance()));
+    assertThat(parse("=", ServiceOtherMatchExpr::comparator), equalTo(EqualsAstNode.instance()));
   }
 
   @Test
   public void testUint16Expr() {
-    assertThat(parse("5", ServiceOtherMatchExpr::Uint16Expr), equalTo(Uint16AstNode.of(5)));
+    assertThat(parse("5", ServiceOtherMatchExpr::uint16Expr), equalTo(Uint16AstNode.of(5)));
     assertThat(
-        parse("LOW_UDP_PORT", ServiceOtherMatchExpr::Uint16Expr),
+        parse("LOW_UDP_PORT", ServiceOtherMatchExpr::uint16Expr),
         equalTo(Uint16AstNode.of(LOW_UDP_PORT)));
   }
 
