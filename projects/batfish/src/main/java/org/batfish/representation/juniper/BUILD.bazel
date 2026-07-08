@@ -10,7 +10,6 @@ java_library(
         exclude = ["BUILD.bazel"],
     ),
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled",
         "//projects/common",
         "@maven//:com_github_ben_manes_caffeine_caffeine",
         "@maven//:com_google_code_findbugs_jsr305",

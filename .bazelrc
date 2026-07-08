@@ -11,5 +11,5 @@ build --javacopt "-Xep:RemoveUnusedImports:ERROR"
 # Do not instrument Bazel packages that contain parboiled parsers, as this crashes.
 # TODO: this does not seem to work, but passing the exact same argument on the command line
 # makes it take effect.
-coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
+coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
 

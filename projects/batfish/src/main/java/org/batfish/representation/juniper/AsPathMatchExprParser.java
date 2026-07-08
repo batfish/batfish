@@ -18,7 +18,6 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
 /**
  * A class that converts a Juniper AS Path regex to an instance of {@link AsPathMatchExpr}.

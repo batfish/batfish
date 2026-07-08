@@ -140,7 +140,7 @@ public class AsPathMatchExprParserTest {
 
   /**
    * Test for fallback to {@link AsPathMatchRegex} for some example regexes tested in {@link
-   * org.batfish.representation.juniper.parboiled.AsPathRegexTest}.
+   * AsPathRegexTest}.
    */
   @Test
   public void testAsPathMatchRegexFallback() {
