@@ -3,13 +3,17 @@ package org.batfish.minesweeper.communities;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -112,10 +116,22 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Configuration arg) {
+    CommunityRendering rendering = communityMatchRegex.getCommunityRendering();
     checkArgument(
-        usesColonSeparatedRendering(communityMatchRegex.getCommunityRendering()),
+        usesColonSeparatedRendering(rendering),
         "Currently only supporting community regexes using the colon-separated rendering");
-    return ImmutableSet.of(CommunityVar.from(communityMatchRegex.getRegex()));
+
+    String regex = communityMatchRegex.getRegex();
+    ImmutableSet.Builder<CommunityVar> vars = ImmutableSet.builder();
+    vars.add(CommunityVar.from(regex));
+    // For SpecialCasesRendering, also include exact community vars for any special-case
+    // communities whose rendered name is matched by the regex.
+    for (Map.Entry<Community, String> entry : getSpecialCases(rendering).entrySet()) {
+      if (Pattern.compile(regex).matcher(entry.getValue()).find()) {
+        vars.add(CommunityVar.from(entry.getKey()));
+      }
+    }
+    return vars.build();
   }
 
   /**
@@ -131,6 +147,17 @@ public class CommunityMatchExprVarCollector
           ((SpecialCasesRendering) rendering).getFallbackRendering());
     }
     return false;
+  }
+
+  /** Returns the map from community to rendered name for all special cases in the rendering. */
+  private static Map<Community, String> getSpecialCases(CommunityRendering rendering) {
+    if (rendering instanceof SpecialCasesRendering specialCases) {
+      ImmutableMap.Builder<Community, String> builder = ImmutableMap.builder();
+      builder.putAll(specialCases.getSpecialCases());
+      builder.putAll(getSpecialCases(specialCases.getFallbackRendering()));
+      return builder.buildOrThrow();
+    }
+    return ImmutableMap.of();
   }
 
   @Override

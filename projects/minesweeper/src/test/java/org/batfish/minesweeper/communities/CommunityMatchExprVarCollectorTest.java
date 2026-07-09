@@ -167,6 +167,21 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
+  public void testVisitCommunityMatchRegex_SpecialCasesRendering_matchesSpecialCase() {
+    CommunityMatchRegex cmr =
+        new CommunityMatchRegex(
+            SpecialCasesRendering.of(
+                ColonSeparatedRendering.instance(),
+                ImmutableMap.of(StandardCommunity.NO_EXPORT, "no-export")),
+            "no-export");
+    Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    assertEquals(
+        ImmutableSet.of(
+            CommunityVar.from("no-export"), CommunityVar.from(StandardCommunity.NO_EXPORT)),
+        result);
+  }
+
+  @Test
   public void testVisitCommunityMatchRegex_IntegerValueRendering() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(IntegerValueRendering.instance(), "^20:");
 
