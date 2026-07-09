@@ -116,6 +116,11 @@ public final class BDDDomain<T> {
     return _integer.support();
   }
 
+  /** The relation {@code this} equals {@code other}. */
+  public BDD eq(BDDDomain<T> other) {
+    return _integer.eq(other._integer);
+  }
+
   /**
    * Frees every BDD backing this domain's underlying integer; see {@link MutableBDDInteger#free}.
    */
