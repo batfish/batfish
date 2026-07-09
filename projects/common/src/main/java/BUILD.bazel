@@ -112,6 +112,7 @@ java_library(
         ":parser_common",
         "//projects/bdd",
         "//projects/common/src/main/antlr4/org/batfish/specifier/parboiled/grammar:specifier_grammar",
+        "//projects/common/src/main/java/org/batfish/common/util/antlr4c3",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",
