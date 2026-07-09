@@ -21,6 +21,8 @@ final class SpecifierRuleAnchors {
   private static Map<Integer, Anchor.Type> buildAnchors() {
     ImmutableMap.Builder<Integer, Anchor.Type> b = ImmutableMap.builder();
     put(b, SpecifierParser.RULE_referenceBook, Anchor.Type.REFERENCE_BOOK_NAME);
+    put(b, SpecifierParser.RULE_closeParens, Anchor.Type.OPERATOR_END);
+    put(b, SpecifierParser.RULE_closeBrackets, Anchor.Type.OPERATOR_END);
     put(b, SpecifierParser.RULE_oneAppSpec, Anchor.Type.ONE_APP);
     put(b, SpecifierParser.RULE_oneAppIcmp, Anchor.Type.ONE_APP_ICMP);
     put(b, SpecifierParser.RULE_oneAppIcmpType, Anchor.Type.ONE_APP_ICMP_TYPE);

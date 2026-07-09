@@ -41,6 +41,12 @@ lexer grammar SpecifierLexer;
     return t;
   }
 
+  /**
+   * Whether icmp/tcp/udp lex as dedicated keyword tokens. True only for the application specifiers,
+   * where they are structural keywords (icmp/8, tcp/80). Elsewhere they are ordinary names.
+   */
+  public boolean appKeywords = false;
+
   /** True if a '/'-delimited regex may begin here (previous token is not an operand). */
   private boolean regexAllowed() {
     switch (_lastRealTokenType) {
@@ -53,6 +59,9 @@ lexer grammar SpecifierLexer;
       case REGEX:
       case CLOSE_PAREN:
       case CLOSE_BRACKET:
+      case ICMP:
+      case TCP:
+      case UDP:
         return false;
       default:
         return true;
@@ -85,6 +94,12 @@ AT_VRF : '@' V R F;
 AT_ZONE : '@' Z O N E;
 AT_ADDRESS_GROUP : '@' A D D R E S S G R O U P;
 AT_ENTER : '@' E N T E R;
+
+// Application keywords, only in application specifiers (appKeywords). Declared before NAME so they
+// win there; gated off elsewhere so icmp/tcp/udp are ordinary names.
+ICMP : {appKeywords}? I C M P;
+TCP : {appKeywords}? T C P;
+UDP : {appKeywords}? U D P;
 
 // A /-delimited regex; \/ escapes an interior slash. Only recognized at a
 // term-start position (see regexAllowed). Declared before SLASH.
@@ -134,6 +149,7 @@ fragment F : [fF];
 fragment G : [gG];
 fragment I : [iI];
 fragment L : [lL];
+fragment M : [mM];
 fragment N : [nN];
 fragment O : [oO];
 fragment P : [pP];

@@ -187,6 +187,17 @@ public final class ParboiledAutoComplete {
     return ParserUtils.getPotentialMatches(error, _completionTypes, false);
   }
 
+  /**
+   * The antlr4-c3-based completion engine. It reproduces the parboiled completions for all
+   * specifier grammars except a few application-specifier literal-extension cases; it will replace
+   * {@link #getPotentialMatches} once those are covered, after which the parboiled parser can be
+   * deleted.
+   */
+  @SuppressWarnings("unused")
+  private Set<PotentialMatch> getPotentialMatchesC3(String query) {
+    return C3PotentialMatches.getPotentialMatches(_grammar, query);
+  }
+
   @VisibleForTesting
   Set<ParboiledAutoCompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {

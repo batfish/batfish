@@ -83,9 +83,22 @@ final class SpecifierAstBuilder {
   }
 
   static SpecifierParser getParser(Grammar grammar, String input) {
+    SpecifierLexer lexer = newLexer(grammar, input);
+    return new SpecifierParser(new CommonTokenStream(lexer));
+  }
+
+  /** Creates a lexer configured for {@code grammar} (slash-in-names and app-keyword modes). */
+  static SpecifierLexer newLexer(Grammar grammar, String input) {
     SpecifierLexer lexer = new SpecifierLexer(CharStreams.fromString(input));
     lexer.slashInNames = slashInNames(grammar);
-    return new SpecifierParser(new CommonTokenStream(lexer));
+    lexer.appKeywords = appKeywords(grammar);
+    return lexer;
+  }
+
+  /** Whether icmp/tcp/udp are keyword tokens: only in the application specifiers. */
+  static boolean appKeywords(Grammar grammar) {
+    return grammar == Grammar.APPLICATION_SPECIFIER
+        || grammar == Grammar.SINGLE_APPLICATION_SPECIFIER;
   }
 
   /**
@@ -124,8 +137,8 @@ final class SpecifierAstBuilder {
     return new RegexAstNode(ctx.DEPRECATED_REGEX().getText());
   }
 
-  /** The set-operator character for a union/difference step: ',' or '\'. */
-  private static char setOp(TerminalNode comma, TerminalNode backslash) {
+  /** The set-operator character for a union/difference step: ',' if comma is present, else '\'. */
+  private static char setOp(TerminalNode comma) {
     return comma != null ? ',' : '\\';
   }
 
@@ -135,7 +148,7 @@ final class SpecifierAstBuilder {
     NodeAstNode result = buildNodeIntersection(ctx.nodeIntersection(0));
     List<NodeIntersectionContext> rest = ctx.nodeIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (NodeAstNode) SetOpNodeAstNode.create(op, result, buildNodeIntersection(rest.get(i)));
     }
@@ -180,7 +193,7 @@ final class SpecifierAstBuilder {
     InterfaceAstNode result = buildInterfaceIntersection(ctx.interfaceIntersection(0));
     List<InterfaceIntersectionContext> rest = ctx.interfaceIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (InterfaceAstNode)
               SetOpInterfaceAstNode.create(op, result, buildInterfaceIntersection(rest.get(i)));
@@ -216,7 +229,7 @@ final class SpecifierAstBuilder {
         buildInterfaceWithoutNodeIntersection(ctx.interfaceWithoutNodeIntersection(0));
     List<InterfaceWithoutNodeIntersectionContext> rest = ctx.interfaceWithoutNodeIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (InterfaceAstNode)
               SetOpInterfaceAstNode.create(
@@ -283,7 +296,7 @@ final class SpecifierAstBuilder {
     FilterAstNode result = buildFilterIntersection(ctx.filterIntersection(0));
     List<FilterIntersectionContext> rest = ctx.filterIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (FilterAstNode)
               SetOpFilterAstNode.create(op, result, buildFilterIntersection(rest.get(i)));
@@ -317,7 +330,7 @@ final class SpecifierAstBuilder {
     FilterAstNode result = buildFilterWithoutNodeIntersection(ctx.filterWithoutNodeIntersection(0));
     List<FilterWithoutNodeIntersectionContext> rest = ctx.filterWithoutNodeIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (FilterAstNode)
               SetOpFilterAstNode.create(
@@ -362,7 +375,7 @@ final class SpecifierAstBuilder {
     IpSpaceAstNode result = buildIpSpaceIntersection(ctx.ipSpaceIntersection(0));
     List<IpSpaceIntersectionContext> rest = ctx.ipSpaceIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (IpSpaceAstNode)
               SetOpIpSpaceAstNode.create(op, result, buildIpSpaceIntersection(rest.get(i)));
@@ -415,7 +428,7 @@ final class SpecifierAstBuilder {
     LocationAstNode result = buildLocationIntersection(ctx.locationIntersection(0));
     List<LocationIntersectionContext> rest = ctx.locationIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (LocationAstNode)
               SetOpLocationAstNode.create(op, result, buildLocationIntersection(rest.get(i)));
@@ -475,7 +488,7 @@ final class SpecifierAstBuilder {
     RoutingPolicyAstNode result = buildRoutingPolicyIntersection(ctx.routingPolicyIntersection(0));
     List<RoutingPolicyIntersectionContext> rest = ctx.routingPolicyIntersection();
     for (int i = 1; i < rest.size(); i++) {
-      char op = setOp(ctx.COMMA(i - 1), ctx.BACKSLASH(i - 1));
+      char op = setOp(ctx.COMMA(i - 1));
       result =
           (RoutingPolicyAstNode)
               SetOpRoutingPolicyAstNode.create(

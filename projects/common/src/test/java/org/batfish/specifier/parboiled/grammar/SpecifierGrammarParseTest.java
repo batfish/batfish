@@ -44,8 +44,17 @@ public class SpecifierGrammarParseTest {
 
   private static void assertParses(
       String input, Function<SpecifierParser, ParseTree> entry, boolean slashInNames) {
+    assertParses(input, entry, slashInNames, false);
+  }
+
+  private static void assertParses(
+      String input,
+      Function<SpecifierParser, ParseTree> entry,
+      boolean slashInNames,
+      boolean appKeywords) {
     SpecifierLexer lexer = new SpecifierLexer(CharStreams.fromString(input));
     lexer.slashInNames = slashInNames;
+    lexer.appKeywords = appKeywords;
     ErrorCollector lexErrors = new ErrorCollector();
     lexer.removeErrorListeners();
     lexer.addErrorListener(lexErrors);
@@ -94,7 +103,7 @@ public class SpecifierGrammarParseTest {
   }
 
   private static void assertApp(String input) {
-    assertParses(input, SpecifierParser::appSpecInput, false);
+    assertParses(input, SpecifierParser::appSpecInput, false, /* appKeywords= */ true);
   }
 
   private static void assertEnumSet(String input) {

@@ -50,9 +50,12 @@ import org.antlr.v4.runtime.misc.IntervalSet;
 public class CodeCompletionCore {
 
   /**
-   * A candidate rule: the token index where the rule started and the rule callstack to reach it.
+   * A candidate rule: the token index where the rule started, the rule callstack to reach it, and
+   * the parallel list of token indices at which each rule in {@code ruleList} started (same length
+   * and order as {@code ruleList}).
    */
-  public record CandidateRule(int startTokenIndex, List<Integer> ruleList) {}
+  public record CandidateRule(
+      int startTokenIndex, List<Integer> ruleList, List<Integer> ruleStartTokens) {}
 
   /**
    * The result of a collection run. {@code tokens} maps a candidate token type to the sequence of
@@ -65,7 +68,14 @@ public class CodeCompletionCore {
   public record CandidatesCollection(
       Map<Integer, List<Integer>> tokens,
       Map<Integer, CandidateRule> rules,
-      Map<Integer, List<List<Integer>>> tokenRuleStacks) {}
+      Map<Integer, List<RuleStack>> tokenRuleStacks) {}
+
+  /**
+   * A rule call stack (outermost-first) with, in parallel, the token index at which each rule
+   * started. Used to classify a candidate token by its enclosing rules and to recover the input
+   * spans of those rules.
+   */
+  public record RuleStack(List<Integer> ruleList, List<Integer> ruleStartTokens) {}
 
   private record RuleWithStartToken(int startTokenIndex, int ruleIndex) {}
 
@@ -92,7 +102,7 @@ public class CodeCompletionCore {
   private final Map<Integer, Map<Integer, Set<Integer>>> _shortcutMap = new HashMap<>();
   private Map<Integer, List<Integer>> _candidateTokens;
   private Map<Integer, CandidateRule> _candidateRules;
-  private Map<Integer, List<List<Integer>>> _candidateTokenRuleStacks;
+  private Map<Integer, List<RuleStack>> _candidateTokenRuleStacks;
 
   public CodeCompletionCore(Parser parser) {
     _parser = parser;
@@ -152,10 +162,14 @@ public class CodeCompletionCore {
   /** Records the rule call stack (outermost-first) at which {@code symbol} was collected. */
   private void recordTokenRuleStack(int symbol, List<RuleWithStartToken> callStack) {
     List<Integer> stack = new ArrayList<>(callStack.size());
+    List<Integer> starts = new ArrayList<>(callStack.size());
     for (RuleWithStartToken entry : callStack) {
       stack.add(entry.ruleIndex());
+      starts.add(entry.startTokenIndex());
     }
-    _candidateTokenRuleStacks.computeIfAbsent(symbol, k -> new ArrayList<>()).add(stack);
+    _candidateTokenRuleStacks
+        .computeIfAbsent(symbol, k -> new ArrayList<>())
+        .add(new RuleStack(stack, starts));
   }
 
   private boolean checkPredicate(PredicateTransition transition) {
@@ -183,6 +197,10 @@ public class CodeCompletionCore {
         callStack.subList(0, i).stream()
             .map(RuleWithStartToken::ruleIndex)
             .collect(Collectors.toList());
+    List<Integer> pathStarts =
+        callStack.subList(0, i).stream()
+            .map(RuleWithStartToken::startTokenIndex)
+            .collect(Collectors.toList());
 
     boolean addNew = true;
     CandidateRule existing = _candidateRules.get(entry.ruleIndex());
@@ -190,7 +208,8 @@ public class CodeCompletionCore {
       addNew = false;
     }
     if (addNew) {
-      _candidateRules.put(entry.ruleIndex(), new CandidateRule(entry.startTokenIndex(), path));
+      _candidateRules.put(
+          entry.ruleIndex(), new CandidateRule(entry.startTokenIndex(), path, pathStarts));
     }
     return true;
   }
