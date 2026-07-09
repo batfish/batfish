@@ -21,9 +21,6 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationIpSpaceSpecifier;
 import org.batfish.specifier.ReferenceAddressGroupIpSpaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /**
  * An {@link IpSpaceAssignmentSpecifier} and {@link IpSpaceSpecifier} that resolves based on the AST
@@ -137,21 +134,7 @@ public final class ParboiledIpSpaceSpecifier
    * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
    */
   public static ParboiledIpSpaceSpecifier parse(String input) {
-    ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(
-                Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER))
-            .run(input);
-
-    if (!result.parseErrors.isEmpty()) {
-      throw new IllegalArgumentException(
-          ParserUtils.getErrorString(
-              input,
-              Grammar.IP_SPACE_SPECIFIER,
-              (InvalidInputError) result.parseErrors.get(0),
-              Parser.ANCHORS));
-    }
-
-    AstNode ast = ParserUtils.getAst(result);
+    AstNode ast = SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, input);
     checkArgument(
         ast instanceof IpSpaceAstNode, "ParboiledIpSpaceSpecifier requires an IpSpace input");
 

@@ -43,9 +43,8 @@ public class ParboiledInputValidatorTest {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    TestParser parser = TestParser.instance();
     return new ParboiledInputValidator(
-        parser, Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+        Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
   }
 
   private static IllegalArgumentException getException(
@@ -77,8 +76,16 @@ public class ParboiledInputValidatorTest {
 
     IllegalArgumentException exception = getException(query, IpAstNode::new);
 
+    // Use a grammar that accepts IP addresses so the invalid octet surfaces as an Ip construction
+    // error (mirroring the historical behavior via the test grammar).
     assertThat(
-        getTestPIV(query).run(),
+        new ParboiledInputValidator(
+                Grammar.IP_SPACE_SPECIFIER,
+                query,
+                CompletionMetadata.builder().build(),
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(null))
+            .run(),
         equalTo(new InputValidationNotes(Validity.INVALID, getErrorMessage(exception), -1)));
   }
 

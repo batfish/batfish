@@ -26,17 +26,11 @@ import org.batfish.specifier.Grammar;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
-import org.parboiled.Rule;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** A helper class that provides {@link InputValidationNotes} */
 @ParametersAreNonnullByDefault
 public final class ParboiledInputValidator {
 
-  private final Rule _inputRule;
   private final Grammar _grammar;
   private final String _query;
   private final CompletionMetadata _completionMetadata;
@@ -108,29 +102,11 @@ public final class ParboiledInputValidator {
   }
 
   ParboiledInputValidator(
-      CommonParser parser,
       Grammar grammar,
       String query,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    this(
-        parser.getInputRule(grammar),
-        grammar,
-        query,
-        completionMetadata,
-        nodeRolesData,
-        referenceLibrary);
-  }
-
-  private ParboiledInputValidator(
-      Rule inputRule,
-      Grammar grammar,
-      String query,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
-    _inputRule = inputRule;
     _grammar = grammar;
     _query = query;
     _completionMetadata = completionMetadata;
@@ -151,41 +127,28 @@ public final class ParboiledInputValidator {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    Parser parser = Parser.instance();
     return new ParboiledInputValidator(
-            parser.getInputRule(grammar),
-            grammar,
-            query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
+            grammar, query, completionMetadata, nodeRolesData, referenceLibrary)
         .run();
   }
 
   /** This is the entry point for all validations */
   InputValidationNotes run() {
 
-    ParsingResult<AstNode> result;
+    AstNode resultAst;
     try {
-      result = new ReportingParseRunner<AstNode>(_inputRule).run(_query);
-    } catch (ParserRuntimeException e) {
-      if (e.getCause() instanceof IllegalArgumentException) {
-        return new InputValidationNotes(
-            Validity.INVALID, getErrorMessage((IllegalArgumentException) e.getCause()), -1);
-      } else {
-        return new InputValidationNotes(Validity.INVALID, e.getMessage(), -1);
-      }
-    }
-
-    if (!result.parseErrors.isEmpty()) {
-      InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
+      resultAst = SpecifierAstBuilder.getAst(_grammar, _query);
+    } catch (SpecifierAstBuilder.SpecifierParseException e) {
       return new InputValidationNotes(
           Validity.INVALID,
-          getErrorMessage(_grammar.getFriendlyName(), error.getStartIndex()),
-          error.getStartIndex());
+          getErrorMessage(_grammar.getFriendlyName(), e.getStartIndex()),
+          e.getStartIndex());
+    } catch (IllegalArgumentException e) {
+      // A semantically invalid but syntactically parseable value (e.g. 1.1.1.256) throws from AST
+      // construction with a descriptive message.
+      return new InputValidationNotes(Validity.INVALID, getErrorMessage(e), -1);
     }
 
-    AstNode resultAst = ParserUtils.getAst(result);
     List<String> noMatchMessages = noMatchMessages(resultAst);
     if (!noMatchMessages.isEmpty()) {
       return new InputValidationNotes(Validity.NO_MATCH, noMatchMessages.get(0));

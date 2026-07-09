@@ -84,7 +84,63 @@ final class SpecifierAstBuilder {
 
   static SpecifierParser getParser(Grammar grammar, String input) {
     SpecifierLexer lexer = newLexer(grammar, input);
-    return new SpecifierParser(new CommonTokenStream(lexer));
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(ThrowingErrorListener.forInput(grammar, input));
+    SpecifierParser parser = new SpecifierParser(new CommonTokenStream(lexer));
+    parser.removeErrorListeners();
+    parser.addErrorListener(ThrowingErrorListener.forInput(grammar, input));
+    return parser;
+  }
+
+  /** Thrown on a specifier parse error; carries the character index of the offending token. */
+  static final class SpecifierParseException extends IllegalArgumentException {
+    private final int _startIndex;
+
+    SpecifierParseException(String message, int startIndex) {
+      super(message);
+      _startIndex = startIndex;
+    }
+
+    int getStartIndex() {
+      return _startIndex;
+    }
+  }
+
+  /**
+   * An ANTLR error listener that throws {@link SpecifierParseException} with a friendly message on
+   * the first syntax error, mirroring the parboiled parser's behavior for invalid specifier input.
+   */
+  private static final class ThrowingErrorListener extends org.antlr.v4.runtime.BaseErrorListener {
+    private final Grammar _grammar;
+    private final String _input;
+
+    private ThrowingErrorListener(Grammar grammar, String input) {
+      _grammar = grammar;
+      _input = input;
+    }
+
+    static ThrowingErrorListener forInput(Grammar grammar, String input) {
+      return new ThrowingErrorListener(grammar, input);
+    }
+
+    @Override
+    public void syntaxError(
+        org.antlr.v4.runtime.Recognizer<?, ?> recognizer,
+        Object offendingSymbol,
+        int line,
+        int charPositionInLine,
+        String msg,
+        org.antlr.v4.runtime.RecognitionException e) {
+      int startIndex =
+          offendingSymbol instanceof org.antlr.v4.runtime.Token
+              ? ((org.antlr.v4.runtime.Token) offendingSymbol).getStartIndex()
+              : charPositionInLine;
+      throw new SpecifierParseException(
+          String.format(
+              "Error parsing '%s' as %s. See %s for valid grammar. %s",
+              _input, _grammar.getFriendlyName(), _grammar.getFullUrl(), Grammar.GENERAL_NOTE),
+          startIndex);
+    }
   }
 
   /** Creates a lexer configured for {@code grammar} (slash-in-names and app-keyword modes). */
@@ -93,6 +149,19 @@ final class SpecifierAstBuilder {
     lexer.slashInNames = slashInNames(grammar);
     lexer.appKeywords = appKeywords(grammar);
     return lexer;
+  }
+
+  /**
+   * Builds the "Error parsing ..." exception used when a value fails a closed-set validity check,
+   * mirroring the parboiled parser's ACTION-driven parse failure for such values. The offending
+   * value starts at index 0 within its own text; callers pass the whole query as {@code input}.
+   */
+  private static SpecifierParseException parseError(Grammar grammar, String input) {
+    return new SpecifierParseException(
+        String.format(
+            "Error parsing '%s' as %s. See %s for valid grammar. %s",
+            input, grammar.getFriendlyName(), grammar.getFullUrl(), Grammar.GENERAL_NOTE),
+        0);
   }
 
   /** Whether icmp/tcp/udp are keyword tokens: only in the application specifiers. */
@@ -542,7 +611,11 @@ final class SpecifierAstBuilder {
 
   private static IpProtocolAstNode buildIpProtocol(IpProtocolContext ctx) {
     if (ctx.ipProtocolName() != null) {
-      return new IpProtocolIpProtocolAstNode(ctx.ipProtocolName().NAME().getText());
+      String name = ctx.ipProtocolName().NAME().getText();
+      if (!IpProtocolIpProtocolAstNode.isValidName(name)) {
+        throw parseError(Grammar.IP_PROTOCOL_SPECIFIER, name);
+      }
+      return new IpProtocolIpProtocolAstNode(name);
     }
     return new IpProtocolIpProtocolAstNode(ctx.ipProtocolNumber().NUM().getText());
   }
@@ -560,7 +633,13 @@ final class SpecifierAstBuilder {
 
   private static AppAstNode buildAppTerm(AppTermContext ctx) {
     if (ctx.appName() != null) {
-      return new NameAppAstNode(ctx.appName().NAME().getText());
+      String name = ctx.appName().NAME().getText();
+      // Parboiled's AppName ACTION rejected non-application names as a parse failure, rather than
+      // letting the node constructor throw a different message.
+      if (!CommonParser.namedApplications.contains(name.toUpperCase())) {
+        throw parseError(Grammar.APPLICATION_SPECIFIER, name);
+      }
+      return new NameAppAstNode(name);
     }
     if (ctx.appNameRegex() != null) {
       return new RegexAppAstNode(regex(ctx.appNameRegex().REGEX()));
@@ -679,6 +758,13 @@ final class SpecifierAstBuilder {
     if (ctx.enumSetRegex() != null) {
       return new RegexEnumSetAstNode(regex(ctx.enumSetRegex().REGEX()));
     }
-    return new ValueEnumSetAstNode<>(ctx.enumSetValue().NAME().getText(), values);
+    org.antlr.v4.runtime.tree.TerminalNode value = ctx.enumSetValue().NAME();
+    if (!ValueEnumSetAstNode.isValidValue(value.getText(), values)) {
+      // Parboiled's EnumSetValue ACTION rejected unknown values as a parse failure. The reported
+      // index is the position just past the consumed value (where the match ultimately failed).
+      throw new SpecifierParseException(
+          "Cannot parse enum value", value.getSymbol().getStopIndex() + 1);
+    }
+    return new ValueEnumSetAstNode<>(value.getText(), values);
   }
 }
