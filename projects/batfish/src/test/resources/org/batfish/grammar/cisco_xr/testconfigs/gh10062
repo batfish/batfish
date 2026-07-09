@@ -1,0 +1,24 @@
+hostname gh10062
+vrf two_byte
+!
+vrf four_byte
+!
+vrf dotted
+!
+vrf ip_admin
+!
+router bgp 65001
+ vrf two_byte
+  rd 65000:4294967295
+ !
+ vrf four_byte
+  rd 4200000001:200
+ !
+ vrf dotted
+  rd 1.100:200
+ !
+ vrf ip_admin
+  rd 10.0.0.1:200
+ !
+!
+end
