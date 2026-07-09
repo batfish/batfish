@@ -1,4 +1,4 @@
-package org.batfish.representation.juniper.parboiled;
+package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -106,6 +106,17 @@ public class AsPathRegexTest {
       assertDoesNotMatch(regex, 1L, 1234L, 1L);
       assertDoesNotMatch(regex, 1L, 2L, 3L, 4L);
     }
+  }
+
+  @Test
+  public void testMatchingExactCount() {
+    String regex = "1234{2}";
+    assertMatches(regex, 1234L, 1234L);
+    assertDoesNotMatch(regex);
+    assertDoesNotMatch(regex, 1234L);
+    assertDoesNotMatch(regex, 1234L, 1234L, 1234L);
+    assertDoesNotMatch(regex, 1L, 1234L, 1234L);
+    assertDoesNotMatch(regex, 1234L, 1234L, 1L);
   }
 
   @Test
