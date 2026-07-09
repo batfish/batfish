@@ -7,6 +7,10 @@ vrf dotted
 !
 vrf ip_admin
 !
+vrf bad_ip_admin
+!
+vrf bad_asn4_val4
+!
 router bgp 65001
  vrf two_byte
   rd 65000:4294967295
@@ -19,6 +23,12 @@ router bgp 65001
  !
  vrf ip_admin
   rd 10.0.0.1:200
+ !
+ vrf bad_ip_admin
+  rd 10.0.0.1:70000
+ !
+ vrf bad_asn4_val4
+  rd 4200000001:70000
  !
 !
 end

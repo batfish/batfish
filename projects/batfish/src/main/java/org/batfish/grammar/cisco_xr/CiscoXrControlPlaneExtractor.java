@@ -1204,6 +1204,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private @Nullable RouteDistinguisher toRouteDistinguisher(
       ParserRuleContext messageCtx, Route_distinguisherContext ctx) {
+    // The M_Rd lexer mode produces at most UINT32 tokens, so both the ASN and the
+    // assigned number are guaranteed to fit in 32 bits here.
     long admin2 = toLong(ctx.uint_legacy());
     if (ctx.IP_ADDRESS() != null) {
       if (admin2 > 0xFFFFL) {
@@ -1213,10 +1215,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) admin2);
     }
     long asn = toAsNum(ctx.bgp_asn());
-    if (asn <= 0xFFFFL && admin2 <= 0xFFFFFFFFL) {
+    if (asn <= 0xFFFFL) {
+      // type 0: 2-byte ASN administrator, 4-byte assigned number
       return RouteDistinguisher.from((int) asn, admin2);
     }
-    if (asn <= 0xFFFFFFFFL && admin2 <= 0xFFFFL) {
+    if (admin2 <= 0xFFFFL) {
+      // type 2: 4-byte ASN administrator, 2-byte assigned number
       return RouteDistinguisher.from(asn, (int) admin2);
     }
     warn(messageCtx, "Invalid route distinguisher: " + ctx.getText());

@@ -7,6 +7,7 @@ import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -57,7 +58,16 @@ public final class GitHub10062Test {
   @Test
   public void testBgpVrfRdExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("gh10062");
-    assertThat(c.getVrfs(), hasKeys("default", "two_byte", "four_byte", "dotted", "ip_admin"));
+    assertThat(
+        c.getVrfs(),
+        hasKeys(
+            "default",
+            "two_byte",
+            "four_byte",
+            "dotted",
+            "ip_admin",
+            "bad_ip_admin",
+            "bad_asn4_val4"));
     // type 0: 2-byte ASN administrator, 4-byte assigned number
     assertThat(
         c.getVrfs().get("two_byte").getRouteDistinguisher(),
@@ -74,5 +84,9 @@ public final class GitHub10062Test {
     assertThat(
         c.getVrfs().get("ip_admin").getRouteDistinguisher(),
         equalTo(RouteDistinguisher.from(Ip.parse("10.0.0.1"), 200)));
+    // invalid: IP administrator requires a 2-byte assigned number
+    assertThat(c.getVrfs().get("bad_ip_admin").getRouteDistinguisher(), nullValue());
+    // invalid: 4-byte ASN administrator requires a 2-byte assigned number
+    assertThat(c.getVrfs().get("bad_asn4_val4").getRouteDistinguisher(), nullValue());
   }
 }
