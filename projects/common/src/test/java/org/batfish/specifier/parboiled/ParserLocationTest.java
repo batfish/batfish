@@ -27,29 +27,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link LocationAstNode}. */
 public class ParserLocationTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
-  }
 
   @Test
   public void testCompletionEmpty() {
@@ -123,7 +105,7 @@ public class ParserLocationTest {
   public void testParseLocationBrackets() {
     // make sure that bracket binds more tightly than union
     assertThat(
-        ParserUtils.getAst(getRunner().run("n1 , n2[e2]")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "n1 , n2[e2]"),
         equalTo(
             new UnionLocationAstNode(
                 InterfaceLocationAstNode.createFromNode("n1"),
@@ -132,7 +114,7 @@ public class ParserLocationTest {
 
     // this should parse well too
     assertThat(
-        ParserUtils.getAst(getRunner().run("n1[e1] , n2[e2]")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "n1[e1] , n2[e2]"),
         equalTo(
             new UnionLocationAstNode(
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
@@ -142,7 +124,7 @@ public class ParserLocationTest {
 
     // brackets after a complex node expression
     assertThat(
-        ParserUtils.getAst(getRunner().run("(n1 , n2)[e1/0]")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(n1 , n2)[e1/0]"),
         equalTo(
             InterfaceLocationAstNode.createFromInterfaceWithNode(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -150,7 +132,7 @@ public class ParserLocationTest {
 
     // brackets after a complex node expression and with complex interface expression
     assertThat(
-        ParserUtils.getAst(getRunner().run("(n1 , n2)[e1 , e2]")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(n1 , n2)[e1 , e2]"),
         equalTo(
             InterfaceLocationAstNode.createFromInterfaceWithNode(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -166,9 +148,11 @@ public class ParserLocationTest {
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("@vrf(eth1)\\@vrf(eth2)")), equalTo(expectedNode));
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1)\\@vrf(eth2)"),
+        equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @vrf(eth1) \\ @vrf(eth2) ")), equalTo(expectedNode));
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " @vrf(eth1) \\ @vrf(eth2) "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -177,25 +161,32 @@ public class ParserLocationTest {
         new EnterLocationAstNode(
             InterfaceLocationAstNode.createFromNode(new NameNodeAstNode("node1")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@enter(node1)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @enter ( node1 ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@EnTER(node1)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@enter(node1)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " @enter ( node1 ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@EnTER(node1)"),
+        equalTo(expectedAst));
   }
 
   /** Test of the special internet query and then also interfaces on the internet node. */
   @Test
   public void testParseLocationInternet() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("internet")), equalTo(InternetLocationAstNode.INSTANCE));
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "internet"),
+        equalTo(InternetLocationAstNode.INSTANCE));
     assertThat(
-        ParserUtils.getAst(getRunner().run("internet[To-Isp123]")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "internet[To-Isp123]"),
         equalTo(
             InterfaceLocationAstNode.createFromInterfaceWithNode(
                 new InterfaceWithNodeInterfaceAstNode(
                     new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
                     new NameInterfaceAstNode("To-Isp123")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@enter(internet[To-Isp123])"),
         equalTo(
             new EnterLocationAstNode(
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
@@ -212,8 +203,10 @@ public class ParserLocationTest {
             new NameNodeAstNode("node"),
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, input), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " " + input + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -224,8 +217,10 @@ public class ParserLocationTest {
         InterfaceLocationAstNode.createFromInterfaceWithNode(
             new NameNodeAstNode("tor-001a.sea3"), new NameRegexInterfaceAstNode(".*"));
 
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, input), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " " + input + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -235,8 +230,10 @@ public class ParserLocationTest {
         InterfaceLocationAstNode.createFromInterface(
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, input), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " " + input + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -246,9 +243,12 @@ public class ParserLocationTest {
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2)")), equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @vrf(eth1) & @vrf(eth2) ")), equalTo(expectedNode));
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1)&@vrf(eth2)"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " @vrf(eth1) & @vrf(eth2) "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -256,8 +256,10 @@ public class ParserLocationTest {
     String input = "node";
     InterfaceLocationAstNode expectedAst = InterfaceLocationAstNode.createFromNode(input);
 
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, input), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " " + input + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -266,25 +268,25 @@ public class ParserLocationTest {
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode(input));
 
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, input), equalTo(expectedAst));
   }
 
   @Test
   public void testParseLocationParens() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("(node)")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(node)"),
         equalTo(InterfaceLocationAstNode.createFromNode("node")));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( node ) ")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " ( node ) "),
         equalTo(InterfaceLocationAstNode.createFromNode("node")));
     assertThat(
-        ParserUtils.getAst(getRunner().run("(node1&node2)")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(node1&node2)"),
         equalTo(
             InterfaceLocationAstNode.createFromNode(
                 new IntersectionNodeAstNode(
                     new NameNodeAstNode("node1"), new NameNodeAstNode("node2")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("(node1&node2[e1])")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(node1&node2[e1])"),
         equalTo(
             new IntersectionLocationAstNode(
                 InterfaceLocationAstNode.createFromNode("node1"),
@@ -296,7 +298,7 @@ public class ParserLocationTest {
   @Test
   public void testParseLocationSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("@vrf(eth1)\\@vrf(eth2)&@vrf(eth3)")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1)\\@vrf(eth2)&@vrf(eth3)"),
         equalTo(
             new DifferenceLocationAstNode(
                 InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
@@ -305,7 +307,7 @@ public class ParserLocationTest {
                     InterfaceLocationAstNode.createFromInterface(
                         new VrfInterfaceAstNode("eth3"))))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2),@vrf(eth3)")),
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1)&@vrf(eth2),@vrf(eth3)"),
         equalTo(
             new UnionLocationAstNode(
                 new IntersectionLocationAstNode(
@@ -321,8 +323,11 @@ public class ParserLocationTest {
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1),@vrf(eth2)")), equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @vrf(eth1) , @vrf(eth2) ")), equalTo(expectedNode));
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1),@vrf(eth2)"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, " @vrf(eth1) , @vrf(eth2) "),
+        equalTo(expectedNode));
   }
 }

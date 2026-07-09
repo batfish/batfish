@@ -25,21 +25,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link AppAstNode}. */
 public class ParserAppTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER));
-  }
 
   private static ParboiledAutoComplete getPAC(String query) {
     return new ParboiledAutoComplete(
@@ -64,16 +54,6 @@ public class ParserAppTest {
         .add(new ParboiledAutoCompleteSuggestion("tcp", insertionIndex, APP_TCP))
         .add(new ParboiledAutoCompleteSuggestion("udp", insertionIndex, APP_UDP))
         .build();
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
   @Test
@@ -229,8 +209,11 @@ public class ParserAppTest {
     String regex = "/ht.*/";
     RegexAppAstNode expectedAst = new RegexAppAstNode("ht.*");
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -238,123 +221,149 @@ public class ParserAppTest {
     String name = "http";
     NameAppAstNode expectedAst = new NameAppAstNode("http");
 
-    assertThat(ParserUtils.getAst(getRunner().run(name)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + name + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, name), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " " + name + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmp() {
     IcmpAllAppAstNode expectedAst = new IcmpAllAppAstNode();
 
-    assertThat(ParserUtils.getAst(getRunner().run("icmp")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" icmp ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" IcMp ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " icmp "), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " IcMp "), equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmpType() {
     IcmpTypeAppAstNode expectedAst = new IcmpTypeAppAstNode(8);
 
-    assertThat(ParserUtils.getAst(getRunner().run("icmp/8")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" icmp / 8 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/8"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " icmp / 8 "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmpType_invalidType() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid ICMP type");
-    ParserUtils.getAst(getRunner().run("icmp/257"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/257");
   }
 
   @Test
   public void testParseIcmpTypeCode() {
     IcmpTypeCodeAppAstNode expectedAst = new IcmpTypeCodeAppAstNode(8, 0);
 
-    assertThat(ParserUtils.getAst(getRunner().run("icmp/8/0")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" icmp / 8 / 0 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/8/0"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " icmp / 8 / 0 "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmpTypeCode_invalidCode() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid ICMP type/code");
-    ParserUtils.getAst(getRunner().run("icmp/8/1"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/8/1");
   }
 
   @Test
   public void testParseTcp() {
     TcpAppAstNode expectedAst = new TcpAppAstNode();
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("TCp")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " tcp "), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "TCp"), equalTo(expectedAst));
   }
 
   @Test
   public void testParseUdp() {
     UdpAppAstNode expectedAst = new UdpAppAstNode();
 
-    assertThat(ParserUtils.getAst(getRunner().run("udp")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" udp ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("UdP")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "udp"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " udp "), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "UdP"), equalTo(expectedAst));
   }
 
   @Test
   public void testParsePort() {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp/80")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp / 80 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " tcp / 80 "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParsePort_invalid_max() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number");
-    ParserUtils.getAst(getRunner().run("tcp/808080"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080");
   }
 
   @Test
   public void testParsePort_invalid_min() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number");
-    ParserUtils.getAst(getRunner().run("tcp/0"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0");
   }
 
   @Test
   public void testParsePortRange() {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(new SubRange(80, 82)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp/80-82")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp / 80 - 82")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80-82"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " tcp / 80 - 82"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParsePortRange_invalid1() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number");
-    ParserUtils.getAst(getRunner().run("tcp/80 - 808080"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80 - 808080");
   }
 
   @Test
   public void testParsePortRange_invalid2() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number");
-    ParserUtils.getAst(getRunner().run("tcp/808080 - 80"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080 - 80");
   }
 
   @Test
   public void testParsePortRange_invalid3() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port range");
-    ParserUtils.getAst(getRunner().run("tcp/82 - 80"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/82 - 80");
   }
 
   @Test
   public void testParsePortRange_invalid4() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number: 0");
-    ParserUtils.getAst(getRunner().run("tcp/0 - 80"));
+    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0 - 80");
   }
 
   @Test
@@ -362,8 +371,12 @@ public class ParserAppTest {
     TcpAppAstNode expectedAst =
         new TcpAppAstNode(ImmutableList.of(new SubRange(80, 82), SubRange.singleton(89)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp/80-82,89")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp / 80 - 82 , 89 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80-82,89"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " tcp / 80 - 82 , 89 "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -371,8 +384,12 @@ public class ParserAppTest {
     UnionAppAstNode expectedNode =
         new UnionAppAstNode(new NameAppAstNode("http"), new NameAppAstNode("https"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("http,https")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" http , https ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "http,https"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " http , https "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -380,7 +397,11 @@ public class ParserAppTest {
     UnionAppAstNode expectedNode =
         new UnionAppAstNode(new NameAppAstNode("http"), new TcpAppAstNode());
 
-    assertThat(ParserUtils.getAst(getRunner().run("http,tcp")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" http , tcp ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "http,tcp"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, " http , tcp "),
+        equalTo(expectedNode));
   }
 }

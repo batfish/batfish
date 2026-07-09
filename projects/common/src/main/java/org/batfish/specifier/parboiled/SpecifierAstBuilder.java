@@ -617,7 +617,11 @@ final class SpecifierAstBuilder {
       }
       return new IpProtocolIpProtocolAstNode(name);
     }
-    return new IpProtocolIpProtocolAstNode(ctx.ipProtocolNumber().NUM().getText());
+    String num = ctx.ipProtocolNumber().NUM().getText();
+    if (!IpProtocolIpProtocolAstNode.isValidNumber(Integer.parseInt(num))) {
+      throw parseError(Grammar.IP_PROTOCOL_SPECIFIER, num);
+    }
+    return new IpProtocolIpProtocolAstNode(num);
   }
 
   // ---- Application (set) ----
@@ -694,8 +698,13 @@ final class SpecifierAstBuilder {
       return new NameAppAstNode(ctx.appName().NAME().getText());
     }
     if (ctx.oneAppIcmp() != null) {
+      // Validate the type first (throws "Invalid ICMP type" for out-of-range values), then require
+      // the code -- matching parboiled's evaluation order.
       int type = Integer.parseInt(ctx.oneAppIcmp().NUM().getText());
       AppAstNode typeNode = new IcmpTypeAppAstNode(type);
+      if (ctx.oneAppIcmp().oneAppIcmpType() == null) {
+        throw parseError(Grammar.SINGLE_APPLICATION_SPECIFIER, ctx.getText());
+      }
       int code = Integer.parseInt(ctx.oneAppIcmp().oneAppIcmpType().NUM().getText());
       return (AppAstNode) IcmpTypeCodeAppAstNode.create(typeNode, code);
     }
@@ -731,8 +740,23 @@ final class SpecifierAstBuilder {
 
   // ---- Enum set ----
 
+  /**
+   * Parses {@code input} as an enum set over an explicit {@code values} collection (rather than a
+   * Grammar's enum values). Intended for tests that exercise the enum-set grammar with ad-hoc value
+   * sets.
+   */
+  static EnumSetAstNode getEnumSetAst(java.util.Collection<?> values, String input) {
+    SpecifierLexer lexer = new SpecifierLexer(CharStreams.fromString(input));
+    SpecifierParser parser = new SpecifierParser(new CommonTokenStream(lexer));
+    return buildEnumSetSpec(parser.enumSetSpecInput().enumSetSpec(), values);
+  }
+
   static EnumSetAstNode buildEnumSetSpec(EnumSetSpecContext ctx, Grammar grammar) {
-    java.util.Collection<?> values = Grammar.getEnumValues(grammar);
+    return buildEnumSetSpec(ctx, Grammar.getEnumValues(grammar));
+  }
+
+  private static EnumSetAstNode buildEnumSetSpec(
+      EnumSetSpecContext ctx, java.util.Collection<?> values) {
     EnumSetAstNode result = buildEnumSetTerm(ctx.enumSetTerm(0), values);
     List<EnumSetTermContext> terms = ctx.enumSetTerm();
     for (int i = 1; i < terms.size(); i++) {

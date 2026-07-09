@@ -17,30 +17,11 @@ import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link IpProtocolAstNode}. */
 public class ParserIpProtocolTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
-  }
 
   @Test
   public void testCompletionEmpty() {
@@ -124,8 +105,11 @@ public class ParserIpProtocolTest {
     String query = "tcp";
     IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -133,32 +117,39 @@ public class ParserIpProtocolTest {
     String query = IpProtocol.ANY_0_HOP_PROTOCOL.toString();
     IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIpProtocolBadName() {
     String query = "faux";
     _thrown.expect(IllegalArgumentException.class);
-    ParserUtils.getAst(getRunner().run(query));
+    SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query);
   }
 
   @Test
   public void testParseIpProtocolBadNumber() {
     String query = "2555";
     _thrown.expect(IllegalArgumentException.class);
-    ParserUtils.getAst(getRunner().run(query));
+    SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query);
   }
 
   @Test
   public void testParseNotIpProtocol() {
     IpProtocolAstNode expectedAst = new NotIpProtocolAstNode("tcp");
 
-    assertThat(ParserUtils.getAst(getRunner().run("!tcp")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" ! tcp ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("!6")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" ! 6 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, "!tcp"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, " ! tcp "), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, "!6"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, " ! 6 "), equalTo(expectedAst));
   }
 
   @Test
@@ -167,8 +158,11 @@ public class ParserIpProtocolTest {
         new UnionIpProtocolAstNode(
             new IpProtocolIpProtocolAstNode("tcp"), new IpProtocolIpProtocolAstNode("23"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp,23")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp , 23 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, "tcp,23"), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, " tcp , 23 "),
+        equalTo(expectedNode));
   }
 
   /** When the query is 'qq', we should match ALL superstrings, including xqq and qqx */

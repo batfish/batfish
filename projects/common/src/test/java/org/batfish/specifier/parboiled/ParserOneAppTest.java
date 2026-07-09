@@ -21,21 +21,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} for {@link Grammar#SINGLE_APPLICATION_SPECIFIER}. */
 public class ParserOneAppTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        Parser.instance().getInputRule(Grammar.SINGLE_APPLICATION_SPECIFIER));
-  }
 
   private static ParboiledAutoComplete getPAC(String query) {
     return new ParboiledAutoComplete(
@@ -60,16 +50,6 @@ public class ParserOneAppTest {
         .add(new ParboiledAutoCompleteSuggestion("tcp/", insertionIndex, ONE_APP_TCP))
         .add(new ParboiledAutoCompleteSuggestion("udp/", insertionIndex, ONE_APP_UDP))
         .build();
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
   @Test
@@ -171,42 +151,52 @@ public class ParserOneAppTest {
     String name = "http";
     NameAppAstNode expectedAst = new NameAppAstNode("http");
 
-    assertThat(ParserUtils.getAst(getRunner().run(name)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + name + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, name),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, " " + name + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmpType_invalidType() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid ICMP type");
-    ParserUtils.getAst(getRunner().run("icmp/257"));
+    SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, "icmp/257");
   }
 
   @Test
   public void testParseIcmpTypeCode() {
     IcmpTypeCodeAppAstNode expectedAst = new IcmpTypeCodeAppAstNode(8, 0);
-    assertThat(ParserUtils.getAst(getRunner().run("icmp/8/0")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, "icmp/8/0"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseIcmpTypeCode_invalidCode() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid ICMP type/code");
-    ParserUtils.getAst(getRunner().run("icmp/8/1"));
+    SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, "icmp/8/1");
   }
 
   @Test
   public void testParsePort() {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp/80")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp/80")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, "tcp/80"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, " tcp/80"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParsePort_invalid() {
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Invalid port number");
-    ParserUtils.getAst(getRunner().run("tcp/808080"));
+    SpecifierAstBuilder.getAst(Grammar.SINGLE_APPLICATION_SPECIFIER, "tcp/808080");
   }
 }

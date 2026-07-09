@@ -15,30 +15,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link RoutingPolicyAstNode}. */
 public class ParserRoutingPolicyTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
-  }
 
   @Test
   public void testCompletionEmpty() {
@@ -106,9 +87,12 @@ public class ParserRoutingPolicyTest {
     String routingPolicyName = "route-er";
     NameRoutingPolicyAstNode expectedAst = new NameRoutingPolicyAstNode(routingPolicyName);
 
-    assertThat(ParserUtils.getAst(getRunner().run(routingPolicyName)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + routingPolicyName + " ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, routingPolicyName),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, " " + routingPolicyName + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -117,9 +101,12 @@ public class ParserRoutingPolicyTest {
     String regexWithSlashes = "/" + regex + "/";
     NameRegexRoutingPolicyAstNode expectedAst = new NameRegexRoutingPolicyAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, regexWithSlashes),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, " " + regexWithSlashes + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -127,20 +114,24 @@ public class ParserRoutingPolicyTest {
     String regex = "RoutingPolicy.*";
     NameRegexRoutingPolicyAstNode expectedAst = new NameRegexRoutingPolicyAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseRoutingPolicyParens() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("(RoutingPolicy)")),
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, "(RoutingPolicy)"),
         equalTo(new NameRoutingPolicyAstNode("RoutingPolicy")));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( RoutingPolicy ) ")),
+        SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, " ( RoutingPolicy ) "),
         equalTo(new NameRoutingPolicyAstNode("RoutingPolicy")));
     assertThat(
-        ParserUtils.getAst(getRunner().run("(RoutingPolicy1&RoutingPolicy2)")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "(RoutingPolicy1&RoutingPolicy2)"),
         equalTo(
             new IntersectionRoutingPolicyAstNode(
                 new NameRoutingPolicyAstNode("RoutingPolicy1"),
@@ -155,10 +146,12 @@ public class ParserRoutingPolicyTest {
             new NameRoutingPolicyAstNode("RoutingPolicy2"));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("RoutingPolicy1\\RoutingPolicy2")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1\\RoutingPolicy2"),
         equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" RoutingPolicy1 \\ RoutingPolicy2 ")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, " RoutingPolicy1 \\ RoutingPolicy2 "),
         equalTo(expectedNode));
   }
 
@@ -170,10 +163,12 @@ public class ParserRoutingPolicyTest {
             new NameRoutingPolicyAstNode("RoutingPolicy2"));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("RoutingPolicy1&RoutingPolicy2")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1&RoutingPolicy2"),
         equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" RoutingPolicy1 & RoutingPolicy2 ")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, " RoutingPolicy1 & RoutingPolicy2 "),
         equalTo(expectedNode));
   }
 
@@ -185,10 +180,12 @@ public class ParserRoutingPolicyTest {
             new NameRoutingPolicyAstNode("RoutingPolicy2"));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("RoutingPolicy1,RoutingPolicy2")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1,RoutingPolicy2"),
         equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" RoutingPolicy1 , RoutingPolicy2 ")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, " RoutingPolicy1 , RoutingPolicy2 "),
         equalTo(expectedNode));
   }
 
@@ -196,7 +193,8 @@ public class ParserRoutingPolicyTest {
   @Test
   public void testParseRoutingPolicySetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("RoutingPolicy1\\RoutingPolicy2&RoutingPolicy3")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1\\RoutingPolicy2&RoutingPolicy3"),
         equalTo(
             new DifferenceRoutingPolicyAstNode(
                 new NameRoutingPolicyAstNode("RoutingPolicy1"),
@@ -204,7 +202,8 @@ public class ParserRoutingPolicyTest {
                     new NameRoutingPolicyAstNode("RoutingPolicy2"),
                     new NameRoutingPolicyAstNode("RoutingPolicy3")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("RoutingPolicy1&RoutingPolicy2,RoutingPolicy3")),
+        SpecifierAstBuilder.getAst(
+            Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1&RoutingPolicy2,RoutingPolicy3"),
         equalTo(
             new UnionRoutingPolicyAstNode(
                 new IntersectionRoutingPolicyAstNode(

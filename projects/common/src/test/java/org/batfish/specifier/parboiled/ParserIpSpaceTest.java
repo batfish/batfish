@@ -23,20 +23,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
 public class ParserIpSpaceTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER));
-  }
 
   private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
@@ -50,16 +41,6 @@ public class ParserIpSpaceTest {
             NodeRolesData.builder().build(),
             referenceLibrary)
         .run();
-  }
-
-  /** This tests if we have proper completion annotations on the rules */
-  @Test
-  public void testCompletionAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
   /** This is a complex completion test that exercises a bunch of the grammar */
@@ -103,37 +84,50 @@ public class ParserIpSpaceTest {
   public void testIpSpaceAddressGroup() {
     IpSpaceAstNode expectedAst = new AddressGroupIpSpaceAstNode("a", "b");
 
-    assertThat(ParserUtils.getAst(getRunner().run("@addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @addressgroup ( a , b ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@ADDRESSGROUP(a , b)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@addressGroup(a , b)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "@addressgroup(a, b)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, " @addressgroup ( a , b ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "@ADDRESSGROUP(a , b)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "@addressGroup(a , b)"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceIpAddress() {
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1")), equalTo(new IpAstNode("1.1.1.1")));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1"),
+        equalTo(new IpAstNode("1.1.1.1")));
   }
 
   @Test
   public void testIpSpaceIpAddressFail() {
     _thrown.expectMessage("1111 is an invalid octet");
-    _thrown.expect(ParserRuntimeException.class);
-    getRunner().run("1.1.1.1111");
+    _thrown.expect(IllegalArgumentException.class);
+    SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1111");
   }
 
   @Test
   public void testIpSpaceIpRange() {
     IpSpaceAstNode expectedAst = new IpRangeAstNode("1.1.1.1", "2.2.2.2");
 
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1-2.2.2.2"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, " 1.1.1.1 - 2.2.2.2 "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceIpWildcard() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1:2.2.2.2")),
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1:2.2.2.2"),
         equalTo(new IpWildcardAstNode("1.1.1.1:2.2.2.2")));
   }
 
@@ -143,20 +137,22 @@ public class ParserIpSpaceTest {
         new LocationIpSpaceAstNode(
             InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode("node.*")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("node.*")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "node.*"), equalTo(expectedNode));
   }
 
   @Test
   public void testIpSpacePrefix() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1/1")), equalTo(new PrefixAstNode("1.1.1.1/1")));
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1/1"),
+        equalTo(new PrefixAstNode("1.1.1.1/1")));
   }
 
   @Test
   public void testIpSpacePrefixFail() {
     _thrown.expectMessage("Invalid prefix length");
-    _thrown.expect(ParserRuntimeException.class);
-    getRunner().run("1.1.1.1/33");
+    _thrown.expect(IllegalArgumentException.class);
+    SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1/33");
   }
 
   @Test
@@ -164,8 +160,12 @@ public class ParserIpSpaceTest {
     IpSpaceAstNode expectedNode =
         new DifferenceIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1\\2.2.2.2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 \\ 2.2.2.2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1\\2.2.2.2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, " 1.1.1.1 \\ 2.2.2.2 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -173,8 +173,12 @@ public class ParserIpSpaceTest {
     IpSpaceAstNode expectedNode =
         new IntersectionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1&2.2.2.2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 & 2.2.2.2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1&2.2.2.2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, " 1.1.1.1 & 2.2.2.2 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -182,8 +186,12 @@ public class ParserIpSpaceTest {
     IpSpaceAstNode expectedNode =
         new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1,2.2.2.2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, " 1.1.1.1 , 2.2.2.2 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -194,7 +202,8 @@ public class ParserIpSpaceTest {
             new IntersectionIpSpaceAstNode(new IpAstNode("2.2.2.2"), new IpAstNode("3.3.3.3")));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2&3.3.3.3")), equalTo(expectedNode));
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1,2.2.2.2&3.3.3.3"),
+        equalTo(expectedNode));
   }
 
   /** Test complex terms in set operations */
@@ -207,7 +216,7 @@ public class ParserIpSpaceTest {
             new IpAstNode("3.3.3.3"));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
+        SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3"),
         equalTo(expectedNode2));
   }
 

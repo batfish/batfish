@@ -20,29 +20,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link NodeAstNode}. */
 public class ParserNodeTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.NODE_SPECIFIER));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
-  }
 
   @Test
   public void testCompletionEmpty() {
@@ -109,9 +91,13 @@ public class ParserNodeTest {
   public void testParseNodeRole() {
     RoleNodeAstNode expectedAst = new RoleNodeAstNode("a", "b");
 
-    assertThat(ParserUtils.getAst(getRunner().run("@role(a, b)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @role ( a , b ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@RoLe(a , b)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "@role(a, b)"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " @role ( a , b ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "@RoLe(a , b)"), equalTo(expectedAst));
   }
 
   @Test
@@ -119,8 +105,9 @@ public class ParserNodeTest {
     String name = "node.com-011";
     NameNodeAstNode expectedAst = new NameNodeAstNode(name);
 
-    assertThat(ParserUtils.getAst(getRunner().run(name)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + name + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, name), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " " + name + " "), equalTo(expectedAst));
   }
 
   @Test
@@ -129,9 +116,11 @@ public class ParserNodeTest {
     String regexWithSlashes = "/" + regex + "/";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, regexWithSlashes), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " " + regexWithSlashes + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -139,8 +128,10 @@ public class ParserNodeTest {
     String regex = "node.*";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -148,8 +139,10 @@ public class ParserNodeTest {
     String regex = ".*node.*";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -157,9 +150,12 @@ public class ParserNodeTest {
     String ifaceName = "node-lhr";
     NameNodeAstNode expectedAst = new NameNodeAstNode(ifaceName);
 
-    assertThat(ParserUtils.getAst(getRunner().run("(" + ifaceName + ")")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( " + ifaceName + " ) ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "(" + ifaceName + ")"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " ( " + ifaceName + " ) "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -167,10 +163,15 @@ public class ParserNodeTest {
     TypeNodeAstNode expectedAst =
         new TypeNodeAstNode(new StringAstNode(DeviceType.ROUTER.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@deviceType(router)")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @deviceType ( router ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@DeviCEtype(RouTer)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "@deviceType(router)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " @deviceType ( router ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "@DeviCEtype(RouTer)"),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -178,8 +179,11 @@ public class ParserNodeTest {
     DifferenceNodeAstNode expectedNode =
         new DifferenceNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("node0\\node1")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node0 \\ node1 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0\\node1"), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " node0 \\ node1 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -187,8 +191,11 @@ public class ParserNodeTest {
     IntersectionNodeAstNode expectedNode =
         new IntersectionNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("node0&node1")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node0 & node1 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0&node1"), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " node0 & node1 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -196,23 +203,28 @@ public class ParserNodeTest {
     UnionNodeAstNode expectedNode =
         new UnionNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("node0,node1")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node0 , node1 ")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run("(node0 , node1)")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0,node1"), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, " node0 , node1 "),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "(node0 , node1)"),
+        equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
   public void testParseNodeSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("node0\\node1&eth1")),
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0\\node1&eth1"),
         equalTo(
             new DifferenceNodeAstNode(
                 new NameNodeAstNode("node0"),
                 new IntersectionNodeAstNode(
                     new NameNodeAstNode("node1"), new NameNodeAstNode("eth1")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("node0&node1,eth1")),
+        SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0&node1,eth1"),
         equalTo(
             new UnionNodeAstNode(
                 new IntersectionNodeAstNode(

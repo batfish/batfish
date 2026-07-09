@@ -36,19 +36,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link InterfaceAstNode}. */
 public class ParserInterfaceTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER));
-  }
 
   private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, CompletionMetadata completionMetadata) {
@@ -72,16 +64,6 @@ public class ParserInterfaceTest {
             NodeRolesData.builder().build(),
             referenceLibrary)
         .run();
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
   @Test
@@ -171,20 +153,30 @@ public class ParserInterfaceTest {
     ConnectedToInterfaceAstNode expectedAst =
         new ConnectedToInterfaceAstNode(new IpAstNode("1.1.1.1"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@connectedTo(1.1.1.1)")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @connectedTo ( 1.1.1.1 ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@COnnECTEDTO(1.1.1.1)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@connectedTo(1.1.1.1)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " @connectedTo ( 1.1.1.1 ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@COnnECTEDTO(1.1.1.1)"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseInterfaceInterfaceGroup() {
     InterfaceGroupInterfaceAstNode expectedAst = new InterfaceGroupInterfaceAstNode("a", "b");
 
-    assertThat(ParserUtils.getAst(getRunner().run("@interfacegroup(a, b)")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @interfacegroup ( a , b ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@InterfaceGrouP(a , b)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@interfacegroup(a, b)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " @interfacegroup ( a , b ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@InterfaceGrouP(a , b)"),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -192,8 +184,11 @@ public class ParserInterfaceTest {
     String ifaceName = "ifa-ce0:1/0.0";
     NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
 
-    assertThat(ParserUtils.getAst(getRunner().run(ifaceName)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + ifaceName + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, ifaceName), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " " + ifaceName + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -202,9 +197,12 @@ public class ParserInterfaceTest {
     String regexWithSlashes = "/" + regex + "/";
     NameRegexInterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, regexWithSlashes),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " " + regexWithSlashes + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -212,19 +210,23 @@ public class ParserInterfaceTest {
     String regex = "iface1/0.*";
     InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseInterfaceParens() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("(e1/0)")), equalTo(new NameInterfaceAstNode("e1/0")));
-    assertThat(
-        ParserUtils.getAst(getRunner().run(" ( e1/0 ) ")),
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(e1/0)"),
         equalTo(new NameInterfaceAstNode("e1/0")));
     assertThat(
-        ParserUtils.getAst(getRunner().run("(e1/0&e1/1)")),
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " ( e1/0 ) "),
+        equalTo(new NameInterfaceAstNode("e1/0")));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(e1/0&e1/1)"),
         equalTo(
             new IntersectionInterfaceAstNode(
                 new NameInterfaceAstNode("e1/0"), new NameInterfaceAstNode("e1/1"))));
@@ -236,29 +238,44 @@ public class ParserInterfaceTest {
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run("@interfaceType(physical)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@interfaceType(physical)"),
+        equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @interfaceType ( physical ) ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " @interfaceType ( physical ) "),
+        equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run("@interFAcetype(PHYsical)")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@interFAcetype(PHYsical)"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseInterfaceVrf() {
     VrfInterfaceAstNode expectedAst = new VrfInterfaceAstNode(new StringAstNode("vrf-name"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@vrf(vrf-name)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @vrf ( vrf-name ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@VrF(vrf-name)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@vrf(vrf-name)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " @vrf ( vrf-name ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@VrF(vrf-name)"),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseInterfaceZone() {
     ZoneInterfaceAstNode expectedAst = new ZoneInterfaceAstNode(new StringAstNode("zone-name"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@zone(zone-name)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @zone ( zone-name ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@ZoNe(zone-name)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@zone(zone-name)"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " @zone ( zone-name ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "@ZoNe(zone-name)"),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -267,8 +284,10 @@ public class ParserInterfaceTest {
         new InterfaceWithNodeInterfaceAstNode(
             new NameNodeAstNode("n"), new NameInterfaceAstNode("e"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("n[e]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" n [ e ] ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "n[e]"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " n [ e ] "), equalTo(expectedAst));
   }
 
   @Test
@@ -279,9 +298,15 @@ public class ParserInterfaceTest {
             new UnionInterfaceAstNode(
                 new NameInterfaceAstNode("e1"), new NameInterfaceAstNode("e2")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[e1, e2]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[(e1, e2)]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, (n2))[e1, (e2)]")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(n1, n2)[e1, e2]"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(n1, n2)[(e1, e2)]"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(n1, (n2))[e1, (e2)]"),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -290,8 +315,12 @@ public class ParserInterfaceTest {
         new DifferenceInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0\\loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 \\ loopback0 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0\\loopback0"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " eth0 \\ loopback0 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -300,8 +329,12 @@ public class ParserInterfaceTest {
         new IntersectionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0&loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 & loopback0 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0&loopback0"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " eth0 & loopback0 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -310,22 +343,26 @@ public class ParserInterfaceTest {
         new UnionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0,loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 , loopback0 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0,loopback0"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, " eth0 , loopback0 "),
+        equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
   public void testParseInterfaceSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("eth0\\loopback0&eth1")),
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0\\loopback0&eth1"),
         equalTo(
             new DifferenceInterfaceAstNode(
                 new NameInterfaceAstNode("eth0"),
                 new IntersectionInterfaceAstNode(
                     new NameInterfaceAstNode("loopback0"), new NameInterfaceAstNode("eth1")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("eth0&loopback0,eth1")),
+        SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0&loopback0,eth1"),
         equalTo(
             new UnionInterfaceAstNode(
                 new IntersectionInterfaceAstNode(

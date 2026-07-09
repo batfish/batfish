@@ -360,7 +360,9 @@ oneAppSpec
   | appName
   ;
 
-oneAppIcmp : ICMP SLASH NUM oneAppIcmpType;
+// The code is grammatically optional so an out-of-range type (e.g. icmp/257) is reported as an
+// invalid type by the visitor before the missing code is flagged, matching the parboiled parser.
+oneAppIcmp : ICMP SLASH NUM oneAppIcmpType?;
 
 oneAppIcmpType : SLASH NUM;
 

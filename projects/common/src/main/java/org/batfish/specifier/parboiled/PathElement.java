@@ -1,27 +1,23 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
-import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
-import static org.batfish.specifier.parboiled.ParserUtils.isCharLiteralLabel;
-import static org.batfish.specifier.parboiled.ParserUtils.isStringLiteralLabel;
-
 import com.google.common.base.MoreObjects;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Anchor.Type;
-import org.parboiled.support.MatcherPath.Element;
 
-/** Captures elements of that matched the input or failed to match for invalid input */
+/**
+ * An element along a completion match path: an anchor type, a grammar label, the nesting level, and
+ * the start index in the query. Built by the antlr4-c3 completion adapter ({@link
+ * C3PotentialMatches}).
+ */
 @ParametersAreNonnullByDefault
 final class PathElement {
 
   /** The anchor type of this element */
   private final @Nullable Anchor.Type _anchorType;
 
-  /** The parboiled label for this element */
+  /** The grammar label for this element */
   private String _label;
 
   /** How deep this element is from the start */
@@ -29,18 +25,6 @@ final class PathElement {
 
   /** Where in the input buffer (query) this element starts */
   private int _startIndex;
-
-  static PathElement create(Element element, Map<String, Type> anchorTypes) {
-    String label = element.matcher.getLabel();
-    Anchor.Type anchorType =
-        anchorTypes.containsKey(label)
-            ? anchorTypes.get(label)
-            : isStringLiteralLabel(label)
-                ? STRING_LITERAL
-                : isCharLiteralLabel(label) ? CHAR_LITERAL : null;
-
-    return new PathElement(anchorType, label, element.level, element.startIndex);
-  }
 
   PathElement(@Nullable Anchor.Type anchorType, String label, int level, int startIndex) {
     _anchorType = anchorType;

@@ -65,8 +65,6 @@ BATFISH_MAVEN_ARTIFACTS = [
     "at.yawk.lz4:lz4-java:1.11.1",
     "org.mockito:mockito-core:5.23.0",
     "org.mockito:mockito-inline:5.2.0",
-    "org.parboiled:parboiled-core:1.4.1",
-    "org.parboiled:parboiled-java:1.4.1",
     "org.skyscreamer:jsonassert:1.5.3",
     "org.yaml:snakeyaml:2.6",
     "tools.profiler:async-profiler:4.4",

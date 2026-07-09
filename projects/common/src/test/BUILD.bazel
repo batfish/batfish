@@ -26,8 +26,6 @@ java_library(
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_configuration2",
         "@maven//:org_hamcrest_hamcrest",
-        "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
     ],
 )
 
@@ -69,6 +67,5 @@ junit_tests(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_commons_commons_text",
         "@maven//:org_hamcrest_hamcrest",
-        "@maven//:org_parboiled_parboiled_core",
     ],
 )

@@ -34,10 +34,6 @@ import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /**
  * Tests of {@link Parser} producing {@link EnumSetAstNode}. It uses NamedStructureType as the enum
@@ -45,24 +41,10 @@ import org.parboiled.support.ParsingResult;
  */
 public class ParserEnumSetTest {
 
-  /** */
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static Collection<?> ALL_NAMED_STRUCTURE_TYPES =
+  private static final Collection<?> ALL_NAMED_STRUCTURE_TYPES =
       Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return getRunner(Grammar.NAMED_STRUCTURE_SPECIFIER);
-  }
-
-  private static AbstractParseRunner<AstNode> getRunner(Grammar grammar) {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(grammar));
-  }
-
-  private static AbstractParseRunner<AstNode> getRunner(Collection<?> allValues) {
-    Parser parser = Parser.instance();
-    return new ReportingParseRunner<>(parser.input(parser.EnumSetSpec(allValues)));
-  }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
     return new ParboiledAutoComplete(
@@ -87,17 +69,7 @@ public class ParserEnumSetTest {
             new ValueEnumSetAstNode<>(value1, allValues),
             new ValueEnumSetAstNode<>(value2, allValues));
 
-    assertThat(ParserUtils.getAst(getRunner(grammar).run(query)), equalTo(expectedAst));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
+    assertThat(SpecifierAstBuilder.getAst(grammar, query), equalTo(expectedAst));
   }
 
   @Test
@@ -164,15 +136,18 @@ public class ParserEnumSetTest {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseNamedStructureBad() {
     String query = "faux";
     _thrown.expect(IllegalArgumentException.class);
-    ParserUtils.getAst(getRunner().run(query));
+    SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query);
   }
 
   @Test
@@ -180,8 +155,11 @@ public class ParserEnumSetTest {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST.toLowerCase();
     EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -189,8 +167,11 @@ public class ParserEnumSetTest {
     String query = "/IP/";
     RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("IP");
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -198,8 +179,11 @@ public class ParserEnumSetTest {
     String query = "/ip.*/";
     RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("ip.*");
 
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " " + query + " "),
+        equalTo(expectedAst));
   }
 
   /** Test the base case of not expression and tolerance to spaces with it */
@@ -209,8 +193,12 @@ public class ParserEnumSetTest {
     NotEnumSetAstNode expectedAst =
         new NotEnumSetAstNode(new ValueEnumSetAstNode<>(value, ALL_NAMED_STRUCTURE_TYPES));
 
-    assertThat(ParserUtils.getAst(getRunner().run("!" + value)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" ! " + value)), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, "!" + value),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " ! " + value),
+        equalTo(expectedAst));
   }
 
   /** Test the not expression with regex */
@@ -219,10 +207,14 @@ public class ParserEnumSetTest {
     String regex = "ip.*list";
     NotEnumSetAstNode expectedAst = new NotEnumSetAstNode(new RegexEnumSetAstNode(regex));
 
-    assertThat(ParserUtils.getAst(getRunner().run("!/" + regex + "/")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, "!/" + regex + "/"),
+        equalTo(expectedAst));
 
     // deprecated version
-    assertThat(ParserUtils.getAst(getRunner().run(" ! " + regex)), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, " ! " + regex),
+        equalTo(expectedAst));
   }
 
   /** Test expressions where '!' appears as (at least) one part within a union */
@@ -230,13 +222,12 @@ public class ParserEnumSetTest {
   public void testParseNamedStructureTypeNotUnion() {
     // !a, !b
     assertThat(
-        ParserUtils.getAst(
-            getRunner()
-                .run(
-                    String.format(
-                        "! %s, ! %s",
-                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
-                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        SpecifierAstBuilder.getAst(
+            Grammar.NAMED_STRUCTURE_SPECIFIER,
+            String.format(
+                "! %s, ! %s",
+                NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                NamedStructurePropertySpecifier.IP_6_ACCESS_LIST)),
         equalTo(
             new UnionEnumSetAstNode(
                 new NotEnumSetAstNode(
@@ -248,13 +239,12 @@ public class ParserEnumSetTest {
                         ALL_NAMED_STRUCTURE_TYPES)))));
     // a, !b
     assertThat(
-        ParserUtils.getAst(
-            getRunner()
-                .run(
-                    String.format(
-                        "%s, ! %s",
-                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
-                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        SpecifierAstBuilder.getAst(
+            Grammar.NAMED_STRUCTURE_SPECIFIER,
+            String.format(
+                "%s, ! %s",
+                NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                NamedStructurePropertySpecifier.IP_6_ACCESS_LIST)),
         equalTo(
             new UnionEnumSetAstNode(
                 new ValueEnumSetAstNode<>(
@@ -265,13 +255,12 @@ public class ParserEnumSetTest {
                         ALL_NAMED_STRUCTURE_TYPES)))));
     // !a, b
     assertThat(
-        ParserUtils.getAst(
-            getRunner()
-                .run(
-                    String.format(
-                        "! %s, %s",
-                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
-                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        SpecifierAstBuilder.getAst(
+            Grammar.NAMED_STRUCTURE_SPECIFIER,
+            String.format(
+                "! %s, %s",
+                NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                NamedStructurePropertySpecifier.IP_6_ACCESS_LIST)),
         equalTo(
             new UnionEnumSetAstNode(
                 new NotEnumSetAstNode(
@@ -286,10 +275,10 @@ public class ParserEnumSetTest {
     Collection<String> allValues = ImmutableList.of("long", "longer");
 
     assertThat(
-        ParserUtils.getAst(getRunner(allValues).run("longer")),
+        SpecifierAstBuilder.getEnumSetAst(allValues, "longer"),
         equalTo(new ValueEnumSetAstNode<>("longer", allValues)));
     assertThat(
-        ParserUtils.getAst(getRunner(allValues).run("long")),
+        SpecifierAstBuilder.getEnumSetAst(allValues, "long"),
         equalTo(new ValueEnumSetAstNode<>("long", allValues)));
   }
 
@@ -303,10 +292,12 @@ public class ParserEnumSetTest {
             new RegexEnumSetAstNode(t2Regex));
 
     assertThat(
-        ParserUtils.getAst(getRunner().run(String.format("%s,/%s/", t1, t2Regex))),
+        SpecifierAstBuilder.getAst(
+            Grammar.NAMED_STRUCTURE_SPECIFIER, String.format("%s,/%s/", t1, t2Regex)),
         equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(String.format(" %s , /%s/ ", t1, t2Regex))),
+        SpecifierAstBuilder.getAst(
+            Grammar.NAMED_STRUCTURE_SPECIFIER, String.format(" %s , /%s/ ", t1, t2Regex)),
         equalTo(expectedNode));
   }
 

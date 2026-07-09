@@ -23,29 +23,11 @@ import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link FilterAstNode}. */
 public class ParserFilterTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.FILTER_SPECIFIER));
-  }
-
-  /** This testParses if we have proper completion annotations on the rules */
-  @Test
-  public void testAnchorAnnotations() {
-    ParsingResult<?> result = getRunner().run("");
-
-    // not barfing means all potential paths have completion annotation at least for empty input
-    ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
-  }
 
   @Test
   public void testCompletionEmpty() {
@@ -123,18 +105,26 @@ public class ParserFilterTest {
   public void testParseFilterDirectionIn() {
     InFilterAstNode expectedAst = new InFilterAstNode(new NameInterfaceAstNode("eth0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@in(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @in ( eth0 ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@IN(eth0)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "@in(eth0)"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " @in ( eth0 ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "@IN(eth0)"), equalTo(expectedAst));
   }
 
   @Test
   public void testParseFilterDirectionOut() {
     OutFilterAstNode expectedAst = new OutFilterAstNode(new NameInterfaceAstNode("eth0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@out(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @out ( eth0 ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@OUT(eth0)")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "@out(eth0)"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " @out ( eth0 ) "),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "@OUT(eth0)"), equalTo(expectedAst));
   }
 
   @Test
@@ -142,8 +132,11 @@ public class ParserFilterTest {
     String filterName = "filt-er";
     NameFilterAstNode expectedAst = new NameFilterAstNode(filterName);
 
-    assertThat(ParserUtils.getAst(getRunner().run(filterName)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + filterName + " ")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, filterName), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " " + filterName + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -152,9 +145,12 @@ public class ParserFilterTest {
     String regexWithSlashes = "/" + regex + "/";
     NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, regexWithSlashes),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " " + regexWithSlashes + " "),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -162,19 +158,22 @@ public class ParserFilterTest {
     String regex = "filter.*";
     NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, regex), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " " + regex + " "),
+        equalTo(expectedAst));
   }
 
   @Test
   public void testParseFilterParens() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("(filter)")), equalTo(new NameFilterAstNode("filter")));
-    assertThat(
-        ParserUtils.getAst(getRunner().run(" ( filter ) ")),
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(filter)"),
         equalTo(new NameFilterAstNode("filter")));
     assertThat(
-        ParserUtils.getAst(getRunner().run("(filter1&filter2)")),
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " ( filter ) "),
+        equalTo(new NameFilterAstNode("filter")));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(filter1&filter2)"),
         equalTo(
             new IntersectionFilterAstNode(
                 new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"))));
@@ -186,8 +185,12 @@ public class ParserFilterTest {
         new DifferenceFilterAstNode(
             new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("filter1\\filter2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" filter1 \\ filter2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1\\filter2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " filter1 \\ filter2 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -196,8 +199,12 @@ public class ParserFilterTest {
         new IntersectionFilterAstNode(
             new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("filter1&filter2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" filter1 & filter2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1&filter2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " filter1 & filter2 "),
+        equalTo(expectedNode));
   }
 
   @Test
@@ -205,8 +212,9 @@ public class ParserFilterTest {
     FilterAstNode expectedAst =
         new FilterWithNodeFilterAstNode(new NameNodeAstNode("n"), new NameFilterAstNode("e"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("n[e]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" n [ e ] ")), equalTo(expectedAst));
+    assertThat(SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "n[e]"), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " n [ e ] "), equalTo(expectedAst));
   }
 
   @Test
@@ -216,9 +224,15 @@ public class ParserFilterTest {
             new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
             new UnionFilterAstNode(new NameFilterAstNode("e1"), new NameFilterAstNode("e2")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[e1, e2]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[(e1, e2)]")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("(n1, (n2))[e1, (e2)]")), equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(n1, n2)[e1, e2]"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(n1, n2)[(e1, e2)]"),
+        equalTo(expectedAst));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(n1, (n2))[e1, (e2)]"),
+        equalTo(expectedAst));
   }
 
   @Test
@@ -226,22 +240,26 @@ public class ParserFilterTest {
     UnionFilterAstNode expectedNode =
         new UnionFilterAstNode(new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("filter1,filter2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" filter1 , filter2 ")), equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1,filter2"),
+        equalTo(expectedNode));
+    assertThat(
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, " filter1 , filter2 "),
+        equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
   public void testParseFilterSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("filter1\\filter2&filter3")),
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1\\filter2&filter3"),
         equalTo(
             new DifferenceFilterAstNode(
                 new NameFilterAstNode("filter1"),
                 new IntersectionFilterAstNode(
                     new NameFilterAstNode("filter2"), new NameFilterAstNode("filter3")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("filter1&filter2,filter3")),
+        SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1&filter2,filter3"),
         equalTo(
             new UnionFilterAstNode(
                 new IntersectionFilterAstNode(
