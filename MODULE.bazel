@@ -3,7 +3,7 @@
 # Maven artifact lists
 # Note: MODULE.bazel cannot use load() statements, but can define constants.
 BATFISH_MAVEN_ARTIFACTS = [
-    "com.carrotsearch:hppc:0.10.0",
+    "com.carrotsearch:hppc:0.11.1",
     "com.fasterxml.jackson.core:jackson-annotations",
     "com.fasterxml.jackson.core:jackson-core",
     "com.fasterxml.jackson.core:jackson-databind",
