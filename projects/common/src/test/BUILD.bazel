@@ -50,6 +50,7 @@ junit_tests(
         ":common_testlib",
         "//projects/bdd",
         "//projects/common",
+        "//projects/common/src/main/java/org/batfish/common/util/antlr4c3",
         "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
         "//projects/common/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/common/src/test/java/org/batfish/common/matchers",
