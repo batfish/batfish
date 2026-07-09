@@ -4,6 +4,13 @@ options {
   tokenVocab = SpecifierLexer;
 }
 
+@members {
+  /** Case-insensitive check that the next token's text equals a soft keyword. */
+  private boolean nextIs(String kw) {
+    return _input.LT(1).getText().equalsIgnoreCase(kw);
+  }
+}
+
 // Parser for the Batfish flexible specifier language, replacing the parboiled
 // grammar in Parser.java / CommonParser.java. Each specifier type has its own
 // entry point; the visitor builds the same AstNode tree the parboiled parser
@@ -243,9 +250,10 @@ locationTerm
   | locationParens
   ;
 
-// 'internet' is a soft keyword: it lexes as NAME and is matched by text in the
-// visitor. Optionally followed by an interface-with-node tail.
-locationInternet : name interfaceWithNodeTail?;
+// 'internet' is a soft keyword: it lexes as NAME. Guard with a predicate so a
+// non-internet name falls through to locationInterface. Optionally followed by
+// an interface-with-node tail.
+locationInternet : {nextIs("internet")}? NAME interfaceWithNodeTail?;
 
 locationEnter : AT_ENTER OPEN_PAREN locationInterface CLOSE_PAREN;
 
@@ -303,26 +311,28 @@ ipProtocolNumber : NUM;
 appSpec : appTerm ( COMMA appTerm )*;
 
 appTerm
-  : appName
-  | appNameRegex
-  | appIcmpTerm
+  : appIcmpTerm
   | appTcpTerm
   | appUdpTerm
+  | appName
+  | appNameRegex
   ;
 
-appName : NAME;
+// appName matches a named application; the icmp/tcp/udp soft keywords are
+// handled by their own terms (which appear first), so exclude them here.
+appName : {!nextIs("icmp") && !nextIs("tcp") && !nextIs("udp")}? NAME;
 
 appNameRegex : REGEX;
 
-appIcmpTerm : NAME appIcmpType?;
+appIcmpTerm : {nextIs("icmp")}? NAME appIcmpType?;
 
 appIcmpType : SLASH NUM appIcmpTypeCode?;
 
 appIcmpTypeCode : SLASH NUM;
 
-appTcpTerm : NAME appPortSpec?;
+appTcpTerm : {nextIs("tcp")}? NAME appPortSpec?;
 
-appUdpTerm : NAME appPortSpec?;
+appUdpTerm : {nextIs("udp")}? NAME appPortSpec?;
 
 appPortSpec : SLASH appPortTerm ( COMMA appPortTerm )*;
 
@@ -338,19 +348,19 @@ appPortRange : NUM DASH NUM;
 // ---- Single application ----
 
 oneAppSpec
-  : appName
-  | oneAppIcmp
+  : oneAppIcmp
   | oneAppTcp
   | oneAppUdp
+  | appName
   ;
 
-oneAppIcmp : NAME SLASH NUM oneAppIcmpType;
+oneAppIcmp : {nextIs("icmp")}? NAME SLASH NUM oneAppIcmpType;
 
 oneAppIcmpType : SLASH NUM;
 
-oneAppTcp : NAME SLASH appPort;
+oneAppTcp : {nextIs("tcp")}? NAME SLASH appPort;
 
-oneAppUdp : NAME SLASH appPort;
+oneAppUdp : {nextIs("udp")}? NAME SLASH appPort;
 
 // ---- Name set ----
 
