@@ -61,15 +61,13 @@ public class ParboiledAutoCompleteReferenceBookEntityTest {
   }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
-    return getPAC(Parser.instance(), query, grammar, testLibrary);
+    return getPAC(query, grammar, testLibrary);
   }
 
   private static ParboiledAutoComplete getPAC(
-      Parser parser, String query, Grammar grammar, ReferenceLibrary testLibrary) {
+      String query, Grammar grammar, ReferenceLibrary testLibrary) {
     return new ParboiledAutoComplete(
-        parser,
         grammar,
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,

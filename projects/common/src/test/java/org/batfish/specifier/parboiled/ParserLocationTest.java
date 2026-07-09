@@ -60,9 +60,7 @@ public class ParserLocationTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.LOCATION_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -100,9 +98,7 @@ public class ParserLocationTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.LOCATION_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

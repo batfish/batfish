@@ -598,7 +598,9 @@ final class SpecifierAstBuilder {
       if (term.appPortRange() != null) {
         result =
             PortAppAstNode.createFrom(
-                result, term.appPortRange().NUM(0).getText(), term.appPortRange().NUM(1).getText());
+                result,
+                term.appPort().NUM().getText(),
+                term.appPortRange().appPortRangeEnd().NUM().getText());
       } else {
         result = PortAppAstNode.createFrom(result, term.appPort().NUM().getText());
       }

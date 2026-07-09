@@ -103,7 +103,27 @@ final class C3PotentialMatches {
       Token last = allTokens.get(eofIndex - 1);
       if (isPartialToken(last, query)) {
         collectAt(grammar, query, eofIndex - 1, matches, /* rulesOnly= */ true, last.getType());
+        addAppKeywordPrefixMatches(grammar, allTokens, eofIndex, last, matches);
+        addAppPortRangeDash(grammar, allTokens, eofIndex, last, query, matches);
+      } else if (grammar == Grammar.SINGLE_APPLICATION_SPECIFIER
+          && isAppKeywordToken(last)
+          && last.getStopIndex() == query.length() - 1) {
+        // A trailing complete icmp/tcp/udp keyword in the single-application grammar must be
+        // followed
+        // by '/...'. Replace the standalone '/' match (anchored at the keyword's ONE_APP_* rule)
+        // with the combined "icmp/" anchored at the keyword start, matching parboiled.
+        matches.removeIf(C3PotentialMatches::isSlashLiteralMatch);
+        Anchor.Type anchor = oneAppKeywordAnchor(last.getType());
+        int startChar = last.getStartIndex();
+        matches.add(oneAppKeywordSlashMatch(anchor, last.getText(), startChar));
       }
+    }
+
+    if (grammar == Grammar.SINGLE_APPLICATION_SPECIFIER) {
+      // In the single-application grammar icmp/tcp/udp are only valid as "icmp/...", so rewrite any
+      // bare keyword suggestion (e.g. from the empty-input token candidates) to "icmp/". Doing it
+      // here (rather than via literal extension) avoids the extension machinery double-appending.
+      rewriteOneAppBareKeywords(matches);
     }
 
     return ImmutableSet.copyOf(matches);
@@ -147,10 +167,154 @@ final class C3PotentialMatches {
     };
   }
 
+  /** The type of the nearest default-channel token strictly before index {@code i} (skips WS). */
+  private static int prevDefaultChannelType(List<Token> allTokens, int i) {
+    for (int j = i - 1; j >= 0; j--) {
+      if (allTokens.get(j).getChannel() == Token.DEFAULT_CHANNEL) {
+        return allTokens.get(j).getType();
+      }
+    }
+    return -1;
+  }
+
+  private static boolean isAppKeywordToken(Token token) {
+    int t = token.getType();
+    return t == SpecifierParser.ICMP || t == SpecifierParser.TCP || t == SpecifierParser.UDP;
+  }
+
+  private static boolean isSlashLiteralMatch(PotentialMatch m) {
+    return m.getAnchorType() == Anchor.Type.STRING_LITERAL && "/".equals(m.getMatch());
+  }
+
+  /** A "icmp/" style match anchored at {@code startChar} under the given ONE_APP_* anchor. */
+  private static PotentialMatch oneAppKeywordSlashMatch(
+      Anchor.Type anchor, String keyword, int startChar) {
+    PathElement ancestor = new PathElement(anchor, "oneApp", 0, startChar);
+    PathElement literal =
+        new PathElement(Anchor.Type.STRING_LITERAL, "\"" + keyword + "/\"", 1, startChar);
+    return new PotentialMatch(literal, "", List.of(ancestor, literal));
+  }
+
+  /** Rewrites bare icmp/tcp/udp literal matches to their "icmp/" form for the one-app grammar. */
+  private static void rewriteOneAppBareKeywords(List<PotentialMatch> matches) {
+    for (int i = 0; i < matches.size(); i++) {
+      PotentialMatch m = matches.get(i);
+      String match = m.getMatch();
+      if (m.getAnchorType() == Anchor.Type.STRING_LITERAL && match != null && isAppKeyword(match)) {
+        Anchor.Type anchor =
+            match.equalsIgnoreCase("icmp")
+                ? Anchor.Type.ONE_APP_ICMP
+                : match.equalsIgnoreCase("tcp") ? Anchor.Type.ONE_APP_TCP : Anchor.Type.ONE_APP_UDP;
+        matches.set(i, oneAppKeywordSlashMatch(anchor, match, m.getMatchStartIndex()));
+      }
+    }
+  }
+
+  private static Anchor.Type oneAppKeywordAnchor(int tokenType) {
+    if (tokenType == SpecifierParser.ICMP) {
+      return Anchor.Type.ONE_APP_ICMP;
+    }
+    if (tokenType == SpecifierParser.TCP) {
+      return Anchor.Type.ONE_APP_TCP;
+    }
+    return Anchor.Type.ONE_APP_UDP;
+  }
+
   private static boolean isAppKeyword(String text) {
     return text.equalsIgnoreCase("icmp")
         || text.equalsIgnoreCase("tcp")
         || text.equalsIgnoreCase("udp");
+  }
+
+  /**
+   * In the application specifiers, icmp/tcp/udp are keyword tokens, so a partial name that is a
+   * strict prefix of one (e.g. "ud" -> "udp") does not surface as a keyword candidate from c3.
+   * Offer such keyword completions explicitly, but only at a term-start position (start of input or
+   * right after a ',' term separator), anchored at the partial token's start.
+   */
+  private static void addAppKeywordPrefixMatches(
+      Grammar grammar,
+      List<Token> allTokens,
+      int eofIndex,
+      Token partial,
+      List<PotentialMatch> matches) {
+    if (grammar != Grammar.APPLICATION_SPECIFIER
+        && grammar != Grammar.SINGLE_APPLICATION_SPECIFIER) {
+      return;
+    }
+    if (partial.getType() != SpecifierParser.NAME) {
+      return;
+    }
+    // Term-start: the partial token is the first real token, or the previous real token is a ','.
+    int prevType = prevDefaultChannelType(allTokens, eofIndex - 1);
+    boolean atTermStart = prevType == -1 || prevType == SpecifierParser.COMMA;
+    if (!atTermStart) {
+      return;
+    }
+    String prefix = partial.getText().toLowerCase();
+    int start = partial.getStartIndex();
+    addKeywordPrefixMatch(prefix, "icmp", Anchor.Type.APP_ICMP, start, matches);
+    addKeywordPrefixMatch(prefix, "tcp", Anchor.Type.APP_TCP, start, matches);
+    addKeywordPrefixMatch(prefix, "udp", Anchor.Type.APP_UDP, start, matches);
+  }
+
+  /**
+   * A partial port number in an application port spec (tcp/udp {@code /N}) can begin a range, so
+   * offer '-' (APP_PORT_RANGE) at the caret. c3 does not surface this because the range tail is an
+   * optional continuation the caret-on-token position does not expand.
+   */
+  private static void addAppPortRangeDash(
+      Grammar grammar,
+      List<Token> allTokens,
+      int eofIndex,
+      Token partial,
+      String query,
+      List<PotentialMatch> matches) {
+    if (grammar != Grammar.APPLICATION_SPECIFIER || partial.getType() != SpecifierParser.NUM) {
+      return;
+    }
+    // A '-' (range) may follow only the *first* number of a tcp/udp port term: the number must be
+    // immediately preceded by the '/' that starts the port spec or a ',' between port terms (not by
+    // a '-', which would already be a range), and the term keyword must be tcp/udp (icmp
+    // types/codes
+    // are not ranges).
+    int prevType = prevDefaultChannelType(allTokens, eofIndex - 1);
+    if (prevType != SpecifierParser.SLASH && prevType != SpecifierParser.COMMA) {
+      return;
+    }
+    boolean tcpOrUdpTerm = false;
+    for (int i = eofIndex - 2; i >= 0; i--) {
+      int t = allTokens.get(i).getType();
+      if (t == SpecifierParser.TCP || t == SpecifierParser.UDP) {
+        tcpOrUdpTerm = true;
+        break;
+      }
+      if (t == SpecifierParser.ICMP) {
+        break;
+      }
+    }
+    if (!tcpOrUdpTerm) {
+      return;
+    }
+    PathElement ancestor =
+        new PathElement(Anchor.Type.APP_PORT_RANGE, "appPortRange", 0, query.length());
+    PathElement literal = new PathElement(Anchor.Type.STRING_LITERAL, "\"-\"", 1, query.length());
+    matches.add(new PotentialMatch(literal, "", List.of(ancestor, literal)));
+  }
+
+  private static void addKeywordPrefixMatch(
+      String prefix,
+      String keyword,
+      Anchor.Type anchor,
+      int startChar,
+      List<PotentialMatch> matches) {
+    if (!keyword.startsWith(prefix) || keyword.equals(prefix)) {
+      return;
+    }
+    PathElement ancestor = new PathElement(anchor, "app", 0, startChar);
+    PathElement literal =
+        new PathElement(Anchor.Type.STRING_LITERAL, "\"" + keyword + "\"", 1, startChar);
+    matches.add(new PotentialMatch(literal, "", List.of(ancestor, literal)));
   }
 
   private static CommonTokenStream lex(Grammar grammar, String query) {
@@ -185,7 +349,12 @@ final class C3PotentialMatches {
     addRuleMatches(
         candidates, tokens, query, matches, /* includeRegexOpener= */ !rulesOnly, partialTokenType);
     if (!rulesOnly) {
-      addTokenMatches(candidates, parser.getVocabulary(), tokens, query, matches);
+      addTokenMatches(candidates, parser.getVocabulary(), tokens, query, matches, false);
+    } else {
+      // In the partial-token pass, also surface token candidates that continue the *current* value
+      // term (e.g. '-' to turn a port into a port range), but not operators/parens that require the
+      // term to be complete.
+      addTokenMatches(candidates, parser.getVocabulary(), tokens, query, matches, true);
     }
   }
 
@@ -313,7 +482,8 @@ final class C3PotentialMatches {
       Vocabulary vocabulary,
       CommonTokenStream tokens,
       String query,
-      List<PotentialMatch> matches) {
+      List<PotentialMatch> matches,
+      boolean valueContinuationOnly) {
     for (Map.Entry<Integer, List<CodeCompletionCore.RuleStack>> entry :
         candidates.tokenRuleStacks().entrySet()) {
       int tokenType = entry.getKey();
@@ -328,11 +498,20 @@ final class C3PotentialMatches {
         List<PathElement> path = new ArrayList<>();
         List<Integer> ruleList = stack.ruleList();
         List<Integer> starts = stack.ruleStartTokens();
+        Anchor.Type nearestAnchor = null;
         for (int i = 0; i < ruleList.size(); i++) {
           int ruleIndex = ruleList.get(i);
           Anchor.Type type = SpecifierRuleAnchors.ANCHORS.get(ruleIndex);
+          if (type != null) {
+            nearestAnchor = type;
+          }
           int startChar = charIndexOf(tokens, starts.get(i));
           path.add(new PathElement(type, SpecifierParser.ruleNames[ruleIndex], i, startChar));
+        }
+        // In the partial-token pass only keep tokens that continue the current value term (e.g. the
+        // '-' that turns a port into a port range), not operators/parens requiring a complete term.
+        if (valueContinuationOnly && !isValueContinuationAnchor(nearestAnchor)) {
+          continue;
         }
         // The literal is the anchor; its label carries the token text in quotes so that
         // PotentialMatch.getMatch() returns the literal (mirroring parboiled). It anchors at the
@@ -344,6 +523,14 @@ final class C3PotentialMatches {
         matches.add(new PotentialMatch(literalAnchor, "", path));
       }
     }
+  }
+
+  /** Anchors whose in-rule tokens continue the current value term (not term separators). */
+  private static boolean isValueContinuationAnchor(Anchor.Type anchor) {
+    return anchor == Anchor.Type.APP_PORT_RANGE
+        || anchor == Anchor.Type.APP_PORTS
+        || anchor == Anchor.Type.APP_ICMP_TYPE
+        || anchor == Anchor.Type.APP_ICMP_TYPE_CODE;
   }
 
   /**

@@ -61,15 +61,13 @@ public class ParboiledAutoCompleteInterfaceNameTest {
   }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
-    return getPAC(Parser.instance(), query, grammar, testCompletionMetadata);
+    return getPAC(query, grammar, testCompletionMetadata);
   }
 
   private static ParboiledAutoComplete getPAC(
-      Parser parser, String query, Grammar grammar, CompletionMetadata completionMetadata) {
+      String query, Grammar grammar, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
-        parser,
         grammar,
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,

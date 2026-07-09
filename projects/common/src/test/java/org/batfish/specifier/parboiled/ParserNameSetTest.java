@@ -32,8 +32,6 @@ public class ParserNameSetTest {
   private static ParboiledAutoComplete getPAC(String query) {
     return new ParboiledAutoComplete(
         Grammar.MLAG_ID_SPECIFIER,
-        Parser.instance().getInputRule(Grammar.MLAG_ID_SPECIFIER),
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,

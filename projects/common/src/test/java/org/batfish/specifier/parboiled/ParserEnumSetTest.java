@@ -67,8 +67,6 @@ public class ParserEnumSetTest {
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
     return new ParboiledAutoComplete(
         grammar,
-        Parser.instance().getInputRule(grammar),
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -109,8 +107,6 @@ public class ParserEnumSetTest {
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
                 Grammar.NAMED_STRUCTURE_SPECIFIER,
-                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -143,8 +139,6 @@ public class ParserEnumSetTest {
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
                 Grammar.NAMED_STRUCTURE_SPECIFIER,
-                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

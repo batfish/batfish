@@ -51,9 +51,7 @@ public class ParserRoutingPolicyTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.ROUTING_POLICY_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -83,9 +81,7 @@ public class ParserRoutingPolicyTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.ROUTING_POLICY_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

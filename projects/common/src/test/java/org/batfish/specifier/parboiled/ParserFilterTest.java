@@ -59,9 +59,7 @@ public class ParserFilterTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.FILTER_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -100,9 +98,7 @@ public class ParserFilterTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.FILTER_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

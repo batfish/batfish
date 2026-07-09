@@ -41,9 +41,7 @@ public class ParserIpSpaceTest {
   private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
-            Parser.instance(),
             Grammar.IP_SPACE_SPECIFIER,
-            Parser.ANCHORS,
             "network",
             "snapshot",
             query,
@@ -78,9 +76,7 @@ public class ParserIpSpaceTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.IP_SPACE_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

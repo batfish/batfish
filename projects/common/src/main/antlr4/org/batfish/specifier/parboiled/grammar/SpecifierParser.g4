@@ -341,14 +341,15 @@ appUdpTerm : UDP appPortSpec?;
 
 appPortSpec : SLASH appPortTerm ( COMMA appPortTerm )*;
 
-appPortTerm
-  : appPortRange
-  | appPort
-  ;
+// Left-factored so that after the first number a '-' (port range) is a visible continuation for
+// autocompletion. The visitor treats the presence of the range tail as a range.
+appPortTerm : appPort appPortRange?;
 
 appPort : NUM;
 
-appPortRange : NUM DASH NUM;
+appPortRange : DASH appPortRangeEnd;
+
+appPortRangeEnd : NUM;
 
 // ---- Single application ----
 

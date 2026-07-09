@@ -59,15 +59,13 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
   }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
-    return getPAC(Parser.instance(), query, grammar, testNodeRolesData);
+    return getPAC(query, grammar, testNodeRolesData);
   }
 
   private static ParboiledAutoComplete getPAC(
-      Parser parser, String query, Grammar grammar, NodeRolesData testNodeRolesData) {
+      String query, Grammar grammar, NodeRolesData testNodeRolesData) {
     return new ParboiledAutoComplete(
-        parser,
         grammar,
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,

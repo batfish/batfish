@@ -48,9 +48,7 @@ public class ParserIpProtocolTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.IP_PROTOCOL_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -82,9 +80,7 @@ public class ParserIpProtocolTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.IP_PROTOCOL_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -107,9 +103,7 @@ public class ParserIpProtocolTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.IP_PROTOCOL_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -184,8 +178,6 @@ public class ParserIpProtocolTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Grammar.IP_PROTOCOL_SPECIFIER,
-            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
-            Parser.ANCHORS,
             "network",
             "snapshot",
             query,

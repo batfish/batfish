@@ -26,7 +26,6 @@ import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -48,10 +47,6 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.parboiled.Rule;
-import org.parboiled.errors.InvalidInputError;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /** A helper class that provides auto complete suggestions */
 @ParametersAreNonnullByDefault
@@ -73,8 +68,6 @@ public final class ParboiledAutoComplete {
   }
 
   private final Grammar _grammar;
-  private final Rule _inputRule;
-  private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
   private final String _snapshot;
@@ -85,33 +78,7 @@ public final class ParboiledAutoComplete {
   private final ReferenceLibrary _referenceLibrary;
 
   ParboiledAutoComplete(
-      CommonParser parser,
       Grammar grammar,
-      Map<String, Anchor.Type> completionTypes,
-      String network,
-      String snapshot,
-      String query,
-      int maxSuggestions,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
-    this(
-        grammar,
-        parser.getInputRule(grammar),
-        completionTypes,
-        network,
-        snapshot,
-        query,
-        maxSuggestions,
-        completionMetadata,
-        nodeRolesData,
-        referenceLibrary);
-  }
-
-  ParboiledAutoComplete(
-      Grammar grammar,
-      Rule inputRule,
-      Map<String, Anchor.Type> completionTypes,
       String network,
       String snapshot,
       String query,
@@ -120,8 +87,6 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     _grammar = grammar;
-    _inputRule = inputRule;
-    _completionTypes = completionTypes;
     _network = network;
     _snapshot = snapshot;
     _query = query;
@@ -145,12 +110,9 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
                 grammar,
-                parser.getInputRule(grammar),
-                Parser.ANCHORS,
                 network,
                 snapshot,
                 query,
@@ -171,30 +133,6 @@ public final class ParboiledAutoComplete {
   }
 
   private Set<PotentialMatch> getPotentialMatches(String query) {
-    /**
-     * Before passing the query to the parser, we make it illegal by adding a funny, non-ascii
-     * character (soccer ball :)). We will not get any errors backs if the string is legal.
-     */
-    String testQuery = query + new String(Character.toChars(ILLEGAL_CHAR));
-
-    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_inputRule).run(testQuery);
-    if (result.parseErrors.isEmpty()) {
-      throw new IllegalStateException("Failed to force erroneous input");
-    }
-
-    InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
-
-    return ParserUtils.getPotentialMatches(error, _completionTypes, false);
-  }
-
-  /**
-   * The antlr4-c3-based completion engine. It reproduces the parboiled completions for all
-   * specifier grammars except a few application-specifier literal-extension cases; it will replace
-   * {@link #getPotentialMatches} once those are covered, after which the parboiled parser can be
-   * deleted.
-   */
-  @SuppressWarnings("unused")
-  private Set<PotentialMatch> getPotentialMatchesC3(String query) {
     return C3PotentialMatches.getPotentialMatches(_grammar, query);
   }
 

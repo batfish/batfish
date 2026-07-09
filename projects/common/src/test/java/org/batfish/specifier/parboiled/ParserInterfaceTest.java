@@ -63,9 +63,7 @@ public class ParserInterfaceTest {
   private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, CompletionMetadata completionMetadata, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
-            Parser.instance(),
             Grammar.INTERFACE_SPECIFIER,
-            Parser.ANCHORS,
             "network",
             "snapshot",
             query,
@@ -98,9 +96,7 @@ public class ParserInterfaceTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.INTERFACE_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
@@ -149,9 +145,7 @@ public class ParserInterfaceTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance(),
                 Grammar.INTERFACE_SPECIFIER,
-                Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,

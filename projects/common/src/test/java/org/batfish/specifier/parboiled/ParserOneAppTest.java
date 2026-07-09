@@ -39,9 +39,7 @@ public class ParserOneAppTest {
 
   private static ParboiledAutoComplete getPAC(String query) {
     return new ParboiledAutoComplete(
-        Parser.instance(),
         Grammar.SINGLE_APPLICATION_SPECIFIER,
-        Parser.ANCHORS,
         "network",
         "snapshot",
         query,
