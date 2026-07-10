@@ -24,7 +24,7 @@ This section provides information about the Batfish development environment, tec
 
 ### Prerequisites
 
-- Java 17 or later
+- Java JDK 21 (minimum) or 25 (preferred)
 - [Bazelisk](https://github.com/bazelbuild/bazelisk#installation)
 - Python 3.10 or later (for Pybatfish)
 - Docker (for containerized deployment)

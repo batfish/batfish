@@ -105,7 +105,7 @@ REPIN=1 bazel run @maven//:pin
 **Diagnosis**:
 ```bash
 # Check Java version
-java -version  # Should be Java 17
+java -version  # Should be JDK 21 (minimum) or 25 (preferred)
 
 # Check what Bazel is using
 bazel info --jvmopt
@@ -114,11 +114,10 @@ bazel info --jvmopt
 **Solutions**:
 ```bash
 # Set JAVA_HOME explicitly
-export JAVA_HOME=/path/to/java17
+export JAVA_HOME=/path/to/java25
 
-# Or use Bazel config
-echo "build --java_language_version=17" >> ~/.bazelrc
-echo "build --tool_java_language_version=17" >> ~/.bazelrc
+# Or use Bazel config to pin the runtime
+echo "build --java_runtime_version=remotejdk_25" >> ~/.bazelrc
 ```
 
 ---

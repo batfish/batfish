@@ -68,7 +68,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: "25"
       - name: Checkstyle
         run: tools/run_checkstyle.sh
   bazel_build_test_and_pmd:
@@ -86,14 +86,14 @@ jobs:
         uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
-            ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
+            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: "25"
       - name: Bazel build and test
         run: |
           # Stop on first test failure for PRs; keep going for scheduled runs to see all failures
@@ -110,7 +110,7 @@ jobs:
       - name: Save JAR
         uses: actions/upload-artifact@v7
         with:
-          name: allinone_jar_17
+          name: allinone_jar_25
           path: workspace/allinone.jar
   code_cov:
     needs:
@@ -137,7 +137,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: "25"
       - name: Bazel Junit Tests and Coverage
         run: |
           bazel coverage //projects/... \

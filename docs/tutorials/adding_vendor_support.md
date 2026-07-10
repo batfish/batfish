@@ -45,7 +45,7 @@ re-running the pipeline for each newly-exercised feature. SR-OS was built this w
 1. **ANTLR4 basics**: lexer/parser concepts. New to it? Read the
    [example code](../example_code/new_vendor/) (the "CoolNOS" scaffold) and
    [ANTLR4 tips](../parsing/antlr4_tips.md) first.
-2. **Java 17**, and comfort reading existing vendor code.
+2. **Java JDK 21 or later** (25 preferred), and comfort reading existing vendor code.
 3. **Read the canonical docs first.** Read [Parsing](../parsing/README.md), the
    [Implementation Guide](../parsing/implementation_guide.md), and
    [Extraction](../extraction/README.md) before writing code — the steps below assume
