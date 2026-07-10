@@ -3490,7 +3490,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testDnsForwardersExtraction() {
     JuniperConfiguration config = parseJuniperConfig("dns-proxy");
-    assertThat(config.getMasterLogicalSystem().getDnsForwarders(), contains("8.8.4.4"));
+    assertThat(config.getMasterLogicalSystem().getDnsForwarders(), contains(Ip.parse("8.8.4.4")));
   }
 
   @Test

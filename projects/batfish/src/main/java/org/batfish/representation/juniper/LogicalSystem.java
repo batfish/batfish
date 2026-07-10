@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.Nat.Type;
@@ -48,7 +49,7 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _dnsServers;
 
-  private final NavigableSet<String> _dnsForwarders;
+  private final NavigableSet<Ip> _dnsForwarders;
 
   private final Set<String> _dnsProxyInterfaces;
 
@@ -256,7 +257,7 @@ public class LogicalSystem implements Serializable {
     return _dnsServers;
   }
 
-  public NavigableSet<String> getDnsForwarders() {
+  public NavigableSet<Ip> getDnsForwarders() {
     return _dnsForwarders;
   }
 

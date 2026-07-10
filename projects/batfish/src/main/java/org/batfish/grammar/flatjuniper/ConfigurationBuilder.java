@@ -4003,7 +4003,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSyservd_forwarders(Syservd_forwardersContext ctx) {
-    _currentLogicalSystem.getDnsForwarders().add(toIp(ctx.name).toString());
+    _currentLogicalSystem.getDnsForwarders().add(toIp(ctx.name));
   }
 
   @Override
