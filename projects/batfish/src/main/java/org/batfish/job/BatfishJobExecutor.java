@@ -96,6 +96,11 @@ public class BatfishJobExecutor {
    * @param <JobResultT> type of {@link BatfishJobResult} which will contain the result of the job
    * @param <OutputT> type of data structure to which job result will be applied
    */
+  // We call pool.shutdown() in a finally that spans everything after the pool is created, rather
+  // than using try-with-resources: ExecutorService.close() blocks awaiting termination, but on the
+  // error path we want the exception to propagate immediately without waiting for in-flight jobs.
+  // PMD's CloseResource only recognizes close()/try-with-resources, not shutdown(), so suppress it.
+  @SuppressWarnings("PMD.CloseResource")
   private <
           JobT extends BatfishJob<JobResultT>,
           AnswerElementT extends AnswerElement,
@@ -110,20 +115,21 @@ public class BatfishJobExecutor {
 
     // Initializing executors
     ExecutorService pool = createExecutorService();
-    ExecutorCompletionService<JobResultT> completionService = new ExecutorCompletionService<>(pool);
-
-    if (!_settings.getSequential() && _settings.getShuffleJobs()) {
-      Collections.shuffle(jobs);
-    }
-
-    for (JobT job : jobs) {
-      completionService.submit(job);
-    }
-
-    initializeJobsStats(jobs, description);
-    boolean processingError = false;
-    List<BatfishException> failureCauses = new ArrayList<>();
     try {
+      ExecutorCompletionService<JobResultT> completionService =
+          new ExecutorCompletionService<>(pool);
+
+      if (!_settings.getSequential() && _settings.getShuffleJobs()) {
+        Collections.shuffle(jobs);
+      }
+
+      for (JobT job : jobs) {
+        completionService.submit(job);
+      }
+
+      initializeJobsStats(jobs, description);
+      boolean processingError = false;
+      List<BatfishException> failureCauses = new ArrayList<>();
       for (int i = 0; i < jobs.size(); i++) {
 
         JobResultT result = null;
@@ -144,14 +150,14 @@ public class BatfishJobExecutor {
           processingError = true;
         }
       }
+
+      if (processingError) {
+        handleProcessingError(jobs, failureCauses, haltOnProcessingError);
+      } else if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+        _logger.info("All jobs executed successfully\n");
+      }
     } finally {
       pool.shutdown();
-    }
-
-    if (processingError) {
-      handleProcessingError(jobs, failureCauses, haltOnProcessingError);
-    } else if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-      _logger.info("All jobs executed successfully\n");
     }
   }
 
