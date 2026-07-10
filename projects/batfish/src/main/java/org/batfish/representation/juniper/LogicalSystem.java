@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.Nat.Type;
@@ -47,6 +48,10 @@ public class LogicalSystem implements Serializable {
   private RoutingInstance _defaultRoutingInstance;
 
   private NavigableSet<String> _dnsServers;
+
+  private final NavigableSet<Ip> _dnsForwarders;
+
+  private final Set<String> _dnsProxyInterfaces;
 
   private final Map<String, Integer> _dscpAliases;
 
@@ -142,6 +147,8 @@ public class LogicalSystem implements Serializable {
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
+    _dnsForwarders = new TreeSet<>();
+    _dnsProxyInterfaces = new TreeSet<>();
     _dscpAliases = new TreeMap<>();
     _expAliases = new TreeMap<>();
     _ieee8021pAliases = new TreeMap<>();
@@ -248,6 +255,14 @@ public class LogicalSystem implements Serializable {
 
   public NavigableSet<String> getDnsServers() {
     return _dnsServers;
+  }
+
+  public NavigableSet<Ip> getDnsForwarders() {
+    return _dnsForwarders;
+  }
+
+  public Set<String> getDnsProxyInterfaces() {
+    return _dnsProxyInterfaces;
   }
 
   public Map<String, Integer> getDscpAliases() {

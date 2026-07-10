@@ -3540,6 +3540,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.setDefaultRoutingInstance(ls.getDefaultRoutingInstance());
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
+    _masterLogicalSystem.getDnsForwarders().clear();
+    _masterLogicalSystem.getDnsForwarders().addAll(ls.getDnsForwarders());
+    _masterLogicalSystem.getDnsProxyInterfaces().clear();
+    _masterLogicalSystem.getDnsProxyInterfaces().addAll(ls.getDnsProxyInterfaces());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
     _masterLogicalSystem.getSecurityPolicies().putAll(ls.getSecurityPolicies());
     _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());

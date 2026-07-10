@@ -3468,6 +3468,32 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testDnsProxyParsing() {
+    JuniperConfiguration config = parseJuniperConfig("dns-proxy");
+    assertThat(config.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testDnsProxyExtraction() {
+    JuniperConfiguration config = parseJuniperConfig("dns-proxy");
+    assertThat(
+        config.getMasterLogicalSystem().getDnsProxyInterfaces(),
+        containsInAnyOrder("ge-0/0/0.0", "ge-0/0/1.0"));
+  }
+
+  @Test
+  public void testDnsProxyExtractionAbsent() {
+    JuniperConfiguration config = parseJuniperConfig("dns-no-proxy");
+    assertThat(config.getMasterLogicalSystem().getDnsProxyInterfaces(), empty());
+  }
+
+  @Test
+  public void testDnsForwardersExtraction() {
+    JuniperConfiguration config = parseJuniperConfig("dns-proxy");
+    assertThat(config.getMasterLogicalSystem().getDnsForwarders(), contains(Ip.parse("8.8.4.4")));
+  }
+
+  @Test
   public void testAggregateDefaults() {
     Configuration config = parseConfig("aggregate-defaults");
 
