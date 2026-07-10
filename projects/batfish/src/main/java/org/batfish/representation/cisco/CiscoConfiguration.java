@@ -1348,6 +1348,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         || name.startsWith("HundredGigabitEthernet")
         || name.startsWith("HundredGigE")
         || name.startsWith("FiftyGigE")
+        || name.startsWith("FiveGigabitEthernet")
         || name.startsWith("FortyGigE")
         || name.startsWith("FourHundredGigE")
         || name.startsWith("TenGigabitEthernet")
