@@ -8046,7 +8046,7 @@ M_Rd_COLON: ':' -> type(COLON);
 M_Rd_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
 M_Rd_PERIOD: '.' -> type(PERIOD);
 M_Rd_UINT16: F_Uint16 -> type(UINT16);
-M_Rd_UINT32: F_Uint16 -> type(UINT16);
+M_Rd_UINT32: F_Uint32 -> type(UINT32);
 M_Rd_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Rd_WS: F_Whitespace+ -> channel(HIDDEN);
 

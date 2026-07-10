@@ -284,6 +284,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
@@ -762,6 +763,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_nexthopContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_nameContext;
@@ -1198,6 +1200,31 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     String[] parts = ctx.asn4b.getText().split("\\.");
     return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
+  }
+
+  private @Nullable RouteDistinguisher toRouteDistinguisher(
+      ParserRuleContext messageCtx, Route_distinguisherContext ctx) {
+    // The M_Rd lexer mode produces at most UINT32 tokens, so both the ASN and the
+    // assigned number are guaranteed to fit in 32 bits here.
+    long admin2 = toLong(ctx.uint_legacy());
+    if (ctx.IP_ADDRESS() != null) {
+      if (admin2 > 0xFFFFL) {
+        warn(messageCtx, "Invalid route distinguisher: " + ctx.getText());
+        return null;
+      }
+      return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) admin2);
+    }
+    long asn = toAsNum(ctx.bgp_asn());
+    if (asn <= 0xFFFFL) {
+      // type 0: 2-byte ASN administrator, 4-byte assigned number
+      return RouteDistinguisher.from((int) asn, admin2);
+    }
+    if (admin2 <= 0xFFFFL) {
+      // type 2: 4-byte ASN administrator, 2-byte assigned number
+      return RouteDistinguisher.from(asn, (int) admin2);
+    }
+    warn(messageCtx, "Invalid route distinguisher: " + ctx.getText());
+    return null;
   }
 
   private static Ip toIp(TerminalNode t) {
@@ -2998,7 +3025,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBgp_vrf_rd(Bgp_vrf_rdContext ctx) {
-    todo(ctx);
+    RouteDistinguisher rd = toRouteDistinguisher(ctx, ctx.route_distinguisher());
+    if (rd != null) {
+      currentVrf().setRouteDistinguisher(rd);
+    }
   }
 
   @Override
