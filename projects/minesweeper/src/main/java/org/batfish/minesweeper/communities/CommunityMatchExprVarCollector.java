@@ -120,18 +120,47 @@ public class CommunityMatchExprVarCollector
     checkArgument(
         usesColonSeparatedRendering(rendering),
         "Currently only supporting community regexes using the colon-separated rendering");
+    return regexToCommunityVars(communityMatchRegex.getRegex(), rendering);
+  }
 
-    String regex = communityMatchRegex.getRegex();
+  /**
+   * Determines which community vars are needed for a regex under the given rendering.
+   *
+   * <p>Always includes a regex var for matching against the colon-separated universe. For
+   * SpecialCasesRendering, also includes exact vars for any special-case community whose rendered
+   * name or colon form interacts with the regex. This ensures atomic predicates are split finely
+   * enough for the BDD builder to correctly include/exclude individual communities.
+   */
+  public static Set<CommunityVar> regexToCommunityVars(String regex, CommunityRendering rendering) {
     ImmutableSet.Builder<CommunityVar> vars = ImmutableSet.builder();
     vars.add(CommunityVar.from(regex));
-    // For SpecialCasesRendering, also include exact community vars for any special-case
-    // communities whose rendered name is matched by the regex.
+    Pattern pattern = Pattern.compile(regex);
     for (Map.Entry<Community, String> entry : getSpecialCases(rendering).entrySet()) {
-      if (Pattern.compile(regex).matcher(entry.getValue()).find()) {
+      if (pattern.matcher(entry.getValue()).find()
+          || pattern.matcher(entry.getKey().matchString()).find()) {
         vars.add(CommunityVar.from(entry.getKey()));
       }
     }
     return vars.build();
+  }
+
+  /**
+   * Returns special-case communities whose colon form matches the regex but whose rendered name
+   * does not. These should be subtracted from the regex BDD because FRR evaluates the regex against
+   * the rendered name, not the colon form.
+   */
+  public static Set<CommunityVar> regexExcludedSpecialCases(
+      String regex, CommunityRendering rendering) {
+    ImmutableSet.Builder<CommunityVar> excluded = ImmutableSet.builder();
+    Pattern pattern = Pattern.compile(regex);
+    for (Map.Entry<Community, String> entry : getSpecialCases(rendering).entrySet()) {
+      boolean nameMatches = pattern.matcher(entry.getValue()).find();
+      boolean colonFormMatches = pattern.matcher(entry.getKey().matchString()).find();
+      if (colonFormMatches && !nameMatches) {
+        excluded.add(CommunityVar.from(entry.getKey()));
+      }
+    }
+    return excluded.build();
   }
 
   /**
@@ -149,8 +178,12 @@ public class CommunityMatchExprVarCollector
     return false;
   }
 
-  /** Returns the map from community to rendered name for all special cases in the rendering. */
-  private static Map<Community, String> getSpecialCases(CommunityRendering rendering) {
+  /**
+   * Returns the map from community to rendered name for all special cases in the rendering. For
+   * example, {NO_EXPORT -> "no-export", NO_ADVERTISE -> "no-advertise"}. Recurses through nested
+   * {@link SpecialCasesRendering} fallbacks.
+   */
+  public static Map<Community, String> getSpecialCases(CommunityRendering rendering) {
     if (rendering instanceof SpecialCasesRendering specialCases) {
       ImmutableMap.Builder<Community, String> builder = ImmutableMap.builder();
       builder.putAll(specialCases.getSpecialCases());
