@@ -4,7 +4,7 @@ import static org.batfish.specifier.ToSpecifierString.toSpecifierString;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.util.isp.IspModelingUtils;
-import org.batfish.specifier.parboiled.InternetLocationAstNode;
+import org.batfish.specifier.parse.InternetLocationAstNode;
 import org.junit.Test;
 
 /** Test for {@link ToSpecifierString}. */

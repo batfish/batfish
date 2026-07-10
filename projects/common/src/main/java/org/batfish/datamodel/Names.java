@@ -22,7 +22,7 @@ public final class Names {
    * Enum for different types of names with regexes that describes valid names.
    *
    * <p>If the regex of any of the names here is changed, ensure that corresponding grammar rules in
-   * org.batfish.specifier.parboiled.CommonParser are also updated
+   * org.batfish.specifier.parse.CommonParser are also updated
    */
   public enum Type {
     /**

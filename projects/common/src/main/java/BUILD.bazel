@@ -101,7 +101,7 @@ specifier_common_srcs = [
     "org/batfish/specifier/ReferenceFilterGroupFilterSpecifier.java",
     "org/batfish/specifier/RoutingProtocolSpecifier.java",
     "org/batfish/specifier/SpecifierFactories.java",
-] + glob(["org/batfish/specifier/parboiled/*.java"])
+] + glob(["org/batfish/specifier/parse/*.java"])
 
 java_library(
     name = "specifier_common",
@@ -110,7 +110,7 @@ java_library(
         ":common_lib",
         ":parser_common",
         "//projects/bdd",
-        "//projects/common/src/main/antlr4/org/batfish/specifier/parboiled/grammar:specifier_grammar",
+        "//projects/common/src/main/antlr4/org/batfish/specifier/parse/grammar:specifier_grammar",
         "//projects/common/src/main/java/org/batfish/common/util/antlr4c3",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
