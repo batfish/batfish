@@ -4,17 +4,12 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "check_point_management",
+    name = "serviceother",
     srcs = glob(
         ["**/*.java"],
         exclude = ["BUILD.bazel"],
     ),
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/serviceother",
-        "//projects/common",
-        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_commons_commons_lang3",
@@ -23,5 +18,5 @@ java_library(
 
 pmd_test(
     name = "pmd",
-    lib = ":check_point_management",
+    lib = ":serviceother",
 )
