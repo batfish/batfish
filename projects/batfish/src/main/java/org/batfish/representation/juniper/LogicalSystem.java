@@ -48,7 +48,7 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _dnsServers;
 
-  private boolean _dnsProxyEnabled;
+  private final NavigableSet<String> _dnsForwarders;
 
   private final Set<String> _dnsProxyInterfaces;
 
@@ -146,6 +146,7 @@ public class LogicalSystem implements Serializable {
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
+    _dnsForwarders = new TreeSet<>();
     _dnsProxyInterfaces = new TreeSet<>();
     _dscpAliases = new TreeMap<>();
     _expAliases = new TreeMap<>();
@@ -255,12 +256,8 @@ public class LogicalSystem implements Serializable {
     return _dnsServers;
   }
 
-  public boolean getDnsProxyEnabled() {
-    return _dnsProxyEnabled;
-  }
-
-  public void setDnsProxyEnabled(boolean dnsProxyEnabled) {
-    _dnsProxyEnabled = dnsProxyEnabled;
+  public NavigableSet<String> getDnsForwarders() {
+    return _dnsForwarders;
   }
 
   public Set<String> getDnsProxyInterfaces() {

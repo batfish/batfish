@@ -267,8 +267,14 @@ syserv_dns
    DNS
    (
       syservd_dns_proxy
+      | syservd_forwarders
       | syservd_null
    )
+;
+
+syservd_forwarders
+:
+   FORWARDERS name = ip_address
 ;
 
 syservd_dns_proxy
@@ -284,7 +290,6 @@ syservd_null
 :
    (
       DNSSEC
-      | FORWARDERS
       | MAX_CACHE_TTL
       | MAX_NCACHE_TTL
       | TRACEOPTIONS

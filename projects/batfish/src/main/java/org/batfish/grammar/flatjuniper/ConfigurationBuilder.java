@@ -1004,6 +1004,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_ftpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_sshContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_telnetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syservd_forwardersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syservddp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
@@ -4001,9 +4002,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSyservd_forwarders(Syservd_forwardersContext ctx) {
+    _currentLogicalSystem.getDnsForwarders().add(toIp(ctx.name).toString());
+  }
+
+  @Override
   public void exitSyservddp_interface(Syservddp_interfaceContext ctx) {
     String ifaceName = getInterfaceFullName(ctx.iface);
-    _currentLogicalSystem.setDnsProxyEnabled(true);
     _currentLogicalSystem.getDnsProxyInterfaces().add(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, SYSTEM_SERVICES_DNS_PROXY_INTERFACE, getLine(ctx.iface.getStart()));
