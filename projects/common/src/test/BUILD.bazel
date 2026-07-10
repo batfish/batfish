@@ -26,8 +26,6 @@ java_library(
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_configuration2",
         "@maven//:org_hamcrest_hamcrest",
-        "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
     ],
 )
 
@@ -50,6 +48,7 @@ junit_tests(
         ":common_testlib",
         "//projects/bdd",
         "//projects/common",
+        "//projects/common/src/main/java/org/batfish/common/util/antlr4c3",
         "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
         "//projects/common/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/common/src/test/java/org/batfish/common/matchers",
@@ -68,6 +67,5 @@ junit_tests(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_commons_commons_text",
         "@maven//:org_hamcrest_hamcrest",
-        "@maven//:org_parboiled_parboiled_core",
     ],
 )

@@ -93,7 +93,7 @@ import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
+import org.batfish.specifier.parse.ParsedIpSpaceSpecifier;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
@@ -496,7 +496,7 @@ public class Client extends AbstractClient implements IClient {
                   "A Batfish %s must be a JSON string with IpSpaceSpec grammar",
                   expectedType.getName()));
         }
-        ParboiledIpSpaceSpecifier.parse(value.asText());
+        ParsedIpSpaceSpecifier.parse(value.asText());
         break;
       case IP_WILDCARD:
         if (!value.isTextual()) {

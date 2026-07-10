@@ -67,8 +67,6 @@
     "org.jgrapht:jgrapht-core": -733997147,
     "org.mockito:mockito-core": 1330163800,
     "org.mockito:mockito-inline": 724093597,
-    "org.parboiled:parboiled-core": 179926754,
-    "org.parboiled:parboiled-java": 517971365,
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": 359292282,
     "repositories": -1949687017,
@@ -293,17 +291,7 @@
     "org.opentest4j:opentest4j": -1711174392,
     "org.opentest4j:opentest4j:jar:sources": -1740624156,
     "org.ow2.asm:asm": -153858314,
-    "org.ow2.asm:asm-analysis": 820111867,
-    "org.ow2.asm:asm-analysis:jar:sources": -1263606580,
-    "org.ow2.asm:asm-tree": 1769195083,
-    "org.ow2.asm:asm-tree:jar:sources": 1806688935,
-    "org.ow2.asm:asm-util": 635814825,
-    "org.ow2.asm:asm-util:jar:sources": -358803464,
     "org.ow2.asm:asm:jar:sources": 1372783843,
-    "org.parboiled:parboiled-core": 1851660128,
-    "org.parboiled:parboiled-core:jar:sources": 200753406,
-    "org.parboiled:parboiled-java": 967132897,
-    "org.parboiled:parboiled-java:jar:sources": -1922688500,
     "org.pcollections:pcollections": -311488717,
     "org.pcollections:pcollections:jar:sources": 238016638,
     "org.skyscreamer:jsonassert": -852848867,
@@ -1110,41 +1098,6 @@
       },
       "version": "9.10.1"
     },
-    "org.ow2.asm:asm-analysis": {
-      "shasums": {
-        "jar": "878fbe521731c072d14d2d65b983b1beae6ad06fda0007b6a8bae81f73f433c4",
-        "sources": "c5a6764bbcee9e4bcd8ee1ea33808f96b8b587371f329aa75a2f541f2ee1b0d5"
-      },
-      "version": "9.2"
-    },
-    "org.ow2.asm:asm-tree": {
-      "shasums": {
-        "jar": "aabf9bd23091a4ebfc109c1f3ee7cf3e4b89f6ba2d3f51c5243f16b3cffae011",
-        "sources": "c35bc5b4b6c54bf15abec34ab821cf9d0801a64451f4f6070d93dcb87122aa08"
-      },
-      "version": "9.2"
-    },
-    "org.ow2.asm:asm-util": {
-      "shasums": {
-        "jar": "ff5b3cd331ae8a9a804768280da98f50f424fef23dd3c788bb320e08c94ee598",
-        "sources": "b631d4561a24e84eaeee2c0495added214e4961ed328b02300f7d9b1f407c853"
-      },
-      "version": "9.2"
-    },
-    "org.parboiled:parboiled-core": {
-      "shasums": {
-        "jar": "71fadab3044387df87ce502aee0bd81835778df50f3689b743518e886a5865e4",
-        "sources": "f86742a9e12f4b4513967b3608400a70b9419d4a997ba60efced51bfa726a65c"
-      },
-      "version": "1.4.1"
-    },
-    "org.parboiled:parboiled-java": {
-      "shasums": {
-        "jar": "f21b6baab93a16f812b939fcb18b42edd83a9d8019c0a6d14449636fdeb22d1e",
-        "sources": "5b0995f9aa2a24676cca9502ba22c3afd9750de2698e13a9b0f266c3c9ba82b2"
-      },
-      "version": "1.4.1"
-    },
     "org.pcollections:pcollections": {
       "shasums": {
         "jar": "2bbeef5797a241300c4f7513cd546239629ed7deda4fc0c31df90bb95f5f13ef",
@@ -1483,24 +1436,6 @@
     ],
     "org.mockito:mockito-inline": [
       "org.mockito:mockito-core"
-    ],
-    "org.ow2.asm:asm-analysis": [
-      "org.ow2.asm:asm-tree"
-    ],
-    "org.ow2.asm:asm-tree": [
-      "org.ow2.asm:asm"
-    ],
-    "org.ow2.asm:asm-util": [
-      "org.ow2.asm:asm",
-      "org.ow2.asm:asm-analysis",
-      "org.ow2.asm:asm-tree"
-    ],
-    "org.parboiled:parboiled-java": [
-      "org.ow2.asm:asm",
-      "org.ow2.asm:asm-analysis",
-      "org.ow2.asm:asm-tree",
-      "org.ow2.asm:asm-util",
-      "org.parboiled:parboiled-core"
     ],
     "org.skyscreamer:jsonassert": [
       "com.vaadin.external.google:android-json"
@@ -2995,32 +2930,6 @@
       "org.objectweb.asm",
       "org.objectweb.asm.signature"
     ],
-    "org.ow2.asm:asm-analysis": [
-      "org.objectweb.asm.tree.analysis"
-    ],
-    "org.ow2.asm:asm-tree": [
-      "org.objectweb.asm.tree"
-    ],
-    "org.ow2.asm:asm-util": [
-      "org.objectweb.asm.util"
-    ],
-    "org.parboiled:parboiled-core": [
-      "org.parboiled",
-      "org.parboiled.buffers",
-      "org.parboiled.common",
-      "org.parboiled.errors",
-      "org.parboiled.matchers",
-      "org.parboiled.matchervisitors",
-      "org.parboiled.parserunners",
-      "org.parboiled.support",
-      "org.parboiled.trees"
-    ],
-    "org.parboiled:parboiled-java": [
-      "org.parboiled",
-      "org.parboiled.annotations",
-      "org.parboiled.test",
-      "org.parboiled.transform"
-    ],
     "org.pcollections:pcollections": [
       "org.pcollections"
     ],
@@ -3310,17 +3219,7 @@
       "org.opentest4j:opentest4j",
       "org.opentest4j:opentest4j:jar:sources",
       "org.ow2.asm:asm",
-      "org.ow2.asm:asm-analysis",
-      "org.ow2.asm:asm-analysis:jar:sources",
-      "org.ow2.asm:asm-tree",
-      "org.ow2.asm:asm-tree:jar:sources",
-      "org.ow2.asm:asm-util",
-      "org.ow2.asm:asm-util:jar:sources",
       "org.ow2.asm:asm:jar:sources",
-      "org.parboiled:parboiled-core",
-      "org.parboiled:parboiled-core:jar:sources",
-      "org.parboiled:parboiled-java",
-      "org.parboiled:parboiled-java:jar:sources",
       "org.pcollections:pcollections",
       "org.pcollections:pcollections:jar:sources",
       "org.skyscreamer:jsonassert",

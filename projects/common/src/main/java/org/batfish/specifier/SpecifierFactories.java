@@ -2,16 +2,16 @@ package org.batfish.specifier;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.ParboiledAppSpecifier;
-import org.batfish.specifier.parboiled.ParboiledEnumSetSpecifier;
-import org.batfish.specifier.parboiled.ParboiledFilterSpecifier;
-import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
-import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier;
-import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
-import org.batfish.specifier.parboiled.ParboiledLocationSpecifier;
-import org.batfish.specifier.parboiled.ParboiledNameSetSpecifier;
-import org.batfish.specifier.parboiled.ParboiledNodeSpecifier;
-import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifier;
+import org.batfish.specifier.parse.ParsedAppSpecifier;
+import org.batfish.specifier.parse.ParsedEnumSetSpecifier;
+import org.batfish.specifier.parse.ParsedFilterSpecifier;
+import org.batfish.specifier.parse.ParsedInterfaceSpecifier;
+import org.batfish.specifier.parse.ParsedIpProtocolSpecifier;
+import org.batfish.specifier.parse.ParsedIpSpaceSpecifier;
+import org.batfish.specifier.parse.ParsedLocationSpecifier;
+import org.batfish.specifier.parse.ParsedNameSetSpecifier;
+import org.batfish.specifier.parse.ParsedNodeSpecifier;
+import org.batfish.specifier.parse.ParsedRoutingPolicySpecifier;
 
 /**
  * This class enables a global choice of the grammar that is used by different question parameters.
@@ -33,34 +33,34 @@ public final class SpecifierFactories {
 
   public static ApplicationSpecifier getApplicationSpecifier(String input, Version version) {
     return switch (version) {
-      case V1, V2 -> ParboiledAppSpecifier.parse(input);
+      case V1, V2 -> ParsedAppSpecifier.parse(input);
     };
   }
 
   public static FilterSpecifier getFilterSpecifier(String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 filter grammar has been nixed");
-      case V2 -> ParboiledFilterSpecifier.parse(input);
+      case V2 -> ParsedFilterSpecifier.parse(input);
     };
   }
 
   public static InterfaceSpecifier getInterfaceSpecifier(String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 interface grammar has been nixed");
-      case V2 -> ParboiledInterfaceSpecifier.parse(input);
+      case V2 -> ParsedInterfaceSpecifier.parse(input);
     };
   }
 
   public static IpProtocolSpecifier getIpProtocolSpecifier(String input, Version version) {
     return switch (version) {
-      case V1, V2 -> ParboiledIpProtocolSpecifier.parse(input);
+      case V1, V2 -> ParsedIpProtocolSpecifier.parse(input);
     };
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifier(String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
-      case V2 -> ParboiledIpSpaceSpecifier.parse(input);
+      case V2 -> ParsedIpSpaceSpecifier.parse(input);
     };
   }
 
@@ -68,41 +68,41 @@ public final class SpecifierFactories {
       String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
-      case V2 -> ParboiledIpSpaceSpecifier.parse(input);
+      case V2 -> ParsedIpSpaceSpecifier.parse(input);
     };
   }
 
   public static LocationSpecifier getLocationSpecifier(String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 location grammar has been nixed");
-      case V2 -> ParboiledLocationSpecifier.parse(input);
+      case V2 -> ParsedLocationSpecifier.parse(input);
     };
   }
 
   public static <T> EnumSetSpecifier<T> getEnumSetSpecifier(
       String input, Grammar grammar, Version version) {
     return switch (version) {
-      case V1, V2 -> ParboiledEnumSetSpecifier.parse(input, grammar);
+      case V1, V2 -> ParsedEnumSetSpecifier.parse(input, grammar);
     };
   }
 
   public static NameSetSpecifier getNameSetSpecifier(
       String input, Grammar grammar, Version version) {
     return switch (version) {
-      case V1, V2 -> ParboiledNameSetSpecifier.parse(input, grammar);
+      case V1, V2 -> ParsedNameSetSpecifier.parse(input, grammar);
     };
   }
 
   public static NodeSpecifier getNodeSpecifier(String input, Version version) {
     return switch (version) {
       case V1 -> throw new IllegalArgumentException("V1 grammar has been completely removed");
-      case V2 -> ParboiledNodeSpecifier.parse(input);
+      case V2 -> ParsedNodeSpecifier.parse(input);
     };
   }
 
   public static RoutingPolicySpecifier getRoutingPolicySpecifier(String input, Version version) {
     return switch (version) {
-      case V1, V2 -> ParboiledRoutingPolicySpecifier.parse(input);
+      case V1, V2 -> ParsedRoutingPolicySpecifier.parse(input);
     };
   }
 

@@ -4,7 +4,7 @@ import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage
 import static org.batfish.datamodel.answers.InputValidationUtils.validateIp;
 import static org.batfish.datamodel.answers.InputValidationUtils.validatePrefix;
 import static org.batfish.datamodel.answers.InputValidationUtils.validateSourceLocation;
-import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_LOCATION;
+import static org.batfish.specifier.parse.InternetLocationAstNode.INTERNET_LOCATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
