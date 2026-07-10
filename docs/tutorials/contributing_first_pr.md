@@ -25,7 +25,7 @@ You'll make a simple documentation fix or improvement to Batfish. This could be:
 Before starting, ensure you have:
 
 1. **Git installed**: `git --version`
-2. **Java 17 JDK**: `java -version` (should show 17.x.x)
+2. **Java JDK**: `java -version` (should show 21.x.x or later; 25 preferred)
 3. **Bazelisk**: `bazelisk version`
 4. **GitHub account**: [Create one here](https://github.com/signup)
 

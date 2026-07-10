@@ -8,7 +8,7 @@ or can be [set up separately](https://github.com/batfish/pybatfish#how-do-i-get-
 
 ## Prerequisites
 
-- Java 17 JDK
+- Java JDK 21 (minimum) or 25 (preferred)
 - Python 3.10 or later (for Pybatfish)
 - git
 - [`bazelisk`](https://github.com/bazelbuild/bazelisk#installation)
@@ -32,11 +32,11 @@ Do the following before doing anything
 
 1. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-1. If you don't already have the Java 17 JDK installed, first install homebrew cask and then Java 17
-   using the following commands.
+1. If you don't already have a suitable Java JDK installed, first install homebrew cask and then Java
+   using the following commands. Batfish requires JDK 21 at a minimum; JDK 25 is preferred.
 
    - `brew tap homebrew/cask-versions`
-   - `brew install --cask temurin17`
+   - `brew install --cask temurin@25`
 
 1. If you don't already have it, install Bazelisk.
    - `brew install bazelisk`
@@ -45,9 +45,10 @@ Do the following before doing anything
 
 Do the following before doing anything
 
-1. Install Java 17 and corresponding debug symbols
+1. Install a Java JDK and corresponding debug symbols. Batfish requires JDK 21 at a minimum;
+   JDK 25 is preferred.
 
-   - `sudo apt install openjdk-17-jdk openjdk-17-dbg`
+   - `sudo apt install openjdk-21-jdk openjdk-21-dbg`
 
 1. If you don't already have it, install `wget`:
 
@@ -73,20 +74,20 @@ Do the following before doing anything
 ### Note: multiple versions of Java
 
 If you have multiple versions of Java installed on your machine, the default `java`/`javac` commands may still not be
-using JVM 17. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
+using a supported JVM. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
 in his `.zshrc` to control which Java is running in a given shell on macOS:
 
 ```sh
 # Java options
-# j11q switches to Java 11, quietly. Could make a loud version that runs `java -version` after.
-function j11q() {
-    export JAVA_HOME=`/usr/libexec/java_home -v 11`
+# j21q switches to Java 21, quietly. Could make a loud version that runs `java -version` after.
+function j21q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 21`
 }
-function j17q() {
-    export JAVA_HOME=`/usr/libexec/java_home -v 17`
+function j25q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 25`
 }
-# Default to Java 17.
-j17q
+# Default to Java 25.
+j25q
 ```
 
 ## Installation steps
