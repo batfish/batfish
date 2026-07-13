@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -18,9 +19,11 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.VrfAddressFamily;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -88,5 +91,23 @@ public final class GitHub10062Test {
     assertThat(c.getVrfs().get("bad_ip_admin").getRouteDistinguisher(), nullValue());
     // invalid: 4-byte ASN administrator requires a 2-byte assigned number
     assertThat(c.getVrfs().get("bad_asn4_val4").getRouteDistinguisher(), nullValue());
+  }
+
+  @Test
+  public void testVrfRouteTargetExtraction() {
+    // Route-targets under router bgp / vrf / address-family, including a 4-byte asplain
+    // ASN administrator (the extcommunity/RT half of GH-10062). The 4-byte forms must both
+    // parse cleanly and be extracted onto the VRF address-family import/export sets.
+    CiscoXrConfiguration c = parseVendorConfig("gh10062rt");
+    assertThat(c.getVrfs(), hasKeys("default", "rt_test"));
+    VrfAddressFamily af = c.getVrfs().get("rt_test").getIpv4UnicastAddressFamily();
+    assertThat(
+        af.getRouteTargetImport(),
+        containsInAnyOrder(
+            ExtendedCommunity.target(65000L, 100L),
+            ExtendedCommunity.target(4200000001L, 200L)));
+    assertThat(
+        af.getRouteTargetExport(),
+        containsInAnyOrder(ExtendedCommunity.target(4200000001L, 300L)));
   }
 }
