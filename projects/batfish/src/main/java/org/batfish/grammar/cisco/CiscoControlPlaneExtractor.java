@@ -634,7 +634,9 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
+import org.batfish.grammar.cisco.CiscoParser.If_isis_enableContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.If_isis_passiveContext;
 import org.batfish.grammar.cisco.CiscoParser.If_member_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
@@ -5702,6 +5704,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     long metric = toLong(ctx.metric);
     for (Interface iface : _currentInterfaces) {
       iface.setIsisCost(metric);
+    }
+  }
+
+  @Override
+  public void exitIf_isis_enable(If_isis_enableContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+    }
+  }
+
+  @Override
+  public void exitIf_isis_passive(If_isis_passiveContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
     }
   }
 
