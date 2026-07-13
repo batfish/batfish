@@ -8,3 +8,13 @@ set system syslog host 1.2.3.4 source-address 5.6.7.8
 set system syslog host 1.2.3.4 routing-instance RI
 set system syslog host 1.2.3.4 explicit-priority
 #
+# Full host: facility+severity, port, transport, routing-instance
+set system syslog host 2.3.4.5 any notice
+set system syslog host 2.3.4.5 port 6514
+set system syslog host 2.3.4.5 transport tcp
+set system syslog host 2.3.4.5 routing-instance mgmt
+#
+# Multiple facility/severity pairs on one host
+set system syslog host 3.4.5.6 kernel error
+set system syslog host 3.4.5.6 daemon warning
+#

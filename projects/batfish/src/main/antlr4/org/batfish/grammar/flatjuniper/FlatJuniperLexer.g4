@@ -175,6 +175,8 @@ ALARM_WITHOUT_DROP: 'alarm-without-drop';
 
 ALARM_THRESHOLD: 'alarm-threshold';
 
+ALERT: 'alert';
+
 ALG: 'alg';
 
 ALGORITHM: 'algorithm';
@@ -195,6 +197,8 @@ ALLOW_SNOOPED_CLIENTS: 'allow-snooped-clients';
 ALLOW_TCP_FORWARDING: 'allow-tcp-forwarding';
 
 ALLOW_V4MAPPED_PACKETS: 'allow-v4mapped-packets';
+
+ALTERNATE_FORMAT: 'alternate-format';
 
 ALWAYS_COMPARE_MED: 'always-compare-med';
 
@@ -235,6 +239,8 @@ APPLY_MACRO: 'apply-macro';
 APPLY_PATH: 'apply-path';
 
 ARCHIVE: 'archive';
+
+ARCHIVE_SITES: 'archive-sites';
 
 AREA: 'area';
 
@@ -347,6 +353,8 @@ BGP_ERROR_TOLERANCE: 'bgp-error-tolerance';
 BGP_OUTPUT_QUEUE_PRIORITY: 'bgp-output-queue-priority';
 
 BIFF: 'biff';
+
+BINARY_DATA: 'binary-data';
 
 BIND_INTERFACE
 :
@@ -463,6 +471,8 @@ CONDITIONAL_METRIC: 'conditional-metric';
 
 CONFEDERATION: 'confederation';
 
+CONFLICT_LOG: 'conflict-log';
+
 CONNECTIONS: 'connections';
 
 CONNECTION_LIMIT: 'connection-limit';
@@ -482,6 +492,7 @@ COS_NEXT_HOP_MAP: 'cos-next-hop-map' -> pushMode(M_Name);
 COUNT: 'count' -> pushMode(M_Name);
 
 CREDIBILITY_PROTOCOL_PREFERENCE: 'credibility-protocol-preference';
+CRITICAL: 'critical';
 CROSS_CREDIBILITY_CSPF: 'cross-credibility-cspf';
 CVSPSERVER: 'cvspserver';
 
@@ -607,6 +618,8 @@ DESTINATION_UNREACHABLE: 'destination-unreachable';
 
 DF_BIT: 'df-bit';
 
+DFC: 'dfc';
+
 DH_GROUP: 'dh-group';
 
 DHCP: 'dhcp';
@@ -707,6 +720,8 @@ EKSHELL: 'ekshell';
 
 ELIGIBLE: 'eligible';
 
+EMERGENCY: 'emergency';
+
 ENABLE: 'enable';
 
 ENCAPSULATION: 'encapsulation';
@@ -722,6 +737,8 @@ ENGINE_ID: 'engine-id';
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
 
 EQUAL_COST_PATHS: 'equal-cost-paths';
+
+ERROR: 'error';
 
 ESP: 'esp';
 
@@ -747,6 +764,7 @@ EXACT: 'exact';
 EXCEPT: 'except';
 EXCESS_RATE: 'excess-rate';
 EXCLUDE: 'exclude';
+EXCLUDE_HOSTNAME: 'exclude-hostname';
 EXCLUDE_NON_ELIGIBLE: 'exclude-non-eligible';
 EXCLUDE_NON_FEASIBLE: 'exclude-non-feasible';
 EXEC: 'exec';
@@ -806,7 +824,8 @@ FAST_REROUTE: 'fast-reroute';
 
 FASTETHER_OPTIONS: 'fastether-options';
 
-FILE: 'file';
+FILE: 'file' -> pushMode(M_Name);
+FILES: 'files';
 FILL_LEVEL: 'fill-level';
 FILTER: 'filter' -> pushMode(M_Filter);
 FILTER_DUPLICATES: 'filter-duplicates';
@@ -929,6 +948,8 @@ GROUP24: 'group24';
 GROUP5: 'group5';
 
 GROUPS: 'groups' -> pushMode(M_Name);
+
+GRPC_REPLAY: 'grpc-replay';
 
 HALF_LIFE: 'half-life';
 
@@ -1130,6 +1151,8 @@ INET6_MVPN: 'inet6-mvpn';
 INET_VPN: 'inet-vpn';
 
 INET6_VPN: 'inet6-vpn';
+
+INFO: 'info';
 
 INFO_REPLY: 'info-reply';
 
@@ -1817,6 +1840,7 @@ LOG: 'log';
 LOG_LSP_HISTORY: 'log-lsp-history';
 LOG_OUT_ON_DISCONNECT: 'log-out-on-disconnect';
 LOG_PREFIX: 'log-prefix';
+LOG_ROTATE_FREQUENCY: 'log-rotate-frequency';
 LOG_UPDOWN: 'log-updown';
 LOGICAL_INTERFACE_POLICER: 'logical-interface-policer';
 LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
@@ -1875,6 +1899,8 @@ MASK_REQUEST: 'mask-request';
 MASTER_ONLY: 'master-only';
 
 MATCH: 'match';
+
+MATCH_STRINGS: 'match-strings';
 
 MAX_CACHE_TTL: 'max-cache-ttl';
 
@@ -2098,6 +2124,7 @@ NO_ANTI_REPLAY: 'no-anti-replay';
 NO_ARP: 'no-arp';
 NO_AUTO_NEGOTIATION: 'no-auto-negotiation';
 NO_AUTO_POLICING: 'no-auto-policing';
+NO_BINARY_DATA: 'no-binary-data';
 NO_CHALLENGE_RESPONSE: 'no-challenge-response';
 NO_CLIENT_REFLECT: 'no-client-reflect';
 NO_CSPF: 'no-cspf';
@@ -2134,6 +2161,7 @@ NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
 NO_TRAPS: 'no-traps';
+NO_WORLD_READABLE: 'no-world-readable';
 
 NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);
 
@@ -2143,6 +2171,7 @@ NODE_LINK_PROTECTION: 'node-link-protection';
 NONE: 'none';
 NONSTOP_ROUTING: 'nonstop-routing';
 NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
+NOTICE: 'notice';
 NOTIFICATION_RIB: 'notification-rib' -> pushMode(M_Name);
 
 NSSA: 'nssa';
@@ -2228,6 +2257,8 @@ PERMIT: 'permit';
 PERMIT_ALL: 'permit-all';
 
 PERSISTENT_NAT: 'persistent-nat';
+
+PFE: 'pfe';
 
 PGM: 'pgm';
 
@@ -2772,6 +2803,16 @@ SIMPLE: 'simple';
 SINGLE_CONNECTION: 'single-connection';
 SIP: 'sip';
 
+SIZE
+:
+  'size'
+  {
+    if (lastTokenType() == ARCHIVE) {
+      pushMode(M_Bandwidth);
+    }
+  }
+;
+
 SMTP: 'smtp';
 SMART_OPTIMIZE_TIMER: 'smart-optimize-timer';
 
@@ -2981,6 +3022,9 @@ TIMESTAMP: 'timestamp';
 TIMESTAMP_OPTION: 'timestamp-option';
 TIMESTAMP_REPLY: 'timestamp-reply';
 
+TLS: 'tls';
+TLSDETAILS: 'tlsdetails';
+
 TO: 'to';
 TO_ZONE: 'to-zone' -> pushMode(M_Zone);
 TOLERANCE: 'tolerance';
@@ -2991,8 +3035,10 @@ TRACEROUTE: 'traceroute';
 TRACK: 'track';
 TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles' -> pushMode(M_Name);
 TRAFFIC_ENGINEERING: 'traffic-engineering';
+TRANSFER_INTERVAL: 'transfer-interval';
 TRANSLATION_TABLE: 'translation-table';
 TRANSMIT_RATE: 'transmit-rate' -> pushMode(M_TransmitRate);
+TRANSPORT: 'transport';
 TRAP: 'trap';
 TRAP_DESTINATIONS: 'trap-destinations';
 TRAP_GROUP: 'trap-group' -> pushMode(M_Name);
@@ -3147,6 +3193,8 @@ VXLAN: 'vxlan';
 
 VXLAN_ROUTING: 'vxlan-routing';
 
+WARNING: 'warning';
+
 WEB_MANAGEMENT: 'web-management';
 
 WEBAPI: 'webapi';
@@ -3161,6 +3209,7 @@ WILDCARD_ADDRESS: 'wildcard-address';
 
 WINNUKE: 'winnuke';
 WITHDRAW_PRIORITY: 'withdraw-priority';
+WORLD_READABLE: 'world-readable';
 XAUTH: 'xauth';
 
 XDMCP: 'xdmcp';

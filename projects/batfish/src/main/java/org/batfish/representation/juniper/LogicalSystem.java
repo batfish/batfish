@@ -117,7 +117,9 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Srlg> _srlgs;
 
-  private NavigableSet<String> _syslogHosts;
+  private Map<String, JunosSyslogFile> _syslogFiles;
+
+  private Map<String, JunosSyslogHost> _syslogHosts;
 
   private NavigableSet<String> _tacplusServers;
 
@@ -178,7 +180,8 @@ public class LogicalSystem implements Serializable {
     _securityPolicies = new TreeMap<>();
     _snmpClientLists = new TreeMap<>();
     _srlgs = new HashMap<>();
-    _syslogHosts = new TreeSet<>();
+    _syslogFiles = new TreeMap<>();
+    _syslogHosts = new TreeMap<>();
     _tacplusServers = new TreeSet<>();
     _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
@@ -452,7 +455,11 @@ public class LogicalSystem implements Serializable {
     return _snmpClientLists;
   }
 
-  public NavigableSet<String> getSyslogHosts() {
+  public Map<String, JunosSyslogFile> getSyslogFiles() {
+    return _syslogFiles;
+  }
+
+  public Map<String, JunosSyslogHost> getSyslogHosts() {
     return _syslogHosts;
   }
 
@@ -520,7 +527,11 @@ public class LogicalSystem implements Serializable {
     _natStatic = natStatic;
   }
 
-  public void setSyslogHosts(NavigableSet<String> syslogHosts) {
+  public void setSyslogFiles(Map<String, JunosSyslogFile> syslogFiles) {
+    _syslogFiles = syslogFiles;
+  }
+
+  public void setSyslogHosts(Map<String, JunosSyslogHost> syslogHosts) {
     _syslogHosts = syslogHosts;
   }
 }
