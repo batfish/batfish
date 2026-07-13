@@ -18,3 +18,27 @@ set system syslog host 2.3.4.5 routing-instance mgmt
 set system syslog host 3.4.5.6 kernel error
 set system syslog host 3.4.5.6 daemon warning
 #
+# Every facility paired with a severity so all facility and severity
+# grammar branches are exercised (severities cycle to cover all values).
+set system syslog host 4.5.6.7 any any
+set system syslog host 4.5.6.7 authorization none
+set system syslog host 4.5.6.7 change-log emergency
+set system syslog host 4.5.6.7 conflict-log alert
+set system syslog host 4.5.6.7 daemon critical
+set system syslog host 4.5.6.7 dfc error
+set system syslog host 4.5.6.7 external warning
+set system syslog host 4.5.6.7 firewall notice
+set system syslog host 4.5.6.7 ftp info
+set system syslog host 4.5.6.7 interactive-commands any
+set system syslog host 4.5.6.7 kernel none
+set system syslog host 4.5.6.7 ntp emergency
+set system syslog host 4.5.6.7 pfe alert
+set system syslog host 4.5.6.7 user critical
+#
+# Transport tls (tcp covered above; udp below) so all transport branches hit
+set system syslog host 5.6.7.8 any info
+set system syslog host 5.6.7.8 transport tls
+#
+set system syslog host 6.7.8.9 any info
+set system syslog host 6.7.8.9 transport udp
+#

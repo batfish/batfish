@@ -8,7 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * A syslog file configured under {@code system syslog file <name>}.
  *
- * <p>Captures the archive settings Batfish extracts: the raw archive size (with its unit) and the
+ * <p>Captures the archive settings Batfish extracts: the archive size (normalized to bytes) and the
  * archive file count.
  */
 @ParametersAreNonnullByDefault
@@ -16,11 +16,11 @@ public class JunosSyslogFile implements Serializable {
 
   private final @Nonnull String _name;
 
-  /** Raw {@code archive size} value, as written in the config (not normalized to bytes). */
-  private @Nullable Long _archiveSize;
-
-  /** Unit of {@link #_archiveSize}; {@code null} when no size is configured. */
-  private @Nullable JunosSyslogArchiveSizeUnit _archiveSizeUnit;
+  /**
+   * Archive size in bytes. Junos {@code k}/{@code m}/{@code g} suffixes are 1024-based and are
+   * normalized to bytes at extraction; a bare value is already in bytes.
+   */
+  private @Nullable Long _archiveSizeBytes;
 
   private @Nullable Integer _archiveFileCount;
 
@@ -32,18 +32,12 @@ public class JunosSyslogFile implements Serializable {
     return _name;
   }
 
-  public @Nullable Long getArchiveSize() {
-    return _archiveSize;
+  public @Nullable Long getArchiveSizeBytes() {
+    return _archiveSizeBytes;
   }
 
-  public @Nullable JunosSyslogArchiveSizeUnit getArchiveSizeUnit() {
-    return _archiveSizeUnit;
-  }
-
-  /** Set the raw archive size and its unit together. */
-  public void setArchiveSize(long archiveSize, JunosSyslogArchiveSizeUnit archiveSizeUnit) {
-    _archiveSize = archiveSize;
-    _archiveSizeUnit = archiveSizeUnit;
+  public void setArchiveSizeBytes(@Nullable Long archiveSizeBytes) {
+    _archiveSizeBytes = archiveSizeBytes;
   }
 
   public @Nullable Integer getArchiveFileCount() {

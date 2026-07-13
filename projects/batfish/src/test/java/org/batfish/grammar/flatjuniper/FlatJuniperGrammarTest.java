@@ -459,7 +459,6 @@ import org.batfish.representation.juniper.JuniperAuthenticationKeyChain;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
-import org.batfish.representation.juniper.JunosSyslogArchiveSizeUnit;
 import org.batfish.representation.juniper.JunosSyslogFacility;
 import org.batfish.representation.juniper.JunosSyslogFile;
 import org.batfish.representation.juniper.JunosSyslogHost;
@@ -1236,7 +1235,7 @@ public final class FlatJuniperGrammarTest {
   public void testSyslogHostExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-syslog");
     Map<String, JunosSyslogHost> hosts = c.getMasterLogicalSystem().getSyslogHosts();
-    assertThat(hosts, hasKeys("1.2.3.4", "2.3.4.5", "3.4.5.6"));
+    assertThat(hosts, hasKeys("1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7", "5.6.7.8", "6.7.8.9"));
 
     // Host with multiple facility/severity pairs and a routing-instance; facility-override,
     // source-address, and explicit-priority are recognized but not extracted.
@@ -1271,6 +1270,34 @@ public final class FlatJuniperGrammarTest {
     assertThat(multi.getPort(), nullValue());
     assertThat(multi.getTransportProtocol(), nullValue());
     assertThat(multi.getRoutingInstance(), nullValue());
+
+    // Every facility paired with a severity so all facility/severity branches are covered.
+    JunosSyslogHost all = hosts.get("4.5.6.7");
+    assertThat(
+        all.getFacilitySeverities(),
+        equalTo(
+            ImmutableMap.<JunosSyslogFacility, JunosSyslogSeverity>builder()
+                .put(JunosSyslogFacility.ANY, JunosSyslogSeverity.ANY)
+                .put(JunosSyslogFacility.AUTHORIZATION, JunosSyslogSeverity.NONE)
+                .put(JunosSyslogFacility.CHANGE_LOG, JunosSyslogSeverity.EMERGENCY)
+                .put(JunosSyslogFacility.CONFLICT_LOG, JunosSyslogSeverity.ALERT)
+                .put(JunosSyslogFacility.DAEMON, JunosSyslogSeverity.CRITICAL)
+                .put(JunosSyslogFacility.DFC, JunosSyslogSeverity.ERROR)
+                .put(JunosSyslogFacility.EXTERNAL, JunosSyslogSeverity.WARNING)
+                .put(JunosSyslogFacility.FIREWALL, JunosSyslogSeverity.NOTICE)
+                .put(JunosSyslogFacility.FTP, JunosSyslogSeverity.INFO)
+                .put(JunosSyslogFacility.INTERACTIVE_COMMANDS, JunosSyslogSeverity.ANY)
+                .put(JunosSyslogFacility.KERNEL, JunosSyslogSeverity.NONE)
+                .put(JunosSyslogFacility.NTP, JunosSyslogSeverity.EMERGENCY)
+                .put(JunosSyslogFacility.PFE, JunosSyslogSeverity.ALERT)
+                .put(JunosSyslogFacility.USER, JunosSyslogSeverity.CRITICAL)
+                .build()));
+
+    // Remaining transport protocols: tls and udp (tcp covered above).
+    assertThat(
+        hosts.get("5.6.7.8").getTransportProtocol(), equalTo(JunosSyslogTransportProtocol.TLS));
+    assertThat(
+        hosts.get("6.7.8.9").getTransportProtocol(), equalTo(JunosSyslogTransportProtocol.UDP));
   }
 
   @Test
@@ -1278,7 +1305,10 @@ public final class FlatJuniperGrammarTest {
     // Vendor-independent conversion still emits the set of host IPs.
     Configuration c = parseConfig("juniper-syslog");
     assertThat(
-        c.getLoggingServers(), equalTo(ImmutableSortedSet.of("1.2.3.4", "2.3.4.5", "3.4.5.6")));
+        c.getLoggingServers(),
+        equalTo(
+            ImmutableSortedSet.of(
+                "1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7", "5.6.7.8", "6.7.8.9")));
   }
 
   @Test
@@ -1287,22 +1317,19 @@ public final class FlatJuniperGrammarTest {
     Map<String, JunosSyslogFile> files = c.getMasterLogicalSystem().getSyslogFiles();
     assertThat(files, hasKeys("messages", "bytes-only", "count-only"));
 
-    // Archive size with unit and archive file count both set
+    // Archive size with unit (10m -> 10 * 1024 * 1024 bytes) and archive file count both set
     JunosSyslogFile messages = files.get("messages");
-    assertThat(messages.getArchiveSize(), equalTo(10L));
-    assertThat(messages.getArchiveSizeUnit(), equalTo(JunosSyslogArchiveSizeUnit.MEGABYTES));
+    assertThat(messages.getArchiveSizeBytes(), equalTo(10L * 1024 * 1024));
     assertThat(messages.getArchiveFileCount(), equalTo(5));
 
     // Archive size in bare bytes (no unit); no file count
     JunosSyslogFile bytesOnly = files.get("bytes-only");
-    assertThat(bytesOnly.getArchiveSize(), equalTo(65536L));
-    assertThat(bytesOnly.getArchiveSizeUnit(), equalTo(JunosSyslogArchiveSizeUnit.BYTES));
+    assertThat(bytesOnly.getArchiveSizeBytes(), equalTo(65536L));
     assertThat(bytesOnly.getArchiveFileCount(), nullValue());
 
     // Only archive file count; no size
     JunosSyslogFile countOnly = files.get("count-only");
-    assertThat(countOnly.getArchiveSize(), nullValue());
-    assertThat(countOnly.getArchiveSizeUnit(), nullValue());
+    assertThat(countOnly.getArchiveSizeBytes(), nullValue());
     assertThat(countOnly.getArchiveFileCount(), equalTo(3));
   }
 

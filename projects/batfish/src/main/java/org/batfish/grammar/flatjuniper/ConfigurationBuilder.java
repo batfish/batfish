@@ -1154,7 +1154,6 @@ import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
-import org.batfish.representation.juniper.JunosSyslogArchiveSizeUnit;
 import org.batfish.representation.juniper.JunosSyslogFacility;
 import org.batfish.representation.juniper.JunosSyslogFile;
 import org.batfish.representation.juniper.JunosSyslogHost;
@@ -4772,20 +4771,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSysfa_size(Sysfa_sizeContext ctx) {
-    _currentSyslogFile.setArchiveSize(toLong(ctx.size), toJunosSyslogArchiveSizeUnit(ctx));
-  }
-
-  private static @Nonnull JunosSyslogArchiveSizeUnit toJunosSyslogArchiveSizeUnit(
-      Sysfa_sizeContext ctx) {
+    // Junos k/m/g suffixes are 1024-based; a bare value is already in bytes.
+    long value = toLong(ctx.size);
+    long multiplier;
     if (ctx.K() != null) {
-      return JunosSyslogArchiveSizeUnit.KILOBYTES;
+      multiplier = 1024L;
     } else if (ctx.M() != null) {
-      return JunosSyslogArchiveSizeUnit.MEGABYTES;
+      multiplier = 1024L * 1024;
     } else if (ctx.G() != null) {
-      return JunosSyslogArchiveSizeUnit.GIGABYTES;
+      multiplier = 1024L * 1024 * 1024;
     } else {
-      return JunosSyslogArchiveSizeUnit.BYTES;
+      multiplier = 1L;
     }
+    _currentSyslogFile.setArchiveSizeBytes(value * multiplier);
   }
 
   @Override
