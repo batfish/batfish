@@ -314,7 +314,7 @@ syslog_severity
 
 sysh_port
 :
-   PORT num = uint16
+   PORT num = port_number
 ;
 
 sysh_transport

@@ -9016,7 +9016,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSysh_port(Sysh_portContext ctx) {
-    _currentSyslogHost.setPort(toInteger(ctx.num));
+    _currentSyslogHost.setPort(toInt(ctx.num));
   }
 
   @Override
