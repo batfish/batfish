@@ -824,7 +824,15 @@ FAST_REROUTE: 'fast-reroute';
 
 FASTETHER_OPTIONS: 'fastether-options';
 
-FILE: 'file' -> pushMode(M_Name);
+FILE
+:
+  'file'
+  {
+    if (lastTokenType() == SYSLOG) {
+      pushMode(M_SyslogFileName);
+    }
+  }
+;
 FILES: 'files';
 FILL_LEVEL: 'fill-level';
 FILTER: 'filter' -> pushMode(M_Filter);
@@ -4310,6 +4318,15 @@ M_Name_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Name_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
 M_Name_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Name_NAME: F_Name -> type(NAME), popMode;
+
+mode M_SyslogFileName;
+
+M_SyslogFileName_WS: F_WhitespaceChar+ -> skip;
+M_SyslogFileName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SyslogFileName_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
+M_SyslogFileName_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_SyslogFileName_ASTERISK: '*' {setWildcard();} -> popMode;
+M_SyslogFileName_NAME: F_Name -> type(NAME), popMode;
 
 mode M_NameList;
 
