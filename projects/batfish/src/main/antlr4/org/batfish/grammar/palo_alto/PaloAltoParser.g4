@@ -74,14 +74,17 @@ newline
    NEWLINE
 ;
 
-s_null
+s_log_collector_null
 :
-    (
-        LOG_COLLECTOR
-        | LOG_COLLECTOR_GROUP
-        | MGT_CONFIG
-    )
-    null_rest_of_line
+   LOG_COLLECTOR null_rest_of_line
+;
+s_log_collector_group_null
+:
+   LOG_COLLECTOR_GROUP null_rest_of_line
+;
+s_mgt_config_null
+:
+   MGT_CONFIG null_rest_of_line
 ;
 
 /*
@@ -108,8 +111,10 @@ statement_config_devices
     | s_application
     | s_application_group
     | s_deviceconfig
+    | s_log_collector_group_null
+    | s_log_collector_null
+    | s_mgt_config_null
     | s_network
-    | s_null
     | s_profiles
     | s_rulebase
     | s_service
@@ -124,7 +129,9 @@ statement_config_devices
  */
 statement_config_general
 :
-    s_null
+    s_log_collector_group_null
+    | s_log_collector_null
+    | s_mgt_config_null
     | s_shared
 ;
 
@@ -144,11 +151,12 @@ statement_template_config
 statement_template_config_devices
 :
     s_deviceconfig
+    | s_log_collector_group_null
+    | s_log_collector_null
+    | s_mgt_config_null
     | s_network
     | s_shared
     | s_vsys
-    // Ignore irrelevant syntax
-    | s_null
 ;
 
 statement_template_stack

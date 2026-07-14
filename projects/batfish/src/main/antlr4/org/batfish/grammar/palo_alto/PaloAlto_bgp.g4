@@ -120,7 +120,11 @@ bgppgp_connection_options
     (
         bgppgp_co_incoming_bgp_connection
         | bgppgp_co_multihop
-        | bgppgp_co_null
+        | bgppgp_co_hold_time_null
+        | bgppgp_co_idle_hold_time_null
+        | bgppgp_co_keep_alive_interval_null
+        | bgppgp_co_min_route_adv_interval_null
+        | bgppgp_co_open_delay_time_null
         | bgppgp_co_outgoing_bgp_connection
     )
 ;
@@ -149,16 +153,25 @@ bgppgp_co_multihop
     MULTIHOP num = uint8 // 0-255
 ;
 
-bgppgp_co_null
+bgppgp_co_hold_time_null
 :
-    (
-       HOLD_TIME
-       | IDLE_HOLD_TIME
-       | KEEP_ALIVE_INTERVAL
-       | MIN_ROUTE_ADV_INTERVAL
-       | OPEN_DELAY_TIME
-    )
-    null_rest_of_line
+   HOLD_TIME null_rest_of_line
+;
+bgppgp_co_idle_hold_time_null
+:
+   IDLE_HOLD_TIME null_rest_of_line
+;
+bgppgp_co_keep_alive_interval_null
+:
+   KEEP_ALIVE_INTERVAL null_rest_of_line
+;
+bgppgp_co_min_route_adv_interval_null
+:
+   MIN_ROUTE_ADV_INTERVAL null_rest_of_line
+;
+bgppgp_co_open_delay_time_null
+:
+   OPEN_DELAY_TIME null_rest_of_line
 ;
 
 bgppgp_co_outgoing_bgp_connection
