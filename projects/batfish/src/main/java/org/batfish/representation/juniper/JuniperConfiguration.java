@@ -3589,7 +3589,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.setNatDestination(ls.getNatDestination());
     _masterLogicalSystem.setNatSource(ls.getNatSource());
     _masterLogicalSystem.setNatStatic(ls.getNatStatic());
-    // TODO: something with NTP servers?
+    _masterLogicalSystem.getNtpServers().clear();
+    _masterLogicalSystem.getNtpServers().putAll(ls.getNtpServers());
+    _masterLogicalSystem.getNtpAuthenticationKeys().clear();
+    _masterLogicalSystem.getNtpAuthenticationKeys().addAll(ls.getNtpAuthenticationKeys());
+    _masterLogicalSystem.getNtpTrustedKeys().clear();
+    _masterLogicalSystem.getNtpTrustedKeys().addAll(ls.getNtpTrustedKeys());
     _masterLogicalSystem.getPolicyStatements().putAll(ls.getPolicyStatements());
     _masterLogicalSystem.getConditions().putAll(ls.getConditions());
     _masterLogicalSystem.getPrefixLists().putAll(ls.getPrefixLists());
@@ -3634,7 +3639,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setDnsServers(_masterLogicalSystem.getDnsServers());
     _c.setDomainName(_masterLogicalSystem.getDefaultRoutingInstance().getDomainName());
     _c.setLoggingServers(_masterLogicalSystem.getSyslogHosts());
-    _c.setNtpServers(_masterLogicalSystem.getNtpServers());
+    _c.setNtpServers(ImmutableSortedSet.copyOf(_masterLogicalSystem.getNtpServers().keySet()));
     _c.setTacacsServers(_masterLogicalSystem.getTacplusServers());
     _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());
     _c.setDeviceModel(DeviceModel.JUNIPER_UNSPECIFIED);

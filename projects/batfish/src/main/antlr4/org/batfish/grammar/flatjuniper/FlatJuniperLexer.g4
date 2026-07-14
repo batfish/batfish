@@ -294,7 +294,15 @@ AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_ALGORITHM: 'authentication-algorithm';
 
-AUTHENTICATION_KEY: 'authentication-key' -> pushMode(M_SecretString);
+AUTHENTICATION_KEY
+:
+  'authentication-key'
+  {
+    if (lastTokenType() != NTP) {
+      pushMode(M_SecretString);
+    }
+  }
+;
 
 AUTHENTICATION_KEY_CHAIN: 'authentication-key-chain' -> pushMode(M_Name);
 
@@ -365,6 +373,7 @@ BOOTPS: 'bootps';
 BOTH: 'both';
 BRIDGE: 'bridge';
 BRIDGE_DOMAINS: 'bridge-domains' -> pushMode(M_Name);
+BROADCAST: 'broadcast';
 BROADCAST_CLIENT: 'broadcast-client';
 BUFFER_DYNAMIC_THRESHOLD: 'buffer-dynamic-threshold';
 BUFFER_SIZE: 'buffer-size';
@@ -1204,6 +1213,7 @@ INTERNAL: 'internal';
 INTERNET_OPTIONS: 'internet-options';
 INTERPOLATE: 'interpolate';
 INTERVAL: 'interval';
+INTERVAL_RANGE: 'interval-range';
 INVERT_MATCH: 'invert-match';
 
 INVALID: 'invalid';
@@ -1697,10 +1707,6 @@ KEY
         // set security authentication-key-chains key-chain foo key 0 ...
         pushMode(M_Name);
         break;
-      case SERVER:
-        // set system ntp server 2.3.4.7 key 33333
-        pushMode(M_SecretString);
-        break;
       default:
         break;
     }
@@ -1996,6 +2002,8 @@ MULTICAST_MAC
    'multicast-mac' -> pushMode ( M_MacAddress )
 ;
 
+MULTICAST_CLIENT: 'multicast-client';
+
 MULTICAST_MODE: 'multicast-mode';
 
 MULTIHOP: 'multihop';
@@ -2149,6 +2157,8 @@ NSSA: 'nssa';
 
 NTP: 'ntp';
 
+NTS: 'nts';
+
 OAM: 'oam';
 
 OFF: 'off';
@@ -2214,6 +2224,7 @@ PATH_MTU: 'path-mtu';
 PATH_SELECTION: 'path-selection';
 PATH_SELECTION_MODE: 'path-selection-mode';
 PAYLOAD_PROTOCOL: 'payload-protocol';
+PEER: 'peer';
 PEER_ADDRESS: 'peer-address';
 PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
 PEER_UNIT: 'peer-unit';
@@ -2602,6 +2613,7 @@ ROUTING_HEADER: 'routing-header';
 
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_RoutingInstanceName);
 ROUTING_INSTANCE_ACCESS: 'routing-instance-access';
+ROUTING_INSTANCE_NAME: 'routing-instance-name' -> pushMode(M_RoutingInstanceName);
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
@@ -2759,6 +2771,7 @@ SFLOW: 'sflow';
 SFM_DPD_OPTION: 'SFM-DPD-option';
 
 SHA_256: 'sha-256';
+SHA256: 'sha256';
 SHA_384: 'sha-384';
 SHA1: 'sha1';
 SHAPING_RATE: 'shaping-rate';
@@ -3005,6 +3018,8 @@ TRUNK: 'trunk';
 
 TRUST: 'trust';
 
+TRUSTED_KEY: 'trusted-key';
+
 TTL: 'ttl' -> pushMode(M_SubRange);
 TTL_EQ_ZERO_DURING_REASSEMBLY: 'ttl-eq-zero-during-reassembly';
 TTL_EQ_ZERO_DURING_TRANSIT: 'ttl-eq-zero-during-transit';
@@ -3067,6 +3082,8 @@ V2_ONLY: 'v2-only';
 VALID: 'valid';
 
 VALIDATION: 'validation';
+
+VALUE: 'value' -> pushMode(M_SecretString);
 
 VALIDATION_DATABASE: 'validation-database';
 

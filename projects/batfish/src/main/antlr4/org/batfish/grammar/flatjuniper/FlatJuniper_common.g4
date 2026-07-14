@@ -526,6 +526,12 @@ name_or_ip
   | IPV6_ADDRESS
 ;
 
+ip_or_ipv6_address
+:
+  ip_address
+  | ipv6_address
+;
+
 route_distinguisher
 :
   (
