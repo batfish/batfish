@@ -1,0 +1,17 @@
+hostname gh10062rt
+vrf rt_test
+!
+router bgp 4200000001
+ vrf rt_test
+  address-family ipv4 unicast
+   import route-target
+    65000:100
+    4200000001:200
+   !
+   export route-target
+    4200000001:300
+   !
+  !
+ !
+!
+end
