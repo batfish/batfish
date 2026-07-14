@@ -1882,6 +1882,10 @@ public final class CiscoGrammarTest {
 
     assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(notNullValue()))));
     assertThat(c, hasInterface("Loopback100", hasIsis(nullValue())));
+    // interface-level "isis enable" makes the interface an active IS-IS interface
+    assertThat(c, hasInterface("Loopback101", hasIsis(hasLevel2(notNullValue()))));
+    // interface-level "isis passive" still models IS-IS on the interface (passive)
+    assertThat(c, hasInterface("Loopback102", hasIsis(hasLevel2(notNullValue()))));
   }
 
   @Test

@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista-isis
+!
+interface Loopback0
+   ip address 172.20.20.1/32
+   isis enable CORE
+!
+interface Loopback1
+   ip address 172.20.20.2/32
+   isis enable CORE
+   isis passive
+!
+interface Loopback2
+   ip address 172.20.20.3/32
+!
+router isis CORE
+   net 49.0001.1720.2002.0001.00
+   is-type level-2
+!

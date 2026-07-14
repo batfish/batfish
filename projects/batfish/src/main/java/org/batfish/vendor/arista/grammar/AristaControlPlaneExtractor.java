@@ -609,7 +609,9 @@ import org.batfish.vendor.arista.grammar.AristaParser.If_ip_inband_access_groupC
 import org.batfish.vendor.arista.grammar.AristaParser.If_ip_local_proxy_arp_eosContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_ip_virtual_routerContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_ipv6_traffic_filterContext;
+import org.batfish.vendor.arista.grammar.AristaParser.If_isis_enableContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_isis_metricContext;
+import org.batfish.vendor.arista.grammar.AristaParser.If_isis_passiveContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_member_interfaceContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_mtuContext;
 import org.batfish.vendor.arista.grammar.AristaParser.If_no_autostateContext;
@@ -5409,6 +5411,20 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     long metric = toLong(ctx.metric);
     for (Interface iface : _currentInterfaces) {
       iface.setIsisCost(metric);
+    }
+  }
+
+  @Override
+  public void exitIf_isis_enable(If_isis_enableContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+    }
+  }
+
+  @Override
+  public void exitIf_isis_passive(If_isis_passiveContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
     }
   }
 

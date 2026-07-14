@@ -10,6 +10,14 @@ interface Loopback0
 interface Loopback100
   ip address 153.56.0.1 255.255.255.255
 !
+interface Loopback101
+  ip address 153.56.0.2 255.255.255.255
+  isis enable 1
+!
+interface Loopback102
+  ip address 153.56.0.3 255.255.255.255
+  isis passive
+!
 router isis CORE
   net 49.0001.1722.0020.0001.00
   is-type level-2-only
