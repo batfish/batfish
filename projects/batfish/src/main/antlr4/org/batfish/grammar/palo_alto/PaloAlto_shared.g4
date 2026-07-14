@@ -34,7 +34,15 @@ ss_common
     | s_service
     | s_service_group
     | s_tag
-    | ss_null
+    | ss_admin_role_null
+    | ss_authentication_profile_null
+    | ss_botnet_null
+    | ss_certificate_null
+    | ss_certificate_profile_null
+    | ss_content_preview_null
+    | ss_profile_group_null
+    | ss_profiles_null
+    | ss_server_profile_null
 ;
 
 s_external_list
@@ -101,18 +109,39 @@ seltip_url
     URL url = variable
 ;
 
-ss_null
+ss_admin_role_null
 :
-    (
-        ADMIN_ROLE
-        | AUTHENTICATION_PROFILE
-        | BOTNET
-        | CERTIFICATE
-        | CERTIFICATE_PROFILE
-        | CONTENT_PREVIEW
-        | PROFILE_GROUP
-        | PROFILES
-        | SERVER_PROFILE
-    )
-    null_rest_of_line
+   ADMIN_ROLE null_rest_of_line
+;
+ss_authentication_profile_null
+:
+   AUTHENTICATION_PROFILE null_rest_of_line
+;
+ss_botnet_null
+:
+   BOTNET null_rest_of_line
+;
+ss_certificate_null
+:
+   CERTIFICATE null_rest_of_line
+;
+ss_certificate_profile_null
+:
+   CERTIFICATE_PROFILE null_rest_of_line
+;
+ss_content_preview_null
+:
+   CONTENT_PREVIEW null_rest_of_line
+;
+ss_profile_group_null
+:
+   PROFILE_GROUP null_rest_of_line
+;
+ss_profiles_null
+:
+   PROFILES null_rest_of_line
+;
+ss_server_profile_null
+:
+   SERVER_PROFILE null_rest_of_line
 ;

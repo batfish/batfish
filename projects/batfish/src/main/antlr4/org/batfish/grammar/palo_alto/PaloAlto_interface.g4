@@ -186,7 +186,11 @@ sniel3_common
     (
         sniel3_ip
         | sniel3_mtu
-        | sniel3_null
+        | sniel3_adjust_tcp_mss_null
+        | sniel3_lldp_null
+        | sniel3_ipv6_null
+        | sniel3_ndp_proxy_null
+        | sniel3_netflow_profile_null
     )
 ;
 
@@ -200,16 +204,25 @@ sniel3_mtu
     MTU mtu = uint32
 ;
 
-sniel3_null
+sniel3_adjust_tcp_mss_null
 :
-    (
-        ADJUST_TCP_MSS
-        | LLDP
-        | IPV6
-        | NDP_PROXY
-        | NETFLOW_PROFILE
-    )
-    null_rest_of_line
+   ADJUST_TCP_MSS null_rest_of_line
+;
+sniel3_lldp_null
+:
+   LLDP null_rest_of_line
+;
+sniel3_ipv6_null
+:
+   IPV6 null_rest_of_line
+;
+sniel3_ndp_proxy_null
+:
+   NDP_PROXY null_rest_of_line
+;
+sniel3_netflow_profile_null
+:
+   NETFLOW_PROFILE null_rest_of_line
 ;
 
 sniel3_unit
