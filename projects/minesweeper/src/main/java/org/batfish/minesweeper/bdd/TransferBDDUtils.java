@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
-import org.batfish.minesweeper.ConfigAtomicPredicates;
 
 /**
  * Various utility methods for working with the results of the symbolic routing analysis {@link
@@ -74,14 +73,8 @@ public class TransferBDDUtils {
    */
   public static BDDPairing makeRoutePairing(BDDRoute route, TransferBDD tbdd) {
     BDDFactory factory = tbdd.getFactory();
-    ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
-
-    // create a fresh BDDRoute to pair with the given one
-    BDDRoute freshRoute = new BDDRoute(factory, configAPs);
     BDDPairing pairing = factory.makePair();
-
-    route.augmentPairing(freshRoute, pairing);
-
+    route.augmentPairing(tbdd.getOriginalRoute(), pairing);
     return pairing;
   }
 

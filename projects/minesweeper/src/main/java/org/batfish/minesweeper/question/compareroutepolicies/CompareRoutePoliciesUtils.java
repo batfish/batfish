@@ -444,7 +444,7 @@ public final class CompareRoutePoliciesUtils {
     TransferBDD tBDD = new TransferBDD(configAPs);
 
     // Generate well-formedness constraints
-    BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).wellFormednessConstraints(true);
+    BDD wf = tBDD.getOriginalRoute().wellFormednessConstraints(true);
 
     // The set of paths for the current policy
     List<TransferReturn> paths = computePaths(tBDD, referencePolicy);
@@ -577,51 +577,65 @@ public final class CompareRoutePoliciesUtils {
    */
   public static List<Result.RouteAttributeType> relevantAttributesFor(
       BDD constraint, ConfigAtomicPredicates configAPs) {
+    return relevantAttributesFor(constraint, new BDDRoute(constraint.getFactory(), configAPs));
+  }
+
+  /**
+   * As {@link #relevantAttributesFor(BDD, ConfigAtomicPredicates)}, but takes the analysis's
+   * canonical route explicitly. {@code constraint}'s variables must be those of {@code
+   * identityRoute}; pass the {@link TransferBDD#getOriginalRoute()} the constraint was produced
+   * over so this is correct even when that route is not at the default variable positions.
+   *
+   * @param constraint predicate that represents the input space leading to a particular difference
+   * @param identityRoute the analysis's canonical route, whose variables {@code constraint} is over
+   * @return a list of route attributes that are relevant for this difference
+   */
+  public static List<Result.RouteAttributeType> relevantAttributesFor(
+      BDD constraint, BDDRoute identityRoute) {
     ImmutableList.Builder<Result.RouteAttributeType> result = new ImmutableList.Builder<>();
 
     BDDFactory factory = constraint.getFactory();
-    BDDRoute origRoute = new BDDRoute(factory, configAPs);
 
     BDD support = constraint.support();
 
-    if (support.testsVars(origRoute.getAdminDist().support())) {
+    if (support.testsVars(identityRoute.getAdminDist().support())) {
       result.add(ADMINISTRATIVE_DISTANCE);
     }
-    if (support.testsVars(origRoute.getAsPathRegexAtomicPredicates().support())) {
+    if (support.testsVars(identityRoute.getAsPathRegexAtomicPredicates().support())) {
       result.add(AS_PATH);
     }
-    if (support.testsVars(origRoute.getClusterListLength().support())) {
+    if (support.testsVars(identityRoute.getClusterListLength().support())) {
       result.add(CLUSTER_LIST);
     }
-    if (support.testsVars(factory.andAll(origRoute.getCommunityAtomicPredicates()))) {
+    if (support.testsVars(factory.andAll(identityRoute.getCommunityAtomicPredicates()))) {
       result.add(COMMUNITIES);
     }
-    if (support.testsVars(origRoute.getLocalPref().support())) {
+    if (support.testsVars(identityRoute.getLocalPref().support())) {
       result.add(LOCAL_PREFERENCE);
     }
-    if (support.testsVars(origRoute.getMed().support())) {
+    if (support.testsVars(identityRoute.getMed().support())) {
       result.add(METRIC);
     }
     if (support.testsVars(
-        origRoute.getPrefix().support().and(origRoute.getPrefixLength().support()))) {
+        identityRoute.getPrefix().support().and(identityRoute.getPrefixLength().support()))) {
       result.add(NETWORK);
     }
-    if (support.testsVars(origRoute.getNextHop().support())) {
+    if (support.testsVars(identityRoute.getNextHop().support())) {
       result.add(NEXT_HOP);
     }
-    if (support.testsVars(origRoute.getOriginType().support())) {
+    if (support.testsVars(identityRoute.getOriginType().support())) {
       result.add(ORIGIN_TYPE);
     }
-    if (support.testsVars(origRoute.getProtocolHistory().support())) {
+    if (support.testsVars(identityRoute.getProtocolHistory().support())) {
       result.add(PROTOCOL);
     }
-    if (support.testsVars(origRoute.getTag().support())) {
+    if (support.testsVars(identityRoute.getTag().support())) {
       result.add(TAG);
     }
-    if (support.testsVars(origRoute.getTunnelEncapsulationAttribute().support())) {
+    if (support.testsVars(identityRoute.getTunnelEncapsulationAttribute().support())) {
       result.add(TUNNEL_ENCAPSULATION_ATTRIBUTE);
     }
-    if (support.testsVars(origRoute.getWeight().support())) {
+    if (support.testsVars(identityRoute.getWeight().support())) {
       result.add(WEIGHT);
     }
 

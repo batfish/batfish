@@ -1580,7 +1580,7 @@ public class TransferBDD {
    */
   public List<TransferReturn> computePaths(
       List<Statement> statements, Context context, boolean retainAllPaths) {
-    BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
+    BDDRoute o = _originalRoute.deepCopy();
     TransferParam p = new TransferParam(false);
     TransferBDDState state = new TransferBDDState(p, new TransferResult(o));
     return computePaths(state, statements, context, retainAllPaths).stream()
