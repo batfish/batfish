@@ -3633,7 +3633,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         convertAuthenticationKeyChains(_masterLogicalSystem.getAuthenticationKeyChains()));
     _c.setDnsServers(_masterLogicalSystem.getDnsServers());
     _c.setDomainName(_masterLogicalSystem.getDefaultRoutingInstance().getDomainName());
-    _c.setLoggingServers(_masterLogicalSystem.getSyslogHosts());
+    _c.setLoggingServers(ImmutableSortedSet.copyOf(_masterLogicalSystem.getSyslogHosts().keySet()));
     _c.setNtpServers(_masterLogicalSystem.getNtpServers());
     _c.setTacacsServers(_masterLogicalSystem.getTacplusServers());
     _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());

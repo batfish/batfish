@@ -185,27 +185,161 @@ sy_syslog
 :
    SYSLOG
    (
-      sys_host
+      sys_file
+      | sys_host
       | sys_null
       | sys_source_address
    )
+;
+
+sys_file
+:
+   FILE filename = junos_name
+   (
+      sysf_archive
+      | sysf_null
+   )
+;
+
+sysf_archive
+:
+   ARCHIVE
+   (
+      sysfa_file
+      | sysfa_size
+      | sysfa_null
+   )?
+;
+
+sysfa_file
+:
+   FILES count = dec
+;
+
+sysfa_size
+:
+   SIZE size = dec
+   (
+      unit = K
+      | unit = M
+      | unit = G
+   )?
+;
+
+sysfa_null
+:
+   (
+      BINARY_DATA
+      | NO_BINARY_DATA
+      | NO_WORLD_READABLE
+      | START_TIME
+      | TRANSFER_INTERVAL
+      | WORLD_READABLE
+   ) null_filler
+;
+
+sysf_null
+:
+   (
+      ALLOW_DUPLICATES
+      | ANY
+      | ARCHIVE_SITES
+      | AUTHORIZATION
+      | CHANGE_LOG
+      | CONFLICT_LOG
+      | DAEMON
+      | DFC
+      | EXPLICIT_PRIORITY
+      | EXTERNAL
+      | FIREWALL
+      | FTP
+      | INTERACTIVE_COMMANDS
+      | KERNEL
+      | MATCH
+      | MATCH_STRINGS
+      | NTP
+      | PFE
+      | STRUCTURED_DATA
+      | USER
+   ) null_filler
 ;
 
 sys_host
 :
    HOST hostname = junos_name
    (
-      sysh_null
+      sysh_facility
+      | sysh_null
+      | sysh_port
       | sysh_routing_instance
+      | sysh_transport
    )
+;
+
+sysh_facility
+:
+   facility = syslog_facility severity = syslog_severity
+;
+
+syslog_facility
+:
+   ANY
+   | AUTHORIZATION
+   | CHANGE_LOG
+   | CONFLICT_LOG
+   | DAEMON
+   | DFC
+   | EXTERNAL
+   | FIREWALL
+   | FTP
+   | INTERACTIVE_COMMANDS
+   | KERNEL
+   | NTP
+   | PFE
+   | USER
+;
+
+syslog_severity
+:
+   ANY
+   | NONE
+   | EMERGENCY
+   | ALERT
+   | CRITICAL
+   | ERROR
+   | WARNING
+   | NOTICE
+   | INFO
+;
+
+sysh_port
+:
+   PORT num = port_number
+;
+
+sysh_transport
+:
+   TRANSPORT protocol = syslog_transport_protocol
+;
+
+syslog_transport_protocol
+:
+   TCP
+   | TLS
+   | UDP
 ;
 
 sys_null
 :
    (
-      ARCHIVE
+      ALLOW_DUPLICATES
+      | ALTERNATE_FORMAT
+      | ARCHIVE
       | CONSOLE
-      | FILE
+      | GRPC_REPLAY
+      | LOG_ROTATE_FREQUENCY
+      | ROUTING_INSTANCE
+      | SERVER
       | TIME_FORMAT
       | USER
    ) null_filler
@@ -222,21 +356,15 @@ sysh_null
 :
    (
       ALLOW_DUPLICATES
-      | AUTHORIZATION
-      | ANY
-      | CHANGE_LOG
-      | DAEMON
+      | EXCLUDE_HOSTNAME
       | EXPLICIT_PRIORITY
       | FACILITY_OVERRIDE
-      | FIREWALL
-      | INTERACTIVE_COMMANDS
-      | KERNEL
       | LOG_PREFIX
       | MATCH
-      | PORT
+      | MATCH_STRINGS
       | SOURCE_ADDRESS
       | STRUCTURED_DATA
-      | USER
+      | TLSDETAILS
    ) null_filler
 ;
 

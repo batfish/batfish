@@ -1,0 +1,12 @@
+#
+set system host-name juniper-syslog-file-archive
+#
+# File with both archive size (with unit) and archive file count
+set system syslog file messages archive size 10m
+set system syslog file messages archive files 5
+#
+# File with size in bare bytes (no unit)
+set system syslog file bytes-only archive size 65536
+#
+# File with only an archive file count
+set system syslog file count-only archive files 3

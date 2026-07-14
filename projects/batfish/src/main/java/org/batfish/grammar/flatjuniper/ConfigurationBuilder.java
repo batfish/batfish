@@ -1000,13 +1000,22 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_server_routing_inst
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syp_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syr_encrypted_passwordContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_fileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_ftpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_sshContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_telnetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syservd_forwardersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syservddp_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysfa_fileContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysfa_sizeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_facilityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_transportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_facilityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_severityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_transport_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_secretContext;
@@ -1145,6 +1154,11 @@ import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
+import org.batfish.representation.juniper.JunosSyslogFacility;
+import org.batfish.representation.juniper.JunosSyslogFile;
+import org.batfish.representation.juniper.JunosSyslogHost;
+import org.batfish.representation.juniper.JunosSyslogSeverity;
+import org.batfish.representation.juniper.JunosSyslogTransportProtocol;
 import org.batfish.representation.juniper.LiteralCommunityMember;
 import org.batfish.representation.juniper.LogicalSystem;
 import org.batfish.representation.juniper.MulticastModeOptions;
@@ -1323,6 +1337,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(2, 64));
 
   private static final IntegerSpace OSPF_EXTERNAL_TYPE_RANGE = IntegerSpace.of(new SubRange(1, 2));
+
+  // Junos system syslog archive file size: 64 KB through 1 GB, in bytes.
+  private static final long SYSLOG_ARCHIVE_SIZE_MAX_BYTES = 1073741824L;
+  private static final LongSpace SYSLOG_ARCHIVE_SIZE_BYTES_RANGE =
+      LongSpace.of(Range.closed(65536L, SYSLOG_ARCHIVE_SIZE_MAX_BYTES));
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
@@ -2655,6 +2674,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private Zone _currentToZone;
 
   private VrrpGroup _currentVrrpGroup;
+
+  private JunosSyslogHost _currentSyslogHost;
+
+  private JunosSyslogFile _currentSyslogFile;
 
   private Vlan _currentNamedVlan;
 
@@ -4735,9 +4758,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterSys_file(Sys_fileContext ctx) {
+    String filename = toString(ctx.filename);
+    _currentSyslogFile =
+        _currentLogicalSystem.getSyslogFiles().computeIfAbsent(filename, JunosSyslogFile::new);
+  }
+
+  @Override
+  public void exitSys_file(Sys_fileContext ctx) {
+    _currentSyslogFile = null;
+  }
+
+  @Override
+  public void exitSysfa_file(Sysfa_fileContext ctx) {
+    _currentSyslogFile.setArchiveFileCount(toInt(ctx.count));
+  }
+
+  @Override
+  public void exitSysfa_size(Sysfa_sizeContext ctx) {
+    // Junos k/m/g suffixes are 1024-based; a bare value is already in bytes.
+    long multiplier;
+    if (ctx.K() != null) {
+      multiplier = 1024L;
+    } else if (ctx.M() != null) {
+      multiplier = 1024L * 1024;
+    } else if (ctx.G() != null) {
+      multiplier = 1024L * 1024 * 1024;
+    } else {
+      multiplier = 1L;
+    }
+    // Guard the value*multiplier product against overflow, then range-check the result using the
+    // same LongSpace idiom as the other numeric attributes (see toLongInSpace).
+    long value = toLong(ctx.size);
+    long sizeBytes = value > SYSLOG_ARCHIVE_SIZE_MAX_BYTES / multiplier ? -1L : value * multiplier;
+    if (!SYSLOG_ARCHIVE_SIZE_BYTES_RANGE.contains(sizeBytes)) {
+      warn(
+          ctx,
+          String.format(
+              "Expected syslog archive size in range %s bytes, but got '%s'",
+              SYSLOG_ARCHIVE_SIZE_BYTES_RANGE, getFullText(ctx)));
+      return;
+    }
+    _currentSyslogFile.setArchiveSizeBytes(sizeBytes);
+  }
+
+  @Override
   public void enterSys_host(Sys_hostContext ctx) {
     String hostname = toString(ctx.hostname);
-    _currentLogicalSystem.getSyslogHosts().add(hostname);
+    _currentSyslogHost =
+        _currentLogicalSystem.getSyslogHosts().computeIfAbsent(hostname, JunosSyslogHost::new);
+  }
+
+  @Override
+  public void exitSys_host(Sys_hostContext ctx) {
+    _currentSyslogHost = null;
   }
 
   @Override
@@ -8951,10 +9025,95 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSysh_facility(Sysh_facilityContext ctx) {
+    _currentSyslogHost.setFacilitySeverity(
+        toJunosSyslogFacility(ctx.facility), toJunosSyslogSeverity(ctx.severity));
+  }
+
+  @Override
+  public void exitSysh_port(Sysh_portContext ctx) {
+    _currentSyslogHost.setPort(toInt(ctx.num));
+  }
+
+  @Override
+  public void exitSysh_transport(Sysh_transportContext ctx) {
+    _currentSyslogHost.setTransportProtocol(toJunosSyslogTransportProtocol(ctx.protocol));
+  }
+
+  @Override
   public void exitSysh_routing_instance(Sysh_routing_instanceContext ctx) {
     String name = toString(ctx.ri);
+    _currentSyslogHost.setRoutingInstance(name);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, SYSLOG_HOST_ROUTING_INSTANCE, getLine(ctx.ri.getStart()));
+  }
+
+  private static @Nonnull JunosSyslogFacility toJunosSyslogFacility(Syslog_facilityContext ctx) {
+    if (ctx.ANY() != null) {
+      return JunosSyslogFacility.ANY;
+    } else if (ctx.AUTHORIZATION() != null) {
+      return JunosSyslogFacility.AUTHORIZATION;
+    } else if (ctx.CHANGE_LOG() != null) {
+      return JunosSyslogFacility.CHANGE_LOG;
+    } else if (ctx.CONFLICT_LOG() != null) {
+      return JunosSyslogFacility.CONFLICT_LOG;
+    } else if (ctx.DAEMON() != null) {
+      return JunosSyslogFacility.DAEMON;
+    } else if (ctx.DFC() != null) {
+      return JunosSyslogFacility.DFC;
+    } else if (ctx.EXTERNAL() != null) {
+      return JunosSyslogFacility.EXTERNAL;
+    } else if (ctx.FIREWALL() != null) {
+      return JunosSyslogFacility.FIREWALL;
+    } else if (ctx.FTP() != null) {
+      return JunosSyslogFacility.FTP;
+    } else if (ctx.INTERACTIVE_COMMANDS() != null) {
+      return JunosSyslogFacility.INTERACTIVE_COMMANDS;
+    } else if (ctx.KERNEL() != null) {
+      return JunosSyslogFacility.KERNEL;
+    } else if (ctx.NTP() != null) {
+      return JunosSyslogFacility.NTP;
+    } else if (ctx.PFE() != null) {
+      return JunosSyslogFacility.PFE;
+    } else {
+      assert ctx.USER() != null;
+      return JunosSyslogFacility.USER;
+    }
+  }
+
+  private static @Nonnull JunosSyslogSeverity toJunosSyslogSeverity(Syslog_severityContext ctx) {
+    if (ctx.ANY() != null) {
+      return JunosSyslogSeverity.ANY;
+    } else if (ctx.NONE() != null) {
+      return JunosSyslogSeverity.NONE;
+    } else if (ctx.EMERGENCY() != null) {
+      return JunosSyslogSeverity.EMERGENCY;
+    } else if (ctx.ALERT() != null) {
+      return JunosSyslogSeverity.ALERT;
+    } else if (ctx.CRITICAL() != null) {
+      return JunosSyslogSeverity.CRITICAL;
+    } else if (ctx.ERROR() != null) {
+      return JunosSyslogSeverity.ERROR;
+    } else if (ctx.WARNING() != null) {
+      return JunosSyslogSeverity.WARNING;
+    } else if (ctx.NOTICE() != null) {
+      return JunosSyslogSeverity.NOTICE;
+    } else {
+      assert ctx.INFO() != null;
+      return JunosSyslogSeverity.INFO;
+    }
+  }
+
+  private static @Nonnull JunosSyslogTransportProtocol toJunosSyslogTransportProtocol(
+      Syslog_transport_protocolContext ctx) {
+    if (ctx.TCP() != null) {
+      return JunosSyslogTransportProtocol.TCP;
+    } else if (ctx.TLS() != null) {
+      return JunosSyslogTransportProtocol.TLS;
+    } else {
+      assert ctx.UDP() != null;
+      return JunosSyslogTransportProtocol.UDP;
+    }
   }
 
   @Override
