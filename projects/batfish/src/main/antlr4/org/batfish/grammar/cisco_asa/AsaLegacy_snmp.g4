@@ -28,7 +28,35 @@ s_snmp_server
       | ss_group
       | ss_host
       | ss_mib
-      | ss_null
+      | ss_aaa_null
+      | ss_aaa_user_null
+      | ss_card_trap_inh_null
+      | ss_chassis_id_null
+      | ss_community_map_null
+      | ss_contact_null
+      | ss_context_null
+      | ss_engineid_null
+      | ss_globalenforcepriv_null
+      | ss_ifindex_null
+      | ss_ifmib_null
+      | ss_location_null
+      | ss_logging_null
+      | ss_manager_null
+      | ss_max_ifindex_per_module_null
+      | ss_notify_filter_null
+      | ss_overload_control_null
+      | ss_packetsize_null
+      | ss_priority_null
+      | ss_protocol_null
+      | ss_queue_length_null
+      | ss_system_shutdown_null
+      | ss_tcp_session_null
+      | ss_trap_null
+      | ss_trap_timeout_null
+      | ss_traps_null
+      | ss_user_null
+      | ss_view_null
+      | ss_vrf_null
       | ss_source_interface
       | ss_tftp_server_list
       | ss_trap_source
@@ -86,14 +114,19 @@ ss_group
 :
   GROUP name = variable
   (
-    ss_group_null
+    ss_group_v1_null
+    | ss_group_v2c_null
     | ss_group_v3
   )
 ;
 
-ss_group_null
+ss_group_v1_null
 :
-  (V1 | V2C) null_rest_of_line
+   V1 null_rest_of_line
+;
+ss_group_v2c_null
+:
+   V2C null_rest_of_line
 ;
 
 ss_view_name
@@ -140,39 +173,121 @@ ss_mib
    MIB COMMUNITY_MAP (community_string = variable) CONTEXT (context_name = variable) NEWLINE
 ;
 
-ss_null
+ss_aaa_null
 :
-   (
-      AAA
-      | AAA_USER
-      | CARD_TRAP_INH
-      | CHASSIS_ID
-      | COMMUNITY_MAP
-      | CONTACT
-      | CONTEXT
-      | ENGINEID
-      | GLOBALENFORCEPRIV
-      | IFINDEX
-      | IFMIB
-      | LOCATION
-      | LOGGING
-      | MANAGER
-      | MAX_IFINDEX_PER_MODULE
-      | NOTIFY_FILTER
-      | OVERLOAD_CONTROL
-      | PACKETSIZE
-      | PRIORITY
-      | PROTOCOL
-      | QUEUE_LENGTH
-      | SYSTEM_SHUTDOWN
-      | TCP_SESSION
-      | TRAP
-      | TRAP_TIMEOUT
-      | TRAPS
-      | USER
-      | VIEW
-      | VRF
-   ) null_rest_of_line
+   AAA null_rest_of_line
+;
+ss_aaa_user_null
+:
+   AAA_USER null_rest_of_line
+;
+ss_card_trap_inh_null
+:
+   CARD_TRAP_INH null_rest_of_line
+;
+ss_chassis_id_null
+:
+   CHASSIS_ID null_rest_of_line
+;
+ss_community_map_null
+:
+   COMMUNITY_MAP null_rest_of_line
+;
+ss_contact_null
+:
+   CONTACT null_rest_of_line
+;
+ss_context_null
+:
+   CONTEXT null_rest_of_line
+;
+ss_engineid_null
+:
+   ENGINEID null_rest_of_line
+;
+ss_globalenforcepriv_null
+:
+   GLOBALENFORCEPRIV null_rest_of_line
+;
+ss_ifindex_null
+:
+   IFINDEX null_rest_of_line
+;
+ss_ifmib_null
+:
+   IFMIB null_rest_of_line
+;
+ss_location_null
+:
+   LOCATION null_rest_of_line
+;
+ss_logging_null
+:
+   LOGGING null_rest_of_line
+;
+ss_manager_null
+:
+   MANAGER null_rest_of_line
+;
+ss_max_ifindex_per_module_null
+:
+   MAX_IFINDEX_PER_MODULE null_rest_of_line
+;
+ss_notify_filter_null
+:
+   NOTIFY_FILTER null_rest_of_line
+;
+ss_overload_control_null
+:
+   OVERLOAD_CONTROL null_rest_of_line
+;
+ss_packetsize_null
+:
+   PACKETSIZE null_rest_of_line
+;
+ss_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+ss_protocol_null
+:
+   PROTOCOL null_rest_of_line
+;
+ss_queue_length_null
+:
+   QUEUE_LENGTH null_rest_of_line
+;
+ss_system_shutdown_null
+:
+   SYSTEM_SHUTDOWN null_rest_of_line
+;
+ss_tcp_session_null
+:
+   TCP_SESSION null_rest_of_line
+;
+ss_trap_null
+:
+   TRAP null_rest_of_line
+;
+ss_trap_timeout_null
+:
+   TRAP_TIMEOUT null_rest_of_line
+;
+ss_traps_null
+:
+   TRAPS null_rest_of_line
+;
+ss_user_null
+:
+   USER null_rest_of_line
+;
+ss_view_null
+:
+   VIEW null_rest_of_line
+;
+ss_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
 ss_source_interface

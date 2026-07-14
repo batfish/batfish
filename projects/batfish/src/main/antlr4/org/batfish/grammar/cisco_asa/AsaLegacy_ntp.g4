@@ -71,15 +71,19 @@ ntp_commit
 ntp_common
 :
    ntp_access_group
+   | ntp_allow_null
    | ntp_authenticate
    | ntp_authentication
+   | ntp_authentication_key_null
    | ntp_clock_period
    | ntp_commit
    | ntp_distribute
+   | ntp_interface_null
+   | ntp_log_internal_sync_null
    | ntp_logging
    | ntp_max_associations
    | ntp_master
-   | ntp_null
+   | ntp_passive_null
    | ntp_peer
    | ntp_server
    | ntp_source
@@ -108,15 +112,25 @@ ntp_master
    MASTER NEWLINE
 ;
 
-ntp_null
+ntp_allow_null
 :
-   (
-      ALLOW
-      | AUTHENTICATION_KEY
-      | INTERFACE
-      | LOG_INTERNAL_SYNC
-      | PASSIVE
-   ) null_rest_of_line
+   ALLOW null_rest_of_line
+;
+ntp_authentication_key_null
+:
+   AUTHENTICATION_KEY null_rest_of_line
+;
+ntp_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+ntp_log_internal_sync_null
+:
+   LOG_INTERNAL_SYNC null_rest_of_line
+;
+ntp_passive_null
+:
+   PASSIVE null_rest_of_line
 ;
 
 ntp_peer

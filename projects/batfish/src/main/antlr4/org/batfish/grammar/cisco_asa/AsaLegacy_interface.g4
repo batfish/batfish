@@ -317,8 +317,9 @@ if_ip_dhcp
 :
    NO? IP DHCP
    (
-      ifdhcp_null
-      | ifdhcp_relay
+      ifdhcp_relay
+      | ifdhcp_smart_relay_null
+      | ifdhcp_snooping_null
    )
 ;
 
@@ -363,7 +364,23 @@ if_ip_igmp
       NEWLINE
       | ifigmp_access_group
       | ifigmp_host_proxy
-      | ifigmp_null
+      | ifigmp_group_timeout_null
+      | ifigmp_join_group_null
+      | ifigmp_last_member_query_count_null
+      | ifigmp_last_member_query_interval_null
+      | ifigmp_last_member_query_response_time_null
+      | ifigmp_multicast_static_only_null
+      | ifigmp_query_interval_null
+      | ifigmp_query_max_response_time_null
+      | ifigmp_query_timeout_null
+      | ifigmp_robustness_variable_null
+      | ifigmp_router_alert_null
+      | ifigmp_snooping_null
+      | ifigmp_startup_query_count_null
+      | ifigmp_startup_query_interval_null
+      | ifigmp_tcn_null
+      | ifigmp_v3_query_max_response_time_null
+      | ifigmp_version_null
       | ifigmp_static_group
    )
 ;
@@ -1203,7 +1220,7 @@ if_spanning_tree
 :
    NO? SPANNING_TREE
    (
-      if_st_null
+      ( if_st_bpdufilter_null | if_st_bpduguard_null | if_st_cost_null | if_st_guard_null | if_st_link_type_null | if_st_mst_null | if_st_port_null | if_st_port_priority_null | if_st_priority_null | if_st_protect_null | if_st_rstp_null | if_st_vlan_null )
       | if_st_portfast
       | NEWLINE
    )
@@ -1264,22 +1281,53 @@ if_speed_ios_dot11radio
    )* NEWLINE
 ;
 
-if_st_null
+if_st_bpdufilter_null
 :
-   (
-      BPDUFILTER
-      | BPDUGUARD
-      | COST
-      | GUARD
-      | LINK_TYPE
-      | MST
-      | PORT
-      | PORT_PRIORITY
-      | PRIORITY
-      | PROTECT
-      | RSTP
-      | VLAN
-   ) null_rest_of_line
+   BPDUFILTER null_rest_of_line
+;
+if_st_bpduguard_null
+:
+   BPDUGUARD null_rest_of_line
+;
+if_st_cost_null
+:
+   COST null_rest_of_line
+;
+if_st_guard_null
+:
+   GUARD null_rest_of_line
+;
+if_st_link_type_null
+:
+   LINK_TYPE null_rest_of_line
+;
+if_st_mst_null
+:
+   MST null_rest_of_line
+;
+if_st_port_null
+:
+   PORT null_rest_of_line
+;
+if_st_port_priority_null
+:
+   PORT_PRIORITY null_rest_of_line
+;
+if_st_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+if_st_protect_null
+:
+   PROTECT null_rest_of_line
+;
+if_st_rstp_null
+:
+   RSTP null_rest_of_line
+;
+if_st_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 if_st_portfast
@@ -1563,12 +1611,13 @@ if_security_level
    SECURITY_LEVEL level = dec NEWLINE
 ;
 
-ifdhcp_null
+ifdhcp_smart_relay_null
 :
-   (
-      SMART_RELAY
-      | SNOOPING
-   ) null_rest_of_line
+   SMART_RELAY null_rest_of_line
+;
+ifdhcp_snooping_null
+:
+   SNOOPING null_rest_of_line
 ;
 
 ifdhcp_relay
@@ -1577,7 +1626,8 @@ ifdhcp_relay
    (
       ifdhcpr_address
       | ifdhcpr_client
-      | ifdhcpr_null
+      | ifdhcpr_information_null
+      | ifdhcpr_subnet_broadcast_null
    )
 ;
 
@@ -1591,12 +1641,13 @@ ifdhcpr_client
    CLIENT NEWLINE
 ;
 
-ifdhcpr_null
+ifdhcpr_information_null
 :
-   (
-      INFORMATION
-      | SUBNET_BROADCAST
-   ) null_rest_of_line
+   INFORMATION null_rest_of_line
+;
+ifdhcpr_subnet_broadcast_null
+:
+   SUBNET_BROADCAST null_rest_of_line
 ;
 
 ifigmp_access_group
@@ -1608,7 +1659,11 @@ ifigmp_host_proxy
 :
    HOST_PROXY (
        ifigmphp_access_list
-       | ifigmphp_null
+       | ifigmphp_exclude_null
+       | ifigmphp_include_null
+       | ifigmphp_ip_address_null
+       | ifigmphp_report_interval_null
+       | ifigmphp_version_null
    )
 ;
 
@@ -1617,39 +1672,94 @@ ifigmphp_access_list
    ACCESS_LIST name = variable NEWLINE
 ;
 
-ifigmphp_null
+ifigmphp_exclude_null
 :
-   (
-      EXCLUDE
-      | INCLUDE
-      | IP_ADDRESS
-      | REPORT_INTERVAL
-      | VERSION
-   ) null_rest_of_line
-
+   EXCLUDE null_rest_of_line
+;
+ifigmphp_include_null
+:
+   INCLUDE null_rest_of_line
+;
+ifigmphp_ip_address_null
+:
+   IP_ADDRESS null_rest_of_line
+;
+ifigmphp_report_interval_null
+:
+   REPORT_INTERVAL null_rest_of_line
+;
+ifigmphp_version_null
+:
+   VERSION null_rest_of_line
 ;
 
-ifigmp_null
+ifigmp_group_timeout_null
 :
-   (
-      GROUP_TIMEOUT
-      | JOIN_GROUP
-      | LAST_MEMBER_QUERY_COUNT
-      | LAST_MEMBER_QUERY_INTERVAL
-      | LAST_MEMBER_QUERY_RESPONSE_TIME
-      | MULTICAST_STATIC_ONLY
-      | QUERY_INTERVAL
-      | QUERY_MAX_RESPONSE_TIME
-      | QUERY_TIMEOUT
-      | ROBUSTNESS_VARIABLE
-      | ROUTER_ALERT
-      | SNOOPING
-      | STARTUP_QUERY_COUNT
-      | STARTUP_QUERY_INTERVAL
-      | TCN
-      | V3_QUERY_MAX_RESPONSE_TIME
-      | VERSION
-   ) null_rest_of_line
+   GROUP_TIMEOUT null_rest_of_line
+;
+ifigmp_join_group_null
+:
+   JOIN_GROUP null_rest_of_line
+;
+ifigmp_last_member_query_count_null
+:
+   LAST_MEMBER_QUERY_COUNT null_rest_of_line
+;
+ifigmp_last_member_query_interval_null
+:
+   LAST_MEMBER_QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_last_member_query_response_time_null
+:
+   LAST_MEMBER_QUERY_RESPONSE_TIME null_rest_of_line
+;
+ifigmp_multicast_static_only_null
+:
+   MULTICAST_STATIC_ONLY null_rest_of_line
+;
+ifigmp_query_interval_null
+:
+   QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_query_max_response_time_null
+:
+   QUERY_MAX_RESPONSE_TIME null_rest_of_line
+;
+ifigmp_query_timeout_null
+:
+   QUERY_TIMEOUT null_rest_of_line
+;
+ifigmp_robustness_variable_null
+:
+   ROBUSTNESS_VARIABLE null_rest_of_line
+;
+ifigmp_router_alert_null
+:
+   ROUTER_ALERT null_rest_of_line
+;
+ifigmp_snooping_null
+:
+   SNOOPING null_rest_of_line
+;
+ifigmp_startup_query_count_null
+:
+   STARTUP_QUERY_COUNT null_rest_of_line
+;
+ifigmp_startup_query_interval_null
+:
+   STARTUP_QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_tcn_null
+:
+   TCN null_rest_of_line
+;
+ifigmp_v3_query_max_response_time_null
+:
+   V3_QUERY_MAX_RESPONSE_TIME null_rest_of_line
+;
+ifigmp_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 ifigmp_static_group
@@ -1657,7 +1767,8 @@ ifigmp_static_group
    STATIC_GROUP
    (
       ifigmpsg_acl
-      | ifigmpsg_null
+      | ifigmpsg_ip_address_null
+      | ifigmpsg_range_null
    )
 ;
 
@@ -1666,12 +1777,13 @@ ifigmpsg_acl
    ACL name = variable NEWLINE
 ;
 
-ifigmpsg_null
+ifigmpsg_ip_address_null
 :
-   (
-      IP_ADDRESS
-      | RANGE
-   ) null_rest_of_line
+   IP_ADDRESS null_rest_of_line
+;
+ifigmpsg_range_null
+:
+   RANGE null_rest_of_line
 ;
 
 iftunnel_bandwidth
