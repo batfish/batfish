@@ -529,8 +529,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     relevantPaths.addAll(pathMap.get(true));
     Set<PrefixSpace> blockedPrefixes = new HashSet<>();
     BDD inConstraints =
-        routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, tbdd, context);
+        routeConstraintsToBDD(_inputConstraints, tbdd.getOriginalRoute(), false, tbdd, context);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
       BDD pathAnnouncements = path.getInputConstraints();

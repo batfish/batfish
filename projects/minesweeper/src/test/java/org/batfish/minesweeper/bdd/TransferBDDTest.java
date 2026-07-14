@@ -357,6 +357,33 @@ public class TransferBDDTest {
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
+  /**
+   * When constructed with an {@code originalRoute} whose variables are not at the default
+   * positions, {@code computePaths} must express its output routes over THAT route's variables, not
+   * a fresh default-layout {@link BDDRoute}'s. Here the route is allocated past a block of reserved
+   * shared bits (via {@link BDDRouteFactory}), so a default-layout output route would sit on
+   * entirely different variables and the accept path's output would not equal the supplied route.
+   */
+  @Test
+  public void testComputePathsHonorsOriginalRouteVariables() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // originalRoute allocated after 10 reserved shared bits => non-default variable positions.
+    BDDRouteFactory routeFactory =
+        new BDDRouteFactory(_configAPs, /* numRoutes= */ 1, /* numSharedBits= */ 10);
+    BDDRoute originalRoute = routeFactory.identityRoute(0);
+    TransferBDD tbdd = new TransferBDD(routeFactory.getFactory(), originalRoute, _configAPs);
+
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    assertThat(paths, hasSize(1));
+    // The accepted path is the identity: its output route must be the supplied originalRoute (same
+    // variables), not a fresh default-layout route.
+    assertEquals(originalRoute, paths.get(0).getOutputRoute());
+  }
+
   @Test
   public void testEmptyPolicy() {
 

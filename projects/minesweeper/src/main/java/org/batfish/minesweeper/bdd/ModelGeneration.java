@@ -237,12 +237,22 @@ public class ModelGeneration {
    */
   public static AbstractRoute satAssignmentToInputRoute(
       BDD model, ConfigAtomicPredicates configAPs) {
-    BDDRoute bddRoute = new BDDRoute(model.getFactory(), configAPs);
-    RoutingProtocol p = bddRoute.getProtocolHistory().satAssignmentToValue(model);
+    return satAssignmentToInputRoute(model, new BDDRoute(model.getFactory(), configAPs), configAPs);
+  }
+
+  /**
+   * As {@link #satAssignmentToInputRoute(BDD, ConfigAtomicPredicates)}, but takes the analysis's
+   * canonical route explicitly. {@code model}'s variables must be those of {@code identityRoute};
+   * pass the {@link TransferBDD#getOriginalRoute()} the model was produced over so decoding is
+   * correct even when that route is not at the default variable positions.
+   */
+  public static AbstractRoute satAssignmentToInputRoute(
+      BDD model, BDDRoute identityRoute, ConfigAtomicPredicates configAPs) {
+    RoutingProtocol p = identityRoute.getProtocolHistory().satAssignmentToValue(model);
     if (p == RoutingProtocol.STATIC) {
-      return satAssignmentToStaticInputRoute(model, configAPs);
+      return satAssignmentToStaticInputRoute(model, identityRoute, configAPs);
     } else if (BDDRoute.ALL_BGP_PROTOCOLS.contains(p)) {
-      return satAssignmentToBgpInputRoute(model, configAPs);
+      return satAssignmentToBgpRoute(model, identityRoute, configAPs).build();
     } else {
       throw new IllegalArgumentException("Unexpected routing protocol " + p);
     }
@@ -258,8 +268,18 @@ public class ModelGeneration {
    */
   public static Bgpv4Route satAssignmentToBgpInputRoute(
       BDD model, ConfigAtomicPredicates configAPs) {
-    return satAssignmentToBgpRoute(model, new BDDRoute(model.getFactory(), configAPs), configAPs)
-        .build();
+    return satAssignmentToBgpInputRoute(
+        model, new BDDRoute(model.getFactory(), configAPs), configAPs);
+  }
+
+  /**
+   * As {@link #satAssignmentToBgpInputRoute(BDD, ConfigAtomicPredicates)}, but takes the analysis's
+   * canonical route explicitly (see {@link #satAssignmentToInputRoute(BDD, BDDRoute,
+   * ConfigAtomicPredicates)}).
+   */
+  public static Bgpv4Route satAssignmentToBgpInputRoute(
+      BDD model, BDDRoute identityRoute, ConfigAtomicPredicates configAPs) {
+    return satAssignmentToBgpRoute(model, identityRoute, configAPs).build();
   }
 
   /**
@@ -271,18 +291,16 @@ public class ModelGeneration {
    * @return a static route
    */
   private static StaticRoute satAssignmentToStaticInputRoute(
-      BDD model, ConfigAtomicPredicates configAPs) {
-
-    BDDRoute bddRoute = new BDDRoute(model.getFactory(), configAPs);
+      BDD model, BDDRoute identityRoute, ConfigAtomicPredicates configAPs) {
 
     StaticRoute.Builder builder = StaticRoute.builder();
     // dummy value
     builder.setAdministrativeCost(0);
-    Ip ip = Ip.create(bddRoute.getPrefix().satAssignmentToLong(model));
-    long len = bddRoute.getPrefixLength().satAssignmentToLong(model);
+    Ip ip = Ip.create(identityRoute.getPrefix().satAssignmentToLong(model));
+    long len = identityRoute.getPrefixLength().satAssignmentToLong(model);
     builder.setNetwork(Prefix.create(ip, (int) len));
-    builder.setNextHop(satAssignmentToNextHop(model, bddRoute, configAPs));
-    builder.setTag(bddRoute.getTag().satAssignmentToLong(model));
+    builder.setNextHop(satAssignmentToNextHop(model, identityRoute, configAPs));
+    builder.setTag(identityRoute.getTag().satAssignmentToLong(model));
 
     return builder.build();
   }
@@ -492,15 +510,26 @@ public class ModelGeneration {
    */
   public static RouteMapEnvironment satAssignmentToEnvironment(
       BDD model, ConfigAtomicPredicates configAPs) {
+    return satAssignmentToEnvironment(
+        model, new BDDRoute(model.getFactory(), configAPs), configAPs);
+  }
 
-    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
+  /**
+   * As {@link #satAssignmentToEnvironment(BDD, ConfigAtomicPredicates)}, but takes the analysis's
+   * canonical route explicitly (see {@link #satAssignmentToInputRoute(BDD, BDDRoute,
+   * ConfigAtomicPredicates)}).
+   */
+  public static RouteMapEnvironment satAssignmentToEnvironment(
+      BDD model, BDDRoute identityRoute, ConfigAtomicPredicates configAPs) {
 
-    List<String> successfulTracks = allSatisfyingItems(configAPs.getTracks(), r.getTracks(), model);
+    List<String> successfulTracks =
+        allSatisfyingItems(configAPs.getTracks(), identityRoute.getTracks(), model);
 
     // get the optional (and hence possibly null) source VRF
-    String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
+    String sourceVrf =
+        optionalSatisfyingItem(configAPs.getSourceVrfs(), identityRoute.getSourceVrfs(), model);
 
-    Ip remoteIp = satAssignmentToPeerAddress(model, r, configAPs);
+    Ip remoteIp = satAssignmentToPeerAddress(model, identityRoute, configAPs);
 
     return new RouteMapEnvironment(successfulTracks::contains, sourceVrf, remoteIp);
   }
@@ -555,32 +584,41 @@ public class ModelGeneration {
   // like the prefix, if they are consistent with the constraints. Note that the model is a partial
   // assignment -- variables that don't matter are not assigned a truth value.
   public static BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates configAPs) {
-    BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
+    return constraintsToModel(constraints, new BDDRoute(constraints.getFactory(), configAPs));
+  }
+
+  /**
+   * As {@link #constraintsToModel(BDD, ConfigAtomicPredicates)}, but takes the analysis's canonical
+   * route explicitly. {@code constraints}'s variables must be those of {@code identityRoute}; pass
+   * the {@link TransferBDD#getOriginalRoute()} the constraints were produced over so this is
+   * correct even when that route is not at the default variable positions.
+   */
+  public static BDD constraintsToModel(BDD constraints, BDDRoute identityRoute) {
     // set the protocol field to BGP if it is consistent with the constraints
-    BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
-    BDD defaultLP = route.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
+    BDD isBGP = identityRoute.getProtocolHistory().value(RoutingProtocol.BGP);
+    BDD defaultLP = identityRoute.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
 
     // Set the prefixes to one of the well-known ones
     BDD googlePrefix =
-        route
+        identityRoute
             .getPrefix()
             .value(Ip.parse("8.8.8.0").asLong())
-            .and(route.getPrefixLength().value(24));
+            .and(identityRoute.getPrefixLength().value(24));
     BDD amazonPrefix =
-        route
+        identityRoute
             .getPrefix()
             .value(Ip.parse("52.0.0.0").asLong())
-            .and(route.getPrefixLength().value(10));
+            .and(identityRoute.getPrefixLength().value(10));
     BDD rfc1918 =
-        route
+        identityRoute
             .getPrefix()
             .value(Ip.parse("10.0.0.0").asLong())
-            .and(route.getPrefixLength().value(8));
+            .and(identityRoute.getPrefixLength().value(8));
     BDD prefixes = googlePrefix.or(amazonPrefix).or(rfc1918);
     // Alternatively, if the above fails set the prefix to something >= 10.0.0.0 and the length to
     // something >= 16.
     BDD lessPreferredPrefixes =
-        route.getPrefix().geq(167772160).and(route.getPrefixLength().geq(16));
+        identityRoute.getPrefix().geq(167772160).and(identityRoute.getPrefixLength().geq(16));
     BDD augmentedConstraints = tryAddingConstraint(isBGP, constraints);
     augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
     augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
