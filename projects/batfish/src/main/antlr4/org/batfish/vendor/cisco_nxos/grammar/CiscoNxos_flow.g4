@@ -20,8 +20,11 @@ flow_exporter
 :
   EXPORTER name = fe_name NEWLINE 
   (
-    fe_null
+    fe_description_null
+    | fe_destination_null
     | fe_source
+    | fe_transport_null
+    | fe_version_null
   )*
 ;
 
@@ -30,14 +33,21 @@ fe_name
   WORD
 ;
 
-fe_null
+fe_description_null
 :
-  (
-    DESCRIPTION
-    | DESTINATION
-    | TRANSPORT
-    | VERSION
-  ) null_rest_of_line
+   DESCRIPTION null_rest_of_line
+;
+fe_destination_null
+:
+   DESTINATION null_rest_of_line
+;
+fe_transport_null
+:
+   TRANSPORT null_rest_of_line
+;
+fe_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 fe_source
@@ -81,7 +91,7 @@ flow_record
 :
   RECORD name = fr_name NEWLINE 
   (
-    fr_null
+    ( fr_collect_null | fr_description_null | fr_match_null )
   )*
 ;
 
@@ -90,11 +100,15 @@ fr_name
   WORD
 ;
 
-fr_null
+fr_collect_null
 :
-  (
-    COLLECT 
-    | DESCRIPTION
-    | MATCH
-  ) null_rest_of_line
+   COLLECT null_rest_of_line
+;
+fr_description_null
+:
+   DESCRIPTION null_rest_of_line
+;
+fr_match_null
+:
+   MATCH null_rest_of_line
 ;

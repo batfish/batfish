@@ -138,8 +138,10 @@ ro_graceful_restart
 :
   GRACEFUL_RESTART
   (
-    rogr_graceful_restart
-    | rogr_null
+    rogr_grace_period_null
+    | rogr_graceful_restart
+    | rogr_helper_disable_null
+    | rogr_planned_only_null
   )
 ;
 
@@ -148,13 +150,17 @@ rogr_graceful_restart
   NEWLINE
 ;
 
-rogr_null
+rogr_grace_period_null
 :
-  (
-    GRACE_PERIOD
-    | HELPER_DISABLE
-    | PLANNED_ONLY
-  ) null_rest_of_line
+   GRACE_PERIOD null_rest_of_line
+;
+rogr_helper_disable_null
+:
+   HELPER_DISABLE null_rest_of_line
+;
+rogr_planned_only_null
+:
+   PLANNED_ONLY null_rest_of_line
 ;
 
 ro_log_adjacency_changes

@@ -10,8 +10,12 @@ s_tacacs_server
 :
   TACACS_SERVER
   (
-    ts_host
-    | ts_null
+    ts_deadtime_null
+    | ts_directed_request_null
+    | ts_host
+    | ts_key_null
+    | ts_test_null
+    | ts_timeout_null
   )
 ;
 
@@ -53,15 +57,25 @@ tacacs_server_host
   | WORD
 ;
 
-ts_null
+ts_deadtime_null
 :
-  (
-    DEADTIME
-    | DIRECTED_REQUEST
-    | KEY
-    | TEST
-    | TIMEOUT
-  ) null_rest_of_line
+   DEADTIME null_rest_of_line
+;
+ts_directed_request_null
+:
+   DIRECTED_REQUEST null_rest_of_line
+;
+ts_key_null
+:
+   KEY null_rest_of_line
+;
+ts_test_null
+:
+   TEST null_rest_of_line
+;
+ts_timeout_null
+:
+   TIMEOUT null_rest_of_line
 ;
 
 ip_tacacs

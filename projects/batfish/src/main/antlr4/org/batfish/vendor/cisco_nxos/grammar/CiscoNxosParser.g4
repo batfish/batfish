@@ -56,10 +56,14 @@ statement
   | s_banner
   | s_boot
   | s_class_map
+  | s_cli_null
+  | s_clock_null
   | s_control_plane
   | s_crypto
+  | s_errdisable_null
   | s_evpn
   | s_fabric
+  | s_feature_null
   | s_fex
   | s_flow
   | s_hostname
@@ -68,13 +72,13 @@ statement
   | s_ipv6
   | s_key
   | s_lacp
+  | s_license_null
   | s_line
   | s_logging
   | s_mac
   | s_monitor
   | s_no
   | s_ntp
-  | s_null
   | s_nv
   | s_object_group
   | s_policy_map
@@ -82,10 +86,15 @@ statement
   | s_role
   | s_route_map
   | s_router
+  | s_service_null
   | s_snmp_server
+  | s_spanning_tree_null
+  | s_ssh_null
   | s_system
   | s_tacacs_server
   | s_track
+  | s_username_null
+  | s_userpassphrase_null
   | s_version
   | s_vdc
   | s_vlan
@@ -163,7 +172,10 @@ s_fabric_forwarding
   (
     ff_admin_distance
     | ff_anycast_gateway_mac
-    | ff_null
+    | ff_dup_host_ip_addr_detection_null
+    | ff_dup_host_recovery_timer_null
+    | ff_dup_host_unfreeze_timer_null
+    | ff_limit_vlan_mac_null
   )
 ;
 
@@ -171,14 +183,21 @@ ff_admin_distance: ADMIN_DISTANCE dist = protocol_distance NEWLINE;
 
 ff_anycast_gateway_mac: ANYCAST_GATEWAY_MAC mac = mac_address_literal NEWLINE;
 
-ff_null
+ff_dup_host_ip_addr_detection_null
 :
-  (
-    DUP_HOST_IP_ADDR_DETECTION
-    | DUP_HOST_RECOVERY_TIMER
-    | DUP_HOST_UNFREEZE_TIMER
-    | LIMIT_VLAN_MAC
-  ) null_rest_of_line
+   DUP_HOST_IP_ADDR_DETECTION null_rest_of_line
+;
+ff_dup_host_recovery_timer_null
+:
+   DUP_HOST_RECOVERY_TIMER null_rest_of_line
+;
+ff_dup_host_unfreeze_timer_null
+:
+   DUP_HOST_UNFREEZE_TIMER null_rest_of_line
+;
+ff_limit_vlan_mac_null
+:
+   LIMIT_VLAN_MAC null_rest_of_line
 ;
 
 s_fabric_null: DATABASE null_rest_of_line;
@@ -193,12 +212,14 @@ s_ip
   IP
   (
     ip_access_list
+    | ip_arp_null
     | ip_as_path_access_list
     | ip_community_list
     | ip_dhcp
+    | ip_domain_list_null
+    | ip_domain_lookup_null
     | ip_domain_name
     | ip_name_server
-    | ip_null
     | ip_pim
     | ip_prefix_list
     | ip_route
@@ -229,13 +250,17 @@ name_server
   | ipv6_address
 ;
 
-ip_null
+ip_arp_null
 :
-  (
-    ARP
-    | DOMAIN_LIST
-    | DOMAIN_LOOKUP
-  ) null_rest_of_line
+   ARP null_rest_of_line
+;
+ip_domain_list_null
+:
+   DOMAIN_LIST null_rest_of_line
+;
+ip_domain_lookup_null
+:
+   DOMAIN_LOOKUP null_rest_of_line
 ;
 
 ip_pim
@@ -272,7 +297,13 @@ ip_sla
   SLA
   (
     ip_sla_block
-    | ip_sla_null
+    | ip_sla_group_null
+    | ip_sla_logging_null
+    | ip_sla_reaction_configuration_null
+    | ip_sla_reaction_trigger_null
+    | ip_sla_reset_null
+    | ip_sla_responder_null
+    | ip_sla_schedule_null
   )
 ;
 
@@ -298,17 +329,33 @@ ip_sla_entry
   ) null_rest_of_line
 ;
 
-ip_sla_null
+ip_sla_group_null
 :
-  (
-    GROUP
-    | LOGGING
-    | REACTION_CONFIGURATION
-    | REACTION_TRIGGER
-    | RESET
-    | RESPONDER
-    | SCHEDULE
-  ) null_rest_of_line
+   GROUP null_rest_of_line
+;
+ip_sla_logging_null
+:
+   LOGGING null_rest_of_line
+;
+ip_sla_reaction_configuration_null
+:
+   REACTION_CONFIGURATION null_rest_of_line
+;
+ip_sla_reaction_trigger_null
+:
+   REACTION_TRIGGER null_rest_of_line
+;
+ip_sla_reset_null
+:
+   RESET null_rest_of_line
+;
+ip_sla_responder_null
+:
+   RESPONDER null_rest_of_line
+;
+ip_sla_schedule_null
+:
+   SCHEDULE null_rest_of_line
 ;
 
 s_ipv6
@@ -348,20 +395,45 @@ key_string_text
   REMARK_TEXT
 ;
 
-s_null
+s_cli_null
 :
-  (
-    CLI
-    | CLOCK
-    | ERRDISABLE
-    | FEATURE
-    | LICENSE
-    | SERVICE
-    | SSH
-    | SPANNING_TREE
-    | USERNAME
-    | USERPASSPHRASE
-  ) null_rest_of_line
+   CLI null_rest_of_line
+;
+s_clock_null
+:
+   CLOCK null_rest_of_line
+;
+s_errdisable_null
+:
+   ERRDISABLE null_rest_of_line
+;
+s_feature_null
+:
+   FEATURE null_rest_of_line
+;
+s_license_null
+:
+   LICENSE null_rest_of_line
+;
+s_service_null
+:
+   SERVICE null_rest_of_line
+;
+s_ssh_null
+:
+   SSH null_rest_of_line
+;
+s_spanning_tree_null
+:
+   SPANNING_TREE null_rest_of_line
+;
+s_username_null
+:
+   USERNAME null_rest_of_line
+;
+s_userpassphrase_null
+:
+   USERPASSPHRASE null_rest_of_line
 ;
 
 s_no
@@ -375,35 +447,124 @@ s_no
   )
 ;
 
-no_ip: IP (no_ip_route | no_ip_null);
+no_ip: IP (
+no_ip_adjacency_null
+| no_ip_adjmgr_null
+| no_ip_amt_null
+| no_ip_arp_null
+| no_ip_auto_discard_null
+| no_ip_dns_null
+| no_ip_domain_list_null
+| no_ip_domain_lookup_null
+| no_ip_dscp_lop_null
+| no_ip_extcommunity_list_null
+| no_ip_host_null
+| no_ip_igmp_null
+| no_ip_internal_null
+| no_ip_load_sharing_null
+| no_ip_mfwd_null
+| no_ip_mroute_null
+| no_ip_multicast_null
+| no_ip_radius_null
+| no_ip_route
+| no_ip_routing_null
+| no_ip_source_route_null
+| no_ip_tcp_null
+| no_ip_telnet_null
+| no_ip_tftp_null
+ );
 
-no_ip_null
+no_ip_adjacency_null
 :
-  (
-    ADJACENCY
-    | ADJMGR
-    | AMT
-    | ARP
-    | AUTO_DISCARD
-    | DNS
-    | DOMAIN_LIST
-    | DOMAIN_LOOKUP
-    | DSCP_LOP
-    | EXTCOMMUNITY_LIST
-    | HOST
-    | IGMP
-    | INTERNAL
-    | LOAD_SHARING
-    | MFWD
-    | MROUTE
-    | MULTICAST
-    | RADIUS
-    | ROUTING
-    | SOURCE_ROUTE
-    | TCP
-    | TELNET
-    | TFTP
-  ) null_rest_of_line
+   ADJACENCY null_rest_of_line
+;
+no_ip_adjmgr_null
+:
+   ADJMGR null_rest_of_line
+;
+no_ip_amt_null
+:
+   AMT null_rest_of_line
+;
+no_ip_arp_null
+:
+   ARP null_rest_of_line
+;
+no_ip_auto_discard_null
+:
+   AUTO_DISCARD null_rest_of_line
+;
+no_ip_dns_null
+:
+   DNS null_rest_of_line
+;
+no_ip_domain_list_null
+:
+   DOMAIN_LIST null_rest_of_line
+;
+no_ip_domain_lookup_null
+:
+   DOMAIN_LOOKUP null_rest_of_line
+;
+no_ip_dscp_lop_null
+:
+   DSCP_LOP null_rest_of_line
+;
+no_ip_extcommunity_list_null
+:
+   EXTCOMMUNITY_LIST null_rest_of_line
+;
+no_ip_host_null
+:
+   HOST null_rest_of_line
+;
+no_ip_igmp_null
+:
+   IGMP null_rest_of_line
+;
+no_ip_internal_null
+:
+   INTERNAL null_rest_of_line
+;
+no_ip_load_sharing_null
+:
+   LOAD_SHARING null_rest_of_line
+;
+no_ip_mfwd_null
+:
+   MFWD null_rest_of_line
+;
+no_ip_mroute_null
+:
+   MROUTE null_rest_of_line
+;
+no_ip_multicast_null
+:
+   MULTICAST null_rest_of_line
+;
+no_ip_radius_null
+:
+   RADIUS null_rest_of_line
+;
+no_ip_routing_null
+:
+   ROUTING null_rest_of_line
+;
+no_ip_source_route_null
+:
+   SOURCE_ROUTE null_rest_of_line
+;
+no_ip_tcp_null
+:
+   TCP null_rest_of_line
+;
+no_ip_telnet_null
+:
+   TELNET null_rest_of_line
+;
+no_ip_tftp_null
+:
+   TFTP null_rest_of_line
 ;
 
 no_null
@@ -420,7 +581,8 @@ no_system
   SYSTEM
   (
     no_sys_default
-    | no_sys_null
+    | no_sys_interface_null
+    | no_sys_mode_null
   )
 ;
 
@@ -429,12 +591,13 @@ no_sys_default
   DEFAULT no_sysd_switchport
 ;
 
-no_sys_null
+no_sys_interface_null
 :
-  (
-    INTERFACE
-    | MODE
-  ) null_rest_of_line
+   INTERFACE null_rest_of_line
+;
+no_sys_mode_null
+:
+   MODE null_rest_of_line
 ;
 
 no_sysd_switchport
@@ -463,7 +626,7 @@ s_nv
 
 s_role
 :
-  ROLE NAME name = role_name NEWLINE role_null*
+  ROLE NAME name = role_name NEWLINE ( role_description_null | role_rule_null )*
 ;
 
 role_name
@@ -472,12 +635,13 @@ role_name
   WORD
 ;
 
-role_null
+role_description_null
 :
-  (
-    DESCRIPTION
-    | RULE
-  ) null_rest_of_line
+   DESCRIPTION null_rest_of_line
+;
+role_rule_null
+:
+   RULE null_rest_of_line
 ;
 
 s_router
