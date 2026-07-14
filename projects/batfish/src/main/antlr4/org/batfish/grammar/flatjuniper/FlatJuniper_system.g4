@@ -208,7 +208,7 @@ sysf_archive
       sysfa_file
       | sysfa_size
       | sysfa_null
-   )*
+   )?
 ;
 
 sysfa_file
@@ -273,7 +273,7 @@ sys_host
       | sysh_port
       | sysh_routing_instance
       | sysh_transport
-   )+
+   )
 ;
 
 sysh_facility
