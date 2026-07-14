@@ -23,18 +23,26 @@ ss_common
 :
     s_address
     | s_address_group
+    | s_admin_role_null
     | s_application
     | s_application_filter
     | s_application_group
+    | s_authentication_profile_null
+    | s_botnet_null
+    | s_certificate_null
+    | s_certificate_profile_null
+    | s_content_preview_null
     | s_external_list
     | s_log_settings
+    | s_profile_group_null
     | s_profiles
     | s_post_rulebase
     | s_pre_rulebase
+    | s_profiles_null
+    | s_server_profile_null
     | s_service
     | s_service_group
     | s_tag
-    | ss_null
 ;
 
 s_external_list
@@ -101,18 +109,39 @@ seltip_url
     URL url = variable
 ;
 
-ss_null
+s_admin_role_null
 :
-    (
-        ADMIN_ROLE
-        | AUTHENTICATION_PROFILE
-        | BOTNET
-        | CERTIFICATE
-        | CERTIFICATE_PROFILE
-        | CONTENT_PREVIEW
-        | PROFILE_GROUP
-        | PROFILES
-        | SERVER_PROFILE
-    )
-    null_rest_of_line
+   ADMIN_ROLE null_rest_of_line
+;
+s_authentication_profile_null
+:
+   AUTHENTICATION_PROFILE null_rest_of_line
+;
+s_botnet_null
+:
+   BOTNET null_rest_of_line
+;
+s_certificate_null
+:
+   CERTIFICATE null_rest_of_line
+;
+s_certificate_profile_null
+:
+   CERTIFICATE_PROFILE null_rest_of_line
+;
+s_content_preview_null
+:
+   CONTENT_PREVIEW null_rest_of_line
+;
+s_profile_group_null
+:
+   PROFILE_GROUP null_rest_of_line
+;
+s_profiles_null
+:
+   PROFILES null_rest_of_line
+;
+s_server_profile_null
+:
+   SERVER_PROFILE null_rest_of_line
 ;
