@@ -1338,6 +1338,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final IntegerSpace OSPF_EXTERNAL_TYPE_RANGE = IntegerSpace.of(new SubRange(1, 2));
 
+  // Junos system syslog archive file size: 64 KB through 1 GB, in bytes.
+  private static final long SYSLOG_ARCHIVE_SIZE_MAX_BYTES = 1073741824L;
+  private static final LongSpace SYSLOG_ARCHIVE_SIZE_BYTES_RANGE =
+      LongSpace.of(Range.closed(65536L, SYSLOG_ARCHIVE_SIZE_MAX_BYTES));
+
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
     _w.redFlagf("Could not convert to %s: %s", returnType.getSimpleName(), getFullText(ctx));
@@ -4772,7 +4777,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSysfa_size(Sysfa_sizeContext ctx) {
     // Junos k/m/g suffixes are 1024-based; a bare value is already in bytes.
-    long value = toLong(ctx.size);
     long multiplier;
     if (ctx.K() != null) {
       multiplier = 1024L;
@@ -4783,7 +4787,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       multiplier = 1L;
     }
-    _currentSyslogFile.setArchiveSizeBytes(value * multiplier);
+    // Guard the value*multiplier product against overflow, then range-check the result using the
+    // same LongSpace idiom as the other numeric attributes (see toLongInSpace).
+    long value = toLong(ctx.size);
+    long sizeBytes = value > SYSLOG_ARCHIVE_SIZE_MAX_BYTES / multiplier ? -1L : value * multiplier;
+    if (!SYSLOG_ARCHIVE_SIZE_BYTES_RANGE.contains(sizeBytes)) {
+      warn(
+          ctx,
+          String.format(
+              "Expected syslog archive size in range %s bytes, but got '%s'",
+              SYSLOG_ARCHIVE_SIZE_BYTES_RANGE, getFullText(ctx)));
+      return;
+    }
+    _currentSyslogFile.setArchiveSizeBytes(sizeBytes);
   }
 
   @Override
