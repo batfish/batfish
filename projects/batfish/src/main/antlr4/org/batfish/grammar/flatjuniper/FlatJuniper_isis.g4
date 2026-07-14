@@ -46,8 +46,12 @@ is_interface
     apply
     | isi_bfd_liveness_detection
     | isi_disable
+    | isi_hello_padding_null
+    | isi_ldp_synchronization_null
     | isi_level
-    | isi_null
+    | isi_lsp_interval_null
+    | isi_no_adjacency_down_notification_null
+    | isi_node_link_protection_null
     | isi_passive
     | isi_point_to_point
   )
@@ -61,8 +65,10 @@ is_level
     | wildcard
   )
   (
-    isl_disable
-    | isl_null
+    isl_authentication_key_null
+    | isl_authentication_type_null
+    | isl_disable
+    | isl_prefix_export_limit_null
     | isl_wide_metrics_only
   )
 ;
@@ -72,13 +78,17 @@ is_no_ipv4_routing
   NO_IPV4_ROUTING
 ;
 
-is_null
+is_lsp_lifetime_null
 :
-  (
-    LSP_LIFETIME
-    | SPF_OPTIONS
-    | TRACEOPTIONS
-  ) null_filler
+   LSP_LIFETIME null_filler
+;
+is_spf_options_null
+:
+   SPF_OPTIONS null_filler
+;
+is_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 is_overload
@@ -149,15 +159,25 @@ isi_level
   )
 ;
 
-isi_null
+isi_hello_padding_null
 :
-  (
-    HELLO_PADDING
-    | LDP_SYNCHRONIZATION
-    | LSP_INTERVAL
-    | NO_ADJACENCY_DOWN_NOTIFICATION
-    | NODE_LINK_PROTECTION
-  ) null_filler
+   HELLO_PADDING null_filler
+;
+isi_ldp_synchronization_null
+:
+   LDP_SYNCHRONIZATION null_filler
+;
+isi_lsp_interval_null
+:
+   LSP_INTERVAL null_filler
+;
+isi_no_adjacency_down_notification_null
+:
+   NO_ADJACENCY_DOWN_NOTIFICATION null_filler
+;
+isi_node_link_protection_null
+:
+   NODE_LINK_PROTECTION null_filler
 ;
 
 isi_passive
@@ -251,13 +271,17 @@ isl_disable
   DISABLE
 ;
 
-isl_null
+isl_authentication_key_null
 :
-  (
-    AUTHENTICATION_KEY
-    | AUTHENTICATION_TYPE
-    | PREFIX_EXPORT_LIMIT
-  ) null_filler
+   AUTHENTICATION_KEY null_filler
+;
+isl_authentication_type_null
+:
+   AUTHENTICATION_TYPE null_filler
+;
+isl_prefix_export_limit_null
+:
+   PREFIX_EXPORT_LIMIT null_filler
 ;
 
 isl_wide_metrics_only
@@ -299,11 +323,13 @@ p_isis
     | is_import
     | is_interface
     | is_level
-    | is_null
+    | is_lsp_lifetime_null
     | is_no_ipv4_routing
     | is_overload
     | is_reference_bandwidth
     | is_rib_group
+    | is_spf_options_null
+    | is_traceoptions_null
     | is_traffic_engineering
   )
 ;

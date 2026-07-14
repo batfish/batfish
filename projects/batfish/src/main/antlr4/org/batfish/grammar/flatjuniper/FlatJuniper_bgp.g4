@@ -103,6 +103,8 @@ b_common
    | b_authentication_algorithm
    | b_authentication_key
    | b_authentication_key_chain
+   | b_authentication_key_null
+   | b_bfd_liveness_detection_null
    | b_bmp
    | b_cluster
    | b_damping
@@ -112,21 +114,27 @@ b_common
    | b_export
    | b_family
    | b_forwarding_context
+   | b_graceful_restart_null
+   | b_hold_time_null
    | b_import
    | b_keep
    | b_local_address
    | b_local_as
    | b_local_preference
+   | b_log_updown_null
+   | b_mtu_discovery_null
    | b_multihop
    | b_multipath
    | b_no_client_reflect
-   | b_null
+   | b_out_delay_null
    | b_passive
    | b_path_selection
    | b_peer_as
+   | b_precision_timers_null
    | b_preference
    | b_remove_private
    | b_tcp_mss
+   | b_traceoptions_null
    | b_type
 ;
 
@@ -179,7 +187,11 @@ b_family
       bf_evpn
       | bf_inet
       | bf_inet6
-      | bf_null
+      | bf_inet6_vpn_null
+      | bf_inet_mdt_null
+      | bf_inet_mvpn_null
+      | bf_inet_vpn_null
+      | bf_l2vpn_null
       | bf_route_target
    ) bf_accepted_prefix_limit?
 ;
@@ -265,19 +277,41 @@ b_no_client_reflect
    NO_CLIENT_REFLECT
 ;
 
-b_null
+b_authentication_key_null
 :
-   (
-      AUTHENTICATION_KEY
-      | BFD_LIVENESS_DETECTION
-      | GRACEFUL_RESTART
-      | HOLD_TIME
-      | LOG_UPDOWN
-      | MTU_DISCOVERY
-      | OUT_DELAY
-      | PRECISION_TIMERS
-      | TRACEOPTIONS
-   ) null_filler
+   AUTHENTICATION_KEY null_filler
+;
+b_bfd_liveness_detection_null
+:
+   BFD_LIVENESS_DETECTION null_filler
+;
+b_graceful_restart_null
+:
+   GRACEFUL_RESTART null_filler
+;
+b_hold_time_null
+:
+   HOLD_TIME null_filler
+;
+b_log_updown_null
+:
+   LOG_UPDOWN null_filler
+;
+b_mtu_discovery_null
+:
+   MTU_DISCOVERY null_filler
+;
+b_out_delay_null
+:
+   OUT_DELAY null_filler
+;
+b_precision_timers_null
+:
+   PRECISION_TIMERS null_filler
+;
+b_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 b_passive
@@ -376,20 +410,31 @@ bf_inet6
    INET6
    (
       bfi6_any
-      | bfi6_null
+      | bfi6_labeled_unicast_null
+      | bfi6_multicast_null
       | bfi6_unicast
    )
 ;
 
-bf_null
+bf_inet_mdt_null
 :
-   (
-      INET_MDT
-      | INET_MVPN
-      | INET_VPN
-      | INET6_VPN
-      | L2VPN
-   ) null_filler
+   INET_MDT null_filler
+;
+bf_inet_mvpn_null
+:
+   INET_MVPN null_filler
+;
+bf_inet_vpn_null
+:
+   INET_VPN null_filler
+;
+bf_inet6_vpn_null
+:
+   INET6_VPN null_filler
+;
+bf_l2vpn_null
+:
+   L2VPN null_filler
 ;
 
 bf_route_target
@@ -437,12 +482,13 @@ bfi6_any
    ANY null_filler
 ;
 
-bfi6_null
+bfi6_labeled_unicast_null
 :
-   (
-      LABELED_UNICAST
-      | MULTICAST
-   ) null_filler
+   LABELED_UNICAST null_filler
+;
+bfi6_multicast_null
+:
+   MULTICAST null_filler
 ;
 
 bfi6_unicast

@@ -44,13 +44,16 @@ ri_named_routing_instance
    name = junos_name
    (
       apply
+      | ri_chassis_null
+      | ri_event_options_null
+      | ri_provider_tunnel_null
+      | ri_services_null
       | s_bridge_domains
       | s_forwarding_options
       | s_routing_options
       | ri_description
       | ri_instance_type
       | ri_interface
-      | ri_null
       | ri_protocols
       | ri_route_distinguisher
       | ri_snmp
@@ -62,14 +65,21 @@ ri_named_routing_instance
    )
 ;
 
-ri_null
+ri_chassis_null
 :
-   (
-      CHASSIS
-      | EVENT_OPTIONS
-      | PROVIDER_TUNNEL
-      | SERVICES
-   ) null_filler
+   CHASSIS null_filler
+;
+ri_event_options_null
+:
+   EVENT_OPTIONS null_filler
+;
+ri_provider_tunnel_null
+:
+   PROVIDER_TUNNEL null_filler
+;
+ri_services_null
+:
+   SERVICES null_filler
 ;
 
 ri_protocols
@@ -173,8 +183,10 @@ ro_forwarding_table
    FORWARDING_TABLE
    (
       rof_export
+      | rof_indirect_next_hop_change_acknowledgements_null
+      | rof_indirect_next_hop_null
       | rof_no_ecmp_fast_reroute
-      | rof_null
+      | rof_traceoptions_null
    )
 ;
 
@@ -212,18 +224,37 @@ ro_maximum_prefixes
   MAXIMUM_PREFIXES null_filler
 ;
 
-ro_null
+ro_graceful_restart_null
 :
-   (
-      GRACEFUL_RESTART
-      | LSP_TELEMETRY
-      | MULTICAST
-      | MULTIPATH
-      | NONSTOP_ROUTING
-      | OPTIONS
-      | PPM
-      | TRACEOPTIONS
-   ) null_filler
+   GRACEFUL_RESTART null_filler
+;
+ro_lsp_telemetry_null
+:
+   LSP_TELEMETRY null_filler
+;
+ro_multicast_null
+:
+   MULTICAST null_filler
+;
+ro_multipath_null
+:
+   MULTIPATH null_filler
+;
+ro_nonstop_routing_null
+:
+   NONSTOP_ROUTING null_filler
+;
+ro_options_null
+:
+   OPTIONS null_filler
+;
+ro_ppm_null
+:
+   PPM null_filler
+;
+ro_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 ro_resolution
@@ -534,13 +565,17 @@ rof_no_ecmp_fast_reroute
    NO_ECMP_FAST_REROUTE
 ;
 
-rof_null
+rof_indirect_next_hop_null
 :
-   (
-      INDIRECT_NEXT_HOP
-      | INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
-      | TRACEOPTIONS
-   ) null_filler
+   INDIRECT_NEXT_HOP null_filler
+;
+rof_indirect_next_hop_change_acknowledgements_null
+:
+   INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS null_filler
+;
+rof_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 rog_active
@@ -903,11 +938,17 @@ s_routing_options
       | ro_confederation
       | ro_forwarding_table
       | ro_generate
+      | ro_graceful_restart_null
       | ro_instance_import
       | ro_interface_routes
+      | ro_lsp_telemetry_null
       | ro_martians
       | ro_maximum_prefixes
-      | ro_null
+      | ro_multicast_null
+      | ro_multipath_null
+      | ro_nonstop_routing_null
+      | ro_options_null
+      | ro_ppm_null
       | ro_resolution
       | ro_rib
       | ro_rib_groups
@@ -915,6 +956,7 @@ s_routing_options
       | ro_router_id
       | ro_srlg
       | ro_static
+      | ro_traceoptions_null
       | ro_validation
    )
 ;

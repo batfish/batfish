@@ -7,15 +7,29 @@ s_class_of_service
    CLASS_OF_SERVICE
    (
        apply
+       | scos_adaptive_shapers_null
+       | scos_application_traffic_control_null
        | scos_classifiers
        | scos_code_point_aliases
+       | scos_drop_profiles_null
        | scos_forwarding_classes
+       | scos_forwarding_policy_null
+       | scos_fragmentation_maps_null
        | scos_host_outbound_traffic
        | scos_interfaces
+       | scos_loss_priority_maps_null
+       | scos_non_strict_priority_scheduling_null
+       | scos_restricted_queues_null
        | scos_rewrite_rules
+       | scos_routing_instances_null
        | scos_scheduler_maps
        | scos_schedulers
-       | scos_null
+       | scos_shared_buffer_null
+       | scos_trace_options_null
+       | scos_traffic_control_profiles_null
+       | scos_translation_table_null
+       | scos_tri_color_null
+       | scos_virtual_channel_null
    )
 ;
 
@@ -750,25 +764,64 @@ scoss_shaping_rate
     SHAPING_RATE PERCENT num = dec
 ;
 
-scos_null
+scos_adaptive_shapers_null
 :
-   (
-      ADAPTIVE_SHAPERS
-      | APPLICATION_TRAFFIC_CONTROL
-      | DROP_PROFILES
-      | FORWARDING_POLICY
-      | FRAGMENTATION_MAPS
-      | LOSS_PRIORITY_MAPS
-      | NON_STRICT_PRIORITY_SCHEDULING
-      | RESTRICTED_QUEUES
-      | ROUTING_INSTANCES
-      | SHARED_BUFFER
-      | TRACE_OPTIONS
-      | TRAFFIC_CONTROL_PROFILES
-      | TRANSLATION_TABLE
-      | TRI_COLOR
-      | VIRTUAL_CHANNEL
-   )
-   null_filler
+   ADAPTIVE_SHAPERS null_filler
+;
+scos_application_traffic_control_null
+:
+   APPLICATION_TRAFFIC_CONTROL null_filler
+;
+scos_drop_profiles_null
+:
+   DROP_PROFILES null_filler
+;
+scos_forwarding_policy_null
+:
+   FORWARDING_POLICY null_filler
+;
+scos_fragmentation_maps_null
+:
+   FRAGMENTATION_MAPS null_filler
+;
+scos_loss_priority_maps_null
+:
+   LOSS_PRIORITY_MAPS null_filler
+;
+scos_non_strict_priority_scheduling_null
+:
+   NON_STRICT_PRIORITY_SCHEDULING null_filler
+;
+scos_restricted_queues_null
+:
+   RESTRICTED_QUEUES null_filler
+;
+scos_routing_instances_null
+:
+   ROUTING_INSTANCES null_filler
+;
+scos_shared_buffer_null
+:
+   SHARED_BUFFER null_filler
+;
+scos_trace_options_null
+:
+   TRACE_OPTIONS null_filler
+;
+scos_traffic_control_profiles_null
+:
+   TRAFFIC_CONTROL_PROFILES null_filler
+;
+scos_translation_table_null
+:
+   TRANSLATION_TABLE null_filler
+;
+scos_tri_color_null
+:
+   TRI_COLOR null_filler
+;
+scos_virtual_channel_null
+:
+   VIRTUAL_CHANNEL null_filler
 ;
 
