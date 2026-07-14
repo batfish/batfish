@@ -104,10 +104,8 @@ public final class GitHub10062Test {
     assertThat(
         af.getRouteTargetImport(),
         containsInAnyOrder(
-            ExtendedCommunity.target(65000L, 100L),
-            ExtendedCommunity.target(4200000001L, 200L)));
+            ExtendedCommunity.target(65000L, 100L), ExtendedCommunity.target(4200000001L, 200L)));
     assertThat(
-        af.getRouteTargetExport(),
-        containsInAnyOrder(ExtendedCommunity.target(4200000001L, 300L)));
+        af.getRouteTargetExport(), containsInAnyOrder(ExtendedCommunity.target(4200000001L, 300L)));
   }
 }
