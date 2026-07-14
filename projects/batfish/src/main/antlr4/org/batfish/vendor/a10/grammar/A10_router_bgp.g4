@@ -55,23 +55,33 @@ bgp_neighbor: ip_address;
 srbn
 :
    srbn_activate
+   | srbn_capability_null
    | srbn_description
+   | srbn_fall_over_null
    | srbn_maximum_prefix
    | srbn_remote_as
    | srbn_send_community
+   | srbn_soft_reconfiguration_null
+   | srbn_timers_null
    | srbn_weight
    | srbn_update_source
-   | srbn_null
 ;
 
-srbn_null
+srbn_capability_null
 :
-   (
-      CAPABILITY
-      | FALL_OVER
-      | SOFT_RECONFIGURATION
-      | TIMERS
-   ) null_rest_of_line
+   CAPABILITY null_rest_of_line
+;
+srbn_fall_over_null
+:
+   FALL_OVER null_rest_of_line
+;
+srbn_soft_reconfiguration_null
+:
+   SOFT_RECONFIGURATION null_rest_of_line
+;
+srbn_timers_null
+:
+   TIMERS null_rest_of_line
 ;
 
 srbn_activate: ACTIVATE NEWLINE;
