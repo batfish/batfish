@@ -50,6 +50,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -59,6 +60,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
@@ -668,6 +670,17 @@ public class AristaGrammarTest {
         c.getAllInterfaces().get("Ethernet1").getOspfSettings().getCost(),
         equalTo(OspfProcess.DEFAULT_INTERFACE_OSPF_COST));
     assertThat(c.getAllInterfaces().get("Ethernet2").getOspfSettings().getCost(), equalTo(42));
+  }
+
+  @Test
+  public void testIsisInterfaceEnable() throws IOException {
+    // Interface-level "isis enable" makes the interface an active IS-IS interface, and
+    // "isis passive" models it as passive. Both were previously dropped by the extractor.
+    Configuration c = parseConfig("arista-isis");
+    assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(notNullValue()))));
+    assertThat(c, hasInterface("Loopback1", hasIsis(hasLevel2(notNullValue()))));
+    // Loopback2 has no interface-level IS-IS config, so it gets no IS-IS settings.
+    assertThat(c, hasInterface("Loopback2", hasIsis(nullValue())));
   }
 
   @Test

@@ -711,7 +711,7 @@ if_isis_circuit_type
 
 if_isis_enable
 :
-   ENABLE num = dec NEWLINE
+   ENABLE name = variable NEWLINE
 ;
 
 if_isis_hello_interval
