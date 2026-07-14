@@ -82,7 +82,12 @@ sd_system
         | sds_ip_address
         | sds_netmask
         | sds_ntp_servers
-        | sds_null
+        | sds_panorama_server_null
+        | sds_service_null
+        | sds_timezone_null
+        | sds_type_null
+        | sds_update_schedule_null
+        | sds_update_server_null
     )
 ;
 
@@ -131,17 +136,29 @@ sds_ntp_servers
     )
 ;
 
-sds_null
+sds_panorama_server_null
 :
-    (
-        PANORAMA_SERVER
-        | SERVICE
-        | TIMEZONE
-        | TYPE
-        | UPDATE_SCHEDULE
-        | UPDATE_SERVER
-    )
-    null_rest_of_line
+   PANORAMA_SERVER null_rest_of_line
+;
+sds_service_null
+:
+   SERVICE null_rest_of_line
+;
+sds_timezone_null
+:
+   TIMEZONE null_rest_of_line
+;
+sds_type_null
+:
+   TYPE null_rest_of_line
+;
+sds_update_schedule_null
+:
+   UPDATE_SCHEDULE null_rest_of_line
+;
+sds_update_server_null
+:
+   UPDATE_SERVER null_rest_of_line
 ;
 
 sdsd_servers
