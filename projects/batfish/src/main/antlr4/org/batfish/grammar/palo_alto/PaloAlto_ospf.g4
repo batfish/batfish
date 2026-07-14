@@ -58,9 +58,10 @@ vrp_ospf
     OSPF
     (
         ospf_area
+        | ospf_auth_profile_null
         | ospf_enable
+        | ospf_global_bfd_null
         | ospf_graceful_restart
-        | ospf_null
         | ospf_reject_default_route
         | ospf_router_id
     )
@@ -100,13 +101,13 @@ ospf_graceful_restart
     )
 ;
 
-ospf_null
+ospf_auth_profile_null
 :
-    (
-        AUTH_PROFILE
-        | GLOBAL_BFD
-    )
-    null_rest_of_line
+   AUTH_PROFILE null_rest_of_line
+;
+ospf_global_bfd_null
+:
+   GLOBAL_BFD null_rest_of_line
 ;
 
 
@@ -124,12 +125,14 @@ ospfa_interface
 :
     INTERFACE name = variable
     (
-        ospfai_dead_counts
+        ospfai_authentication_null
+        | ospfai_bfd_null
+        | ospfai_dead_counts
         | ospfai_enable
+        | ospfai_gr_delay_null
         | ospfai_hello_interval
         | ospfai_link_type
         | ospfai_metric
-        | ospfai_null
         | ospfai_passive
         | ospfai_priority
         | ospfai_retransmit_interval
@@ -167,14 +170,17 @@ ospfai_metric
     METRIC metric = ospf_interface_metric
 ;
 
-ospfai_null
+ospfai_authentication_null
 :
-    (
-        AUTHENTICATION
-        | BFD
-        | GR_DELAY
-    )
-    null_rest_of_line
+   AUTHENTICATION null_rest_of_line
+;
+ospfai_bfd_null
+:
+   BFD null_rest_of_line
+;
+ospfai_gr_delay_null
+:
+   GR_DELAY null_rest_of_line
 ;
 
 ospfai_passive

@@ -8,3 +8,37 @@ set system syslog host 1.2.3.4 source-address 5.6.7.8
 set system syslog host 1.2.3.4 routing-instance RI
 set system syslog host 1.2.3.4 explicit-priority
 #
+# Full host: facility+severity, port, transport, routing-instance
+set system syslog host 2.3.4.5 any notice
+set system syslog host 2.3.4.5 port 6514
+set system syslog host 2.3.4.5 transport tcp
+set system syslog host 2.3.4.5 routing-instance mgmt
+#
+# Multiple facility/severity pairs on one host
+set system syslog host 3.4.5.6 kernel error
+set system syslog host 3.4.5.6 daemon warning
+#
+# Every facility paired with a severity so all facility and severity
+# grammar branches are exercised (severities cycle to cover all values).
+set system syslog host 4.5.6.7 any any
+set system syslog host 4.5.6.7 authorization none
+set system syslog host 4.5.6.7 change-log emergency
+set system syslog host 4.5.6.7 conflict-log alert
+set system syslog host 4.5.6.7 daemon critical
+set system syslog host 4.5.6.7 dfc error
+set system syslog host 4.5.6.7 external warning
+set system syslog host 4.5.6.7 firewall notice
+set system syslog host 4.5.6.7 ftp info
+set system syslog host 4.5.6.7 interactive-commands any
+set system syslog host 4.5.6.7 kernel none
+set system syslog host 4.5.6.7 ntp emergency
+set system syslog host 4.5.6.7 pfe alert
+set system syslog host 4.5.6.7 user critical
+#
+# Transport tls (tcp covered above; udp below) so all transport branches hit
+set system syslog host 5.6.7.8 any info
+set system syslog host 5.6.7.8 transport tls
+#
+set system syslog host 6.7.8.9 any info
+set system syslog host 6.7.8.9 transport udp
+#
