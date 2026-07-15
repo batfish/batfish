@@ -30,11 +30,6 @@ s_protocols_tail
 ;
 
 /*
-s_protocols_null
-:
-   (
-   ) s_null_filler
-;
 */
 srt_blackhole
 :

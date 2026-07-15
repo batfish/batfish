@@ -506,34 +506,6 @@ ro6_redistribute
    REDISTRIBUTE null_rest_of_line
 ;
 
-roi_cost
-:
-   COST cost = dec NEWLINE
-;
-
-roi_network
-:
-   NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
-
-roi_passive
-:
-   PASSIVE
-   (
-      ENABLE
-      | DISABLE
-   )? NEWLINE
-;
-
 roi_priority
 :
    PRIORITY dec NEWLINE

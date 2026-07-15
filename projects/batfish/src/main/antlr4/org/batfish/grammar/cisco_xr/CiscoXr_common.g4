@@ -65,23 +65,6 @@ uint32
   | UINT32
 ;
 
-uint64
-:
-  UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-;
-
-uint_big
-:
-  UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-  | UINT_BIG
-;
-
 // TODO: replace all references with one of above rules and remove this rule
 uint_legacy
 :
@@ -180,24 +163,9 @@ dscp_num
   uint8
 ;
 
-ec_literal
-:
-   uint_legacy COLON uint_legacy
-;
-
 eigrp_metric
 :
    bw_kbps = uint_legacy delay_10us = uint_legacy reliability = uint_legacy eff_bw = uint_legacy mtu = uint_legacy
-;
-
-exit_line
-:
-   EXIT NEWLINE
-;
-
-extended_community
-:
-   ec_literal
 ;
 
 hash_comment
@@ -634,17 +602,6 @@ variable_hostname
    ~( USE_VRF | NEWLINE | VRF )+
 ;
 
-variable_interface_name
-:
-   ~( UINT8 | UINT16 | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
-   NAME | NEWLINE | TAG | TRACK | VARIABLE )
-;
-
-variable_max_metric
-:
-   ~(NEWLINE | BGP | EXTERNAL_LSA | INCLUDE_STUB | ON_STARTUP | ROUTER_LSA | SUMMARY_LSA | WAIT_FOR)
-;
-
 variable_permissive
 :
    (
@@ -655,11 +612,6 @@ variable_permissive
 variable_secret
 :
    ~( NEWLINE | ATTRIBUTES | ENCRYPTED | LEVEL |  MSCHAP | NT_ENCRYPTED | PBKDF2 | PRIVILEGE | ROLE )+
-;
-
-variable_group_id
-:
-    ~( NEWLINE | TCP | TCP_UDP | UDP )+
 ;
 
 vlan_id: v = uint16;

@@ -67,7 +67,3 @@ vrf_table_name
   WORD
 ;
 
-null_rest_of_line
-:
-  ~NEWLINE* NEWLINE
-;

@@ -148,11 +148,6 @@ as_path_multipath_relax_rb_stanza
    NO? BGP? BESTPATH AS_PATH MULTIPATH_RELAX NEWLINE
 ;
 
-auto_summary_bgp_tail
-:
-   NO? AUTO_SUMMARY NEWLINE
-;
-
 bgp_af_import
 :
    IMPORT bgp_af_import_path
@@ -395,11 +390,6 @@ maximum_paths_bgp_tail
    )? SELECTIVE? NEWLINE
 ;
 
-maximum_prefix_bgp_tail
-:
-   MAXIMUM_PREFIX dec NEWLINE
-;
-
 neighbor_flat_rb_stanza
 :
    NEIGHBOR
@@ -542,11 +532,6 @@ no_redistribute_connected_rb_stanza
       CONNECTED
       | DIRECT
    ) null_rest_of_line
-;
-
-no_shutdown_rb_stanza
-:
-   NO SHUTDOWN NEWLINE
 ;
 
 null_bgp_tail
@@ -923,11 +908,6 @@ subnet_bgp_tail
    ) NEWLINE
 ;
 
-template_peer_address_family
-:
-   address_family_header bgp_tail* address_family_footer
-;
-
 template_peer_policy_rb_stanza
 :
    TEMPLATE PEER_POLICY name = variable_permissive NEWLINE
@@ -960,11 +940,6 @@ unsuppress_map_bgp_tail
 update_source_bgp_tail
 :
    UPDATE_SOURCE source = interface_name NEWLINE
-;
-
-use_af_group_bgp_tail
-:
-   USE AF_GROUP name = variable NEWLINE
 ;
 
 use_neighbor_group_bgp_tail

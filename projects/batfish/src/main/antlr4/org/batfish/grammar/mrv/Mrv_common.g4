@@ -69,12 +69,3 @@ quoted_string
    DOUBLE_QUOTE text = QUOTED_TEXT? DOUBLE_QUOTE
 ;
 
-type
-:
-   T_BOOL
-;
-
-type_declaration
-:
-   TYPE type
-;

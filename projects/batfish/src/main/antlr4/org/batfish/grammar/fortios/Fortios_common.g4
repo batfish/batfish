@@ -66,12 +66,6 @@ ip_wildcard
     ip = ip_address mask = ip_address
 ;
 
-ipv6_address: IPV6_ADDRESS;
-
-ipv6_prefix: IPV6_PREFIX;
-
-mac_address_literal: MAC_ADDRESS_LITERAL;
-
 newline: STR_SEPARATOR? NEWLINE;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
@@ -99,13 +93,6 @@ uint16
 :
   UINT8
   | UINT16
-;
-
-uint32
-:
-  UINT8
-  | UINT16
-  | UINT32
 ;
 
 // extractor should disallow whitespace, newlines
