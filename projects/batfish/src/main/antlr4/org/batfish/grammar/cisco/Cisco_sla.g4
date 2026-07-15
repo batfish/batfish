@@ -81,56 +81,194 @@ ip_sla_type
 
 ip_sla_inner
 :
-  // The first inner line sets the type, and decides what other inner lines are in scope.
-  // On re-entry, the type line cannot be re-entered or modified (with limited exceptions) and the
-  // scope is fixed. Since re-entry cannot be detected in the parser without semantic predicates
-  // that tend to break operation, we just allow all scopes here. The extractor is responsible for
-  // rejecting out-of-scope lines and type redefinition attempts. Note that it is impossible to
-  // detect scope, since the first alternative that matches will dominate. The individual scopes are
-  // commented for reference.
-  ip_slai_null
+  ip_slai_aggregate_null
+  | ip_slai_clock_null
+  | ip_slai_clock_tolerance_null
+  | ip_slai_control_null
+  | ip_slai_cos_null
+  | ip_slai_data_pattern_null
+  | ip_slai_distribution_null
+  | ip_slai_exp_null
+  | ip_slai_frame_null
+  | ip_slai_frequency_null
+  | ip_slai_history_null
+  | ip_slai_hops_of_statistics_kept_null
+  | ip_slai_lsr_path_null
+  | ip_slai_max_delay_null
+  | ip_slai_operation_packet_priority_null
+  | ip_slai_optimize_null
+  | ip_slai_owner_null
+  | ip_slai_paths_of_statistics_kept_null
+  | ip_slai_percentile_null
+  | ip_slai_precision_null
+  | ip_slai_request_data_size_null
+  | ip_slai_response_data_size_null
+  | ip_slai_samples_of_history_kept_null
+  | ip_slai_secondary_frequency_null
+  | ip_slai_tag_null
+  | ip_slai_threshold_null
+  | ip_slai_timeout_null
+  | ip_slai_tos_null
+  | ip_slai_ttl_null
+  | ip_slai_verify_data_null
   | no_ip_slai_null
   | ip_slai_dest_ipaddr
   | ip_slai_dest_port
   | ip_slai_vrf
 ;
 
-no_ip_slai_null: NO ip_slai_null;
+no_ip_slai_null: NO (
+   ip_slai_aggregate_null
+   | ip_slai_clock_null
+   | ip_slai_clock_tolerance_null
+   | ip_slai_control_null
+   | ip_slai_cos_null
+   | ip_slai_data_pattern_null
+   | ip_slai_distribution_null
+   | ip_slai_exp_null
+   | ip_slai_frame_null
+   | ip_slai_frequency_null
+   | ip_slai_history_null
+   | ip_slai_hops_of_statistics_kept_null
+   | ip_slai_lsr_path_null
+   | ip_slai_max_delay_null
+   | ip_slai_operation_packet_priority_null
+   | ip_slai_optimize_null
+   | ip_slai_owner_null
+   | ip_slai_paths_of_statistics_kept_null
+   | ip_slai_percentile_null
+   | ip_slai_precision_null
+   | ip_slai_request_data_size_null
+   | ip_slai_response_data_size_null
+   | ip_slai_samples_of_history_kept_null
+   | ip_slai_secondary_frequency_null
+   | ip_slai_tag_null
+   | ip_slai_threshold_null
+   | ip_slai_timeout_null
+   | ip_slai_tos_null
+   | ip_slai_ttl_null
+   | ip_slai_verify_data_null
+);
 
-ip_slai_null
+ip_slai_aggregate_null
 :
-  (
-    AGGREGATE
-    | CLOCK
-    | CLOCK_TOLERANCE
-    | CONTROL
-    | COS
-    | DATA_PATTERN
-    | DISTRIBUTION
-    | EXP
-    | FRAME
-    | FREQUENCY
-    | HISTORY
-    | HOPS_OF_STATISTICS_KEPT
-    | LSR_PATH
-    | MAX_DELAY
-    | OPERATION_PACKET_PRIORITY
-    | OPTIMIZE
-    | OWNER
-    | PATHS_OF_STATISTICS_KEPT
-    | PERCENTILE
-    | PRECISION
-    | REQUEST_DATA_SIZE
-    | RESPONSE_DATA_SIZE
-    | SAMPLES_OF_HISTORY_KEPT
-    | SECONDARY_FREQUENCY
-    | TAG
-    | THRESHOLD
-    | TIMEOUT
-    | TOS
-    | TTL
-    | VERIFY_DATA
-  ) null_rest_of_line
+   AGGREGATE null_rest_of_line
+;
+ip_slai_clock_null
+:
+   CLOCK null_rest_of_line
+;
+ip_slai_clock_tolerance_null
+:
+   CLOCK_TOLERANCE null_rest_of_line
+;
+ip_slai_control_null
+:
+   CONTROL null_rest_of_line
+;
+ip_slai_cos_null
+:
+   COS null_rest_of_line
+;
+ip_slai_data_pattern_null
+:
+   DATA_PATTERN null_rest_of_line
+;
+ip_slai_distribution_null
+:
+   DISTRIBUTION null_rest_of_line
+;
+ip_slai_exp_null
+:
+   EXP null_rest_of_line
+;
+ip_slai_frame_null
+:
+   FRAME null_rest_of_line
+;
+ip_slai_frequency_null
+:
+   FREQUENCY null_rest_of_line
+;
+ip_slai_history_null
+:
+   HISTORY null_rest_of_line
+;
+ip_slai_hops_of_statistics_kept_null
+:
+   HOPS_OF_STATISTICS_KEPT null_rest_of_line
+;
+ip_slai_lsr_path_null
+:
+   LSR_PATH null_rest_of_line
+;
+ip_slai_max_delay_null
+:
+   MAX_DELAY null_rest_of_line
+;
+ip_slai_operation_packet_priority_null
+:
+   OPERATION_PACKET_PRIORITY null_rest_of_line
+;
+ip_slai_optimize_null
+:
+   OPTIMIZE null_rest_of_line
+;
+ip_slai_owner_null
+:
+   OWNER null_rest_of_line
+;
+ip_slai_paths_of_statistics_kept_null
+:
+   PATHS_OF_STATISTICS_KEPT null_rest_of_line
+;
+ip_slai_percentile_null
+:
+   PERCENTILE null_rest_of_line
+;
+ip_slai_precision_null
+:
+   PRECISION null_rest_of_line
+;
+ip_slai_request_data_size_null
+:
+   REQUEST_DATA_SIZE null_rest_of_line
+;
+ip_slai_response_data_size_null
+:
+   RESPONSE_DATA_SIZE null_rest_of_line
+;
+ip_slai_samples_of_history_kept_null
+:
+   SAMPLES_OF_HISTORY_KEPT null_rest_of_line
+;
+ip_slai_secondary_frequency_null
+:
+   SECONDARY_FREQUENCY null_rest_of_line
+;
+ip_slai_tag_null
+:
+   TAG null_rest_of_line
+;
+ip_slai_threshold_null
+:
+   THRESHOLD null_rest_of_line
+;
+ip_slai_timeout_null
+:
+   TIMEOUT null_rest_of_line
+;
+ip_slai_tos_null
+:
+   TOS null_rest_of_line
+;
+ip_slai_ttl_null
+:
+   TTL null_rest_of_line
+;
+ip_slai_verify_data_null
+:
+   VERIFY_DATA null_rest_of_line
 ;
 
 ip_slai_dest_ipaddr: DEST_IPADDR (dstip = ip_address | dsthost = variable) NEWLINE;
@@ -512,21 +650,36 @@ no_ip_slaa_group: GROUP TYPE IP name = variable NEWLINE;
 
 ipslaag_inner
 :
-  ipslaag_null
+  ipslaag_description_null
+  | ipslaag_destination_null
+  | ipslaag_schedule_null
+  | ipslaag_template_null
   | no_ipslaag_null
 ;
 
-ipslaag_null
+ipslaag_description_null
 :
-  (
-    DESCRIPTION
-    | DESTINATION
-    | SCHEDULE
-    | TEMPLATE
-  ) null_rest_of_line
+   DESCRIPTION null_rest_of_line
+;
+ipslaag_destination_null
+:
+   DESTINATION null_rest_of_line
+;
+ipslaag_schedule_null
+:
+   SCHEDULE null_rest_of_line
+;
+ipslaag_template_null
+:
+   TEMPLATE null_rest_of_line
 ;
 
-no_ipslaag_null: NO ipslaag_null;
+no_ipslaag_null: NO (
+   ipslaag_description_null
+   | ipslaag_destination_null
+   | ipslaag_schedule_null
+   | ipslaag_template_null
+);
 
 ip_slaa_schedule
 :
@@ -538,22 +691,42 @@ no_ip_slaa_schedule: SCHEDULE name = variable NEWLINE;
 
 ip_slaas_inner
 :
-  ip_slaas_null
+  ip_slaas_ageout_null
+  | ip_slaas_frequency_null
+  | ip_slaas_life_null
+  | ip_slaas_probe_interval_null
+  | ip_slaas_start_time_null
   | no_ip_slaas_null
 ;
 
-ip_slaas_null
+ip_slaas_ageout_null
 :
-  (
-    AGEOUT
-    | FREQUENCY
-    | LIFE
-    | PROBE_INTERVAL
-    | START_TIME
-  ) null_rest_of_line
+   AGEOUT null_rest_of_line
+;
+ip_slaas_frequency_null
+:
+   FREQUENCY null_rest_of_line
+;
+ip_slaas_life_null
+:
+   LIFE null_rest_of_line
+;
+ip_slaas_probe_interval_null
+:
+   PROBE_INTERVAL null_rest_of_line
+;
+ip_slaas_start_time_null
+:
+   START_TIME null_rest_of_line
 ;
 
-no_ip_slaas_null: NO ip_slaas_null;
+no_ip_slaas_null: NO (
+   ip_slaas_ageout_null
+   | ip_slaas_frequency_null
+   | ip_slaas_life_null
+   | ip_slaas_probe_interval_null
+   | ip_slaas_start_time_null
+);
 
 ip_slaa_template
 :
@@ -589,23 +762,48 @@ no_ip_slaat_icmp_echo: ICMP_ECHO name = variable NEWLINE;
 
 ipslaati_inner
 :
-  ipslaati_null
+  ipslaati_description_null
+  | ipslaati_parameters_null
+  | ipslaati_react_null
+  | ipslaati_source_ip_null
+  | ipslaati_tos_null
+  | ipslaati_vrf_null
   | no_ipslaati_null
 ;
 
-ipslaati_null
+ipslaati_description_null
 :
-  (
-    DESCRIPTION
-    | PARAMETERS
-    | REACT
-    | SOURCE_IP
-    | TOS
-    | VRF
-  ) null_rest_of_line
+   DESCRIPTION null_rest_of_line
+;
+ipslaati_parameters_null
+:
+   PARAMETERS null_rest_of_line
+;
+ipslaati_react_null
+:
+   REACT null_rest_of_line
+;
+ipslaati_source_ip_null
+:
+   SOURCE_IP null_rest_of_line
+;
+ipslaati_tos_null
+:
+   TOS null_rest_of_line
+;
+ipslaati_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
-no_ipslaati_null: NO ipslaati_null;
+no_ipslaati_null: NO (
+   ipslaati_description_null
+   | ipslaati_parameters_null
+   | ipslaati_react_null
+   | ipslaati_source_ip_null
+   | ipslaati_tos_null
+   | ipslaati_vrf_null
+);
 
 ip_slaat_icmp_jitter
 :
@@ -625,25 +823,60 @@ no_ip_slaat_tcp_connect: NO TCP_CONNECT name = variable NEWLINE;
 
 ip_slaatt_inner
 :
-  ip_slaatt_null
+  ip_slaatt_control_null
+  | ip_slaatt_description_null
+  | ip_slaatt_parameters_null
+  | ip_slaatt_react_null
+  | ip_slaatt_source_ip_null
+  | ip_slaatt_source_port_null
+  | ip_slaatt_tos_null
+  | ip_slaatt_vrf_null
   | no_ip_slaatt_null
 ;
 
-ip_slaatt_null
+ip_slaatt_control_null
 :
-  (
-    CONTROL
-    | DESCRIPTION
-    | PARAMETERS
-    | REACT
-    | SOURCE_IP
-    | SOURCE_PORT
-    | TOS
-    | VRF
-  ) null_rest_of_line
+   CONTROL null_rest_of_line
+;
+ip_slaatt_description_null
+:
+   DESCRIPTION null_rest_of_line
+;
+ip_slaatt_parameters_null
+:
+   PARAMETERS null_rest_of_line
+;
+ip_slaatt_react_null
+:
+   REACT null_rest_of_line
+;
+ip_slaatt_source_ip_null
+:
+   SOURCE_IP null_rest_of_line
+;
+ip_slaatt_source_port_null
+:
+   SOURCE_PORT null_rest_of_line
+;
+ip_slaatt_tos_null
+:
+   TOS null_rest_of_line
+;
+ip_slaatt_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
-no_ip_slaatt_null: NO ip_slaatt_null;
+no_ip_slaatt_null: NO (
+   ip_slaatt_control_null
+   | ip_slaatt_description_null
+   | ip_slaatt_parameters_null
+   | ip_slaatt_react_null
+   | ip_slaatt_source_ip_null
+   | ip_slaatt_source_port_null
+   | ip_slaatt_tos_null
+   | ip_slaatt_vrf_null
+);
 
 ip_slaat_udp_echo
 :
@@ -655,25 +888,60 @@ no_ip_slaat_udp_echo: UDP_ECHO name = variable NEWLINE;
 
 ip_slaatue_inner
 :
-  ip_slaatue_null
+  ip_slaatue_control_null
+  | ip_slaatue_description_null
+  | ip_slaatue_parameters_null
+  | ip_slaatue_react_null
+  | ip_slaatue_source_ip_null
+  | ip_slaatue_source_port_null
+  | ip_slaatue_tos_null
+  | ip_slaatue_vrf_null
   | no_ip_slaatue_null
 ;
 
-ip_slaatue_null
+ip_slaatue_control_null
 :
-  (
-    CONTROL
-    | DESCRIPTION
-    | PARAMETERS
-    | REACT
-    | SOURCE_IP
-    | SOURCE_PORT
-    | TOS
-    | VRF
-  ) null_rest_of_line
+   CONTROL null_rest_of_line
+;
+ip_slaatue_description_null
+:
+   DESCRIPTION null_rest_of_line
+;
+ip_slaatue_parameters_null
+:
+   PARAMETERS null_rest_of_line
+;
+ip_slaatue_react_null
+:
+   REACT null_rest_of_line
+;
+ip_slaatue_source_ip_null
+:
+   SOURCE_IP null_rest_of_line
+;
+ip_slaatue_source_port_null
+:
+   SOURCE_PORT null_rest_of_line
+;
+ip_slaatue_tos_null
+:
+   TOS null_rest_of_line
+;
+ip_slaatue_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
-no_ip_slaatue_null: NO ip_slaatue_null;
+no_ip_slaatue_null: NO (
+   ip_slaatue_control_null
+   | ip_slaatue_description_null
+   | ip_slaatue_parameters_null
+   | ip_slaatue_react_null
+   | ip_slaatue_source_ip_null
+   | ip_slaatue_source_port_null
+   | ip_slaatue_tos_null
+   | ip_slaatue_vrf_null
+);
 
 ip_slaat_udp_jitter
 :
@@ -685,26 +953,66 @@ no_ip_slaat_udp_jitter: UDP_JITTER name = variable NEWLINE;
 
 ip_slaatuj_inner
 :
-  ip_slaatuj_null
+  ip_slaatuj_codec_null
+  | ip_slaatuj_control_null
+  | ip_slaatuj_description_null
+  | ip_slaatuj_parameters_null
+  | ip_slaatuj_react_null
+  | ip_slaatuj_source_ip_null
+  | ip_slaatuj_source_port_null
+  | ip_slaatuj_tos_null
+  | ip_slaatuj_vrf_null
   | no_ip_slaatuj_null
 ;
 
-ip_slaatuj_null
+ip_slaatuj_codec_null
 :
-  (
-    CODEC
-    | CONTROL
-    | DESCRIPTION
-    | PARAMETERS
-    | REACT
-    | SOURCE_IP
-    | SOURCE_PORT
-    | TOS
-    | VRF
-  ) null_rest_of_line
+   CODEC null_rest_of_line
+;
+ip_slaatuj_control_null
+:
+   CONTROL null_rest_of_line
+;
+ip_slaatuj_description_null
+:
+   DESCRIPTION null_rest_of_line
+;
+ip_slaatuj_parameters_null
+:
+   PARAMETERS null_rest_of_line
+;
+ip_slaatuj_react_null
+:
+   REACT null_rest_of_line
+;
+ip_slaatuj_source_ip_null
+:
+   SOURCE_IP null_rest_of_line
+;
+ip_slaatuj_source_port_null
+:
+   SOURCE_PORT null_rest_of_line
+;
+ip_slaatuj_tos_null
+:
+   TOS null_rest_of_line
+;
+ip_slaatuj_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
-no_ip_slaatuj_null: NO ip_slaatuj_null;
+no_ip_slaatuj_null: NO (
+   ip_slaatuj_codec_null
+   | ip_slaatuj_control_null
+   | ip_slaatuj_description_null
+   | ip_slaatuj_parameters_null
+   | ip_slaatuj_react_null
+   | ip_slaatuj_source_ip_null
+   | ip_slaatuj_source_port_null
+   | ip_slaatuj_tos_null
+   | ip_slaatuj_vrf_null
+);
 
 ip_sla_enable_null: ENABLE REACTION_ALERTS NEWLINE;
 
@@ -763,7 +1071,8 @@ ip_sla_ethernet_monitor
   ETHERNET_MONITOR
   (
     ip_slaem_entry
-    | ip_slaem_null
+    | ip_slaem_reaction_configuration_null
+    | ip_slaem_schedule_null
   )
 ;
 
@@ -771,8 +1080,9 @@ no_ip_sla_ethernet_monitor
 :
   ETHERNET_MONITOR
   (
-    no_ip_slaem_entry
-    | ip_slaem_null
+    ip_slaem_reaction_configuration_null
+    | ip_slaem_schedule_null
+    | no_ip_slaem_entry
   )
 ;
 
@@ -786,37 +1096,62 @@ no_ip_slaem_entry: num = sla_number NEWLINE;
 
 ip_slaeme_inner
 :
-  ip_slaeme_null
+  ip_slaeme_cos_null
+  | ip_slaeme_owner_null
+  | ip_slaeme_request_data_size_null
+  | ip_slaeme_tag_null
+  | ip_slaeme_threshold_null
+  | ip_slaeme_timeout_null
+  | ip_slaeme_type_null
   | no_ip_slaeme_null
 ;
 
-ip_slaeme_null
+ip_slaeme_type_null
 :
-  // Here you specify a type if the entry is new, then are taken to another context.
-  // If the entry already exists and the type has been specified, you are brought directly to the
-  // new context. Since we currently do not care about the contents, just allow lines from all
-  // contexts.
-  (
-    // for new entry
-    TYPE
-    // below are for existing entries or after type has been specified
-    | COS
-    | OWNER
-    | REQUEST_DATA_SIZE
-    | TAG
-    | THRESHOLD
-    | TIMEOUT
-  ) null_rest_of_line
+   TYPE null_rest_of_line
+;
+ip_slaeme_cos_null
+:
+   COS null_rest_of_line
+;
+ip_slaeme_owner_null
+:
+   OWNER null_rest_of_line
+;
+ip_slaeme_request_data_size_null
+:
+   REQUEST_DATA_SIZE null_rest_of_line
+;
+ip_slaeme_tag_null
+:
+   TAG null_rest_of_line
+;
+ip_slaeme_threshold_null
+:
+   THRESHOLD null_rest_of_line
+;
+ip_slaeme_timeout_null
+:
+   TIMEOUT null_rest_of_line
 ;
 
-no_ip_slaeme_null: NO ip_slaeme_null;
+no_ip_slaeme_null: NO (
+   ip_slaeme_cos_null
+   | ip_slaeme_owner_null
+   | ip_slaeme_request_data_size_null
+   | ip_slaeme_tag_null
+   | ip_slaeme_threshold_null
+   | ip_slaeme_timeout_null
+   | ip_slaeme_type_null
+);
 
-ip_slaem_null
+ip_slaem_reaction_configuration_null
 :
-  (
-    REACTION_CONFIGURATION
-    | SCHEDULE
-  ) null_rest_of_line
+   REACTION_CONFIGURATION null_rest_of_line
+;
+ip_slaem_schedule_null
+:
+   SCHEDULE null_rest_of_line
 ;
 
 ip_sla_group_null: GROUP null_rest_of_line;
@@ -905,16 +1240,21 @@ no_ip_sla_server: NO SERVER TWAMP NEWLINE;
 
 ip_slas_inner
 :
-  ip_slas_null
+  ip_slas_port_null
+  | ip_slas_timer_null
   | no_ip_slas_null
 ;
 
-ip_slas_null
+ip_slas_port_null
 :
-  (
-    PORT
-    | TIMER
-  ) null_rest_of_line
+   PORT null_rest_of_line
+;
+ip_slas_timer_null
+:
+   TIMER null_rest_of_line
 ;
 
-no_ip_slas_null: NO ip_slas_null;
+no_ip_slas_null: NO (
+   ip_slas_port_null
+   | ip_slas_timer_null
+);

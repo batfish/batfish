@@ -548,42 +548,152 @@ rov3_address_family
 
 rov3_common
 :
-   rov3_null
+   rov3_area_null
+   | rov3_auto_cost_null
+   | rov3_bfd_null
+   | rov3_cost_null
+   | rov3_dead_interval_null
+   | rov3_default_information_null
+   | rov3_discard_route_null
+   | rov3_distance_null
+   | rov3_fast_reroute_null
+   | rov3_graceful_restart_null
+   | rov3_hello_interval_null
+   | rov3_interface_null
+   | rov3_log_adjacency_changes_null
+   | rov3_log_null
+   | rov3_max_metric_null
+   | rov3_maximum_null
+   | rov3_maximum_paths_null
+   | rov3_mtu_ignore_null
+   | rov3_network_null
+   | rov3_nsr_null
+   | rov3_nssa_null
+   | rov3_ospfv3_null
+   | rov3_passive_interface_null
+   | rov3_passive_null
+   | rov3_priority_null
+   | rov3_range_null
+   | rov3_redistribute_null
+   | rov3_router_id_null
+   | rov3_timers_null
 ;
 
-rov3_null
+rov3_area_null
 :
-   (
-      AREA
-      | AUTO_COST
-      | BFD
-      | COST
-      | DEAD_INTERVAL
-      | DEFAULT_INFORMATION
-      | DISCARD_ROUTE
-      | DISTANCE
-      | FAST_REROUTE
-      | GRACEFUL_RESTART
-      | HELLO_INTERVAL
-      | INTERFACE
-      | LOG
-      | LOG_ADJACENCY_CHANGES
-      | MAX_METRIC
-      | MAXIMUM
-      | MAXIMUM_PATHS
-      | MTU_IGNORE
-      | NETWORK
-      | NSSA
-      | NSR
-      | OSPFV3
-      | PASSIVE
-      | PASSIVE_INTERFACE
-      | PRIORITY
-      | RANGE
-      | REDISTRIBUTE
-      | ROUTER_ID
-      | TIMERS
-   ) null_rest_of_line
+   AREA null_rest_of_line
+;
+rov3_auto_cost_null
+:
+   AUTO_COST null_rest_of_line
+;
+rov3_bfd_null
+:
+   BFD null_rest_of_line
+;
+rov3_cost_null
+:
+   COST null_rest_of_line
+;
+rov3_dead_interval_null
+:
+   DEAD_INTERVAL null_rest_of_line
+;
+rov3_default_information_null
+:
+   DEFAULT_INFORMATION null_rest_of_line
+;
+rov3_discard_route_null
+:
+   DISCARD_ROUTE null_rest_of_line
+;
+rov3_distance_null
+:
+   DISTANCE null_rest_of_line
+;
+rov3_fast_reroute_null
+:
+   FAST_REROUTE null_rest_of_line
+;
+rov3_graceful_restart_null
+:
+   GRACEFUL_RESTART null_rest_of_line
+;
+rov3_hello_interval_null
+:
+   HELLO_INTERVAL null_rest_of_line
+;
+rov3_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+rov3_log_null
+:
+   LOG null_rest_of_line
+;
+rov3_log_adjacency_changes_null
+:
+   LOG_ADJACENCY_CHANGES null_rest_of_line
+;
+rov3_max_metric_null
+:
+   MAX_METRIC null_rest_of_line
+;
+rov3_maximum_null
+:
+   MAXIMUM null_rest_of_line
+;
+rov3_maximum_paths_null
+:
+   MAXIMUM_PATHS null_rest_of_line
+;
+rov3_mtu_ignore_null
+:
+   MTU_IGNORE null_rest_of_line
+;
+rov3_network_null
+:
+   NETWORK null_rest_of_line
+;
+rov3_nssa_null
+:
+   NSSA null_rest_of_line
+;
+rov3_nsr_null
+:
+   NSR null_rest_of_line
+;
+rov3_ospfv3_null
+:
+   OSPFV3 null_rest_of_line
+;
+rov3_passive_null
+:
+   PASSIVE null_rest_of_line
+;
+rov3_passive_interface_null
+:
+   PASSIVE_INTERFACE null_rest_of_line
+;
+rov3_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+rov3_range_null
+:
+   RANGE null_rest_of_line
+;
+rov3_redistribute_null
+:
+   REDISTRIBUTE null_rest_of_line
+;
+rov3_router_id_null
+:
+   ROUTER_ID null_rest_of_line
+;
+rov3_timers_null
+:
+   TIMERS null_rest_of_line
 ;
 
 s_ipv6_router_ospf
