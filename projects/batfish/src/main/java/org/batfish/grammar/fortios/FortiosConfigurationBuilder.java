@@ -31,7 +31,6 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -184,7 +183,6 @@ import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefix_
 import org.batfish.grammar.fortios.FortiosParser.Ip_prefixContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_protocol_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_wildcardContext;
-import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.MtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Permit_or_denyContext;
 import org.batfish.grammar.fortios.FortiosParser.Policy_actionContext;
@@ -2982,10 +2980,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // the mask in IpWildcard
     Ip maskIp = toIp(mask);
     return IpWildcard.ipWithWildcardMask(toIp(ip), invertMask ? maskIp.inverted() : maskIp);
-  }
-
-  private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
-    return Ip6.parse(ctx.getText());
   }
 
   /** Returns message indicating why address can't be committed in the CLI, or null if it can */

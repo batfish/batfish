@@ -10,7 +10,6 @@ import org.batfish.vendor.StructureType;
 public enum CiscoXrStructureType implements StructureType {
   ACCESS_LIST("acl"),
   AS_PATH_SET("as-path-set"),
-  BFD_TEMPLATE("bfd-template"),
   BGP_AF_GROUP("bgp af-group"),
   BGP_NEIGHBOR("bgp neighbor"),
   BGP_NEIGHBOR_GROUP("bgp neighbor-group"),
@@ -27,7 +26,6 @@ public enum CiscoXrStructureType implements StructureType {
   EXTCOMMUNITY_SET_RT("extcommunity-set rt"),
   FLOW_EXPORTER_MAP("flow exporter-map"),
   FLOW_MONITOR_MAP("flow monitor-map"),
-  INSPECT_CLASS_MAP("class-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
   IPSEC_PROFILE("crypto ipsec profile"),

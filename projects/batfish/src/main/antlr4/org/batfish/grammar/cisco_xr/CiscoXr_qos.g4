@@ -205,12 +205,6 @@ color_setter
    )
 ;
 
-match_semantics
-:
-   MATCH_ALL
-   | MATCH_ANY
-;
-
 og_network
 :
    NETWORK name = variable_permissive NEWLINE
@@ -263,11 +257,6 @@ ogn_network_object
 
       | host = variable_permissive
    ) NEWLINE
-;
-
-on_group
-:
-   GROUP_OBJECT name = variable_permissive NEWLINE
 ;
 
 pm_end_policy_map
@@ -455,7 +444,3 @@ s_policy_map
    pm_end_policy_map?
 ;
 
-variable_policy_map_header
-:
-   ~( TYPE | NEWLINE )
-;

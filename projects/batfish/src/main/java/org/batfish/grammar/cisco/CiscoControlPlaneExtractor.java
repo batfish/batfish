@@ -128,7 +128,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIB
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_SESSION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP;
@@ -488,7 +487,6 @@ import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_bp_compare_routerid_rb_stanzaContext;
@@ -777,7 +775,6 @@ import org.batfish.grammar.cisco.CiscoParser.No_neighbor_activate_rb_stanzaConte
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_redistribute_connected_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_route_map_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
@@ -923,8 +920,6 @@ import org.batfish.grammar.cisco.CiscoParser.Roa_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_nssaContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_stubContext;
-import org.batfish.grammar.cisco.CiscoParser.Roi_costContext;
-import org.batfish.grammar.cisco.CiscoParser.Roi_passiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_map_stanzaContext;
@@ -1067,7 +1062,6 @@ import org.batfish.grammar.cisco.CiscoParser.Uint32Context;
 import org.batfish.grammar.cisco.CiscoParser.Uint8Context;
 import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
@@ -1497,8 +1491,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private String _currentIosNatPoolName;
 
   private Long _currentOspfArea;
-
-  private String _currentOspfInterface;
 
   private OspfProcess _currentOspfProcess;
 
@@ -4262,11 +4254,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
-  }
-
-  @Override
-  public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
-    todo(ctx);
   }
 
   @Override
@@ -7618,13 +7605,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
-    // TODO: see if it is always ok to set active on 'no shutdown'
-    _currentPeerGroup.setShutdown(false);
-    _currentPeerGroup.setActive(true);
-  }
-
-  @Override
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -8703,20 +8683,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRoi_cost(Roi_costContext ctx) {
-    Interface iface = _configuration.getInterfaces().get(_currentOspfInterface);
-    int cost = toInteger(ctx.cost);
-    iface.setOspfCost(cost);
-  }
-
-  @Override
-  public void exitRoi_passive(Roi_passiveContext ctx) {
-    if (ctx.ENABLE() != null) {
-      _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
-    }
-  }
-
-  @Override
   public void exitRoute_map_bgp_tail(Route_map_bgp_tailContext ctx) {
     if (_currentPeerGroup == null) {
       return;
@@ -9784,14 +9750,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unexpected context for use neighbor group");
     }
-  }
-
-  @Override
-  public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
-    String groupName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_AF_GROUP, groupName, BGP_USE_AF_GROUP, ctx.name.getStart().getLine());
-    todo(ctx);
   }
 
   @Override

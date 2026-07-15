@@ -798,11 +798,6 @@ on_subnet
    ) NEWLINE
 ;
 
-on_group
-:
-   GROUP_OBJECT name = variable_permissive NEWLINE
-;
-
 onn_dynamic
 :
    DYNAMIC
