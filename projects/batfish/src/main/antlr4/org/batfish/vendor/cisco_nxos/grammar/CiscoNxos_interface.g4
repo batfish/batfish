@@ -39,27 +39,48 @@ s_interface_regular
   (
     i_autostate
     | i_bandwidth
+    | i_bfd_null
+    | i_carrier_delay_null
+    | i_cdp_null
     | i_channel_group
     | i_delay
     | i_description
+    | i_duplex_null
     | i_encapsulation
     | i_fabric
+    | i_fex_null
+    | i_flowcontrol_null
+    | i_hardware_null
     | i_hsrp
     | i_ip
     | i_ipv6
     | i_isis
     | i_lacp
+    | i_link_null
+    | i_lldp_null
+    | i_load_interval_null
+    | i_logging_null
     | i_mac_address
+    | i_mdix_null
+    | i_medium_null
     | i_mtu
+    | i_negotiate_null
     | i_no
-    | i_null
     | i_ospfv3
+    | i_packet_null
+    | i_priority_flow_control_null
     | i_private_vlan
     | i_service_policy
     | i_shutdown
+    | i_snmp_null
+    | i_spanning_tree_null
     | i_speed
+    | i_storm_control_null
     | i_switchport
+    | i_udld_null
+    | i_vpc_null
     | i_vrf_member
+    | i_vtp_null
   )*
 ;
 
@@ -405,17 +426,19 @@ i_ip
   (
     i_ip_access_group
     | i_ip_address
+    | i_ip_arp_null
     | i_ip_authentication
     | i_ip_bandwidth
     | i_ip_delay
+    | i_ip_directed_broadcast_null
     | i_ip_distribute_list
     | i_ip_dhcp
     | i_ip_eigrp
+    | i_ip_flow_null
     | i_ip_forward
     | i_ip_hello_interval
     | i_ip_hold_time
     | i_ip_igmp
-    | i_ip_null
     | i_ip_ospf
     | i_ip_passive_interface
     | i_ip_pim
@@ -423,9 +446,12 @@ i_ip
     | i_ip_port
     | i_ip_port_unreachable
     | i_ip_proxy_arp
+    | i_ip_redirects_null
     | i_ip_rip
     | i_ip_router
     | i_ip_sticky_arp
+    | i_ip_unreachables_null
+    | i_ip_verify_null
   )
 ;
 
@@ -541,7 +567,9 @@ i_ip_igmp
   IGMP
   (
     iipi_access_group
-    | iipi_null
+    | iipi_query_interval_null
+    | iipi_query_max_response_time_null
+    | iipi_version_null
   )
 ;
 
@@ -550,13 +578,17 @@ iipi_access_group
   ACCESS_GROUP acl = ip_access_list_name NEWLINE
 ;
 
-iipi_null
+iipi_query_interval_null
 :
-  (
-    QUERY_INTERVAL
-    | QUERY_MAX_RESPONSE_TIME
-    | VERSION
-  ) null_rest_of_line
+   QUERY_INTERVAL null_rest_of_line
+;
+iipi_query_max_response_time_null
+:
+   QUERY_MAX_RESPONSE_TIME null_rest_of_line
+;
+iipi_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 i_ip_hello_interval
@@ -569,16 +601,29 @@ i_ip_hold_time
   HOLD_TIME EIGRP tag = router_eigrp_process_tag time = uint16 NEWLINE
 ;
 
-i_ip_null
+i_ip_arp_null
 :
-  (
-    ARP
-    | DIRECTED_BROADCAST
-    | FLOW
-    | REDIRECTS
-    | UNREACHABLES
-    | VERIFY
-  ) null_rest_of_line
+   ARP null_rest_of_line
+;
+i_ip_directed_broadcast_null
+:
+   DIRECTED_BROADCAST null_rest_of_line
+;
+i_ip_flow_null
+:
+   FLOW null_rest_of_line
+;
+i_ip_redirects_null
+:
+   REDIRECTS null_rest_of_line
+;
+i_ip_unreachables_null
+:
+   UNREACHABLES null_rest_of_line
+;
+i_ip_verify_null
+:
+   VERIFY null_rest_of_line
 ;
 
 i_ip_ospf
@@ -607,10 +652,17 @@ i_ip_pim
 :
   PIM
   (
-    iipp_hello_authentication
+    iipp_bfd_instance_null
+    | iipp_border_null
+    | iipp_dr_delay_null
+    | iipp_dr_priority_null
+    | iipp_hello_authentication
+    | iipp_hello_interval_null
     | iipp_jp_policy
     | iipp_neighbor_policy
-    | iipp_null
+    | iipp_passive_null
+    | iipp_sparse_mode_null
+    | iipp_strict_rfc_compliant_null
   )
 ;
 
@@ -657,18 +709,37 @@ iipp_neighbor_policy_route_map
   map = route_map_name (IN | OUT)? NEWLINE
 ;
 
-iipp_null
+iipp_bfd_instance_null
 :
-  (
-    BFD_INSTANCE
-    | BORDER
-    | DR_DELAY
-    | DR_PRIORITY
-    | HELLO_INTERVAL
-    | PASSIVE
-    | SPARSE_MODE
-    | STRICT_RFC_COMPLIANT
-  ) null_rest_of_line
+   BFD_INSTANCE null_rest_of_line
+;
+iipp_border_null
+:
+   BORDER null_rest_of_line
+;
+iipp_dr_delay_null
+:
+   DR_DELAY null_rest_of_line
+;
+iipp_dr_priority_null
+:
+   DR_PRIORITY null_rest_of_line
+;
+iipp_hello_interval_null
+:
+   HELLO_INTERVAL null_rest_of_line
+;
+iipp_passive_null
+:
+   PASSIVE null_rest_of_line
+;
+iipp_sparse_mode_null
+:
+   SPARSE_MODE null_rest_of_line
+;
+iipp_strict_rfc_compliant_null
+:
+   STRICT_RFC_COMPLIANT null_rest_of_line
 ;
 
 i_ip_policy
@@ -882,9 +953,14 @@ i_ipv6
   IPV6
   (
     iip6_address
-    | iip6_null
+    | iip6_dhcp_null
+    | iip6_mld_null
+    | iip6_nd_null
+    | iip6_pim_null
+    | iip6_redirects_null
     | iip6_router
     | iip6_traffic_filter
+    | iip6_verify_null
   )
 ;
 
@@ -910,16 +986,29 @@ i_ipv6_address_dhcp
   DHCP NEWLINE
 ;
 
-iip6_null
+iip6_dhcp_null
 :
-  (
-    DHCP
-    | MLD
-    | ND
-    | PIM
-    | REDIRECTS
-    | VERIFY
-  ) null_rest_of_line
+   DHCP null_rest_of_line
+;
+iip6_mld_null
+:
+   MLD null_rest_of_line
+;
+iip6_nd_null
+:
+   ND null_rest_of_line
+;
+iip6_pim_null
+:
+   PIM null_rest_of_line
+;
+iip6_redirects_null
+:
+   REDIRECTS null_rest_of_line
+;
+iip6_verify_null
+:
+   VERIFY null_rest_of_line
 ;
 
 iip6_router
@@ -1227,8 +1316,11 @@ i_lacp
 :
   LACP
   (
-    il_min_links
-    | il_null
+    il_fast_select_hot_standby_null
+    | il_min_links
+    | il_port_priority_null
+    | il_rate_null
+    | il_suspend_individual_null
   )
 ;
 
@@ -1243,14 +1335,21 @@ min_links_number
   uint8
 ;
 
-il_null
+il_fast_select_hot_standby_null
 :
-  (
-    FAST_SELECT_HOT_STANDBY
-    | PORT_PRIORITY
-    | RATE
-    | SUSPEND_INDIVIDUAL
-  ) null_rest_of_line
+   FAST_SELECT_HOT_STANDBY null_rest_of_line
+;
+il_port_priority_null
+:
+   PORT_PRIORITY null_rest_of_line
+;
+il_rate_null
+:
+   RATE null_rest_of_line
+;
+il_suspend_individual_null
+:
+   SUSPEND_INDIVIDUAL null_rest_of_line
 ;
 
 i_mac_address
@@ -1275,15 +1374,32 @@ i_no
   (
     i_no_autostate
     | i_no_bandwidth
+    | i_no_beacon_null
     | i_no_bfd
+    | i_no_cdp_null
     | i_no_description
+    | i_no_hardware_null
+    | i_no_hsrp_null
     | i_no_ip
     | i_no_ipv6
+    | i_no_lacp_null
+    | i_no_link_null
+    | i_no_lldp_null
+    | i_no_load_interval_null
+    | i_no_logging_null
     | i_no_mac_address
-    | i_no_null
+    | i_no_management_null
+    | i_no_negotiate_null
+    | i_no_ospfv3_null
+    | i_no_port_channel_null
     | i_no_shutdown
+    | i_no_snmp_null
+    | i_no_spanning_tree_null
+    | i_no_storm_control_null
     | i_no_switchport
+    | i_no_udld_null
     | i_no_vrf_member
+    | i_no_vtp_null
   )
 ;
 
@@ -1316,22 +1432,36 @@ i_no_ip
 :
   IP
   (
-    inoip_null
+    inoip_arp_null
+    | inoip_dhcp_null
     | inoip_forward
     | inoip_ospf
+    | inoip_port_unreachable_null
     | inoip_proxy_arp
+    | inoip_redirects_null
+    | inoip_verify_null
   )
 ;
 
-inoip_null
+inoip_arp_null
 :
-  (
-    ARP
-    | DHCP
-    | PORT_UNREACHABLE
-    | REDIRECTS
-    | VERIFY
-  ) null_rest_of_line
+   ARP null_rest_of_line
+;
+inoip_dhcp_null
+:
+   DHCP null_rest_of_line
+;
+inoip_port_unreachable_null
+:
+   PORT_UNREACHABLE null_rest_of_line
+;
+inoip_redirects_null
+:
+   REDIRECTS null_rest_of_line
+;
+inoip_verify_null
+:
+   VERIFY null_rest_of_line
 ;
 
 inoip_forward
@@ -1371,28 +1501,77 @@ i_no_mac_address
   MAC_ADDRESS NEWLINE
 ;
 
-i_no_null
+i_no_beacon_null
 :
-  (
-    BEACON
-    | CDP
-    | HARDWARE
-    | HSRP
-    | LACP
-    | LINK
-    | LLDP
-    | LOAD_INTERVAL
-    | LOGGING
-    | MANAGEMENT
-    | NEGOTIATE
-    | OSPFV3
-    | PORT_CHANNEL
-    | SNMP
-    | SPANNING_TREE
-    | STORM_CONTROL
-    | UDLD
-    | VTP
-  ) null_rest_of_line
+   BEACON null_rest_of_line
+;
+i_no_cdp_null
+:
+   CDP null_rest_of_line
+;
+i_no_hardware_null
+:
+   HARDWARE null_rest_of_line
+;
+i_no_hsrp_null
+:
+   HSRP null_rest_of_line
+;
+i_no_lacp_null
+:
+   LACP null_rest_of_line
+;
+i_no_link_null
+:
+   LINK null_rest_of_line
+;
+i_no_lldp_null
+:
+   LLDP null_rest_of_line
+;
+i_no_load_interval_null
+:
+   LOAD_INTERVAL null_rest_of_line
+;
+i_no_logging_null
+:
+   LOGGING null_rest_of_line
+;
+i_no_management_null
+:
+   MANAGEMENT null_rest_of_line
+;
+i_no_negotiate_null
+:
+   NEGOTIATE null_rest_of_line
+;
+i_no_ospfv3_null
+:
+   OSPFV3 null_rest_of_line
+;
+i_no_port_channel_null
+:
+   PORT_CHANNEL null_rest_of_line
+;
+i_no_snmp_null
+:
+   SNMP null_rest_of_line
+;
+i_no_spanning_tree_null
+:
+   SPANNING_TREE null_rest_of_line
+;
+i_no_storm_control_null
+:
+   STORM_CONTROL null_rest_of_line
+;
+i_no_udld_null
+:
+   UDLD null_rest_of_line
+;
+i_no_vtp_null
+:
+   VTP null_rest_of_line
 ;
 
 i_no_shutdown
@@ -1470,32 +1649,93 @@ i_no_vrf_member
   VRF MEMBER (name = vrf_name)? NEWLINE
 ;
 
-i_null
+i_bfd_null
 :
-  (
-    BFD
-    | CARRIER_DELAY
-    | CDP
-    | DUPLEX
-    | FEX
-    | FLOWCONTROL
-    | HARDWARE
-    | LINK
-    | LLDP
-    | LOAD_INTERVAL
-    | LOGGING
-    | MDIX
-    | MEDIUM
-    | NEGOTIATE
-    | PACKET
-    | PRIORITY_FLOW_CONTROL
-    | SNMP
-    | SPANNING_TREE
-    | STORM_CONTROL
-    | UDLD
-    | VPC
-    | VTP
-  ) null_rest_of_line
+   BFD null_rest_of_line
+;
+i_carrier_delay_null
+:
+   CARRIER_DELAY null_rest_of_line
+;
+i_cdp_null
+:
+   CDP null_rest_of_line
+;
+i_duplex_null
+:
+   DUPLEX null_rest_of_line
+;
+i_fex_null
+:
+   FEX null_rest_of_line
+;
+i_flowcontrol_null
+:
+   FLOWCONTROL null_rest_of_line
+;
+i_hardware_null
+:
+   HARDWARE null_rest_of_line
+;
+i_link_null
+:
+   LINK null_rest_of_line
+;
+i_lldp_null
+:
+   LLDP null_rest_of_line
+;
+i_load_interval_null
+:
+   LOAD_INTERVAL null_rest_of_line
+;
+i_logging_null
+:
+   LOGGING null_rest_of_line
+;
+i_mdix_null
+:
+   MDIX null_rest_of_line
+;
+i_medium_null
+:
+   MEDIUM null_rest_of_line
+;
+i_negotiate_null
+:
+   NEGOTIATE null_rest_of_line
+;
+i_packet_null
+:
+   PACKET null_rest_of_line
+;
+i_priority_flow_control_null
+:
+   PRIORITY_FLOW_CONTROL null_rest_of_line
+;
+i_snmp_null
+:
+   SNMP null_rest_of_line
+;
+i_spanning_tree_null
+:
+   SPANNING_TREE null_rest_of_line
+;
+i_storm_control_null
+:
+   STORM_CONTROL null_rest_of_line
+;
+i_udld_null
+:
+   UDLD null_rest_of_line
+;
+i_vpc_null
+:
+   VPC null_rest_of_line
+;
+i_vtp_null
+:
+   VTP null_rest_of_line
 ;
 
 i_ospfv3

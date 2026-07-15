@@ -336,8 +336,10 @@ ro3_graceful_restart
 :
   GRACEFUL_RESTART
   (
-    ro3_gr_graceful_restart
-    | ro3_gr_null
+    ro3_gr_grace_period_null
+    | ro3_gr_graceful_restart
+    | ro3_gr_helper_disable_null
+    | ro3_gr_planned_only_null
   )
 ;
 
@@ -346,13 +348,17 @@ ro3_gr_graceful_restart
   NEWLINE
 ;
 
-ro3_gr_null
+ro3_gr_grace_period_null
 :
-  (
-    GRACE_PERIOD
-    | HELPER_DISABLE
-    | PLANNED_ONLY
-  ) null_rest_of_line
+   GRACE_PERIOD null_rest_of_line
+;
+ro3_gr_helper_disable_null
+:
+   HELPER_DISABLE null_rest_of_line
+;
+ro3_gr_planned_only_null
+:
+   PLANNED_ONLY null_rest_of_line
 ;
 
 ro3_isolate

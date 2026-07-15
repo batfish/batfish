@@ -14,8 +14,9 @@ s_vrf_context
     | vc_description
     | vc_ip
     | vc_ipv6
+    | vc_mdt_null
     | vc_no
-    | vc_null
+    | vc_pim_null
     | vc_rd
     | vc_shutdown
     | vc_vni
@@ -87,18 +88,23 @@ vc_ip
   (
     ip_route
     | ip_name_server
-    | vc_ip_null
+    | vc_ip_domain_list_null
+    | vc_ip_domain_name_null
+    | vc_ip_pim_null
   )
 ;
 
-vc_ip_null
+vc_ip_domain_list_null
 :
-  (
-    DOMAIN_LIST
-    | DOMAIN_NAME
-    | PIM
-  )
-  null_rest_of_line
+   DOMAIN_LIST null_rest_of_line
+;
+vc_ip_domain_name_null
+:
+   DOMAIN_NAME null_rest_of_line
+;
+vc_ip_pim_null
+:
+   PIM null_rest_of_line
 ;
 
 vc_ipv6
@@ -127,12 +133,13 @@ vc_no_shutdown
   SHUTDOWN NEWLINE
 ;
 
-vc_null
+vc_mdt_null
 :
-  (
-    MDT
-    | PIM
-  ) null_rest_of_line
+   MDT null_rest_of_line
+;
+vc_pim_null
+:
+   PIM null_rest_of_line
 ;
 
 vc_rd

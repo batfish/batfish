@@ -100,9 +100,10 @@ pmnq_class
 // type mandatory
   CLASS TYPE NETWORK_QOS name = class_map_network_qos_name NEWLINE
   (
-    pmnqc_mtu
+    pmnqc_congestion_control_null
+    | pmnqc_mtu
     | pmnqc_no
-    | pmnqc_null
+    | pmnqc_pause_null
   )*
 ;
 
@@ -113,23 +114,25 @@ pmnqc_mtu
 
 pmnqc_no
 :
-  NO pmnqc_no_null
+  NO ( pmnqc_no_congestion_control_null | pmnqc_no_pause_null )
 ;
 
-pmnqc_no_null
+pmnqc_no_congestion_control_null
 :
-  (
-    CONGESTION_CONTROL
-    | PAUSE
-  ) null_rest_of_line
+   CONGESTION_CONTROL null_rest_of_line
+;
+pmnqc_no_pause_null
+:
+   PAUSE null_rest_of_line
 ;
 
-pmnqc_null
+pmnqc_congestion_control_null
 :
-  (
-    CONGESTION_CONTROL
-    | PAUSE
-  ) null_rest_of_line
+   CONGESTION_CONTROL null_rest_of_line
+;
+pmnqc_pause_null
+:
+   PAUSE null_rest_of_line
 ;
 
 pmnq_description
@@ -183,17 +186,30 @@ pm_queuing
 pmqu_class
 :
   CLASS TYPE QUEUING name = class_map_queuing_name NEWLINE
-  pmquc_null*
+  ( pmquc_bandwidth_null | pmquc_pause_null | pmquc_priority_null | pmquc_queue_limit_null | pmquc_random_detect_null | pmquc_shape_null )*
 ;
 
-pmquc_null
+pmquc_bandwidth_null
 :
-  (
-    BANDWIDTH
-    | PAUSE
-    | PRIORITY
-    | QUEUE_LIMIT
-    | RANDOM_DETECT
-    | SHAPE
-  ) null_rest_of_line
+   BANDWIDTH null_rest_of_line
+;
+pmquc_pause_null
+:
+   PAUSE null_rest_of_line
+;
+pmquc_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+pmquc_queue_limit_null
+:
+   QUEUE_LIMIT null_rest_of_line
+;
+pmquc_random_detect_null
+:
+   RANDOM_DETECT null_rest_of_line
+;
+pmquc_shape_null
+:
+   SHAPE null_rest_of_line
 ;
