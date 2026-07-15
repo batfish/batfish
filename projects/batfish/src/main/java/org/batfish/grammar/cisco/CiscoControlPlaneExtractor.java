@@ -435,6 +435,7 @@ import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.LoggingHost;
 import org.batfish.datamodel.vendor_family.cisco.LoggingType;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
+import org.batfish.datamodel.vendor_family.cisco.NtpAuthenticationKey;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
 import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
@@ -776,8 +777,11 @@ import org.batfish.grammar.cisco.CiscoParser.No_neighbor_shutdown_rb_stanzaConte
 import org.batfish.grammar.cisco.CiscoParser.No_redistribute_connected_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Ntp_authenticateContext;
+import org.batfish.grammar.cisco.CiscoParser.Ntp_authentication_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ntp_trusted_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_icmp_typeContext;
@@ -7617,6 +7621,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitNtp_authenticate(Ntp_authenticateContext ctx) {
+    _configuration.getCf().getNtp().setAuthenticate(true);
+  }
+
+  @Override
+  public void exitNtp_authentication_key(Ntp_authentication_keyContext ctx) {
+    Ntp ntp = _configuration.getCf().getNtp();
+    long keyNum = toLong(ctx.key_num);
+    NtpAuthenticationKey key =
+        ntp.getAuthenticationKeys().computeIfAbsent(keyNum, NtpAuthenticationKey::new);
+    key.setMd5Key(ctx.key.getText());
+    if (ctx.enc_type != null) {
+      key.setEncryptionType(toLong(ctx.enc_type));
+    }
+  }
+
+  @Override
+  public void exitNtp_trusted_key(Ntp_trusted_keyContext ctx) {
+    Ntp ntp = _configuration.getCf().getNtp();
+    long low = toLong(ctx.key_low);
+    long high = ctx.key_high != null ? toLong(ctx.key_high) : low;
+    for (long k = low; k <= high; k++) {
+      ntp.getTrustedKeys().add(k);
+    }
+  }
+
+  @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     Ntp ntp = _configuration.getCf().getNtp();
     String hostname = ctx.hostname.getText();
@@ -7625,6 +7656,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String vrfName = ctx.vrf.getText();
       server.setVrf(vrfName);
       initVrf(vrfName);
+    }
+    if (ctx.key != null) {
+      server.setKey(toLong(ctx.key));
     }
     if (ctx.PREFER() != null) {
       // TODO: implement

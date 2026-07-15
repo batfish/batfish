@@ -422,6 +422,9 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.vendor_family.cisco.Ntp;
+import org.batfish.datamodel.vendor_family.cisco.NtpAuthenticationKey;
+import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -745,6 +748,42 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosLineParsing() {
     assertNotNull(parseCiscoConfig("ios-line", null));
+  }
+
+  @Test
+  public void testIosNtpExtraction() {
+    CiscoConfiguration vc = parseCiscoConfig("ios-ntp", ConfigurationFormat.CISCO_IOS);
+    Ntp ntp = vc.getCf().getNtp();
+    assertNotNull(ntp);
+
+    assertTrue(ntp.getAuthenticate());
+
+    assertThat(ntp.getAuthenticationKeys(), hasKeys(1L, 42L));
+
+    NtpAuthenticationKey key1 = ntp.getAuthenticationKeys().get(1L);
+    assertThat(key1.getMd5Key(), equalTo("aNiceKey"));
+    assertThat(key1.getEncryptionType(), nullValue());
+
+    NtpAuthenticationKey key42 = ntp.getAuthenticationKeys().get(42L);
+    assertThat(key42.getMd5Key(), equalTo("anEncryptedKey"));
+    assertThat(key42.getEncryptionType(), equalTo(7L));
+
+    assertThat(ntp.getTrustedKeys(), contains(1L, 10L, 11L, 12L));
+
+    assertThat(ntp.getServers(), hasKeys("10.1.1.10", "10.1.1.11", "10.1.1.12"));
+
+    NtpServer server10 = ntp.getServers().get("10.1.1.10");
+    assertThat(server10.getKey(), equalTo(1L));
+
+    NtpServer server11 = ntp.getServers().get("10.1.1.11");
+    assertThat(server11.getKey(), nullValue());
+
+    NtpServer server12 = ntp.getServers().get("10.1.1.12");
+    assertThat(server12.getKey(), equalTo(42L));
+
+    assertTrue(ntp.isServerAuthenticated(server10));
+    assertFalse(ntp.isServerAuthenticated(server11));
+    assertFalse(ntp.isServerAuthenticated(server12));
   }
 
   @Test

@@ -58,6 +58,14 @@ ntp_authentication
    AUTHENTICATION NEWLINE
 ;
 
+ntp_authentication_key
+:
+   AUTHENTICATION_KEY key_num = dec MD5 key = variable
+   (
+      enc_type = dec
+   )? NEWLINE
+;
+
 ntp_clock_period
 :
    CLOCK_PERIOD null_rest_of_line
@@ -74,7 +82,7 @@ ntp_common
    | ntp_allow_null
    | ntp_authenticate
    | ntp_authentication
-   | ntp_authentication_key_null
+   | ntp_authentication_key
    | ntp_clock_period
    | ntp_commit
    | ntp_distribute
@@ -115,10 +123,6 @@ ntp_master
 ntp_allow_null
 :
    ALLOW null_rest_of_line
-;
-ntp_authentication_key_null
-:
-   AUTHENTICATION_KEY null_rest_of_line
 ;
 ntp_interface_null
 :
@@ -172,7 +176,10 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY dec NEWLINE
+   TRUSTED_KEY key_low = dec
+   (
+      DASH key_high = dec
+   )? NEWLINE
 ;
 
 ntp_update_calendar
