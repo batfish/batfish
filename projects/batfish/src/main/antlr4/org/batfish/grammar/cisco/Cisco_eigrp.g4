@@ -17,15 +17,26 @@ re_classic_tail
    re_distribute_list
    | re_eigrp
    | rec_address_family
+   | rec_auto_summary_null
+   | rec_bfd_null
+   | rec_default_information_null
+   | rec_hello_interval_null
+   | rec_maximum_paths_null
    | rec_metric
+   | rec_neighbor_null
    | rec_no
-   | rec_null
    | re_default_metric
    | re_network
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
    | re_shutdown
+   | rec_nsf_null
+   | rec_offset_list_null
+   | rec_split_horizon_null
+   | rec_timers_null
+   | rec_traffic_share_null
+   | rec_variance_null
 ;
 
 re_default_metric
@@ -51,20 +62,30 @@ re_eigrp
 :
    EIGRP
    (
-      re_eigrp_null
+      re_eigrp_default_route_tag_null
+      | re_eigrp_event_log_size_null
+      | re_eigrp_log_neighbor_changes_null
+      | re_eigrp_log_neighbor_warnings_null
       | re_eigrp_stub
       | re_eigrp_router_id
    )
 ;
 
-re_eigrp_null
+re_eigrp_default_route_tag_null
 :
-   (
-      DEFAULT_ROUTE_TAG
-      | EVENT_LOG_SIZE
-      | LOG_NEIGHBOR_CHANGES
-      | LOG_NEIGHBOR_WARNINGS
-   ) null_rest_of_line
+   DEFAULT_ROUTE_TAG null_rest_of_line
+;
+re_eigrp_event_log_size_null
+:
+   EVENT_LOG_SIZE null_rest_of_line
+;
+re_eigrp_log_neighbor_changes_null
+:
+   LOG_NEIGHBOR_CHANGES null_rest_of_line
+;
+re_eigrp_log_neighbor_warnings_null
+:
+   LOG_NEIGHBOR_WARNINGS null_rest_of_line
 ;
 
 re_eigrp_router_id
@@ -260,7 +281,10 @@ reaf_interface_tail
 reaf_topology_tail
 :
    re_default_metric
-   | re_eigrp_null
+   | re_eigrp_default_route_tag_null
+   | re_eigrp_event_log_size_null
+   | re_eigrp_log_neighbor_changes_null
+   | re_eigrp_log_neighbor_warnings_null
    | re_redistribute
    | reaf_topology_null
 ;
@@ -371,8 +395,19 @@ rec_no
 :
    NO
    (
-     recno_eigrp
-     | rec_null
+     rec_auto_summary_null
+     | rec_bfd_null
+     | rec_default_information_null
+     | rec_hello_interval_null
+     | rec_maximum_paths_null
+     | rec_neighbor_null
+     | rec_nsf_null
+     | rec_offset_list_null
+     | rec_split_horizon_null
+     | rec_timers_null
+     | rec_traffic_share_null
+     | rec_variance_null
+     | recno_eigrp
      | reno_shutdown
    )
 ;
@@ -388,22 +423,53 @@ recno_eigrp_router_id
   ROUTER_ID NEWLINE
 ;
 
-rec_null
+rec_auto_summary_null
 :
-   (
-      AUTO_SUMMARY
-      | BFD
-      | DEFAULT_INFORMATION
-      | HELLO_INTERVAL
-      | MAXIMUM_PATHS
-      | NEIGHBOR
-      | NSF
-      | OFFSET_LIST
-      | SPLIT_HORIZON
-      | TIMERS
-      | TRAFFIC_SHARE
-      | VARIANCE
-   ) null_rest_of_line
+   AUTO_SUMMARY null_rest_of_line
+;
+rec_bfd_null
+:
+   BFD null_rest_of_line
+;
+rec_default_information_null
+:
+   DEFAULT_INFORMATION null_rest_of_line
+;
+rec_hello_interval_null
+:
+   HELLO_INTERVAL null_rest_of_line
+;
+rec_maximum_paths_null
+:
+   MAXIMUM_PATHS null_rest_of_line
+;
+rec_neighbor_null
+:
+   NEIGHBOR null_rest_of_line
+;
+rec_nsf_null
+:
+   NSF null_rest_of_line
+;
+rec_offset_list_null
+:
+   OFFSET_LIST null_rest_of_line
+;
+rec_split_horizon_null
+:
+   SPLIT_HORIZON null_rest_of_line
+;
+rec_timers_null
+:
+   TIMERS null_rest_of_line
+;
+rec_traffic_share_null
+:
+   TRAFFIC_SHARE null_rest_of_line
+;
+rec_variance_null
+:
+   VARIANCE null_rest_of_line
 ;
 
 re_shutdown
@@ -600,7 +666,10 @@ resf_null
 
 resf_topology_tail
 :
-   re_eigrp_null
+   re_eigrp_default_route_tag_null
+   | re_eigrp_event_log_size_null
+   | re_eigrp_log_neighbor_changes_null
+   | re_eigrp_log_neighbor_warnings_null
    | resf_topology_null
 ;
 
