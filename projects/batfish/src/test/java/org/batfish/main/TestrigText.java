@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -271,6 +272,15 @@ public class TestrigText {
 
   /** Load a {@link TestrigText} from the specified directory. */
   public static TestrigText loadTestrig(String dir) throws IOException {
+    return loadTestrig(dir, filename -> true);
+  }
+
+  /**
+   * Load a {@link TestrigText} from the specified directory, including only configuration files
+   * whose names match the given filter. The filter is applied to filenames under {@code configs/}.
+   */
+  public static TestrigText loadTestrig(String dir, Predicate<String> configFileFilter)
+      throws IOException {
     TestrigText.Builder builder = TestrigText.builder();
 
     Path snapshotDir = Paths.get(dir);
@@ -314,6 +324,7 @@ public class TestrigText {
     checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
     builder.setConfigurationText(
         Arrays.stream(configsDir.toFile().listFiles())
+            .filter(f -> configFileFilter.test(f.getName()))
             .collect(
                 ImmutableMap.toImmutableMap(
                     File::getName,
