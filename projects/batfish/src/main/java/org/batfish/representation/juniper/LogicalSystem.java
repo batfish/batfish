@@ -99,7 +99,11 @@ public class LogicalSystem implements Serializable {
 
   private @Nullable Nat _natStatic;
 
-  private NavigableSet<String> _ntpServers;
+  private final Map<String, NtpServer> _ntpServers;
+
+  private final Set<Integer> _ntpAuthenticationKeys;
+
+  private final Set<Integer> _ntpTrustedKeys;
 
   private final Map<String, Condition> _conditions;
 
@@ -169,7 +173,9 @@ public class LogicalSystem implements Serializable {
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
     _jf = new JuniperFamily();
-    _ntpServers = new TreeSet<>();
+    _ntpServers = new TreeMap<>();
+    _ntpAuthenticationKeys = new TreeSet<>();
+    _ntpTrustedKeys = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _conditions = new TreeMap<>();
     _policyStatements = new TreeMap<>();
@@ -383,8 +389,16 @@ public class LogicalSystem implements Serializable {
     return _natStatic;
   }
 
-  public NavigableSet<String> getNtpServers() {
+  public @Nonnull Map<String, NtpServer> getNtpServers() {
     return _ntpServers;
+  }
+
+  public @Nonnull Set<Integer> getNtpAuthenticationKeys() {
+    return _ntpAuthenticationKeys;
+  }
+
+  public @Nonnull Set<Integer> getNtpTrustedKeys() {
+    return _ntpTrustedKeys;
   }
 
   public Nat getOrCreateNat(Nat.Type natType) {

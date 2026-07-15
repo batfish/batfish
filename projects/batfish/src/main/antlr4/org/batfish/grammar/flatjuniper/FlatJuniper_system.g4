@@ -68,28 +68,62 @@ sy_ntp
 :
    NTP
    (
-      syn_null
+      syn_authentication_key
+      | syn_null
       | syn_server
       | syn_source_address
+      | syn_trusted_key
    )
+;
+
+syn_authentication_key
+:
+   AUTHENTICATION_KEY id = ntp_key_number
+   (
+      synak_type
+      | synak_value
+   )
+;
+
+synak_type
+:
+   TYPE
+   (
+      MD5
+      | SHA1
+      | SHA256
+   )
+;
+
+synak_value
+:
+   VALUE secret_string
 ;
 
 syn_null
 :
    (
       BOOT_SERVER
+      | BROADCAST
       | BROADCAST_CLIENT
+      | INTERVAL_RANGE
+      | MULTICAST_CLIENT
+      | NTS
+      | PEER
+      | RESTRICT
+      | THRESHOLD
    ) null_filler
 ;
 
 syn_server
 :
-   SERVER hostname = name_or_ip
+   SERVER hostname = ip_or_ipv6_address
    (
-       syn_server_key
-       | syn_server_version
-       | syn_server_prefer
-       | syn_server_routing_instance
+       syns_key
+       | syns_nts
+       | syns_prefer
+       | syns_routing_instance
+       | syns_version
    )*
 ;
 
@@ -98,24 +132,39 @@ syn_source_address
    SOURCE_ADDRESS address = IP_ADDRESS (ROUTING_INSTANCE ri = junos_name)?
 ;
 
-syn_server_key
+syn_trusted_key
 :
-    KEY secret_string
+   TRUSTED_KEY id = ntp_key_number
 ;
 
-syn_server_prefer
+syns_key
+:
+    KEY id = ntp_key_number
+;
+
+syns_nts
+:
+    NTS null_filler
+;
+
+syns_prefer
 :
     PREFER
 ;
 
-syn_server_routing_instance
+syns_routing_instance
 :
     ROUTING_INSTANCE name = junos_name
 ;
 
-syn_server_version
+syns_version
 :
     VERSION VERSION_STRING
+;
+
+ntp_key_number
+:
+    uint16
 ;
 
 sy_null

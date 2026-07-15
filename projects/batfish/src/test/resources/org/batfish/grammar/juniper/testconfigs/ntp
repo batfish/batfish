@@ -1,0 +1,56 @@
+#
+set system host-name ntp
+#
+#
+set system ntp authentication-key 1 type md5
+set system ntp authentication-key 1 value "$9$secret1"
+set system ntp authentication-key 2 type sha1
+set system ntp authentication-key 2 value secret2
+set system ntp authentication-key 3 type sha256
+set system ntp authentication-key 3 value secret3
+set system ntp authentication-key 4 type md5
+set system ntp authentication-key 4 value secret4
+#
+#
+set system ntp trusted-key 1
+set system ntp trusted-key 2
+set system ntp trusted-key 3
+set system ntp trusted-key 5
+set system ntp trusted-key 6
+set system ntp trusted-key 7
+#
+#
+set system ntp server 10.0.0.1 key 1
+set system ntp server 10.0.0.1 routing-instance MGMT
+set system ntp server 10.0.0.2 prefer
+set system ntp server 10.0.0.2 version 4
+set system ntp server 10.0.0.2 nts
+set system ntp server 10.0.0.10 key 4
+set system ntp server 10.0.0.11 key 5
+set system ntp server 2001:db8::10
+#
+#
+set system ntp peer 10.0.0.3 key 2
+set system ntp peer 10.0.0.3 version 4
+set system ntp peer 10.0.0.3 prefer
+set system ntp peer 10.0.0.4
+set system ntp peer 2001:db8::11
+set system ntp broadcast 10.0.0.255 key 3
+set system ntp broadcast 10.0.0.255 routing-instance-name MGMT
+set system ntp broadcast 10.0.0.255 ttl 5
+set system ntp broadcast 10.0.0.255 version 4
+set system ntp broadcast 2001:db8::ff
+#
+#
+set system ntp boot-server 4.5.6.7
+set system ntp broadcast-client
+set system ntp multicast-client 224.0.1.1
+set system ntp interval-range 3
+set system ntp restrict 10.0.0.0 mask 255.0.0.0
+set system ntp restrict 10.0.0.0 noquery
+set system ntp threshold 300 action reject
+#
+set system ntp source-address 10.0.0.9 routing-instance MGMT
+set system ntp source-address 5.6.7.8
+#
+set routing-instances MGMT

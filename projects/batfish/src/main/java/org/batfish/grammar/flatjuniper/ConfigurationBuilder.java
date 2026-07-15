@@ -582,6 +582,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ntp_key_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_enableContext;
@@ -995,9 +996,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_porttypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_security_profileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_server_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_trusted_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syns_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syns_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syp_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syr_encrypted_passwordContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_fileContext;
@@ -1186,6 +1190,7 @@ import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
+import org.batfish.representation.juniper.NtpServer;
 import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
@@ -1321,6 +1326,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 65535));
   private static final IntegerSpace SRLG_COST_RANGE = IntegerSpace.of(new SubRange(1, 65535));
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final IntegerSpace NTP_KEY_NUMBER_RANGE = IntegerSpace.of(new SubRange(1, 65534));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
@@ -2295,6 +2301,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return toLongInSpace(messageCtx, ctx, SRLG_VALUE_RANGE, "srlg-value");
   }
 
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ntp_key_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, NTP_KEY_NUMBER_RANGE, "ntp key-number");
+  }
+
   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
     if (ctx.dec() != null) {
       int protocolNum = toInt(ctx.dec());
@@ -2597,6 +2608,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private OspfInterfaceSettings _currentOspfSettings;
 
   private Nat _currentNat;
+
+  private NtpServer _currentNtpServer;
 
   private NatPool _currentNatPool;
 
@@ -4731,12 +4744,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterSyn_server(Syn_serverContext ctx) {
-    String hostname = toString(ctx.hostname);
-    _currentLogicalSystem.getNtpServers().add(hostname);
+    String hostname = ctx.hostname.getText();
+    _currentNtpServer =
+        _currentLogicalSystem.getNtpServers().computeIfAbsent(hostname, NtpServer::new);
   }
 
   @Override
-  public void exitSyn_server_routing_instance(Syn_server_routing_instanceContext ctx) {
+  public void exitSyn_server(Syn_serverContext ctx) {
+    _currentNtpServer = null;
+  }
+
+  @Override
+  public void exitSyns_key(Syns_keyContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentNtpServer::setKey);
+  }
+
+  @Override
+  public void exitSyn_authentication_key(Syn_authentication_keyContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentLogicalSystem.getNtpAuthenticationKeys()::add);
+  }
+
+  @Override
+  public void exitSyn_trusted_key(Syn_trusted_keyContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentLogicalSystem.getNtpTrustedKeys()::add);
+  }
+
+  @Override
+  public void exitSyns_routing_instance(Syns_routing_instanceContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, NTP_SERVER_ROUTING_INSTANCE, getLine(ctx.getStart()));

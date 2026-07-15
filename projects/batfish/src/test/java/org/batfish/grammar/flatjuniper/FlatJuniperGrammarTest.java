@@ -1339,6 +1339,92 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNtpParsing() {
+    JuniperConfiguration vc = parseJuniperConfig("ntp");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testNtpExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("ntp");
+
+    assertThat(
+        vc.getMasterLogicalSystem().getNtpAuthenticationKeys(), containsInAnyOrder(1, 2, 3, 4));
+    assertThat(
+        vc.getMasterLogicalSystem().getNtpTrustedKeys(), containsInAnyOrder(1, 2, 3, 5, 6, 7));
+
+    // Only servers are modeled, keyed by host (IPv4 and IPv6).
+    assertThat(
+        vc.getMasterLogicalSystem().getNtpServers(),
+        hasKeys("10.0.0.1", "10.0.0.2", "10.0.0.10", "10.0.0.11", "2001:db8::10"));
+
+    assertThat(vc.getMasterLogicalSystem().getNtpServers().get("10.0.0.1").getKey(), equalTo(1));
+    assertThat(vc.getMasterLogicalSystem().getNtpServers().get("10.0.0.2").getKey(), nullValue());
+    assertThat(vc.getMasterLogicalSystem().getNtpServers().get("10.0.0.10").getKey(), equalTo(4));
+    assertThat(vc.getMasterLogicalSystem().getNtpServers().get("10.0.0.11").getKey(), equalTo(5));
+    assertThat(
+        vc.getMasterLogicalSystem().getNtpServers().get("2001:db8::10").getKey(), nullValue());
+  }
+
+  @Test
+  public void testNtpAuthenticationConfigured() {
+    JuniperConfiguration vc = parseJuniperConfig("ntp");
+    Set<Integer> definedKeys = vc.getMasterLogicalSystem().getNtpAuthenticationKeys();
+    Set<Integer> trustedKeys = vc.getMasterLogicalSystem().getNtpTrustedKeys();
+
+    // Authenticated: key referenced, defined via authentication-key, and trusted
+    assertThat(
+        vc.getMasterLogicalSystem()
+            .getNtpServers()
+            .get("10.0.0.1")
+            .isAuthenticated(definedKeys, trustedKeys),
+        equalTo(true));
+    // Not authenticated: no key referenced
+    assertThat(
+        vc.getMasterLogicalSystem()
+            .getNtpServers()
+            .get("10.0.0.2")
+            .isAuthenticated(definedKeys, trustedKeys),
+        equalTo(false));
+    // Not authenticated: key defined but not trusted (key 4)
+    assertThat(
+        vc.getMasterLogicalSystem()
+            .getNtpServers()
+            .get("10.0.0.10")
+            .isAuthenticated(definedKeys, trustedKeys),
+        equalTo(false));
+    // Not authenticated: key trusted but not defined via authentication-key (key 5)
+    assertThat(
+        vc.getMasterLogicalSystem()
+            .getNtpServers()
+            .get("10.0.0.11")
+            .isAuthenticated(definedKeys, trustedKeys),
+        equalTo(false));
+  }
+
+  @Test
+  public void testNtpInvalidKey() {
+    // key-number 0 is out of the valid range (1..65534) at every site: server key,
+    // authentication-key, and trusted-key. Each occurrence should warn and be dropped
+    JuniperConfiguration vc = parseJuniperConfig("ntp-invalid-key");
+
+    List<String> comments =
+        vc.getWarnings().getParseWarnings().stream()
+            .map(ParseWarning::getComment)
+            .collect(Collectors.toList());
+    assertThat(comments, everyItem(containsString("Expected ntp key-number in range")));
+    assertThat(comments, hasSize(4));
+
+    // No defined or trusted keys are recorded
+    assertThat(vc.getMasterLogicalSystem().getNtpAuthenticationKeys(), empty());
+    assertThat(vc.getMasterLogicalSystem().getNtpTrustedKeys(), empty());
+
+    // The server is still created, but with no key recorded
+    assertThat(vc.getMasterLogicalSystem().getNtpServers(), hasKeys("10.0.0.1"));
+    assertThat(vc.getMasterLogicalSystem().getNtpServers().get("10.0.0.1").getKey(), nullValue());
+  }
+
+  @Test
   public void testL2Topology() throws IOException {
     /*
     L1:
@@ -8770,9 +8856,9 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperNtp() {
+  public void testJuniperSyslog() {
     // Parse with no warnings
-    parseJuniperConfig("juniper-ntp");
+    parseJuniperConfig("juniper-syslog");
   }
 
   @Test
