@@ -202,22 +202,6 @@ color_setter
    )
 ;
 
-inspect_protocol
-:
-   HTTP
-   | HTTPS
-   | ICMP
-   | TCP
-   | TFTP
-   | UDP
-;
-
-match_semantics
-:
-   MATCH_ALL
-   | MATCH_ANY
-;
-
 pm_class
 :
    CLASS (CLASS_DEFAULT | BUILT_IN? name = class_name) NEWLINE
@@ -478,7 +462,3 @@ table_map_null
    ) null_rest_of_line
 ;
 
-variable_policy_map_header
-:
-   ~( TYPE | NEWLINE )
-;

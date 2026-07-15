@@ -81,27 +81,9 @@ access_list_ip6_range
    )
 ;
 
-appletalk_access_list_null_tail
-:
-   action = access_list_action
-   (
-      (
-         CABLE_RANGE ~NEWLINE*
-      )
-      | OTHER_ACCESS
-   )? NEWLINE
-;
-
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line
-;
-
-etype
-:
-   ANY
-   | ARP
-   | IPV4_L5
 ;
 
 extended_access_list_additional_feature
@@ -332,40 +314,6 @@ ip_prefix_list_tail
    )* NEWLINE
 ;
 
-ipaclsession_ip_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IP_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IP_ADDRESS mask = IP_ADDRESS
-   )
-   | USER
-;
-
-ipaclsession_ip6_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IPV6_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IPV6_PREFIX
-   )
-   | USER
-;
-
 ipv6_prefix_list_tail
 :
    (
@@ -386,37 +334,10 @@ ipv6_prefix_list_tail
    )* NEWLINE
 ;
 
-ipx_sap_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
-;
-
 irs_stanza
 :
    bandwidth_irs_stanza
    | null_irs_stanza
-;
-
-mac_access_list_additional_feature
-:
-   (
-      ETYPE etype
-   )
-   | HEX
-   | IP
-   | LOG_ENABLE
-   |
-   (
-      PRIORITY priority = uint_legacy
-   )
-   |
-   (
-      PRIORITY_FORCE priority_force = uint_legacy
-   )
-   |
-   (
-      PRIORITY_MAPPING priority_mapping = uint_legacy
-   )
 ;
 
 no_ip_prefix_list_stanza
@@ -466,11 +387,6 @@ prefix_set_elem_list
       hash_comment
       | prefix_set_elem
    ) NEWLINE
-;
-
-protocol_type_code_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
 ;
 
 rs_stanza

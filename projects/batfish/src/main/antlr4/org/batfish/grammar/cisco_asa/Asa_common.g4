@@ -91,19 +91,6 @@ dscp_type
    | EF
 ;
 
-ec_ga_la_literal
-:
-   ecgalal_asdot_colon
-   | ecgalal_colon
-   | ecgalal_ip_colon
-;
-
-ecgalal_asdot_colon: ga_high16 = uint16 PERIOD ga_low16 = uint16 COLON la = uint16;
-
-ecgalal_colon: ga = uint32 COLON la = uint16;
-
-ecgalal_ip_colon: ga = IP_ADDRESS COLON la = uint16;
-
 eigrp_metric
 :
    bw_kbps = dec delay_10us = dec reliability = dec eff_bw = dec mtu = dec
@@ -210,13 +197,6 @@ ip_hostname
 :
    IP_ADDRESS
    | IPV6_ADDRESS
-;
-
-isis_level
-:
-   LEVEL_1
-   | LEVEL_1_2
-   | LEVEL_2
 ;
 
 line_type
@@ -611,12 +591,6 @@ uint8
   UINT8
 ;
 
-uint16
-:
-  UINT8
-  | UINT16
-;
-
 uint32
 :
   UINT8
@@ -658,11 +632,6 @@ variable_interface_name
    NAME | NEWLINE | TAG | TRACK | UINT8 | UINT16 | UINT32 | VARIABLE )
 ;
 
-variable_max_metric
-:
-   ~(NEWLINE | BGP | EXTERNAL_LSA | INCLUDE_STUB | ON_STARTUP | ROUTER_LSA | SUMMARY_LSA | WAIT_FOR)
-;
-
 variable_permissive
 :
    (
@@ -678,11 +647,6 @@ variable_secret
 variable_group_id
 :
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
-;
-
-variable_vlan
-:
-   ~( NEWLINE | ACCESS_MAP | DEC | UINT8 | UINT16 | UINT32 )
 ;
 
 vlan_id

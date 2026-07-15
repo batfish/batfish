@@ -107,28 +107,6 @@ ec_administrator
   | administrator_ip
 ;
 
-ec_literal
-:
-  dec COLON dec COLON dec
-;
-
-ec_named
-:
-  ec_type COLON ec_administrator COLON assigned_number = dec
-;
-
-ec_type
-:
-  ORIGIN
-  | TARGET
-;
-
-extended_community
-:
-  ec_literal
-  | ec_named
-;
-
 /** An extended community restricted to route-target type, for use in vrf-target contexts. */
 vrf_target_community
 :
@@ -517,13 +495,6 @@ filter_name
   // Edge-cases due to language ambiguity
   | INPUT
   | OUTPUT
-;
-
-name_or_ip
-:
-  junos_name
-  | IP_ADDRESS
-  | IPV6_ADDRESS
 ;
 
 ip_or_ipv6_address

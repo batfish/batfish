@@ -17,11 +17,6 @@ continue_rm_stanza
    CONTINUE dec? NEWLINE
 ;
 
-ip_policy_list_stanza
-:
-   IP POLICY_LIST name = variable access_list_action NEWLINE match_rm_stanza*
-;
-
 match_as_number_rm_stanza
 :
    AS_NUMBER num = dec NEWLINE

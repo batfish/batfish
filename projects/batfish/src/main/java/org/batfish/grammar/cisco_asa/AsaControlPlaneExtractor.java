@@ -100,7 +100,6 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTR
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_SESSION_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.CLASS_MAP_ACCESS_GROUP;
@@ -456,7 +455,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Asa_nat_optional_argsContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_twice_nat_destinationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_twice_nat_dynamicContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_twice_nat_staticContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_conf_identifier_rb_stanzaContext;
@@ -698,7 +696,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.No_neighbor_activate_rb_stanzaCon
 import org.batfish.grammar.cisco_asa.AsaParser.No_neighbor_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.No_redistribute_connected_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.No_route_map_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_source_interfaceContext;
@@ -958,7 +955,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.T_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.T_source_interfaceContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Template_peer_address_familyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Template_peer_session_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Tl_objectContext;
@@ -967,11 +963,9 @@ import org.batfish.grammar.cisco_asa.AsaParser.Track_interfaceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ts_hostContext;
 import org.batfish.grammar.cisco_asa.AsaParser.U_passwordContext;
 import org.batfish.grammar.cisco_asa.AsaParser.U_roleContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Uint16Context;
 import org.batfish.grammar.cisco_asa.AsaParser.Uint32Context;
 import org.batfish.grammar.cisco_asa.AsaParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Update_source_bgp_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.VariableContext;
@@ -3807,11 +3801,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
-  }
-
-  @Override
-  public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
-    todo(ctx);
   }
 
   @Override
@@ -6816,13 +6805,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
-    // TODO: see if it is always ok to set active on 'no shutdown'
-    _currentPeerGroup.setShutdown(false);
-    _currentPeerGroup.setActive(true);
-  }
-
-  @Override
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -8520,10 +8502,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentRouteMapClause.addSetLine(line);
   }
 
-  private int toUint16(Uint16Context ctx) {
-    return Integer.parseInt(ctx.getText());
-  }
-
   private long toUint32(Uint32Context ctx) {
     return Long.parseLong(ctx.getText());
   }
@@ -8876,11 +8854,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitTemplate_peer_address_family(Template_peer_address_familyContext ctx) {
-    popPeer();
-  }
-
-  @Override
   public void exitTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
     _currentIpPeerGroup = null;
     _currentIpv6PeerGroup = null;
@@ -8956,14 +8929,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     } else {
       throw new BatfishException("Unexpected context for use neighbor group");
     }
-  }
-
-  @Override
-  public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
-    String groupName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_AF_GROUP, groupName, BGP_USE_AF_GROUP, ctx.name.getStart().getLine());
-    todo(ctx);
   }
 
   @Override

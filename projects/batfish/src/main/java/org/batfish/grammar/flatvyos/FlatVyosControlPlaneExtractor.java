@@ -47,7 +47,6 @@ import org.batfish.grammar.flatvyos.FlatVyosParser.Ivt_ipsec_interfacesContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Ivt_site_to_siteContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Line_actionContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Plrt_actionContext;
-import org.batfish.grammar.flatvyos.FlatVyosParser.Plrt_descriptionContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Plrt_geContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Plrt_leContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Plrt_prefixContext;
@@ -528,12 +527,6 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   public void exitPlrt_action(Plrt_actionContext ctx) {
     LineAction action = toAction(ctx.action);
     _currentPrefixListRule.setAction(action);
-  }
-
-  @Override
-  public void exitPlrt_description(Plrt_descriptionContext ctx) {
-    String description = ctx.description().DESCRIPTION_TEXT().getText();
-    _currentPrefixListRule.setDescription(description);
   }
 
   @Override

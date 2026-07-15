@@ -155,11 +155,6 @@ ss_host_informs
    INFORMS
 ;
 
-ss_host_name
-:
-   NAME name = variable
-;
-
 ss_host_traps
 :
    TRAPS
