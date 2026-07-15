@@ -1982,11 +1982,6 @@ eos_rbi_network6
   IPV6_PREFIX (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
-eos_rbi_next_hop_unchanged
-:
-  NEXT_HOP_UNCHANGED NEWLINE
-;
-
 eos_rbi_no
 :
   NO

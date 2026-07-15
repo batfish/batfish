@@ -223,13 +223,6 @@ ip_hostname
    | IPV6_ADDRESS
 ;
 
-isis_level
-:
-   LEVEL_1
-   | LEVEL_1_2
-   | LEVEL_2
-;
-
 line_type
 :
 // intentional blank
@@ -585,17 +578,6 @@ route_target
    (IP_ADDRESS | bgp_asn) COLON dec
 ;
 
-community_set_elem_half
-:
-   value = dec
-   |
-   (
-      BRACKET_LEFT first = dec PERIOD PERIOD last = dec BRACKET_RIGHT
-   )
-   | ASTERISK
-   | PRIVATE_AS
-;
-
 service_group_protocol
 :
      TCP | TCP_UDP | UDP
@@ -704,11 +686,6 @@ variable_interface_name
 :
    ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
    NAME | NEWLINE | TAG | TRACK | UINT8 | UINT16 | UINT32 | VARIABLE )
-;
-
-variable_max_metric
-:
-   ~(NEWLINE | BGP | EXTERNAL_LSA | INCLUDE_STUB | ON_STARTUP | ROUTER_LSA | SUMMARY_LSA | WAIT_FOR)
 ;
 
 variable_permissive

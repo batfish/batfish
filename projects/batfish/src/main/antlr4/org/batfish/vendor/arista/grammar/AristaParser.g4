@@ -3974,57 +3974,6 @@ vrfd_rd
    RD (AUTO | rd = route_distinguisher) NEWLINE
 ;
 
-wccp_id
-:
-   id = dec
-   (
-      (
-         GROUP_LIST group_list = variable
-      )
-      |
-      (
-         MODE
-         (
-            CLOSED
-            | OPEN
-         )
-      )
-      |
-      (
-         PASSWORD dec? password = variable
-      )
-      |
-      (
-         REDIRECT_LIST redirect_list = variable
-      )
-      |
-      (
-         SERVICE_LIST service_list = variable
-      )
-   )* NEWLINE
-;
-
-wccp_check_null
-:
-   CHECK null_rest_of_line
-;
-wccp_outbound_acl_check_null
-:
-   OUTBOUND_ACL_CHECK null_rest_of_line
-;
-wccp_source_interface_null
-:
-   SOURCE_INTERFACE null_rest_of_line
-;
-wccp_version_null
-:
-   VERSION null_rest_of_line
-;
-wccp_web_cache_null
-:
-   WEB_CACHE null_rest_of_line
-;
-
 web_server_null
 :
    NO?

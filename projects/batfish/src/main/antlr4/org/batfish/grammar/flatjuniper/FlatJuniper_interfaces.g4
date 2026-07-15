@@ -23,16 +23,6 @@ eo_802_3ad
    )
 ;
 
-eo_auto_negotiation
-:
-   AUTO_NEGOTIATION
-;
-
-eo_no_auto_negotiation
-:
-   NO_AUTO_NEGOTIATION
-;
-
 eo_auto_negotiation_null
 :
    AUTO_NEGOTIATION null_filler

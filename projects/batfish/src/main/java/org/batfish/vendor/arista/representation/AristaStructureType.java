@@ -15,7 +15,6 @@ public enum AristaStructureType implements StructureType {
   COMMUNITY_LIST_STANDARD("standard community-list"),
   CRYPTO_DYNAMIC_MAP_SET("crypto-dynamic-map-set"),
   CRYPTO_MAP_SET("crypto-map-set"),
-  CSR_PARAMS("csr-params"),
   INSPECT_CLASS_MAP("class-map type inspect"),
   INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),

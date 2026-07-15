@@ -49,11 +49,6 @@ set_line_tail
    statement
 ;
 
-st_default_address_selection
-:
-   DEFAULT_ADDRESS_SELECTION
-;
-
 st_host_name
 :
    HOST_NAME name = variable

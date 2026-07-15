@@ -533,40 +533,6 @@ ipacleth_range
    ANY
 ;
 
-ipaclsession_ip_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IP_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IP_ADDRESS mask = IP_ADDRESS
-   )
-   | USER
-;
-
-ipaclsession_ip6_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IPV6_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IPV6_PREFIX
-   )
-   | USER
-;
-
 ipv6_prefix_list_tail
 :
    (
@@ -673,12 +639,6 @@ netdestination6_name
 netdestination6_network
 :
    NETWORK net6 = IPV6_PREFIX NEWLINE
-;
-
-netservice_icmpv6_specifier
-:
-   dec
-   | RTR_ADV
 ;
 
 netservice_port_specifier

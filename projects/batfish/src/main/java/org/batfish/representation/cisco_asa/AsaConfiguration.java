@@ -3474,7 +3474,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(AsaStructureType.BGP_AF_GROUP, AsaStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
         AsaStructureType.BGP_NEIGHBOR_GROUP, AsaStructureUsage.BGP_USE_NEIGHBOR_GROUP);
     markConcreteStructure(

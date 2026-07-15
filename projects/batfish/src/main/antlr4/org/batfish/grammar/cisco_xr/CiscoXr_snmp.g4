@@ -6,15 +6,6 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
-snmp_file_transfer_protocol
-:
-   FTP
-   | RCP
-   | SCP
-   | SFTP
-   | TFTP
-;
-
 s_snmp_server
 :
    SNMP_SERVER
