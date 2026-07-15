@@ -46,11 +46,6 @@ eos_mlag_reload_delay
    RELOAD_DELAY (MLAG | NON_MLAG)? period = (INFINITY | UINT8 | UINT16 | UINT32 | DEC) NEWLINE
 ;
 
-eos_mlag_reload_mode
-:
-   MODE LACP STANDBY NEWLINE
-;
-
 eos_mlag_shutdown
 :
    (NO)? SHUTDOWN NEWLINE

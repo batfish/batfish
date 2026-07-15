@@ -30,11 +30,6 @@ plrt_action
    ACTION action = line_action
 ;
 
-plrt_description
-:
-   description
-;
-
 plrt_ge
 :
    GE num = DEC

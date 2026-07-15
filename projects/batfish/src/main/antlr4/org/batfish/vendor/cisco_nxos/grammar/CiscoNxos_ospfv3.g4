@@ -431,15 +431,6 @@ ro3_tim_throttle
   THROTTLE LSA start = ospfv3_throttle_lsa_start hold = ospfv3_throttle_lsa_hold max = ospfv3_throttle_lsa_max NEWLINE
 ;
 
-ro3_summary_address
-:
-  SUMMARY_ADDRESS network = route_network
-  (
-    not_advertise = NOT_ADVERTISE
-    | TAG tag = uint32
-  )? NEWLINE
-;
-
 ro3_vrf
 :
   VRF name = vrf_non_default_name NEWLINE
