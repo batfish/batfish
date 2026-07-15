@@ -33,12 +33,16 @@ o_common
    | o_enable
    | o_export
    | o_external_preference
+   | o_graceful_restart_null
    | o_import
    | o_no_active_backbone
-   | o_null
+   | o_no_rfc_1583_null
+   | o_overload_null
    | o_prefix_export_limit
    | o_reference_bandwidth
    | o_rib_group
+   | o_spf_options_null
+   | o_traceoptions_null
    | o_traffic_engineering
 ;
 
@@ -72,15 +76,25 @@ o_no_active_backbone
    NO_ACTIVE_BACKBONE
 ;
 
-o_null
+o_graceful_restart_null
 :
-   (
-      GRACEFUL_RESTART
-      | NO_RFC_1583
-      | OVERLOAD
-      | SPF_OPTIONS
-      | TRACEOPTIONS
-   ) null_filler
+   GRACEFUL_RESTART null_filler
+;
+o_no_rfc_1583_null
+:
+   NO_RFC_1583 null_filler
+;
+o_overload_null
+:
+   OVERLOAD null_filler
+;
+o_spf_options_null
+:
+   SPF_OPTIONS null_filler
+;
+o_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 o_prefix_export_limit
@@ -136,6 +150,8 @@ oa_interface
    )
    (
       apply
+      | oai_authentication_null
+      | oai_bfd_liveness_detection_null
       | oai_dead_interval
       | oai_disable
       | oai_enable
@@ -145,8 +161,9 @@ oa_interface
       | oai_link_protection
       | oai_metric
       | oai_neighbor
-      | oai_null
+      | oai_no_neighbor_down_notification_null
       | oai_passive
+      | oai_poll_interval_null
       | oai_priority
       | oai_retransmit_interval_null
       | oai_te_metric
@@ -265,14 +282,21 @@ oai_neighbor
    NEIGHBOR ip_address ELIGIBLE?
 ;
 
-oai_null
+oai_authentication_null
 :
-   (
-      AUTHENTICATION
-      | BFD_LIVENESS_DETECTION
-      | NO_NEIGHBOR_DOWN_NOTIFICATION
-      | POLL_INTERVAL
-   ) null_filler
+   AUTHENTICATION null_filler
+;
+oai_bfd_liveness_detection_null
+:
+   BFD_LIVENESS_DETECTION null_filler
+;
+oai_no_neighbor_down_notification_null
+:
+   NO_NEIGHBOR_DOWN_NOTIFICATION null_filler
+;
+oai_poll_interval_null
+:
+   POLL_INTERVAL null_filler
 ;
 
 oai_passive
