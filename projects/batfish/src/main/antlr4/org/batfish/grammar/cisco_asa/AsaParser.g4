@@ -4310,41 +4310,6 @@ vc_null
    ) null_rest_of_line
 ;
 
-vlan_vn_segment
-:
-   VN_SEGMENT vni = dec NEWLINE
-;
-
-vlan_null
-:
-   NO?
-   (
-      ACTION
-      | BACKUPCRF
-      | BRIDGE
-      | MATCH
-      | MEDIA
-      | MTU
-      | MULTICAST
-      | NAME
-      | PARENT
-      | PRIORITY
-      | PRIVATE_VLAN
-      | REMOTE_SPAN
-      | ROUTER_INTERFACE
-      | SHUTDOWN
-      | SPANNING_TREE
-      | STATE
-      | STATISTICS
-      | STP
-      | TAGGED
-      | TRUNK
-      | TB_VLAN1
-      | TB_VLAN2
-      | UNTAGGED
-   ) null_rest_of_line
-;
-
 voice_class
 :
    CLASS

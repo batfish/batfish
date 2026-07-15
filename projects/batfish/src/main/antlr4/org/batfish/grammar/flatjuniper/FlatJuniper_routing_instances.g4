@@ -12,11 +12,6 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-ri_class_of_service
-:
-   s_class_of_service
-;
-
 ri_description
 :
    description

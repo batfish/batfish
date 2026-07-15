@@ -70,7 +70,6 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.St
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Static_route_prefixContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Static_route_priorityContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint16Context;
-import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint32Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint8Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Vlan_idContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.WordContext;
@@ -585,11 +584,6 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   private @Nonnull Optional<Integer> toIntegerInSpace(
       ParserRuleContext messageCtx, Uint16Context ctx, IntegerSpace space, String name) {
-    return toIntegerInSpace(messageCtx, ctx.getText(), space, name);
-  }
-
-  private @Nonnull Optional<Integer> toIntegerInSpace(
-      ParserRuleContext messageCtx, Uint32Context ctx, IntegerSpace space, String name) {
     return toIntegerInSpace(messageCtx, ctx.getText(), space, name);
   }
 

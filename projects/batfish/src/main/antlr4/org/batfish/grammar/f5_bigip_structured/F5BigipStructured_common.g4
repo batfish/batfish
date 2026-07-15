@@ -65,16 +65,6 @@ structure_name
   partition = PARTITION? word_id
 ;
 
-structure_name_or_address
-:
-  partition = PARTITION?
-  (
-    address = ip_address
-    | address6 = ipv6_address
-    | w = word_id
-  )
-;
-
 structure_name_with_port
 :
   partition = PARTITION?

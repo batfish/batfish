@@ -572,7 +572,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppol_filterContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_allContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_anyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_portContext;
@@ -9904,10 +9903,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private static @Nonnull String toString(Tacplus_server_hostContext ctx) {
-    return ctx.getText();
-  }
-
-  private @Nonnull String toString(Name_or_ipContext ctx) {
     return ctx.getText();
   }
 

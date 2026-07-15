@@ -78,7 +78,6 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_IP_ROUTER_ISIS("interface ip router isis"),
   INTERFACE_IP_ROUTER_OSPF("interface ip router ospf"),
   INTERFACE_IP_ROUTER_RIP("interface ip router rip"),
-  INTERFACE_IPV6_ROUTER_OSPFV3("interface ipv6 router ospfv3"),
   INTERFACE_SELF_REFERENCE("interface"),
   INTERFACE_SERVICE_POLICY_QOS("interface service-policy type qos"),
   INTERFACE_SERVICE_POLICY_QUEUING("interface service-policy type queuing"),

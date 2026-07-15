@@ -34,27 +34,9 @@ access_list_mac_range
    )
 ;
 
-appletalk_access_list_null_tail
-:
-   action = access_list_action
-   (
-      (
-         CABLE_RANGE ~NEWLINE*
-      )
-      | OTHER_ACCESS
-   )? NEWLINE
-;
-
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line
-;
-
-etype
-:
-   ANY
-   | ARP
-   | IPV4_L5
 ;
 
 extended_access_list_additional_feature
@@ -373,11 +355,6 @@ ipv6_prefix_list_tail
    )* NEWLINE
 ;
 
-ipx_sap_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
-;
-
 irs_stanza
 :
    bandwidth_irs_stanza
@@ -434,12 +411,6 @@ netdestination6_network
    NETWORK net6 = IPV6_PREFIX NEWLINE
 ;
 
-netservice_icmpv6_specifier
-:
-   dec
-   | RTR_ADV
-;
-
 netservice_port_specifier
 :
    (
@@ -489,11 +460,6 @@ null_rs_stanza
       | LOGGING
       | WINDOW_SIZE
    ) null_rest_of_line
-;
-
-protocol_type_code_access_list_null_tail
-:
-   action = access_list_action null_rest_of_line
 ;
 
 rs_stanza

@@ -155,47 +155,6 @@ l_vacant_message
   VACANT_MESSAGE message = ios_delimited_banner NEWLINE
 ;
 
-lc_accounting_null
-:
-   ACCOUNTING null_rest_of_line
-;
-lc_authentication_null
-:
-   AUTHENTICATION null_rest_of_line
-;
-lc_authorization_null
-:
-   AUTHORIZATION null_rest_of_line
-;
-lc_enable_authentication_null
-:
-   ENABLE_AUTHENTICATION null_rest_of_line
-;
-lc_idle_timeout_null
-:
-   IDLE_TIMEOUT null_rest_of_line
-;
-lc_length_null
-:
-   LENGTH null_rest_of_line
-;
-lc_login_authentication_null
-:
-   LOGIN_AUTHENTICATION null_rest_of_line
-;
-lc_password_null
-:
-   PASSWORD null_rest_of_line
-;
-lc_session_timeout_null
-:
-   SESSION_TIMEOUT null_rest_of_line
-;
-lc_speed_null
-:
-   SPEED null_rest_of_line
-;
-
 s_line
 :
    LINE line_type

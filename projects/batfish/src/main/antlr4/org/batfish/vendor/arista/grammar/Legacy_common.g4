@@ -154,29 +154,6 @@ ip_hostname
    | IPV6_ADDRESS
 ;
 
-isis_level
-:
-   LEVEL_1
-   | LEVEL_1_2
-   | LEVEL_2
-;
-
-line_type
-:
-// intentional blank
-
-   | AUX
-   | CON
-   | CONSOLE
-   | DEFAULT
-   |
-   (
-      TEMPLATE name = variable
-   )
-   | TTY
-   | VTY
-;
-
 netservice_alg
 :
    DHCP
@@ -194,18 +171,6 @@ netservice_alg
 null_rest_of_line
 :
     ~NEWLINE* NEWLINE
-;
-
-ospf_route_type
-:
-   (
-      EXTERNAL dec?
-   )
-   | INTERNAL
-   |
-   (
-      NSSA_EXTERNAL dec?
-   )
 ;
 
 port_specifier
@@ -509,13 +474,6 @@ subrange
    )?
 ;
 
-switchport_trunk_encapsulation
-:
-   DOT1Q
-   | ISL
-   | NEGOTIATE
-;
-
 variable
 :
    ~NEWLINE
@@ -550,11 +508,6 @@ variable_interface_name
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
-variable_max_metric
-:
-   ~(NEWLINE | BGP | EXTERNAL_LSA | INCLUDE_STUB | ON_STARTUP | ROUTER_LSA | SUMMARY_LSA | WAIT_FOR)
-;
-
 variable_permissive
 :
    (
@@ -565,11 +518,6 @@ variable_permissive
 variable_secret
 :
    ~( NEWLINE | ATTRIBUTES | ENCRYPTED | LEVEL |  MSCHAP | NT_ENCRYPTED | PBKDF2 | PRIVILEGE | ROLE )+
-;
-
-variable_group_id
-:
-    ~( NEWLINE | TCP | TCP_UDP | UDP )+
 ;
 
 vlan_id
