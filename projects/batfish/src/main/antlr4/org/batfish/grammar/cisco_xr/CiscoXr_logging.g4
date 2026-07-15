@@ -202,19 +202,6 @@ logging_monitor_null
    MONITOR null_rest_of_line
 ;
 
-logging_severity
-:
-   uint_legacy
-   | ALERTS
-   | CRITICAL
-   | DEBUGGING
-   | EMERGENCIES
-   | ERRORS
-   | INFORMATIONAL
-   | NOTIFICATIONS
-   | WARNINGS
-;
-
 logging_source_interface
 :
    SOURCE_INTERFACE interface_name

@@ -1182,16 +1182,6 @@ if_shutdown
    ) FORCE? LAN? NEWLINE
 ;
 
-track_action
-:
-  track_action_decrement
-;
-
-track_action_decrement
-:
-  DECREMENT subtrahend = uint_legacy
-;
-
 if_switchport
 :
    NO? SWITCHPORT NEWLINE

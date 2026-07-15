@@ -2808,10 +2808,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
         AristaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
         AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
-        AristaStructureUsage.SSH_ACL,
-        AristaStructureUsage.WCCP_GROUP_LIST,
-        AristaStructureUsage.WCCP_REDIRECT_LIST,
-        AristaStructureUsage.WCCP_SERVICE_LIST);
+        AristaStructureUsage.SSH_ACL);
 
     markCommunityLists(
         AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE,

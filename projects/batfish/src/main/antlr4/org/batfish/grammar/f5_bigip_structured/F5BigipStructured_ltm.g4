@@ -207,13 +207,6 @@ l_persistence
   )
 ;
 
-lper_null
-:
-  (
-    APP_SERVICE
-  ) ignored
-;
-
 lper_cookie
 :
   COOKIE name = structure_name BRACE_LEFT

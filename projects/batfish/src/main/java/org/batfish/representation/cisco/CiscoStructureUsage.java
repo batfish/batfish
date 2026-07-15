@@ -48,7 +48,6 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_ROUTE_MAP_ADVERTISE("bgp address-family aggregate-address advertise-map"),
   BGP_ROUTE_MAP_UNSUPPRESS("bgp unsuppress-map"),
   BGP_UPDATE_SOURCE_INTERFACE("update-source interface"),
-  BGP_USE_AF_GROUP("bgp use af-group"),
   BGP_USE_NEIGHBOR_GROUP("bgp use neighbor-group"),
   BGP_USE_SESSION_GROUP("bgp use session-group"),
   CLASS_MAP_ACCESS_GROUP("class-map access-group"),
