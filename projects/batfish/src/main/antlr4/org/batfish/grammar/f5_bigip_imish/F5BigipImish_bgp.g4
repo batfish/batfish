@@ -16,12 +16,13 @@ rb_bgp_deterministic_med
   DETERMINISTIC_MED NEWLINE
 ;
 
-rb_bgp_null
+rb_bgp_graceful_restart_null
 :
-  (
-    GRACEFUL_RESTART
-    | LOG_NEIGHBOR_CHANGES
-  ) null_rest_of_line
+   GRACEFUL_RESTART null_rest_of_line
+;
+rb_bgp_log_neighbor_changes_null
+:
+   LOG_NEIGHBOR_CHANGES null_rest_of_line
 ;
 
 rb_bgp_router_id
@@ -58,17 +59,18 @@ rb_neighbor_peer_group
 
 rbn_common
 :
-  (
-    rbn_default_originate
-    | rbn_description
-    | rbn_next_hop_self
-    | rbn_null
-    | rbn_soft_reconfiguration
-    | rbn_remote_as
-    | rbn_route_map
-    | rbn_password
-    | rbn_update_source
-  )
+  rbn_advertisement_interval_null
+  | rbn_capability_null
+  | rbn_default_originate
+  | rbn_description
+  | rbn_fall_over_null
+  | rbn_maximum_prefix_null
+  | rbn_next_hop_self
+  | rbn_soft_reconfiguration
+  | rbn_remote_as
+  | rbn_route_map
+  | rbn_password
+  | rbn_update_source
 ;
 
 rbn_default_originate
@@ -101,14 +103,21 @@ rbn_peer_group_assign
   PEER_GROUP name = peer_group_name NEWLINE
 ;
 
-rbn_null
+rbn_advertisement_interval_null
 :
-  (
-    ADVERTISEMENT_INTERVAL
-    | CAPABILITY
-    | FALL_OVER
-    | MAXIMUM_PREFIX
-  ) null_rest_of_line
+   ADVERTISEMENT_INTERVAL null_rest_of_line
+;
+rbn_capability_null
+:
+   CAPABILITY null_rest_of_line
+;
+rbn_fall_over_null
+:
+   FALL_OVER null_rest_of_line
+;
+rbn_maximum_prefix_null
+:
+   MAXIMUM_PREFIX null_rest_of_line
 ;
 
 rbn_soft_reconfiguration
@@ -222,7 +231,8 @@ rb_bgp
     rb_bgp_always_compare_med
     | rb_bgp_confederation
     | rb_bgp_deterministic_med
-    | rb_bgp_null
+    | rb_bgp_graceful_restart_null
+    | rb_bgp_log_neighbor_changes_null
     | rb_bgp_router_id
   )
 ;
@@ -248,13 +258,17 @@ rbbc_peers
 
 rb_no
 :
-  NO rb_no_null
+  NO (
+     rb_no_bgp_null
+     | rb_no_max_paths_null
+  )
 ;
 
-rb_no_null
+rb_no_bgp_null
 :
-  (
-    BGP
-    | MAX_PATHS
-  ) null_rest_of_line
+   BGP null_rest_of_line
+;
+rb_no_max_paths_null
+:
+   MAX_PATHS null_rest_of_line
 ;
