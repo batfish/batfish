@@ -11,12 +11,13 @@ bnt_nexthop_self
    NEXTHOP_SELF
 ;
 
-bnt_null
+bnt_soft_reconfiguration_null
 :
-   (
-      SOFT_RECONFIGURATION
-      | TIMERS
-   ) null_filler
+   SOFT_RECONFIGURATION null_filler
+;
+bnt_timers_null
+:
+   TIMERS null_filler
 ;
 
 bnt_remote_as
@@ -42,10 +43,11 @@ bt_neighbor
 bt_neighbor_tail
 :
    bnt_nexthop_self
-   | bnt_null
    | bnt_remote_as
    | bnt_route_map_export
    | bnt_route_map_import
+   | bnt_soft_reconfiguration_null
+   | bnt_timers_null
 ;
 
 s_protocols_bgp

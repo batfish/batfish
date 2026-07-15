@@ -122,12 +122,13 @@ iket_lifetime
    LIFETIME seconds = DEC
 ;
 
-iket_null
+iket_dead_peer_detection_null
 :
-   (
-      DEAD_PEER_DETECTION
-      | IKEV2_REAUTH
-   ) null_filler
+   DEAD_PEER_DETECTION null_filler
+;
+iket_ikev2_reauth_null
+:
+   IKEV2_REAUTH null_filler
 ;
 
 iket_proposal
@@ -163,9 +164,10 @@ ivt_ike_group
 
 ivt_ike_group_tail
 :
-   iket_key_exchange
+   iket_dead_peer_detection_null
+   | iket_ikev2_reauth_null
+   | iket_key_exchange
    | iket_lifetime
-   | iket_null
    | iket_proposal
 ;
 
