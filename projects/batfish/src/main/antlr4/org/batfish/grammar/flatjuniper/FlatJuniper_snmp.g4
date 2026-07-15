@@ -13,10 +13,21 @@ s_snmp
       apply
       | snmp_client_list
       | snmp_community
+      | snmp_contact_null
+      | snmp_description_null
+      | snmp_engine_id_null
+      | snmp_filter_duplicates_null
       | snmp_filter_interfaces
+      | snmp_interface_null
+      | snmp_location_null
       | snmp_name
-      | snmp_null
+      | snmp_routing_instance_access_null
+      | snmp_stats_cache_lifetime_null
+      | snmp_traceoptions_null
       | snmp_trap_group
+      | snmp_trap_options_null
+      | snmp_v3_null
+      | snmp_view_null
    )
 ;
 
@@ -39,9 +50,10 @@ snmp_community
    (
       apply
       | snmpc_authorization
+      | snmpc_clients_null
       | snmpc_logical_system
+      | snmpc_view_null
       | snmpcls_common
-      | snmpc_null
    )
 ;
 
@@ -73,30 +85,63 @@ snmp_name
     NAME_LITERALLY name = junos_name
 ;
 
-snmp_null
+snmp_contact_null
 :
-   (
-      CONTACT
-      | DESCRIPTION
-      | ENGINE_ID
-      | FILTER_DUPLICATES
-      | INTERFACE
-      | LOCATION
-      | ROUTING_INSTANCE_ACCESS
-      | STATS_CACHE_LIFETIME
-      | TRACEOPTIONS
-      | TRAP_OPTIONS
-      | VIEW
-      | V3
-   ) null_filler
+   CONTACT null_filler
+;
+snmp_description_null
+:
+   DESCRIPTION null_filler
+;
+snmp_engine_id_null
+:
+   ENGINE_ID null_filler
+;
+snmp_filter_duplicates_null
+:
+   FILTER_DUPLICATES null_filler
+;
+snmp_interface_null
+:
+   INTERFACE null_filler
+;
+snmp_location_null
+:
+   LOCATION null_filler
+;
+snmp_routing_instance_access_null
+:
+   ROUTING_INSTANCE_ACCESS null_filler
+;
+snmp_stats_cache_lifetime_null
+:
+   STATS_CACHE_LIFETIME null_filler
+;
+snmp_traceoptions_null
+:
+   TRACEOPTIONS null_filler
+;
+snmp_trap_options_null
+:
+   TRAP_OPTIONS null_filler
+;
+snmp_view_null
+:
+   VIEW null_filler
+;
+snmp_v3_null
+:
+   V3 null_filler
 ;
 
 snmp_trap_group
 :
    TRAP_GROUP name = junos_name
    (
-      snmptg_null
+      snmptg_categories_null
+      | snmptg_routing_instance_null
       | snmptg_targets
+      | snmptg_version_null
    )
 ;
 
@@ -137,21 +182,26 @@ snmpclsri_common
    snmpc_client_list_name
 ;
 
-snmpc_null
+snmpc_clients_null
 :
-   (
-      CLIENTS
-      | VIEW
-   ) null_filler
+   CLIENTS null_filler
+;
+snmpc_view_null
+:
+   VIEW null_filler
 ;
 
-snmptg_null
+snmptg_categories_null
 :
-   (
-      CATEGORIES
-      | ROUTING_INSTANCE
-      | VERSION
-   ) null_filler
+   CATEGORIES null_filler
+;
+snmptg_routing_instance_null
+:
+   ROUTING_INSTANCE null_filler
+;
+snmptg_version_null
+:
+   VERSION null_filler
 ;
 
 snmptg_targets

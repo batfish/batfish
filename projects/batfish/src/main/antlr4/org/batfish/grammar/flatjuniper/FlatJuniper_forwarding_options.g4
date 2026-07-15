@@ -11,8 +11,9 @@ fo_dhcp_relay
    DHCP_RELAY
    (
       fod_common
+      | fod_forward_snooped_clients_null
       | fod_group
-      | fod_null
+      | fod_overrides_null
       | fod_server_group
    )
 ;
@@ -26,19 +27,41 @@ fo_helpers
    )
 ;
 
-fo_null
+fo_analyzer_null
 :
-   (
-      ANALYZER
-      | ENHANCED_HASH_KEY
-      | FAMILY
-      | HASH_KEY
-      | LOAD_BALANCE
-      | MULTICAST
-      | PORT_MIRRORING
-      | SAMPLING
-      | STORM_CONTROL_PROFILES
-   ) null_filler
+   ANALYZER null_filler
+;
+fo_enhanced_hash_key_null
+:
+   ENHANCED_HASH_KEY null_filler
+;
+fo_family_null
+:
+   FAMILY null_filler
+;
+fo_hash_key_null
+:
+   HASH_KEY null_filler
+;
+fo_load_balance_null
+:
+   LOAD_BALANCE null_filler
+;
+fo_multicast_null
+:
+   MULTICAST null_filler
+;
+fo_port_mirroring_null
+:
+   PORT_MIRRORING null_filler
+;
+fo_sampling_null
+:
+   SAMPLING null_filler
+;
+fo_storm_control_profiles_null
+:
+   STORM_CONTROL_PROFILES null_filler
 ;
 
 fo_vxlan_routing
@@ -69,12 +92,13 @@ fod_group
    )
 ;
 
-fod_null
+fod_forward_snooped_clients_null
 :
-   (
-      FORWARD_SNOOPED_CLIENTS
-      | OVERRIDES
-   ) null_filler
+   FORWARD_SNOOPED_CLIENTS null_filler
+;
+fod_overrides_null
+:
+   OVERRIDES null_filler
 ;
 
 fod_server_group
@@ -109,8 +133,9 @@ foh_bootp
    (
       apply
       | fohb_common
+      | fohb_description_null
       | fohb_interface
-      | fohb_null
+      | fohb_relay_agent_option_null
    )
 ;
 
@@ -123,7 +148,8 @@ foh_null
 
 fohb_common
 :
-   fohb_null
+   fohb_description_null
+   | fohb_relay_agent_option_null
    | fohb_server_null
 ;
 
@@ -141,12 +167,13 @@ fohb_interface
    )
 ;
 
-fohb_null
+fohb_description_null
 :
-   (
-      DESCRIPTION
-      | RELAY_AGENT_OPTION
-   ) null_filler
+   DESCRIPTION null_filler
+;
+fohb_relay_agent_option_null
+:
+   RELAY_AGENT_OPTION null_filler
 ;
 
 fohb_server_null
@@ -171,9 +198,17 @@ s_forwarding_options
    FORWARDING_OPTIONS
    (
       apply
+      | fo_analyzer_null
       | fo_dhcp_relay
+      | fo_enhanced_hash_key_null
+      | fo_family_null
+      | fo_hash_key_null
       | fo_helpers
-      | fo_null
+      | fo_load_balance_null
+      | fo_multicast_null
+      | fo_port_mirroring_null
+      | fo_sampling_null
+      | fo_storm_control_profiles_null
       | fo_vxlan_routing
    )
 ;

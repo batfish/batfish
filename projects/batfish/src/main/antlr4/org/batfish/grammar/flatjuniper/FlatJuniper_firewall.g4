@@ -128,6 +128,7 @@ fft_from
       | fftf_destination_port_range_optimize
       | fftf_destination_prefix_list
       | fftf_dscp
+      | fftf_ether_type_null
       | fftf_exp
       | fftf_extension_header
       | fftf_first_fragment
@@ -147,9 +148,9 @@ fft_from
       | fftf_is_fragment
       | fftf_learn_vlan_1p_priority
       | fftf_next_header
-      | fftf_null
       | fftf_packet_length
       | fftf_packet_length_except
+      | fftf_payload_protocol_null
       | fftf_port
       | fftf_port_except
       | fftf_precedence
@@ -353,12 +354,13 @@ fftf_next_header
    NEXT_HEADER (ip_protocol | DSTOPTS | FRAGMENT | ICMPV6 | ROUTING)
 ;
 
-fftf_null
+fftf_ether_type_null
 :
-   (
-      ETHER_TYPE
-      | PAYLOAD_PROTOCOL
-   ) null_filler
+   ETHER_TYPE null_filler
+;
+fftf_payload_protocol_null
+:
+   PAYLOAD_PROTOCOL null_filler
 ;
 
 fftf_packet_length

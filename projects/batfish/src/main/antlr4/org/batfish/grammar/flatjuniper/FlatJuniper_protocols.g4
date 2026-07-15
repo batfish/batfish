@@ -18,7 +18,32 @@ s_protocols
       | p_evpn
       | p_isis
       | p_mpls
-      | p_null
+      | p_bfd_null
+      | p_dcbx_null
+      | p_iccp_null
+      | p_igmp_null
+      | p_igmp_snooping_null
+      | p_l2_learning_null
+      | p_l2circuit_null
+      | p_l2vpn_null
+      | p_lacp_null
+      | p_layer2_control_null
+      | p_ldp_null
+      | p_lldp_med_null
+      | p_lldp_null
+      | p_mld_null
+      | p_msdp_null
+      | p_mstp_null
+      | p_mvpn_null
+      | p_neighbor_discovery_null
+      | p_oam_null
+      | p_pim_null
+      | p_router_advertisement_null
+      | p_router_discovery_null
+      | p_rsvp_null
+      | p_sflow_null
+      | p_uplink_failure_detection_null
+      | p_vrrp_null
       | p_ospf
       | p_ospf3
       | p_rstp
@@ -27,36 +52,109 @@ s_protocols
    )
 ;
 
-p_null
+p_bfd_null
 :
-   (
-      BFD
-      | DCBX
-      | ICCP
-      | IGMP
-      | IGMP_SNOOPING
-      | L2_LEARNING
-      | L2CIRCUIT
-      | L2VPN
-      | LACP
-      | LAYER2_CONTROL
-      | LDP
-      | LLDP
-      | LLDP_MED
-      | MLD
-      | MSDP
-      | MSTP
-      | MVPN
-      | NEIGHBOR_DISCOVERY
-      | OAM
-      | PIM
-      | ROUTER_ADVERTISEMENT
-      | ROUTER_DISCOVERY
-      | RSVP
-      | SFLOW
-      | UPLINK_FAILURE_DETECTION
-      | VRRP
-   ) null_filler
+   BFD null_filler
+;
+p_dcbx_null
+:
+   DCBX null_filler
+;
+p_iccp_null
+:
+   ICCP null_filler
+;
+p_igmp_null
+:
+   IGMP null_filler
+;
+p_igmp_snooping_null
+:
+   IGMP_SNOOPING null_filler
+;
+p_l2_learning_null
+:
+   L2_LEARNING null_filler
+;
+p_l2circuit_null
+:
+   L2CIRCUIT null_filler
+;
+p_l2vpn_null
+:
+   L2VPN null_filler
+;
+p_lacp_null
+:
+   LACP null_filler
+;
+p_layer2_control_null
+:
+   LAYER2_CONTROL null_filler
+;
+p_ldp_null
+:
+   LDP null_filler
+;
+p_lldp_null
+:
+   LLDP null_filler
+;
+p_lldp_med_null
+:
+   LLDP_MED null_filler
+;
+p_mld_null
+:
+   MLD null_filler
+;
+p_msdp_null
+:
+   MSDP null_filler
+;
+p_mstp_null
+:
+   MSTP null_filler
+;
+p_mvpn_null
+:
+   MVPN null_filler
+;
+p_neighbor_discovery_null
+:
+   NEIGHBOR_DISCOVERY null_filler
+;
+p_oam_null
+:
+   OAM null_filler
+;
+p_pim_null
+:
+   PIM null_filler
+;
+p_router_advertisement_null
+:
+   ROUTER_ADVERTISEMENT null_filler
+;
+p_router_discovery_null
+:
+   ROUTER_DISCOVERY null_filler
+;
+p_rsvp_null
+:
+   RSVP null_filler
+;
+p_sflow_null
+:
+   SFLOW null_filler
+;
+p_uplink_failure_detection_null
+:
+   UPLINK_FAILURE_DETECTION null_filler
+;
+p_vrrp_null
+:
+   VRRP null_filler
 ;
 
 p_rstp
