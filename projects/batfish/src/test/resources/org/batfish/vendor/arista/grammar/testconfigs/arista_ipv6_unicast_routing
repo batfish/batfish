@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_ipv6_unicast_routing
+!
+ip routing
+ipv6 unicast-routing
+ipv6 unicast-routing vrf TENANT
+!

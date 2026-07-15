@@ -2598,12 +2598,21 @@ s_ipc
 s_ipv6
 :
   IPV6
-  ipv6_route
+  (
+    ipv6_route
+    | ipv6_unicast_routing
+  )
 ;
 
 ipv6_route
 :
   ROUTE prefix = ipv6_prefix null_rest_of_line
+;
+
+// Global IPv6 forwarding enable; modeled like `ip routing` (accepted, not converted).
+ipv6_unicast_routing
+:
+  UNICAST_ROUTING (VRF name = vrf_name)? NEWLINE
 ;
 
 s_ipsla

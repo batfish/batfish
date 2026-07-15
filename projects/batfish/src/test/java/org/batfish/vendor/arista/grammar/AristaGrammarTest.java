@@ -5258,4 +5258,11 @@ public class AristaGrammarTest {
 
     assertTrue(vc.getAristaBgp().getDefaultVrf().getRedistributionPolicies().isEmpty());
   }
+
+  @Test
+  public void testIpv6UnicastRoutingParsing() {
+    // Ensure "ipv6 unicast-routing" (bare and vrf-qualified) parses without warnings.
+    AristaConfiguration vc = parseVendorConfig("arista_ipv6_unicast_routing");
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+  }
 }
