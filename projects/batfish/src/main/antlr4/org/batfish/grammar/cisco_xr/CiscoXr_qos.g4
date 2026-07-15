@@ -360,7 +360,13 @@ pmtcsec_tail
   uint_legacy
   (
      pmtcsec_activate
-     | pmtcsec_null
+     | pmtcsec_authenticate_null
+     | pmtcsec_authorize_null
+     | pmtcsec_deactivate_null
+     | pmtcsec_disconnect_null
+     | pmtcsec_monitor_null
+     | pmtcsec_set_timer_null
+     | pmtcsec_stop_timer_null
   )
 ;
 
@@ -369,17 +375,33 @@ pmtcsec_activate
   ACTIVATE DYNAMIC_TEMPLATE dtname = variable NEWLINE
 ;
 
-pmtcsec_null
+pmtcsec_authenticate_null
 :
-  (
-   AUTHENTICATE
-   | AUTHORIZE
-   | DEACTIVATE
-   | DISCONNECT
-   | MONITOR
-   | SET_TIMER
-   | STOP_TIMER
-) null_rest_of_line
+   AUTHENTICATE null_rest_of_line
+;
+pmtcsec_authorize_null
+:
+   AUTHORIZE null_rest_of_line
+;
+pmtcsec_deactivate_null
+:
+   DEACTIVATE null_rest_of_line
+;
+pmtcsec_disconnect_null
+:
+   DISCONNECT null_rest_of_line
+;
+pmtcsec_monitor_null
+:
+   MONITOR null_rest_of_line
+;
+pmtcsec_set_timer_null
+:
+   SET_TIMER null_rest_of_line
+;
+pmtcsec_stop_timer_null
+:
+   STOP_TIMER null_rest_of_line
 ;
 
 s_class_map

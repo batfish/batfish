@@ -761,7 +761,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_acl_inContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_acl_outContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_ospf_nullContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_rip_nullContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_nexthopContext;
@@ -5915,7 +5916,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRor_routing_instance_null(Ror_routing_instance_nullContext ctx) {
+  public void exitRor_routing_instance_ospf_null(Ror_routing_instance_ospf_nullContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRor_routing_instance_rip_null(Ror_routing_instance_rip_nullContext ctx) {
     todo(ctx);
   }
 

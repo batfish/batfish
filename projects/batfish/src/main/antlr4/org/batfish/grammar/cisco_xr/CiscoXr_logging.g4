@@ -34,29 +34,59 @@ logging_archive: ARCHIVE null_rest_of_line logging_archive_inner*;
 
 logging_archive_inner
 :
-  logging_archive_no
-  | logging_archive_null
+  logging_archive_archive_length_null
+  | logging_archive_archive_size_null
+  | logging_archive_device_null
+  | logging_archive_file_size_null
+  | logging_archive_frequency_null
+  | logging_archive_no
+  | logging_archive_severity_null
+  | logging_archive_threshold_null
 ;
 
 logging_archive_no
 :
   NO
   (
-    logging_archive_null
+    (
+       logging_archive_archive_length_null
+       | logging_archive_archive_size_null
+       | logging_archive_device_null
+       | logging_archive_file_size_null
+       | logging_archive_frequency_null
+       | logging_archive_severity_null
+       | logging_archive_threshold_null
+    )
   )
 ;
 
-logging_archive_null
+logging_archive_archive_length_null
 :
-   (
-      ARCHIVE_LENGTH
-      | ARCHIVE_SIZE
-      | DEVICE
-      | FILE_SIZE
-      | FREQUENCY
-      | SEVERITY
-      | THRESHOLD
-   ) null_rest_of_line
+   ARCHIVE_LENGTH null_rest_of_line
+;
+logging_archive_archive_size_null
+:
+   ARCHIVE_SIZE null_rest_of_line
+;
+logging_archive_device_null
+:
+   DEVICE null_rest_of_line
+;
+logging_archive_file_size_null
+:
+   FILE_SIZE null_rest_of_line
+;
+logging_archive_frequency_null
+:
+   FREQUENCY null_rest_of_line
+;
+logging_archive_severity_null
+:
+   SEVERITY null_rest_of_line
+;
+logging_archive_threshold_null
+:
+   THRESHOLD null_rest_of_line
 ;
 
 logging_buffered
@@ -79,18 +109,38 @@ logging_buffer_size
 
 logging_buffered_discriminator: DISCRIMINATOR NEWLINE discriminator_inner*;
 
-discriminator_inner: discriminator_null;
+discriminator_inner:
+ discriminator_match1_null
+ | discriminator_match2_null
+ | discriminator_match3_null
+ | discriminator_nomatch1_null
+ | discriminator_nomatch2_null
+ | discriminator_nomatch3_null
+;
 
-discriminator_null
+discriminator_match1_null
 :
-  (
-    MATCH1
-    | MATCH2
-    | MATCH3
-    | NOMATCH1
-    | NOMATCH2
-    | NOMATCH3
-  ) null_rest_of_line
+   MATCH1 null_rest_of_line
+;
+discriminator_match2_null
+:
+   MATCH2 null_rest_of_line
+;
+discriminator_match3_null
+:
+   MATCH3 null_rest_of_line
+;
+discriminator_nomatch1_null
+:
+   NOMATCH1 null_rest_of_line
+;
+discriminator_nomatch2_null
+:
+   NOMATCH2 null_rest_of_line
+;
+discriminator_nomatch3_null
+:
+   NOMATCH3 null_rest_of_line
 ;
 
 logging_buffered_set_severity: logging_buffered_severity NEWLINE;
@@ -135,14 +185,21 @@ logging_console_severity
   | WARNING
 ;
 
-logging_null
+logging_facility_null
 :
-   (
-      FACILITY
-      | HISTORY
-      | HOSTNAMEPREFIX
-      | MONITOR
-   ) null_rest_of_line
+   FACILITY null_rest_of_line
+;
+logging_history_null
+:
+   HISTORY null_rest_of_line
+;
+logging_hostnameprefix_null
+:
+   HOSTNAMEPREFIX null_rest_of_line
+;
+logging_monitor_null
+:
+   MONITOR null_rest_of_line
 ;
 
 logging_severity
@@ -218,7 +275,10 @@ s_logging
     | logging_buffered
     | logging_console
     | logging_events
-    | logging_null
+    | logging_facility_null
+    | logging_history_null
+    | logging_hostnameprefix_null
+    | logging_monitor_null
     | logging_source_interface
     | logging_suppress
     | logging_trap
@@ -229,8 +289,12 @@ logging_events
 :
   EVENTS
   (
-    logging_events_filter
-    | logging_events_null
+    logging_events_buffer_size_null
+    | logging_events_display_location_null
+    | logging_events_filter
+    | logging_events_level_null
+    | logging_events_link_status_null
+    | logging_events_threshold_null
   )
 ;
 
@@ -240,13 +304,23 @@ logging_events_filter_inner: logging_events_filter_null;
 
 logging_events_filter_null: MATCH null_rest_of_line;
 
-logging_events_null
+logging_events_buffer_size_null
 :
-  (
-    BUFFER_SIZE
-    | DISPLAY_LOCATION
-    | LEVEL
-    | LINK_STATUS
-    | THRESHOLD
-  ) null_rest_of_line
+   BUFFER_SIZE null_rest_of_line
+;
+logging_events_display_location_null
+:
+   DISPLAY_LOCATION null_rest_of_line
+;
+logging_events_level_null
+:
+   LEVEL null_rest_of_line
+;
+logging_events_link_status_null
+:
+   LINK_STATUS null_rest_of_line
+;
+logging_events_threshold_null
+:
+   THRESHOLD null_rest_of_line
 ;
