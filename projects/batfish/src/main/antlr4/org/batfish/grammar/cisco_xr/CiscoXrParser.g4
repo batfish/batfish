@@ -60,75 +60,106 @@ cisco_xr_configuration
 statement
 :
   s_as_path_set
+  | s_building_configuration_null
   | s_cdp
   | s_cef
   | s_clock
+  | s_confdconfig_null
   | s_configuration
   | s_end
   | s_flow
+  | s_fpd_null
+  | s_fri_null
   | s_ipv4
   | s_ipv6
   | s_isolation
   | s_lldp
+  | s_mon_null
   | s_mpls
   | s_multicast_routing
-  | s_null
   | s_no
   | s_nsr
   | s_rd_set
   | s_router
   | s_sampler_map
+  | s_sat_null
+  | s_sun_null
   | s_taskgroup
   | s_tcp
   | s_telnet
   | s_tftp
+  | s_thu_null
+  | s_tue_null
   | s_usergroup
+  | s_vty_pool_null
+  | s_wed_null
 ;
 
 s_cdp
 :
   CDP
   (
-    NEWLINE
-    | cdp_null
+    cdp_advertise_null
+    | cdp_holdtime_null
+    | cdp_log_null
+    | cdp_timer_null
+    | NEWLINE
   )
 ;
 
-cdp_null
+cdp_advertise_null
 :
-  (
-    ADVERTISE
-    | HOLDTIME
-    | LOG
-    | TIMER
-  ) null_rest_of_line
+   ADVERTISE null_rest_of_line
+;
+cdp_holdtime_null
+:
+   HOLDTIME null_rest_of_line
+;
+cdp_log_null
+:
+   LOG null_rest_of_line
+;
+cdp_timer_null
+:
+   TIMER null_rest_of_line
 ;
 
-s_cef: CEF cef_null;
+s_cef: CEF ( cef_adjacency_null | cef_load_balancing_null | cef_pbts_null | cef_platform_null );
 
-cef_null
+cef_adjacency_null
 :
-  (
-    ADJACENCY
-    | LOAD_BALANCING
-    | PBTS
-    | PLATFORM
-  ) null_rest_of_line
+   ADJACENCY null_rest_of_line
+;
+cef_load_balancing_null
+:
+   LOAD_BALANCING null_rest_of_line
+;
+cef_pbts_null
+:
+   PBTS null_rest_of_line
+;
+cef_platform_null
+:
+   PLATFORM null_rest_of_line
 ;
 
 s_end: END NEWLINE;
 
 s_clock: CLOCK TIMEZONE null_rest_of_line;
 
-s_configuration: CONFIGURATION configuration_null;
+s_configuration: CONFIGURATION ( configuration_commit_null | configuration_display_null | configuration_mode_null );
 
-configuration_null
+configuration_commit_null
 :
-  (
-    COMMIT
-    | DISPLAY
-    | MODE
-  ) null_rest_of_line
+   COMMIT null_rest_of_line
+;
+configuration_display_null
+:
+   DISPLAY null_rest_of_line
+;
+configuration_mode_null
+:
+   MODE null_rest_of_line
 ;
 
 s_ipv4
@@ -137,7 +168,8 @@ s_ipv4
   (
     ipv4_access_list
     | ipv4_conflict_policy
-    | ipv4_null
+    | ipv4_netmask_format_null
+    | ipv4_virtual_null
   )
 ;
 
@@ -151,12 +183,13 @@ ipv4_conflict_policy
   ) NEWLINE
 ;
 
-ipv4_null
+ipv4_netmask_format_null
 :
-  (
-    NETMASK_FORMAT
-    | VIRTUAL
-  ) null_rest_of_line
+   NETMASK_FORMAT null_rest_of_line
+;
+ipv4_virtual_null
+:
+   VIRTUAL null_rest_of_line
 ;
 
 s_ipv6
@@ -187,21 +220,49 @@ no_ipv6
 
 s_nsr: NSR PROCESS_FAILURES SWITCHOVER NEWLINE;
 
-s_null
+s_building_configuration_null
 :
-  (
-    BUILDING_CONFIGURATION
-    | CONFDCONFIG
-    | FPD
-    | FRI
-    | MON
-    | SAT
-    | SUN
-    | THU
-    | TUE
-    | VTY_POOL
-    | WED
-  ) null_rest_of_line
+   BUILDING_CONFIGURATION null_rest_of_line
+;
+s_confdconfig_null
+:
+   CONFDCONFIG null_rest_of_line
+;
+s_fpd_null
+:
+   FPD null_rest_of_line
+;
+s_fri_null
+:
+   FRI null_rest_of_line
+;
+s_mon_null
+:
+   MON null_rest_of_line
+;
+s_sat_null
+:
+   SAT null_rest_of_line
+;
+s_sun_null
+:
+   SUN null_rest_of_line
+;
+s_thu_null
+:
+   THU null_rest_of_line
+;
+s_tue_null
+:
+   TUE null_rest_of_line
+;
+s_vty_pool_null
+:
+   VTY_POOL null_rest_of_line
+;
+s_wed_null
+:
+   WED null_rest_of_line
 ;
 
 s_router
@@ -235,46 +296,87 @@ taskgroup_task
   )
   null_rest_of_line;
 
-s_tcp: TCP tcp_null;
+s_tcp: TCP ( tcp_accept_rate_null | tcp_directory_null | tcp_mss_null | tcp_num_thread_null | tcp_path_mtu_discovery_null | tcp_receive_queue_null | tcp_selective_ack_null | tcp_synwait_time_null | tcp_throttle_null | tcp_timestamp_null | tcp_window_size_null );
 
-tcp_null:
-  (
-    ACCEPT_RATE
-    | DIRECTORY
-    | MSS
-    | NUM_THREAD
-    | PATH_MTU_DISCOVERY
-    | RECEIVE_QUEUE
-    | SELECTIVE_ACK
-    | SYNWAIT_TIME
-    | THROTTLE
-    | TIMESTAMP
-    | WINDOW_SIZE
-  ) null_rest_of_line
+tcp_accept_rate_null
+:
+   ACCEPT_RATE null_rest_of_line
+;
+tcp_directory_null
+:
+   DIRECTORY null_rest_of_line
+;
+tcp_mss_null
+:
+   MSS null_rest_of_line
+;
+tcp_num_thread_null
+:
+   NUM_THREAD null_rest_of_line
+;
+tcp_path_mtu_discovery_null
+:
+   PATH_MTU_DISCOVERY null_rest_of_line
+;
+tcp_receive_queue_null
+:
+   RECEIVE_QUEUE null_rest_of_line
+;
+tcp_selective_ack_null
+:
+   SELECTIVE_ACK null_rest_of_line
+;
+tcp_synwait_time_null
+:
+   SYNWAIT_TIME null_rest_of_line
+;
+tcp_throttle_null
+:
+   THROTTLE null_rest_of_line
+;
+tcp_timestamp_null
+:
+   TIMESTAMP null_rest_of_line
+;
+tcp_window_size_null
+:
+   WINDOW_SIZE null_rest_of_line
 ;
 
-s_telnet: TELNET telnet_null;
+s_telnet: TELNET ( telnet_ipv4_null | telnet_ipv6_null | telnet_vrf_null );
 
-telnet_null
+telnet_ipv4_null
 :
-  (
-    IPV4
-    | IPV6
-    | VRF
-  ) null_rest_of_line
+   IPV4 null_rest_of_line
+;
+telnet_ipv6_null
+:
+   IPV6 null_rest_of_line
+;
+telnet_vrf_null
+:
+   VRF null_rest_of_line
 ;
 
 s_usergroup: USERGROUP name = usergroup_name NEWLINE usergroup_inner*;
 
-usergroup_inner: usergroup_null;
+usergroup_inner:
+ usergroup_description_null
+ | usergroup_inherit_null
+ | usergroup_taskgroup_null
+;
 
-usergroup_null
+usergroup_description_null
 :
-  (
-    DESCRIPTION
-    | INHERIT
-    | TASKGROUP
-  ) null_rest_of_line
+   DESCRIPTION null_rest_of_line
+;
+usergroup_inherit_null
+:
+   INHERIT null_rest_of_line
+;
+usergroup_taskgroup_null
+:
+   TASKGROUP null_rest_of_line
 ;
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -834,10 +936,26 @@ s_spanning_tree
 :
    NO? SPANNING_TREE
    (
-      spanning_tree_mst
+      spanning_tree_backbonefast_null
+      | spanning_tree_bpdufilter_null
+      | spanning_tree_bridge_null
+      | spanning_tree_cost_null
+      | spanning_tree_dispute_null
+      | spanning_tree_etherchannel_null
+      | spanning_tree_extend_null
+      | spanning_tree_fcoe_null
+      | spanning_tree_guard_null
+      | spanning_tree_logging_null
+      | spanning_tree_loopguard_null
+      | spanning_tree_mode_null
+      | spanning_tree_mst
+      | spanning_tree_optimize_null
+      | spanning_tree_pathcost_null
+      | spanning_tree_port_null
       | spanning_tree_portfast
       | spanning_tree_pseudo_information
-      | spanning_tree_null
+      | spanning_tree_uplinkfast_null
+      | spanning_tree_vlan_null
       | NEWLINE
    )
 ;
@@ -847,9 +965,15 @@ s_ssh
    SSH
    (
       ssh_client
-      | ssh_null
+      | ssh_ip_address_null
+      | ssh_key_exchange_null
+      | ssh_key_null
+      | ssh_login_attempts_null
+      | ssh_mgmt_auth_null
       | ssh_server
+      | ssh_stricthostkeycheck_null
       | ssh_timeout
+      | ssh_version_null
    )
 ;
 
@@ -865,7 +989,8 @@ s_tacacs
 :
    TACACS
    (
-      t_null
+      t_group_null
+      | t_host_null
       | t_server
       | t_source_interface
    )
@@ -927,7 +1052,7 @@ s_username_attributes
 :
    USERNAME user = variable ATTRIBUTES NEWLINE
    (
-      ua_null
+      ( ua_group_lock_null | ua_vpn_group_policy_null )
    )*
 ;
 
@@ -965,27 +1090,73 @@ spanning_tree_pseudo_information
    )*
 ;
 
-spanning_tree_null
+spanning_tree_backbonefast_null
 :
-   (
-      BACKBONEFAST
-      | BPDUFILTER
-      | BRIDGE
-      | COST
-      | DISPUTE
-      | ETHERCHANNEL
-      | EXTEND
-      | FCOE
-      | GUARD
-      | LOGGING
-      | LOOPGUARD
-      | MODE
-      | OPTIMIZE
-      | PATHCOST
-      | PORT
-      | UPLINKFAST
-      | VLAN
-   ) null_rest_of_line
+   BACKBONEFAST null_rest_of_line
+;
+spanning_tree_bpdufilter_null
+:
+   BPDUFILTER null_rest_of_line
+;
+spanning_tree_bridge_null
+:
+   BRIDGE null_rest_of_line
+;
+spanning_tree_cost_null
+:
+   COST null_rest_of_line
+;
+spanning_tree_dispute_null
+:
+   DISPUTE null_rest_of_line
+;
+spanning_tree_etherchannel_null
+:
+   ETHERCHANNEL null_rest_of_line
+;
+spanning_tree_extend_null
+:
+   EXTEND null_rest_of_line
+;
+spanning_tree_fcoe_null
+:
+   FCOE null_rest_of_line
+;
+spanning_tree_guard_null
+:
+   GUARD null_rest_of_line
+;
+spanning_tree_logging_null
+:
+   LOGGING null_rest_of_line
+;
+spanning_tree_loopguard_null
+:
+   LOOPGUARD null_rest_of_line
+;
+spanning_tree_mode_null
+:
+   MODE null_rest_of_line
+;
+spanning_tree_optimize_null
+:
+   OPTIMIZE null_rest_of_line
+;
+spanning_tree_pathcost_null
+:
+   PATHCOST null_rest_of_line
+;
+spanning_tree_port_null
+:
+   PORT null_rest_of_line
+;
+spanning_tree_uplinkfast_null
+:
+   UPLINKFAST null_rest_of_line
+;
+spanning_tree_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 spti_null
@@ -1016,17 +1187,33 @@ ssh_client
    CLIENT null_rest_of_line
 ;
 
-ssh_null
+ssh_ip_address_null
 :
-   (
-      IP_ADDRESS
-      | KEY
-      | KEY_EXCHANGE
-      | LOGIN_ATTEMPTS
-      | MGMT_AUTH
-      | STRICTHOSTKEYCHECK
-      | VERSION
-   ) null_rest_of_line
+   IP_ADDRESS null_rest_of_line
+;
+ssh_key_null
+:
+   KEY null_rest_of_line
+;
+ssh_key_exchange_null
+:
+   KEY_EXCHANGE null_rest_of_line
+;
+ssh_login_attempts_null
+:
+   LOGIN_ATTEMPTS null_rest_of_line
+;
+ssh_mgmt_auth_null
+:
+   MGMT_AUTH null_rest_of_line
+;
+ssh_stricthostkeycheck_null
+:
+   STRICTHOSTKEYCHECK null_rest_of_line
+;
+ssh_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 ssh_server
@@ -1127,12 +1314,13 @@ statistics_null
    ) null_rest_of_line
 ;
 
-t_null
+t_group_null
 :
-   (
-      GROUP
-      | HOST
-   ) null_rest_of_line
+   GROUP null_rest_of_line
+;
+t_host_null
+:
+   HOST null_rest_of_line
 ;
 
 t_server
@@ -1215,20 +1403,26 @@ track_interface
 
 track_list
 :
-  LIST null_rest_of_line track_list_null*
+  LIST null_rest_of_line ( track_list_delay_null | track_list_object_null )*
 ;
 
-track_list_null
+track_list_delay_null
 :
-  (
-    DELAY
-    | OBJECT
-  ) null_rest_of_line
+   DELAY null_rest_of_line
+;
+track_list_object_null
+:
+   OBJECT null_rest_of_line
 ;
 
 ts_common
 :
-   ts_null
+   ts_deadtime_null
+   | ts_directed_request_null
+   | ts_key_null
+   | ts_retransmit_null
+   | ts_test_null
+   | ts_timeout_null
 ;
 
 ts_host
@@ -1240,16 +1434,29 @@ ts_host
    ) null_rest_of_line t_key?
 ;
 
-ts_null
+ts_deadtime_null
 :
-   (
-      DEADTIME
-      | DIRECTED_REQUEST
-      | KEY
-      | RETRANSMIT
-      | TEST
-      | TIMEOUT
-   ) null_rest_of_line
+   DEADTIME null_rest_of_line
+;
+ts_directed_request_null
+:
+   DIRECTED_REQUEST null_rest_of_line
+;
+ts_key_null
+:
+   KEY null_rest_of_line
+;
+ts_retransmit_null
+:
+   RETRANSMIT null_rest_of_line
+;
+ts_test_null
+:
+   TEST null_rest_of_line
+;
+ts_timeout_null
+:
+   TIMEOUT null_rest_of_line
 ;
 
 u
@@ -1301,12 +1508,13 @@ u_role
    ) role = variable
 ;
 
-ua_null
+ua_group_lock_null
 :
-   (
-      GROUP_LOCK
-      | VPN_GROUP_POLICY
-   ) null_rest_of_line
+   GROUP_LOCK null_rest_of_line
+;
+ua_vpn_group_policy_null
+:
+   VPN_GROUP_POLICY null_rest_of_line
 ;
 
 up_cisco_xr
