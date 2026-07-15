@@ -4678,6 +4678,8 @@ UNAUTHORIZED: 'unauthorized';
 
 UNAUTHORIZED_DEVICE_PROFILE: 'unauthorized-device-profile';
 
+UNICAST_ROUTING: 'unicast-routing';
+
 UNICAST: 'unicast';
 
 UNIDIRECTIONAL: 'unidirectional';
