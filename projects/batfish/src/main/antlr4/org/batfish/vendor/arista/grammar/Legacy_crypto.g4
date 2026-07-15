@@ -141,21 +141,26 @@ certificate
    ~QUIT+
 ;
 
-cg_null
+cg_identity_null
 :
-   (
-      IDENTITY
-      | SERVER
-   ) null_rest_of_line
+   IDENTITY null_rest_of_line
+;
+cg_server_null
+:
+   SERVER null_rest_of_line
 ;
 
-ci1_null
+ci1_am_disable_null
 :
-   (
-      AM_DISABLE
-      | ENABLE
-      | IPSEC_OVER_TCP
-   ) null_rest_of_line
+   AM_DISABLE null_rest_of_line
+;
+ci1_enable_null
+:
+   ENABLE null_rest_of_line
+;
+ci1_ipsec_over_tcp_null
+:
+   IPSEC_OVER_TCP null_rest_of_line
 ;
 
 ci1_policy
@@ -186,12 +191,13 @@ ci2_keyring
    )*
 ;
 
-ci2_null
+ci2_enable_null
 :
-   (
-      ENABLE
-      | REMOTE_ACCESS
-   ) null_rest_of_line
+   ENABLE null_rest_of_line
+;
+ci2_remote_access_null
+:
+   REMOTE_ACCESS null_rest_of_line
 ;
 
 ci2_policy
@@ -273,15 +279,25 @@ cip_ikev2
    IKEV2 cipi2_ipsec_proposal
 ;
 
-cip_null
+cip_df_bit_null
 :
-   (
-      DF_BIT
-      | FRAGMENTATION
-      | IKEV1
-      | NAT_TRANSPARENCY
-      | SECURITY_ASSOCIATION
-   ) null_rest_of_line
+   DF_BIT null_rest_of_line
+;
+cip_fragmentation_null
+:
+   FRAGMENTATION null_rest_of_line
+;
+cip_ikev1_null
+:
+   IKEV1 null_rest_of_line
+;
+cip_nat_transparency_null
+:
+   NAT_TRANSPARENCY null_rest_of_line
+;
+cip_security_association_null
+:
+   SECURITY_ASSOCIATION null_rest_of_line
 ;
 
 cip_profile
@@ -325,9 +341,10 @@ cipprf_set
 :
    SET
    (
-      cipprf_set_isakmp_profile
-      | cipprf_set_null
+      cipprf_set_ikev2_profile_null
+      | cipprf_set_isakmp_profile
       | cipprf_set_pfs
+      | cipprf_set_security_association_null
       | cipprf_set_transform_set
    )
 ;
@@ -337,12 +354,13 @@ cipprf_set_isakmp_profile
     ISAKMP_PROFILE name = variable NEWLINE
 ;
 
-cipprf_set_null
+cipprf_set_ikev2_profile_null
 :
-   (
-      IKEV2_PROFILE
-      | SECURITY_ASSOCIATION
-   ) null_rest_of_line
+   IKEV2_PROFILE null_rest_of_line
+;
+cipprf_set_security_association_null
+:
+   SECURITY_ASSOCIATION null_rest_of_line
 ;
 
 cipprf_set_pfs
@@ -372,17 +390,33 @@ cis_key
    KEY dec? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
 ;
 
-cis_null
+cis_eap_passthrough_null
 :
-   (
-      EAP_PASSTHROUGH
-      | ENABLE
-      | IDENTITY
-      | INVALID_SPI_RECOVERY
-      | KEEPALIVE
-      | NAT
-      | NAT_TRAVERSAL
-   ) null_rest_of_line
+   EAP_PASSTHROUGH null_rest_of_line
+;
+cis_enable_null
+:
+   ENABLE null_rest_of_line
+;
+cis_identity_null
+:
+   IDENTITY null_rest_of_line
+;
+cis_invalid_spi_recovery_null
+:
+   INVALID_SPI_RECOVERY null_rest_of_line
+;
+cis_keepalive_null
+:
+   KEEPALIVE null_rest_of_line
+;
+cis_nat_null
+:
+   NAT null_rest_of_line
+;
+cis_nat_traversal_null
+:
+   NAT_TRAVERSAL null_rest_of_line
 ;
 
 cis_policy
@@ -497,12 +531,13 @@ cisprf_self_identity
 ;
 
 
-ck_null
+ck_generate_null
 :
-   (
-      GENERATE
-      | PARAM
-   ) null_rest_of_line
+   GENERATE null_rest_of_line
+;
+ck_param_null
+:
+   PARAM null_rest_of_line
 ;
 
 ck_pubkey_chain
@@ -665,7 +700,10 @@ crypto_gdoi
 :
    GDOI null_rest_of_line
    (
-      cg_null
+      (
+         cg_identity_null
+         | cg_server_null
+      )
    )*
 ;
 
@@ -673,7 +711,9 @@ crypto_ikev1
 :
    IKEV1
    (
-      ci1_null
+      ci1_am_disable_null
+      | ci1_enable_null
+      | ci1_ipsec_over_tcp_null
       | ci1_policy
    )
 ;
@@ -682,11 +722,12 @@ crypto_ikev2
 :
    IKEV2
    (
-      ci2_keyring
-      | ci2_null
+      ci2_enable_null
+      | ci2_keyring
       | ci2_policy
       | ci2_profile
       | ci2_proposal
+      | ci2_remote_access_null
    )
 ;
 
@@ -694,9 +735,13 @@ crypto_ipsec
 :
    IPSEC
    (
-      cip_ikev2
-      | cip_null
+      cip_df_bit_null
+      | cip_fragmentation_null
+      | cip_ikev1_null
+      | cip_ikev2
+      | cip_nat_transparency_null
       | cip_profile
+      | cip_security_association_null
       | cip_transform_set
    )
 ;
@@ -705,8 +750,14 @@ crypto_isakmp
 :
    ISAKMP
    (
-      cis_key
-      | cis_null
+      cis_eap_passthrough_null
+      | cis_enable_null
+      | cis_identity_null
+      | cis_invalid_spi_recovery_null
+      | cis_keepalive_null
+      | cis_key
+      | cis_nat_null
+      | cis_nat_traversal_null
       | cis_policy
       | cis_profile
    )
@@ -716,7 +767,8 @@ crypto_key
 :
    KEY
    (
-      ck_null
+      ck_generate_null
+      | ck_param_null
       | ck_pubkey_chain
    )
 ;
@@ -734,27 +786,35 @@ crypto_map
 :
    MAP name = variable
    (
-      crypto_map_null
+      (
+         crypto_map_interface_null
+         | crypto_map_local_address_null
+         | crypto_map_redundancy_null
+      )
       | seq_num = dec crypto_map_tail
    )
 ;
 
-crypto_map_null
+crypto_map_interface_null
 :
-   (
-      INTERFACE
-      | LOCAL_ADDRESS
-      | REDUNDANCY
-   ) null_rest_of_line
+   INTERFACE null_rest_of_line
+;
+crypto_map_local_address_null
+:
+   LOCAL_ADDRESS null_rest_of_line
+;
+crypto_map_redundancy_null
+:
+   REDUNDANCY null_rest_of_line
 ;
 
 crypto_map_tail
 :
-   (
-      crypto_map_t_gdoi
-      | crypto_map_t_ipsec_isakmp
-      | crypto_map_t_null
-   )
+   crypto_map_t_gdoi
+   | crypto_map_t_ipsec_isakmp
+   | crypto_map_t_ipsec_manual_null
+   | crypto_map_t_match_null
+   | crypto_map_t_set_null
 ;
 
 crypto_map_t_g_null
@@ -843,13 +903,17 @@ crypto_map_t_ipsec_isakmp
    )*
 ;
 
-crypto_map_t_null
+crypto_map_t_ipsec_manual_null
 :
-   (
-      IPSEC_MANUAL
-      | MATCH
-      | SET
-   ) null_rest_of_line
+   IPSEC_MANUAL null_rest_of_line
+;
+crypto_map_t_match_null
+:
+   MATCH null_rest_of_line
+;
+crypto_map_t_set_null
+:
+   SET null_rest_of_line
 ;
 
 crypto_pki
