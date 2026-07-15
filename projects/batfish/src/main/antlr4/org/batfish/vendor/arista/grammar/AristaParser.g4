@@ -553,14 +553,21 @@ eh_null
    ) null_rest_of_line
 ;
 
-enable_null
+enable_encrypted_password_null
 :
-   (
-      ENCRYPTED_PASSWORD
-      | READ_ONLY_PASSWORD
-      | SUPER_USER_PASSWORD
-      | TELNET
-   ) null_rest_of_line
+   ENCRYPTED_PASSWORD null_rest_of_line
+;
+enable_read_only_password_null
+:
+   READ_ONLY_PASSWORD null_rest_of_line
+;
+enable_super_user_password_null
+:
+   SUPER_USER_PASSWORD null_rest_of_line
+;
+enable_telnet_null
+:
+   TELNET null_rest_of_line
 ;
 
 enable_password
@@ -908,15 +915,25 @@ ip_as_path_regex_mode_stanza
    ) NEWLINE
 ;
 
-ip_dhcp_null
+ip_dhcp_excluded_address_null
 :
-   (
-      EXCLUDED_ADDRESS
-      | PACKET
-      | SMART_RELAY
-      | SNOOPING
-      | USE
-   ) null_rest_of_line
+   EXCLUDED_ADDRESS null_rest_of_line
+;
+ip_dhcp_packet_null
+:
+   PACKET null_rest_of_line
+;
+ip_dhcp_smart_relay_null
+:
+   SMART_RELAY null_rest_of_line
+;
+ip_dhcp_snooping_null
+:
+   SNOOPING null_rest_of_line
+;
+ip_dhcp_use_null
+:
+   USE null_rest_of_line
 ;
 
 ip_dhcp_pool
@@ -951,23 +968,45 @@ ip_dhcp_relay
 :
    RELAY
    (
-      NEWLINE
-      | ip_dhcp_relay_null
+      ip_dhcp_relay_always_on_null
+      | ip_dhcp_relay_information_null
+      | ip_dhcp_relay_option_null
       | ip_dhcp_relay_server
+      | ip_dhcp_relay_source_address_null
+      | ip_dhcp_relay_source_interface_null
+      | ip_dhcp_relay_sub_option_null
+      | ip_dhcp_relay_use_link_address_null
+      | NEWLINE
    )
 ;
 
-ip_dhcp_relay_null
+ip_dhcp_relay_always_on_null
 :
-   (
-      ALWAYS_ON
-      | INFORMATION
-      | OPTION
-      | SOURCE_ADDRESS
-      | SOURCE_INTERFACE
-      | SUB_OPTION
-      | USE_LINK_ADDRESS
-   ) null_rest_of_line
+   ALWAYS_ON null_rest_of_line
+;
+ip_dhcp_relay_information_null
+:
+   INFORMATION null_rest_of_line
+;
+ip_dhcp_relay_option_null
+:
+   OPTION null_rest_of_line
+;
+ip_dhcp_relay_source_address_null
+:
+   SOURCE_ADDRESS null_rest_of_line
+;
+ip_dhcp_relay_source_interface_null
+:
+   SOURCE_INTERFACE null_rest_of_line
+;
+ip_dhcp_relay_sub_option_null
+:
+   SUB_OPTION null_rest_of_line
+;
+ip_dhcp_relay_use_link_address_null
+:
+   USE_LINK_ADDRESS null_rest_of_line
 ;
 
 ip_dhcp_relay_server
@@ -2272,9 +2311,12 @@ s_enable
 :
    ENABLE
    (
-      enable_null
+      enable_encrypted_password_null
       | enable_password
+      | enable_read_only_password_null
       | enable_secret
+      | enable_super_user_password_null
+      | enable_telnet_null
    )
 ;
 
@@ -2451,9 +2493,13 @@ s_ip_dhcp
       | IPV6
    ) DHCP
    (
-      ip_dhcp_null
+      ip_dhcp_excluded_address_null
+      | ip_dhcp_packet_null
       | ip_dhcp_pool
       | ip_dhcp_relay
+      | ip_dhcp_smart_relay_null
+      | ip_dhcp_snooping_null
+      | ip_dhcp_use_null
    )
 ;
 
@@ -2875,10 +2921,26 @@ s_spanning_tree
 :
    NO? SPANNING_TREE
    (
-      spanning_tree_mst
+      spanning_tree_backbonefast_null
+      | spanning_tree_bpdufilter_null
+      | spanning_tree_bridge_null
+      | spanning_tree_cost_null
+      | spanning_tree_dispute_null
+      | spanning_tree_etherchannel_null
+      | spanning_tree_extend_null
+      | spanning_tree_fcoe_null
+      | spanning_tree_guard_null
+      | spanning_tree_logging_null
+      | spanning_tree_loopguard_null
+      | spanning_tree_mode_null
+      | spanning_tree_mst
+      | spanning_tree_optimize_null
+      | spanning_tree_pathcost_null
+      | spanning_tree_port_null
       | spanning_tree_portfast
       | spanning_tree_pseudo_information
-      | spanning_tree_null
+      | spanning_tree_uplinkfast_null
+      | spanning_tree_vlan_null
       | NEWLINE
    )
 ;
@@ -2919,9 +2981,21 @@ s_system
 :
    NO? SYSTEM
    (
-      system_default
-      | system_null
+      system_admin_vdc_null
+      | system_auto_upgrade_null
+      | system_default
+      | system_fabric_mode_null
+      | system_fabric_null
+      | system_flowcontrol_null
+      | system_interface_null
+      | system_jumbomtu_null
+      | system_mode_null
+      | system_module_type_null
+      | system_mtu_null
       | system_qos
+      | system_routing_null
+      | system_urpf_null
+      | system_vlan_null
    )
    s_system_inner*
 ;
@@ -3033,7 +3107,7 @@ s_username_attributes
 :
    USERNAME user = variable ATTRIBUTES NEWLINE
    (
-      ua_null
+      ( ua_group_lock_null | ua_vpn_group_policy_null )
    )*
 ;
 
@@ -3132,13 +3206,17 @@ sccp_null
    ) null_rest_of_line
 ;
 
-sd_null
+sd_dce_mode_null
 :
-   (
-      DCE_MODE
-      | INTERFACE
-      | LINK_FAIL
-   ) null_rest_of_line
+   DCE_MODE null_rest_of_line
+;
+sd_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+sd_link_fail_null
+:
+   LINK_FAIL null_rest_of_line
 ;
 
 sd_switchport
@@ -3146,7 +3224,8 @@ sd_switchport
    SWITCHPORT
    (
       sd_switchport_blank
-      | sd_switchport_null
+      | sd_switchport_fabricpath_null
+      | sd_switchport_monitor_null
       | sd_switchport_shutdown
    )
 ;
@@ -3156,12 +3235,13 @@ sd_switchport_blank
    NEWLINE
 ;
 
-sd_switchport_null
+sd_switchport_fabricpath_null
 :
-   (
-      FABRICPATH
-      | MONITOR
-   ) null_rest_of_line
+   FABRICPATH null_rest_of_line
+;
+sd_switchport_monitor_null
+:
+   MONITOR null_rest_of_line
 ;
 
 sd_switchport_shutdown
@@ -3223,27 +3303,73 @@ spanning_tree_pseudo_information
    )*
 ;
 
-spanning_tree_null
+spanning_tree_backbonefast_null
 :
-   (
-      BACKBONEFAST
-      | BPDUFILTER
-      | BRIDGE
-      | COST
-      | DISPUTE
-      | ETHERCHANNEL
-      | EXTEND
-      | FCOE
-      | GUARD
-      | LOGGING
-      | LOOPGUARD
-      | MODE
-      | OPTIMIZE
-      | PATHCOST
-      | PORT
-      | UPLINKFAST
-      | VLAN
-   ) null_rest_of_line
+   BACKBONEFAST null_rest_of_line
+;
+spanning_tree_bpdufilter_null
+:
+   BPDUFILTER null_rest_of_line
+;
+spanning_tree_bridge_null
+:
+   BRIDGE null_rest_of_line
+;
+spanning_tree_cost_null
+:
+   COST null_rest_of_line
+;
+spanning_tree_dispute_null
+:
+   DISPUTE null_rest_of_line
+;
+spanning_tree_etherchannel_null
+:
+   ETHERCHANNEL null_rest_of_line
+;
+spanning_tree_extend_null
+:
+   EXTEND null_rest_of_line
+;
+spanning_tree_fcoe_null
+:
+   FCOE null_rest_of_line
+;
+spanning_tree_guard_null
+:
+   GUARD null_rest_of_line
+;
+spanning_tree_logging_null
+:
+   LOGGING null_rest_of_line
+;
+spanning_tree_loopguard_null
+:
+   LOOPGUARD null_rest_of_line
+;
+spanning_tree_mode_null
+:
+   MODE null_rest_of_line
+;
+spanning_tree_optimize_null
+:
+   OPTIMIZE null_rest_of_line
+;
+spanning_tree_pathcost_null
+:
+   PATHCOST null_rest_of_line
+;
+spanning_tree_port_null
+:
+   PORT null_rest_of_line
+;
+spanning_tree_uplinkfast_null
+:
+   UPLINKFAST null_rest_of_line
+;
+spanning_tree_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 spti_null
@@ -3456,28 +3582,64 @@ system_default
 :
    DEFAULT
    (
-      sd_null
+      sd_dce_mode_null
+      | sd_interface_null
+      | sd_link_fail_null
       | sd_switchport
    )
 ;
 
-system_null
+system_admin_vdc_null
 :
-   (
-      ADMIN_VDC
-      | AUTO_UPGRADE
-      | FABRIC
-      | FABRIC_MODE
-      | FLOWCONTROL
-      | INTERFACE
-      | JUMBOMTU
-      | MODE
-      | MODULE_TYPE
-      | MTU
-      | ROUTING
-      | URPF
-      | VLAN
-   ) null_rest_of_line
+   ADMIN_VDC null_rest_of_line
+;
+system_auto_upgrade_null
+:
+   AUTO_UPGRADE null_rest_of_line
+;
+system_fabric_null
+:
+   FABRIC null_rest_of_line
+;
+system_fabric_mode_null
+:
+   FABRIC_MODE null_rest_of_line
+;
+system_flowcontrol_null
+:
+   FLOWCONTROL null_rest_of_line
+;
+system_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+system_jumbomtu_null
+:
+   JUMBOMTU null_rest_of_line
+;
+system_mode_null
+:
+   MODE null_rest_of_line
+;
+system_module_type_null
+:
+   MODULE_TYPE null_rest_of_line
+;
+system_mtu_null
+:
+   MTU null_rest_of_line
+;
+system_routing_null
+:
+   ROUTING null_rest_of_line
+;
+system_urpf_null
+:
+   URPF null_rest_of_line
+;
+system_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 system_qos
@@ -3580,20 +3742,26 @@ track_interface
 
 track_list
 :
-  LIST null_rest_of_line track_list_null*
+  LIST null_rest_of_line ( track_list_delay_null | track_list_object_null )*
 ;
 
-track_list_null
+track_list_delay_null
 :
-  (
-    DELAY
-    | OBJECT
-  ) null_rest_of_line
+   DELAY null_rest_of_line
+;
+track_list_object_null
+:
+   OBJECT null_rest_of_line
 ;
 
 ts_common
 :
-   ts_null
+   ts_deadtime_null
+   | ts_directed_request_null
+   | ts_key_null
+   | ts_retransmit_null
+   | ts_test_null
+   | ts_timeout_null
 ;
 
 ts_host
@@ -3605,16 +3773,29 @@ ts_host
    ) null_rest_of_line t_key?
 ;
 
-ts_null
+ts_deadtime_null
 :
-   (
-      DEADTIME
-      | DIRECTED_REQUEST
-      | KEY
-      | RETRANSMIT
-      | TEST
-      | TIMEOUT
-   ) null_rest_of_line
+   DEADTIME null_rest_of_line
+;
+ts_directed_request_null
+:
+   DIRECTED_REQUEST null_rest_of_line
+;
+ts_key_null
+:
+   KEY null_rest_of_line
+;
+ts_retransmit_null
+:
+   RETRANSMIT null_rest_of_line
+;
+ts_test_null
+:
+   TEST null_rest_of_line
+;
+ts_timeout_null
+:
+   TIMEOUT null_rest_of_line
 ;
 
 u
@@ -3678,12 +3859,13 @@ u_role
    ) role = variable
 ;
 
-ua_null
+ua_group_lock_null
 :
-   (
-      GROUP_LOCK
-      | VPN_GROUP_POLICY
-   ) null_rest_of_line
+   GROUP_LOCK null_rest_of_line
+;
+ua_vpn_group_policy_null
+:
+   VPN_GROUP_POLICY null_rest_of_line
 ;
 
 up_arista_md5
@@ -3816,15 +3998,25 @@ wccp_id
    )* NEWLINE
 ;
 
-wccp_null
+wccp_check_null
 :
-   (
-      CHECK
-      | OUTBOUND_ACL_CHECK
-      | SOURCE_INTERFACE
-      | VERSION
-      | WEB_CACHE
-   ) null_rest_of_line
+   CHECK null_rest_of_line
+;
+wccp_outbound_acl_check_null
+:
+   OUTBOUND_ACL_CHECK null_rest_of_line
+;
+wccp_source_interface_null
+:
+   SOURCE_INTERFACE null_rest_of_line
+;
+wccp_version_null
+:
+   VERSION null_rest_of_line
+;
+wccp_web_cache_null
+:
+   WEB_CACHE null_rest_of_line
 ;
 
 web_server_null

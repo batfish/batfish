@@ -17,15 +17,22 @@ s_email
 email_no
 :
   NO
-  email_no_null
+  ( email_no_auth_null | email_no_from_user_null | email_no_server_null | email_no_tls_null )
 ;
 
-email_no_null
+email_no_auth_null
 :
-  (
-    AUTH
-    | FROM_USER
-    | SERVER
-    | TLS
-  ) null_rest_of_line
+   AUTH null_rest_of_line
+;
+email_no_from_user_null
+:
+   FROM_USER null_rest_of_line
+;
+email_no_server_null
+:
+   SERVER null_rest_of_line
+;
+email_no_tls_null
+:
+   TLS null_rest_of_line
 ;
