@@ -556,14 +556,21 @@ eh_null
    ) null_rest_of_line
 ;
 
-enable_null
+enable_encrypted_password_null
 :
-   (
-      ENCRYPTED_PASSWORD
-      | READ_ONLY_PASSWORD
-      | SUPER_USER_PASSWORD
-      | TELNET
-   ) null_rest_of_line
+   ENCRYPTED_PASSWORD null_rest_of_line
+;
+enable_read_only_password_null
+:
+   READ_ONLY_PASSWORD null_rest_of_line
+;
+enable_super_user_password_null
+:
+   SUPER_USER_PASSWORD null_rest_of_line
+;
+enable_telnet_null
+:
+   TELNET null_rest_of_line
 ;
 
 enable_password
@@ -941,15 +948,25 @@ ip_as_path_regex_mode_stanza
    ) NEWLINE
 ;
 
-ip_dhcp_null
+ip_dhcp_excluded_address_null
 :
-   (
-      EXCLUDED_ADDRESS
-      | PACKET
-      | SMART_RELAY
-      | SNOOPING
-      | USE
-   ) null_rest_of_line
+   EXCLUDED_ADDRESS null_rest_of_line
+;
+ip_dhcp_packet_null
+:
+   PACKET null_rest_of_line
+;
+ip_dhcp_smart_relay_null
+:
+   SMART_RELAY null_rest_of_line
+;
+ip_dhcp_snooping_null
+:
+   SNOOPING null_rest_of_line
+;
+ip_dhcp_use_null
+:
+   USE null_rest_of_line
 ;
 
 ip_dhcp_pool
@@ -984,23 +1001,45 @@ ip_dhcp_relay
 :
    RELAY
    (
-      NEWLINE
-      | ip_dhcp_relay_null
+      ip_dhcp_relay_always_on_null
+      | ip_dhcp_relay_information_null
+      | ip_dhcp_relay_option_null
       | ip_dhcp_relay_server
+      | ip_dhcp_relay_source_address_null
+      | ip_dhcp_relay_source_interface_null
+      | ip_dhcp_relay_sub_option_null
+      | ip_dhcp_relay_use_link_address_null
+      | NEWLINE
    )
 ;
 
-ip_dhcp_relay_null
+ip_dhcp_relay_always_on_null
 :
-   (
-      ALWAYS_ON
-      | INFORMATION
-      | OPTION
-      | SOURCE_ADDRESS
-      | SOURCE_INTERFACE
-      | SUB_OPTION
-      | USE_LINK_ADDRESS
-   ) null_rest_of_line
+   ALWAYS_ON null_rest_of_line
+;
+ip_dhcp_relay_information_null
+:
+   INFORMATION null_rest_of_line
+;
+ip_dhcp_relay_option_null
+:
+   OPTION null_rest_of_line
+;
+ip_dhcp_relay_source_address_null
+:
+   SOURCE_ADDRESS null_rest_of_line
+;
+ip_dhcp_relay_source_interface_null
+:
+   SOURCE_INTERFACE null_rest_of_line
+;
+ip_dhcp_relay_sub_option_null
+:
+   SUB_OPTION null_rest_of_line
+;
+ip_dhcp_relay_use_link_address_null
+:
+   USE_LINK_ADDRESS null_rest_of_line
 ;
 
 ip_dhcp_relay_server
@@ -2171,9 +2210,12 @@ s_enable
 :
    ENABLE
    (
-      enable_null
+      enable_encrypted_password_null
       | enable_password
+      | enable_read_only_password_null
       | enable_secret
+      | enable_super_user_password_null
+      | enable_telnet_null
    )
 ;
 
@@ -2341,9 +2383,13 @@ s_ip_dhcp
       | IPV6
    ) DHCP
    (
-      ip_dhcp_null
+      ip_dhcp_excluded_address_null
+      | ip_dhcp_packet_null
       | ip_dhcp_pool
       | ip_dhcp_relay
+      | ip_dhcp_smart_relay_null
+      | ip_dhcp_snooping_null
+      | ip_dhcp_use_null
    )
 ;
 
@@ -2437,8 +2483,12 @@ s_ip_wccp
       VRF vrf = variable
    )?
    (
-      wccp_id
-      | wccp_null
+      wccp_check_null
+      | wccp_id
+      | wccp_outbound_acl_check_null
+      | wccp_source_interface_null
+      | wccp_version_null
+      | wccp_web_cache_null
    )
 ;
 
@@ -2712,10 +2762,26 @@ s_spanning_tree
 :
    NO? SPANNING_TREE
    (
-      spanning_tree_mst
+      spanning_tree_backbonefast_null
+      | spanning_tree_bpdufilter_null
+      | spanning_tree_bridge_null
+      | spanning_tree_cost_null
+      | spanning_tree_dispute_null
+      | spanning_tree_etherchannel_null
+      | spanning_tree_extend_null
+      | spanning_tree_fcoe_null
+      | spanning_tree_guard_null
+      | spanning_tree_logging_null
+      | spanning_tree_loopguard_null
+      | spanning_tree_mode_null
+      | spanning_tree_mst
+      | spanning_tree_optimize_null
+      | spanning_tree_pathcost_null
+      | spanning_tree_port_null
       | spanning_tree_portfast
       | spanning_tree_pseudo_information
-      | spanning_tree_null
+      | spanning_tree_uplinkfast_null
+      | spanning_tree_vlan_null
       | NEWLINE
    )
 ;
@@ -2726,9 +2792,15 @@ s_ssh
    (
       ssh_access_group
       | ssh_client
-      | ssh_null
+      | ssh_ip_address_null
+      | ssh_key_exchange_null
+      | ssh_key_null
+      | ssh_login_attempts_null
+      | ssh_mgmt_auth_null
       | ssh_server
+      | ssh_stricthostkeycheck_null
       | ssh_timeout
+      | ssh_version_null
    )
 ;
 
@@ -2768,9 +2840,21 @@ s_system
 :
    NO? SYSTEM
    (
-      system_default
-      | system_null
+      system_admin_vdc_null
+      | system_auto_upgrade_null
+      | system_default
+      | system_fabric_mode_null
+      | system_fabric_null
+      | system_flowcontrol_null
+      | system_interface_null
+      | system_jumbomtu_null
+      | system_mode_null
+      | system_module_type_null
+      | system_mtu_null
       | system_qos
+      | system_routing_null
+      | system_urpf_null
+      | system_vlan_null
    )
    s_system_inner*
 ;
@@ -2789,7 +2873,8 @@ s_tacacs
 :
    TACACS
    (
-      t_null
+      t_group_null
+      | t_host_null
       | t_server
       | t_source_interface
    )
@@ -2882,7 +2967,10 @@ s_username_attributes
 :
    USERNAME user = variable ATTRIBUTES NEWLINE
    (
-      ua_null
+      (
+         ua_group_lock_null
+         | ua_vpn_group_policy_null
+      )
    )*
 ;
 
@@ -2892,9 +2980,19 @@ s_voice
 :
    NO? VOICE
    (
-      voice_class
-      | voice_null
+      voice_alg_based_cac_null
+      | voice_call_null
+      | voice_class
+      | voice_dialplan_profile_null
+      | voice_hunt_null
+      | voice_iec_null
+      | voice_logging_null
+      | voice_real_time_config_null
+      | voice_rtcp_inactivity_null
+      | voice_rtp_null
       | voice_service
+      | voice_sip_midcall_req_timeout_null
+      | voice_sip_null
       | voice_translation_profile
       | voice_translation_rule
    )
@@ -3017,13 +3115,17 @@ sccp_null
    ) null_rest_of_line
 ;
 
-sd_null
+sd_dce_mode_null
 :
-   (
-      DCE_MODE
-      | INTERFACE
-      | LINK_FAIL
-   ) null_rest_of_line
+   DCE_MODE null_rest_of_line
+;
+sd_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+sd_link_fail_null
+:
+   LINK_FAIL null_rest_of_line
 ;
 
 sd_switchport
@@ -3031,7 +3133,8 @@ sd_switchport
    SWITCHPORT
    (
       sd_switchport_blank
-      | sd_switchport_null
+      | sd_switchport_fabricpath_null
+      | sd_switchport_monitor_null
       | sd_switchport_shutdown
    )
 ;
@@ -3041,12 +3144,13 @@ sd_switchport_blank
    NEWLINE
 ;
 
-sd_switchport_null
+sd_switchport_fabricpath_null
 :
-   (
-      FABRICPATH
-      | MONITOR
-   ) null_rest_of_line
+   FABRICPATH null_rest_of_line
+;
+sd_switchport_monitor_null
+:
+   MONITOR null_rest_of_line
 ;
 
 sd_switchport_shutdown
@@ -3108,27 +3212,73 @@ spanning_tree_pseudo_information
    )*
 ;
 
-spanning_tree_null
+spanning_tree_backbonefast_null
 :
-   (
-      BACKBONEFAST
-      | BPDUFILTER
-      | BRIDGE
-      | COST
-      | DISPUTE
-      | ETHERCHANNEL
-      | EXTEND
-      | FCOE
-      | GUARD
-      | LOGGING
-      | LOOPGUARD
-      | MODE
-      | OPTIMIZE
-      | PATHCOST
-      | PORT
-      | UPLINKFAST
-      | VLAN
-   ) null_rest_of_line
+   BACKBONEFAST null_rest_of_line
+;
+spanning_tree_bpdufilter_null
+:
+   BPDUFILTER null_rest_of_line
+;
+spanning_tree_bridge_null
+:
+   BRIDGE null_rest_of_line
+;
+spanning_tree_cost_null
+:
+   COST null_rest_of_line
+;
+spanning_tree_dispute_null
+:
+   DISPUTE null_rest_of_line
+;
+spanning_tree_etherchannel_null
+:
+   ETHERCHANNEL null_rest_of_line
+;
+spanning_tree_extend_null
+:
+   EXTEND null_rest_of_line
+;
+spanning_tree_fcoe_null
+:
+   FCOE null_rest_of_line
+;
+spanning_tree_guard_null
+:
+   GUARD null_rest_of_line
+;
+spanning_tree_logging_null
+:
+   LOGGING null_rest_of_line
+;
+spanning_tree_loopguard_null
+:
+   LOOPGUARD null_rest_of_line
+;
+spanning_tree_mode_null
+:
+   MODE null_rest_of_line
+;
+spanning_tree_optimize_null
+:
+   OPTIMIZE null_rest_of_line
+;
+spanning_tree_pathcost_null
+:
+   PATHCOST null_rest_of_line
+;
+spanning_tree_port_null
+:
+   PORT null_rest_of_line
+;
+spanning_tree_uplinkfast_null
+:
+   UPLINKFAST null_rest_of_line
+;
+spanning_tree_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 spti_null
@@ -3164,17 +3314,33 @@ ssh_client
    CLIENT null_rest_of_line
 ;
 
-ssh_null
+ssh_ip_address_null
 :
-   (
-      IP_ADDRESS
-      | KEY
-      | KEY_EXCHANGE
-      | LOGIN_ATTEMPTS
-      | MGMT_AUTH
-      | STRICTHOSTKEYCHECK
-      | VERSION
-   ) null_rest_of_line
+   IP_ADDRESS null_rest_of_line
+;
+ssh_key_null
+:
+   KEY null_rest_of_line
+;
+ssh_key_exchange_null
+:
+   KEY_EXCHANGE null_rest_of_line
+;
+ssh_login_attempts_null
+:
+   LOGIN_ATTEMPTS null_rest_of_line
+;
+ssh_mgmt_auth_null
+:
+   MGMT_AUTH null_rest_of_line
+;
+ssh_stricthostkeycheck_null
+:
+   STRICTHOSTKEYCHECK null_rest_of_line
+;
+ssh_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 ssh_server
@@ -3442,28 +3608,64 @@ system_default
 :
    DEFAULT
    (
-      sd_null
+      sd_dce_mode_null
+      | sd_interface_null
+      | sd_link_fail_null
       | sd_switchport
    )
 ;
 
-system_null
+system_admin_vdc_null
 :
-   (
-      ADMIN_VDC
-      | AUTO_UPGRADE
-      | FABRIC
-      | FABRIC_MODE
-      | FLOWCONTROL
-      | INTERFACE
-      | JUMBOMTU
-      | MODE
-      | MODULE_TYPE
-      | MTU
-      | ROUTING
-      | URPF
-      | VLAN
-   ) null_rest_of_line
+   ADMIN_VDC null_rest_of_line
+;
+system_auto_upgrade_null
+:
+   AUTO_UPGRADE null_rest_of_line
+;
+system_fabric_null
+:
+   FABRIC null_rest_of_line
+;
+system_fabric_mode_null
+:
+   FABRIC_MODE null_rest_of_line
+;
+system_flowcontrol_null
+:
+   FLOWCONTROL null_rest_of_line
+;
+system_interface_null
+:
+   INTERFACE null_rest_of_line
+;
+system_jumbomtu_null
+:
+   JUMBOMTU null_rest_of_line
+;
+system_mode_null
+:
+   MODE null_rest_of_line
+;
+system_module_type_null
+:
+   MODULE_TYPE null_rest_of_line
+;
+system_mtu_null
+:
+   MTU null_rest_of_line
+;
+system_routing_null
+:
+   ROUTING null_rest_of_line
+;
+system_urpf_null
+:
+   URPF null_rest_of_line
+;
+system_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 system_qos
@@ -3483,12 +3685,13 @@ system_qos_null
    ) null_rest_of_line
 ;
 
-t_null
+t_group_null
 :
-   (
-      GROUP
-      | HOST
-   ) null_rest_of_line
+   GROUP null_rest_of_line
+;
+t_host_null
+:
+   HOST null_rest_of_line
 ;
 
 t_server
@@ -3595,7 +3798,12 @@ tr_null
 
 ts_common
 :
-   ts_null
+   ts_deadtime_null
+   | ts_directed_request_null
+   | ts_key_null
+   | ts_retransmit_null
+   | ts_test_null
+   | ts_timeout_null
 ;
 
 ts_host
@@ -3607,16 +3815,29 @@ ts_host
    ) null_rest_of_line t_key?
 ;
 
-ts_null
+ts_deadtime_null
 :
-   (
-      DEADTIME
-      | DIRECTED_REQUEST
-      | KEY
-      | RETRANSMIT
-      | TEST
-      | TIMEOUT
-   ) null_rest_of_line
+   DEADTIME null_rest_of_line
+;
+ts_directed_request_null
+:
+   DIRECTED_REQUEST null_rest_of_line
+;
+ts_key_null
+:
+   KEY null_rest_of_line
+;
+ts_retransmit_null
+:
+   RETRANSMIT null_rest_of_line
+;
+ts_test_null
+:
+   TEST null_rest_of_line
+;
+ts_timeout_null
+:
+   TIMEOUT null_rest_of_line
 ;
 
 u
@@ -3677,12 +3898,13 @@ u_role
    ) role = variable
 ;
 
-ua_null
+ua_group_lock_null
 :
-   (
-      GROUP_LOCK
-      | VPN_GROUP_POLICY
-   ) null_rest_of_line
+   GROUP_LOCK null_rest_of_line
+;
+ua_vpn_group_policy_null
+:
+   VPN_GROUP_POLICY null_rest_of_line
 ;
 
 up_cisco
@@ -3852,21 +4074,49 @@ voice_class_uri
     )
 ;
 
-voice_null
+voice_alg_based_cac_null
 :
-   (
-      ALG_BASED_CAC
-      | CALL
-      | DIALPLAN_PROFILE
-      | HUNT
-      | IEC
-      | LOGGING
-      | REAL_TIME_CONFIG
-      | RTCP_INACTIVITY
-      | RTP
-      | SIP
-      | SIP_MIDCALL_REQ_TIMEOUT
-   ) null_rest_of_line
+   ALG_BASED_CAC null_rest_of_line
+;
+voice_call_null
+:
+   CALL null_rest_of_line
+;
+voice_dialplan_profile_null
+:
+   DIALPLAN_PROFILE null_rest_of_line
+;
+voice_hunt_null
+:
+   HUNT null_rest_of_line
+;
+voice_iec_null
+:
+   IEC null_rest_of_line
+;
+voice_logging_null
+:
+   LOGGING null_rest_of_line
+;
+voice_real_time_config_null
+:
+   REAL_TIME_CONFIG null_rest_of_line
+;
+voice_rtcp_inactivity_null
+:
+   RTCP_INACTIVITY null_rest_of_line
+;
+voice_rtp_null
+:
+   RTP null_rest_of_line
+;
+voice_sip_null
+:
+   SIP null_rest_of_line
+;
+voice_sip_midcall_req_timeout_null
+:
+   SIP_MIDCALL_REQ_TIMEOUT null_rest_of_line
 ;
 
 voice_service
@@ -4159,15 +4409,25 @@ wccp_id
    )* NEWLINE
 ;
 
-wccp_null
+wccp_check_null
 :
-   (
-      CHECK
-      | OUTBOUND_ACL_CHECK
-      | SOURCE_INTERFACE
-      | VERSION
-      | WEB_CACHE
-   ) null_rest_of_line
+   CHECK null_rest_of_line
+;
+wccp_outbound_acl_check_null
+:
+   OUTBOUND_ACL_CHECK null_rest_of_line
+;
+wccp_source_interface_null
+:
+   SOURCE_INTERFACE null_rest_of_line
+;
+wccp_version_null
+:
+   VERSION null_rest_of_line
+;
+wccp_web_cache_null
+:
+   WEB_CACHE null_rest_of_line
 ;
 
 web_server_null

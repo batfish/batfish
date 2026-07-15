@@ -61,21 +61,54 @@ logging_buffered
 logging_common
 :
    logging_address
+   | logging_alarm_null
    | logging_archive
+   | logging_asdm_buffer_size_null
+   | logging_asdm_null
+   | logging_buffer_size_null
    | logging_buffered
+   | logging_cmts_null
    | logging_console
+   | logging_count_null
+   | logging_debug_trace_null
    | logging_device_id
+   | logging_discriminator_null
    | logging_enable
+   | logging_esm_null
+   | logging_event_null
+   | logging_events_null
+   | logging_facility_null
    | logging_format
+   | logging_history_null
    | logging_host
+   | logging_hostnameprefix_null
+   | logging_ip_null
+   | logging_level_null
+   | logging_linecard_null
+   | logging_local_volatile_null
+   | logging_logfile_null
    | logging_message
-   | logging_null
+   | logging_message_counter_null
+   | logging_monitor_null
    | logging_on
+   | logging_origin_id_null
+   | logging_override_null
+   | logging_permit_hostdown_null
+   | logging_proprietary_null
    | logging_queue
+   | logging_queue_limit_null
+   | logging_rate_limit_null
+   | logging_sequence_nums_null
    | logging_server
+   | logging_server_arp_null
+   | logging_snmp_authfail_null
    | logging_source_interface
    | logging_suppress
+   | logging_synchronous_null
+   | logging_syslog_null
+   | logging_timestamp_null
    | logging_trap
+   | logging_userinfo_null
 ;
 
 logging_console
@@ -161,45 +194,141 @@ logging_message
    MESSAGE (syslog_id = dec) (LEVEL level = variable)? STANDBY? NEWLINE
 ;
 
-logging_null
+logging_alarm_null
 :
-   (
-      ALARM
-      | ASDM
-      | ASDM_BUFFER_SIZE
-      | BUFFER_SIZE
-      | COUNT
-      | CMTS
-      | DEBUG_TRACE
-      | DISCRIMINATOR
-      | ESM
-      | EVENT
-      | EVENTS
-      | FACILITY
-      | HISTORY
-      | HOSTNAMEPREFIX
-      | IP
-      | LEVEL
-      | LINECARD
-      | LOCAL_VOLATILE
-      | LOGFILE
-      | MESSAGE_COUNTER
-      | MONITOR
-      | ORIGIN_ID
-      | PERMIT_HOSTDOWN
-      | PROPRIETARY
-      | ORIGIN_ID
-      | OVERRIDE
-      | QUEUE_LIMIT
-      | RATE_LIMIT
-      | SEQUENCE_NUMS
-      | SERVER_ARP
-      | SNMP_AUTHFAIL
-      | SYNCHRONOUS
-      | SYSLOG
-      | TIMESTAMP
-      | USERINFO
-   ) null_rest_of_line
+   ALARM null_rest_of_line
+;
+logging_asdm_null
+:
+   ASDM null_rest_of_line
+;
+logging_asdm_buffer_size_null
+:
+   ASDM_BUFFER_SIZE null_rest_of_line
+;
+logging_buffer_size_null
+:
+   BUFFER_SIZE null_rest_of_line
+;
+logging_count_null
+:
+   COUNT null_rest_of_line
+;
+logging_cmts_null
+:
+   CMTS null_rest_of_line
+;
+logging_debug_trace_null
+:
+   DEBUG_TRACE null_rest_of_line
+;
+logging_discriminator_null
+:
+   DISCRIMINATOR null_rest_of_line
+;
+logging_esm_null
+:
+   ESM null_rest_of_line
+;
+logging_event_null
+:
+   EVENT null_rest_of_line
+;
+logging_events_null
+:
+   EVENTS null_rest_of_line
+;
+logging_facility_null
+:
+   FACILITY null_rest_of_line
+;
+logging_history_null
+:
+   HISTORY null_rest_of_line
+;
+logging_hostnameprefix_null
+:
+   HOSTNAMEPREFIX null_rest_of_line
+;
+logging_ip_null
+:
+   IP null_rest_of_line
+;
+logging_level_null
+:
+   LEVEL null_rest_of_line
+;
+logging_linecard_null
+:
+   LINECARD null_rest_of_line
+;
+logging_local_volatile_null
+:
+   LOCAL_VOLATILE null_rest_of_line
+;
+logging_logfile_null
+:
+   LOGFILE null_rest_of_line
+;
+logging_message_counter_null
+:
+   MESSAGE_COUNTER null_rest_of_line
+;
+logging_monitor_null
+:
+   MONITOR null_rest_of_line
+;
+logging_origin_id_null
+:
+   ORIGIN_ID null_rest_of_line
+;
+logging_permit_hostdown_null
+:
+   PERMIT_HOSTDOWN null_rest_of_line
+;
+logging_proprietary_null
+:
+   PROPRIETARY null_rest_of_line
+;
+logging_override_null
+:
+   OVERRIDE null_rest_of_line
+;
+logging_queue_limit_null
+:
+   QUEUE_LIMIT null_rest_of_line
+;
+logging_rate_limit_null
+:
+   RATE_LIMIT null_rest_of_line
+;
+logging_sequence_nums_null
+:
+   SEQUENCE_NUMS null_rest_of_line
+;
+logging_server_arp_null
+:
+   SERVER_ARP null_rest_of_line
+;
+logging_snmp_authfail_null
+:
+   SNMP_AUTHFAIL null_rest_of_line
+;
+logging_synchronous_null
+:
+   SYNCHRONOUS null_rest_of_line
+;
+logging_syslog_null
+:
+   SYSLOG null_rest_of_line
+;
+logging_timestamp_null
+:
+   TIMESTAMP null_rest_of_line
+;
+logging_userinfo_null
+:
+   USERINFO null_rest_of_line
 ;
 
 logging_on

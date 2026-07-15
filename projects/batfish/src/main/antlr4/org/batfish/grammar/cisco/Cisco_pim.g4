@@ -15,13 +15,29 @@ ip_pim_tail
 :
    pim_accept_register
    | pim_accept_rp
-   | pim_null
+   | pim_autorp_null
+   | pim_bidir_enable_null
+   | pim_bidir_offer_interval_null
+   | pim_bidir_offer_limit_null
+   | pim_bidir_rp_limit_null
+   | pim_bsr_candidate_null
+   | pim_dm_fallback_null
+   | pim_event_history_null
+   | pim_log_neighbor_changes_null
+   | pim_mtu_null
+   | pim_register_rate_limit_null
+   | pim_register_source_null
    | pim_rp_address
    | pim_rp_announce_filter
    | pim_rp_candidate
+   | pim_rpf_vector_null
    | pim_send_rp_announce
+   | pim_send_rp_discovery_null
+   | pim_sg_expiry_timer_null
+   | pim_snooping_null
    | pim_spt_threshold
    | pim_ssm
+   | pim_v1_rp_reachability_null
 ;
 
 pim_accept_register
@@ -50,27 +66,73 @@ pim_accept_rp
    )? NEWLINE
 ;
 
-pim_null
+pim_autorp_null
 :
-   (
-      AUTORP
-      | BIDIR_ENABLE
-      | BIDIR_OFFER_INTERVAL
-      | BIDIR_OFFER_LIMIT
-      | BIDIR_RP_LIMIT
-      | BSR_CANDIDATE
-      | DM_FALLBACK
-      | EVENT_HISTORY
-      | LOG_NEIGHBOR_CHANGES
-      | MTU
-      | REGISTER_RATE_LIMIT
-      | REGISTER_SOURCE
-      | RPF_VECTOR
-      | SEND_RP_DISCOVERY
-      | SG_EXPIRY_TIMER
-      | SNOOPING
-      | V1_RP_REACHABILITY
-   ) null_rest_of_line
+   AUTORP null_rest_of_line
+;
+pim_bidir_enable_null
+:
+   BIDIR_ENABLE null_rest_of_line
+;
+pim_bidir_offer_interval_null
+:
+   BIDIR_OFFER_INTERVAL null_rest_of_line
+;
+pim_bidir_offer_limit_null
+:
+   BIDIR_OFFER_LIMIT null_rest_of_line
+;
+pim_bidir_rp_limit_null
+:
+   BIDIR_RP_LIMIT null_rest_of_line
+;
+pim_bsr_candidate_null
+:
+   BSR_CANDIDATE null_rest_of_line
+;
+pim_dm_fallback_null
+:
+   DM_FALLBACK null_rest_of_line
+;
+pim_event_history_null
+:
+   EVENT_HISTORY null_rest_of_line
+;
+pim_log_neighbor_changes_null
+:
+   LOG_NEIGHBOR_CHANGES null_rest_of_line
+;
+pim_mtu_null
+:
+   MTU null_rest_of_line
+;
+pim_register_rate_limit_null
+:
+   REGISTER_RATE_LIMIT null_rest_of_line
+;
+pim_register_source_null
+:
+   REGISTER_SOURCE null_rest_of_line
+;
+pim_rpf_vector_null
+:
+   RPF_VECTOR null_rest_of_line
+;
+pim_send_rp_discovery_null
+:
+   SEND_RP_DISCOVERY null_rest_of_line
+;
+pim_sg_expiry_timer_null
+:
+   SG_EXPIRY_TIMER null_rest_of_line
+;
+pim_snooping_null
+:
+   SNOOPING null_rest_of_line
+;
+pim_v1_rp_reachability_null
+:
+   V1_RP_REACHABILITY null_rest_of_line
 ;
 
 pim_rp_address
