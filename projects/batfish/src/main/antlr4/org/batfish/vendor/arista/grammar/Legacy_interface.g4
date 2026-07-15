@@ -389,11 +389,25 @@ if_ip_igmp
 :
    IGMP
    (
-      NEWLINE
-      | ifigmp_access_group
+      ifigmp_access_group
+      | ifigmp_group_timeout_null
       | ifigmp_host_proxy
-      | ifigmp_null
+      | ifigmp_join_group_null
+      | ifigmp_last_member_query_count_null
+      | ifigmp_last_member_query_interval_null
+      | ifigmp_last_member_query_response_time_null
+      | ifigmp_multicast_static_only_null
+      | ifigmp_query_interval_null
+      | ifigmp_query_max_response_time_null
+      | ifigmp_query_timeout_null
+      | ifigmp_robustness_variable_null
+      | ifigmp_router_alert_null
+      | ifigmp_snooping_null
+      | ifigmp_startup_query_count_null
+      | ifigmp_startup_query_interval_null
       | ifigmp_static_group
+      | ifigmp_version_null
+      | NEWLINE
    )
 ;
 
@@ -641,8 +655,11 @@ if_ipv6
 :
    IPV6
    (
-     if_ipv6_enable
-     | if_ipv6_null
+     if_ipv6_address_null
+     | if_ipv6_attached_routes_null
+     | if_ipv6_enable
+     | if_ipv6_nd_null
+     | if_ipv6_ospf_null
      | if_ipv6_traffic_filter
    )
 ;
@@ -652,14 +669,21 @@ if_ipv6_enable
    ENABLE NEWLINE
 ;
 
-if_ipv6_null
+if_ipv6_address_null
 :
-  (
-    ADDRESS
-    | ATTACHED_ROUTES
-    | ND
-    | OSPF
-  ) null_rest_of_line
+   ADDRESS null_rest_of_line
+;
+if_ipv6_attached_routes_null
+:
+   ATTACHED_ROUTES null_rest_of_line
+;
+if_ipv6_nd_null
+:
+   ND null_rest_of_line
+;
+if_ipv6_ospf_null
+:
+   OSPF null_rest_of_line
 ;
 
 if_ipv6_traffic_filter
@@ -671,32 +695,70 @@ if_isis
 :
   ISIS
   (
-    if_isis_circuit_type
+    if_isis_authentication_null
+    | if_isis_circuit_type
+    | if_isis_csnp_interval_null
+    | if_isis_ds_hello_interval_null
     | if_isis_enable
     | if_isis_hello_interval
+    | if_isis_hello_interval_null
+    | if_isis_hello_multiplier_null
+    | if_isis_hello_null
+    | if_isis_lsp_interval_null
     | if_isis_metric
     | if_isis_network
-    | if_isis_null
     | if_isis_passive
+    | if_isis_point_to_point_null
+    | if_isis_protocol_null
+    | if_isis_small_hello_null
     | if_isis_tag
+    | if_isis_wide_metric_null
   )
 ;
 
-if_isis_null
+if_isis_authentication_null
 :
-  (
-    AUTHENTICATION
-    | CSNP_INTERVAL
-    | DS_HELLO_INTERVAL
-    | HELLO
-    | HELLO_INTERVAL
-    | HELLO_MULTIPLIER
-    | LSP_INTERVAL
-    | POINT_TO_POINT
-    | PROTOCOL
-    | SMALL_HELLO
-    | WIDE_METRIC
-  ) null_rest_of_line
+   AUTHENTICATION null_rest_of_line
+;
+if_isis_csnp_interval_null
+:
+   CSNP_INTERVAL null_rest_of_line
+;
+if_isis_ds_hello_interval_null
+:
+   DS_HELLO_INTERVAL null_rest_of_line
+;
+if_isis_hello_null
+:
+   HELLO null_rest_of_line
+;
+if_isis_hello_interval_null
+:
+   HELLO_INTERVAL null_rest_of_line
+;
+if_isis_hello_multiplier_null
+:
+   HELLO_MULTIPLIER null_rest_of_line
+;
+if_isis_lsp_interval_null
+:
+   LSP_INTERVAL null_rest_of_line
+;
+if_isis_point_to_point_null
+:
+   POINT_TO_POINT null_rest_of_line
+;
+if_isis_protocol_null
+:
+   PROTOCOL null_rest_of_line
+;
+if_isis_small_hello_null
+:
+   SMALL_HELLO null_rest_of_line
+;
+if_isis_wide_metric_null
+:
+   WIDE_METRIC null_rest_of_line
 ;
 
 if_isis_circuit_type
@@ -1056,27 +1118,69 @@ if_no_spanning_tree
 :
    SPANNING_TREE
    (
-      if_no_st_null
+      if_no_st_bpdufilter_null
+      | if_no_st_bpduguard_null
+      | if_no_st_cost_null
+      | if_no_st_guard_null
+      | if_no_st_link_type_null
+      | if_no_st_mst_null
+      | if_no_st_port_null
+      | if_no_st_port_priority_null
       | if_no_st_portfast
+      | if_no_st_priority_null
+      | if_no_st_protect_null
+      | if_no_st_rstp_null
+      | if_no_st_vlan_null
    )
 ;
 
-if_no_st_null
+if_no_st_bpdufilter_null
 :
-   (
-      BPDUFILTER
-      | BPDUGUARD
-      | COST
-      | GUARD
-      | LINK_TYPE
-      | MST
-      | PORT
-      | PORT_PRIORITY
-      | PRIORITY
-      | PROTECT
-      | RSTP
-      | VLAN
-   ) null_rest_of_line
+   BPDUFILTER null_rest_of_line
+;
+if_no_st_bpduguard_null
+:
+   BPDUGUARD null_rest_of_line
+;
+if_no_st_cost_null
+:
+   COST null_rest_of_line
+;
+if_no_st_guard_null
+:
+   GUARD null_rest_of_line
+;
+if_no_st_link_type_null
+:
+   LINK_TYPE null_rest_of_line
+;
+if_no_st_mst_null
+:
+   MST null_rest_of_line
+;
+if_no_st_port_null
+:
+   PORT null_rest_of_line
+;
+if_no_st_port_priority_null
+:
+   PORT_PRIORITY null_rest_of_line
+;
+if_no_st_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+if_no_st_protect_null
+:
+   PROTECT null_rest_of_line
+;
+if_no_st_rstp_null
+:
+   RSTP null_rest_of_line
+;
+if_no_st_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 if_no_st_portfast
@@ -1490,8 +1594,19 @@ if_spanning_tree
 :
    SPANNING_TREE
    (
-      if_st_null
+      if_st_bpdufilter_null
+      | if_st_bpduguard_null
+      | if_st_cost_null
+      | if_st_guard_null
+      | if_st_link_type_null
+      | if_st_mst_null
+      | if_st_port_null
+      | if_st_port_priority_null
       | if_st_portfast
+      | if_st_priority_null
+      | if_st_protect_null
+      | if_st_rstp_null
+      | if_st_vlan_null
       | NEWLINE
    )
 ;
@@ -1521,22 +1636,53 @@ if_speed_forced_eos
   FORCED eos_bandwidth_specifier NEWLINE
 ;
 
-if_st_null
+if_st_bpdufilter_null
 :
-   (
-      BPDUFILTER
-      | BPDUGUARD
-      | COST
-      | GUARD
-      | LINK_TYPE
-      | MST
-      | PORT
-      | PORT_PRIORITY
-      | PRIORITY
-      | PROTECT
-      | RSTP
-      | VLAN
-   ) null_rest_of_line
+   BPDUFILTER null_rest_of_line
+;
+if_st_bpduguard_null
+:
+   BPDUGUARD null_rest_of_line
+;
+if_st_cost_null
+:
+   COST null_rest_of_line
+;
+if_st_guard_null
+:
+   GUARD null_rest_of_line
+;
+if_st_link_type_null
+:
+   LINK_TYPE null_rest_of_line
+;
+if_st_mst_null
+:
+   MST null_rest_of_line
+;
+if_st_port_null
+:
+   PORT null_rest_of_line
+;
+if_st_port_priority_null
+:
+   PORT_PRIORITY null_rest_of_line
+;
+if_st_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+if_st_protect_null
+:
+   PROTECT null_rest_of_line
+;
+if_st_rstp_null
+:
+   RSTP null_rest_of_line
+;
+if_st_vlan_null
+:
+   VLAN null_rest_of_line
 ;
 
 if_st_portfast
@@ -1709,34 +1855,56 @@ if_tx_queue
 :
   TX_QUEUE num = dec NEWLINE
   (
-    if_txq_no
-    | if_txq_null
+    if_txq_bandwidth_null
+    | if_txq_no
+    | if_txq_priority_null
+    | if_txq_random_detect_null
+    | if_txq_shape_null
   )*
 ;
 
 if_txq_no
 :
-  NO if_txq_no_null
+  NO (
+     if_txq_no_bandwidth_null
+     | if_txq_no_priority_null
+     | if_txq_no_random_detect_null
+     | if_txq_no_shape_null
+  )
 ;
 
-if_txq_no_null
+if_txq_no_bandwidth_null
 :
-  (
-    BANDWIDTH
-    | PRIORITY
-    | RANDOM_DETECT
-    | SHAPE
-  ) null_rest_of_line
+   BANDWIDTH null_rest_of_line
+;
+if_txq_no_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+if_txq_no_random_detect_null
+:
+   RANDOM_DETECT null_rest_of_line
+;
+if_txq_no_shape_null
+:
+   SHAPE null_rest_of_line
 ;
 
-if_txq_null
+if_txq_bandwidth_null
 :
-  (
-    BANDWIDTH
-    | PRIORITY
-    | RANDOM_DETECT
-    | SHAPE
-  ) null_rest_of_line
+   BANDWIDTH null_rest_of_line
+;
+if_txq_priority_null
+:
+   PRIORITY null_rest_of_line
+;
+if_txq_random_detect_null
+:
+   RANDOM_DETECT null_rest_of_line
+;
+if_txq_shape_null
+:
+   SHAPE null_rest_of_line
 ;
 
 if_vrf
@@ -1785,7 +1953,11 @@ ifigmp_host_proxy
 :
    HOST_PROXY (
        ifigmphp_access_list
-       | ifigmphp_null
+       | ifigmphp_exclude_null
+       | ifigmphp_include_null
+       | ifigmphp_ip_address_null
+       | ifigmphp_report_interval_null
+       | ifigmphp_version_null
    )
 ;
 
@@ -1794,37 +1966,86 @@ ifigmphp_access_list
    ACCESS_LIST name = variable NEWLINE
 ;
 
-ifigmphp_null
+ifigmphp_exclude_null
 :
-   (
-      EXCLUDE
-      | INCLUDE
-      | IP_ADDRESS
-      | REPORT_INTERVAL
-      | VERSION
-   ) null_rest_of_line
-
+   EXCLUDE null_rest_of_line
+;
+ifigmphp_include_null
+:
+   INCLUDE null_rest_of_line
+;
+ifigmphp_ip_address_null
+:
+   IP_ADDRESS null_rest_of_line
+;
+ifigmphp_report_interval_null
+:
+   REPORT_INTERVAL null_rest_of_line
+;
+ifigmphp_version_null
+:
+   VERSION null_rest_of_line
 ;
 
-ifigmp_null
+ifigmp_group_timeout_null
 :
-   (
-      GROUP_TIMEOUT
-      | JOIN_GROUP
-      | LAST_MEMBER_QUERY_COUNT
-      | LAST_MEMBER_QUERY_INTERVAL
-      | LAST_MEMBER_QUERY_RESPONSE_TIME
-      | MULTICAST_STATIC_ONLY
-      | QUERY_INTERVAL
-      | QUERY_MAX_RESPONSE_TIME
-      | QUERY_TIMEOUT
-      | ROBUSTNESS_VARIABLE
-      | ROUTER_ALERT
-      | SNOOPING
-      | STARTUP_QUERY_COUNT
-      | STARTUP_QUERY_INTERVAL
-      | VERSION
-   ) null_rest_of_line
+   GROUP_TIMEOUT null_rest_of_line
+;
+ifigmp_join_group_null
+:
+   JOIN_GROUP null_rest_of_line
+;
+ifigmp_last_member_query_count_null
+:
+   LAST_MEMBER_QUERY_COUNT null_rest_of_line
+;
+ifigmp_last_member_query_interval_null
+:
+   LAST_MEMBER_QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_last_member_query_response_time_null
+:
+   LAST_MEMBER_QUERY_RESPONSE_TIME null_rest_of_line
+;
+ifigmp_multicast_static_only_null
+:
+   MULTICAST_STATIC_ONLY null_rest_of_line
+;
+ifigmp_query_interval_null
+:
+   QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_query_max_response_time_null
+:
+   QUERY_MAX_RESPONSE_TIME null_rest_of_line
+;
+ifigmp_query_timeout_null
+:
+   QUERY_TIMEOUT null_rest_of_line
+;
+ifigmp_robustness_variable_null
+:
+   ROBUSTNESS_VARIABLE null_rest_of_line
+;
+ifigmp_router_alert_null
+:
+   ROUTER_ALERT null_rest_of_line
+;
+ifigmp_snooping_null
+:
+   SNOOPING null_rest_of_line
+;
+ifigmp_startup_query_count_null
+:
+   STARTUP_QUERY_COUNT null_rest_of_line
+;
+ifigmp_startup_query_interval_null
+:
+   STARTUP_QUERY_INTERVAL null_rest_of_line
+;
+ifigmp_version_null
+:
+   VERSION null_rest_of_line
 ;
 
 ifigmp_static_group
@@ -1832,7 +2053,8 @@ ifigmp_static_group
    STATIC_GROUP
    (
       ifigmpsg_acl
-      | ifigmpsg_null
+      | ifigmpsg_ip_address_null
+      | ifigmpsg_range_null
    )
 ;
 
@@ -1841,12 +2063,13 @@ ifigmpsg_acl
    ACL name = variable NEWLINE
 ;
 
-ifigmpsg_null
+ifigmpsg_ip_address_null
 :
-   (
-      IP_ADDRESS
-      | RANGE
-   ) null_rest_of_line
+   IP_ADDRESS null_rest_of_line
+;
+ifigmpsg_range_null
+:
+   RANGE null_rest_of_line
 ;
 
 iftunnel_bandwidth
