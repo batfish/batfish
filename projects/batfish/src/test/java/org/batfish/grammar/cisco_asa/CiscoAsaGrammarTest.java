@@ -199,6 +199,8 @@ import org.batfish.representation.cisco_asa.ExpandedCommunityListLine;
 import org.batfish.representation.cisco_asa.NetworkObject;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco_asa.NtpAuthenticationKey;
+import org.batfish.representation.cisco_asa.NtpAuthenticationKey.HashAlgorithm;
 import org.batfish.representation.cisco_asa.OspfNetworkType;
 import org.batfish.representation.cisco_asa.RouteMap;
 import org.batfish.representation.cisco_asa.RouteMapClause;
@@ -2893,5 +2895,79 @@ public final class CiscoAsaGrammarTest {
           containsInAnyOrder(
               StandardCommunity.of(1, 1), StandardCommunity.of(2, 2), StandardCommunity.of(3, 3)));
     }
+  }
+
+  @Test
+  public void testAsaNtpExtraction() {
+    AsaConfiguration vc = parseVendorConfig("asa-ntp");
+
+    assertTrue(vc.getNtpAuthenticate());
+
+    assertThat(vc.getNtpAuthenticationKeys(), hasKeys(1L, 2L, 3L, 42L, 100L, 4294967295L));
+
+    NtpAuthenticationKey key1 = vc.getNtpAuthenticationKeys().get(1L);
+    assertThat(key1.getHashAlgorithm(), equalTo(HashAlgorithm.MD5));
+    assertThat(key1.getValue(), equalTo("aNiceKey"));
+
+    NtpAuthenticationKey key2 = vc.getNtpAuthenticationKeys().get(2L);
+    assertThat(key2.getHashAlgorithm(), equalTo(HashAlgorithm.CMAC));
+    assertThat(key2.getValue(), equalTo("aCmacKey"));
+
+    NtpAuthenticationKey key3 = vc.getNtpAuthenticationKeys().get(3L);
+    assertThat(key3.getHashAlgorithm(), equalTo(HashAlgorithm.SHA1));
+    assertThat(key3.getValue(), equalTo("aSha1Key"));
+
+    NtpAuthenticationKey key42 = vc.getNtpAuthenticationKeys().get(42L);
+    assertThat(key42.getHashAlgorithm(), equalTo(HashAlgorithm.SHA256));
+    assertThat(key42.getValue(), equalTo("aSha256Key"));
+
+    NtpAuthenticationKey key100 = vc.getNtpAuthenticationKeys().get(100L);
+    assertThat(key100.getHashAlgorithm(), equalTo(HashAlgorithm.SHA512));
+    assertThat(key100.getValue(), equalTo("aSha512Key"));
+
+    // Largest valid uint32 key ID
+    NtpAuthenticationKey keyMax = vc.getNtpAuthenticationKeys().get(4294967295L);
+    assertThat(keyMax.getHashAlgorithm(), equalTo(HashAlgorithm.MD5));
+    assertThat(keyMax.getValue(), equalTo("aBigKey"));
+
+    // `ntp trusted-key 0` parses as a uint32 but is out of the valid NTP key range
+    // (1-4294967295), so it is dropped with a warning and never added to the trusted-key set.
+    assertThat(vc.getNtpTrustedKeys(), equalTo(ImmutableSet.of(1L, 10L, 4294967295L)));
+
+    assertThat(vc.getNtpServers(), hasKeys("10.1.1.10", "10.1.1.11", "10.1.1.12", "10.1.1.13"));
+
+    assertThat(vc.getNtpServers().get("10.1.1.10").getKey(), equalTo(1L));
+    assertThat(vc.getNtpServers().get("10.1.1.11").getKey(), nullValue());
+    assertThat(vc.getNtpServers().get("10.1.1.12").getKey(), equalTo(42L));
+    assertThat(vc.getNtpServers().get("10.1.1.13").getKey(), equalTo(4294967295L));
+
+    // key 1 is defined, trusted, and authentication is enabled.
+    assertTrue(vc.isNtpServerAuthenticated("10.1.1.10"));
+    // no key referenced.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.11"));
+    // key 42 is defined but not trusted.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.12"));
+    // key 4294967295 is defined and trusted, and authentication is enabled.
+    assertTrue(vc.isNtpServerAuthenticated("10.1.1.13"));
+  }
+
+  @Test
+  public void testAsaNtpNoAuthenticateExtraction() {
+    AsaConfiguration vc = parseVendorConfig("asa-ntp-no-authenticate");
+
+    assertFalse(vc.getNtpAuthenticate());
+
+    assertThat(vc.getNtpTrustedKeys(), equalTo(ImmutableSet.of(6L)));
+
+    assertThat(vc.getNtpServers(), hasKeys("10.1.1.20", "10.1.1.21"));
+
+    assertThat(vc.getNtpServers().get("10.1.1.20").getKey(), equalTo(6L));
+    assertThat(vc.getNtpServers().get("10.1.1.21").getKey(), equalTo(9L));
+
+    // Key 6 is defined and trusted, but `ntp authenticate` is off, so the server is not
+    // authenticated.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.20"));
+    // Key 9 is undefined and untrusted.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.21"));
   }
 }

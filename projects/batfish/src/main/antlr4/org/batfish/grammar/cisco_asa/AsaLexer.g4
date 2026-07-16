@@ -956,6 +956,8 @@ CLUSTER_ID: 'cluster-id';
 
 CLUSTER_LIST_LENGTH: 'cluster-list-length';
 
+CMAC: 'cmac';
+
 CMD: 'cmd';
 
 CMTS: 'cmts';
@@ -5001,10 +5003,17 @@ SHA: 'sha';
 
 SHA1
 :
-   'sha1' -> pushMode ( M_SHA1 )
+   'sha1'
+   {
+     if (secondToLastTokenType() != AUTHENTICATION_KEY) {
+       pushMode(M_SHA1);
+     }
+   }
 ;
 
 SHA2_256_128: 'sha2-256-128';
+
+SHA256: 'sha256';
 
 SHA512: 'sha512';
 

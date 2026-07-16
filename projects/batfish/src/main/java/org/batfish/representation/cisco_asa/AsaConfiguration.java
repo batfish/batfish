@@ -497,6 +497,14 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private String _ntpSourceInterface;
 
+  private boolean _ntpAuthenticate;
+
+  private final Map<Long, NtpAuthenticationKey> _ntpAuthenticationKeys;
+
+  private final Set<Long> _ntpTrustedKeys;
+
+  private final Map<String, NtpServer> _ntpServers;
+
   private final Map<String, ObjectGroup> _objectGroups;
 
   private final Map<String, Prefix6List> _prefix6Lists;
@@ -579,6 +587,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
+    _ntpAuthenticationKeys = new TreeMap<>();
+    _ntpTrustedKeys = new TreeSet<>();
+    _ntpServers = new TreeMap<>();
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
@@ -829,6 +840,40 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
+  }
+
+  public boolean getNtpAuthenticate() {
+    return _ntpAuthenticate;
+  }
+
+  public void setNtpAuthenticate(boolean ntpAuthenticate) {
+    _ntpAuthenticate = ntpAuthenticate;
+  }
+
+  public Map<Long, NtpAuthenticationKey> getNtpAuthenticationKeys() {
+    return _ntpAuthenticationKeys;
+  }
+
+  public Set<Long> getNtpTrustedKeys() {
+    return _ntpTrustedKeys;
+  }
+
+  public Map<String, NtpServer> getNtpServers() {
+    return _ntpServers;
+  }
+
+  /**
+   * Whether the NTP server with the given hostname is authenticated: NTP authentication is enabled,
+   * the server references a key, and that key is both defined via {@code ntp authentication-key}
+   * and trusted via {@code ntp trusted-key}.
+   */
+  public boolean isNtpServerAuthenticated(String hostname) {
+    NtpServer server = _ntpServers.get(hostname);
+    if (server == null || !_ntpAuthenticate) {
+      return false;
+    }
+    Long key = server.getKey();
+    return key != null && _ntpAuthenticationKeys.containsKey(key) && _ntpTrustedKeys.contains(key);
   }
 
   public Map<String, Prefix6List> getPrefix6Lists() {
