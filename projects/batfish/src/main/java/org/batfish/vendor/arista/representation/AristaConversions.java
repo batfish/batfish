@@ -201,7 +201,6 @@ final class AristaConversions {
 
   static @Nonnull BgpAggregate toBgpAggregate(
       Prefix prefix, AristaBgpAggregateNetwork vsAggregate, Configuration c, Warnings w) {
-    // TODO: handle advertise-only
     // TODO: handle as-set
     // TODO: handle match-map
     // TODO: verify undefined attribute-map can be treated as omitted
@@ -211,12 +210,16 @@ final class AristaConversions {
       attributeMap = null;
     }
     String attributePolicy = generateAggregateAttributePolicy(attributeMap, c);
+    // advertise-only generates the aggregate for advertisement to peers but does not install it in
+    // the main RIB.
+    boolean installInMainRib = !Boolean.TRUE.equals(vsAggregate.getAdvertiseOnly());
     return BgpAggregate.of(
         prefix,
         generateSuppressionPolicy(vsAggregate.getSummaryOnlyEffective(), c),
         // TODO: put match-map here
         null,
-        attributePolicy);
+        attributePolicy,
+        installInMainRib);
   }
 
   static @Nonnull Map<Ip, BgpActivePeerConfig> getNeighbors(

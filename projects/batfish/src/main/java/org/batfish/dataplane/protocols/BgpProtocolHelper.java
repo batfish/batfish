@@ -373,6 +373,10 @@ public final class BgpProtocolHelper {
             .setNextHop(NextHopDiscard.instance())
             .setNetwork(aggregate.getNetwork())
             .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+            // When the aggregate should not be installed in the main RIB (e.g. Arista EOS
+            // advertise-only), mark it non-routing so it remains in the BGP RIB for advertisement
+            // but is excluded from the main RIB.
+            .setNonRouting(!aggregate.getInstallInMainRib())
             .setOriginatorIp(routerId)
             .setOriginMechanism(GENERATED)
             // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB

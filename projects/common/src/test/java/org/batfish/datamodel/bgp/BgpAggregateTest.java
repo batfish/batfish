@@ -14,14 +14,19 @@ public final class BgpAggregateTest {
 
   @Test
   public void testJavaSerialization() {
-    BgpAggregate obj = BgpAggregate.of(Prefix.ZERO, "a", "b", "c");
+    BgpAggregate obj = BgpAggregate.of(Prefix.ZERO, "a", "b", "c", false);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
   public void testJsonSerialization() {
-    BgpAggregate obj = BgpAggregate.of(Prefix.ZERO, "a", "b", "c");
+    BgpAggregate obj = BgpAggregate.of(Prefix.ZERO, "a", "b", "c", false);
     assertThat(BatfishObjectMapper.clone(obj, BgpAggregate.class), equalTo(obj));
+  }
+
+  @Test
+  public void testDefaultInstallInMainRib() {
+    assertThat(BgpAggregate.of(Prefix.ZERO, null, null, null).getInstallInMainRib(), equalTo(true));
   }
 
   @Test
@@ -32,6 +37,7 @@ public final class BgpAggregateTest {
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", null, null))
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", "b", null))
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", "b", "c"))
+        .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", "b", "c", false))
         .addEqualityGroup(BgpAggregate.of(Prefix.MULTICAST, "a", "b", "c"))
         .testEquals();
   }
