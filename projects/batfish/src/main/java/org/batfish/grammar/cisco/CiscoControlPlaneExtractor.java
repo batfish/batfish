@@ -435,7 +435,6 @@ import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.LoggingHost;
 import org.batfish.datamodel.vendor_family.cisco.LoggingType;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
-import org.batfish.datamodel.vendor_family.cisco.NtpAuthenticationKey;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
 import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
@@ -779,6 +778,8 @@ import org.batfish.grammar.cisco.CiscoParser.No_route_map_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_authenticateContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_authentication_keyContext;
+import org.batfish.grammar.cisco.CiscoParser.Ntp_hash_algorithmContext;
+import org.batfish.grammar.cisco.CiscoParser.Ntp_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_trusted_keyContext;
@@ -1167,6 +1168,7 @@ import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectInfo;
 import org.batfish.representation.cisco.NssaSettings;
+import org.batfish.representation.cisco.NtpAuthenticationKey;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -7622,29 +7624,54 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitNtp_authenticate(Ntp_authenticateContext ctx) {
-    _configuration.getCf().getNtp().setAuthenticate(true);
+    _configuration.setNtpAuthenticate(true);
   }
 
   @Override
   public void exitNtp_authentication_key(Ntp_authentication_keyContext ctx) {
-    Ntp ntp = _configuration.getCf().getNtp();
-    long keyNum = toLong(ctx.key_num);
+    Optional<Integer> maybeKeyNum = toInteger(ctx, ctx.key_num);
+    if (!maybeKeyNum.isPresent()) {
+      return;
+    }
     NtpAuthenticationKey key =
-        ntp.getAuthenticationKeys().computeIfAbsent(keyNum, NtpAuthenticationKey::new);
-    key.setMd5Key(ctx.key.getText());
-    if (ctx.enc_type != null) {
-      key.setEncryptionType(toLong(ctx.enc_type));
+        _configuration
+            .getNtpAuthenticationKeys()
+            .computeIfAbsent(maybeKeyNum.get(), NtpAuthenticationKey::new);
+    key.setHashAlgorithm(toHashAlgorithm(ctx.hash_algorithm));
+    key.setValue(ctx.key.getText());
+  }
+
+  private NtpAuthenticationKey.HashAlgorithm toHashAlgorithm(Ntp_hash_algorithmContext ctx) {
+    if (ctx.CMAC_AES_128() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.CMAC_AES_128;
+    } else if (ctx.HMAC_SHA1() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.HMAC_SHA1;
+    } else if (ctx.HMAC_SHA2_256() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.HMAC_SHA2_256;
+    } else if (ctx.MD5() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.MD5;
+    } else {
+      throw convError(NtpAuthenticationKey.HashAlgorithm.class, ctx);
     }
   }
 
   @Override
   public void exitNtp_trusted_key(Ntp_trusted_keyContext ctx) {
-    Ntp ntp = _configuration.getCf().getNtp();
-    long low = toLong(ctx.key_low);
-    long high = ctx.key_high != null ? toLong(ctx.key_high) : low;
-    for (long k = low; k <= high; k++) {
-      ntp.getTrustedKeys().add(k);
+    Optional<Integer> maybeLow = toInteger(ctx, ctx.key_low);
+    if (!maybeLow.isPresent()) {
+      return;
     }
+    int low = maybeLow.get();
+    int high = low;
+    if (ctx.key_high != null) {
+      Optional<Integer> maybeHigh = toInteger(ctx, ctx.key_high);
+      if (!maybeHigh.isPresent()) {
+        return;
+      }
+      high = maybeHigh.get();
+    }
+    _configuration.setNtpTrustedKeys(
+        _configuration.getNtpTrustedKeys().union(IntegerSpace.of(Range.closed(low, high))));
   }
 
   @Override
@@ -7657,8 +7684,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       server.setVrf(vrfName);
       initVrf(vrfName);
     }
+    org.batfish.representation.cisco.NtpServer vsServer =
+        _configuration
+            .getNtpServers()
+            .computeIfAbsent(hostname, org.batfish.representation.cisco.NtpServer::new);
     if (ctx.key != null) {
-      server.setKey(toLong(ctx.key));
+      toInteger(ctx, ctx.key).ifPresent(vsServer::setKey);
     }
     if (ctx.PREFER() != null) {
       // TODO: implement
@@ -10974,6 +11005,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return Optional.of(num);
   }
 
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Ntp_keyContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, NTP_KEY_RANGE, "NTP key number");
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -11009,4 +11044,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IntegerSpace.of(Range.closed(0, 255));
   private static final IntegerSpace HSRP_VERSION_2_GROUP_RANGE =
       IntegerSpace.of(Range.closed(0, 4095));
+
+  private static final IntegerSpace NTP_KEY_RANGE = IntegerSpace.of(Range.closed(1, 65535));
 }

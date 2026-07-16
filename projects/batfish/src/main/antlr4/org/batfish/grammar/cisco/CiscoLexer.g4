@@ -990,6 +990,8 @@ CLUSTER_ID: 'cluster-id';
 
 CLUSTER_LIST_LENGTH: 'cluster-list-length';
 
+CMAC_AES_128: 'cmac-aes-128';
+
 CMD: 'cmd';
 
 CMTS: 'cmts';
@@ -2373,6 +2375,10 @@ HIGH_AVAILABILITY: 'high-availability';
 HIGH_RESOLUTION: 'high-resolution';
 
 HISTORY: 'history';
+
+HMAC_SHA1: 'hmac-sha1';
+
+HMAC_SHA2_256: 'hmac-sha2-256';
 
 HOLD_CHARACTER: 'hold-character';
 

@@ -1,0 +1,11 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-ntp-no-authenticate
+!
+ntp authentication-key 6 md5 aKey
+ntp trusted-key 5 - 8
+ntp server 10.1.1.20 key 6
+ntp server 10.1.1.21 key 9
+!
+end

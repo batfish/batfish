@@ -647,6 +647,11 @@ uint16
   | UINT16
 ;
 
+ntp_key
+:
+  uint16
+;
+
 uint32
 :
   UINT8

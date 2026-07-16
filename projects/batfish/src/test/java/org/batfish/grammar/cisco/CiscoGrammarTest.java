@@ -422,9 +422,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.vendor_family.cisco.Ntp;
-import org.batfish.datamodel.vendor_family.cisco.NtpAuthenticationKey;
-import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -452,6 +449,8 @@ import org.batfish.representation.cisco.HsrpVersion;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IpSla;
 import org.batfish.representation.cisco.LdapServerGroup;
+import org.batfish.representation.cisco.NtpAuthenticationKey;
+import org.batfish.representation.cisco.NtpAuthenticationKey.HashAlgorithm;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PrefixList;
@@ -753,37 +752,68 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosNtpExtraction() {
     CiscoConfiguration vc = parseCiscoConfig("ios-ntp", ConfigurationFormat.CISCO_IOS);
-    Ntp ntp = vc.getCf().getNtp();
-    assertNotNull(ntp);
 
-    assertTrue(ntp.getAuthenticate());
+    assertTrue(vc.getNtpAuthenticate());
 
-    assertThat(ntp.getAuthenticationKeys(), hasKeys(1L, 42L));
+    assertThat(vc.getNtpAuthenticationKeys(), hasKeys(1, 2, 3, 42));
 
-    NtpAuthenticationKey key1 = ntp.getAuthenticationKeys().get(1L);
-    assertThat(key1.getMd5Key(), equalTo("aNiceKey"));
-    assertThat(key1.getEncryptionType(), nullValue());
+    NtpAuthenticationKey key1 = vc.getNtpAuthenticationKeys().get(1);
+    assertThat(key1.getHashAlgorithm(), equalTo(HashAlgorithm.MD5));
+    assertThat(key1.getValue(), equalTo("aNiceKey"));
 
-    NtpAuthenticationKey key42 = ntp.getAuthenticationKeys().get(42L);
-    assertThat(key42.getMd5Key(), equalTo("anEncryptedKey"));
-    assertThat(key42.getEncryptionType(), equalTo(7L));
+    NtpAuthenticationKey key2 = vc.getNtpAuthenticationKeys().get(2);
+    assertThat(key2.getHashAlgorithm(), equalTo(HashAlgorithm.CMAC_AES_128));
+    assertThat(key2.getValue(), equalTo("aCmacKey"));
 
-    assertThat(ntp.getTrustedKeys(), contains(1L, 10L, 11L, 12L));
+    NtpAuthenticationKey key3 = vc.getNtpAuthenticationKeys().get(3);
+    assertThat(key3.getHashAlgorithm(), equalTo(HashAlgorithm.HMAC_SHA1));
+    assertThat(key3.getValue(), equalTo("aSha1Key"));
 
-    assertThat(ntp.getServers(), hasKeys("10.1.1.10", "10.1.1.11", "10.1.1.12"));
+    NtpAuthenticationKey key42 = vc.getNtpAuthenticationKeys().get(42);
+    assertThat(key42.getHashAlgorithm(), equalTo(HashAlgorithm.HMAC_SHA2_256));
+    assertThat(key42.getValue(), equalTo("aSha2Key"));
 
-    NtpServer server10 = ntp.getServers().get("10.1.1.10");
-    assertThat(server10.getKey(), equalTo(1L));
+    // `ntp trusted-key 0` parses as a uint16 but is out of the valid NTP key range (1-65535), so it
+    // is dropped with a warning and never added to the trusted-key set.
+    assertThat(
+        vc.getNtpTrustedKeys(),
+        equalTo(IntegerSpace.builder().including(1).including(Range.closed(10, 12)).build()));
 
-    NtpServer server11 = ntp.getServers().get("10.1.1.11");
-    assertThat(server11.getKey(), nullValue());
+    assertThat(vc.getNtpServers(), hasKeys("10.1.1.10", "10.1.1.11", "10.1.1.12"));
 
-    NtpServer server12 = ntp.getServers().get("10.1.1.12");
-    assertThat(server12.getKey(), equalTo(42L));
+    assertThat(vc.getNtpServers().get("10.1.1.10").getKey(), equalTo(1));
+    assertThat(vc.getNtpServers().get("10.1.1.11").getKey(), nullValue());
+    assertThat(vc.getNtpServers().get("10.1.1.12").getKey(), equalTo(42));
 
-    assertTrue(ntp.isServerAuthenticated(server10));
-    assertFalse(ntp.isServerAuthenticated(server11));
-    assertFalse(ntp.isServerAuthenticated(server12));
+    assertTrue(vc.isNtpServerAuthenticated("10.1.1.10"));
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.11"));
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.12"));
+  }
+
+  @Test
+  public void testIosNtpNoAuthenticateExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-ntp-no-authenticate", ConfigurationFormat.CISCO_IOS);
+
+    assertFalse(vc.getNtpAuthenticate());
+
+    // `ntp trusted-key 5 - 8` should expand to the inclusive range 5-8.
+    IntegerSpace trustedKeys = vc.getNtpTrustedKeys();
+    assertThat(trustedKeys, equalTo(IntegerSpace.of(Range.closed(5, 8))));
+    assertThat(trustedKeys.contains(4), equalTo(false));
+    assertThat(trustedKeys.contains(5), equalTo(true));
+    assertThat(trustedKeys.contains(8), equalTo(true));
+    assertThat(trustedKeys.contains(9), equalTo(false));
+
+    assertThat(vc.getNtpServers(), hasKeys("10.1.1.20", "10.1.1.21"));
+    assertThat(vc.getNtpServers().get("10.1.1.20").getKey(), equalTo(6));
+    assertThat(vc.getNtpServers().get("10.1.1.21").getKey(), equalTo(9));
+
+    // Key 6 is defined and falls within the trusted range 5-8, but `ntp authenticate` is off, so
+    // the server is not authenticated.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.20"));
+    // Key 9 is outside the trusted range and undefined.
+    assertFalse(vc.isNtpServerAuthenticated("10.1.1.21"));
   }
 
   @Test

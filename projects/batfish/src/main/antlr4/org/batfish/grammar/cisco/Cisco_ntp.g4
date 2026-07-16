@@ -60,10 +60,15 @@ ntp_authentication
 
 ntp_authentication_key
 :
-   AUTHENTICATION_KEY key_num = dec MD5 key = variable
-   (
-      enc_type = dec
-   )? NEWLINE
+   AUTHENTICATION_KEY key_num = ntp_key hash_algorithm = ntp_hash_algorithm key = variable NEWLINE
+;
+
+ntp_hash_algorithm
+:
+   CMAC_AES_128
+   | HMAC_SHA1
+   | HMAC_SHA2_256
+   | MD5
 ;
 
 ntp_clock_period
@@ -149,7 +154,7 @@ ntp_server
    hostname = variable
    (
       IBURST
-      | KEY key = dec
+      | KEY key = ntp_key
       | MAXPOLL dec
       | MINPOLL dec
       | prefer = PREFER
@@ -176,9 +181,9 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY key_low = dec
+   TRUSTED_KEY key_low = ntp_key
    (
-      DASH key_high = dec
+      DASH key_high = ntp_key
    )? NEWLINE
 ;
 

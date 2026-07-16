@@ -3107,7 +3107,6 @@
               "on" : true
             },
             "ntp" : {
-              "authenticate" : false,
               "servers" : {
                 "18.18.18.18" : {
                   "name" : "18.18.18.18"
@@ -5347,7 +5346,6 @@
               "on" : true
             },
             "ntp" : {
-              "authenticate" : false,
               "servers" : {
                 "18.18.18.18" : {
                   "name" : "18.18.18.18"
@@ -7016,7 +7014,6 @@
               "on" : true
             },
             "ntp" : {
-              "authenticate" : false,
               "servers" : {
                 "18.18.18.18" : {
                   "name" : "18.18.18.18"
@@ -13459,7 +13456,6 @@
               "on" : true
             },
             "ntp" : {
-              "authenticate" : false,
               "servers" : {
                 "18.18.18.18" : {
                   "name" : "18.18.18.18"
@@ -14916,7 +14912,6 @@
               "on" : true
             },
             "ntp" : {
-              "authenticate" : false,
               "servers" : {
                 "18.18.18.18" : {
                   "name" : "18.18.18.18"
