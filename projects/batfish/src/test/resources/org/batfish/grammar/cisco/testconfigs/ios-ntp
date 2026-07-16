@@ -1,0 +1,18 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-ntp
+!
+ntp authenticate
+ntp authentication-key 1 md5 aNiceKey
+ntp authentication-key 2 cmac-aes-128 aCmacKey
+ntp authentication-key 3 hmac-sha1 aSha1Key
+ntp authentication-key 42 hmac-sha2-256 aSha2Key
+ntp trusted-key 1
+ntp trusted-key 10 - 12
+ntp trusted-key 0
+ntp server 10.1.1.10 key 1
+ntp server 10.1.1.11
+ntp server 10.1.1.12 key 42
+!
+end
