@@ -1608,12 +1608,14 @@ public class AristaGrammarTest {
         defaultVrfAggs,
         hasEntry(
             Prefix.parse("1.2.33.0/24"),
-            // TODO: Support advertise-only, as-set, and match-map
+            // advertise-only => installInMainRib=false
+            // TODO: Support as-set and match-map
             BgpAggregate.of(
                 Prefix.parse("1.2.33.0/24"),
                 SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                 null,
-                "~BGP_AGGREGATE_ATTRIBUTE_MAP:ATTR_MAP~")));
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:ATTR_MAP~",
+                false)));
     assertThat(
         defaultVrfAggs,
         hasEntry(
@@ -1785,6 +1787,36 @@ public class AristaGrammarTest {
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
+  }
+
+  @Test
+  public void testBgpAggregateAdvertiseOnly() throws IOException {
+    /*
+     * Config has static routes 1.1.1.0/24 and 2.2.2.0/24 redistributed into BGP, and aggregates:
+     * - 1.1.0.0/16 advertise-only
+     * - 2.2.0.0/16 summary-only advertise-only
+     *
+     * advertise-only means each aggregate is generated in the BGP RIB (for advertisement to peers)
+     * but is NOT installed in the main RIB.
+     */
+    String hostname = "bgp_aggregate_advertise_only";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    Prefix aggPrefix1 = Prefix.parse("1.1.0.0/16");
+    Prefix aggPrefix2 = Prefix.parse("2.2.0.0/16");
+
+    // Both aggregates are generated in the BGP RIB.
+    Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
+    assertThat(bgpRibRoutes, hasItem(hasPrefix(aggPrefix1)));
+    assertThat(bgpRibRoutes, hasItem(hasPrefix(aggPrefix2)));
+
+    // Neither aggregate is installed in the main RIB (advertise-only).
+    Set<AbstractRoute> mainRibRoutes =
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(mainRibRoutes, not(hasItem(hasPrefix(aggPrefix1))));
+    assertThat(mainRibRoutes, not(hasItem(hasPrefix(aggPrefix2))));
   }
 
   @Test
