@@ -1912,6 +1912,47 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpAggregateVrfSummaryOnly() throws IOException {
+    /*
+     * Snapshot contains c1, c2, and c3. All BGP sessions on c2 live in vrf vxlan_public under
+     * router bgp with an asdot AS (65166.10010 = 4270728986; c1 peers with it in asdot notation,
+     * c3 in asplain). c1 redistributes static routes 10.1.1.96/27 and 10.1.1.98/32 into BGP and
+     * advertises them to c2. c2 has `aggregate-address 0.0.0.0/0 summary-only advertise-only` in
+     * the vrf, so every learned route is a suppressed contributor of the default-route aggregate.
+     * c3 must receive ONLY the aggregate.
+     */
+    String snapshotName = "bgp-agg-vrf-summary-only";
+    String c1 = "c1";
+    String c2 = "c2";
+    String c3 = "c3";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    SNAPSHOTS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
+                .build(),
+            _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    Prefix learnedPrefix1 = Prefix.parse("10.1.1.96/27");
+    Prefix learnedPrefix2 = Prefix.parse("10.1.1.98/32");
+    {
+      // c2's vrf BGP RIB has the learned contributors and the activated aggregate.
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c2, "vxlan_public");
+      assertThat(
+          bgpRibRoutes,
+          containsInAnyOrder(
+              hasPrefix(learnedPrefix1), hasPrefix(learnedPrefix2), hasPrefix(Prefix.ZERO)));
+    }
+    {
+      // c3 receives only the aggregate; both contributors are suppressed VRF-wide.
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c3, Configuration.DEFAULT_VRF_NAME);
+      assertThat(bgpRibRoutes, containsInAnyOrder(hasPrefix(Prefix.ZERO)));
+    }
+  }
+
+  @Test
   public void testAllowedVlans() throws IOException {
     Configuration c = parseConfig("eos-allowed-vlans");
 
