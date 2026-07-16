@@ -357,14 +357,22 @@ public final class BgpProtocolHelper {
         .setNonRouting(nonRouting);
   }
 
-  /** Create a BGP route from an activated aggregate. */
+  /**
+   * Create a BGP route from an activated aggregate.
+   *
+   * @param asPath the AS_PATH to assign to the generated aggregate, derived from its contributors
+   *     according to the aggregate's {@link BgpAggregate.AsPathMode} (empty for {@code NONE})
+   */
   public static @Nonnull Bgpv4Route toBgpv4Route(
-      BgpAggregate aggregate, @Nullable RoutingPolicy attributePolicy, int admin, Ip routerId) {
+      BgpAggregate aggregate,
+      @Nullable RoutingPolicy attributePolicy,
+      int admin,
+      Ip routerId,
+      AsPath asPath) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setAdmin(admin)
-            // TODO: support merging as-path from contributors via generationPolicy
-            .setAsPath(AsPath.empty())
+            .setAsPath(asPath)
             // TODO: support merging communities from contributors via generationPolicy
             .setCommunities(CommunitySet.empty())
             .setMetric(0L)

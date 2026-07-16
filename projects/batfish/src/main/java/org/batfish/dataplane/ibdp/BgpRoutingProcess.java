@@ -31,6 +31,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -1467,28 +1469,40 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpAggregate aggregate = Iterables.getOnlyElement(aggregatesAtNode);
           Collection<AbstractRoute> potentialContributors =
               potentialContributorsByAggregatePrefix.get(aggNet);
-          Bgpv4Route activatedAggregate = null;
+          RoutingPolicy generationPolicy =
+              Optional.ofNullable(aggregate.getGenerationPolicy())
+                  .map(_c.getRoutingPolicies()::get)
+                  .orElse(null);
+          // Collect the AS_PATHs of all contributors that activate the aggregate. Used below to
+          // derive the aggregate's AS_PATH per its AsPathMode. Non-BGP contributors (e.g. a locally
+          // redistributed static route) contribute an empty AS_PATH.
+          List<AsPath> contributorAsPaths = new ArrayList<>();
           for (AbstractRoute potentialContributor : potentialContributors) {
             // TODO: apply suppressionPolicy
             // TODO: apply and merge transformations of generationPolicy
-            RoutingPolicy generationPolicy =
-                Optional.ofNullable(aggregate.getGenerationPolicy())
-                    .map(_c.getRoutingPolicies()::get)
-                    .orElse(null);
             if (generationPolicy == null
                 || generationPolicy.processReadOnly(potentialContributor)) {
-              // When merging is supported, the aggregate should be updated by each contributor
-              // instead of just the first one.
-              activatedAggregate =
-                  toBgpv4Route(
-                      aggregate,
-                      Optional.ofNullable(aggregate.getAttributePolicy())
-                          .map(_c.getRoutingPolicies()::get)
-                          .orElse(null),
-                      admin,
-                      _process.getRouterId());
-              break;
+              contributorAsPaths.add(
+                  potentialContributor instanceof BgpRoute
+                      ? ((BgpRoute<?, ?>) potentialContributor).getAsPath()
+                      : AsPath.empty());
             }
+          }
+          Bgpv4Route activatedAggregate = null;
+          if (!contributorAsPaths.isEmpty()) {
+            AsPath asPath =
+                aggregate.getAsPathMode() == BgpAggregate.AsPathMode.COMMON_SEQUENCE
+                    ? AsPath.aggregateContributors(contributorAsPaths)
+                    : AsPath.empty();
+            activatedAggregate =
+                toBgpv4Route(
+                    aggregate,
+                    Optional.ofNullable(aggregate.getAttributePolicy())
+                        .map(_c.getRoutingPolicies()::get)
+                        .orElse(null),
+                    admin,
+                    _process.getRouterId(),
+                    asPath);
           }
 
           // If generating aggregates from main RIB routes, the aggregate should only be generated

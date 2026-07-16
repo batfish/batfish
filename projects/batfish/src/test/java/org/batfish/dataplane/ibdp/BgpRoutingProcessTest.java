@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasAsPath;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
@@ -846,6 +847,86 @@ public class BgpRoutingProcessTest {
             .map(RouteAdvertisement::getRoute)
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(hasPrefix((Prefix.strict("1.0.0.0/24")))));
+  }
+
+  /**
+   * With {@link BgpAggregate.AsPathMode#COMMON_SEQUENCE}, the aggregate's AS_PATH is the longest
+   * common leading AS_SEQUENCE of its contributors, with the divergent tail dropped. Models Arista
+   * EOS (batfish/batfish#10094).
+   */
+  @Test
+  public void testInitBgpAggregateRoutesCommonSequenceAsPath() {
+    // Two contributors to 10.1.0.0/16 with divergent AS_PATHs sharing a leading 65000.
+    _routingProcess._bgpv4Rib.mergeRoute(
+        aggregateContributorRoute(
+            Prefix.strict("10.1.1.0/24"), AsPath.ofSingletonAsSets(65000L, 65001L)));
+    _routingProcess._bgpv4Rib.mergeRoute(
+        aggregateContributorRoute(
+            Prefix.strict("10.1.2.0/24"), AsPath.ofSingletonAsSets(65000L, 65003L)));
+    _bgpProcess.addAggregate(
+        BgpAggregate.of(
+            Prefix.strict("10.1.0.0/16"),
+            null,
+            null,
+            null,
+            true,
+            BgpAggregate.AsPathMode.COMMON_SEQUENCE));
+    // Re-init routing process to pick up the aggregate.
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+    _routingProcess._bgpv4Rib.mergeRoute(
+        aggregateContributorRoute(
+            Prefix.strict("10.1.1.0/24"), AsPath.ofSingletonAsSets(65000L, 65001L)));
+    _routingProcess._bgpv4Rib.mergeRoute(
+        aggregateContributorRoute(
+            Prefix.strict("10.1.2.0/24"), AsPath.ofSingletonAsSets(65000L, 65003L)));
+
+    RibDelta<Bgpv4Route> delta = _routingProcess.initBgpAggregateRoutes();
+
+    assertThat(
+        delta
+            .getRoutesStream()
+            .filter(r -> r.getNetwork().equals(Prefix.strict("10.1.0.0/16")))
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.strict("10.1.0.0/16")),
+                    hasAsPath(equalTo(AsPath.ofSingletonAsSets(65000L)))))));
+  }
+
+  /** With the default {@link BgpAggregate.AsPathMode#NONE}, the aggregate's AS_PATH is empty. */
+  @Test
+  public void testInitBgpAggregateRoutesNoneAsPath() {
+    _bgpProcess.addAggregate(BgpAggregate.of(Prefix.strict("10.1.0.0/16"), null, null, null));
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+    _routingProcess._bgpv4Rib.mergeRoute(
+        aggregateContributorRoute(
+            Prefix.strict("10.1.1.0/24"), AsPath.ofSingletonAsSets(65000L, 65001L)));
+
+    RibDelta<Bgpv4Route> delta = _routingProcess.initBgpAggregateRoutes();
+
+    assertThat(
+        delta
+            .getRoutesStream()
+            .filter(r -> r.getNetwork().equals(Prefix.strict("10.1.0.0/16")))
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.strict("10.1.0.0/16")), hasAsPath(equalTo(AsPath.empty()))))));
+  }
+
+  private static @Nonnull Bgpv4Route aggregateContributorRoute(Prefix network, AsPath asPath) {
+    return Bgpv4Route.testBuilder()
+        .setNetwork(network)
+        .setAsPath(asPath)
+        .setProtocol(RoutingProtocol.BGP)
+        .setSrcProtocol(RoutingProtocol.BGP)
+        .build();
   }
 
   /*

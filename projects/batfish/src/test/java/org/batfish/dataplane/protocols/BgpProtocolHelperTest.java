@@ -798,17 +798,39 @@ public class BgpProtocolHelperTest {
   public void testToBgpv4RouteFromAggregate() {
     Prefix network = Prefix.parse("1.0.0.0/8");
     Ip routerId = Ip.parse("1.1.1.1");
+    AsPath asPath = AsPath.ofSingletonAsSets(65000L);
 
     // installInMainRib=true => routing (installed in main RIB)
     Bgpv4Route routing =
         BgpProtocolHelper.toBgpv4Route(
-            BgpAggregate.of(network, null, null, null), null, 200, routerId);
+            BgpAggregate.of(network, null, null, null), null, 200, routerId, asPath);
     assertFalse(routing.getNonRouting());
 
     // installInMainRib=false (e.g. advertise-only) => non-routing
     Bgpv4Route nonRouting =
         BgpProtocolHelper.toBgpv4Route(
-            BgpAggregate.of(network, null, null, null, false), null, 200, routerId);
+            BgpAggregate.of(network, null, null, null, false), null, 200, routerId, asPath);
     assertTrue(nonRouting.getNonRouting());
+  }
+
+  @Test
+  public void testToBgpv4RouteFromAggregateAsPath() {
+    Prefix network = Prefix.parse("1.0.0.0/8");
+    Ip routerId = Ip.parse("1.1.1.1");
+
+    // The AS_PATH passed in is assigned to the generated aggregate verbatim.
+    Bgpv4Route withAsPath =
+        BgpProtocolHelper.toBgpv4Route(
+            BgpAggregate.of(network, null, null, null),
+            null,
+            200,
+            routerId,
+            AsPath.ofSingletonAsSets(65000L));
+    assertThat(withAsPath.getAsPath(), equalTo(AsPath.ofSingletonAsSets(65000L)));
+
+    Bgpv4Route emptyAsPath =
+        BgpProtocolHelper.toBgpv4Route(
+            BgpAggregate.of(network, null, null, null), null, 200, routerId, AsPath.empty());
+    assertThat(emptyAsPath.getAsPath(), equalTo(AsPath.empty()));
   }
 }
