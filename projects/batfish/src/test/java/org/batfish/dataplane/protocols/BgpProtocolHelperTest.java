@@ -43,6 +43,7 @@ import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -791,5 +792,23 @@ public class BgpProtocolHelperTest {
 
     // ReceivedFromSelf: never matches
     assertFalse(receivedFromPeer(ReceivedFromSelf.instance(), peerIp));
+  }
+
+  @Test
+  public void testToBgpv4RouteFromAggregate() {
+    Prefix network = Prefix.parse("1.0.0.0/8");
+    Ip routerId = Ip.parse("1.1.1.1");
+
+    // installInMainRib=true => routing (installed in main RIB)
+    Bgpv4Route routing =
+        BgpProtocolHelper.toBgpv4Route(
+            BgpAggregate.of(network, null, null, null), null, 200, routerId);
+    assertFalse(routing.getNonRouting());
+
+    // installInMainRib=false (e.g. advertise-only) => non-routing
+    Bgpv4Route nonRouting =
+        BgpProtocolHelper.toBgpv4Route(
+            BgpAggregate.of(network, null, null, null, false), null, 200, routerId);
+    assertTrue(nonRouting.getNonRouting());
   }
 }

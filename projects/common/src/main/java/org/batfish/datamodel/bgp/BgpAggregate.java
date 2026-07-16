@@ -24,7 +24,17 @@ public final class BgpAggregate implements Serializable {
       @Nullable String suppressionPolicy,
       @Nullable String generationPolicy,
       @Nullable String attributePolicy) {
-    return new BgpAggregate(attributePolicy, generationPolicy, network, suppressionPolicy);
+    return of(network, suppressionPolicy, generationPolicy, attributePolicy, true);
+  }
+
+  public static @Nonnull BgpAggregate of(
+      Prefix network,
+      @Nullable String suppressionPolicy,
+      @Nullable String generationPolicy,
+      @Nullable String attributePolicy,
+      boolean installInMainRib) {
+    return new BgpAggregate(
+        attributePolicy, generationPolicy, network, suppressionPolicy, installInMainRib);
   }
 
   /**
@@ -90,6 +100,18 @@ public final class BgpAggregate implements Serializable {
     return _suppressionPolicy;
   }
 
+  /**
+   * Whether the generated aggregate should be installed in the main RIB once activated. If {@code
+   * false}, the aggregate is generated in the BGP RIB (and thus advertised to peers) but not
+   * installed in the main RIB. This models {@code advertise-only} on Arista EOS.
+   *
+   * <p>Defaults to {@code true}.
+   */
+  @JsonProperty(PROP_INSTALL_IN_MAIN_RIB)
+  public boolean getInstallInMainRib() {
+    return _installInMainRib;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -101,12 +123,14 @@ public final class BgpAggregate implements Serializable {
     return Objects.equals(_attributePolicy, that._attributePolicy)
         && Objects.equals(_generationPolicy, that._generationPolicy)
         && _network.equals(that._network)
-        && Objects.equals(_suppressionPolicy, that._suppressionPolicy);
+        && Objects.equals(_suppressionPolicy, that._suppressionPolicy)
+        && _installInMainRib == that._installInMainRib;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_attributePolicy, _generationPolicy, _network, _suppressionPolicy);
+    return Objects.hash(
+        _attributePolicy, _generationPolicy, _network, _suppressionPolicy, _installInMainRib);
   }
 
   @Override
@@ -117,6 +141,7 @@ public final class BgpAggregate implements Serializable {
         .add(PROP_GENERATION_POLICY, _generationPolicy)
         .add(PROP_NETWORK, _network)
         .add(PROP_SUPPRESSION_POLICY, _suppressionPolicy)
+        .add(PROP_INSTALL_IN_MAIN_RIB, _installInMainRib)
         .toString();
   }
 
@@ -124,30 +149,41 @@ public final class BgpAggregate implements Serializable {
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_SUPPRESSION_POLICY = "suppressionPolicy";
+  private static final String PROP_INSTALL_IN_MAIN_RIB = "installInMainRib";
 
   private final @Nullable String _attributePolicy;
   private final @Nullable String _generationPolicy;
   private final @Nonnull Prefix _network;
   private final @Nullable String _suppressionPolicy;
+  private final boolean _installInMainRib;
 
   @JsonCreator
   private static @Nonnull BgpAggregate create(
       @JsonProperty(PROP_ATTRIBUTE_POLICY) @Nullable String attributePolicy,
       @JsonProperty(PROP_GENERATION_POLICY) @Nullable String generationPolicy,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
-      @JsonProperty(PROP_SUPPRESSION_POLICY) @Nullable String suppressionPolicy) {
+      @JsonProperty(PROP_SUPPRESSION_POLICY) @Nullable String suppressionPolicy,
+      @JsonProperty(PROP_INSTALL_IN_MAIN_RIB) @Nullable Boolean installInMainRib) {
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
-    return of(network, suppressionPolicy, generationPolicy, attributePolicy);
+    return of(
+        network,
+        suppressionPolicy,
+        generationPolicy,
+        attributePolicy,
+        // Default to true for backward compatibility with older serialized aggregates.
+        installInMainRib == null || installInMainRib);
   }
 
   private BgpAggregate(
       @Nullable String attributePolicy,
       @Nullable String generationPolicy,
       Prefix network,
-      @Nullable String suppressionPolicy) {
+      @Nullable String suppressionPolicy,
+      boolean installInMainRib) {
     _attributePolicy = attributePolicy;
     _generationPolicy = generationPolicy;
     _network = network;
     _suppressionPolicy = suppressionPolicy;
+    _installInMainRib = installInMainRib;
   }
 }
