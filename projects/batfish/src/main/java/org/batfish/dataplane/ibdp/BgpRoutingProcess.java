@@ -78,6 +78,7 @@ import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRibReadOnly;
+import org.batfish.datamodel.HasReadableAsPath;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -1473,23 +1474,27 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               Optional.ofNullable(aggregate.getGenerationPolicy())
                   .map(_c.getRoutingPolicies()::get)
                   .orElse(null);
-          // Collect the AS_PATHs of all contributors that activate the aggregate. Used below to
-          // derive the aggregate's AS_PATH per its AsPathMode. Non-BGP contributors (e.g. a locally
-          // redistributed static route) contribute an empty AS_PATH.
+          // Any contributor that passes the generation policy activates the aggregate. Only
+          // contributors that carry an AS_PATH inform the aggregate's AS_PATH: routes without one
+          // (e.g. connected routes that fall under a 0.0.0.0/0 aggregate) are not in the BGP table
+          // and do not contribute an AS_PATH on the device. Locally-originated BGP contributors
+          // (e.g. redistributed statics) carry an empty AS_PATH, which correctly collapses the
+          // common sequence to empty.
+          boolean activated = false;
           List<AsPath> contributorAsPaths = new ArrayList<>();
           for (AbstractRoute potentialContributor : potentialContributors) {
             // TODO: apply suppressionPolicy
             // TODO: apply and merge transformations of generationPolicy
             if (generationPolicy == null
                 || generationPolicy.processReadOnly(potentialContributor)) {
-              contributorAsPaths.add(
-                  potentialContributor instanceof BgpRoute
-                      ? ((BgpRoute<?, ?>) potentialContributor).getAsPath()
-                      : AsPath.empty());
+              activated = true;
+              if (potentialContributor instanceof HasReadableAsPath) {
+                contributorAsPaths.add(((HasReadableAsPath) potentialContributor).getAsPath());
+              }
             }
           }
           Bgpv4Route activatedAggregate = null;
-          if (!contributorAsPaths.isEmpty()) {
+          if (activated) {
             AsPath asPath =
                 aggregate.getAsPathMode() == BgpAggregate.AsPathMode.COMMON_SEQUENCE
                     ? AsPath.aggregateContributors(contributorAsPaths)
