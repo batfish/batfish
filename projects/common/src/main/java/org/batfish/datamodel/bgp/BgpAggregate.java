@@ -1,5 +1,6 @@
 package org.batfish.datamodel.bgp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,12 +20,29 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class BgpAggregate implements Serializable {
 
+  /**
+   * How the AS_PATH of a locally-generated aggregate is derived from its contributing routes.
+   *
+   * <p>The default {@link #NONE} matches vendors that generate an empty AS_PATH for aggregates
+   * (e.g. Cisco IOS/NX-OS/XR without {@code as-set}). Arista EOS includes the contributors' common
+   * leading AS_SEQUENCE, modeled by {@link #COMMON_SEQUENCE}.
+   */
+  public enum AsPathMode {
+    /** Empty AS_PATH. */
+    NONE,
+    /**
+     * Longest common leading AS_SEQUENCE of the contributors, with the divergent tail dropped
+     * (matching Arista EOS and RFC 4271 aggregation without {@code as-set}).
+     */
+    COMMON_SEQUENCE,
+  }
+
   public static @Nonnull BgpAggregate of(
       Prefix network,
       @Nullable String suppressionPolicy,
       @Nullable String generationPolicy,
       @Nullable String attributePolicy) {
-    return of(network, suppressionPolicy, generationPolicy, attributePolicy, true);
+    return of(network, suppressionPolicy, generationPolicy, attributePolicy, true, AsPathMode.NONE);
   }
 
   public static @Nonnull BgpAggregate of(
@@ -33,8 +51,29 @@ public final class BgpAggregate implements Serializable {
       @Nullable String generationPolicy,
       @Nullable String attributePolicy,
       boolean installInMainRib) {
+    return of(
+        network,
+        suppressionPolicy,
+        generationPolicy,
+        attributePolicy,
+        installInMainRib,
+        AsPathMode.NONE);
+  }
+
+  public static @Nonnull BgpAggregate of(
+      Prefix network,
+      @Nullable String suppressionPolicy,
+      @Nullable String generationPolicy,
+      @Nullable String attributePolicy,
+      boolean installInMainRib,
+      AsPathMode asPathMode) {
     return new BgpAggregate(
-        attributePolicy, generationPolicy, network, suppressionPolicy, installInMainRib);
+        attributePolicy,
+        generationPolicy,
+        network,
+        suppressionPolicy,
+        installInMainRib,
+        asPathMode);
   }
 
   /**
@@ -112,6 +151,15 @@ public final class BgpAggregate implements Serializable {
     return _installInMainRib;
   }
 
+  /**
+   * How the AS_PATH of the generated aggregate is derived from its contributors. See {@link
+   * AsPathMode}. Defaults to {@link AsPathMode#NONE}.
+   */
+  @JsonProperty(PROP_AS_PATH_MODE)
+  public @Nonnull AsPathMode getAsPathMode() {
+    return _asPathMode;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -124,13 +172,19 @@ public final class BgpAggregate implements Serializable {
         && Objects.equals(_generationPolicy, that._generationPolicy)
         && _network.equals(that._network)
         && Objects.equals(_suppressionPolicy, that._suppressionPolicy)
-        && _installInMainRib == that._installInMainRib;
+        && _installInMainRib == that._installInMainRib
+        && _asPathMode == that._asPathMode;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _attributePolicy, _generationPolicy, _network, _suppressionPolicy, _installInMainRib);
+        _attributePolicy,
+        _generationPolicy,
+        _network,
+        _suppressionPolicy,
+        _installInMainRib,
+        _asPathMode.ordinal());
   }
 
   @Override
@@ -142,6 +196,7 @@ public final class BgpAggregate implements Serializable {
         .add(PROP_NETWORK, _network)
         .add(PROP_SUPPRESSION_POLICY, _suppressionPolicy)
         .add(PROP_INSTALL_IN_MAIN_RIB, _installInMainRib)
+        .add(PROP_AS_PATH_MODE, _asPathMode)
         .toString();
   }
 
@@ -150,12 +205,14 @@ public final class BgpAggregate implements Serializable {
   private static final String PROP_NETWORK = "network";
   private static final String PROP_SUPPRESSION_POLICY = "suppressionPolicy";
   private static final String PROP_INSTALL_IN_MAIN_RIB = "installInMainRib";
+  private static final String PROP_AS_PATH_MODE = "asPathMode";
 
   private final @Nullable String _attributePolicy;
   private final @Nullable String _generationPolicy;
   private final @Nonnull Prefix _network;
   private final @Nullable String _suppressionPolicy;
   private final boolean _installInMainRib;
+  private final @Nonnull AsPathMode _asPathMode;
 
   @JsonCreator
   private static @Nonnull BgpAggregate create(
@@ -163,7 +220,8 @@ public final class BgpAggregate implements Serializable {
       @JsonProperty(PROP_GENERATION_POLICY) @Nullable String generationPolicy,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_SUPPRESSION_POLICY) @Nullable String suppressionPolicy,
-      @JsonProperty(PROP_INSTALL_IN_MAIN_RIB) @Nullable Boolean installInMainRib) {
+      @JsonProperty(PROP_INSTALL_IN_MAIN_RIB) @Nullable Boolean installInMainRib,
+      @JsonProperty(PROP_AS_PATH_MODE) @Nullable AsPathMode asPathMode) {
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
     return of(
         network,
@@ -171,7 +229,9 @@ public final class BgpAggregate implements Serializable {
         generationPolicy,
         attributePolicy,
         // Default to true for backward compatibility with older serialized aggregates.
-        installInMainRib == null || installInMainRib);
+        installInMainRib == null || installInMainRib,
+        // Default to NONE for backward compatibility with older serialized aggregates.
+        firstNonNull(asPathMode, AsPathMode.NONE));
   }
 
   private BgpAggregate(
@@ -179,11 +239,13 @@ public final class BgpAggregate implements Serializable {
       @Nullable String generationPolicy,
       Prefix network,
       @Nullable String suppressionPolicy,
-      boolean installInMainRib) {
+      boolean installInMainRib,
+      AsPathMode asPathMode) {
     _attributePolicy = attributePolicy;
     _generationPolicy = generationPolicy;
     _network = network;
     _suppressionPolicy = suppressionPolicy;
     _installInMainRib = installInMainRib;
+    _asPathMode = asPathMode;
   }
 }

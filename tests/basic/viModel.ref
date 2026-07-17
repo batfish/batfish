@@ -5435,6 +5435,7 @@
               "routerId" : "2.1.1.1",
               "aggregates" : [
                 {
+                  "asPathMode" : "NONE",
                   "installInMainRib" : true,
                   "network" : "2.128.0.0/16",
                   "suppressionPolicy" : "~suppress~rp~summary-only~"
@@ -7101,6 +7102,7 @@
               "routerId" : "2.1.1.2",
               "aggregates" : [
                 {
+                  "asPathMode" : "NONE",
                   "installInMainRib" : true,
                   "network" : "2.128.0.0/16",
                   "suppressionPolicy" : "~suppress~rp~summary-only~"

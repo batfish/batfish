@@ -40,4 +40,60 @@ public class AsPathTest {
     assertThat(path.length(), equalTo(1));
     assertThat(path.size(), equalTo(3));
   }
+
+  @Test
+  public void testAggregateContributorsEmpty() {
+    assertThat(AsPath.aggregateContributors(ImmutableList.of()), equalTo(AsPath.empty()));
+  }
+
+  @Test
+  public void testAggregateContributorsSingle() {
+    // A single contributor yields its own leading AS_SEQUENCE.
+    AsPath path = AsPath.ofSingletonAsSets(65000L, 65001L);
+    assertThat(AsPath.aggregateContributors(ImmutableList.of(path)), equalTo(path));
+  }
+
+  @Test
+  public void testAggregateContributorsIdentical() {
+    AsPath path = AsPath.ofSingletonAsSets(65000L, 65001L);
+    assertThat(
+        AsPath.aggregateContributors(ImmutableList.of(path, path)),
+        equalTo(AsPath.ofSingletonAsSets(65000L, 65001L)));
+  }
+
+  @Test
+  public void testAggregateContributorsCommonPrefixThenDiverge() {
+    // The lab case: "65000 65001" and "65000 65003" share the leading 65000, then diverge; the
+    // divergent tail is dropped.
+    AsPath a = AsPath.ofSingletonAsSets(65000L, 65001L);
+    AsPath b = AsPath.ofSingletonAsSets(65000L, 65003L);
+    assertThat(
+        AsPath.aggregateContributors(ImmutableList.of(a, b)),
+        equalTo(AsPath.ofSingletonAsSets(65000L)));
+  }
+
+  @Test
+  public void testAggregateContributorsNoCommonPrefix() {
+    AsPath a = AsPath.ofSingletonAsSets(65001L);
+    AsPath b = AsPath.ofSingletonAsSets(65002L);
+    assertThat(AsPath.aggregateContributors(ImmutableList.of(a, b)), equalTo(AsPath.empty()));
+  }
+
+  @Test
+  public void testAggregateContributorsEmptyContributorPath() {
+    // A contributor with an empty path (e.g. a locally redistributed route) shares no prefix.
+    AsPath a = AsPath.ofSingletonAsSets(65000L);
+    assertThat(
+        AsPath.aggregateContributors(ImmutableList.of(a, AsPath.empty())), equalTo(AsPath.empty()));
+  }
+
+  @Test
+  public void testAggregateContributorsStopsAtAsSet() {
+    // A non-singleton (AS_SET) segment cannot extend the common AS_SEQUENCE.
+    AsPath a = AsPath.of(ImmutableList.of(AsSet.of(65000L), AsSet.of(65001L, 65002L)));
+    AsPath b = AsPath.of(ImmutableList.of(AsSet.of(65000L), AsSet.of(65001L, 65002L)));
+    assertThat(
+        AsPath.aggregateContributors(ImmutableList.of(a, b)),
+        equalTo(AsPath.ofSingletonAsSets(65000L)));
+  }
 }

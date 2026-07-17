@@ -46,6 +46,57 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
     return of(Arrays.asList(asSets));
   }
 
+  /**
+   * Returns the longest common leading AS_SEQUENCE shared by all the given contributor paths, as a
+   * new {@link AsPath} of singleton AS_SEQUENCE segments, dropping the divergent tail.
+   *
+   * <p>This models how Arista EOS (and RFC 4271 aggregation without {@code as-set}) forms the
+   * AS_PATH of a locally-generated aggregate from its contributors: it keeps the ASes shared, in
+   * order, as a leading run of singleton segments by every contributor and drops everything from
+   * the first point of divergence onward. A single contributor yields its own leading AS_SEQUENCE
+   * (up to any AS_SET segment). An empty collection yields the empty path.
+   *
+   * <p>The common-prefix traversal is factored into {@link #commonLeadingAsns} so an {@code as-set}
+   * variant (which would instead append the union of divergent ASes as a single AS_SET segment) can
+   * reuse it.
+   */
+  public static @Nonnull AsPath aggregateContributors(Collection<AsPath> contributors) {
+    return AsPath.ofSingletonAsSets(commonLeadingAsns(contributors));
+  }
+
+  /**
+   * Returns the ASNs of the longest run of leading segments for which every path in {@code
+   * contributors} has the same single (non-confederation) ASN. Stops at the first index where the
+   * paths diverge, any path is exhausted, or any path has a non-singleton (AS_SET) or confederation
+   * segment.
+   */
+  private static @Nonnull List<Long> commonLeadingAsns(Collection<AsPath> contributors) {
+    if (contributors.isEmpty()) {
+      return ImmutableList.of();
+    }
+    ImmutableList.Builder<Long> common = ImmutableList.builder();
+    for (int i = 0; ; i++) {
+      Long asnAtI = null;
+      for (AsPath path : contributors) {
+        List<AsSet> asSets = path.getAsSets();
+        if (i >= asSets.size()) {
+          return common.build();
+        }
+        AsSet asSet = asSets.get(i);
+        if (asSet.size() != 1 || asSet.isConfederationAsSet()) {
+          return common.build();
+        }
+        long asn = asSet.getAsns().first();
+        if (asnAtI == null) {
+          asnAtI = asn;
+        } else if (asnAtI != asn) {
+          return common.build();
+        }
+      }
+      common.add(asnAtI);
+    }
+  }
+
   private final List<AsSet> _asSets;
 
   // Soft values: let it be garbage collected in times of pressure.

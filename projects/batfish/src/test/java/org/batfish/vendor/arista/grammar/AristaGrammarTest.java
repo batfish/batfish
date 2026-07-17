@@ -1615,7 +1615,8 @@ public class AristaGrammarTest {
                 SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                 null,
                 "~BGP_AGGREGATE_ATTRIBUTE_MAP:ATTR_MAP~",
-                false)));
+                false,
+                BgpAggregate.AsPathMode.COMMON_SEQUENCE)));
     assertThat(
         defaultVrfAggs,
         hasEntry(
@@ -1624,13 +1625,20 @@ public class AristaGrammarTest {
                 Prefix.parse("1.2.44.0/24"),
                 SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                 null,
-                "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~",
+                true,
+                BgpAggregate.AsPathMode.COMMON_SEQUENCE)));
     assertThat(
         defaultVrfAggs,
         hasEntry(
             Prefix.parse("1.2.55.0/24"),
             BgpAggregate.of(
-                Prefix.parse("1.2.55.0/24"), null, null, "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
+                Prefix.parse("1.2.55.0/24"),
+                null,
+                null,
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~",
+                true,
+                BgpAggregate.AsPathMode.COMMON_SEQUENCE)));
 
     // vrf FOO
     Map<Prefix, BgpAggregate> vrfFooAggs = c.getVrfs().get("FOO").getBgpProcess().getAggregates();
@@ -1641,7 +1649,12 @@ public class AristaGrammarTest {
             Prefix.parse("5.6.7.0/24"),
             // TODO Support as-set
             BgpAggregate.of(
-                Prefix.parse("5.6.7.0/24"), null, null, "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~")));
+                Prefix.parse("5.6.7.0/24"),
+                null,
+                null,
+                "~BGP_AGGREGATE_ATTRIBUTE_MAP:null~",
+                true,
+                BgpAggregate.AsPathMode.COMMON_SEQUENCE)));
   }
 
   @Test
