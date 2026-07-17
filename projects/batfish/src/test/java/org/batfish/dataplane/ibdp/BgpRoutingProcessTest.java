@@ -896,6 +896,51 @@ public class BgpRoutingProcessTest {
                     hasAsPath(equalTo(AsPath.ofSingletonAsSets(65000L)))))));
   }
 
+  /**
+   * When generating aggregates from the main RIB (Arista), a non-BGP contributor (e.g. a connected
+   * route that falls under a 0.0.0.0/0 aggregate) must not zero out the AS_PATH derived from the
+   * BGP contributors. Regression for batfish/batfish#10094: the device only aggregates BGP-table
+   * routes, so connected routes carry no AS_PATH into the aggregate.
+   */
+  @Test
+  public void testInitBgpAggregateRoutesCommonSequenceIgnoresNonBgpContributors() {
+    _c.setGenerateBgpAggregatesFromMainRib(true);
+    _bgpProcess.addAggregate(
+        BgpAggregate.of(
+            Prefix.ZERO, null, null, null, true, BgpAggregate.AsPathMode.COMMON_SEQUENCE));
+    Rib mainRib = new Rib();
+    // A connected route and a BGP route both fall under the 0.0.0.0/0 aggregate.
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            ConnectedRoute.builder()
+                .setNetwork(Prefix.strict("10.10.10.0/24"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build(),
+            DEFAULT_VRF_NAME));
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            aggregateContributorRoute(
+                Prefix.strict("10.1.1.0/24"), AsPath.ofSingletonAsSets(65001L)),
+            DEFAULT_VRF_NAME));
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    RibDelta<Bgpv4Route> delta = _routingProcess.initBgpAggregateRoutes();
+
+    // The connected route's (empty) AS_PATH must not drag the aggregate path to empty.
+    assertThat(
+        delta
+            .getRoutesStream()
+            .filter(r -> r.getNetwork().equals(Prefix.ZERO))
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.ZERO),
+                    hasAsPath(equalTo(AsPath.ofSingletonAsSets(65001L)))))));
+  }
+
   /** With the default {@link BgpAggregate.AsPathMode#NONE}, the aggregate's AS_PATH is empty. */
   @Test
   public void testInitBgpAggregateRoutesNoneAsPath() {
