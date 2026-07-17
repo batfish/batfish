@@ -488,12 +488,17 @@ import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Name_serverContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_ip_route_networkContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_sysds_switchportContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_authenticateContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_authentication_keyContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_authentication_key_numberContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_source_interfaceContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntp_trusted_keyContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntpag_peerContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntpag_query_onlyContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntpag_serveContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntpag_serve_onlyContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntps_keyContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntps_preferContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ntps_use_vrfContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Nve_host_reachabilityContext;
@@ -825,6 +830,7 @@ import org.batfish.vendor.cisco_nxos.representation.LiteralIpAddressSpec;
 import org.batfish.vendor.cisco_nxos.representation.LiteralPortSpec;
 import org.batfish.vendor.cisco_nxos.representation.LoggingServer;
 import org.batfish.vendor.cisco_nxos.representation.NameServer;
+import org.batfish.vendor.cisco_nxos.representation.NtpAuthenticationKey;
 import org.batfish.vendor.cisco_nxos.representation.NtpServer;
 import org.batfish.vendor.cisco_nxos.representation.Nve;
 import org.batfish.vendor.cisco_nxos.representation.Nve.HostReachabilityProtocol;
@@ -917,6 +923,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
   private static final IntegerSpace BGP_INHERIT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+  private static final IntegerSpace NTP_KEY_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace BGP_MAXAS_LIMIT_RANGE = IntegerSpace.of(Range.closed(1, 512));
   private static final IntegerSpace BGP_MAXIMUM_PATHS_RANGE = IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace BGP_NEIGHBOR_DESCRIPTION_LENGTH_RANGE =
@@ -2805,6 +2812,32 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     _currentNtpServer = null;
+  }
+
+  @Override
+  public void exitNtps_key(Ntps_keyContext ctx) {
+    toInteger(ctx, ctx.ntp_authentication_key_number()).ifPresent(_currentNtpServer::setKey);
+  }
+
+  @Override
+  public void exitNtp_authenticate(Ntp_authenticateContext ctx) {
+    _c.setNtpAuthenticate(true);
+  }
+
+  @Override
+  public void exitNtp_authentication_key(Ntp_authentication_keyContext ctx) {
+    Optional<Integer> maybeKeyNum = toInteger(ctx, ctx.num);
+    if (!maybeKeyNum.isPresent()) {
+      return;
+    }
+    NtpAuthenticationKey key =
+        _c.getNtpAuthenticationKeys().computeIfAbsent(maybeKeyNum.get(), NtpAuthenticationKey::new);
+    key.setMd5Value(ctx.md5.getText());
+  }
+
+  @Override
+  public void exitNtp_trusted_key(Ntp_trusted_keyContext ctx) {
+    toInteger(ctx, ctx.key).ifPresent(_c.getNtpTrustedKeys()::add);
   }
 
   @Override
@@ -7284,6 +7317,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Eigrp_asnContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, EIGRP_ASN_RANGE, "EIGRP autonomous-system number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ntp_authentication_key_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, NTP_KEY_RANGE, "NTP key number");
   }
 
   private @Nonnull Optional<Integer> toInteger(

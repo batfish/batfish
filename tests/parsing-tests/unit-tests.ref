@@ -64269,7 +64269,7 @@
             "          USE_VRF:'use-vrf'",
             "          vrf = (vrf_name*",
             "            WORD:'management'  <== mode:M_Word))",
-            "        (ntps_key*",
+            "        (ntps_key",
             "          KEY:'key'",
             "          (ntp_authentication_key_number*",
             "            (uint16*",

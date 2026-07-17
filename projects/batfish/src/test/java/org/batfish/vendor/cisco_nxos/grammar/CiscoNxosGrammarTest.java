@@ -381,6 +381,7 @@ import org.batfish.vendor.cisco_nxos.representation.Layer3Options;
 import org.batfish.vendor.cisco_nxos.representation.LiteralIpAddressSpec;
 import org.batfish.vendor.cisco_nxos.representation.LiteralPortSpec;
 import org.batfish.vendor.cisco_nxos.representation.NameServer;
+import org.batfish.vendor.cisco_nxos.representation.NtpAuthenticationKey;
 import org.batfish.vendor.cisco_nxos.representation.NtpServer;
 import org.batfish.vendor.cisco_nxos.representation.Nve;
 import org.batfish.vendor.cisco_nxos.representation.Nve.HostReachabilityProtocol;
@@ -5471,29 +5472,71 @@ public final class CiscoNxosGrammarTest {
   public void testNtpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
 
+    assertTrue(vc.getNtpAuthenticate());
+
+    assertThat(vc.getNtpAuthenticationKeys(), hasKeys(1, 12345));
+    {
+      NtpAuthenticationKey key = vc.getNtpAuthenticationKeys().get(1);
+      assertThat(key.getMd5Value(), equalTo("012345678Abz"));
+    }
+    {
+      NtpAuthenticationKey key = vc.getNtpAuthenticationKeys().get(12345);
+      assertThat(key.getMd5Value(), equalTo("aSecondKey"));
+    }
+
+    assertThat(vc.getNtpTrustedKeys(), containsInAnyOrder(1, 12345));
+
     assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4"));
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.1");
       assertFalse(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), nullValue());
+      assertThat(ntpServer.getKey(), nullValue());
     }
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
       assertFalse(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), nullValue());
+      assertThat(ntpServer.getKey(), equalTo(12345));
     }
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.3");
       assertFalse(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), equalTo("management"));
+      assertThat(ntpServer.getKey(), equalTo(12345));
     }
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.4");
       assertTrue(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), nullValue());
+      assertThat(ntpServer.getKey(), nullValue());
     }
 
+    assertTrue(vc.isNtpServerAuthenticated("192.0.2.2"));
+    assertTrue(vc.isNtpServerAuthenticated("192.0.2.3"));
+    assertFalse(vc.isNtpServerAuthenticated("192.0.2.1"));
+    assertFalse(vc.isNtpServerAuthenticated("192.0.2.4"));
+
     assertThat(vc.getNtpSourceInterface(), equalTo("mgmt0"));
+  }
+
+  @Test
+  public void testNtpNoAuthenticateExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp_no_authenticate");
+
+    assertFalse(vc.getNtpAuthenticate());
+
+    assertThat(vc.getNtpAuthenticationKeys(), hasKeys(1));
+    assertThat(vc.getNtpAuthenticationKeys().get(1).getMd5Value(), equalTo("012345678Abz"));
+
+    assertThat(vc.getNtpTrustedKeys(), containsInAnyOrder(1));
+
+    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getNtpServers().get("192.0.2.1").getKey(), equalTo(1));
+    assertThat(vc.getNtpServers().get("192.0.2.2").getKey(), nullValue());
+
+    assertFalse(vc.isNtpServerAuthenticated("192.0.2.1"));
+    assertFalse(vc.isNtpServerAuthenticated("192.0.2.2"));
   }
 
   @Test

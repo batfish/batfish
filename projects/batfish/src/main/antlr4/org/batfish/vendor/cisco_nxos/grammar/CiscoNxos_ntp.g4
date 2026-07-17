@@ -24,6 +24,7 @@ s_ntp
     | ntp_peer
     | ntp_server
     | ntp_source_interface
+    | ntp_trusted_key
   )
 ;
 
@@ -148,4 +149,9 @@ ntps_use_vrf
 ntp_source_interface
 :
   SOURCE_INTERFACE name = interface_name NEWLINE
+;
+
+ntp_trusted_key
+:
+  TRUSTED_KEY key = ntp_authentication_key_number NEWLINE
 ;
