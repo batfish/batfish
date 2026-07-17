@@ -598,6 +598,11 @@ uint32
   | UINT32
 ;
 
+ntp_key
+:
+  uint32
+;
+
 variable
 :
    ~NEWLINE

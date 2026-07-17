@@ -1,0 +1,21 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-ntp
+!
+ntp authenticate
+ntp authentication-key 1 md5 aNiceKey
+ntp authentication-key 2 cmac aCmacKey
+ntp authentication-key 3 sha1 aSha1Key
+ntp authentication-key 42 sha256 aSha256Key
+ntp authentication-key 100 sha512 aSha512Key
+ntp authentication-key 4294967295 md5 aBigKey
+ntp trusted-key 1
+ntp trusted-key 10
+ntp trusted-key 4294967295
+ntp trusted-key 0
+ntp server 10.1.1.10 key 1
+ntp server 10.1.1.11
+ntp server 10.1.1.12 key 42
+ntp server 10.1.1.13 key 4294967295
+!

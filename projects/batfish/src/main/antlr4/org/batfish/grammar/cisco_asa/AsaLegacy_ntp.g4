@@ -58,6 +58,20 @@ ntp_authentication
    AUTHENTICATION NEWLINE
 ;
 
+ntp_authentication_key
+:
+   AUTHENTICATION_KEY key_num = ntp_key hash_algorithm = ntp_hash_algorithm key = variable NEWLINE
+;
+
+ntp_hash_algorithm
+:
+   CMAC
+   | MD5
+   | SHA1
+   | SHA256
+   | SHA512
+;
+
 ntp_clock_period
 :
    CLOCK_PERIOD null_rest_of_line
@@ -74,7 +88,7 @@ ntp_common
    | ntp_allow_null
    | ntp_authenticate
    | ntp_authentication
-   | ntp_authentication_key_null
+   | ntp_authentication_key
    | ntp_clock_period
    | ntp_commit
    | ntp_distribute
@@ -116,10 +130,6 @@ ntp_allow_null
 :
    ALLOW null_rest_of_line
 ;
-ntp_authentication_key_null
-:
-   AUTHENTICATION_KEY null_rest_of_line
-;
 ntp_interface_null
 :
    INTERFACE null_rest_of_line
@@ -145,7 +155,7 @@ ntp_server
    hostname = variable
    (
       IBURST
-      | KEY key = dec
+      | KEY key = ntp_key
       | MAXPOLL dec
       | MINPOLL dec
       | prefer = PREFER
@@ -172,7 +182,7 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY dec NEWLINE
+   TRUSTED_KEY key = ntp_key NEWLINE
 ;
 
 ntp_update_calendar

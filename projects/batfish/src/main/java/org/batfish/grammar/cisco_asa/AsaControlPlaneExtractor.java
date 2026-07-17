@@ -342,6 +342,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -697,8 +698,13 @@ import org.batfish.grammar.cisco_asa.AsaParser.No_neighbor_shutdown_rb_stanzaCon
 import org.batfish.grammar.cisco_asa.AsaParser.No_redistribute_connected_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.No_route_map_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_access_groupContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Ntp_authenticateContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Ntp_authentication_keyContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Ntp_hash_algorithmContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Ntp_keyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ntp_source_interfaceContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Ntp_trusted_keyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.O_networkContext;
 import org.batfish.grammar.cisco_asa.AsaParser.O_serviceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Og_icmp_typeContext;
@@ -1052,6 +1058,7 @@ import org.batfish.representation.cisco_asa.NetworkObjectGroup;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectInfo;
 import org.batfish.representation.cisco_asa.NssaSettings;
+import org.batfish.representation.cisco_asa.NtpAuthenticationKey;
 import org.batfish.representation.cisco_asa.OspfNetwork;
 import org.batfish.representation.cisco_asa.OspfNetworkType;
 import org.batfish.representation.cisco_asa.OspfProcess;
@@ -1130,6 +1137,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
   private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
+
+  private static final LongSpace NTP_KEY_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -1248,6 +1257,25 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private static long toLong(DecContext ctx) {
     return Long.parseLong(ctx.getText());
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Ntp_keyContext ctx) {
+    return toLongInSpace(messageCtx, ctx, NTP_KEY_RANGE, "NTP key number");
   }
 
   private static List<SubRange> toRange(RangeContext ctx) {
@@ -6817,6 +6845,46 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
+  public void exitNtp_authenticate(Ntp_authenticateContext ctx) {
+    _configuration.setNtpAuthenticate(true);
+  }
+
+  @Override
+  public void exitNtp_authentication_key(Ntp_authentication_keyContext ctx) {
+    Optional<Long> maybeKeyNum = toLong(ctx, ctx.key_num);
+    if (!maybeKeyNum.isPresent()) {
+      return;
+    }
+    NtpAuthenticationKey key =
+        _configuration
+            .getNtpAuthenticationKeys()
+            .computeIfAbsent(maybeKeyNum.get(), NtpAuthenticationKey::new);
+    key.setHashAlgorithm(toHashAlgorithm(ctx.hash_algorithm));
+    key.setValue(ctx.key.getText());
+  }
+
+  private NtpAuthenticationKey.HashAlgorithm toHashAlgorithm(Ntp_hash_algorithmContext ctx) {
+    if (ctx.CMAC() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.CMAC;
+    } else if (ctx.MD5() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.MD5;
+    } else if (ctx.SHA1() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.SHA1;
+    } else if (ctx.SHA256() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.SHA256;
+    } else if (ctx.SHA512() != null) {
+      return NtpAuthenticationKey.HashAlgorithm.SHA512;
+    } else {
+      throw convError(NtpAuthenticationKey.HashAlgorithm.class, ctx);
+    }
+  }
+
+  @Override
+  public void exitNtp_trusted_key(Ntp_trusted_keyContext ctx) {
+    toLong(ctx, ctx.key).ifPresent(_configuration.getNtpTrustedKeys()::add);
+  }
+
+  @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     Ntp ntp = _configuration.getCf().getNtp();
     String hostname = ctx.hostname.getText();
@@ -6825,6 +6893,13 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       String vrfName = ctx.vrf.getText();
       server.setVrf(vrfName);
       initVrf(vrfName);
+    }
+    org.batfish.representation.cisco_asa.NtpServer vsServer =
+        _configuration
+            .getNtpServers()
+            .computeIfAbsent(hostname, org.batfish.representation.cisco_asa.NtpServer::new);
+    if (ctx.key != null) {
+      toLong(ctx, ctx.key).ifPresent(vsServer::setKey);
     }
     if (ctx.PREFER() != null) {
       // TODO: implement
