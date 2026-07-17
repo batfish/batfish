@@ -31,7 +31,16 @@ public final class NtpServer implements Serializable {
     _useVrf = useVrf;
   }
 
+  public @Nullable Integer getKey() {
+    return _key;
+  }
+
+  public void setKey(@Nullable Integer key) {
+    _key = key;
+  }
+
   private final @Nonnull String _host;
   private boolean _prefer;
   private @Nullable String _useVrf;
+  private @Nullable Integer _key;
 }

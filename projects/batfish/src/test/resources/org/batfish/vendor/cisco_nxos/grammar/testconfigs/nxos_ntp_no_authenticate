@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ntp_no_authenticate
+!
+
+ntp authentication-key 1 md5 012345678Abz 7
+ntp trusted-key 1
+
+ntp server 192.0.2.1 key 1
+ntp server 192.0.2.2

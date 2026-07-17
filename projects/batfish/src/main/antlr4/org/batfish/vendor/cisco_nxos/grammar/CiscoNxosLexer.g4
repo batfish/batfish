@@ -2460,6 +2460,8 @@ TRUST: 'trust';
 
 TRUSTED: 'trusted';
 
+TRUSTED_KEY: 'trusted-key';
+
 TRUSTPOINT: 'trustpoint';
 
 TTL: 'ttl';

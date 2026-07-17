@@ -443,6 +443,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _loggingSourceInterface;
   private @Nonnull NxosMajorVersion _majorVersion;
   private boolean _nonSwitchportDefaultShutdown;
+  private boolean _ntpAuthenticate;
+  private final @Nonnull Map<Integer, NtpAuthenticationKey> _ntpAuthenticationKeys;
+  private final @Nonnull Set<Integer> _ntpTrustedKeys;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
   private @Nullable String _ntpSourceInterface;
   private final @Nonnull Map<Integer, Nve> _nves;
@@ -477,6 +480,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _isisProcesses = new HashMap<>();
     _loggingServers = new HashMap<>();
     _majorVersion = NxosMajorVersion.UNKNOWN;
+    _ntpAuthenticationKeys = new HashMap<>();
+    _ntpTrustedKeys = new HashSet<>();
     _ntpServers = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
@@ -1853,6 +1858,36 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, NtpServer> getNtpServers() {
     return _ntpServers;
+  }
+
+  public boolean getNtpAuthenticate() {
+    return _ntpAuthenticate;
+  }
+
+  public void setNtpAuthenticate(boolean ntpAuthenticate) {
+    _ntpAuthenticate = ntpAuthenticate;
+  }
+
+  public @Nonnull Map<Integer, NtpAuthenticationKey> getNtpAuthenticationKeys() {
+    return _ntpAuthenticationKeys;
+  }
+
+  public @Nonnull Set<Integer> getNtpTrustedKeys() {
+    return _ntpTrustedKeys;
+  }
+
+  /**
+   * Whether the NTP server with the given hostname is authenticated: NTP authentication is enabled,
+   * the server references a key, and that key is both defined via {@code ntp authentication-key}
+   * and trusted via {@code ntp trusted-key}.
+   */
+  public boolean isNtpServerAuthenticated(String hostname) {
+    NtpServer server = _ntpServers.get(hostname);
+    if (server == null || !_ntpAuthenticate) {
+      return false;
+    }
+    Integer key = server.getKey();
+    return key != null && _ntpAuthenticationKeys.containsKey(key) && _ntpTrustedKeys.contains(key);
   }
 
   public @Nullable String getNtpSourceInterface() {
