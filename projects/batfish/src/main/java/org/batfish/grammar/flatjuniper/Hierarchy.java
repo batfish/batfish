@@ -7,6 +7,7 @@ import static org.batfish.grammar.flatjuniper.JuniperListPaths.getJuniperListPat
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ final class Hierarchy {
     List<String> prioritizedGroups =
         inheritorNode.prependPrioritizedGroups(ancestralPrioritizedGroups);
     Set<String> exceptGroups =
-        inheritorNode._exceptGroups.isEmpty()
+        inheritorNode._exceptGroups == null || inheritorNode._exceptGroups.isEmpty()
             ? ancestralExceptGroups
             : ImmutableSet.<String>builder()
                 .addAll(inheritorNode._exceptGroups)
@@ -115,7 +116,7 @@ final class Hierarchy {
             : inheritGroupsIntoNonListNode(
                 ctx, inheritorNode, inheritorNodePath, prioritizedGroups, exceptGroups);
     // Now that this level is done, recursively inherit at all of this node's children.
-    for (HierarchyChildNode child : inheritorNode._children.values()) {
+    for (HierarchyChildNode child : inheritorNode.children().values()) {
       inheritorNodePath._nodes.add(child);
       modified =
           inheritGroups(ctx, child, inheritorNodePath, prioritizedGroups, exceptGroups) || modified;
@@ -135,7 +136,7 @@ final class Hierarchy {
       List<String> prioritizedGroups,
       Set<String> exceptGroups) {
     // save old children and lines of old children
-    Map<String, HierarchyChildNode> oldChildren = inheritorNode._children;
+    Map<String, HierarchyChildNode> oldChildren = inheritorNode.children();
     Map<String, ParseTree> oldChildrenLines = new HashMap<>();
     for (Entry<String, HierarchyChildNode> oldChildEntry : oldChildren.entrySet()) {
       String key = oldChildEntry.getKey();
@@ -150,7 +151,8 @@ final class Hierarchy {
       if (groupNode == null) {
         continue;
       }
-      for (Entry<String, HierarchyChildNode> groupNodeChildEntry : groupNode._children.entrySet()) {
+      for (Entry<String, HierarchyChildNode> groupNodeChildEntry :
+          groupNode.children().entrySet()) {
         inheritGroupNodeChildIntoNonListNode(
             ctx, inheritorNode, inheritorNodePath, group, groupNodeChildEntry, oldChildren);
       }
@@ -161,14 +163,14 @@ final class Hierarchy {
 
     // record new children lines for comparison
     Map<String, ParseTree> newChildrenLines = new HashMap<>();
-    for (Entry<String, HierarchyChildNode> newChildEntry : inheritorNode._children.entrySet()) {
+    for (Entry<String, HierarchyChildNode> newChildEntry : inheritorNode.children().entrySet()) {
       String key = newChildEntry.getKey();
       HierarchyChildNode newChild = newChildEntry.getValue();
       newChildrenLines.put(key, newChild._line);
     }
     // Tree is modified if there are new children or new lines in existing children; the latter may
     // occur if an inherited group terminal path was a non-terminal path in the main tree.
-    return !oldChildren.keySet().equals(inheritorNode._children.keySet())
+    return !oldChildren.keySet().equals(inheritorNode.children().keySet())
         || !oldChildrenLines.equals(newChildrenLines);
   }
 
@@ -236,7 +238,7 @@ final class Hierarchy {
       if (groupNode == null) {
         continue;
       }
-      for (HierarchyChildNode groupNodeChild : groupNode._children.values()) {
+      for (HierarchyChildNode groupNodeChild : groupNode.children().values()) {
         modified =
             inheritGroupNodeChildIntoListNode(ctx, inheritorNode, globalPath, group, groupNodeChild)
                 || modified;
@@ -258,7 +260,7 @@ final class Hierarchy {
     if (groupChild.isWildcard()) {
       return false;
     }
-    HierarchyChildNode existing = inheritorNode._children.get(groupChild._unquotedText);
+    HierarchyChildNode existing = inheritorNode.children().get(groupChild._unquotedText);
     if (existing != null && (existing._line != null || groupChild._line == null)) {
       // nothing to change
       return false;
@@ -456,21 +458,55 @@ final class Hierarchy {
     }
 
     abstract static class HierarchyNode {
-      private final @Nonnull Set<String> _exceptGroups;
-      private final @Nonnull Set<String> _appliedGroups;
+      /*
+       * These collections are allocated lazily. In configs with many apply-groups, the hierarchy
+       * tree contains a large number of nodes, most of which are leaves or have no
+       * except/applied-groups; the tree is also rebuilt during group inheritance. Eagerly
+       * allocating an empty map/set per node per field dominated allocation for large,
+       * group-heavy configs. A {@code null} field means "empty"; use the accessors below.
+       */
+      private @Nullable Set<String> _exceptGroups;
+      private @Nullable Set<String> _appliedGroups;
 
       // Invariant: children == literal + wildcard, keys are disjoint in the latter two.
-      private @Nonnull LinkedHashMap<String, HierarchyChildNode> _children;
+      private @Nullable LinkedHashMap<String, HierarchyChildNode> _children;
 
-      private @Nonnull LinkedHashMap<String, HierarchyLiteralNode> _literalChildren;
+      private @Nullable LinkedHashMap<String, HierarchyLiteralNode> _literalChildren;
 
-      private @Nonnull LinkedHashMap<String, HierarchyWildcardNode> _wildcardChildren;
+      private @Nullable LinkedHashMap<String, HierarchyWildcardNode> _wildcardChildren;
 
       @Nonnull List<ErrorNode> _errorNodes;
 
+      /** Children map for read/iteration; never mutate the result. Empty if none allocated. */
+      private @Nonnull Map<String, HierarchyChildNode> children() {
+        return _children == null ? ImmutableMap.of() : _children;
+      }
+
+      /** Children map for mutation; allocates on first use. */
+      private @Nonnull LinkedHashMap<String, HierarchyChildNode> mutableChildren() {
+        if (_children == null) {
+          _children = new LinkedHashMap<>();
+        }
+        return _children;
+      }
+
+      private @Nonnull LinkedHashMap<String, HierarchyLiteralNode> mutableLiteralChildren() {
+        if (_literalChildren == null) {
+          _literalChildren = new LinkedHashMap<>();
+        }
+        return _literalChildren;
+      }
+
+      private @Nonnull LinkedHashMap<String, HierarchyWildcardNode> mutableWildcardChildren() {
+        if (_wildcardChildren == null) {
+          _wildcardChildren = new LinkedHashMap<>();
+        }
+        return _wildcardChildren;
+      }
+
       protected final @Nonnull List<String> prependPrioritizedGroups(
           List<String> ancestralAppliedGroups) {
-        if (_appliedGroups.isEmpty()) {
+        if (_appliedGroups == null || _appliedGroups.isEmpty()) {
           return ancestralAppliedGroups;
         }
         return ImmutableList.<String>builder()
@@ -493,7 +529,7 @@ final class Hierarchy {
        * increasing index
        */
       protected final void dumpChildParseTrees(ImmutableList.Builder<ParseTree> builder) {
-        for (HierarchyChildNode child : _children.values()) {
+        for (HierarchyChildNode child : children().values()) {
           child.dumpParseTrees(builder);
         }
       }
@@ -504,7 +540,7 @@ final class Hierarchy {
        */
       protected final int countChildParseTrees() {
         int count = 0;
-        for (HierarchyChildNode child : _children.values()) {
+        for (HierarchyChildNode child : children().values()) {
           count += child.countParseTrees();
         }
         return count;
@@ -515,43 +551,45 @@ final class Hierarchy {
        * a leaf.
        */
       protected final void appendSetLines(@Nonnull String prefix, @Nonnull StringBuilder output) {
-        if (_children.isEmpty()) {
+        Map<String, HierarchyChildNode> children = children();
+        if (children.isEmpty()) {
           // leaf, so append set line
           output.append(prefix).append("\n");
           _errorNodes.forEach(errorNode -> output.append(errorNode.getText().trim()).append("\n"));
         }
         // append set lines for every path from child to leaf
-        for (HierarchyChildNode child : _children.values()) {
+        for (HierarchyChildNode child : children.values()) {
           // NB: do not use _children.keys() / child._unquotedText in order to preserve quotes
           child.appendSetLines(String.format("%s %s", prefix, child._text), output);
         }
       }
 
       private HierarchyNode() {
-        _children = new LinkedHashMap<>();
-        _literalChildren = new LinkedHashMap<>();
-        _wildcardChildren = new LinkedHashMap<>();
-        _appliedGroups = new LinkedHashSet<>();
-        _exceptGroups = new HashSet<>();
         _errorNodes = ImmutableList.of();
       }
 
       void resetChildren() {
-        _children = new LinkedHashMap<>();
-        _literalChildren = new LinkedHashMap<>();
-        _wildcardChildren = new LinkedHashMap<>();
+        _children = null;
+        _literalChildren = null;
+        _wildcardChildren = null;
       }
 
       void addGroup(String groupName) {
+        if (_appliedGroups == null) {
+          _appliedGroups = new LinkedHashSet<>();
+        }
         _appliedGroups.add(groupName);
       }
 
       void addExceptGroup(String groupName) {
+        if (_exceptGroups == null) {
+          _exceptGroups = new HashSet<>();
+        }
         _exceptGroups.add(groupName);
       }
 
       private void addChildNode(HierarchyChildNode node) {
-        HierarchyChildNode replaced = _children.put(node._unquotedText, node);
+        HierarchyChildNode replaced = mutableChildren().put(node._unquotedText, node);
         addConsistently(node);
         if (replaced != null && replaced.getClass() != node.getClass()) {
           // weird case where the removed node was of a different type than the added node.
@@ -561,11 +599,11 @@ final class Hierarchy {
       }
 
       private HierarchyChildNode getChildNode(String text) {
-        return _children.get(text);
+        return children().get(text);
       }
 
       private Map<String, HierarchyChildNode> getChildren() {
-        return Collections.unmodifiableMap(_children);
+        return Collections.unmodifiableMap(children());
       }
 
       /**
@@ -573,22 +611,28 @@ final class Hierarchy {
        * child matches.
        */
       private @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
+        if (_children == null) {
+          return null;
+        }
         if (node instanceof HierarchyWildcardNode) {
           // A wildcard node can't be matched by a literal, and can only be matched by a wildcard of
           // identical text. See: {@link HierarchyWildcardNode#isMatchedBy}
-          return _wildcardChildren.get(node._unquotedText);
+          return _wildcardChildren == null ? null : _wildcardChildren.get(node._unquotedText);
         }
         assert node instanceof HierarchyLiteralNode;
-        HierarchyLiteralNode literal = _literalChildren.get(node._unquotedText);
+        HierarchyLiteralNode literal =
+            _literalChildren == null ? null : _literalChildren.get(node._unquotedText);
         if (literal != null) {
           // We found the literal that matches it.
           return literal;
         }
 
         // See if there's a wildcard that matches it.
-        for (HierarchyWildcardNode child : _wildcardChildren.values()) {
-          if (child.matches(node)) {
-            return child;
+        if (_wildcardChildren != null) {
+          for (HierarchyWildcardNode child : _wildcardChildren.values()) {
+            if (child.matches(node)) {
+              return child;
+            }
           }
         }
         return null;
@@ -600,9 +644,9 @@ final class Hierarchy {
 
       @Nullable
       HierarchyChildNode putLast(@Nonnull HierarchyChildNode node) {
-        HierarchyChildNode replaced = _children.remove(node._unquotedText);
+        HierarchyChildNode replaced = mutableChildren().remove(node._unquotedText);
         removeConsistently(replaced);
-        _children.put(node._unquotedText, node);
+        mutableChildren().put(node._unquotedText, node);
         addConsistently(node);
         return replaced;
       }
@@ -613,9 +657,10 @@ final class Hierarchy {
        */
       private void addConsistently(@Nullable HierarchyChildNode addedChild) {
         if (addedChild instanceof HierarchyLiteralNode) {
-          _literalChildren.put(addedChild._unquotedText, (HierarchyLiteralNode) addedChild);
+          mutableLiteralChildren().put(addedChild._unquotedText, (HierarchyLiteralNode) addedChild);
         } else if (addedChild instanceof HierarchyWildcardNode) {
-          _wildcardChildren.put(addedChild._unquotedText, (HierarchyWildcardNode) addedChild);
+          mutableWildcardChildren()
+              .put(addedChild._unquotedText, (HierarchyWildcardNode) addedChild);
         }
       }
 
