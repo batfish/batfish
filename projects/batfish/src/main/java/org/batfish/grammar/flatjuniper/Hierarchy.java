@@ -785,7 +785,11 @@ final class Hierarchy {
       return new GrammarSettings() {
         @Override
         public boolean getDisableUnrecognized() {
-          return false;
+          // The lines re-parsed here are set-lines generated from an already-parsed tree, so they
+          // are always valid. Disabling unrecognized-line recovery avoids installing the recovery
+          // strategy, ATN-simulator override, and per-parser whole-text regex split for each
+          // generated line; parser/lexer errors still throw via the error listeners.
+          return true;
         }
 
         @Override
