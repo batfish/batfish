@@ -731,6 +731,8 @@ final class Hierarchy {
 
       private final String _wildcard;
       private final Pattern _wildcardPattern;
+      // True for the bare "<*>" wildcard, which matches any text; avoids regex entirely.
+      private final boolean _matchesAll;
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
@@ -741,6 +743,7 @@ final class Hierarchy {
             _unquotedText);
         _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
         _wildcardPattern = PatternProvider.fromString(GroupWildcard.toJavaRegex(_wildcard));
+        _matchesAll = _wildcard.equals("*");
       }
 
       @Override
@@ -769,10 +772,29 @@ final class Hierarchy {
         return node.isMatchedBy(this);
       }
 
+      /*
+       * Cache of match results keyed by literal text, allocated lazily since it is only needed for
+       * non-trivial wildcards. During apply-groups/apply-path inheritance the same wildcard is
+       * tested against the same literals repeatedly, and each miss otherwise allocates a fresh
+       * regex Matcher (the dominant preprocessing allocation on large group-heavy configs).
+       * matches() is a pure function of this wildcard's (immutable) pattern and the text, so
+       * caching is safe.
+       */
+      private @Nullable Map<String, Boolean> _matchCache;
+
       public boolean matches(String text) {
-        return !text.equals("apply-groups")
-            && !text.equals("apply-path")
-            && _wildcardPattern.matcher(text).matches();
+        // apply-groups and apply-path are never expanded by wildcards.
+        if (text.equals("apply-groups") || text.equals("apply-path")) {
+          return false;
+        }
+        // The bare "<*>" wildcard matches anything else; no regex or cache needed.
+        if (_matchesAll) {
+          return true;
+        }
+        if (_matchCache == null) {
+          _matchCache = new HashMap<>();
+        }
+        return _matchCache.computeIfAbsent(text, t -> _wildcardPattern.matcher(t).matches());
       }
 
       @Override
