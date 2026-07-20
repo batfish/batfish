@@ -232,6 +232,115 @@ public class ComparePeerGroupPoliciesAnswererTest {
     assertThat("the two are equivalent", answer.getRows().getData().isEmpty());
   }
 
+  /**
+   * Adds an active peer with no group (a "standalone" peer, e.g. an NX-OS neighbor that does not
+   * inherit a peer template) with the given export policy to both snapshots at {@code peerIp}.
+   */
+  private void addStandalonePeer(Ip peerIp, String exportPolicy) {
+    Configuration currentConfig =
+        _batfish.getProcessedConfigurations(_batfish.getSnapshot()).get().get(HOSTNAME);
+    Configuration referenceConfig =
+        _batfish.getProcessedConfigurations(_batfish.getReferenceSnapshot()).get().get(HOSTNAME);
+
+    BgpActivePeerConfig noGroupPeer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(peerIp)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder().setExportPolicy(exportPolicy).build())
+            .build();
+
+    SortedMap<Ip, BgpActivePeerConfig> baseBgpPeers =
+        new TreeMap<>(currentConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors());
+    baseBgpPeers.put(peerIp, noGroupPeer);
+    currentConfig.getDefaultVrf().getBgpProcess().setNeighbors(baseBgpPeers);
+
+    SortedMap<Ip, BgpActivePeerConfig> deltaBgpPeers =
+        new TreeMap<>(referenceConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors());
+    deltaBgpPeers.put(peerIp, noGroupPeer);
+    referenceConfig.getDefaultVrf().getBgpProcess().setNeighbors(deltaBgpPeers);
+  }
+
+  /**
+   * Reproduces batfish/batfish#10106: a peer with no group (e.g. an NX-OS neighbor that does not
+   * inherit a peer template) has a null group. {@code getGroup()} is nullable, but
+   * findDifferenceCandidates asserted it non-null, crashing on any topology containing such a peer.
+   * Such peers are now skipped: even when the group-less peer's policy differs across snapshots,
+   * the question runs without crashing and reports nothing for it.
+   */
+  @Test
+  public void testNullPeerGroupSkipped() {
+    // The shared group peer's policy (POLICY_NAME) is unchanged.
+    _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
+    _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
+
+    // RM2 is referenced only by the group-less peer, and differs across snapshots.
+    _policyBuilderBase
+        .setName("RM2")
+        .setStatements(ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+        .build();
+    _policyBuilderDelta
+        .setName("RM2")
+        .setStatements(ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+        .build();
+
+    // Add a directly-configured peer with no group (null) to both snapshots.
+    addStandalonePeer(Ip.FIRST_CLASS_B_PRIVATE_IP, "RM2");
+
+    ComparePeerGroupPoliciesQuestion question = new ComparePeerGroupPoliciesQuestion();
+    ComparePeerGroupPoliciesAnswerer answerer =
+        new ComparePeerGroupPoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    // The group-less peer's RM2 difference is not reported; the grouped peer is unchanged.
+    assertThat("the group-less peer is skipped", answer.getRows().getData().isEmpty());
+  }
+
+  /**
+   * Skipping group-less peers is targeted: a grouped peer whose policy differs is still compared
+   * even when the same device also has a group-less peer with a differing policy.
+   */
+  @Test
+  public void testGroupedPeerComparedAlongsideNullPeerGroup() {
+    // The grouped peer's policy (POLICY_NAME) differs across snapshots.
+    _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
+    _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
+
+    // RM2 is referenced only by the group-less peer, and also differs across snapshots.
+    _policyBuilderBase
+        .setName("RM2")
+        .setStatements(ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+        .build();
+    _policyBuilderDelta
+        .setName("RM2")
+        .setStatements(ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+        .build();
+
+    addStandalonePeer(Ip.FIRST_CLASS_B_PRIVATE_IP, "RM2");
+
+    ComparePeerGroupPoliciesQuestion question = new ComparePeerGroupPoliciesQuestion();
+    ComparePeerGroupPoliciesAnswerer answerer =
+        new ComparePeerGroupPoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    // Only the grouped peer's POLICY_NAME difference is reported; RM2 (group-less) is skipped.
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(
+                    deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING))));
+  }
+
   /** Tests route-map diff when the action differs. */
   @Test
   public void testActionDifference() {
