@@ -1,0 +1,18 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# checkstyle launcher using Bazel's hermetic JDK.
+java_binary(
+    name = "checkstyle",
+    main_class = "com.puppycrawl.tools.checkstyle.Main",
+    runtime_deps = ["@maven//:com_puppycrawl_tools_checkstyle"],
+)
+
+sh_binary(
+    name = "checkstyle.check",
+    srcs = ["checkstyle.sh"],
+    data = [":checkstyle"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)

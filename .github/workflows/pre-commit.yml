@@ -60,17 +60,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Checkstyle cache
+      - name: Bazelisk cache
         uses: actions/cache@v6
         with:
-          path: "~/.cache/checkstyle"
-          key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
-      - uses: actions/setup-java@v5
+          path: "~/.cache/bazelisk"
+          key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
+      - name: Bazel cache
+        uses: actions/cache@v6
         with:
-          distribution: "temurin"
-          java-version: "25"
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel-checkstyle-${{ hashFiles('.bazelversion', 'MODULE.bazel', 'maven_install.json') }}
+          restore-keys: |
+            ${{runner.os}}-bazel-checkstyle-
       - name: Checkstyle
-        run: tools/run_checkstyle.sh
+        run: bazel run //tools/checkstyle:checkstyle.check
   bazel_build_test_and_pmd:
     needs:
       - get_date
