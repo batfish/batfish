@@ -99,7 +99,7 @@ bazel_dep(name = "bazel_features", version = "1.51.0")
 bazel_dep(name = "platforms", version = "1.1.0")
 
 # Java rules and dependencies
-bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_java", version = "9.7.0")
 bazel_dep(name = "rules_jvm_external", version = "7.0")
 
 # Python rules
