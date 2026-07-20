@@ -15,6 +15,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer;
@@ -124,47 +125,53 @@ public final class ComparePeerGroupPoliciesUtils {
             if (bgp != null) {
               // If there is a BGP process on the device in the current snapshot.
               for (BgpPeerConfig peer : bgp.getAllPeerConfigs()) {
+                String group = peer.getGroup();
+                // This question compares policies per peer group. A peer with no group (e.g. a
+                // directly-configured neighbor that does not inherit a peer template) has no group
+                // identity to match or deduplicate on, so it is skipped.
+                if (group == null) {
+                  continue;
+                }
                 // If we have already covered this peerGroup then we do not to compare policies
                 // again.
-                if (!peerGroupsSeen.contains(peer.getGroup())) {
-                  // Find the config for the same peer in the reference snapshot.
+                if (!peerGroupsSeen.contains(group)) {
+                  // Find the config for the same peer group in the reference snapshot.
                   Optional<BgpPeerConfig> refPeer =
                       refVrf
                           .getBgpProcess()
                           .allPeerConfigsStream()
-                          .filter(
-                              p -> {
-                                assert p.getGroup() != null;
-                                return p.getGroup().equals(peer.getGroup());
-                              })
+                          .filter(p -> group.equals(p.getGroup()))
                           .findFirst();
 
                   if (refPeer.isPresent()) {
-                    // The peer is in both snapshots. Check if the export policy used in both
-                    // snapshots is syntactically
-                    // the same.
-                    if ((peer.getIpv4UnicastAddressFamily().getExportPolicy() != null)
-                        && (refPeer.get().getIpv4UnicastAddressFamily().getExportPolicy()
-                            != null)) {
-                      trackDifference(
-                          router,
-                          peer.getIpv4UnicastAddressFamily().getExportPolicy(),
-                          refPeer.get().getIpv4UnicastAddressFamily().getExportPolicy(),
-                          syntacticCompare,
-                          candidates);
+                    Ipv4UnicastAddressFamily currentAf = peer.getIpv4UnicastAddressFamily();
+                    Ipv4UnicastAddressFamily refAf = refPeer.get().getIpv4UnicastAddressFamily();
+                    // Only IPv4 unicast policies are compared; a peer that does not exchange IPv4
+                    // unicast routes (e.g. an EVPN-only peer) has no such address family.
+                    if (currentAf != null && refAf != null) {
+                      // The peer is in both snapshots. Check if the export policy used in both
+                      // snapshots is syntactically the same.
+                      if ((currentAf.getExportPolicy() != null)
+                          && (refAf.getExportPolicy() != null)) {
+                        trackDifference(
+                            router,
+                            currentAf.getExportPolicy(),
+                            refAf.getExportPolicy(),
+                            syntacticCompare,
+                            candidates);
+                      }
+                      // Likewise for the import policy.
+                      if ((currentAf.getImportPolicy() != null)
+                          && (refAf.getImportPolicy() != null)) {
+                        trackDifference(
+                            router,
+                            currentAf.getImportPolicy(),
+                            refAf.getImportPolicy(),
+                            syntacticCompare,
+                            candidates);
+                      }
                     }
-                    // Likewise for the import policy.
-                    if ((peer.getIpv4UnicastAddressFamily().getImportPolicy() != null)
-                        && (refPeer.get().getIpv4UnicastAddressFamily().getImportPolicy()
-                            != null)) {
-                      trackDifference(
-                          router,
-                          peer.getIpv4UnicastAddressFamily().getImportPolicy(),
-                          refPeer.get().getIpv4UnicastAddressFamily().getImportPolicy(),
-                          syntacticCompare,
-                          candidates);
-                    }
-                    peerGroupsSeen.add(peer.getGroup());
+                    peerGroupsSeen.add(group);
                   }
                 }
               }
