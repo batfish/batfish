@@ -27,8 +27,10 @@ public class ComparePeerGroupPoliciesAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    ComparePeerGroupPoliciesQuestion question = (ComparePeerGroupPoliciesQuestion) _question;
     List<Row> answers =
-        ComparePeerGroupPoliciesUtils.getDifferencesStream(_batfish, snapshot, reference)
+        ComparePeerGroupPoliciesUtils.getDifferencesStream(
+                _batfish, snapshot, reference, question.getNodeSpecifier())
             .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
             .collect(ImmutableList.toImmutableList());
 

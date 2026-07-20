@@ -384,6 +384,49 @@ public class ComparePeerGroupPoliciesAnswererTest {
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
+  /** A node specifier that matches the (only) node reports its differences. */
+  @Test
+  public void testNodesSpecifierMatches() {
+    _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
+    _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
+
+    ComparePeerGroupPoliciesQuestion question = new ComparePeerGroupPoliciesQuestion(HOSTNAME);
+    ComparePeerGroupPoliciesAnswerer answerer =
+        new ComparePeerGroupPoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(
+                    deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING))));
+  }
+
+  /** A node specifier that excludes the node suppresses its differences. */
+  @Test
+  public void testNodesSpecifierExcludes() {
+    _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
+    _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
+
+    ComparePeerGroupPoliciesQuestion question =
+        new ComparePeerGroupPoliciesQuestion("someOtherNode");
+    ComparePeerGroupPoliciesAnswerer answerer =
+        new ComparePeerGroupPoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    assertThat("the excluded node reports no differences", answer.getRows().getData().isEmpty());
+  }
+
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
     return new MatchPrefixSet(
         DestinationNetwork.instance(), new ExplicitPrefixSet(new PrefixSpace(prList)));

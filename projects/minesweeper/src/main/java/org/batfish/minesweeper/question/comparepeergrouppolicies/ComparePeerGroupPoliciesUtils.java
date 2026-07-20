@@ -22,6 +22,7 @@ import org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePolicie
 import org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
+import org.batfish.specifier.NodeSpecifier;
 
 public final class ComparePeerGroupPoliciesUtils {
 
@@ -29,6 +30,7 @@ public final class ComparePeerGroupPoliciesUtils {
    * @param batfish the batfish object
    * @param snapshot the current snapshot
    * @param reference the reference snapshot
+   * @param nodeSpecifier restricts the comparison to the nodes it resolves to (in both snapshots)
    * @return a stream of all the BGP policy semantic differences between the two snapshots. For
    *     every node in both snapshots, and for every peer group that appears in both snapshots we
    *     use CRP to compare their policies across the snapshots and add to the stream any pair of
@@ -36,10 +38,14 @@ public final class ComparePeerGroupPoliciesUtils {
    *     the comparison of two policies.
    */
   public static Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>>
-      getDifferencesStream(IBatfish batfish, NetworkSnapshot snapshot, NetworkSnapshot reference) {
+      getDifferencesStream(
+          IBatfish batfish,
+          NetworkSnapshot snapshot,
+          NetworkSnapshot reference,
+          NodeSpecifier nodeSpecifier) {
     // Find the candidate differences based on a syntactic check.
     Map<SyntacticDifference, SortedSet<String>> candidates =
-        findDifferenceCandidates(batfish, snapshot, reference);
+        findDifferenceCandidates(batfish, snapshot, reference, nodeSpecifier);
 
     Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>> answers =
         Stream.<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>>builder().build();
@@ -91,14 +97,22 @@ public final class ComparePeerGroupPoliciesUtils {
    * @param batfish the batfish object
    * @param snapshot The current snapshot
    * @param reference The reference snapshot
+   * @param nodeSpecifier restricts the comparison to the nodes it resolves to (in both snapshots)
    * @return A map from potential differences to the devices they appear on.
    */
   private static SortedMap<SyntacticDifference, SortedSet<String>> findDifferenceCandidates(
-      IBatfish batfish, NetworkSnapshot snapshot, NetworkSnapshot reference) {
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
+      NodeSpecifier nodeSpecifier) {
     SortedMap<String, Configuration> currentConfigs =
         batfish.getProcessedConfigurations(snapshot).orElse(batfish.loadConfigurations(snapshot));
     SortedMap<String, Configuration> referenceConfigs =
         batfish.getProcessedConfigurations(reference).orElse(batfish.loadConfigurations(reference));
+
+    // Restrict to nodes that the specifier resolves to in both snapshots.
+    Set<String> currentNodes = nodeSpecifier.resolve(batfish.specifierContext(snapshot));
+    Set<String> referenceNodes = nodeSpecifier.resolve(batfish.specifierContext(reference));
 
     // Routing policies that are potentially different. Maps them to the devices they live on.
     SortedMap<SyntacticDifference, SortedSet<String>> candidates = new TreeMap<>();
@@ -106,6 +120,10 @@ public final class ComparePeerGroupPoliciesUtils {
     // Go through every device in the current snapshot
     for (Map.Entry<String, Configuration> current : currentConfigs.entrySet()) {
       String router = current.getKey();
+      // Skip nodes not selected by the specifier in both snapshots.
+      if (!currentNodes.contains(router) || !referenceNodes.contains(router)) {
+        continue;
+      }
       Configuration currentConfig = current.getValue();
       Configuration refConfig = referenceConfigs.get(current.getKey());
       // If the device is also present in the reference snapshot
