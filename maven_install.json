@@ -28,7 +28,7 @@
     "com.google.j2objc:j2objc-annotations": 2003271689,
     "com.google.re2j:re2j": 1525409503,
     "com.ibm.icu:icu4j": 304238961,
-    "com.puppycrawl.tools:checkstyle": -1038068646,
+    "com.puppycrawl.tools:checkstyle": -1817917266,
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
     "commons-io:commons-io": 1305681826,
@@ -131,8 +131,8 @@
     "com.google.re2j:re2j:jar:sources": 485338798,
     "com.ibm.icu:icu4j": 1483821939,
     "com.ibm.icu:icu4j:jar:sources": 400701553,
-    "com.puppycrawl.tools:checkstyle": -1737435739,
-    "com.puppycrawl.tools:checkstyle:jar:sources": 2072450339,
+    "com.puppycrawl.tools:checkstyle": -1564757191,
+    "com.puppycrawl.tools:checkstyle:jar:sources": -1415230263,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
     "commons-beanutils:commons-beanutils": -882775588,
@@ -177,13 +177,13 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": -560158028,
     "net.sf.saxon:Saxon-HE:jar:sources": 134942547,
-    "net.sourceforge.pmd:pmd-cli": -1865254145,
+    "net.sourceforge.pmd:pmd-cli": 112269130,
     "net.sourceforge.pmd:pmd-cli:jar:sources": 600662739,
-    "net.sourceforge.pmd:pmd-core": 1971699998,
+    "net.sourceforge.pmd:pmd-core": 907280578,
     "net.sourceforge.pmd:pmd-core:jar:sources": 1231275042,
     "net.sourceforge.pmd:pmd-designer": 906775713,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
-    "net.sourceforge.pmd:pmd-java": -1187257638,
+    "net.sourceforge.pmd:pmd-java": -445393142,
     "net.sourceforge.pmd:pmd-java:jar:sources": -2007781449,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
@@ -205,15 +205,15 @@
     "org.apache.logging.log4j:log4j-api:jar:sources": 682344680,
     "org.apache.logging.log4j:log4j-core": -771291131,
     "org.apache.logging.log4j:log4j-core:jar:sources": -625900064,
-    "org.apache.logging.log4j:log4j-slf4j-impl": 731614719,
+    "org.apache.logging.log4j:log4j-slf4j-impl": -1109348669,
     "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources": 670996594,
-    "org.apache.maven.doxia:doxia-core": 1465175351,
+    "org.apache.maven.doxia:doxia-core": -1386620481,
     "org.apache.maven.doxia:doxia-core:jar:sources": -552924920,
-    "org.apache.maven.doxia:doxia-logging-api": 1448116252,
+    "org.apache.maven.doxia:doxia-logging-api": 370228106,
     "org.apache.maven.doxia:doxia-logging-api:jar:sources": -2045371637,
-    "org.apache.maven.doxia:doxia-module-xdoc": -714084260,
+    "org.apache.maven.doxia:doxia-module-xdoc": -921295205,
     "org.apache.maven.doxia:doxia-module-xdoc:jar:sources": 178270329,
-    "org.apache.maven.doxia:doxia-sink-api": -1516873446,
+    "org.apache.maven.doxia:doxia-sink-api": -1527028335,
     "org.apache.maven.doxia:doxia-sink-api:jar:sources": 812584004,
     "org.apache.xbean:xbean-reflect": -780502532,
     "org.apache.xbean:xbean-reflect:jar:sources": 1604927661,
@@ -229,7 +229,7 @@
     "org.codehaus.plexus:plexus-classworlds:jar:sources": -2122083127,
     "org.codehaus.plexus:plexus-component-annotations": -599131582,
     "org.codehaus.plexus:plexus-component-annotations:jar:sources": -1567582380,
-    "org.codehaus.plexus:plexus-container-default": -836965060,
+    "org.codehaus.plexus:plexus-container-default": 1876588805,
     "org.codehaus.plexus:plexus-container-default:jar:sources": 1495289637,
     "org.codehaus.plexus:plexus-utils": -2106813517,
     "org.codehaus.plexus:plexus-utils:jar:sources": -1133546446,
@@ -315,16 +315,16 @@
     "org.ow2.asm:asm:jar:sources": 1372783843,
     "org.pcollections:pcollections": -311488717,
     "org.pcollections:pcollections:jar:sources": 238016638,
-    "org.reflections:reflections": 1275425251,
+    "org.reflections:reflections": -260522401,
     "org.reflections:reflections:jar:sources": -1998345296,
     "org.skyscreamer:jsonassert": -852848867,
     "org.skyscreamer:jsonassert:jar:sources": 1419411400,
-    "org.slf4j:jul-to-slf4j": -1066646556,
+    "org.slf4j:jul-to-slf4j": -1998641090,
     "org.slf4j:jul-to-slf4j:jar:sources": -751821832,
-    "org.slf4j:slf4j-api": -844459515,
-    "org.slf4j:slf4j-api:jar:sources": -952877876,
-    "org.slf4j:slf4j-simple": -1482909959,
-    "org.slf4j:slf4j-simple:jar:sources": -70371629,
+    "org.slf4j:slf4j-api": 500377983,
+    "org.slf4j:slf4j-api:jar:sources": 1751644771,
+    "org.slf4j:slf4j-simple": -1055624668,
+    "org.slf4j:slf4j-simple:jar:sources": 751828941,
     "org.xmlresolver:xmlresolver": -2072175398,
     "org.xmlresolver:xmlresolver:jar:data": 792867476,
     "org.xmlresolver:xmlresolver:jar:sources": 294380453,
@@ -556,10 +556,10 @@
     },
     "com.puppycrawl.tools:checkstyle": {
       "shasums": {
-        "jar": "231f1fab0e44e87118ab26c6624e99a8d5148793411aab9e21428552fc1e91b7",
-        "sources": "41e2f6198f9b09c543a12b2de23c4e208c1bd6d332ee2c9240f0a06726e9165a"
+        "jar": "a370ace383a68c69215ee420d651463e31c9f3443cf6cb3207d9521c12ac31bc",
+        "sources": "ae47fe0e72030da3e42051a13f8f5c1e4d9807f504788875ea9afbb1ed2a90cb"
       },
-      "version": "10.26.1"
+      "version": "13.8.0"
     },
     "com.vaadin.external.google:android-json": {
       "shasums": {
@@ -1221,17 +1221,17 @@
     },
     "org.slf4j:slf4j-api": {
       "shasums": {
-        "jar": "d3ef575e3e4979678dc01bf1dcce51021493b4d11fb7f1be8ad982877c16a1c0",
-        "sources": "15bc04357a3725b7a5153f132db71379f95e83b7b8590a86cc6d4ad77bfc150a"
+        "jar": "44508fd1576500688c790b190acdd16fec4f8c79a3e0b900afd70503cf055f55",
+        "sources": "192e007cf7f2be41d40574e44521fc0b7ce55e01f13dbe0fa8707c8ae3329075"
       },
-      "version": "1.7.36"
+      "version": "2.0.18"
     },
     "org.slf4j:slf4j-simple": {
       "shasums": {
-        "jar": "2f39bed943d624dfa8f4102d0571283a10870b6aa36f197a8a506f147010c10f",
-        "sources": "c11b4197b7100eb4c4986c93493d4230f1efccfc53f39fbdbb84573493722379"
+        "jar": "8268bd018a5709b07209e0d8ca6221a37584ba1bc12ba985b8335a82c648bdd0",
+        "sources": "977f636bc90dc879c56cd6b6158abf0ee77a6f4619ab23342781a273b743786b"
       },
-      "version": "1.7.36"
+      "version": "2.0.18"
     },
     "org.xmlresolver:xmlresolver": {
       "shasums": {
@@ -1334,8 +1334,9 @@
       "org.antlr:antlr4-runtime",
       "org.apache.maven.doxia:doxia-core",
       "org.apache.maven.doxia:doxia-module-xdoc",
-      "org.checkerframework:checker-qual",
-      "org.reflections:reflections"
+      "org.reflections:reflections",
+      "org.slf4j:slf4j-api",
+      "org.slf4j:slf4j-simple"
     ],
     "commons-beanutils:commons-beanutils": [
       "commons-collections:commons-collections",
@@ -1427,8 +1428,7 @@
     ],
     "org.codehaus.plexus:plexus-container-default": [
       "org.apache.xbean:xbean-reflect",
-      "org.codehaus.plexus:plexus-classworlds",
-      "org.codehaus.plexus:plexus-utils"
+      "org.codehaus.plexus:plexus-classworlds"
     ],
     "org.glassfish.grizzly:grizzly-http": [
       "org.glassfish.grizzly:grizzly-framework"
@@ -1924,6 +1924,7 @@
       "com.puppycrawl.tools.checkstyle.grammar.java",
       "com.puppycrawl.tools.checkstyle.grammar.javadoc",
       "com.puppycrawl.tools.checkstyle.gui",
+      "com.puppycrawl.tools.checkstyle.internal.annotation",
       "com.puppycrawl.tools.checkstyle.meta",
       "com.puppycrawl.tools.checkstyle.site",
       "com.puppycrawl.tools.checkstyle.utils",
@@ -3214,7 +3215,7 @@
       "org.slf4j.spi"
     ],
     "org.slf4j:slf4j-simple": [
-      "org.slf4j.impl"
+      "org.slf4j.simple"
     ],
     "org.xmlresolver:xmlresolver": [
       "org.xmlresolver",
@@ -3903,6 +3904,16 @@
         "org.junit.platform.engine.discovery.PackageSelector$IdentifierParser",
         "org.junit.platform.engine.discovery.UniqueIdSelector$IdentifierParser",
         "org.junit.platform.engine.discovery.UriSelector$IdentifierParser"
+      ]
+    },
+    "org.slf4j:slf4j-simple": {
+      "org.slf4j.spi.SLF4JServiceProvider": [
+        "org.slf4j.simple.SimpleServiceProvider"
+      ]
+    },
+    "org.slf4j:slf4j-simple:jar:sources": {
+      "org.slf4j.spi.SLF4JServiceProvider": [
+        "org.slf4j.simple.SimpleServiceProvider"
       ]
     }
   },
