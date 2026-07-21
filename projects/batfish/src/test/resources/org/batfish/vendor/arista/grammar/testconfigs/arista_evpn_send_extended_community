@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_evpn_send_extended_community
+!
+interface Loopback0
+   ip address 192.168.255.1/32
+!
+interface Vxlan1
+   vxlan source-interface Loopback0
+!
+router bgp 65101
+   router-id 192.168.255.1
+   neighbor 192.168.255.2 remote-as 65102
+   neighbor 192.168.255.2 update-source Loopback0
+   neighbor 192.168.255.2 send-community extended
+   !
+   address-family evpn
+      neighbor 192.168.255.2 activate
+!
