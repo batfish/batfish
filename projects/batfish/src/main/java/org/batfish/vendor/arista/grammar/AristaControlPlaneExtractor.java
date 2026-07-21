@@ -3640,10 +3640,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return;
     }
     if (ctx.EXPORT() != null) {
-      _currentAristaBgpVrf.setExportRouteTarget(toRouteTarget(ctx.rt));
+      _currentAristaBgpVrf.addExportRouteTarget(toRouteTarget(ctx.rt));
     }
     if (ctx.IMPORT() != null) {
-      _currentAristaBgpVrf.setImportRouteTarget(toRouteTarget(ctx.rt));
+      _currentAristaBgpVrf.addImportRouteTarget(toRouteTarget(ctx.rt));
     }
   }
 

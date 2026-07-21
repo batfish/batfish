@@ -3,7 +3,9 @@ package org.batfish.vendor.arista.representation.eos;
 import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -30,9 +32,9 @@ public final class AristaBgpVrf implements Serializable {
   private @Nullable Long _defaultMetric;
   private @Nullable Integer _ebgpAdminDistance;
   private @Nullable Boolean _enforceFirstAs;
-  private @Nullable ExtendedCommunity _exportRouteTarget;
+  private final @Nonnull Set<ExtendedCommunity> _exportRouteTargets;
   private @Nullable Integer _ibgpAdminDistance;
-  private @Nullable ExtendedCommunity _importRouteTarget;
+  private final @Nonnull Set<ExtendedCommunity> _importRouteTargets;
   private @Nullable Integer _holdTimer;
   private @Nullable Integer _keepAliveTimer;
   private @Nullable Integer _listenLimit;
@@ -84,6 +86,10 @@ public final class AristaBgpVrf implements Serializable {
     _v4neighbors = new HashMap<>(0);
     _interfaceNeighbors = new HashMap<>(0);
     _redistributionPolicies = new EnumMap<>(AristaRedistributeType.class);
+    // Insertion order is preserved so that the modeled route targets follow
+    // the order they appear in the configuration.
+    _exportRouteTargets = new LinkedHashSet<>(0);
+    _importRouteTargets = new LinkedHashSet<>(0);
   }
 
   public boolean getDefaultIpv4Unicast() {
@@ -206,12 +212,16 @@ public final class AristaBgpVrf implements Serializable {
     _localAdminDistance = localAdminDistance;
   }
 
-  public @Nullable ExtendedCommunity getExportRouteTarget() {
-    return _exportRouteTarget;
+  /**
+   * EVPN export route targets, in configuration order. A VRF may declare multiple {@code
+   * route-target export evpn} lines.
+   */
+  public @Nonnull Set<ExtendedCommunity> getExportRouteTargets() {
+    return _exportRouteTargets;
   }
 
-  public void setExportRouteTarget(@Nullable ExtendedCommunity exportRouteTarget) {
-    _exportRouteTarget = exportRouteTarget;
+  public void addExportRouteTarget(ExtendedCommunity exportRouteTarget) {
+    _exportRouteTargets.add(exportRouteTarget);
   }
 
   public @Nonnull AristaBgpVrfEvpnAddressFamily getOrCreateEvpnAf() {
@@ -251,12 +261,16 @@ public final class AristaBgpVrf implements Serializable {
     return _flowSpecV6Af;
   }
 
-  public @Nullable ExtendedCommunity getImportRouteTarget() {
-    return _importRouteTarget;
+  /**
+   * EVPN import route targets, in configuration order. A VRF may declare multiple {@code
+   * route-target import evpn} lines.
+   */
+  public @Nonnull Set<ExtendedCommunity> getImportRouteTargets() {
+    return _importRouteTargets;
   }
 
-  public void setImportRouteTarget(@Nullable ExtendedCommunity importRouteTarget) {
-    _importRouteTarget = importRouteTarget;
+  public void addImportRouteTarget(ExtendedCommunity importRouteTarget) {
+    _importRouteTargets.add(importRouteTarget);
   }
 
   /** Hold timer, in seconds */
