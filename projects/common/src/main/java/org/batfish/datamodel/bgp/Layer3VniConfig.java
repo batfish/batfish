@@ -6,9 +6,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
@@ -28,10 +30,10 @@ public final class Layer3VniConfig extends VniConfig
       int vni,
       String vrf,
       RouteDistinguisher rd,
-      ExtendedCommunity routeTarget,
-      String importRouteTarget,
+      SortedSet<ExtendedCommunity> routeTargets,
+      SortedSet<String> importRouteTargets,
       boolean advertiseV4Unicast) {
-    super(vni, vrf, rd, routeTarget, importRouteTarget);
+    super(vni, vrf, rd, routeTargets, importRouteTargets);
     _advertiseV4Unicast = advertiseV4Unicast;
   }
 
@@ -40,20 +42,20 @@ public final class Layer3VniConfig extends VniConfig
       @JsonProperty(PROP_VNI) @Nullable Integer vni,
       @JsonProperty(PROP_VRF) @Nullable String vrf,
       @JsonProperty(PROP_ROUTE_DISTINGUISHER) @Nullable RouteDistinguisher rd,
-      @JsonProperty(PROP_ROUTE_TARGET) @Nullable ExtendedCommunity routeTarget,
-      @JsonProperty(PROP_IMPORT_ROUTE_TARGET) @Nullable String importRouteTarget,
+      @JsonProperty(PROP_ROUTE_TARGETS) @Nullable SortedSet<ExtendedCommunity> routeTargets,
+      @JsonProperty(PROP_IMPORT_ROUTE_TARGETS) @Nullable SortedSet<String> importRouteTargets,
       @JsonProperty(PROP_ADVERTISE_V4_UNICAST) @Nullable Boolean advertiseV4Unicast) {
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
-    checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-    checkArgument(importRouteTarget != null, "Missing %s", PROP_ROUTE_TARGET);
+    checkArgument(routeTargets != null, "Missing %s", PROP_ROUTE_TARGETS);
+    checkArgument(importRouteTargets != null, "Missing %s", PROP_IMPORT_ROUTE_TARGETS);
     return new Builder()
         .setVni(vni)
         .setVrf(vrf)
         .setRouteDistinguisher(rd)
-        .setRouteTarget(routeTarget)
-        .setImportRouteTarget(importRouteTarget)
+        .setRouteTargets(routeTargets)
+        .setImportRouteTargets(importRouteTargets)
         .setAdvertiseV4Unicast(firstNonNull(advertiseV4Unicast, Boolean.FALSE))
         .build();
   }
@@ -79,21 +81,21 @@ public final class Layer3VniConfig extends VniConfig
     return _vni == vniConfig._vni
         && Objects.equals(_vrf, vniConfig._vrf)
         && Objects.equals(_rd, vniConfig._rd)
-        && Objects.equals(_routeTarget, vniConfig._routeTarget)
-        && Objects.equals(_importRouteTarget, vniConfig._importRouteTarget)
+        && Objects.equals(_routeTargets, vniConfig._routeTargets)
+        && Objects.equals(_importRouteTargets, vniConfig._importRouteTargets)
         && _advertiseV4Unicast == vniConfig._advertiseV4Unicast;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vni, _vrf, _rd, _routeTarget);
+    return Objects.hash(_vni, _vrf, _rd, _routeTargets, _importRouteTargets, _advertiseV4Unicast);
   }
 
   @Override
   public int compareTo(Layer3VniConfig o) {
     return Comparator.comparing(Layer3VniConfig::getVrf)
         .thenComparing(Layer3VniConfig::getRouteDistinguisher)
-        .thenComparing(Layer3VniConfig::getRouteTarget)
+        .thenComparing(vc -> vc.getRouteTargets().toString())
         .thenComparing(Layer3VniConfig::getAdvertiseV4Unicast)
         .compare(this, o);
   }
@@ -104,7 +106,7 @@ public final class Layer3VniConfig extends VniConfig
         .add(PROP_VNI, _vni)
         .add(PROP_VRF, _vrf)
         .add(PROP_ROUTE_DISTINGUISHER, _rd)
-        .add(PROP_ROUTE_TARGET, _routeTarget)
+        .add(PROP_ROUTE_TARGETS, _routeTargets)
         .add(PROP_ADVERTISE_V4_UNICAST, _advertiseV4Unicast)
         .toString();
   }
@@ -118,8 +120,8 @@ public final class Layer3VniConfig extends VniConfig
     private @Nullable Integer _vni;
     private @Nullable String _vrf;
     private @Nullable RouteDistinguisher _rd;
-    private @Nullable ExtendedCommunity _routeTarget;
-    private @Nullable String _importRouteTarget;
+    private @Nullable SortedSet<ExtendedCommunity> _routeTargets;
+    private @Nullable SortedSet<String> _importRouteTargets;
     private boolean _advertiseV4Unicast;
 
     private Builder() {}
@@ -139,13 +141,25 @@ public final class Layer3VniConfig extends VniConfig
       return this;
     }
 
+    /** Set a single export route target. Convenience for the common single-RT case. */
     public Builder setRouteTarget(ExtendedCommunity routeTarget) {
-      _routeTarget = routeTarget;
+      _routeTargets = ImmutableSortedSet.of(routeTarget);
       return this;
     }
 
+    public Builder setRouteTargets(SortedSet<ExtendedCommunity> routeTargets) {
+      _routeTargets = ImmutableSortedSet.copyOf(routeTargets);
+      return this;
+    }
+
+    /** Set a single import route target pattern. Convenience for the common single-RT case. */
     public Builder setImportRouteTarget(String importRouteTarget) {
-      _importRouteTarget = importRouteTarget;
+      _importRouteTargets = ImmutableSortedSet.of(importRouteTarget);
+      return this;
+    }
+
+    public Builder setImportRouteTargets(SortedSet<String> importRouteTargets) {
+      _importRouteTargets = ImmutableSortedSet.copyOf(importRouteTargets);
       return this;
     }
 
@@ -158,16 +172,22 @@ public final class Layer3VniConfig extends VniConfig
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_vrf != null, "Missing %s", PROP_VRF);
       checkArgument(_rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
-      checkArgument(_routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-      String importRt = firstNonNull(_importRouteTarget, importRtPatternForAnyAs(_vni));
-      // check pattern for validity
-      try {
-        Pattern.compile(importRt);
-      } catch (PatternSyntaxException e) {
-        throw new IllegalArgumentException(
-            String.format("Invalid patthern %s for %s", importRt, PROP_IMPORT_ROUTE_TARGET));
+      checkArgument(
+          _routeTargets != null && !_routeTargets.isEmpty(), "Missing %s", PROP_ROUTE_TARGETS);
+      SortedSet<String> importRts =
+          _importRouteTargets == null || _importRouteTargets.isEmpty()
+              ? ImmutableSortedSet.of(importRtPatternForAnyAs(_vni))
+              : _importRouteTargets;
+      // check patterns for validity
+      for (String importRt : importRts) {
+        try {
+          Pattern.compile(importRt);
+        } catch (PatternSyntaxException e) {
+          throw new IllegalArgumentException(
+              String.format("Invalid pattern %s for %s", importRt, PROP_IMPORT_ROUTE_TARGETS));
+        }
       }
-      return new Layer3VniConfig(_vni, _vrf, _rd, _routeTarget, importRt, _advertiseV4Unicast);
+      return new Layer3VniConfig(_vni, _vrf, _rd, _routeTargets, importRts, _advertiseV4Unicast);
     }
   }
 }

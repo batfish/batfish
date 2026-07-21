@@ -3591,10 +3591,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitEos_rb_vlan_tail_route_target(Eos_rb_vlan_tail_route_targetContext ctx) {
     ExtendedCommunity rt = toRouteTarget(ctx.rt);
     if (ctx.IMPORT() != null || ctx.BOTH() != null) {
-      _currentAristaBgpVlan.setRtImport(rt);
+      _currentAristaBgpVlan.addRtImport(rt);
     }
     if (ctx.EXPORT() != null || ctx.BOTH() != null) {
-      _currentAristaBgpVlan.setRtExport(rt);
+      _currentAristaBgpVlan.addRtExport(rt);
     }
   }
 

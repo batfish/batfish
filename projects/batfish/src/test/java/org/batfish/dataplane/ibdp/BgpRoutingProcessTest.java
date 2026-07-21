@@ -159,7 +159,7 @@ public class BgpRoutingProcessTest {
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                 .setSourceAddress(ip)
                 .build(),
-            routeTarget,
+            ImmutableSortedSet.of(routeTarget),
             routeDistinguisher,
             ip);
     assertThat(

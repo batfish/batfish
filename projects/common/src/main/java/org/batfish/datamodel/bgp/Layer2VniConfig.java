@@ -1,14 +1,15 @@
 package org.batfish.datamodel.bgp;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.SortedSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -22,9 +23,9 @@ public class Layer2VniConfig extends VniConfig
       int vni,
       String vrf,
       RouteDistinguisher rd,
-      ExtendedCommunity routeTarget,
-      String importRouteTarget) {
-    super(vni, vrf, rd, routeTarget, importRouteTarget);
+      SortedSet<ExtendedCommunity> routeTargets,
+      SortedSet<String> importRouteTargets) {
+    super(vni, vrf, rd, routeTargets, importRouteTargets);
   }
 
   @JsonCreator
@@ -32,14 +33,20 @@ public class Layer2VniConfig extends VniConfig
       @JsonProperty(PROP_VNI) @Nullable Integer vni,
       @JsonProperty(PROP_VRF) @Nullable String vrf,
       @JsonProperty(PROP_ROUTE_DISTINGUISHER) @Nullable RouteDistinguisher rd,
-      @JsonProperty(PROP_ROUTE_TARGET) @Nullable ExtendedCommunity routeTarget,
-      @JsonProperty(PROP_IMPORT_ROUTE_TARGET) @Nullable String importRouteTarget) {
+      @JsonProperty(PROP_ROUTE_TARGETS) @Nullable SortedSet<ExtendedCommunity> routeTargets,
+      @JsonProperty(PROP_IMPORT_ROUTE_TARGETS) @Nullable SortedSet<String> importRouteTargets) {
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
-    checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-    checkArgument(importRouteTarget != null, "Missing %s", PROP_IMPORT_ROUTE_TARGET);
-    return new Layer2VniConfig(vni, vrf, rd, routeTarget, importRouteTarget);
+    checkArgument(routeTargets != null, "Missing %s", PROP_ROUTE_TARGETS);
+    checkArgument(importRouteTargets != null, "Missing %s", PROP_IMPORT_ROUTE_TARGETS);
+    return new Builder()
+        .setVni(vni)
+        .setVrf(vrf)
+        .setRouteDistinguisher(rd)
+        .setRouteTargets(routeTargets)
+        .setImportRouteTargets(importRouteTargets)
+        .build();
   }
 
   @Override
@@ -54,13 +61,13 @@ public class Layer2VniConfig extends VniConfig
     return _vni == vniConfig._vni
         && _vrf.equals(vniConfig._vrf)
         && _rd.equals(vniConfig._rd)
-        && _routeTarget.equals(vniConfig._routeTarget)
-        && _importRouteTarget.equals(vniConfig._importRouteTarget);
+        && _routeTargets.equals(vniConfig._routeTargets)
+        && _importRouteTargets.equals(vniConfig._importRouteTargets);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vni, _vrf, _rd, _routeTarget, _importRouteTarget);
+    return Objects.hash(_vni, _vrf, _rd, _routeTargets, _importRouteTargets);
   }
 
   @Override
@@ -68,8 +75,8 @@ public class Layer2VniConfig extends VniConfig
     return Comparator.comparing(Layer2VniConfig::getVni)
         .thenComparing(Layer2VniConfig::getVrf)
         .thenComparing(Layer2VniConfig::getRouteDistinguisher)
-        .thenComparing(Layer2VniConfig::getRouteTarget)
-        .thenComparing(Layer2VniConfig::getImportRouteTarget)
+        .thenComparing(vc -> vc.getRouteTargets().toString())
+        .thenComparing(vc -> vc.getImportRouteTargets().toString())
         .compare(this, o);
   }
 
@@ -79,8 +86,8 @@ public class Layer2VniConfig extends VniConfig
         .add(PROP_VNI, _vni)
         .add(PROP_VRF, _vrf)
         .add(PROP_ROUTE_DISTINGUISHER, _rd)
-        .add(PROP_ROUTE_TARGET, _routeTarget)
-        .add(PROP_IMPORT_ROUTE_TARGET, _importRouteTarget)
+        .add(PROP_ROUTE_TARGETS, _routeTargets)
+        .add(PROP_IMPORT_ROUTE_TARGETS, _importRouteTargets)
         .toString();
   }
 
@@ -92,8 +99,8 @@ public class Layer2VniConfig extends VniConfig
     protected @Nullable Integer _vni;
     protected @Nullable String _vrf;
     protected @Nullable RouteDistinguisher _rd;
-    protected @Nullable ExtendedCommunity _routeTarget;
-    protected @Nullable String _importRouteTarget;
+    protected @Nullable SortedSet<ExtendedCommunity> _routeTargets;
+    protected @Nullable SortedSet<String> _importRouteTargets;
 
     private Builder() {}
 
@@ -112,13 +119,25 @@ public class Layer2VniConfig extends VniConfig
       return this;
     }
 
+    /** Set a single export route target. Convenience for the common single-RT case. */
     public Builder setRouteTarget(ExtendedCommunity routeTarget) {
-      _routeTarget = routeTarget;
+      _routeTargets = ImmutableSortedSet.of(routeTarget);
       return this;
     }
 
+    public Builder setRouteTargets(SortedSet<ExtendedCommunity> routeTargets) {
+      _routeTargets = ImmutableSortedSet.copyOf(routeTargets);
+      return this;
+    }
+
+    /** Set a single import route target pattern. Convenience for the common single-RT case. */
     public Builder setImportRouteTarget(String importRouteTarget) {
-      _importRouteTarget = importRouteTarget;
+      _importRouteTargets = ImmutableSortedSet.of(importRouteTarget);
+      return this;
+    }
+
+    public Builder setImportRouteTargets(SortedSet<String> importRouteTargets) {
+      _importRouteTargets = ImmutableSortedSet.copyOf(importRouteTargets);
       return this;
     }
 
@@ -126,13 +145,13 @@ public class Layer2VniConfig extends VniConfig
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_vrf != null, "Missing %s", PROP_VRF);
       checkArgument(_rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
-      checkArgument(_routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-      return new Layer2VniConfig(
-          _vni,
-          _vrf,
-          _rd,
-          _routeTarget,
-          firstNonNull(_importRouteTarget, importRtPatternForAnyAs(_vni)));
+      checkArgument(
+          _routeTargets != null && !_routeTargets.isEmpty(), "Missing %s", PROP_ROUTE_TARGETS);
+      SortedSet<String> importRts =
+          _importRouteTargets == null || _importRouteTargets.isEmpty()
+              ? ImmutableSortedSet.of(importRtPatternForAnyAs(_vni))
+              : _importRouteTargets;
+      return new Layer2VniConfig(_vni, _vrf, _rd, _routeTargets, importRts);
     }
   }
 }

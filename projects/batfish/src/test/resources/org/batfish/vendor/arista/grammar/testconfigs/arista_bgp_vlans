@@ -9,6 +9,12 @@ router bgp 1
        redistribute learned
        redistribute router-mac
        redistribute static
+   vlan 301
+       rd 192.168.255.100:10104
+       route-target import 65000:100
+       route-target import 65000:200
+       route-target export 65000:300
+       route-target export 65000:400
    vlan-aware-bundle Tenant_A
        rd 192.168.255.8:10101
        route-target both 10101:10101

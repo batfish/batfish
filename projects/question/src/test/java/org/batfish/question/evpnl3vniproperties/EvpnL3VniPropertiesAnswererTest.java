@@ -1,7 +1,7 @@
 package org.batfish.question.evpnl3vniproperties;
 
-import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_EXPORT_ROUTE_TARGET;
-import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_IMPORT_ROUTE_TARGET;
+import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_EXPORT_ROUTE_TARGETS;
+import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_IMPORT_ROUTE_TARGETS;
 import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesAnswerer.COL_VNI;
@@ -13,9 +13,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import java.util.Map;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -58,10 +61,45 @@ public class EvpnL3VniPropertiesAnswererTest {
                 .put(COL_NODE, node)
                 .put(COL_VRF, vniConfig.getVrf())
                 .put(COL_VNI, vniConfig.getVni())
-                .put(COL_EXPORT_ROUTE_TARGET, vniConfig.getRouteTarget().matchString())
-                .put(COL_IMPORT_ROUTE_TARGET, vniConfig.getImportRouteTarget())
+                .put(
+                    COL_EXPORT_ROUTE_TARGETS,
+                    ImmutableList.of(ExtendedCommunity.target(65500, vni).matchString()))
+                .put(
+                    COL_IMPORT_ROUTE_TARGETS,
+                    ImmutableList.of(ExtendedCommunity.target(65500, vni).matchString()))
                 .put(COL_ROUTE_DISTINGUISHER, vniConfig.getRouteDistinguisher())
                 .build()));
+  }
+
+  /** A VNI with multiple import/export route targets reports all of them, sorted. */
+  @Test
+  public void testGenerateRowMultipleRouteTargets() {
+    String node = "n";
+    int vni = 100001;
+    // Provide targets out of order; the answer must be sorted.
+    Layer3VniConfig vniConfig =
+        Layer3VniConfig.builder()
+            .setVni(vni)
+            .setVrf("vrf")
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.ZERO, 2))
+            .setRouteTargets(
+                ImmutableSortedSet.of(
+                    ExtendedCommunity.target(65500, 200), ExtendedCommunity.target(65500, 100)))
+            .setImportRouteTargets(ImmutableSortedSet.of("^\\d+:300$", "^\\d+:250$"))
+            .setAdvertiseV4Unicast(false)
+            .build();
+    Map<String, ColumnMetadata> columnMap =
+        createTableMetadata(new EvpnL3VniPropertiesQuestion(null)).toColumnMap();
+    Row row = generateRow(vniConfig, node, columnMap);
+    assertThat(
+        row.get(COL_EXPORT_ROUTE_TARGETS, Schema.list(Schema.STRING)),
+        equalTo(
+            ImmutableList.of(
+                ExtendedCommunity.target(65500, 100).matchString(),
+                ExtendedCommunity.target(65500, 200).matchString())));
+    assertThat(
+        row.get(COL_IMPORT_ROUTE_TARGETS, Schema.list(Schema.STRING)),
+        equalTo(ImmutableList.of("^\\d+:250$", "^\\d+:300$")));
   }
 
   /**
@@ -134,8 +172,12 @@ public class EvpnL3VniPropertiesAnswererTest {
                     .put(COL_NODE, c1.getHostname())
                     .put(COL_VRF, vniConfig.getVrf())
                     .put(COL_VNI, vniConfig.getVni())
-                    .put(COL_EXPORT_ROUTE_TARGET, vniConfig.getRouteTarget().matchString())
-                    .put(COL_IMPORT_ROUTE_TARGET, vniConfig.getImportRouteTarget())
+                    .put(
+                        COL_EXPORT_ROUTE_TARGETS,
+                        ImmutableList.of(ExtendedCommunity.target(65500, vni).matchString()))
+                    .put(
+                        COL_IMPORT_ROUTE_TARGETS,
+                        ImmutableList.of(ExtendedCommunity.target(65500, vni).matchString()))
                     .put(COL_ROUTE_DISTINGUISHER, vniConfig.getRouteDistinguisher())
                     .build())));
     assertThat(getRows(Collections.singleton("nonexistent"), nc, columnMap), empty());

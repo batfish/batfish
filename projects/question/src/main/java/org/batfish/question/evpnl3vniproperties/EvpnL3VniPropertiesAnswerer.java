@@ -20,6 +20,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -35,8 +36,8 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
   public static final String COL_VRF = "VRF";
   public static final String COL_VNI = "VNI";
   public static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
-  public static final String COL_IMPORT_ROUTE_TARGET = "Import_Route_Target";
-  public static final String COL_EXPORT_ROUTE_TARGET = "Export_Route_Target";
+  public static final String COL_IMPORT_ROUTE_TARGETS = "Import_Route_Targets";
+  public static final String COL_EXPORT_ROUTE_TARGETS = "Export_Route_Targets";
 
   public static final List<ColumnMetadata> COLUMN_METADATA =
       ImmutableList.<ColumnMetadata>builder()
@@ -48,10 +49,18 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
                   COL_ROUTE_DISTINGUISHER, Schema.STRING, "Route distinguisher", false, true))
           .add(
               new ColumnMetadata(
-                  COL_IMPORT_ROUTE_TARGET, Schema.STRING, "Import route target", false, true))
+                  COL_IMPORT_ROUTE_TARGETS,
+                  Schema.list(Schema.STRING),
+                  "Import route targets",
+                  false,
+                  true))
           .add(
               new ColumnMetadata(
-                  COL_EXPORT_ROUTE_TARGET, Schema.STRING, "Export route target", false, true))
+                  COL_EXPORT_ROUTE_TARGETS,
+                  Schema.list(Schema.STRING),
+                  "Export route targets",
+                  false,
+                  true))
           .build();
 
   /**
@@ -100,8 +109,12 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
         .put(COL_NODE, nodeName)
         .put(COL_VRF, vniConfig.getVrf())
         .put(COL_VNI, vniConfig.getVni())
-        .put(COL_EXPORT_ROUTE_TARGET, vniConfig.getRouteTarget().matchString())
-        .put(COL_IMPORT_ROUTE_TARGET, vniConfig.getImportRouteTarget())
+        .put(
+            COL_EXPORT_ROUTE_TARGETS,
+            vniConfig.getRouteTargets().stream()
+                .map(ExtendedCommunity::matchString)
+                .collect(ImmutableList.toImmutableList()))
+        .put(COL_IMPORT_ROUTE_TARGETS, ImmutableList.copyOf(vniConfig.getImportRouteTargets()))
         .put(COL_ROUTE_DISTINGUISHER, vniConfig.getRouteDistinguisher())
         .build();
   }
