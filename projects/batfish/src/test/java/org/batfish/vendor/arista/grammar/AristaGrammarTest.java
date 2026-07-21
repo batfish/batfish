@@ -2323,8 +2323,8 @@ public class AristaGrammarTest {
       AristaBgpVlanAwareBundle bundle = config.getAristaBgp().getVlanAwareBundles().get("Tenant_A");
       assertThat(bundle, notNullValue());
       assertThat(bundle.getRd(), equalTo(RouteDistinguisher.parse("192.168.255.8:10101")));
-      assertThat(bundle.getRtImport(), equalTo(ExtendedCommunity.target(10101, 10101)));
-      assertThat(bundle.getRtExport(), equalTo(ExtendedCommunity.target(10101, 10101)));
+      assertThat(bundle.getRtImports(), contains(ExtendedCommunity.target(10101, 10101)));
+      assertThat(bundle.getRtExports(), contains(ExtendedCommunity.target(10101, 10101)));
       assertThat(bundle.getVlans(), equalTo(IntegerSpace.builder().including(1, 110, 111).build()));
     }
 
@@ -2332,8 +2332,22 @@ public class AristaGrammarTest {
       AristaBgpVlan vlan = config.getAristaBgp().getVlans().get(300);
       assertThat(vlan, notNullValue());
       assertThat(vlan.getRd(), equalTo(RouteDistinguisher.parse("192.168.255.100:10103")));
-      assertThat(vlan.getRtImport(), equalTo(ExtendedCommunity.target(10101, 10103)));
-      assertThat(vlan.getRtExport(), equalTo(ExtendedCommunity.target(10101, 10103)));
+      assertThat(vlan.getRtImports(), contains(ExtendedCommunity.target(10101, 10103)));
+      assertThat(vlan.getRtExports(), contains(ExtendedCommunity.target(10101, 10103)));
+    }
+    {
+      // A VLAN may declare multiple import and export route targets; all are retained.
+      AristaBgpVlan vlan = config.getAristaBgp().getVlans().get(301);
+      assertThat(vlan, notNullValue());
+      assertThat(vlan.getRd(), equalTo(RouteDistinguisher.parse("192.168.255.100:10104")));
+      assertThat(
+          vlan.getRtImports(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(65000, 100), ExtendedCommunity.target(65000, 200)));
+      assertThat(
+          vlan.getRtExports(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(65000, 300), ExtendedCommunity.target(65000, 400)));
     }
   }
 

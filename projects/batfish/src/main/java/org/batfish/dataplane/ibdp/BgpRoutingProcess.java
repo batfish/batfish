@@ -891,7 +891,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               EvpnType3Route route =
                   initEvpnType3Route(
                       l2Vni,
-                      vniConfig.getRouteTarget(),
+                      vniConfig.getRouteTargets(),
                       vniConfig.getRouteDistinguisher(),
                       _process.getRouterId());
               initializationBuilder.from(_evpnType3Rib.mergeRouteGetDelta(route));
@@ -906,16 +906,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @VisibleForTesting
   static @Nonnull EvpnType3Route initEvpnType3Route(
       Layer2Vni vni,
-      ExtendedCommunity routeTarget,
+      Set<ExtendedCommunity> routeTargets,
       RouteDistinguisher routeDistinguisher,
       Ip routerId) {
     checkArgument(
         vni.getSourceAddress() != null,
         "Cannot construct type 3 route for invalid VNI %s",
         vni.getVni());
-    // Locally all routes start as eBGP routes in our own RIB
+    // Locally all routes start as eBGP routes in our own RIB. Attach all export route targets.
     return EvpnType3Route.builder()
-        .setCommunities(CommunitySet.of(routeTarget))
+        .setCommunities(CommunitySet.of(routeTargets))
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
         // so that this route is not installed back in the main RIB of any of the VRFs
         .setOriginatorIp(routerId)

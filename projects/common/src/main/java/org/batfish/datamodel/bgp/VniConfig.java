@@ -3,7 +3,9 @@ package org.batfish.datamodel.bgp;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,26 +22,26 @@ public abstract class VniConfig implements Serializable {
   public static final String PROP_VNI = "vni";
   public static final String PROP_VRF = "vrf";
   public static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
-  public static final String PROP_ROUTE_TARGET = "routeTarget";
-  public static final String PROP_IMPORT_ROUTE_TARGET = "importRouteTarget";
+  public static final String PROP_ROUTE_TARGETS = "routeTargets";
+  public static final String PROP_IMPORT_ROUTE_TARGETS = "importRouteTargets";
 
   protected final int _vni;
   protected final @Nonnull String _vrf;
   protected final @Nonnull RouteDistinguisher _rd;
-  protected final @Nonnull ExtendedCommunity _routeTarget;
-  protected final @Nonnull String _importRouteTarget;
+  protected final @Nonnull ImmutableSortedSet<ExtendedCommunity> _routeTargets;
+  protected final @Nonnull ImmutableSortedSet<String> _importRouteTargets;
 
   protected VniConfig(
       int vni,
       String vrf,
       RouteDistinguisher rd,
-      ExtendedCommunity routeTarget,
-      String importRouteTarget) {
+      SortedSet<ExtendedCommunity> routeTargets,
+      SortedSet<String> importRouteTargets) {
     _vni = vni;
     _vrf = vrf;
     _rd = rd;
-    _routeTarget = routeTarget;
-    _importRouteTarget = importRouteTarget;
+    _routeTargets = ImmutableSortedSet.copyOf(routeTargets);
+    _importRouteTargets = ImmutableSortedSet.copyOf(importRouteTargets);
   }
 
   /** Return an import route target pattern equivalent to "*:VNI" */
@@ -65,15 +67,16 @@ public abstract class VniConfig implements Serializable {
     return _rd;
   }
 
-  /** Route target to use when advertising this VNI (i.e., the export route target) */
-  @JsonProperty(PROP_ROUTE_TARGET)
-  public @Nonnull ExtendedCommunity getRouteTarget() {
-    return _routeTarget;
+  /** Route targets to attach when advertising this VNI (i.e., the export route targets) */
+  @JsonProperty(PROP_ROUTE_TARGETS)
+  public @Nonnull SortedSet<ExtendedCommunity> getRouteTargets() {
+    return _routeTargets;
   }
 
-  /** The import route target pattern. Can be compiled into a {@link Pattern} */
-  public @Nonnull String getImportRouteTarget() {
-    return _importRouteTarget;
+  /** The import route target patterns. Each can be compiled into a {@link Pattern} */
+  @JsonProperty(PROP_IMPORT_ROUTE_TARGETS)
+  public @Nonnull SortedSet<String> getImportRouteTargets() {
+    return _importRouteTargets;
   }
 
   @Override

@@ -1,14 +1,22 @@
 package org.batfish.vendor.arista.representation.eos;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public abstract class AristaBgpVlanBase implements Serializable {
   private @Nullable RouteDistinguisher _rd;
-  private @Nullable ExtendedCommunity _rtImport;
-  private @Nullable ExtendedCommunity _rtExport;
+  private final @Nonnull Set<ExtendedCommunity> _rtImports;
+  private final @Nonnull Set<ExtendedCommunity> _rtExports;
+
+  protected AristaBgpVlanBase() {
+    _rtImports = new HashSet<>(0);
+    _rtExports = new HashSet<>(0);
+  }
 
   public @Nullable RouteDistinguisher getRd() {
     return _rd;
@@ -18,19 +26,21 @@ public abstract class AristaBgpVlanBase implements Serializable {
     _rd = rd;
   }
 
-  public @Nullable ExtendedCommunity getRtImport() {
-    return _rtImport;
+  /** EVPN import route targets. A VLAN may declare multiple {@code route-target import} lines. */
+  public @Nonnull Set<ExtendedCommunity> getRtImports() {
+    return _rtImports;
   }
 
-  public void setRtImport(@Nullable ExtendedCommunity rtImport) {
-    _rtImport = rtImport;
+  public void addRtImport(ExtendedCommunity rtImport) {
+    _rtImports.add(rtImport);
   }
 
-  public @Nullable ExtendedCommunity getRtExport() {
-    return _rtExport;
+  /** EVPN export route targets. A VLAN may declare multiple {@code route-target export} lines. */
+  public @Nonnull Set<ExtendedCommunity> getRtExports() {
+    return _rtExports;
   }
 
-  public void setRtExport(@Nullable ExtendedCommunity rtExport) {
-    _rtExport = rtExport;
+  public void addRtExport(ExtendedCommunity rtExport) {
+    _rtExports.add(rtExport);
   }
 }
