@@ -71,7 +71,7 @@
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": 359292282,
     "repositories": -1949687017,
-    "tools.profiler:async-profiler": -1781689433
+    "tools.profiler:async-profiler": -1318609741
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "at.yawk.lz4:lz4-java": -1840273873,
@@ -330,11 +330,11 @@
     "org.xmlresolver:xmlresolver:jar:sources": 294380453,
     "org.yaml:snakeyaml": 1068613154,
     "org.yaml:snakeyaml:jar:sources": -665563845,
-    "tools.profiler:async-profiler": 1533946495,
-    "tools.profiler:async-profiler:jar:linux-arm64": -468857955,
-    "tools.profiler:async-profiler:jar:linux-x64": 2029605836,
-    "tools.profiler:async-profiler:jar:macos": -163044320,
-    "tools.profiler:async-profiler:jar:sources": 1951799023
+    "tools.profiler:async-profiler": 369181935,
+    "tools.profiler:async-profiler:jar:linux-arm64": 767902809,
+    "tools.profiler:async-profiler:jar:linux-x64": 1724197418,
+    "tools.profiler:async-profiler:jar:macos": -718213337,
+    "tools.profiler:async-profiler:jar:sources": 1066933666
   },
   "conflict_resolution": {
     "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.core:jackson-annotations:2.20",
@@ -349,7 +349,8 @@
     "com.google.guava:guava": "com.google.guava:guava:33.5.0-jre",
     "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.5.0-jre",
     "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.5.0-jre",
-    "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1"
+    "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1",
+    "tools.profiler:async-profiler:4.4": "tools.profiler:async-profiler:4.5"
   },
   "artifacts": {
     "at.yawk.lz4:lz4-java": {
@@ -1250,13 +1251,13 @@
     },
     "tools.profiler:async-profiler": {
       "shasums": {
-        "jar": "47f321b8cdbadda2c281a612f6ac245254c81a02ce578abf782a53170ea40b37",
-        "linux-arm64": "d4e7fd7ffd40a7e0c1caa1956de7eb250d821b7af530d0bea14c10c9615a429f",
-        "linux-x64": "d535e258a0f0cb82ca21ad9185196fed819ef3f109bf08ee6e5830e1cf6ab03d",
-        "macos": "8431ea22ba0dd4fe8d296c3a2cebefc8bf6d5b9ffc1c1ee59c9b9465c9740fa1",
-        "sources": "c3f503b13b108d423184d3d32ea0e1bb9ae15e136808982c2cf01c7cc922ee22"
+        "jar": "d0184907de67ca63363f1a6333c75eb7414fb3e13c564641304fe0fdca97363e",
+        "linux-arm64": "0c21db24ac9b07967ddde00fef0ddc787bf6574fc3fc0f50796a675f3ececa27",
+        "linux-x64": "9c1045baf2ff2a79729d0f09fa1a4e86dce7c9fd15c9caf5ebb8d96102b51e72",
+        "macos": "cdd358af08c87a8cc7a176327ebac0571a1dc5815acadb19cbd5a6f9ceb402cd",
+        "sources": "77a40ba77ac4ec083004fce7df9bf0af6cfa9b6db1e716a7d1c97781d685b1a6"
       },
-      "version": "4.4"
+      "version": "4.5"
     }
   },
   "dependencies": {
