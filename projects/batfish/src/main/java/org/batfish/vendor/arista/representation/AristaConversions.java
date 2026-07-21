@@ -749,16 +749,21 @@ final class AristaConversions {
         }
         AristaBgpVrf bgpVrf = bgpConfig.getVrfs().get(vrfName);
         if (bgpVrf.getRouteDistinguisher() == null
-            || bgpVrf.getImportRouteTarget() == null
-            || bgpVrf.getExportRouteTarget() == null) {
+            || bgpVrf.getImportRouteTargets().isEmpty()
+            || bgpVrf.getExportRouteTargets().isEmpty()) {
           continue;
         }
+        // TODO: Layer3VniConfig models a single import/export RT; a VRF may
+        // configure multiple. Report an arbitrary one of each until the VI
+        // model supports collections (batfish/batfish#10113). Functional
+        // import/export leaking uses all RTs (see toVendorIndependentConfiguration).
         l3vnis.add(
             Layer3VniConfig.builder()
                 .setAdvertiseV4Unicast(true)
                 .setVni(entry.getValue())
-                .setImportRouteTarget(bgpVrf.getImportRouteTarget().matchString())
-                .setRouteTarget(bgpVrf.getExportRouteTarget())
+                .setImportRouteTarget(
+                    bgpVrf.getImportRouteTargets().iterator().next().matchString())
+                .setRouteTarget(bgpVrf.getExportRouteTargets().iterator().next())
                 .setRouteDistinguisher(bgpVrf.getRouteDistinguisher())
                 .setVrf(vrfName)
                 .build());

@@ -12,6 +12,7 @@ import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -160,6 +161,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -2619,7 +2621,8 @@ public class AristaGrammarTest {
     AristaConfiguration config = parseVendorConfig("arista_bgp_vrf");
     assertThat(config.getAristaBgp(), notNullValue());
     assertThat(
-        config.getAristaBgp().getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
+        config.getAristaBgp().getVrfs().keySet(),
+        containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR", "MULTI"));
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
@@ -2630,8 +2633,8 @@ public class AristaGrammarTest {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
       assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.TRUE));
       assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
-      assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
-      assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
+      assertThat(vrf.getExportRouteTargets(), contains(ExtendedCommunity.target(1L, 1L)));
+      assertThat(vrf.getImportRouteTargets(), contains(ExtendedCommunity.target(2L, 2L)));
       assertThat(vrf.getLocalAs(), equalTo(65000L));
       assertThat(vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.ROUTER_ID));
       assertThat(vrf.getClusterId(), nullValue());
@@ -2643,12 +2646,25 @@ public class AristaGrammarTest {
           vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH));
       assertThat(vrf.getClusterId(), nullValue());
     }
+    {
+      // A VRF may declare multiple import and export EVPN route targets; all are retained.
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("MULTI");
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:456")));
+      assertThat(
+          vrf.getImportRouteTargets(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(65000L, 100L), ExtendedCommunity.target(65000L, 200L)));
+      assertThat(
+          vrf.getExportRouteTargets(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(65000L, 300L), ExtendedCommunity.target(65000L, 400L)));
+    }
   }
 
   @Test
   public void testVrfConversion() {
     Configuration c = parseConfig("arista_bgp_vrf");
-    assertThat(c.getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
+    assertThat(c.getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR", "MULTI"));
     {
       BgpProcess proc = c.getDefaultVrf().getBgpProcess();
       assertThat(proc, notNullValue());
@@ -2672,6 +2688,43 @@ public class AristaGrammarTest {
           proc.getMultipathEquivalentAsPathMatchMode(),
           equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
       assertThat(proc.getTieBreaker(), equalTo(BgpTieBreaker.CLUSTER_LIST_LENGTH));
+    }
+    {
+      // MULTI declares multiple import and export EVPN route targets. The export leak attaches
+      // all export RTs, and the import leak policy accepts a route carrying any import RT.
+      org.batfish.datamodel.Vrf multi = c.getVrfs().get("MULTI");
+      assertThat(multi.getBgpProcess(), notNullValue());
+      List<Bgpv4ToEvpnVrfLeakConfig> multiExportLeaks =
+          c.getDefaultVrf().getVrfLeakConfig().getBgpv4ToEvpnVrfLeakConfigs().stream()
+              .filter(leak -> leak.getImportFromVrf().equals("MULTI"))
+              .collect(ImmutableList.toImmutableList());
+      assertThat(multiExportLeaks, hasSize(1));
+      assertThat(
+          multiExportLeaks.get(0).getAttachRouteTargets(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(65000L, 300L), ExtendedCommunity.target(65000L, 400L)));
+      assertThat(multi.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs(), hasSize(1));
+      RoutingPolicy importPolicy =
+          c.getRoutingPolicies().get(generatedEvpnToBgpv4VrfLeakPolicyName("MULTI"));
+      assertThat(importPolicy, notNullValue());
+      for (ExtendedCommunity rt :
+          ImmutableList.of(
+              ExtendedCommunity.target(65000L, 100L), ExtendedCommunity.target(65000L, 200L))) {
+        Bgpv4Route route =
+            Bgpv4Route.testBuilder()
+                .setNetwork(Prefix.parse("10.0.0.0/32"))
+                .setCommunities(CommunitySet.of(rt))
+                .build();
+        assertTrue(
+            "import policy should accept a route carrying " + rt,
+            importPolicy.process(route, route.toBuilder(), Direction.IN));
+      }
+      Bgpv4Route unmatched =
+          Bgpv4Route.testBuilder()
+              .setNetwork(Prefix.parse("10.0.0.0/32"))
+              .setCommunities(CommunitySet.of(ExtendedCommunity.target(65000L, 999L)))
+              .build();
+      assertFalse(importPolicy.process(unmatched, unmatched.toBuilder(), Direction.IN));
     }
   }
 
