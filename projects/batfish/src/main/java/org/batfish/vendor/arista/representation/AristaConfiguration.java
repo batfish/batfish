@@ -160,6 +160,7 @@ import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
@@ -1030,29 +1031,34 @@ public final class AristaConfiguration extends VendorConfiguration {
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
-    if (bgpVrf.getExportRouteTarget() != null && bgpVrf.getRouteDistinguisher() != null) {
-      // This VRF exports BGPv4 into default VRF's EVPN. Create VRF leak config for default VRF
+    if (!bgpVrf.getExportRouteTargets().isEmpty() && bgpVrf.getRouteDistinguisher() != null) {
+      // This VRF exports BGPv4 into default VRF's EVPN. Create VRF leak config for default VRF.
+      // All export route targets are attached to the exported EVPN routes.
       Bgpv4ToEvpnVrfLeakConfig leakConfig =
           Bgpv4ToEvpnVrfLeakConfig.builder()
               .setImportFromVrf(vrfName)
               .setSrcVrfRouteDistinguisher(bgpVrf.getRouteDistinguisher())
-              .setAttachRouteTargets(bgpVrf.getExportRouteTarget())
+              .setAttachRouteTargets(bgpVrf.getExportRouteTargets())
               .build();
       org.batfish.datamodel.Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
       getOrInitVrfLeakConfig(defaultVrf).addBgpv4ToEvpnVrfLeakConfig(leakConfig);
     }
-    if (bgpVrf.getImportRouteTarget() != null) {
+    if (!bgpVrf.getImportRouteTargets().isEmpty()) {
       // This VRF imports default VRF's EVPN into its BGPv4. Create VRF leak config for it
       RoutingPolicy importPolicy =
           RoutingPolicy.builder()
               .setOwner(c)
               .setName(generatedEvpnToBgpv4VrfLeakPolicyName(bgpVrf.getName()))
               .addStatement(
-                  // Only import EVPN routes that match this VRF's import route target
+                  // Only import EVPN routes that match any of this VRF's import route targets
                   new If(
                       new MatchCommunities(
                           InputCommunities.instance(),
-                          new HasCommunity(new CommunityIs(bgpVrf.getImportRouteTarget()))),
+                          new HasCommunity(
+                              CommunityMatchAny.matchAny(
+                                  bgpVrf.getImportRouteTargets().stream()
+                                      .map(CommunityIs::new)
+                                      .collect(ImmutableList.toImmutableList())))),
                       ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
               .addStatement(Statements.ReturnFalse.toStaticStatement())
               .build();

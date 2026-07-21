@@ -16,6 +16,14 @@ router bgp 1
   vrf BAR
     no bgp bestpath as-path multipath-relax
     bgp bestpath tie-break cluster-list-length
+!
+  vrf MULTI
+    rd 123:456
+    route-target import evpn 65000:100
+    route-target import evpn 65000:200
+    route-target export evpn 65000:300
+    route-target export evpn 65000:400
 
 vrf instance FOO
 vrf instance BAR
+vrf instance MULTI
