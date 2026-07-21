@@ -201,6 +201,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
@@ -3320,6 +3321,26 @@ public class AristaGrammarTest {
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
+  }
+
+  /**
+   * `send-community extended` on an EVPN-activated neighbor must set send-extended-community (not
+   * send-community) on the converted EVPN address family. Otherwise route-target extended
+   * communities are stripped on EVPN export.
+   */
+  @Test
+  public void testEvpnSendExtendedCommunityConversion() {
+    Configuration config = parseConfig("arista_evpn_send_extended_community");
+    AddressFamilyCapabilities caps =
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("192.168.255.2"))
+            .getEvpnAddressFamily()
+            .getAddressFamilyCapabilities();
+    assertFalse(caps.getSendCommunity());
+    assertTrue(caps.getSendExtendedCommunity());
   }
 
   @Test

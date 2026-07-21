@@ -686,7 +686,7 @@ final class AristaConversions {
                   .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Arista
                   .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
                   .setSendExtendedCommunity(
-                      firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
+                      firstNonNull(neighbor.getSendExtendedCommunity(), Boolean.FALSE))
                   .build());
 
       ImmutableSet.Builder<Layer2VniConfig> l2vnis = ImmutableSet.builder();
