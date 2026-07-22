@@ -10,9 +10,27 @@ s_logging
 :
   LOGGING
   (
-    logging_server
+    logging_logfile
+    | logging_server
     | logging_source_interface
   )
+;
+
+logging_logfile
+:
+  LOGFILE name = WORD severity = logging_level ll_size? ll_persistent? NEWLINE
+;
+
+ll_size
+:
+// 4096-4194304
+  SIZE size = uint32
+;
+
+ll_persistent
+:
+// 0-99
+  PERSISTENT THRESHOLD threshold = uint8
 ;
 
 logging_server
@@ -56,7 +74,7 @@ trustpoint_name
 
 ls_facility
 :
-  FACILITY
+  FACILITY facility =
   (
     AUTH
     | AUTHPRIV
