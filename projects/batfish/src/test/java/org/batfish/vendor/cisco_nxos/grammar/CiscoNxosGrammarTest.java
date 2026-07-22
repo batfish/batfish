@@ -380,6 +380,8 @@ import org.batfish.vendor.cisco_nxos.representation.Lacp;
 import org.batfish.vendor.cisco_nxos.representation.Layer3Options;
 import org.batfish.vendor.cisco_nxos.representation.LiteralIpAddressSpec;
 import org.batfish.vendor.cisco_nxos.representation.LiteralPortSpec;
+import org.batfish.vendor.cisco_nxos.representation.LoggingLogfile;
+import org.batfish.vendor.cisco_nxos.representation.LoggingServer;
 import org.batfish.vendor.cisco_nxos.representation.NameServer;
 import org.batfish.vendor.cisco_nxos.representation.NtpAuthenticationKey;
 import org.batfish.vendor.cisco_nxos.representation.NtpServer;
@@ -5355,8 +5357,34 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_logging";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3"));
+    assertThat(
+        c.getLoggingServers(),
+        containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4"));
     assertThat(c.getLoggingSourceInterface(), equalTo("loopback0"));
+  }
+
+  @Test
+  public void testLoggingReferences() throws IOException {
+    String hostname = "nxos_logging";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            CiscoNxosStructureType.VRF,
+            "default",
+            CiscoNxosStructureUsage.LOGGING_SERVER_USE_VRF));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            CiscoNxosStructureType.VRF,
+            "management",
+            CiscoNxosStructureUsage.LOGGING_SERVER_USE_VRF));
   }
 
   @Test
@@ -5364,8 +5392,43 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_logging";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
+    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4"));
     assertThat(vc.getLoggingSourceInterface(), equalTo("loopback0"));
+
+    LoggingServer server1 = vc.getLoggingServers().get("192.0.2.1");
+    assertThat(server1.getSeverityLevel(), equalTo(5));
+    assertThat(server1.getPort(), nullValue());
+    assertFalse(server1.getSecure());
+    assertThat(server1.getUseVrf(), equalTo("default"));
+    assertThat(server1.getFacility(), equalTo("local7"));
+
+    LoggingServer server2 = vc.getLoggingServers().get("192.0.2.2");
+    assertThat(server2.getSeverityLevel(), equalTo(3));
+    assertThat(server2.getPort(), equalTo(2025));
+    assertFalse(server2.getSecure());
+    assertThat(server2.getUseVrf(), equalTo("management"));
+    assertThat(server2.getFacility(), equalTo("kern"));
+
+    LoggingServer server3 = vc.getLoggingServers().get("192.0.2.3");
+    assertThat(server3.getSeverityLevel(), nullValue());
+    assertThat(server3.getPort(), nullValue());
+    assertFalse(server3.getSecure());
+    assertThat(server3.getUseVrf(), nullValue());
+    assertThat(server3.getFacility(), nullValue());
+
+    LoggingServer server4 = vc.getLoggingServers().get("192.0.2.4");
+    assertThat(server4.getSeverityLevel(), equalTo(2));
+    assertThat(server4.getPort(), equalTo(500));
+    assertTrue(server4.getSecure());
+    assertThat(server4.getUseVrf(), nullValue());
+    assertThat(server4.getFacility(), equalTo("local3"));
+
+    LoggingLogfile logfile = vc.getLoggingLogfile();
+    assertThat(logfile, notNullValue());
+    assertThat(logfile.getName(), equalTo("my_log"));
+    assertThat(logfile.getSeverityLevel(), equalTo(6));
+    assertThat(logfile.getSizeBytes(), equalTo(4194304));
+    assertThat(logfile.getPersistentThreshold(), equalTo(80));
   }
 
   @Test

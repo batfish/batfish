@@ -440,6 +440,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, IsisProcess> _isisProcesses;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
+  private @Nullable LoggingLogfile _loggingLogfile;
   private @Nullable String _loggingSourceInterface;
   private @Nonnull NxosMajorVersion _majorVersion;
   private boolean _nonSwitchportDefaultShutdown;
@@ -1846,6 +1847,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, LoggingServer> getLoggingServers() {
     return _loggingServers;
+  }
+
+  public @Nullable LoggingLogfile getLoggingLogfile() {
+    return _loggingLogfile;
+  }
+
+  public void setLoggingLogfile(@Nullable LoggingLogfile loggingLogfile) {
+    _loggingLogfile = loggingLogfile;
   }
 
   public @Nullable String getLoggingSourceInterface() {

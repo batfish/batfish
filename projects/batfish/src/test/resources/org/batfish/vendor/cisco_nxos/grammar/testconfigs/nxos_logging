@@ -3,8 +3,11 @@
 hostname nxos_logging
 !
 
-logging server 192.0.2.1 5 use-vrf default facility kern
-logging server 192.0.2.2 5 port 2025 use-vrf management facility kern
+logging server 192.0.2.1 5 use-vrf default facility local7
+logging server 192.0.2.2 3 port 2025 use-vrf management facility kern
 logging server 192.0.2.3
+logging server 192.0.2.4 2 port 500 secure facility local3
+
+logging logfile my_log 6 size 4194304 persistent threshold 80
 
 logging source-interface loopback 0

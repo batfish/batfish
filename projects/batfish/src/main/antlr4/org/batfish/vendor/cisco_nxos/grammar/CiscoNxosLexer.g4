@@ -1258,6 +1258,11 @@ LOG_BUFFER: 'log-buffer';
 
 LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
+LOGFILE
+:
+  'logfile' -> pushMode ( M_Word )
+;
+
 LOGGING: 'logging';
 
 LOGIN: 'login';
@@ -1758,6 +1763,8 @@ PERIODIC: 'periodic';
 PERMIT: 'permit';
 
 PERMIT_ALL: 'permit-all';
+
+PERSISTENT: 'persistent';
 
 PIM: 'pim';
 
