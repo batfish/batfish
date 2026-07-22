@@ -69,7 +69,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.skyscreamer:jsonassert:1.5.3",
     "org.yaml:snakeyaml:2.6",
     "tools.profiler:async-profiler:4.5",
-    "tools.profiler:async-profiler:4.4:linux-arm64",
+    "tools.profiler:async-profiler:4.5:linux-arm64",
     "tools.profiler:async-profiler:4.4:linux-x64",
     "tools.profiler:async-profiler:4.4:macos",
 ]

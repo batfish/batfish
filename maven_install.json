@@ -71,7 +71,7 @@
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": 359292282,
     "repositories": -1949687017,
-    "tools.profiler:async-profiler": -1318609741
+    "tools.profiler:async-profiler": -1957657206
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "at.yawk.lz4:lz4-java": -1840273873,
