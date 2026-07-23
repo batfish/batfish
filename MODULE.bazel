@@ -71,7 +71,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "tools.profiler:async-profiler:4.5",
     "tools.profiler:async-profiler:4.5:linux-arm64",
     "tools.profiler:async-profiler:4.5:linux-x64",
-    "tools.profiler:async-profiler:4.4:macos",
+    "tools.profiler:async-profiler:4.5:macos",
 ]
 
 BATFISH_MAVEN_BOMS = [

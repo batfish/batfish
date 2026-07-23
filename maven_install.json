@@ -71,7 +71,7 @@
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": 359292282,
     "repositories": -1949687017,
-    "tools.profiler:async-profiler": -652056112
+    "tools.profiler:async-profiler": 180920570
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "at.yawk.lz4:lz4-java": -1840273873,
@@ -349,8 +349,7 @@
     "com.google.guava:guava": "com.google.guava:guava:33.5.0-jre",
     "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.5.0-jre",
     "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.5.0-jre",
-    "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1",
-    "tools.profiler:async-profiler:4.4": "tools.profiler:async-profiler:4.5"
+    "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1"
   },
   "artifacts": {
     "at.yawk.lz4:lz4-java": {
