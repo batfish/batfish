@@ -161,9 +161,43 @@ public class CommunityMatchExprVarCollectorTest {
         new CommunityMatchRegex(
             SpecialCasesRendering.of(ColonSeparatedRendering.instance(), ImmutableMap.of()),
             "^20:");
-    // TODO: support
-    _thrown.expect(IllegalArgumentException.class);
-    _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    CommunityVar cvar = CommunityVar.from("^20:");
+    assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunityMatchRegex_SpecialCasesRendering_nameMatches() {
+    // Regex matches the rendered name "no-export" — community should be included
+    CommunityMatchRegex cmr =
+        new CommunityMatchRegex(
+            SpecialCasesRendering.of(
+                ColonSeparatedRendering.instance(),
+                ImmutableMap.of(StandardCommunity.NO_EXPORT, "no-export")),
+            "no-export");
+    Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    assertEquals(
+        ImmutableSet.of(
+            CommunityVar.from("no-export"), CommunityVar.from(StandardCommunity.NO_EXPORT)),
+        result);
+  }
+
+  @Test
+  public void testVisitCommunityMatchRegex_SpecialCasesRendering_colonFormMatchesButNotTheName() {
+    // Regex "^65535:" matches the colon form "65535:65281" but not the name "no-export".
+    // The community should still be emitted (for atomic predicate splitting), so that the
+    // BDD builder can correctly exclude it.
+    CommunityMatchRegex cmr =
+        new CommunityMatchRegex(
+            SpecialCasesRendering.of(
+                ColonSeparatedRendering.instance(),
+                ImmutableMap.of(StandardCommunity.NO_EXPORT, "no-export")),
+            "^65535:");
+    Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    assertEquals(
+        ImmutableSet.of(
+            CommunityVar.from("^65535:"), CommunityVar.from(StandardCommunity.NO_EXPORT)),
+        result);
   }
 
   @Test
