@@ -22,7 +22,7 @@ Developer runs:
 
                  ↓
 
-  async-profiler v4.2 samples call stacks during execution
+  async-profiler v4.5 samples call stacks during execution
 
                  ↓
 
@@ -35,13 +35,13 @@ Developer runs:
 
 ### async-profiler
 
-Sampling-based Java profiler (v4.2) from Maven Central.
+Sampling-based Java profiler (v4.5) from Maven Central.
 
 Maven artifacts:
-- `tools.profiler:async-profiler:4.2` - Main JAR
-- `tools.profiler:async-profiler:4.2:linux-x64` - Linux x86_64 native library
-- `tools.profiler:async-profiler:4.2:linux-arm64` - Linux ARM64 native library
-- `tools.profiler:async-profiler:4.2:macos` - macOS native library
+- `tools.profiler:async-profiler:4.5` - Main JAR
+- `tools.profiler:async-profiler:4.5:linux-x64` - Linux x86_64 native library
+- `tools.profiler:async-profiler:4.5:linux-arm64` - Linux ARM64 native library
+- `tools.profiler:async-profiler:4.5:macos` - macOS native library
 
 **Bazel target**: `//tools/profiling:native_libs` extracts platform-specific .so/.dylib from JARs
 
