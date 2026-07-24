@@ -424,6 +424,8 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final CiscoFamily _cf;
 
+  private final Logging _logging;
+
   private final Map<String, CryptoMapSet> _cryptoMapSets;
 
   private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
@@ -561,6 +563,7 @@ public final class AsaConfiguration extends VendorConfiguration {
   public AsaConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _cf = new CiscoFamily();
+    _logging = new Logging();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -710,6 +713,11 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public CiscoFamily getCf() {
     return _cf;
+  }
+
+  /** Vendor-specific ASA syslog/logging settings. */
+  public Logging getAsaLogging() {
+    return _logging;
   }
 
   public Map<String, CryptoMapSet> getCryptoMapSets() {

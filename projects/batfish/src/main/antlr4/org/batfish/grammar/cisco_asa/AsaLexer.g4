@@ -1697,6 +1697,8 @@ EMAIL_CONTACT
    'email-contact' -> pushMode ( M_Description )
 ;
 
+EMBLEM: 'emblem';
+
 EMERGENCIES: 'emergencies';
 
 EMPTY: 'empty';
@@ -4492,6 +4494,8 @@ REDUNDANCY_GROUP: 'redundancy-group';
 
 REFERENCE_BANDWIDTH: 'reference-bandwidth';
 
+REFERENCE_IDENTITY: 'reference-identity';
+
 REFLECT: 'reflect';
 
 REFLECTION: 'reflection';
@@ -4859,6 +4863,8 @@ SECONDARY: 'secondary';
 SECONDARY_DIALTONE: 'secondary-dialtone';
 
 SECRET: 'secret';
+
+SECURE: 'secure';
 
 SECUREID_UDP: 'secureid-udp';
 

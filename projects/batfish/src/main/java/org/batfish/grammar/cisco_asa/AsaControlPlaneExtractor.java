@@ -283,6 +283,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -663,8 +664,10 @@ import org.batfish.grammar.cisco_asa.AsaParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.L_transportContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_addressContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Logging_buffer_sizeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_consoleContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Logging_facilityContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_hostContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_onContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Logging_serverContext;
@@ -1120,6 +1123,7 @@ import org.batfish.representation.cisco_asa.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco_asa.StaticRoute;
 import org.batfish.representation.cisco_asa.StubSettings;
 import org.batfish.representation.cisco_asa.SubnetNetworkObject;
+import org.batfish.representation.cisco_asa.SyslogTransportProtocol;
 import org.batfish.representation.cisco_asa.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco_asa.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco_asa.Tunnel;
@@ -1139,6 +1143,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
 
   private static final LongSpace NTP_KEY_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
+
+  private static final IntegerSpace LOGGING_HOST_PORT_RANGE =
+      IntegerSpace.of(Range.closed(1025, 65535));
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -6117,6 +6124,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     buffered.setSeverity(severity);
     buffered.setSeverityNum(severityNum);
     buffered.setSize(size);
+    // Vendor-specific ASA model: record the internal buffer severity by name and level.
+    _configuration.getAsaLogging().setBufferedSeverity(severity);
+    _configuration.getAsaLogging().setBufferedSeverityNum(severityNum);
   }
 
   @Override
@@ -6145,10 +6155,82 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     if (_no) {
       return;
     }
-    Logging logging = _configuration.getCf().getLogging();
     String hostname = ctx.hostname.getText();
-    LoggingHost host = new LoggingHost(hostname);
-    logging.getHosts().put(hostname, host);
+    // Preserve shared-model behavior (used for the VI loggingServers set).
+    Logging logging = _configuration.getCf().getLogging();
+    logging.getHosts().put(hostname, new LoggingHost(hostname));
+
+    // Vendor-specific ASA model: capture interface, transport, and port
+    org.batfish.representation.cisco_asa.LoggingHost syslogHost =
+        new org.batfish.representation.cisco_asa.LoggingHost(ctx.iface.getText(), hostname);
+
+    // Transport defaults to UDP on ASA. The transport clause is either a bare
+    // keyword (tcp | udp) or a combined 'protocol/port' token (e.g. 'tcp/1500').
+    SyslogTransportProtocol transport = SyslogTransportProtocol.UDP;
+    Integer explicitPort = null;
+    if (ctx.transport != null) {
+      if (ctx.transport.TCP() != null) {
+        transport = SyslogTransportProtocol.TCP;
+      } else if (ctx.transport.UDP() != null) {
+        transport = SyslogTransportProtocol.UDP;
+      } else {
+        String text = ctx.transport.getText();
+        int slash = text.indexOf('/');
+        String protocol = (slash < 0 ? text : text.substring(0, slash)).toLowerCase();
+        if (protocol.equals("tcp")) {
+          transport = SyslogTransportProtocol.TCP;
+        } else if (protocol.equals("udp")) {
+          transport = SyslogTransportProtocol.UDP;
+        } else {
+          warn(ctx, String.format("Unrecognized logging host transport protocol: '%s'", text));
+          return;
+        }
+        if (slash >= 0) {
+          Optional<Integer> maybePort = toLoggingHostPort(ctx, text.substring(slash + 1));
+          if (!maybePort.isPresent()) {
+            return;
+          }
+          explicitPort = maybePort.get();
+        }
+      }
+    }
+    syslogHost.setTransport(transport);
+    syslogHost.setPort(explicitPort != null ? explicitPort : transport.getDefaultPort());
+    _configuration.getAsaLogging().getHosts().put(hostname, syslogHost);
+  }
+
+  private @Nonnull Optional<Integer> toLoggingHostPort(
+      ParserRuleContext messageCtx, String portText) {
+    Integer port = Ints.tryParse(portText.trim());
+    if (port == null) {
+      warn(messageCtx, String.format("Invalid logging host port: '%s'", portText));
+      return Optional.empty();
+    }
+    if (!LOGGING_HOST_PORT_RANGE.contains(port)) {
+      warn(
+          messageCtx,
+          String.format(
+              "Expected logging host port in range %s, but got '%s'",
+              LOGGING_HOST_PORT_RANGE, portText));
+      return Optional.empty();
+    }
+    return Optional.of(port);
+  }
+
+  @Override
+  public void exitLogging_facility(Logging_facilityContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getAsaLogging().setFacility(toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitLogging_buffer_size(Logging_buffer_sizeContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getAsaLogging().setBufferSize(toInteger(ctx.bytes));
   }
 
   @Override
@@ -6197,6 +6279,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
     trap.setSeverity(severity);
     trap.setSeverityNum(severityNum);
+    // Vendor-specific ASA model: record the global trap severity by name and level.
+    _configuration.getAsaLogging().setTrapSeverity(severity);
+    _configuration.getAsaLogging().setTrapSeverityNum(severityNum);
   }
 
   @Override

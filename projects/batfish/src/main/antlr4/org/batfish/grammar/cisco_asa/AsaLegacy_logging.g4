@@ -65,7 +65,7 @@ logging_common
    | logging_archive
    | logging_asdm_buffer_size_null
    | logging_asdm_null
-   | logging_buffer_size_null
+   | logging_buffer_size
    | logging_buffered
    | logging_cmts_null
    | logging_console
@@ -77,7 +77,7 @@ logging_common
    | logging_esm_null
    | logging_event_null
    | logging_events_null
-   | logging_facility_null
+   | logging_facility
    | logging_format
    | logging_history_null
    | logging_host
@@ -163,30 +163,29 @@ logging_format
 
 logging_host
 :
-   HOST iname = variable? hostname = variable
+   HOST iface = variable hostname =
    (
-      VRF vrf = variable
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) transport = logging_host_transport?
+   (
+      FORMAT EMBLEM
    )?
    (
-      DISCRIMINATOR descr = variable
-   )?
-   (
-      TRANSPORT
+      SECURE
       (
-         TCP
-         | UDP
-      )
-   )?
-   (
-      PORT
-      (
-         DEFAULT
-         | dec
-      )
-   )?
-   (
-      FACILITY name = variable
+         REFERENCE_IDENTITY refid = variable
+      )?
    )? NEWLINE
+;
+
+// The transport/port pair is either a bare keyword (tcp | udp) or, when a port
+// is present, a single token such as 'tcp/1500' or 'udp/1026'
+logging_host_transport
+:
+   TCP
+   | UDP
+   | VARIABLE
 ;
 
 logging_message
@@ -206,9 +205,9 @@ logging_asdm_buffer_size_null
 :
    ASDM_BUFFER_SIZE null_rest_of_line
 ;
-logging_buffer_size_null
+logging_buffer_size
 :
-   BUFFER_SIZE null_rest_of_line
+   BUFFER_SIZE bytes = dec NEWLINE
 ;
 logging_count_null
 :
@@ -238,9 +237,9 @@ logging_events_null
 :
    EVENTS null_rest_of_line
 ;
-logging_facility_null
+logging_facility
 :
-   FACILITY null_rest_of_line
+   FACILITY num = dec NEWLINE
 ;
 logging_history_null
 :
