@@ -74,6 +74,8 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -100,8 +102,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.AllowedValue;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -228,11 +228,12 @@ public final class ClientTest {
   }
 
   @Test
-  public void testGetQuestionName() throws JSONException {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+  public void testGetQuestionName() {
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
 
@@ -241,9 +242,11 @@ public final class ClientTest {
   }
 
   @Test
-  public void testGetQuestionNameInvalid1() throws JSONException {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put("instance", new JSONObject().put("description", "test question description"));
+  public void testGetQuestionNameInvalid1() {
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
+        "instance",
+        JsonNodeFactory.instance.objectNode().put("description", "test question description"));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("question testquestion does not have instanceName field in instance");
 
@@ -253,7 +256,7 @@ public final class ClientTest {
 
   @Test
   public void testGetQuestionNameInvalid2() {
-    JSONObject testQuestion = new JSONObject();
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("question testquestion does not have instance field");
 
@@ -742,69 +745,75 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionFromFile() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
-    JSONObject question = Client.loadQuestionFromFile(questionJsonPath);
+    ObjectNode question = Client.loadQuestionFromFile(questionJsonPath);
 
     // checking if actual and loaded JSONs are same
     assertEquals(
         "testQuestionName",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
+        question.get(BfConsts.PROP_INSTANCE).get(BfConsts.PROP_INSTANCE_NAME).asText());
     assertEquals(
         "test question description",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+        question.get(BfConsts.PROP_INSTANCE).get(BfConsts.PROP_DESCRIPTION).asText());
   }
 
   @Test
   public void testLoadQuestionFromText() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description")
-            .put(
+            .set(
                 "variables",
-                new JSONObject()
-                    .put(
+                JsonNodeFactory.instance
+                    .objectNode()
+                    .set(
                         "var1",
-                        new JSONObject()
+                        JsonNodeFactory.instance
+                            .objectNode()
                             .put("description", "test var1 description")
                             .put("longDescription", "test var1 long description"))));
-    JSONObject question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
+    ObjectNode question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
 
     // checking if actual and loaded JSONs are same
     assertEquals(
         "testQuestionName",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
+        question.get(BfConsts.PROP_INSTANCE).get(BfConsts.PROP_INSTANCE_NAME).asText());
     assertEquals(
         "test question description",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+        question.get(BfConsts.PROP_INSTANCE).get(BfConsts.PROP_DESCRIPTION).asText());
     assertEquals(
         "test var1 description",
         question
-            .getJSONObject(BfConsts.PROP_INSTANCE)
-            .getJSONObject(BfConsts.PROP_VARIABLES)
-            .getJSONObject("var1")
-            .getString(BfConsts.PROP_DESCRIPTION));
+            .get(BfConsts.PROP_INSTANCE)
+            .get(BfConsts.PROP_VARIABLES)
+            .get("var1")
+            .get(BfConsts.PROP_DESCRIPTION)
+            .asText());
     assertEquals(
         "test var1 long description",
         question
-            .getJSONObject(BfConsts.PROP_INSTANCE)
-            .getJSONObject(BfConsts.PROP_VARIABLES)
-            .getJSONObject("var1")
-            .getString(BfConsts.PROP_LONG_DESCRIPTION));
+            .get(BfConsts.PROP_INSTANCE)
+            .get(BfConsts.PROP_VARIABLES)
+            .get("var1")
+            .get(BfConsts.PROP_LONG_DESCRIPTION)
+            .asText());
   }
 
   @Test
   public void testLoadQuestionFromTextInvalid() {
-    JSONObject testQuestion = new JSONObject();
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
 
     // checking if exception thrown for instance missing
     _thrown.expect(BatfishException.class);
@@ -816,10 +825,11 @@ public final class ClientTest {
   public void testLoadQuestionsNames() throws Exception {
     Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
     Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
@@ -841,10 +851,11 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsFromDir() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();

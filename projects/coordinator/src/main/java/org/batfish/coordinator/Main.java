@@ -3,6 +3,8 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -36,8 +38,6 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.storage.FileBasedStorage;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -96,12 +96,15 @@ public class Main {
   }
 
   @VisibleForTesting
-  static String readQuestionTemplate(Path file, Map<String, String> templates)
-      throws JSONException, IOException {
+  static String readQuestionTemplate(Path file, Map<String, String> templates) throws IOException {
     String questionText = CommonUtil.readFile(file);
-    JSONObject questionObj = new JSONObject(questionText);
-    if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
-      JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+    JsonNode parsed = BatfishObjectMapper.mapper().readTree(questionText);
+    if (!(parsed instanceof ObjectNode)) {
+      throw new BatfishException(String.format("Question in file:%s has no instance name", file));
+    }
+    ObjectNode questionObj = (ObjectNode) parsed;
+    if (questionObj.hasNonNull(BfConsts.PROP_INSTANCE)) {
+      JsonNode instanceDataObj = questionObj.get(BfConsts.PROP_INSTANCE);
       String instanceDataStr = instanceDataObj.toString();
       InstanceData instanceData =
           BatfishObjectMapper.mapper().readValue(instanceDataStr, InstanceData.class);

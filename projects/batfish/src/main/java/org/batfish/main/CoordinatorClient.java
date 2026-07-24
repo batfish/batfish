@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Throwables;
 import java.util.Map;
 import javax.net.ssl.SSLHandshakeException;
@@ -11,8 +12,8 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.codehaus.jettison.json.JSONArray;
 
 /** Helper class that implements (some) communication between Batfish worker and coordinator */
 public final class CoordinatorClient {
@@ -26,7 +27,7 @@ public final class CoordinatorClient {
       for (Map.Entry<String, String> entry : params.entrySet()) {
         webTarget = webTarget.queryParam(entry.getKey(), entry.getValue());
       }
-      JSONArray array;
+      JsonNode array;
       try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
 
         logger.debug(
@@ -38,11 +39,11 @@ public final class CoordinatorClient {
         }
 
         String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
+        array = BatfishObjectMapper.mapper().readTree(sobj);
       }
       logger.debugf("BF: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
-      if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
+      if (!array.get(0).asText().equals(CoordConsts.SVC_KEY_SUCCESS)) {
         logger.errorf(
             "BF: got error while talking to coordinator: %s %s\n", array.get(0), array.get(1));
         return null;

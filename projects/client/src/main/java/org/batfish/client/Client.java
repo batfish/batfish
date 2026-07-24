@@ -7,6 +7,7 @@ import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.difflib.DiffUtils;
 import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.patch.Patch;
@@ -52,6 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.BfCoordWorkHelper.WorkResult;
 import org.batfish.client.Command.CommandUsage;
 import org.batfish.client.Command.TestComparisonMode;
+import org.batfish.client.LenientJsonParser.LenientJsonException;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
@@ -94,9 +96,6 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parse.ParsedIpSpaceSpecifier;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONTokener;
 
 public class Client extends AbstractClient implements IClient {
 
@@ -775,10 +774,10 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
     }
     Map<String, JsonNode> parameters = parseParams(paramsLine);
-    JSONObject questionJson;
+    ObjectNode questionJson;
     try {
-      questionJson = new JSONObject(questionContentUnmodified);
-    } catch (JSONException e) {
+      questionJson = (ObjectNode) BatfishObjectMapper.mapper().readTree(questionContentUnmodified);
+    } catch (IOException | ClassCastException e) {
       throw new BatfishException("Question content is not valid JSON", e);
     }
     String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
@@ -800,19 +799,13 @@ public class Client extends AbstractClient implements IClient {
     }
     try {
       questionJson = QuestionHelper.fillTemplate(questionJson, parameters, questionName);
-    } catch (IOException | JSONException e) {
+    } catch (IOException e) {
       throw new BatfishException("Could not fill template: ", e);
     }
     String modifiedQuestionStr = questionJson.toString();
 
-    boolean questionJsonDifferential;
-    try {
-      questionJsonDifferential =
-          questionJson.has(BfConsts.PROP_DIFFERENTIAL)
-              && questionJson.getBoolean(BfConsts.PROP_DIFFERENTIAL);
-    } catch (JSONException e) {
-      throw new BatfishException("Could not find whether question is explicitly differential", e);
-    }
+    boolean questionJsonDifferential =
+        questionJson.path(BfConsts.PROP_DIFFERENTIAL).asBoolean(false);
     if (questionJsonDifferential && _currDeltaTestrig == null) {
       _logger.output(DIFF_NOT_READY_MSG);
       return false;
@@ -885,30 +878,18 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean answerType(String questionType, String paramsLine, FileWriter outWriter) {
-    JSONObject questionJson;
+    ObjectNode questionJson;
     try {
       String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
-      questionJson = new JSONObject(questionString);
+      questionJson = (ObjectNode) BatfishObjectMapper.mapper().readTree(questionString);
 
       Map<String, JsonNode> parameters = parseParams(paramsLine);
       for (Entry<String, JsonNode> e : parameters.entrySet()) {
         String parameterName = e.getKey();
-        String parameterValue = e.getValue().toString();
-        Object parameterObj;
-        try {
-          parameterObj = new JSONTokener(parameterValue).nextValue();
-          questionJson.put(parameterName, parameterObj);
-        } catch (JSONException e1) {
-          throw new BatfishException(
-              "Failed to apply parameter: '"
-                  + parameterName
-                  + "' with value: '"
-                  + parameterValue
-                  + "' to question JSON",
-              e1);
-        }
+        // The parameter value is already a JsonNode produced by parseParams; set it directly.
+        questionJson.set(parameterName, e.getValue());
       }
-    } catch (JSONException e) {
+    } catch (IOException | ClassCastException e) {
       throw new BatfishException("Failed to convert unmodified question string to JSON", e);
     } catch (BatfishException e) {
       _logger.errorf("Could not construct a question: %s\n", e.getMessage());
@@ -1074,25 +1055,18 @@ public class Client extends AbstractClient implements IClient {
    * @return name of question
    * @throws if any of instance or instanceName not found in question
    */
-  static String getQuestionName(JSONObject question, String questionIdentifier) {
+  static String getQuestionName(ObjectNode question, String questionIdentifier) {
     if (!question.has(BfConsts.PROP_INSTANCE)) {
       throw new BatfishException(
           String.format("question %s does not have instance field", questionIdentifier));
     }
-    try {
-      if (!question.getJSONObject(BfConsts.PROP_INSTANCE).has(BfConsts.PROP_INSTANCE_NAME)) {
-        throw new BatfishException(
-            String.format(
-                "question %s does not have instanceName field in instance", questionIdentifier));
-      } else {
-        return question
-            .getJSONObject(BfConsts.PROP_INSTANCE)
-            .getString(BfConsts.PROP_INSTANCE_NAME);
-      }
-    } catch (JSONException e) {
+    JsonNode instance = question.get(BfConsts.PROP_INSTANCE);
+    if (!instance.isObject() || !instance.has(BfConsts.PROP_INSTANCE_NAME)) {
       throw new BatfishException(
-          String.format("Failure in extracting instanceName from question %s", questionIdentifier));
+          String.format(
+              "question %s does not have instanceName field in instance", questionIdentifier));
     }
+    return instance.get(BfConsts.PROP_INSTANCE_NAME).asText();
   }
 
   public Settings getSettings() {
@@ -1297,10 +1271,10 @@ public class Client extends AbstractClient implements IClient {
    * Loads question from a given file
    *
    * @param questionFile File containing the question JSON
-   * @return question loaded as a {@link JSONObject}
+   * @return question loaded as an {@link ObjectNode}
    * @throws BatfishException if question does not have instanceName or question cannot be parsed
    */
-  static JSONObject loadQuestionFromFile(Path questionFile) {
+  static ObjectNode loadQuestionFromFile(Path questionFile) {
     String questionText = CommonUtil.readFile(questionFile);
     return loadQuestionFromText(questionText, questionFile.toString());
   }
@@ -1310,14 +1284,18 @@ public class Client extends AbstractClient implements IClient {
    *
    * @param questionText Question JSON Text
    * @param questionSource JSON key of question or file path of JSON
-   * @return question loaded as a {@link JSONObject}
+   * @return question loaded as an {@link ObjectNode}
    * @throws BatfishException if question does not have instanceName or question cannot be parsed
    */
-  static JSONObject loadQuestionFromText(String questionText, String questionSource) {
+  static ObjectNode loadQuestionFromText(String questionText, String questionSource) {
     try {
-      JSONObject questionObj = new JSONObject(questionText);
-      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
-        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+      JsonNode parsed = BatfishObjectMapper.mapper().readTree(questionText);
+      if (!(parsed instanceof ObjectNode)) {
+        throw new BatfishException("Failed to process question");
+      }
+      ObjectNode questionObj = (ObjectNode) parsed;
+      if (questionObj.hasNonNull(BfConsts.PROP_INSTANCE)) {
+        JsonNode instanceDataObj = questionObj.get(BfConsts.PROP_INSTANCE);
         String instanceDataStr = instanceDataObj.toString();
         InstanceData instanceData =
             BatfishObjectMapper.mapper()
@@ -1328,7 +1306,7 @@ public class Client extends AbstractClient implements IClient {
         throw new BatfishException(
             String.format("Question in %s has no instance data", questionSource));
       }
-    } catch (JSONException | IOException e) {
+    } catch (IOException e) {
       throw new BatfishException("Failed to process question", e);
     }
   }
@@ -1401,7 +1379,7 @@ public class Client extends AbstractClient implements IClient {
     Multimap<String, String> loadedQuestions = HashMultimap.create();
     for (Path jsonQuestionFile : jsonQuestionFiles) {
       try {
-        JSONObject questionJSON = loadQuestionFromFile(jsonQuestionFile);
+        ObjectNode questionJSON = loadQuestionFromFile(jsonQuestionFile);
         loadedQuestions.put(
             getQuestionName(questionJSON, jsonQuestionFile.toString()), questionJSON.toString());
       } catch (Exception e) {
@@ -1473,15 +1451,13 @@ public class Client extends AbstractClient implements IClient {
 
   private Map<String, JsonNode> parseParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
-    Map<String, JsonNode> parameters;
     try {
-      parameters =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  new JSONObject(jsonParamsStr).toString(),
-                  new TypeReference<Map<String, JsonNode>>() {});
-      return parameters;
-    } catch (JSONException | IOException e) {
+      // The CLI accepts a lenient, org.json-flavored parameter syntax (unquoted keys, '='
+      // separators, etc.); normalize it to strict JSON before binding to a map.
+      JsonNode params = LenientJsonParser.parse(jsonParamsStr);
+      return BatfishObjectMapper.mapper()
+          .readValue(params.toString(), new TypeReference<Map<String, JsonNode>>() {});
+    } catch (LenientJsonException | IOException e) {
       throw new BatfishException(
           "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
               + "values valid JSON?)",
@@ -2107,7 +2083,7 @@ public class Client extends AbstractClient implements IClient {
 
   /**
    * Template validation extracts the question template text and parameters, and then relies on
-   * {@link QuestionHelper#validateTemplate(JSONObject, Map)}
+   * {@link QuestionHelper#validateTemplate(ObjectNode, Map)}
    *
    * @param words The array of command words that led to this function being called
    * @param outWriter The parsed question is written to this FileWriter
@@ -2135,11 +2111,11 @@ public class Client extends AbstractClient implements IClient {
         parseParams(String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)));
 
     try {
-      Question question =
-          QuestionHelper.validateTemplate(
-              new JSONObject(questionContentUnmodified), parsedParameters);
+      ObjectNode questionJson =
+          (ObjectNode) BatfishObjectMapper.mapper().readTree(questionContentUnmodified);
+      Question question = QuestionHelper.validateTemplate(questionJson, parsedParameters);
       logOutput(outWriter, BatfishObjectMapper.writePrettyString(question));
-    } catch (IOException | JSONException e) {
+    } catch (IOException | ClassCastException e) {
       throw new BatfishException(
           "Could not create or write question template: " + e.getMessage(), e);
     }
