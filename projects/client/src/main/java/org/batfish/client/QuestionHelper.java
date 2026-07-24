@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Map;
@@ -13,8 +14,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class QuestionHelper {
 
@@ -26,14 +25,14 @@ public class QuestionHelper {
    * @param questionJson The question template to modify
    * @param parameters The parameters and values to fill
    * @param questionName The name to embed in the template
-   * @return A JSONObject representation of the filled out template
+   * @return An {@link ObjectNode} representation of the filled out template
    */
-  public static JSONObject fillTemplate(
-      JSONObject questionJson, Map<String, JsonNode> parameters, String questionName)
-      throws JSONException, IOException {
-    JSONObject clonedQuestionJson = new JSONObject(questionJson.toString()); // deep copy
+  public static ObjectNode fillTemplate(
+      ObjectNode questionJson, Map<String, JsonNode> parameters, String questionName)
+      throws IOException {
+    ObjectNode clonedQuestionJson = questionJson.deepCopy();
 
-    JSONObject instanceJson = clonedQuestionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+    ObjectNode instanceJson = (ObjectNode) clonedQuestionJson.get(BfConsts.PROP_INSTANCE);
     instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
     String instanceDataStr = instanceJson.toString();
     InstanceData instanceData =
@@ -44,9 +43,9 @@ public class QuestionHelper {
     Client.validateAndSet(parameters, variables);
     Client.checkVariableState(variables);
 
-    JSONObject modifiedInstanceData =
-        new JSONObject(BatfishObjectMapper.writePrettyString(instanceData));
-    clonedQuestionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
+    JsonNode modifiedInstanceData =
+        BatfishObjectMapper.mapper().readTree(BatfishObjectMapper.writePrettyString(instanceData));
+    clonedQuestionJson.set(BfConsts.PROP_INSTANCE, modifiedInstanceData);
 
     return clonedQuestionJson;
   }
@@ -74,20 +73,19 @@ public class QuestionHelper {
   /**
    * Validates templates. It first checks if all the variables in template are being exercised by
    * validation (see reason below), and all variable in the templates are used somplace. Then, it
-   * checks if the output of {@link #fillTemplate(JSONObject, Map, String)} can be parsed into a
+   * checks if the output of {@link #fillTemplate(ObjectNode, Map, String)} can be parsed into a
    * valid Question.
    *
-   * @param questionJson The {@link JSONObject} that represents the question
+   * @param questionJson The {@link ObjectNode} that represents the question
    * @param parsedParameters The map of parameter name to value
    * @return The {@link Question} after parameter filling
-   * @throws JSONException If instance data cannot be read from the template or {@link
-   *     #fillTemplate(JSONObject, Map, String)} throws an exception
-   * @throws IOException If {@link #fillTemplate(JSONObject, Map, String)} throws an exception
+   * @throws IOException If instance data cannot be read from the template or {@link
+   *     #fillTemplate(ObjectNode, Map, String)} throws an exception
    */
-  static Question validateTemplate(JSONObject questionJson, Map<String, JsonNode> parsedParameters)
-      throws JSONException, IOException {
+  static Question validateTemplate(ObjectNode questionJson, Map<String, JsonNode> parsedParameters)
+      throws IOException {
 
-    JSONObject instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+    ObjectNode instanceJson = (ObjectNode) questionJson.get(BfConsts.PROP_INSTANCE);
     InstanceData instanceData =
         BatfishObjectMapper.mapper()
             .readValue(instanceJson.toString(), new TypeReference<InstanceData>() {});

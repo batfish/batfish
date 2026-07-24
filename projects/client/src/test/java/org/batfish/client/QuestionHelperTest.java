@@ -6,12 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,10 +21,12 @@ public class QuestionHelperTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void fillTemplate() throws JSONException, IOException {
-    JSONObject template =
-        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
-    JSONObject filledTempate =
+  public void fillTemplate() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/goodTemplate.json", UTF_8));
+    ObjectNode filledTempate =
         QuestionHelper.fillTemplate(
             template, ImmutableSortedMap.of("parameter1", new IntNode(2)), "qname");
     QuestionHelperTestQuestion question =
@@ -36,9 +38,11 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateExtraParameter() throws JSONException, IOException {
-    JSONObject template =
-        new JSONObject(readResource("org/batfish/client/extraParameter.json", UTF_8));
+  public void validateTemplateExtraParameter() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/extraParameter.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unrecognized field");
@@ -49,9 +53,11 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateExtraVariable() throws JSONException, IOException {
-    JSONObject template =
-        new JSONObject(readResource("org/batfish/client/extraVariable.json", UTF_8));
+  public void validateTemplateExtraVariable() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/extraVariable.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unused variable");
@@ -62,9 +68,11 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateSuccess() throws JSONException, IOException {
-    JSONObject template =
-        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
+  public void validateTemplateSuccess() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/goodTemplate.json", UTF_8));
 
     QuestionHelperTestQuestion question =
         (QuestionHelperTestQuestion)
@@ -77,9 +85,11 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateUnexercisedVariable() throws JSONException, IOException {
-    JSONObject template =
-        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
+  public void validateTemplateUnexercisedVariable() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/goodTemplate.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Template validation should exercise all variables");
