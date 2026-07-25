@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-logging
+!
+logging enable
+logging host inside 10.0.0.1 tcp/1500
+logging host dmz 192.168.1.5 udp/1026
+logging host mgmt 172.16.0.9
+logging host outside 10.0.0.4 tcp
+logging host dmz 192.168.1.7 udp
+logging host inside 2001::1:1 udp/2020
+logging facility 21
+logging trap errors
+logging buffered warnings
+logging buffer-size 16384
+!
