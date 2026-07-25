@@ -216,8 +216,9 @@ s_ip
     | ip_as_path_access_list
     | ip_community_list
     | ip_dhcp
+    | ip_dns
     | ip_domain_list_null
-    | ip_domain_lookup_null
+    | ip_domain_lookup
     | ip_domain_name
     | ip_name_server
     | ip_pim
@@ -241,13 +242,27 @@ domain_name
 
 ip_name_server
 :
-  NAME_SERVER servers += name_server+ (USE_VRF vrf = vrf_name)? NEWLINE
+  NAME_SERVER servers += name_server+
+  (
+    SOURCE_INTERFACE source_interface = interface_name
+    | USE_VRF vrf = vrf_name
+  )* NEWLINE
 ;
 
 name_server
 :
   ip_address
   | ipv6_address
+;
+
+ip_dns
+:
+  DNS ip_dns_source_interface
+;
+
+ip_dns_source_interface
+:
+  SOURCE_INTERFACE source_interface = interface_name (VRF vrf = vrf_name)? NEWLINE
 ;
 
 ip_arp_null
@@ -258,9 +273,9 @@ ip_domain_list_null
 :
    DOMAIN_LIST null_rest_of_line
 ;
-ip_domain_lookup_null
+ip_domain_lookup
 :
-   DOMAIN_LOOKUP null_rest_of_line
+   DOMAIN_LOOKUP NEWLINE
 ;
 
 ip_pim
@@ -455,7 +470,7 @@ no_ip_adjacency_null
 | no_ip_auto_discard_null
 | no_ip_dns_null
 | no_ip_domain_list_null
-| no_ip_domain_lookup_null
+| no_ip_domain_lookup
 | no_ip_dscp_lop_null
 | no_ip_extcommunity_list_null
 | no_ip_host_null
@@ -502,9 +517,9 @@ no_ip_domain_list_null
 :
    DOMAIN_LIST null_rest_of_line
 ;
-no_ip_domain_lookup_null
+no_ip_domain_lookup
 :
-   DOMAIN_LOOKUP null_rest_of_line
+   DOMAIN_LOOKUP NEWLINE
 ;
 no_ip_dscp_lop_null
 :

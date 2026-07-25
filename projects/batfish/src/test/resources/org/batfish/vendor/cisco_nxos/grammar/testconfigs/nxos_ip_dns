@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_dns
+!
+interface loopback0
+!
+interface loopback3
+!
+interface loopback4
+!
+interface loopback5
+!
+ip domain-lookup
+ip name-server 192.0.2.11 192.0.2.12 use-vrf Client
+ip name-server 198.51.100.11 source-interface loopback5
+ip dns source-interface loopback0 vrf Corp
+ip dns source-interface loopback3 vrf Mgmt
+ip dns source-interface loopback4 vrf Client

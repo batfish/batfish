@@ -578,7 +578,16 @@ DISTRIBUTE_LIST: 'distribute-list';
 
 DNS
 :
-  'dns' -> pushMode(M_Words)
+  'dns'
+  {
+    // In "[no] ip dns ..." the preceding token is IP, and we want the remainder of the line to be
+    // tokenized normally (e.g. source-interface, interface names, vrf). Everywhere else (notably
+    // the "dns <hostname>" line inside an "ip sla" block), push M_Words so arbitrary text such as
+    // hostnames is consumed as words.
+    if (lastTokenType() != IP) {
+      pushMode(M_Words);
+    }
+  }
 ;
 
 DNSIX: 'dnsix';
