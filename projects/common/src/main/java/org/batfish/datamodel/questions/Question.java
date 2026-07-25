@@ -7,18 +7,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.re2j.Pattern;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Question implements IQuestion {
@@ -116,9 +115,14 @@ public abstract class Question implements IQuestion {
 
   private static String preprocessQuestion(String rawQuestionText) {
     try {
-      JSONObject jobj = new JSONObject(rawQuestionText);
-      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
-        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
+      JsonNode parsed = BatfishObjectMapper.mapper().readTree(rawQuestionText);
+      if (!(parsed instanceof ObjectNode)) {
+        throw new BatfishException(
+            String.format("Question text [%s] is not a JSON object", rawQuestionText));
+      }
+      ObjectNode jobj = (ObjectNode) parsed;
+      if (jobj.hasNonNull(BfConsts.PROP_INSTANCE)) {
+        String instanceDataStr = jobj.get(BfConsts.PROP_INSTANCE).toString();
         InstanceData instanceData =
             BatfishObjectMapper.mapper()
                 .readValue(instanceDataStr, new TypeReference<InstanceData>() {});
@@ -139,15 +143,17 @@ public abstract class Question implements IQuestion {
               if (!value.isArray()) {
                 throw new IllegalArgumentException("Expecting JSON array for array type");
               }
-              JSONArray arr = new JSONArray();
+              ArrayNode arr = jobj.arrayNode();
               for (int i = 0; i < value.size(); i++) {
                 String valueJsonString = new ObjectMapper().writeValueAsString(value.get(i));
-                arr.put(i, new JSONObject(preprocessQuestion(valueJsonString)));
+                arr.add(BatfishObjectMapper.mapper().readTree(preprocessQuestion(valueJsonString)));
               }
-              jobj.put(varName, arr);
+              jobj.set(varName, arr);
             } else {
               String valueJsonString = new ObjectMapper().writeValueAsString(value);
-              jobj.put(varName, new JSONObject(preprocessQuestion(valueJsonString)));
+              jobj.set(
+                  varName,
+                  BatfishObjectMapper.mapper().readTree(preprocessQuestion(valueJsonString)));
             }
           }
         }
@@ -167,7 +173,9 @@ public abstract class Question implements IQuestion {
             if (stringType && !setType) {
               inlineReplacement = valueJsonString.substring(1, valueJsonString.length() - 1);
             } else {
-              String quotedValueJsonString = JSONObject.quote(valueJsonString);
+              // Escape the JSON text so it can be embedded inline as a JSON string, then strip the
+              // surrounding quotes that Jackson adds.
+              String quotedValueJsonString = new ObjectMapper().writeValueAsString(valueJsonString);
               inlineReplacement =
                   quotedValueJsonString.substring(1, quotedValueJsonString.length() - 1);
             }
@@ -180,7 +188,7 @@ public abstract class Question implements IQuestion {
         return questionText;
       }
       return rawQuestionText;
-    } catch (JSONException | IOException e) {
+    } catch (IOException e) {
       throw new BatfishException(
           String.format("Could not convert raw question text [%s] to JSON", rawQuestionText), e);
     }
@@ -191,23 +199,23 @@ public abstract class Question implements IQuestion {
    * Is this fragile? To be doubly sure, we do this only for keys with a sibling key "class" that is
    * a Question class
    */
-  private static void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
-      throws JSONException {
-    Iterator<?> iter = questionObject.keys();
-    while (iter.hasNext()) {
-      String key = (String) iter.next();
-      Object value = questionObject.get(key);
-      if (value instanceof String) {
-        if (value.equals("${" + varName + "}")) {
-          iter.remove();
+  private static void recursivelyRemoveOptionalVar(ObjectNode questionObject, String varName) {
+    // Collect keys first to avoid mutating the node while iterating over its field names.
+    List<String> keys = new ArrayList<>();
+    questionObject.fieldNames().forEachRemaining(keys::add);
+    for (String key : keys) {
+      JsonNode value = questionObject.get(key);
+      if (value.isTextual()) {
+        if (value.textValue().equals("${" + varName + "}")) {
+          questionObject.remove(key);
         }
-      } else if (value instanceof JSONObject) {
-        JSONObject childObject = (JSONObject) value;
-        if (childObject.has("class")) {
-          Object classValue = childObject.get("class");
-          if (classValue instanceof String && isQuestionClass((String) classValue)) {
-            recursivelyRemoveOptionalVar(childObject, varName);
-          }
+      } else if (value instanceof ObjectNode) {
+        ObjectNode childObject = (ObjectNode) value;
+        JsonNode classValue = childObject.get("class");
+        if (classValue != null
+            && classValue.isTextual()
+            && isQuestionClass(classValue.textValue())) {
+          recursivelyRemoveOptionalVar(childObject, varName);
         }
       }
     }

@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import java.io.File;
@@ -17,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -39,10 +40,11 @@ public class MainTest {
     // already existing question template with key duplicate_template
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
 
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", DUPLICATE_TEMPLATE_NAME)
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
@@ -65,10 +67,11 @@ public class MainTest {
     Map<String, String> questionTemplates = Maps.newHashMap();
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
 
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", DUPLICATE_TEMPLATE_NAME.toUpperCase())
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
@@ -92,10 +95,11 @@ public class MainTest {
     Map<String, String> questionTemplates = Maps.newHashMap();
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
 
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", NEW_TEMPLATE_NAME)
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
@@ -117,19 +121,21 @@ public class MainTest {
 
   @Test
   public void testReadQuestionTemplatesRecursive() throws Exception {
-    JSONObject testQuestion1 = new JSONObject();
-    testQuestion1.put(
+    ObjectNode testQuestion1 = JsonNodeFactory.instance.objectNode();
+    testQuestion1.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestion1")
             .put("description", "test question one description"));
     Path question1JsonPath = _folder.newFile("testquestion1.json").toPath();
     CommonUtil.writeFile(question1JsonPath, testQuestion1.toString());
 
-    JSONObject testQuestion2 = new JSONObject();
-    testQuestion2.put(
+    ObjectNode testQuestion2 = JsonNodeFactory.instance.objectNode();
+    testQuestion2.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestion2")
             .put("description", "test question two description"));
     File nestedFolder = _folder.newFolder("nestedFolder");
@@ -156,10 +162,11 @@ public class MainTest {
 
   @Test
   public void testEmptyQuestionTemplateDir() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
+    ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
+    testQuestion.set(
         "instance",
-        new JSONObject()
+        JsonNodeFactory.instance
+            .objectNode()
             .put("instanceName", "testQuestion")
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
