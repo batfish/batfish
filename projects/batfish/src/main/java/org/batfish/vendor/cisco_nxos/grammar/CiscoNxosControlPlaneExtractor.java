@@ -135,6 +135,8 @@ import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsa
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_ACCESS_LIST_LINE_SELF_REFERENCE;
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_PORTGROUP;
+import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_DNS_SOURCE_INTERFACE;
+import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_NAME_SERVER_SOURCE_INTERFACE;
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_PREFIX_LIST;
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_INTERFACE;
@@ -448,6 +450,8 @@ import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_as_path_access_l
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_as_path_access_list_seqContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_community_list_nameContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_community_list_seqContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_dns_source_interfaceContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_domain_lookupContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_domain_nameContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_name_serverContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Ip_prefixContext;
@@ -487,6 +491,7 @@ import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Monitor_session_des
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Monitor_session_source_interfaceContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Monitor_session_source_vlanContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Name_serverContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_ip_domain_lookupContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_ip_route_networkContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.No_sysds_switchportContext;
@@ -794,6 +799,7 @@ import org.batfish.vendor.cisco_nxos.representation.CiscoNxosStructureUsage;
 import org.batfish.vendor.cisco_nxos.representation.DefaultVrfOspfProcess;
 import org.batfish.vendor.cisco_nxos.representation.DistributeList;
 import org.batfish.vendor.cisco_nxos.representation.DistributeList.DistributeListFilterType;
+import org.batfish.vendor.cisco_nxos.representation.DnsSourceInterface;
 import org.batfish.vendor.cisco_nxos.representation.EigrpMetric;
 import org.batfish.vendor.cisco_nxos.representation.EigrpProcessConfiguration;
 import org.batfish.vendor.cisco_nxos.representation.EigrpVrfConfiguration;
@@ -2206,6 +2212,36 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIp_domain_lookup(Ip_domain_lookupContext ctx) {
+    _c.setDnsLookupEnabled(true);
+  }
+
+  @Override
+  public void exitNo_ip_domain_lookup(No_ip_domain_lookupContext ctx) {
+    _c.setDnsLookupEnabled(false);
+  }
+
+  @Override
+  public void exitIp_dns_source_interface(Ip_dns_source_interfaceContext ctx) {
+    Optional<String> inameOrError = toString(ctx, ctx.source_interface);
+    if (!inameOrError.isPresent()) {
+      return;
+    }
+    String name = inameOrError.get();
+    String vrf = null;
+    if (ctx.vrf != null) {
+      Optional<String> vrfOrErr = toString(ctx, ctx.vrf);
+      if (!vrfOrErr.isPresent()) {
+        return;
+      }
+      vrf = vrfOrErr.get();
+    }
+    _c.addDnsSourceInterface(new DnsSourceInterface(name, vrf));
+    _c.referenceStructure(
+        INTERFACE, name, IP_DNS_SOURCE_INTERFACE, ctx.source_interface.getStart().getLine());
+  }
+
+  @Override
   public void exitIp_name_server(Ip_name_serverContext ctx) {
     String useVrf = null;
     if (ctx.vrf != null) {
@@ -2215,8 +2251,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       useVrf = vrfOrErr.get();
     }
+    String sourceInterface = null;
+    if (ctx.source_interface != null) {
+      Optional<String> inameOrError = toString(ctx, ctx.source_interface);
+      if (!inameOrError.isPresent()) {
+        return;
+      }
+      sourceInterface = inameOrError.get();
+      _c.referenceStructure(
+          INTERFACE,
+          sourceInterface,
+          IP_NAME_SERVER_SOURCE_INTERFACE,
+          ctx.source_interface.getStart().getLine());
+    }
     for (Name_serverContext server : ctx.servers) {
-      _currentVrf.addNameServer(new NameServer(getFullText(server), useVrf));
+      _currentVrf.addNameServer(new NameServer(getFullText(server), useVrf, sourceInterface));
     }
   }
 

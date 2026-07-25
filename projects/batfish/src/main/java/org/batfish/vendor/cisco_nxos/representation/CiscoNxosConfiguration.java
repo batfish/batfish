@@ -61,6 +61,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Streams;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -435,6 +436,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private @Nullable String _ipDomainName;
+  private @Nullable Boolean _dnsLookupEnabled;
+  private final @Nonnull List<DnsSourceInterface> _dnsSourceInterfaces;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
@@ -470,6 +473,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public CiscoNxosConfiguration() {
     _bgpGlobalConfiguration = new BgpGlobalConfiguration();
+    _dnsSourceInterfaces = new ArrayList<>();
     _eigrpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
@@ -1831,6 +1835,37 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nullable String getIpDomainName() {
     return _ipDomainName;
+  }
+
+  public @Nullable Boolean getDnsLookupEnabled() {
+    return _dnsLookupEnabled;
+  }
+
+  public void setDnsLookupEnabled(@Nullable Boolean dnsLookupEnabled) {
+    _dnsLookupEnabled = dnsLookupEnabled;
+  }
+
+  public @Nonnull List<DnsSourceInterface> getDnsSourceInterfaces() {
+    return _dnsSourceInterfaces;
+  }
+
+  public void addDnsSourceInterface(DnsSourceInterface dnsSourceInterface) {
+    if (_dnsSourceInterfaces.contains(dnsSourceInterface)) {
+      return;
+    }
+    _dnsSourceInterfaces.add(dnsSourceInterface);
+  }
+
+  public @Nonnull Set<String> getAllDnsSourceInterfaces() {
+    ImmutableSet.Builder<String> interfaces = ImmutableSet.builder();
+    _dnsSourceInterfaces.forEach(
+        dnsSourceInterface -> interfaces.add(dnsSourceInterface.getInterface()));
+    _vrfs.values().stream()
+        .flatMap(vrf -> vrf.getNameServers().stream())
+        .map(NameServer::getSourceInterface)
+        .filter(Objects::nonNull)
+        .forEach(interfaces::add);
+    return interfaces.build();
   }
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {

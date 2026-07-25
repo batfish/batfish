@@ -1,0 +1,5 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_domain_lookup_disabled
+!
+no ip domain-lookup

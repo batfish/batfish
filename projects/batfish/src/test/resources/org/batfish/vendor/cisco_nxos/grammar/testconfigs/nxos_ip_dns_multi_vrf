@@ -1,0 +1,41 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_dns_multi_vrf
+!
+ip domain-lookup
+ip domain-name example.com
+ip name-server 192.0.2.11 192.0.2.12 192.0.2.13 192.0.2.14 192.0.2.15 192.0.2.16 use-vrf Client source-interface loopback6
+ip name-server 198.51.100.11 198.51.100.12 198.51.100.13 198.51.100.14 198.51.100.15 198.51.100.16 use-vrf Infra source-interface loopback7
+ip name-server 203.0.113.11 203.0.113.12 203.0.113.13 use-vrf Mgmt
+ip dns source-interface loopback0 vrf Corp
+ip dns source-interface loopback3 vrf Mgmt
+ip dns source-interface loopback4 vrf Client
+ip dns source-interface loopback5 vrf Infra
+!
+vrf context Client
+  ip name-server 192.0.2.11 192.0.2.12 192.0.2.13 192.0.2.14 192.0.2.15 192.0.2.16
+vrf context Corp
+  ip domain-name example.com
+  ip name-server 192.0.2.4
+vrf context Infra
+  ip name-server 198.51.100.11 198.51.100.12 198.51.100.13 198.51.100.14 198.51.100.15 198.51.100.16
+vrf context Mgmt
+  ip name-server 203.0.113.11 203.0.113.12 203.0.113.13
+!
+interface loopback0
+  vrf member Corp
+!
+interface loopback3
+  vrf member Mgmt
+!
+interface loopback4
+  vrf member Client
+!
+interface loopback5
+  vrf member Infra
+!
+interface loopback6
+  vrf member Client
+!
+interface loopback7
+  vrf member Infra
