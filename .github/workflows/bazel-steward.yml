@@ -12,6 +12,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: VirtusLab/bazel-steward@latest
+      - uses: VirtusLab/bazel-steward@v1.8.0
         with:
           configuration-path: "./.bazel-steward.yaml"
