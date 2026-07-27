@@ -25,7 +25,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.guava:guava",
     "com.google.guava:guava-testlib",
     "com.google.re2j:re2j:1.8",
-    "com.ibm.icu:icu4j:76.1",
+    "com.ibm.icu:icu4j:78.3",
     "com.puppycrawl.tools:checkstyle:13.8.0",
     "commons-beanutils:commons-beanutils:1.11.0",
     "commons-cli:commons-cli:1.11.0",
