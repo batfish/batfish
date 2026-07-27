@@ -27,7 +27,7 @@
     "com.google.guava:guava-testlib": 279911981,
     "com.google.j2objc:j2objc-annotations": 2003271689,
     "com.google.re2j:re2j": 1525409503,
-    "com.ibm.icu:icu4j": 304238961,
+    "com.ibm.icu:icu4j": 1685361909,
     "com.puppycrawl.tools:checkstyle": -1817917266,
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
@@ -128,8 +128,8 @@
     "com.google.j2objc:j2objc-annotations:jar:sources": -1518668002,
     "com.google.re2j:re2j": -1688126233,
     "com.google.re2j:re2j:jar:sources": 485338798,
-    "com.ibm.icu:icu4j": 1483821939,
-    "com.ibm.icu:icu4j:jar:sources": 400701553,
+    "com.ibm.icu:icu4j": -1667183492,
+    "com.ibm.icu:icu4j:jar:sources": 1011748514,
     "com.puppycrawl.tools:checkstyle": 1538301535,
     "com.puppycrawl.tools:checkstyle:jar:sources": -1415230263,
     "com.vaadin.external.google:android-json": -815169796,
@@ -546,10 +546,10 @@
     },
     "com.ibm.icu:icu4j": {
       "shasums": {
-        "jar": "732cdf18121b1642899da1f5e37e52cc7f48e3ec07fa737105d4603976781b33",
-        "sources": "3ab527e55dae77dd6fad6d8d397605f8b3fac1162191bc871cc87594e111d109"
+        "jar": "e962c1758d9659ea1e1fbab99c58683f654d304e1126ace19aaabfe39e0edb25",
+        "sources": "b8458be1c296aec6c52ea8f195f27e833c5d6030fa15a4b361a0e83030c3c3fe"
       },
-      "version": "76.1"
+      "version": "78.3"
     },
     "com.puppycrawl.tools:checkstyle": {
       "shasums": {
@@ -1857,6 +1857,7 @@
       "com.google.re2j"
     ],
     "com.ibm.icu:icu4j": [
+      "com.ibm.icu.dev.tool.docs",
       "com.ibm.icu.impl",
       "com.ibm.icu.impl.breakiter",
       "com.ibm.icu.impl.coll",
@@ -1874,6 +1875,7 @@
       "com.ibm.icu.math",
       "com.ibm.icu.message2",
       "com.ibm.icu.number",
+      "com.ibm.icu.segmenter",
       "com.ibm.icu.text",
       "com.ibm.icu.util"
     ],
