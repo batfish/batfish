@@ -566,25 +566,6 @@ dialer_null
    ) null_rest_of_line
 ;
 
-domain_lookup
-:
-   LOOKUP
-   (
-      SOURCE_INTERFACE iname = interface_name
-      | DISABLE
-   ) NEWLINE
-;
-
-domain_name
-:
-   NAME hostname = variable_hostname NEWLINE
-;
-
-domain_name_server
-:
-   NAME_SERVER hostname = variable_hostname NEWLINE
-;
-
 dspf_null
 :
    NO?
@@ -1145,28 +1126,6 @@ ip_dhcp_relay_server
       ip = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
    ) NEWLINE
-;
-
-ip_domain_lookup
-:
-   LOOKUP
-   (VRF vrf = variable)?
-   (SOURCE_INTERFACE iname = interface_name)?
-   NEWLINE
-;
-
-ip_domain_name
-:
-   NAME
-   (VRF vrf = variable)?
-   hostname = variable_hostname NEWLINE
-;
-
-ip_domain_null
-:
-   (
-      LIST
-   ) null_rest_of_line
 ;
 
 ip_probe_null
@@ -2353,17 +2312,89 @@ s_dial_peer
    )*
 ;
 
-s_domain
+s_dns
 :
-   DOMAIN
+   DNS
    (
-      VRF vrf = variable
-   )?
-   (
-      domain_lookup
-      | domain_name
-      | domain_name_server
+      dns_domain_lookup
+      | dns_name_server
+      | dns_server_group
+      | dns_null
    )
+;
+
+dns_domain_lookup
+:
+   DOMAIN_LOOKUP iname = variable NEWLINE
+;
+
+dns_name_server
+:
+   NAME_SERVER (servers += ip_hostname)+ NEWLINE
+;
+
+dns_server_group
+:
+   SERVER_GROUP name = variable NEWLINE
+   (
+      dnsg_name_server
+      | dnsg_domain_name
+      | dnsg_timeout
+      | dnsg_retries
+      | dnsg_poll_timer
+      | dnsg_expire_entry_timer
+   )*
+;
+
+dnsg_name_server
+:
+   NAME_SERVER (servers += ip_hostname)+ (iface = variable)? NEWLINE
+;
+
+dnsg_domain_name
+:
+   DOMAIN_NAME name = variable_hostname NEWLINE
+;
+
+dnsg_timeout
+:
+   TIMEOUT secs = dec NEWLINE
+;
+
+dnsg_retries
+:
+   RETRIES count = dec NEWLINE
+;
+
+dnsg_poll_timer
+:
+   POLL_TIMER MINUTES mins = dec NEWLINE
+;
+
+dnsg_expire_entry_timer
+:
+   EXPIRE_ENTRY_TIMER MINUTES mins = dec NEWLINE
+;
+
+dns_null
+:
+   ~( DOMAIN_LOOKUP | NAME_SERVER | SERVER_GROUP | NEWLINE ) null_rest_of_line
+;
+
+s_dns_group
+:
+   DNS_GROUP name = variable NEWLINE
+;
+
+s_dns_group_map
+:
+   DNS_GROUP_MAP NEWLINE
+   dns_to_domain*
+;
+
+dns_to_domain
+:
+   DNS_TO_DOMAIN group = variable domain = variable_hostname NEWLINE
 ;
 
 s_domain_name
@@ -2593,24 +2624,6 @@ s_ip_dhcp
    )
 ;
 
-s_ip_domain
-:
-   NO? IP DOMAIN
-   (
-      ip_domain_lookup
-      | ip_domain_name
-      | ip_domain_null
-   )
-;
-
-s_ip_domain_name
-:
-   IP DOMAIN_NAME hostname = variable_hostname
-   (
-      USE_VRF variable
-   )? NEWLINE
-;
-
 ip_local
 :
   LOCAL ipl_policy
@@ -2619,20 +2632,6 @@ ip_local
 ipl_policy
 :
   POLICY ROUTE_MAP name = variable NEWLINE
-;
-
-s_ip_name_server
-:
-   IP NAME_SERVER
-   (
-      VRF vrf = variable
-   )?
-   (
-      hostnames += ip_hostname
-   )+
-   (
-      USE_VRF vrf = variable
-   )? NEWLINE
 ;
 
 s_ip_nbar
@@ -3681,7 +3680,9 @@ stanza
    | s_dhcp
    | s_dialer
    | s_dial_peer
-   | s_domain
+   | s_dns
+   | s_dns_group
+   | s_dns_group_map
    | s_domain_name
    | s_dot11
    | s_dspfarm
@@ -3711,9 +3712,6 @@ stanza
    | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
-   | s_ip_domain
-   | s_ip_domain_name
-   | s_ip_name_server
    | s_ip_nbar
    | s_ip_pim
    | s_ip_probe

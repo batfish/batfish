@@ -193,11 +193,13 @@ import org.batfish.representation.cisco_asa.AsaConfiguration;
 import org.batfish.representation.cisco_asa.AsaNat;
 import org.batfish.representation.cisco_asa.AsaNat.Section;
 import org.batfish.representation.cisco_asa.BgpAggregateIpv4Network;
+import org.batfish.representation.cisco_asa.DnsServerGroup;
 import org.batfish.representation.cisco_asa.EigrpProcess;
 import org.batfish.representation.cisco_asa.ExpandedCommunityList;
 import org.batfish.representation.cisco_asa.ExpandedCommunityListLine;
 import org.batfish.representation.cisco_asa.Logging;
 import org.batfish.representation.cisco_asa.LoggingHost;
+import org.batfish.representation.cisco_asa.NameServer;
 import org.batfish.representation.cisco_asa.NetworkObject;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
@@ -277,6 +279,83 @@ public final class CiscoAsaGrammarTest {
   public void testHumanName() throws IOException {
     Configuration c = parseConfig("asa-humanname");
     assertThat(c.getHumanName(), equalTo("ASA-humanname"));
+  }
+
+  @Test
+  public void testDnsDomainLookupExtraction() {
+    AsaConfiguration c = parseVendorConfig("asa_dns");
+    assertThat(c.getDnsDomainLookupInterfaces(), contains("inside", "management", "outside"));
+  }
+
+  @Test
+  public void testDnsServerGroupExtraction() {
+    AsaConfiguration c = parseVendorConfig("asa_dns");
+    Map<String, DnsServerGroup> groups = c.getDnsServerGroups();
+    assertThat(groups.keySet(), containsInAnyOrder("DefaultDNS", "InsideDNS"));
+
+    DnsServerGroup defaultGroup = groups.get("DefaultDNS");
+    assertThat(
+        defaultGroup.getNameServers(),
+        contains(
+            new NameServer("192.0.2.10", "management"),
+            new NameServer("192.0.2.11", "management"),
+            new NameServer("192.0.2.12", null),
+            new NameServer("203.0.113.8", null)));
+    assertThat(defaultGroup.getDomainName(), equalTo("example.com"));
+    assertThat(defaultGroup.getTimeoutSeconds(), equalTo(7));
+    assertThat(defaultGroup.getRetries(), equalTo(5));
+    assertThat(defaultGroup.getPollTimerMinutes(), equalTo(120));
+    assertThat(defaultGroup.getExpireEntryTimerMinutes(), equalTo(240));
+
+    DnsServerGroup insideGroup = groups.get("InsideDNS");
+    assertThat(insideGroup.getNameServers(), contains(new NameServer("198.51.100.53", null)));
+    assertThat(insideGroup.getDomainName(), nullValue());
+    assertThat(insideGroup.getTimeoutSeconds(), nullValue());
+    assertThat(insideGroup.getRetries(), nullValue());
+    assertThat(insideGroup.getPollTimerMinutes(), nullValue());
+    assertThat(insideGroup.getExpireEntryTimerMinutes(), nullValue());
+  }
+
+  @Test
+  public void testDnsGroupMapAndDefaultExtraction() {
+    AsaConfiguration c = parseVendorConfig("asa_dns");
+    assertThat(c.getDefaultDnsServerGroup(), equalTo("DefaultDNS"));
+    assertThat(
+        c.getDnsGroupMap(),
+        equalTo(Map.of("eng.example.com", "InsideDNS", "hr.example.com", "InsideDNS")));
+  }
+
+  @Test
+  public void testDnsServerGroupBadRanges() {
+    AsaConfiguration c = parseVendorConfig("asa_dns_bad_ranges");
+    DnsServerGroup group = c.getDnsServerGroups().get("DefaultDNS");
+    assertThat(group.getTimeoutSeconds(), nullValue());
+    assertThat(group.getRetries(), nullValue());
+    assertThat(group.getPollTimerMinutes(), nullValue());
+    assertThat(group.getExpireEntryTimerMinutes(), nullValue());
+  }
+
+  @Test
+  public void testDnsServersConversion() throws IOException {
+    Configuration c = parseConfig("asa_dns");
+    assertThat(
+        c.getDnsServers(),
+        containsInAnyOrder(
+            "192.0.2.10", "192.0.2.11", "192.0.2.12", "203.0.113.8", "198.51.100.53"));
+    assertThat(c.getDomainName(), equalTo("corp.example.com"));
+  }
+
+  @Test
+  public void testDnsReferences() throws IOException {
+    String hostname = "asa_dns";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "outside", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "management", 3));
   }
 
   @Test

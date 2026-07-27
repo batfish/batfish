@@ -1492,9 +1492,15 @@ DNS: 'dns';
 
 DNS_DOMAIN: 'dns-domain';
 
+DNS_GROUP: 'dns-group';
+
+DNS_GROUP_MAP: 'dns-group-map';
+
 DNS_GUARD: 'dns-guard';
 
 DNS_SERVER: 'dns-server';
+
+DNS_TO_DOMAIN: 'dns-to-domain';
 
 DNSIX: 'dnsix';
 
@@ -1914,6 +1920,8 @@ EXIT_SF_TOPOLOGY: 'exit-sf-topology';
 EXIT_VRF: 'exit-vrf';
 
 EXPECT: 'expect';
+
+EXPIRE_ENTRY_TIMER: 'expire-entry-timer';
 
 EXPLICIT_NULL: 'explicit-null';
 
@@ -3399,6 +3407,8 @@ MINIMUM_INTERVAL: 'minimum-interval';
 
 MINIMUM_LINKS: 'minimum-links';
 
+MINUTES: 'minutes';
+
 MINPOLL: 'minpoll';
 
 MIRROR: 'mirror';
@@ -4135,6 +4145,8 @@ POLICY_MAP_INPUT: 'policy-map-input';
 POLICY_MAP_OUTPUT: 'policy-map-output';
 
 POLL: 'poll';
+
+POLL_TIMER: 'poll-timer';
 
 POOL: 'pool';
 
