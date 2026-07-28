@@ -737,6 +737,7 @@ import org.batfish.grammar.cisco.CiscoParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_consoleContext;
+import org.batfish.grammar.cisco.CiscoParser.Logging_facilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_onContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
@@ -1241,6 +1242,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
+import org.batfish.representation.cisco.SyslogTransportProtocol;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
@@ -6850,6 +6852,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     buffered.setSeverity(severity);
     buffered.setSeverityNum(severityNum);
     buffered.setSize(size);
+
+    // Vendor-specific IOS model: capture buffer size, severity, discriminator, and filtered flag.
+    // A numeric operand greater than the max severity is a buffer size; a small standalone number
+    // is a severity level. An explicit severity keyword always sets the severity, even alongside a
+    // size (e.g. `logging buffered 32768 warnings`).
+    Integer iosSize = null;
+    Integer iosSeverityNum = null;
+    String iosSeverity = null;
+    if (ctx.size != null) {
+      int sizeRawNum = toInteger(ctx.size);
+      if (sizeRawNum > Logging.MAX_LOGGING_SEVERITY) {
+        iosSize = sizeRawNum;
+      } else {
+        iosSeverityNum = sizeRawNum;
+        iosSeverity = toLoggingSeverity(sizeRawNum);
+      }
+    }
+    if (ctx.logging_severity() != null) {
+      iosSeverityNum = toLoggingSeverityNum(ctx.logging_severity());
+      iosSeverity = toLoggingSeverity(ctx.logging_severity());
+    }
+    org.batfish.representation.cisco.Logging iosLogging = _configuration.getIosLogging();
+    iosLogging.setBufferedSize(iosSize);
+    iosLogging.setBufferedSeverity(iosSeverity);
+    iosLogging.setBufferedSeverityNum(iosSeverityNum);
+    iosLogging.setBufferedFiltered(ctx.FILTERED() != null);
+    if (ctx.descr != null) {
+      iosLogging.setBufferedDiscriminator(ctx.descr.getText());
+    }
   }
 
   @Override
@@ -6878,10 +6909,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_no) {
       return;
     }
-    Logging logging = _configuration.getCf().getLogging();
     String hostname = ctx.hostname.getText();
-    LoggingHost host = new LoggingHost(hostname);
-    logging.getHosts().put(hostname, host);
+    // Preserve shared-model behavior (used for the VI loggingServers set).
+    Logging logging = _configuration.getCf().getLogging();
+    logging.getHosts().put(hostname, new LoggingHost(hostname));
+
+    // Vendor-specific IOS model: capture transport and port. When no transport is configured the
+    // model derives the default (UDP) and the port defaults to the effective transport's port.
+    org.batfish.representation.cisco.LoggingHost syslogHost =
+        new org.batfish.representation.cisco.LoggingHost(hostname);
+    if (ctx.TCP() != null) {
+      syslogHost.setTransport(SyslogTransportProtocol.TCP);
+    } else if (ctx.UDP() != null) {
+      syslogHost.setTransport(SyslogTransportProtocol.UDP);
+    }
+    if (ctx.dec() != null) {
+      toIntegerInSpace(ctx, ctx.dec(), LOGGING_HOST_PORT_RANGE, "logging host port")
+          .ifPresent(syslogHost::setPort);
+    }
+    _configuration.getIosLogging().getHosts().put(hostname, syslogHost);
   }
 
   @Override
@@ -6930,6 +6976,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     trap.setSeverity(severity);
     trap.setSeverityNum(severityNum);
+
+    // Vendor-specific IOS model: record the global trap severity by name and level.
+    _configuration.getIosLogging().setTrapSeverity(severity);
+    _configuration.getIosLogging().setTrapSeverityNum(severityNum);
+  }
+
+  @Override
+  public void exitLogging_facility(Logging_facilityContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getIosLogging().setFacility(ctx.facility.getText());
   }
 
   @Override
@@ -11046,4 +11104,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IntegerSpace.of(Range.closed(0, 4095));
 
   private static final IntegerSpace NTP_KEY_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+
+  // Syslog logging host port range.
+  private static final IntegerSpace LOGGING_HOST_PORT_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
 }

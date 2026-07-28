@@ -52,10 +52,8 @@ logging_buffered
 :
    BUFFERED
    (
-      (
-         DISCRIMINATOR descr = variable
-      )? size = dec? logging_severity?
-   ) NEWLINE
+      DISCRIMINATOR descr = variable
+   )? FILTERED? size = dec? logging_severity? NEWLINE
 ;
 
 logging_common
@@ -77,7 +75,7 @@ logging_common
    | logging_esm_null
    | logging_event_null
    | logging_events_null
-   | logging_facility_null
+   | logging_facility
    | logging_format
    | logging_history_null
    | logging_host
@@ -94,6 +92,7 @@ logging_common
    | logging_origin_id_null
    | logging_override_null
    | logging_permit_hostdown_null
+   | logging_persistent_null
    | logging_proprietary_null
    | logging_queue
    | logging_queue_limit_null
@@ -183,9 +182,6 @@ logging_host
          DEFAULT
          | dec
       )
-   )?
-   (
-      FACILITY name = variable
    )? NEWLINE
 ;
 
@@ -238,9 +234,9 @@ logging_events_null
 :
    EVENTS null_rest_of_line
 ;
-logging_facility_null
+logging_facility
 :
-   FACILITY null_rest_of_line
+   FACILITY facility = variable NEWLINE
 ;
 logging_history_null
 :
@@ -334,6 +330,11 @@ logging_userinfo_null
 logging_on
 :
    ON NEWLINE
+;
+
+logging_persistent_null
+:
+   PERSISTENT null_rest_of_line
 ;
 
 logging_queue
