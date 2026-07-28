@@ -314,6 +314,22 @@ public final class CiscoAsaGrammarTest {
     assertThat(insideGroup.getRetries(), nullValue());
     assertThat(insideGroup.getPollTimerMinutes(), nullValue());
     assertThat(insideGroup.getExpireEntryTimerMinutes(), nullValue());
+
+    DnsServerGroup expectedDefault = new DnsServerGroup("DefaultDNS");
+    expectedDefault.addNameServer(new NameServer("192.0.2.10", "management"));
+    expectedDefault.addNameServer(new NameServer("192.0.2.11", "management"));
+    expectedDefault.addNameServer(new NameServer("192.0.2.12", null));
+    expectedDefault.addNameServer(new NameServer("203.0.113.8", null));
+    expectedDefault.setDomainName("example.com");
+    expectedDefault.setTimeoutSeconds(7);
+    expectedDefault.setRetries(5);
+    expectedDefault.setPollTimerMinutes(120);
+    expectedDefault.setExpireEntryTimerMinutes(240);
+    DnsServerGroup expectedInside = new DnsServerGroup("InsideDNS");
+    expectedInside.addNameServer(new NameServer("198.51.100.53", null));
+    assertThat(
+        ImmutableSet.copyOf(groups.values()),
+        equalTo(ImmutableSet.of(expectedDefault, expectedInside)));
   }
 
   @Test
