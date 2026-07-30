@@ -31,5 +31,6 @@ public final class HsrpGroupIpv6 extends HsrpGroup {
   //////////////////////////////////////////
 
   private @Nullable Ip6 _ip;
+
   private final @Nonnull Set<Ip6> _ipSecondaries;
 }

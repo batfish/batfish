@@ -90,6 +90,7 @@ public final class OspfInterface implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable Long _area;
+
   private boolean _bfd;
   private @Nullable Integer _cost;
   private @Nullable Integer _deadIntervalS;

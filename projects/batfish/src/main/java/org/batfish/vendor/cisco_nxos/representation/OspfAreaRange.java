@@ -36,6 +36,7 @@ public final class OspfAreaRange implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable Integer _cost;
+
   private boolean _notAdvertise;
   private final @Nonnull Prefix _prefix;
 }

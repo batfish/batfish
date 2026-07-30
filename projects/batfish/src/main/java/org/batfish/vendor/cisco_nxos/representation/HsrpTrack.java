@@ -36,5 +36,6 @@ public final class HsrpTrack implements Serializable {
   //////////////////////////////////////////
 
   private final @Nullable Integer _decrement;
+
   private final int _trackObjectNumber;
 }

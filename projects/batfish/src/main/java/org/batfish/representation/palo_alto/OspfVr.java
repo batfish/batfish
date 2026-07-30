@@ -67,6 +67,7 @@ public class OspfVr implements Serializable {
   ///// Private implementation details /////
   //////////////////////////////////////////
   private Map<Ip, OspfArea> _areas;
+
   private boolean _enable;
   private boolean _rejectDefaultRoute;
   private @Nullable Ip _routerId;

@@ -3135,6 +3135,7 @@ public final class FortiosGrammarTest {
   ////////////////////////
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";

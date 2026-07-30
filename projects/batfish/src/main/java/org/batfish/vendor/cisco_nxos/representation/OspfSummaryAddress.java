@@ -35,6 +35,7 @@ public final class OspfSummaryAddress implements Serializable {
   //////////////////////////////////////////
 
   private boolean _notAdvertise;
+
   private final @Nonnull Prefix _prefix;
   private long _tag;
 }

@@ -24,6 +24,7 @@ public final class RedistributionPolicy implements Serializable {
   //////////////////////////////////////////
 
   private final @Nonnull RoutingProtocolInstance _instance;
+
   private final @Nonnull String _routeMap;
 
   @Override

@@ -27,5 +27,6 @@ public final class Vlan implements Serializable {
   //////////////////////////////////////////
 
   private final int _id;
+
   private @Nullable Integer _vni;
 }

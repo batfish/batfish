@@ -51,6 +51,7 @@ public final class VrfAddressFamily implements Serializable {
   //////////////////////////////////////////
 
   private final AddressFamily _type;
+
   private @Nullable ExtendedCommunityOrAuto _exportRt;
   private @Nullable ExtendedCommunityOrAuto _exportRtEvpn;
   private @Nullable ExtendedCommunityOrAuto _importRt;

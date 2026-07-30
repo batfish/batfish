@@ -112,6 +112,7 @@ public final class Vrf implements Serializable {
   //////////////////////////////////////////
 
   private final Map<AddressFamily, VrfAddressFamily> _addressFamilies;
+
   private @Nullable String _description;
   private final @Nonnull String _name;
   private final int _id;

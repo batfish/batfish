@@ -227,6 +227,7 @@ public final class CommunityMatchExprEvaluator
   }
 
   private final @Nonnull CommunityContext _ctx;
+
   ////////////////////////////////
   private static final LoadingCache<RegexCacheKey, Boolean> REGEX_MATCH_CACHE =
       Caffeine.newBuilder()

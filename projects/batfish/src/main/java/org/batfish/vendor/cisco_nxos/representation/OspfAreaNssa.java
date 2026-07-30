@@ -46,6 +46,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
   //////////////////////////////////////////
 
   private boolean _defaultInformationOriginate;
+
   private @Nullable String _defaultInformationOriginateMap;
   private boolean _noRedistribution;
   private boolean _noSummary;

@@ -44,6 +44,7 @@ public final class EvpnVni implements Serializable {
   //////////////////////////////////////////
 
   private final int _vni;
+
   private @Nullable RouteDistinguisherOrAuto _rd;
   private @Nullable ExtendedCommunityOrAuto _exportRt;
   private @Nullable ExtendedCommunityOrAuto _importRt;

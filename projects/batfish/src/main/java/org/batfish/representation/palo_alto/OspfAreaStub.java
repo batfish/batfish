@@ -50,6 +50,7 @@ public class OspfAreaStub implements OspfAreaTypeSettings {
   //////////////////////////////////////////
 
   private boolean _defaultRouteDisable;
+
   private @Nullable Integer _defaultRouteMetric;
   private @Nullable Boolean _acceptSummary;
 }

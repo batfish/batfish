@@ -45,6 +45,7 @@ public final class InterfaceIpv6AddressWithAttributes implements Serializable {
   //////////////////////////////////////////////////
 
   private final @Nonnull Ip6 _address6;
+
   private final int _prefixLength;
   private long _tag;
 

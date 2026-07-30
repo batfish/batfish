@@ -58,6 +58,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
 
   //// PRIVATE CONSTRUCTORS ////
   private final E _first;
+
   private final PList<E> _rest;
   private final int _size;
 

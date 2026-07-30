@@ -42,6 +42,7 @@ public final class InterfaceAddressWithAttributes implements Serializable {
   //////////////////////////////////////////////////
 
   private final @Nonnull InterfaceAddress _address;
+
   private int _routePreference;
   private long _tag;
 
