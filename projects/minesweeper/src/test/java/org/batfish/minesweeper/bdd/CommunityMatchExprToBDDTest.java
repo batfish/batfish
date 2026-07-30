@@ -309,7 +309,7 @@ public class CommunityMatchExprToBDDTest {
   public void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
-            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+            new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
     _exception.expect(UnsupportedOperationException.class);
     _communityMatchExprToBDD.visitExtendedCommunityLocalAdministratorMatch(ec, _arg);
   }

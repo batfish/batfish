@@ -1,0 +1,33 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname gh10062ecrt
+!
+! Type 0: 2-byte ASN global administrator, 4-byte local administrator.
+extcommunity-set rt ecrt_la32
+  65000:11311111
+end-set
+!
+! Type 2: 4-byte asplain ASN global administrator, 2-byte local administrator.
+! Defined after the set above to catch error recovery mis-attributing a
+! failure in the preceding set to this one.
+extcommunity-set rt ecrt_ga32
+  4200000001:100
+end-set
+!
+! Mixed widths within a single set, plus asdot form.
+extcommunity-set rt ecrt_mixed
+  65000:11311111,
+  4200000001:100,
+  1234:56,
+  12.34:56
+end-set
+!
+route-policy set-ecrt
+  set extcommunity rt ecrt_la32
+  pass
+end-policy
+!
+route-policy set-ecrt-inline
+  set extcommunity rt ( 65000:11311111, 4200000001:100 )
+  pass
+end-policy

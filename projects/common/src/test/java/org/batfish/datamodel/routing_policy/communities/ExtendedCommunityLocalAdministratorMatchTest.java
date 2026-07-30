@@ -7,8 +7,8 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntComparison;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.junit.Test;
 
 /** Test of {@link ExtendedCommunityLocalAdministratorMatch}. */
@@ -16,7 +16,7 @@ public final class ExtendedCommunityLocalAdministratorMatchTest {
 
   private static final ExtendedCommunityLocalAdministratorMatch OBJ =
       new ExtendedCommunityLocalAdministratorMatch(
-          new IntComparison(IntComparator.EQ, new LiteralInt(1)));
+          new LongComparison(IntComparator.EQ, new LiteralLong(1L)));
 
   @Test
   public void testJacksonSerialization() {
@@ -38,10 +38,10 @@ public final class ExtendedCommunityLocalAdministratorMatchTest {
             OBJ,
             OBJ,
             new ExtendedCommunityLocalAdministratorMatch(
-                new IntComparison(IntComparator.EQ, new LiteralInt(1))))
+                new LongComparison(IntComparator.EQ, new LiteralLong(1L))))
         .addEqualityGroup(
             new ExtendedCommunityLocalAdministratorMatch(
-                new IntComparison(IntComparator.EQ, new LiteralInt(2))))
+                new LongComparison(IntComparator.EQ, new LiteralLong(2L))))
         .testEquals();
   }
 }

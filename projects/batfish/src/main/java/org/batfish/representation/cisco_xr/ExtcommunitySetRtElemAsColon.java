@@ -5,14 +5,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * A structure representing a space of route-target extended communities given by a 32-bit range
- * expression and 16-bit range expression in the format 'R1:R2' for the 32 bits of the global
- * administrator and the 16 bits of the local administrator respectively.
+ * A structure representing a space of route-target extended communities given by two range
+ * expressions in the format 'R1:R2' for the global administrator and the local administrator
+ * respectively.
+ *
+ * <p>Per RFC 4360, exactly one administrator may be 4 bytes wide: a type-2 route target has a
+ * 4-byte global administrator and a 2-byte local administrator, while a type-0 route target has a
+ * 2-byte global administrator and a 4-byte local administrator. Both are represented here as 32-bit
+ * range expressions; the type is derived from the values when converting, as in {@link
+ * org.batfish.datamodel.bgp.community.ExtendedCommunity#target}.
  */
 @ParametersAreNonnullByDefault
 public final class ExtcommunitySetRtElemAsColon implements ExtcommunitySetRtElem {
 
-  public ExtcommunitySetRtElemAsColon(Uint32RangeExpr gaRangeExpr, Uint16RangeExpr laRangeExpr) {
+  public ExtcommunitySetRtElemAsColon(Uint32RangeExpr gaRangeExpr, Uint32RangeExpr laRangeExpr) {
     _gaRangeExpr = gaRangeExpr;
     _laRangeExpr = laRangeExpr;
   }
@@ -26,7 +32,7 @@ public final class ExtcommunitySetRtElemAsColon implements ExtcommunitySetRtElem
     return _gaRangeExpr;
   }
 
-  public @Nonnull Uint16RangeExpr getLaRangeExpr() {
+  public @Nonnull Uint32RangeExpr getLaRangeExpr() {
     return _laRangeExpr;
   }
 
@@ -48,5 +54,5 @@ public final class ExtcommunitySetRtElemAsColon implements ExtcommunitySetRtElem
   }
 
   private final @Nonnull Uint32RangeExpr _gaRangeExpr;
-  private final @Nonnull Uint16RangeExpr _laRangeExpr;
+  private final @Nonnull Uint32RangeExpr _laRangeExpr;
 }

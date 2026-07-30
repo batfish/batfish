@@ -7,16 +7,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 /**
- * An expression representing a route-target extended community via an expression for its global
- * administrator 32 bits and its local administrator 16 bits
+ * An expression representing a route-target extended community via expressions for its global
+ * administrator and its local administrator.
+ *
+ * <p>Per RFC 4360, exactly one of the two may be 4 bytes wide; the type is derived from the values
+ * by {@link org.batfish.datamodel.bgp.community.ExtendedCommunity#target}.
  */
 public class RouteTargetExtendedCommunityExpr extends CommunityExpr {
 
-  public RouteTargetExtendedCommunityExpr(LongExpr gaExpr, IntExpr laExpr) {
+  public RouteTargetExtendedCommunityExpr(LongExpr gaExpr, LongExpr laExpr) {
     _gaExpr = gaExpr;
     _laExpr = laExpr;
   }
@@ -32,7 +34,7 @@ public class RouteTargetExtendedCommunityExpr extends CommunityExpr {
   }
 
   @JsonProperty(PROP_LA_EXPR)
-  public IntExpr getLaExpr() {
+  public @Nonnull LongExpr getLaExpr() {
     return _laExpr;
   }
 
@@ -59,12 +61,12 @@ public class RouteTargetExtendedCommunityExpr extends CommunityExpr {
   @JsonCreator
   private static @Nonnull RouteTargetExtendedCommunityExpr create(
       @JsonProperty(PROP_GA_EXPR) @Nullable LongExpr gaExpr,
-      @JsonProperty(PROP_LA_EXPR) @Nullable IntExpr laExpr) {
+      @JsonProperty(PROP_LA_EXPR) @Nullable LongExpr laExpr) {
     checkArgument(gaExpr != null, "Missing %s", PROP_GA_EXPR);
     checkArgument(laExpr != null, "Missing %s", PROP_LA_EXPR);
     return new RouteTargetExtendedCommunityExpr(gaExpr, laExpr);
   }
 
   private final @Nonnull LongExpr _gaExpr;
-  private final @Nonnull IntExpr _laExpr;
+  private final @Nonnull LongExpr _laExpr;
 }
