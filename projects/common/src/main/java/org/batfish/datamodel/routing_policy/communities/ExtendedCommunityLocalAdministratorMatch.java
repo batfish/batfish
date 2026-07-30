@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
+import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
 
 /**
  * An expression that matches an extended community whose local administrator is matched by the
@@ -14,7 +14,7 @@ import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
  */
 public final class ExtendedCommunityLocalAdministratorMatch extends CommunityMatchExpr {
 
-  public ExtendedCommunityLocalAdministratorMatch(IntMatchExpr expr) {
+  public ExtendedCommunityLocalAdministratorMatch(LongMatchExpr expr) {
     _expr = expr;
   }
 
@@ -24,7 +24,7 @@ public final class ExtendedCommunityLocalAdministratorMatch extends CommunityMat
   }
 
   @JsonProperty(PROP_EXPR)
-  public @Nonnull IntMatchExpr getExpr() {
+  public @Nonnull LongMatchExpr getExpr() {
     return _expr;
   }
 
@@ -48,10 +48,10 @@ public final class ExtendedCommunityLocalAdministratorMatch extends CommunityMat
 
   @JsonCreator
   private static @Nonnull ExtendedCommunityLocalAdministratorMatch create(
-      @JsonProperty(PROP_EXPR) @Nullable IntMatchExpr expr) {
+      @JsonProperty(PROP_EXPR) @Nullable LongMatchExpr expr) {
     checkArgument(expr != null, "Missing %s", PROP_EXPR);
     return new ExtendedCommunityLocalAdministratorMatch(expr);
   }
 
-  private final @Nonnull IntMatchExpr _expr;
+  private final @Nonnull LongMatchExpr _expr;
 }

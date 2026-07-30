@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.junit.Test;
 
@@ -14,7 +13,7 @@ import org.junit.Test;
 public final class RouteTargetExtendedCommunityExprTest {
 
   private static final RouteTargetExtendedCommunityExpr OBJ =
-      new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralInt(1));
+      new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralLong(1L));
 
   @Test
   public void testJacksonSerialization() {
@@ -32,11 +31,13 @@ public final class RouteTargetExtendedCommunityExprTest {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
-            OBJ, OBJ, new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralInt(1)))
+            OBJ,
+            OBJ,
+            new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralLong(1L)))
         .addEqualityGroup(
-            new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralInt(2)))
+            new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralLong(2L)))
         .addEqualityGroup(
-            new RouteTargetExtendedCommunityExpr(new LiteralLong(2L), new LiteralInt(2)))
+            new RouteTargetExtendedCommunityExpr(new LiteralLong(2L), new LiteralLong(2L)))
         .testEquals();
   }
 }

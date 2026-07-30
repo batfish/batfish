@@ -162,8 +162,8 @@ public final class CommunityMatchExprEvaluator
     return extendedCommunityLocalAdministratorMatch
         .getExpr()
         .accept(
-            IntMatchExprEvaluator.instance(),
-            new LiteralInt((int) ((ExtendedCommunity) arg).getLocalAdministrator()));
+            LongMatchExprEvaluator.instance(),
+            new LiteralLong(((ExtendedCommunity) arg).getLocalAdministrator()));
   }
 
   @Override

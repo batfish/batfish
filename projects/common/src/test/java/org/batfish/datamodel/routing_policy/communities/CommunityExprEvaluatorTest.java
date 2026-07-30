@@ -20,13 +20,13 @@ public final class CommunityExprEvaluatorTest {
     {
       // global administrator fitting within 16 bits
       RouteTargetExtendedCommunityExpr expr =
-          new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralInt(1));
+          new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralLong(1L));
       assertThat(expr.accept(instance(), CTX), equalTo(ExtendedCommunity.target(1L, 1)));
     }
     {
       // global administrator requiring 32 bits
       RouteTargetExtendedCommunityExpr expr =
-          new RouteTargetExtendedCommunityExpr(new LiteralLong(1000000L), new LiteralInt(1));
+          new RouteTargetExtendedCommunityExpr(new LiteralLong(1000000L), new LiteralLong(1L));
       assertThat(expr.accept(instance(), CTX), equalTo(ExtendedCommunity.target(1000000L, 1)));
     }
   }

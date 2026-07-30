@@ -1393,8 +1393,8 @@ public final class XrGrammarTest {
       assertThat(
           set.getElements(),
           contains(
-              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(56)),
-              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(57)),
+              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint32(56L)),
+              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint32(57L)),
               new ExtcommunitySetRtElemAsDotColon(
                   new LiteralUint16(12), new LiteralUint16(34), new LiteralUint16(56))));
     }

@@ -20,7 +20,8 @@ public final class CommunityExprEvaluator
       RouteTargetExtendedCommunityExpr routeTargetExtendedCommunityExpr, CommunityContext arg) {
     long ga =
         routeTargetExtendedCommunityExpr.getGaExpr().accept(LongExprEvaluator.instance(), null);
-    int la = routeTargetExtendedCommunityExpr.getLaExpr().accept(IntExprEvaluator.instance(), null);
+    long la =
+        routeTargetExtendedCommunityExpr.getLaExpr().accept(LongExprEvaluator.instance(), null);
     return ExtendedCommunity.target(ga, la);
   }
 

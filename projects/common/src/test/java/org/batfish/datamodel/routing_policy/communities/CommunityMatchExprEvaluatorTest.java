@@ -188,12 +188,22 @@ public final class CommunityMatchExprEvaluatorTest {
   public void testVisitExtendedCommunityLocalAdministratorMatch() {
     assertFalse(
         new ExtendedCommunityLocalAdministratorMatch(
-                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+                new LongComparison(IntComparator.EQ, new LiteralLong(1L)))
             .accept(EVAL, ExtendedCommunity.of(0, 0L, 0L)));
     assertTrue(
         new ExtendedCommunityLocalAdministratorMatch(
-                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+                new LongComparison(IntComparator.EQ, new LiteralLong(1L)))
             .accept(EVAL, ExtendedCommunity.of(0, 0L, 1L)));
+    // A type-0 local administrator uses all 32 bits. Narrowing it to a signed int would make
+    // values above 2^31 compare as negative.
+    assertTrue(
+        new ExtendedCommunityLocalAdministratorMatch(
+                new LongComparison(IntComparator.EQ, new LiteralLong(0xFFFFFFFFL)))
+            .accept(EVAL, ExtendedCommunity.of(0, 0L, 0xFFFFFFFFL)));
+    assertTrue(
+        new ExtendedCommunityLocalAdministratorMatch(
+                new LongComparison(IntComparator.GT, new LiteralLong(0L)))
+            .accept(EVAL, ExtendedCommunity.of(0, 0L, 0x80000000L)));
   }
 
   @Test

@@ -508,6 +508,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_16Con
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_32Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_as_dot_colonContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_colonContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_colon_la32Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_linesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
@@ -7063,6 +7064,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toExtcommunitySetRtElemExpr(ctx.extcommunity_set_rt_elem_as_dot_colon());
     } else if (ctx.extcommunity_set_rt_elem_colon() != null) {
       return toExtcommunitySetRtElemExpr(ctx.extcommunity_set_rt_elem_colon());
+    } else if (ctx.extcommunity_set_rt_elem_colon_la32() != null) {
+      return toExtcommunitySetRtElemExpr(ctx.extcommunity_set_rt_elem_colon_la32());
     } else {
       return convProblem(ExtcommunitySetRtElem.class, ctx, null);
     }
@@ -7071,12 +7074,27 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private ExtcommunitySetRtElem toExtcommunitySetRtElemExpr(
       Extcommunity_set_rt_elem_colonContext ctx) {
     return new ExtcommunitySetRtElemAsColon(
-        toUint32RangeExpr(ctx.high), toUint16RangeExpr(ctx.low));
+        toUint32RangeExpr(ctx.high), toUint32RangeExpr(ctx.low));
+  }
+
+  private ExtcommunitySetRtElem toExtcommunitySetRtElemExpr(
+      Extcommunity_set_rt_elem_colon_la32Context ctx) {
+    return new ExtcommunitySetRtElemAsColon(
+        toUint32RangeExpr(ctx.high), toUint32RangeExpr(ctx.low));
   }
 
   private @Nonnull Uint32RangeExpr toUint32RangeExpr(Extcommunity_set_rt_elem_32Context ctx) {
     // TODO: support other 32-bit range expressions
     return new LiteralUint32(toLong(ctx.uint32()));
+  }
+
+  /**
+   * Widens a 16-bit administrator to a 32-bit range expression. The two administrators of a route
+   * target are modeled uniformly as 32-bit; only one of them may actually be 4 bytes wide.
+   */
+  private @Nonnull Uint32RangeExpr toUint32RangeExpr(Extcommunity_set_rt_elem_16Context ctx) {
+    // TODO: support other 32-bit range expressions
+    return new LiteralUint32(toInteger(ctx.uint16()));
   }
 
   private static @Nonnull ExtcommunitySetRtElem toExtcommunitySetRtElemExpr(

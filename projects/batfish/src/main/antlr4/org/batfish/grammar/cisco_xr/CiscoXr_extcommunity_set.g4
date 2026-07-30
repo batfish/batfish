@@ -45,6 +45,7 @@ extcommunity_set_rt_elem
 :
    extcommunity_set_rt_elem_as_dot_colon
    | extcommunity_set_rt_elem_colon
+   | extcommunity_set_rt_elem_colon_la32
 ;
 
 extcommunity_set_rt_elem_as_dot_colon
@@ -53,9 +54,19 @@ extcommunity_set_rt_elem_as_dot_colon
   extcommunity_set_rt_elem_16 COLON low = extcommunity_set_rt_elem_16
 ;
 
+// RFC 4360 type 2: 4-byte global administrator, 2-byte local administrator.
 extcommunity_set_rt_elem_colon
 :
   high = extcommunity_set_rt_elem_32 COLON low = extcommunity_set_rt_elem_16
+;
+
+// RFC 4360 type 0: 2-byte global administrator, 4-byte local administrator.
+// Ambiguous with extcommunity_set_rt_elem_colon when both halves fit in 16
+// bits; ANTLR resolves to that rule, which extracts to the same value. Only
+// one administrator may be 4 bytes, so neither rule accepts two 32-bit halves.
+extcommunity_set_rt_elem_colon_la32
+:
+  high = extcommunity_set_rt_elem_16 COLON low = extcommunity_set_rt_elem_32
 ;
 
 extcommunity_set_rt_elem_16

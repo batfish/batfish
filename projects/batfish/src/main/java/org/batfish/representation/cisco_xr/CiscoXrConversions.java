@@ -159,6 +159,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
+import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -472,7 +473,7 @@ public class CiscoXrConversions {
               new ExtendedCommunityLocalAdministratorMatch(
                   extcommunitySetRtElemAsDotColon
                       .getLaRangeExpr()
-                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
+                      .accept(XrUint16RangeExprToLongMatchExpr.INSTANCE, arg))));
     }
 
     @Override
@@ -488,7 +489,7 @@ public class CiscoXrConversions {
               new ExtendedCommunityLocalAdministratorMatch(
                   extcommunitySetRtElemAsColon
                       .getLaRangeExpr()
-                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
+                      .accept(XrUint32RangeExprToLongMatchExpr.INSTANCE, arg))));
     }
   }
 
@@ -533,6 +534,55 @@ public class CiscoXrConversions {
     public IntMatchExpr visitPeerAs(PeerAs peerAs) {
       // TODO: implement. In the meanwhile, prevent matching by using impossible condition
       return new IntComparison(IntComparator.LT, new LiteralInt(0));
+    }
+  }
+
+  /**
+   * Adapts a 16-bit range expression to a {@link LongMatchExpr}, for administrators that are
+   * modeled as 32-bit in the vendor-independent model but can only be 16-bit in this vendor
+   * context.
+   */
+  private static final class XrUint16RangeExprToLongMatchExpr
+      implements Uint16RangeExprVisitor<LongMatchExpr, Configuration> {
+    private static final XrUint16RangeExprToLongMatchExpr INSTANCE =
+        new XrUint16RangeExprToLongMatchExpr();
+
+    @Override
+    public LongMatchExpr visitLiteralUint16(LiteralUint16 literalUint16, Configuration arg) {
+      return new LongComparison(IntComparator.EQ, new LiteralLong(literalUint16.getValue()));
+    }
+
+    @Override
+    public LongMatchExpr visitLiteralUint16Range(
+        LiteralUint16Range literalUint16Range, Configuration arg) {
+      SubRange range = literalUint16Range.getRange();
+      return LongMatchAll.of(
+          new LongComparison(IntComparator.GE, new LiteralLong(range.getStart())),
+          new LongComparison(IntComparator.LE, new LiteralLong(range.getEnd())));
+    }
+
+    @Override
+    public LongMatchExpr visitUint16Reference(Uint16Reference uint16Reference, Configuration arg) {
+      return new LongComparison(IntComparator.EQ, new VarLong(uint16Reference.getVar()));
+    }
+
+    @Override
+    public LongMatchExpr visitWildcardUint16RangeExpr(
+        WildcardUint16RangeExpr wildcardUint16RangeExpr) {
+      return LongMatchAll.of();
+    }
+
+    @Override
+    public LongMatchExpr visitPrivateAs(PrivateAs privateAs) {
+      return LongMatchAll.of(
+          new LongComparison(IntComparator.GE, new LiteralLong(64512)),
+          new LongComparison(IntComparator.LE, new LiteralLong(65534)));
+    }
+
+    @Override
+    public LongMatchExpr visitPeerAs(PeerAs peerAs) {
+      // TODO: implement. In the meanwhile, prevent matching by using impossible condition
+      return new LongComparison(IntComparator.LT, new LiteralLong(0));
     }
   }
 
@@ -642,10 +692,10 @@ public class CiscoXrConversions {
       if (!gaLowExpr.isPresent()) {
         return CommunitySetExprs.empty();
       }
-      Optional<IntExpr> laExpr =
+      Optional<LongExpr> laExpr =
           extcommunitySetRtElemAsDotColon
               .getLaRangeExpr()
-              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+              .accept(XrUint16RangeExprToLongExpr.INSTANCE, null);
       if (!laExpr.isPresent()) {
         return CommunitySetExprs.empty();
       }
@@ -664,10 +714,10 @@ public class CiscoXrConversions {
       if (!gaExpr.isPresent()) {
         return CommunitySetExprs.empty();
       }
-      Optional<IntExpr> laExpr =
+      Optional<LongExpr> laExpr =
           extcommunitySetRtElemAsColon
               .getLaRangeExpr()
-              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+              .accept(XrUint32RangeExprToLongExpr.INSTANCE, null);
       if (!laExpr.isPresent()) {
         return CommunitySetExprs.empty();
       }
@@ -712,6 +762,49 @@ public class CiscoXrConversions {
 
     @Override
     public Optional<IntExpr> visitPeerAs(PeerAs peerAs) {
+      // TODO: implement
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Adapts a 16-bit range expression to a {@link LongExpr}, for administrators that are modeled as
+   * 32-bit in the vendor-independent model but can only be 16-bit in this vendor context.
+   */
+  private static class XrUint16RangeExprToLongExpr
+      implements Uint16RangeExprVisitor<Optional<LongExpr>, Void> {
+
+    private static final XrUint16RangeExprToLongExpr INSTANCE = new XrUint16RangeExprToLongExpr();
+
+    @Override
+    public Optional<LongExpr> visitLiteralUint16(LiteralUint16 literalUint16, Void arg) {
+      return Optional.of(new LiteralLong(literalUint16.getValue()));
+    }
+
+    @Override
+    public Optional<LongExpr> visitLiteralUint16Range(
+        LiteralUint16Range literalUint16Range, Void arg) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<LongExpr> visitUint16Reference(Uint16Reference uint16Reference, Void arg) {
+      return Optional.of(new VarLong(uint16Reference.getVar()));
+    }
+
+    @Override
+    public Optional<LongExpr> visitWildcardUint16RangeExpr(
+        WildcardUint16RangeExpr wildcardUint16RangeExpr) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<LongExpr> visitPrivateAs(PrivateAs privateAs) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<LongExpr> visitPeerAs(PeerAs peerAs) {
       // TODO: implement
       return Optional.empty();
     }

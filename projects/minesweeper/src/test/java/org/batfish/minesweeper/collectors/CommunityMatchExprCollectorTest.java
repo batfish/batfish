@@ -211,7 +211,7 @@ public class CommunityMatchExprCollectorTest {
   public void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
-            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+            new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
     Set<String> result =
         _collector.visitExtendedCommunityLocalAdministratorMatch(
             ec, new Tuple<>(new HashSet<>(), _config));

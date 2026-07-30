@@ -220,7 +220,7 @@ public class CommunityMatchExprVarCollectorTest {
   public void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
-            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+            new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
     Set<CommunityVar> result =
         _varCollector.visitExtendedCommunityLocalAdministratorMatch(ec, _baseConfig);
     assertEquals(ImmutableSet.of(), result);
