@@ -26,5 +26,6 @@ public final class OspfDefaultOriginate implements Serializable {
   //////////////////////////////////////////
 
   private boolean _always;
+
   private @Nullable String _routeMap;
 }

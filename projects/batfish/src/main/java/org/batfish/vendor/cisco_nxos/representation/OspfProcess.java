@@ -173,6 +173,7 @@ public abstract class OspfProcess implements Serializable {
   //////////////////////////////////////////
 
   private final @Nonnull Map<Long, OspfArea> _areas;
+
   private int _autoCostReferenceBandwidthMbps;
   private boolean _bfd;
   private @Nullable OspfDefaultOriginate _defaultOriginate;

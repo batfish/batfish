@@ -107,6 +107,7 @@ public final class Nve implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable HostReachabilityProtocol _hostReachabilityProtocol;
+
   private @Nullable IngressReplicationProtocol _globalIngressReplicationProtocol;
   private boolean _globalSuppressArp;
   private final int _id;

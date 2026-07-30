@@ -139,6 +139,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   /////////////////////////
 
   private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+
   private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
   private final @Nonnull Map<String, Map<String, Fib>> _fibs;
   private final @Nonnull ForwardingAnalysis _forwardingAnalysis;

@@ -70,6 +70,7 @@ public final class OspfArea implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable OspfAreaAuthentication _authentication;
+
   private int _defaultCost;
   private @Nullable String _filterListIn;
   private @Nullable String _filterListOut;

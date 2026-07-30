@@ -227,6 +227,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
   // Private implementation
 
   private final Map<K, V> _map;
+
   private final List<K> _keyList;
 
   /**

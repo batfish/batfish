@@ -63,6 +63,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
   //////////////////////////////////////////
 
   private boolean _defaultRouteDisable;
+
   private @Nullable Integer _defaultRouteMetric;
   private @Nullable DefaultRouteType _defaultRouteType;
   private @Nullable Boolean _acceptSummary;

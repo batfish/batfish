@@ -100,6 +100,7 @@ public final class EigrpVrfConfiguration implements Serializable {
   ///////////////////////////////////
 
   private @Nullable Integer _asn;
+
   private @Nullable Integer _distanceInternal;
   private @Nullable Integer _distanceExternal;
   private @Nullable Ip _routerId;

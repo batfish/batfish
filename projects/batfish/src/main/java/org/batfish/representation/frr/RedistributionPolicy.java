@@ -26,6 +26,7 @@ public final class RedistributionPolicy implements Serializable {
   //////////////////////////////////////////
 
   private final @Nonnull FrrRoutingProtocol _cumulusRoutingProtocol;
+
   private final @Nullable String _routeMap;
 
   @Override

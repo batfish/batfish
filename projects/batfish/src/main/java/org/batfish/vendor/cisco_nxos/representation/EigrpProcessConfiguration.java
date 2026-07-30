@@ -65,6 +65,7 @@ public final class EigrpProcessConfiguration implements Serializable {
   ///////////////////////////////////
 
   private @Nullable Integer _asn;
+
   private boolean _isolate;
   private final Map<String, EigrpVrfConfiguration> _vrfs;
 }

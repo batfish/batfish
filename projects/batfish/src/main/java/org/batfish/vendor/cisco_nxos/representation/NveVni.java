@@ -70,6 +70,7 @@ public class NveVni implements Serializable {
   //////////////////////////////////////////
 
   private boolean _associateVrf;
+
   private @Nullable IngressReplicationProtocol _ingressReplicationProtocol;
   private @Nullable Ip _mcastGroup;
   private @Nullable Set<Ip> _peerIps;

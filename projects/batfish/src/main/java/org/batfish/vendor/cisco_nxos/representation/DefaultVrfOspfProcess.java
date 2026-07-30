@@ -24,5 +24,6 @@ public final class DefaultVrfOspfProcess extends OspfProcess {
   //////////////////////////////////////////
 
   private final @Nonnull String _name;
+
   private final @Nonnull Map<String, OspfVrf> _vrfs;
 }

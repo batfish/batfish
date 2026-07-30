@@ -92,6 +92,7 @@ public abstract class HsrpGroup implements Serializable {
   //////////////////////////////////////////
 
   private final int _group;
+
   private @Nullable Integer _helloIntervalMs;
   private @Nullable Integer _holdTimeMs;
   private @Nullable String _name;

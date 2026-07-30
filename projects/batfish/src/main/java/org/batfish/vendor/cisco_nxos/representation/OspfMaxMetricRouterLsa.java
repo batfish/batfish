@@ -37,6 +37,7 @@ public final class OspfMaxMetricRouterLsa implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable Integer _externalLsa;
+
   private boolean _includeStub;
   private @Nullable Integer _summaryLsa;
 }

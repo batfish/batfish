@@ -117,6 +117,7 @@ public class OspfInterface implements Serializable {
   ///// Private implementation details /////
   //////////////////////////////////////////
   private @Nonnull Integer _deadCounts;
+
   private @Nullable Boolean _enable;
   private @Nonnull LinkType _linkType;
   private @Nonnull Integer _helloInterval;

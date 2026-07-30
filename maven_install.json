@@ -21,7 +21,7 @@
     "com.google.code.findbugs:jsr305": 495355163,
     "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 911823543,
-    "com.google.googlejavaformat:google-java-format": -1003676123,
+    "com.google.googlejavaformat:google-java-format": 1494339814,
     "com.google.guava:guava": -692456693,
     "com.google.guava:guava-bom": -1777969329,
     "com.google.guava:guava-testlib": 279911981,
@@ -115,8 +115,8 @@
     "com.google.code.gson:gson:jar:sources": 935710753,
     "com.google.errorprone:error_prone_annotations": 652227016,
     "com.google.errorprone:error_prone_annotations:jar:sources": -507624312,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": 197123759,
-    "com.google.googlejavaformat:google-java-format:jar:sources": 863436563,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": 1553368666,
+    "com.google.googlejavaformat:google-java-format:jar:sources": 840583835,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
     "com.google.guava:guava": 951060859,
@@ -230,6 +230,10 @@
     "org.codehaus.plexus:plexus-container-default:jar:sources": 1495289637,
     "org.codehaus.plexus:plexus-utils": -2106813517,
     "org.codehaus.plexus:plexus-utils:jar:sources": -1133546446,
+    "org.commonmark:commonmark": 1195553091,
+    "org.commonmark:commonmark-ext-gfm-tables": -558121472,
+    "org.commonmark:commonmark-ext-gfm-tables:jar:sources": 1593227191,
+    "org.commonmark:commonmark:jar:sources": 141052253,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
     "org.glassfish.grizzly:grizzly-framework:jar:sources": -1312844390,
     "org.glassfish.grizzly:grizzly-http": -1102587462,
@@ -498,10 +502,10 @@
     },
     "com.google.googlejavaformat:google-java-format": {
       "shasums": {
-        "all-deps": "bfb7f9ead6cd328389bc2da53860443bc0e805dfd08cc889bfdf43b26cb2a6e8",
-        "sources": "2c3195a5032287616b3839078bd82d19780b2c0cb75932d9f92153421b6c2c93"
+        "all-deps": "23696de05dd20d85c1449c8de9f2419030799508f5356570e979f7f96e59d8d6",
+        "sources": "a016b0ab93008b0c2c35486a1419700645830d6b5f9a48aaf56d5fa9b6e680b4"
       },
-      "version": "1.35.0"
+      "version": "1.36.0"
     },
     "com.google.guava:failureaccess": {
       "shasums": {
@@ -900,6 +904,20 @@
         "sources": "a955fb73bd949cbf0bbdfe76e17a054a8180a82f16038d0c8c719cdbecc8504b"
       },
       "version": "3.3.0"
+    },
+    "org.commonmark:commonmark": {
+      "shasums": {
+        "jar": "f8b28e00f97c568329ee1b2496cfec5c3ef8664b565ea09cf8988894183b956d",
+        "sources": "c1296ec293232548329d9051e5fc49b1ecec1a3440db7d3ce36f193feb972757"
+      },
+      "version": "0.28.0"
+    },
+    "org.commonmark:commonmark-ext-gfm-tables": {
+      "shasums": {
+        "jar": "80439c7c4809daa6c35ccb260f48f8b71cda30e8cc923dbd68bb3be049359ecb",
+        "sources": "e1fd6175ae9eff2ec0317309f421a8ee1a3090b61030746d824381beb6a61fdd"
+      },
+      "version": "0.28.0"
     },
     "org.glassfish.grizzly:grizzly-framework": {
       "shasums": {
@@ -1301,7 +1319,9 @@
       "com.google.errorprone:error_prone_annotations"
     ],
     "com.google.googlejavaformat:google-java-format:jar:all-deps": [
-      "com.google.guava:guava"
+      "com.google.guava:guava",
+      "org.commonmark:commonmark",
+      "org.commonmark:commonmark-ext-gfm-tables"
     ],
     "com.google.guava:guava": [
       "com.google.errorprone:error_prone_annotations",
@@ -1419,6 +1439,9 @@
     "org.codehaus.plexus:plexus-container-default": [
       "org.apache.xbean:xbean-reflect",
       "org.codehaus.plexus:plexus-classworlds"
+    ],
+    "org.commonmark:commonmark-ext-gfm-tables": [
+      "org.commonmark:commonmark"
     ],
     "org.glassfish.grizzly:grizzly-http": [
       "org.glassfish.grizzly:grizzly-framework"
@@ -1816,6 +1839,23 @@
       "org.checkerframework.common.value.qual",
       "org.checkerframework.dataflow.qual",
       "org.checkerframework.framework.qual",
+      "org.commonmark",
+      "org.commonmark.ext.gfm.tables",
+      "org.commonmark.ext.gfm.tables.internal",
+      "org.commonmark.internal",
+      "org.commonmark.internal.inline",
+      "org.commonmark.internal.renderer",
+      "org.commonmark.internal.util",
+      "org.commonmark.node",
+      "org.commonmark.parser",
+      "org.commonmark.parser.beta",
+      "org.commonmark.parser.block",
+      "org.commonmark.parser.delimiter",
+      "org.commonmark.renderer",
+      "org.commonmark.renderer.html",
+      "org.commonmark.renderer.markdown",
+      "org.commonmark.renderer.text",
+      "org.commonmark.text",
       "org.jspecify.annotations"
     ],
     "com.google.guava:failureaccess": [
@@ -2697,6 +2737,27 @@
       "org.codehaus.plexus.util.xml",
       "org.codehaus.plexus.util.xml.pull"
     ],
+    "org.commonmark:commonmark": [
+      "org.commonmark",
+      "org.commonmark.internal",
+      "org.commonmark.internal.inline",
+      "org.commonmark.internal.renderer",
+      "org.commonmark.internal.util",
+      "org.commonmark.node",
+      "org.commonmark.parser",
+      "org.commonmark.parser.beta",
+      "org.commonmark.parser.block",
+      "org.commonmark.parser.delimiter",
+      "org.commonmark.renderer",
+      "org.commonmark.renderer.html",
+      "org.commonmark.renderer.markdown",
+      "org.commonmark.renderer.text",
+      "org.commonmark.text"
+    ],
+    "org.commonmark:commonmark-ext-gfm-tables": [
+      "org.commonmark.ext.gfm.tables",
+      "org.commonmark.ext.gfm.tables.internal"
+    ],
     "org.glassfish.grizzly:grizzly-framework": [
       "org.glassfish.grizzly",
       "org.glassfish.grizzly.asyncqueue",
@@ -3398,6 +3459,10 @@
       "org.codehaus.plexus:plexus-container-default:jar:sources",
       "org.codehaus.plexus:plexus-utils",
       "org.codehaus.plexus:plexus-utils:jar:sources",
+      "org.commonmark:commonmark",
+      "org.commonmark:commonmark-ext-gfm-tables",
+      "org.commonmark:commonmark-ext-gfm-tables:jar:sources",
+      "org.commonmark:commonmark:jar:sources",
       "org.glassfish.grizzly:grizzly-framework",
       "org.glassfish.grizzly:grizzly-framework:jar:sources",
       "org.glassfish.grizzly:grizzly-http",
