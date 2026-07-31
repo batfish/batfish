@@ -21,7 +21,7 @@
     "com.google.code.findbugs:jsr305": 495355163,
     "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 911823543,
-    "com.google.googlejavaformat:google-java-format": 1494339814,
+    "com.google.googlejavaformat:google-java-format": -313114649,
     "com.google.guava:guava": -692456693,
     "com.google.guava:guava-bom": -1777969329,
     "com.google.guava:guava-testlib": 279911981,
@@ -85,7 +85,7 @@
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": 779577142,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1100236561,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 597390101,
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -405148898,
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -1887968465,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -321409313,
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": -1222179274,
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": 2125434031,
@@ -95,11 +95,11 @@
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources": -1077897804,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 374736092,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": 1497034834,
-    "com.github.ben-manes.caffeine:caffeine": 139651916,
+    "com.github.ben-manes.caffeine:caffeine": -1094095223,
     "com.github.ben-manes.caffeine:caffeine:jar:sources": -57104877,
     "com.github.oowekyala.ooxml:nice-xml-messages": -1242718147,
     "com.github.oowekyala.ooxml:nice-xml-messages:jar:sources": 923999346,
-    "com.google.auto.service:auto-service": 1941444422,
+    "com.google.auto.service:auto-service": 1096584128,
     "com.google.auto.service:auto-service-annotations": 262983930,
     "com.google.auto.service:auto-service-annotations:jar:sources": -1392999316,
     "com.google.auto.service:auto-service:jar:sources": -1296332334,
@@ -107,7 +107,7 @@
     "com.google.auto.value:auto-value-annotations": 641752776,
     "com.google.auto.value:auto-value-annotations:jar:sources": -2083311588,
     "com.google.auto.value:auto-value:jar:sources": -30292358,
-    "com.google.auto:auto-common": 1746224209,
+    "com.google.auto:auto-common": -297682014,
     "com.google.auto:auto-common:jar:sources": -542679945,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.findbugs:jsr305:jar:sources": -935881202,
@@ -115,12 +115,12 @@
     "com.google.code.gson:gson:jar:sources": 935710753,
     "com.google.errorprone:error_prone_annotations": 652227016,
     "com.google.errorprone:error_prone_annotations:jar:sources": -507624312,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": 1553368666,
-    "com.google.googlejavaformat:google-java-format:jar:sources": 840583835,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": 1347852314,
+    "com.google.googlejavaformat:google-java-format:jar:sources": 198234778,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
-    "com.google.guava:guava": 951060859,
-    "com.google.guava:guava-testlib": 1429289549,
+    "com.google.guava:guava": -1710221766,
+    "com.google.guava:guava-testlib": 850840313,
     "com.google.guava:guava-testlib:jar:sources": -1659445038,
     "com.google.guava:guava:jar:sources": 129808367,
     "com.google.guava:listenablefuture": 1079558157,
@@ -130,7 +130,7 @@
     "com.google.re2j:re2j:jar:sources": 485338798,
     "com.ibm.icu:icu4j": -1667183492,
     "com.ibm.icu:icu4j:jar:sources": 1011748514,
-    "com.puppycrawl.tools:checkstyle": -1090683229,
+    "com.puppycrawl.tools:checkstyle": -1855956492,
     "com.puppycrawl.tools:checkstyle:jar:sources": 144819849,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
@@ -290,8 +290,8 @@
     "org.jheaps:jheaps:jar:sources": 1658788425,
     "org.jline:jline": -1888912200,
     "org.jline:jline:jar:sources": 717206858,
-    "org.jspecify:jspecify": 117231129,
-    "org.jspecify:jspecify:jar:sources": -2134060298,
+    "org.jspecify:jspecify": -109882726,
+    "org.jspecify:jspecify:jar:sources": 345277939,
     "org.junit.jupiter:junit-jupiter": 1893116253,
     "org.junit.jupiter:junit-jupiter-api": 1459221310,
     "org.junit.jupiter:junit-jupiter-api:jar:sources": 1821883685,
@@ -502,10 +502,10 @@
     },
     "com.google.googlejavaformat:google-java-format": {
       "shasums": {
-        "all-deps": "23696de05dd20d85c1449c8de9f2419030799508f5356570e979f7f96e59d8d6",
-        "sources": "a016b0ab93008b0c2c35486a1419700645830d6b5f9a48aaf56d5fa9b6e680b4"
+        "all-deps": "25b400f003089d23cc5320cdaf1a16cabee19b8aa3434d0ff021b3d9f42154b4",
+        "sources": "b20f9812c27ed700df6d3c43e835efaa1cea129017ce7e7645b52292b66ac8e0"
       },
-      "version": "1.36.0"
+      "version": "1.36.1"
     },
     "com.google.guava:failureaccess": {
       "shasums": {
@@ -1117,10 +1117,10 @@
     },
     "org.jspecify:jspecify": {
       "shasums": {
-        "jar": "1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab",
-        "sources": "adf0898191d55937fb3192ba971826f4f294292c4a960740f3c27310e7b70296"
+        "jar": "070d75f261fe4c5b8202508366715f7f2d4660f88c8ef7e6d3575e48c9683b66",
+        "sources": "230c491aac6d2a2b7e66b68d4331b1d2626f1bf3a372c33bbe2b077297e46c45"
       },
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     "org.junit.jupiter:junit-jupiter": {
       "shasums": {
