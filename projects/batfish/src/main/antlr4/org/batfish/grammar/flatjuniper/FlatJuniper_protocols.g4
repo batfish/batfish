@@ -282,7 +282,7 @@ pvstp_interface
       | pvstpi_mode_null
       | pvstpi_no_root_port_null
       | pvstpi_priority_null
-   )
+   )?
 ;
 
 pvstpi_edge_null
@@ -304,4 +304,3 @@ pvstpi_priority_null
 :
    PRIORITY null_filler
 ;
-

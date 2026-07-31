@@ -14,6 +14,7 @@ set interfaces ge-0/0/0 unit 0 family ethernet-switching interface-mode access
 set vlans v100 vlan-id 100
 #
 # VSTP: xe-0/0/1 is valid, xe-0/0/2 should produce fatal error
+set protocols vstp interface xe-0/0/1
 set protocols vstp vlan v100 interface xe-0/0/1 mode point-to-point
 set protocols vstp vlan v100 interface xe-0/0/2 mode point-to-point
 #
