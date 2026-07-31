@@ -1,0 +1,39 @@
+! This is an ASA device.
+ASA Version 9.18(1)
+!
+hostname asa_dns
+!
+interface GigabitEthernet0/0
+ nameif outside
+ security-level 0
+ ip address 192.0.2.1 255.255.255.0
+!
+interface GigabitEthernet0/1
+ nameif inside
+ security-level 100
+ ip address 198.51.100.1 255.255.255.0
+!
+interface Management0/0
+ nameif management
+ security-level 100
+ ip address 203.0.113.1 255.255.255.0
+!
+domain-name corp.example.com
+dns domain-lookup outside
+dns domain-lookup inside
+dns domain-lookup management
+dns server-group DefaultDNS
+ name-server 192.0.2.10 192.0.2.11 management
+ name-server 192.0.2.12
+ domain-name example.com
+ timeout 7
+ retries 5
+ poll-timer minutes 120
+ expire-entry-timer minutes 240
+dns server-group InsideDNS
+ name-server 198.51.100.53
+dns name-server 203.0.113.8
+dns-group-map
+ dns-to-domain InsideDNS eng.example.com
+ dns-to-domain InsideDNS hr.example.com
+dns-group DefaultDNS

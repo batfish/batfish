@@ -65,6 +65,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -432,9 +433,13 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final List<Ip> _dhcpRelayServers;
 
-  private NavigableSet<String> _dnsServers;
+  private final SortedSet<String> _dnsDomainLookupInterfaces;
 
-  private String _dnsSourceInterface;
+  private final Map<String, DnsServerGroup> _dnsServerGroups;
+
+  private final Map<String, String> _dnsGroupMap;
+
+  private @Nullable String _defaultDnsServerGroup;
 
   private String _domainName;
 
@@ -567,7 +572,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
-    _dnsServers = new TreeSet<>();
+    _dnsDomainLookupInterfaces = new TreeSet<>();
+    _dnsServerGroups = new LinkedHashMap<>();
+    _dnsGroupMap = new LinkedHashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
@@ -736,12 +743,28 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _dhcpRelayServers;
   }
 
-  public NavigableSet<String> getDnsServers() {
-    return _dnsServers;
+  public SortedSet<String> getDnsDomainLookupInterfaces() {
+    return _dnsDomainLookupInterfaces;
   }
 
-  public String getDnsSourceInterface() {
-    return _dnsSourceInterface;
+  public Map<String, DnsServerGroup> getDnsServerGroups() {
+    return _dnsServerGroups;
+  }
+
+  public DnsServerGroup getOrCreateDnsServerGroup(String name) {
+    return _dnsServerGroups.computeIfAbsent(name, DnsServerGroup::new);
+  }
+
+  public Map<String, String> getDnsGroupMap() {
+    return _dnsGroupMap;
+  }
+
+  public @Nullable String getDefaultDnsServerGroup() {
+    return _defaultDnsServerGroup;
+  }
+
+  public void setDefaultDnsServerGroup(@Nullable String defaultDnsServerGroup) {
+    _defaultDnsServerGroup = defaultDnsServerGroup;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1077,10 +1100,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     commIface.setActive(true);
     sigIface.setAddress(sigAddress);
     sigIface.setActive(true);
-  }
-
-  public void setDnsSourceInterface(String dnsSourceInterface) {
-    _dnsSourceInterface = dnsSourceInterface;
   }
 
   public void setDomainName(String domainName) {
@@ -2738,8 +2757,13 @@ public final class AsaConfiguration extends VendorConfiguration {
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
-    c.setDnsServers(_dnsServers);
-    c.setDnsSourceInterface(_dnsSourceInterface);
+
+    SortedSet<String> dnsServers = new TreeSet<>();
+    _dnsServerGroups.values().stream()
+        .flatMap(group -> group.getNameServers().stream())
+        .map(NameServer::getIp)
+        .forEach(dnsServers::add);
+    c.setDnsServers(dnsServers);
     c.setDomainName(_domainName);
     c.setExportBgpFromBgpRib(true);
     c.setNormalVlanRange(
@@ -3290,7 +3314,8 @@ public final class AsaConfiguration extends VendorConfiguration {
     markConcreteStructure(
         AsaStructureType.INTERFACE,
         AsaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
-        AsaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
+        AsaStructureUsage.DNS_DOMAIN_LOOKUP_INTERFACE,
+        AsaStructureUsage.DNS_SERVER_GROUP_NAME_SERVER_INTERFACE,
         AsaStructureUsage.EIGRP_AF_INTERFACE,
         AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
@@ -3304,7 +3329,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.FAILOVER_LAN_INTERFACE,
         AsaStructureUsage.FAILOVER_LINK_INTERFACE,
         AsaStructureUsage.INTERFACE_SELF_REF,
-        AsaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
         AsaStructureUsage.IP_TACACS_SOURCE_INTERFACE,
         AsaStructureUsage.NTP_SOURCE_INTERFACE,
         AsaStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
@@ -3420,6 +3444,9 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // mark references to route-maps
     markConcreteStructure(AsaStructureType.ROUTE_MAP);
+
+    // DNS
+    markConcreteStructure(AsaStructureType.DNS_SERVER_GROUP);
 
     // Cable
     markConcreteStructure(AsaStructureType.DEPI_CLASS);

@@ -3,6 +3,7 @@ parser grammar AsaParser;
 import
 Asa_common,
 Asa_community_list,
+Asa_dns,
 Asa_static,
 AsaLegacy_aaa,
 AsaLegacy_acl,
@@ -566,25 +567,6 @@ dialer_null
    ) null_rest_of_line
 ;
 
-domain_lookup
-:
-   LOOKUP
-   (
-      SOURCE_INTERFACE iname = interface_name
-      | DISABLE
-   ) NEWLINE
-;
-
-domain_name
-:
-   NAME hostname = variable_hostname NEWLINE
-;
-
-domain_name_server
-:
-   NAME_SERVER hostname = variable_hostname NEWLINE
-;
-
 dspf_null
 :
    NO?
@@ -1145,28 +1127,6 @@ ip_dhcp_relay_server
       ip = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
    ) NEWLINE
-;
-
-ip_domain_lookup
-:
-   LOOKUP
-   (VRF vrf = variable)?
-   (SOURCE_INTERFACE iname = interface_name)?
-   NEWLINE
-;
-
-ip_domain_name
-:
-   NAME
-   (VRF vrf = variable)?
-   hostname = variable_hostname NEWLINE
-;
-
-ip_domain_null
-:
-   (
-      LIST
-   ) null_rest_of_line
 ;
 
 ip_probe_null
@@ -2353,19 +2313,6 @@ s_dial_peer
    )*
 ;
 
-s_domain
-:
-   DOMAIN
-   (
-      VRF vrf = variable
-   )?
-   (
-      domain_lookup
-      | domain_name
-      | domain_name_server
-   )
-;
-
 s_domain_name
 :
    DOMAIN_NAME hostname = variable_hostname NEWLINE
@@ -2593,24 +2540,6 @@ s_ip_dhcp
    )
 ;
 
-s_ip_domain
-:
-   NO? IP DOMAIN
-   (
-      ip_domain_lookup
-      | ip_domain_name
-      | ip_domain_null
-   )
-;
-
-s_ip_domain_name
-:
-   IP DOMAIN_NAME hostname = variable_hostname
-   (
-      USE_VRF variable
-   )? NEWLINE
-;
-
 ip_local
 :
   LOCAL ipl_policy
@@ -2619,20 +2548,6 @@ ip_local
 ipl_policy
 :
   POLICY ROUTE_MAP name = variable NEWLINE
-;
-
-s_ip_name_server
-:
-   IP NAME_SERVER
-   (
-      VRF vrf = variable
-   )?
-   (
-      hostnames += ip_hostname
-   )+
-   (
-      USE_VRF vrf = variable
-   )? NEWLINE
 ;
 
 s_ip_nbar
@@ -3681,7 +3596,9 @@ stanza
    | s_dhcp
    | s_dialer
    | s_dial_peer
-   | s_domain
+   | s_dns
+   | s_dns_group
+   | s_dns_group_map
    | s_domain_name
    | s_dot11
    | s_dspfarm
@@ -3711,9 +3628,6 @@ stanza
    | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
-   | s_ip_domain
-   | s_ip_domain_name
-   | s_ip_name_server
    | s_ip_nbar
    | s_ip_pim
    | s_ip_probe

@@ -1,0 +1,10 @@
+! This is an ASA device.
+ASA Version 9.18(1)
+!
+hostname asa_dns_bad_ranges
+!
+dns server-group DefaultDNS
+ timeout 99
+ retries 20
+ poll-timer minutes 0
+ expire-entry-timer minutes 0

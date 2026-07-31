@@ -586,7 +586,6 @@ null_single
       | DIAGNOSTIC
       | DIAL_CONTROL_MIB
       | DIALER_LIST
-      | DNS
       | DNS_GUARD
       | DOWNLINK
       | DSP
