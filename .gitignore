@@ -31,3 +31,14 @@ __pycache__
 
 # Working directory for various tasks
 /working/
+
+# Claude Code: share skills and other project config, but never local settings
+# (permission allowlists, env vars) or transcript/state directories.
+/.claude/settings.local.json
+/.claude/*.local.json
+/.claude/history/
+/.claude/projects/
+/.claude/shell-snapshots/
+/.claude/statsig/
+/.claude/todos/
+/CLAUDE.local.md
