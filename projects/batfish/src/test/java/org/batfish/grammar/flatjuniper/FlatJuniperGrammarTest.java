@@ -9737,6 +9737,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testXstpInterfaceExtraction() {
     JuniperConfiguration jc = parseJuniperConfig("xstp-interface-validation");
+    assertThat(jc.getWarnings().getParseWarnings(), empty());
     Set<String> xstpInterfaces = jc.getMasterLogicalSystem().getXstpInterfaceNames();
     // Should contain the specific interfaces but not "all"
     assertThat(xstpInterfaces, containsInAnyOrder("xe-0/0/1.0", "xe-0/0/2.0", "ge-0/0/0.0"));
