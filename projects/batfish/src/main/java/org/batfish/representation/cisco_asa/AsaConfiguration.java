@@ -3445,6 +3445,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(AsaStructureType.ROUTE_MAP);
 
+    // DNS
+    markConcreteStructure(AsaStructureType.DNS_SERVER_GROUP);
+
     // Cable
     markConcreteStructure(AsaStructureType.DEPI_CLASS);
     markConcreteStructure(AsaStructureType.DEPI_TUNNEL);

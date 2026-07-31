@@ -64,6 +64,8 @@ public enum AsaStructureUsage implements StructureUsage {
   DEPI_TUNNEL_L2TP_CLASS("depi-tunnel l2tp-class"),
   DEPI_TUNNEL_PROTECT_TUNNEL("depi-tunnel protect-tunnel"),
   DNS_DOMAIN_LOOKUP_INTERFACE("dns domain-lookup interface"),
+  DNS_GROUP("dns-group"),
+  DNS_GROUP_MAP_DNS_TO_DOMAIN("dns-group-map dns-to-domain"),
   DNS_SERVER_GROUP_NAME_SERVER_INTERFACE("dns server-group name-server interface"),
   DOCSIS_GROUP_DOCSIS_POLICY("cable load-balance docsis-group docsis-policy"),
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),

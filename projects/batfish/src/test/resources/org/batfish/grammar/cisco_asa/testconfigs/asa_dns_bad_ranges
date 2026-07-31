@@ -7,4 +7,4 @@ dns server-group DefaultDNS
  timeout 99
  retries 20
  poll-timer minutes 0
- expire-entry-timer minutes 99999999
+ expire-entry-timer minutes 0

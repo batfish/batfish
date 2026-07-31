@@ -80,6 +80,7 @@ import static org.batfish.representation.cisco_asa.AsaConfiguration.computeIcmpO
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeServiceObjectGroupAclName;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DNS_SERVER_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureType.IPV4_ACCESS_LIST_EXTENDED;
@@ -372,6 +373,12 @@ public final class CiscoAsaGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 2));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "outside", 2));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "management", 3));
+
+    // "dns server-group" defines a group; "dns-group" and "dns-to-domain" reference one.
+    assertThat(ccae, hasDefinedStructure(filename, DNS_SERVER_GROUP, "DefaultDNS"));
+    assertThat(ccae, hasDefinedStructure(filename, DNS_SERVER_GROUP, "InsideDNS"));
+    assertThat(ccae, hasNumReferrers(filename, DNS_SERVER_GROUP, "DefaultDNS", 1));
+    assertThat(ccae, hasNumReferrers(filename, DNS_SERVER_GROUP, "InsideDNS", 2));
   }
 
   @Test

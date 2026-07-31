@@ -51,22 +51,22 @@ dnssg_domain_name
 
 dnssg_timeout
 :
-   TIMEOUT secs = dec NEWLINE
+   TIMEOUT secs = uint8 NEWLINE
 ;
 
 dnssg_retries
 :
-   RETRIES count = dec NEWLINE
+   RETRIES count = uint8 NEWLINE
 ;
 
 dnssg_poll_timer
 :
-   POLL_TIMER MINUTES mins = dec NEWLINE
+   POLL_TIMER MINUTES mins = uint16 NEWLINE
 ;
 
 dnssg_expire_entry_timer
 :
-   EXPIRE_ENTRY_TIMER MINUTES mins = dec NEWLINE
+   EXPIRE_ENTRY_TIMER MINUTES mins = uint16 NEWLINE
 ;
 
 s_dns_group

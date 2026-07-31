@@ -22,6 +22,7 @@ public enum AsaStructureType implements StructureType {
   CRYPTO_MAP_SET("crypto-map-set"),
   DEPI_CLASS("depi-class"),
   DEPI_TUNNEL("depi-tunnel"),
+  DNS_SERVER_GROUP("dns server-group"),
   DOCSIS_POLICY("docsis-policy"),
   DOCSIS_POLICY_RULE("docsis-policy-rule"),
   EXTCOMMUNITY_LIST("extcommunity-list"),

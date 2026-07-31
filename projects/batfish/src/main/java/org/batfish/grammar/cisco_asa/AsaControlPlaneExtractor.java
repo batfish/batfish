@@ -26,6 +26,7 @@ import static org.batfish.representation.cisco_asa.AsaStructureType.CRYPTO_DYNAM
 import static org.batfish.representation.cisco_asa.AsaStructureType.CRYPTO_MAP_SET;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_TUNNEL;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DNS_SERVER_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco_asa.AsaStructureType.ICMP_TYPE_OBJECT_GROUP;
@@ -123,6 +124,8 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DNS_DOMAIN_LOOKUP_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DNS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DNS_GROUP_MAP_DNS_TO_DOMAIN;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DNS_SERVER_GROUP_NAME_SERVER_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
@@ -4387,7 +4390,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void enterDns_server_group(Dns_server_groupContext ctx) {
-    _currentDnsServerGroup = _configuration.getOrCreateDnsServerGroup(ctx.name.getText());
+    String name = ctx.name.getText();
+    _currentDnsServerGroup = _configuration.getOrCreateDnsServerGroup(name);
+    _configuration.defineStructure(DNS_SERVER_GROUP, name, ctx);
   }
 
   @Override
@@ -4442,14 +4447,20 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitS_dns_group(S_dns_groupContext ctx) {
-    _configuration.setDefaultDnsServerGroup(ctx.name.getText());
+    String name = ctx.name.getText();
+    _configuration.setDefaultDnsServerGroup(name);
+    _configuration.referenceStructure(
+        DNS_SERVER_GROUP, name, DNS_GROUP, ctx.name.getStart().getLine());
   }
 
   @Override
   public void exitDnsgm_dns_to_domain(Dnsgm_dns_to_domainContext ctx) {
     // "dns-to-domain <group> <domain>" maps a domain to a DNS server group. Each domain maps to
     // exactly one group.
-    _configuration.getDnsGroupMap().put(ctx.domain.getText(), ctx.group.getText());
+    String group = ctx.group.getText();
+    _configuration.getDnsGroupMap().put(ctx.domain.getText(), group);
+    _configuration.referenceStructure(
+        DNS_SERVER_GROUP, group, DNS_GROUP_MAP_DNS_TO_DOMAIN, ctx.group.getStart().getLine());
   }
 
   @Override
