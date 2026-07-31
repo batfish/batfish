@@ -3,6 +3,7 @@ parser grammar AsaParser;
 import
 Asa_common,
 Asa_community_list,
+Asa_dns,
 Asa_static,
 AsaLegacy_aaa,
 AsaLegacy_acl,
@@ -2310,91 +2311,6 @@ s_dial_peer
          | VOICE_CLASS
       ) null_rest_of_line
    )*
-;
-
-s_dns
-:
-   DNS
-   (
-      dns_domain_lookup
-      | dns_name_server
-      | dns_server_group
-      | dns_null
-   )
-;
-
-dns_domain_lookup
-:
-   DOMAIN_LOOKUP iname = variable NEWLINE
-;
-
-dns_name_server
-:
-   NAME_SERVER (servers += ip_hostname)+ NEWLINE
-;
-
-dns_server_group
-:
-   SERVER_GROUP name = variable NEWLINE
-   (
-      dnsg_name_server
-      | dnsg_domain_name
-      | dnsg_timeout
-      | dnsg_retries
-      | dnsg_poll_timer
-      | dnsg_expire_entry_timer
-   )*
-;
-
-dnsg_name_server
-:
-   NAME_SERVER (servers += ip_hostname)+ (iface = variable)? NEWLINE
-;
-
-dnsg_domain_name
-:
-   DOMAIN_NAME name = variable_hostname NEWLINE
-;
-
-dnsg_timeout
-:
-   TIMEOUT secs = dec NEWLINE
-;
-
-dnsg_retries
-:
-   RETRIES count = dec NEWLINE
-;
-
-dnsg_poll_timer
-:
-   POLL_TIMER MINUTES mins = dec NEWLINE
-;
-
-dnsg_expire_entry_timer
-:
-   EXPIRE_ENTRY_TIMER MINUTES mins = dec NEWLINE
-;
-
-dns_null
-:
-   ~( DOMAIN_LOOKUP | NAME_SERVER | SERVER_GROUP | NEWLINE ) null_rest_of_line
-;
-
-s_dns_group
-:
-   DNS_GROUP name = variable NEWLINE
-;
-
-s_dns_group_map
-:
-   DNS_GROUP_MAP NEWLINE
-   dns_to_domain*
-;
-
-dns_to_domain
-:
-   DNS_TO_DOMAIN group = variable domain = variable_hostname NEWLINE
 ;
 
 s_domain_name

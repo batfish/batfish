@@ -542,13 +542,13 @@ import org.batfish.grammar.cisco_asa.AsaParser.Distribute_list_is_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dns_domain_lookupContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dns_name_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dns_server_groupContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dns_to_domainContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_domain_nameContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_expire_entry_timerContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_name_serverContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_poll_timerContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_retriesContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Dnsg_timeoutContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnsgm_dns_to_domainContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_domain_nameContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_expire_entry_timerContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_name_serverContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_poll_timerContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_retriesContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Dnssg_timeoutContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dscp_typeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dt_l2tp_classContext;
@@ -4396,7 +4396,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitDnsg_name_server(Dnsg_name_serverContext ctx) {
+  public void exitDnssg_name_server(Dnssg_name_serverContext ctx) {
     String sourceInterface = ctx.iface != null ? ctx.iface.getText() : null;
     for (Ip_hostnameContext server : ctx.servers) {
       _currentDnsServerGroup.addNameServer(new NameServer(server.getText(), sourceInterface));
@@ -4411,30 +4411,30 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitDnsg_domain_name(Dnsg_domain_nameContext ctx) {
+  public void exitDnssg_domain_name(Dnssg_domain_nameContext ctx) {
     _currentDnsServerGroup.setDomainName(ctx.name.getText());
   }
 
   @Override
-  public void exitDnsg_timeout(Dnsg_timeoutContext ctx) {
+  public void exitDnssg_timeout(Dnssg_timeoutContext ctx) {
     toIntegerInSpace(ctx, ctx.secs, DNS_TIMEOUT_RANGE, "dns server-group timeout")
         .ifPresent(_currentDnsServerGroup::setTimeoutSeconds);
   }
 
   @Override
-  public void exitDnsg_retries(Dnsg_retriesContext ctx) {
+  public void exitDnssg_retries(Dnssg_retriesContext ctx) {
     toIntegerInSpace(ctx, ctx.count, DNS_RETRIES_RANGE, "dns server-group retries")
         .ifPresent(_currentDnsServerGroup::setRetries);
   }
 
   @Override
-  public void exitDnsg_poll_timer(Dnsg_poll_timerContext ctx) {
+  public void exitDnssg_poll_timer(Dnssg_poll_timerContext ctx) {
     toIntegerInSpace(ctx, ctx.mins, DNS_POLL_TIMER_RANGE, "dns server-group poll-timer")
         .ifPresent(_currentDnsServerGroup::setPollTimerMinutes);
   }
 
   @Override
-  public void exitDnsg_expire_entry_timer(Dnsg_expire_entry_timerContext ctx) {
+  public void exitDnssg_expire_entry_timer(Dnssg_expire_entry_timerContext ctx) {
     toIntegerInSpace(
             ctx, ctx.mins, DNS_EXPIRE_ENTRY_TIMER_RANGE, "dns server-group expire-entry-timer")
         .ifPresent(_currentDnsServerGroup::setExpireEntryTimerMinutes);
@@ -4446,7 +4446,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitDns_to_domain(Dns_to_domainContext ctx) {
+  public void exitDnsgm_dns_to_domain(Dnsgm_dns_to_domainContext ctx) {
     // "dns-to-domain <group> <domain>" maps a domain to a DNS server group. Each domain maps to
     // exactly one group.
     _configuration.getDnsGroupMap().put(ctx.domain.getText(), ctx.group.getText());
