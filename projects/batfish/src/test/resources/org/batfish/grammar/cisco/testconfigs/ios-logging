@@ -11,6 +11,6 @@ logging host 10.1.1.104 vrf MGMT-TOR transport tcp port 10
 logging host 2001::1:1 transport tcp port 601
 logging facility local7
 logging trap notifications
-logging buffered discriminator MYDISC filtered 32768 warnings
+logging buffered discriminator MYDISC 32768 warnings
 !
 end

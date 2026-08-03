@@ -761,11 +761,10 @@ public final class CiscoGrammarTest {
     assertThat(logging.getTrapSeverity(), equalTo("notifications"));
     assertThat(logging.getTrapSeverityNum(), equalTo(5));
 
+    assertThat(logging.getBufferedDiscriminator(), equalTo("MYDISC"));
     assertThat(logging.getBufferedSize(), equalTo(32768));
     assertThat(logging.getBufferedSeverity(), equalTo("warnings"));
     assertThat(logging.getBufferedSeverityNum(), equalTo(4));
-    assertTrue(logging.getBufferedFiltered());
-    assertThat(logging.getBufferedDiscriminator(), equalTo("MYDISC"));
 
     Map<String, LoggingHost> hosts = logging.getHosts();
     assertThat(

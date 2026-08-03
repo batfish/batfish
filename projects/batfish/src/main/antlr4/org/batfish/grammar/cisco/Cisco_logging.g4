@@ -52,8 +52,33 @@ logging_buffered
 :
    BUFFERED
    (
-      DISCRIMINATOR descr = variable
-   )? FILTERED? size = dec? logging_severity? NEWLINE
+      loggingb_discriminator
+      | loggingb_size_severity
+      | loggingb_filtered_null
+      | loggingb_xml_null
+   )
+;
+
+loggingb_discriminator
+:
+   DISCRIMINATOR name = variable loggingb_size_severity
+;
+
+loggingb_size_severity
+:
+   (
+      size = uint32
+   )? logging_severity? NEWLINE
+;
+
+loggingb_filtered_null
+:
+   FILTERED null_rest_of_line
+;
+
+loggingb_xml_null
+:
+   XML null_rest_of_line
 ;
 
 logging_common

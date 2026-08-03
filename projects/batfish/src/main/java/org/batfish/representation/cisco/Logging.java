@@ -25,12 +25,11 @@ public final class Logging implements Serializable {
   private @Nullable String _trapSeverity;
   private @Nullable Integer _trapSeverityNum;
 
-  // logging buffered [discriminator <name>] [filtered] [<size>] [<severity>]
+  // logging buffered [discriminator <name>] [<size>] [<severity>]
   private @Nullable Integer _bufferedSize;
   private @Nullable String _bufferedSeverity;
   private @Nullable Integer _bufferedSeverityNum;
   private @Nullable String _bufferedDiscriminator;
-  private boolean _bufferedFiltered;
 
   public Logging() {
     _hosts = new TreeMap<>();
@@ -94,13 +93,5 @@ public final class Logging implements Serializable {
 
   public void setBufferedDiscriminator(@Nullable String bufferedDiscriminator) {
     _bufferedDiscriminator = bufferedDiscriminator;
-  }
-
-  public boolean getBufferedFiltered() {
-    return _bufferedFiltered;
-  }
-
-  public void setBufferedFiltered(boolean bufferedFiltered) {
-    _bufferedFiltered = bufferedFiltered;
   }
 }
