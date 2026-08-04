@@ -1,0 +1,7 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_dns"
+ip name server 1.1.1.1 1.1.1.2
+ip domain name "example.com"

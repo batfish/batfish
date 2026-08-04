@@ -1,0 +1,7 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_ntp"
+sntp server "2.2.2.1"
+sntp server "2.2.2.2"

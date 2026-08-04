@@ -1,0 +1,7 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_syslog"
+logging host "3.3.3.1" ipv4 514 debug
+logging host "3.3.3.2" ipv4 514 debug
