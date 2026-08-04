@@ -1,5 +1,6 @@
 package org.batfish.vendor.fastpath.grammar;
 
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -8,6 +9,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
@@ -31,6 +33,11 @@ public final class FastpathControlPlaneExtractor implements ControlPlaneExtracto
   @Override
   public @Nonnull VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    return ImplementedRules.getImplementedRules(FastpathConfigurationBuilder.class);
   }
 
   @Override
