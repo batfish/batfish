@@ -27,6 +27,8 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -144,5 +146,47 @@ public final class FastpathGrammarTest {
     // Logging: `logging host` -> logging (syslog) servers.
     Configuration c = parseConfig("fastpath_syslog");
     assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.3.3.1", "3.3.3.2")));
+  }
+
+  /**
+   * Like {@link #getBatfishForConfigurationNames} but recovers from unrecognized/unsupported lines
+   * instead of throwing, as production parsing does. This lets a config that mixes supported
+   * management commands with not-yet-modeled lines parse to {@link
+   * ParseStatus#PARTIALLY_UNRECOGNIZED} rather than {@code FAILED}.
+   */
+  private @Nonnull Batfish getBatfishAllowUnrecognized(String hostname) throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    batfish.getSettings().setThrowOnLexerError(false);
+    batfish.getSettings().setThrowOnParserError(false);
+    return batfish;
+  }
+
+  @Test
+  public void testManagementServicesFromRealisticConfig() throws IOException {
+    // A representative management block (placeholder values) surrounded by not-yet-modeled lines
+    // (serviceport, VLANs, interfaces, OSPF): the DNS/NTP/Syslog values must still extract.
+    Batfish batfish = getBatfishAllowUnrecognized("fastpath_management_services");
+    Configuration c =
+        batfish.loadConfigurations(batfish.getSnapshot()).get("fastpath_management_services");
+    assertThat(c, hasConfigurationFormat(FASTPATH));
+    assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.2.3.4", "1.2.3.5")));
+    assertThat(c.getDomainName(), equalTo("example.com"));
+    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("2.3.4.5", "2.3.4.6")));
+    assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.4.5.6", "3.4.5.7")));
+  }
+
+  @Test
+  public void testUnrecognizedLinesArePartiallyRecognized() throws IOException {
+    // Not-yet-modeled lines must not fail the whole parse: the config parses to
+    // PARTIALLY_UNRECOGNIZED and the supported lines are still modeled.
+    String hostname = "fastpath_management_services";
+    Batfish batfish = getBatfishAllowUnrecognized(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c, hasHostname(hostname));
+    InitInfoAnswerElement initInfo = batfish.initInfo(batfish.getSnapshot(), false, true);
+    assertThat(
+        initInfo.getParseStatus().get("configs/" + hostname),
+        equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 }
