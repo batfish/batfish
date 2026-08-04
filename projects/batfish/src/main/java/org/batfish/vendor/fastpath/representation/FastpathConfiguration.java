@@ -1,0 +1,98 @@
+package org.batfish.vendor.fastpath.representation;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Vrf;
+import org.batfish.vendor.VendorConfiguration;
+
+/** Vendor-specific datamodel for a FastPath (Broadcom FASTPATH / ICOS) device configuration. */
+public final class FastpathConfiguration extends VendorConfiguration {
+
+  private @Nullable String _hostname;
+  private @Nullable String _rawHostname;
+  private @Nullable String _domainName;
+  private final Set<String> _dnsServers;
+  private final Set<String> _ntpServers;
+  private final Set<String> _loggingServers;
+
+  public FastpathConfiguration() {
+    _dnsServers = new TreeSet<>();
+    _ntpServers = new TreeSet<>();
+    _loggingServers = new TreeSet<>();
+  }
+
+  @Override
+  public @Nullable String getHostname() {
+    return _hostname;
+  }
+
+  @Override
+  public void setHostname(String hostname) {
+    checkNotNull(hostname, "hostname cannot be null");
+    _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
+  }
+
+  @Override
+  public void setVendor(ConfigurationFormat format) {}
+
+  public void setDomainName(String domainName) {
+    _domainName = domainName;
+  }
+
+  public void addDnsServer(String server) {
+    _dnsServers.add(server);
+  }
+
+  public void addNtpServer(String server) {
+    _ntpServers.add(server);
+  }
+
+  public void addLoggingServer(String server) {
+    _loggingServers.add(server);
+  }
+
+  /** Freeze mutable collections after extraction. No-op until the model grows collections. */
+  public void finalizeStructures() {}
+
+  private @Nonnull Configuration toVendorIndependentConfiguration() {
+    Configuration c = new Configuration(_hostname, ConfigurationFormat.FASTPATH);
+    c.setHumanName(_rawHostname);
+    c.setDeviceModel(DeviceModel.FASTPATH_UNSPECIFIED);
+    c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    c.setDefaultInboundAction(LineAction.PERMIT);
+
+    // Generated default VRF
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
+
+    if (_domainName != null) {
+      c.setDomainName(_domainName);
+    }
+    c.setDnsServers(ImmutableSet.copyOf(_dnsServers));
+    c.setNtpServers(ImmutableSet.copyOf(_ntpServers));
+    c.setLoggingServers(ImmutableSet.copyOf(_loggingServers));
+
+    return c;
+  }
+
+  @Override
+  public @Nonnull List<Configuration> toVendorIndependentConfigurations()
+      throws VendorConversionException {
+    return ImmutableList.of(toVendorIndependentConfiguration());
+  }
+}
