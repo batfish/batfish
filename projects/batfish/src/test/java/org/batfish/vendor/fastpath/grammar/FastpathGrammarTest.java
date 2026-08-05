@@ -367,24 +367,32 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testManagementServicesFromRealisticConfig() throws IOException {
-    // A representative management block (placeholder values) surrounded by not-yet-modeled lines
-    // (serviceport, VLANs, interfaces, OSPF): the DNS/NTP/Syslog values must still extract.
-    Batfish batfish = getBatfishAllowUnrecognized("fastpath_management_services");
-    Configuration c =
-        batfish.loadConfigurations(batfish.getSnapshot()).get("fastpath_management_services");
+  public void testFastPathConfig() throws IOException {
+    // A real FastPath config: the modeled DNS/NTP/Syslog surface must extract and
+    // convert onto the VI configuration end-to-end, even surrounded by not-yet-modeled L2/L3,
+    // routing, ACL, AAA, and DHCP lines.
+    String hostname = "fastpath_complete_config";
+    Batfish batfish = getBatfishAllowUnrecognized(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasConfigurationFormat(FASTPATH));
-    assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.2.3.4", "1.2.3.5")));
+    assertThat(c.getHostname(), equalTo(hostname));
+    // DNS
     assertThat(c.getDomainName(), equalTo("example.com"));
-    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("2.3.4.5", "2.3.4.6")));
-    assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.4.5.6", "3.4.5.7")));
+    assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
+    assertThat(c.getDnsSourceInterface(), equalTo("serviceport"));
+    // NTP
+    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("2.2.2.1", "2.2.2.2", "2.2.2.3")));
+    assertThat(c.getNtpSourceInterface(), equalTo("serviceport"));
+    // Syslog
+    assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.3.3.1", "3.3.3.2")));
+    assertThat(c.getLoggingSourceInterface(), equalTo("serviceport"));
   }
 
   @Test
   public void testUnrecognizedLinesArePartiallyRecognized() throws IOException {
     // Not-yet-modeled lines must not fail the whole parse: the config parses to
     // PARTIALLY_UNRECOGNIZED and the supported lines are still modeled.
-    String hostname = "fastpath_management_services";
+    String hostname = "fastpath_complete_config";
     Batfish batfish = getBatfishAllowUnrecognized(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasHostname(hostname));
