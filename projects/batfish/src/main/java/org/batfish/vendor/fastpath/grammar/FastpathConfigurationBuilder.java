@@ -22,8 +22,10 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Double_quoted_stringCo
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Host_valueContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.HostnameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ip_addressContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Ip_domain_nameContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Ip_name_serverContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipd_lookupContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipd_nameContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipn_serverContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipn_source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Lb_enableContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Lb_wrapContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Lh_serverContext;
@@ -35,7 +37,8 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Logging_severityContex
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Logging_severity_keywordContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ls_enableContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ls_source_interfaceContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Nl_consoleContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Noipd_lookupContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Nol_consoleContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Quoted_textContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_hostnameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_set_promptContext;
@@ -89,13 +92,28 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitIp_name_server(Ip_name_serverContext ctx) {
-    ctx.ip_address().forEach(addr -> _c.addDnsServer(toString(addr)));
+  public void exitIpn_server(Ipn_serverContext ctx) {
+    ctx.ip_address().forEach(addr -> _c.getDns().addServer(toString(addr)));
   }
 
   @Override
-  public void exitIp_domain_name(Ip_domain_nameContext ctx) {
-    _c.setDomainName(toString(ctx.domain_name().double_quoted_string().text));
+  public void exitIpn_source_interface(Ipn_source_interfaceContext ctx) {
+    _c.getDns().setSourceInterface(toInterfaceName(ctx.iface));
+  }
+
+  @Override
+  public void exitIpd_name(Ipd_nameContext ctx) {
+    _c.getDns().setDomainName(toString(ctx.domain_name().double_quoted_string().text));
+  }
+
+  @Override
+  public void exitIpd_lookup(Ipd_lookupContext ctx) {
+    _c.getDns().setLookupEnabled(true);
+  }
+
+  @Override
+  public void exitNoipd_lookup(Noipd_lookupContext ctx) {
+    _c.getDns().setLookupEnabled(false);
   }
 
   @Override
@@ -173,7 +191,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitNl_console(Nl_consoleContext ctx) {
+  public void exitNol_console(Nol_consoleContext ctx) {
     _c.getLogging().setConsoleEnabled(false);
   }
 

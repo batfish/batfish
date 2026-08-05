@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -24,13 +22,12 @@ public final class FastpathConfiguration extends VendorConfiguration {
 
   private @Nullable String _hostname;
   private @Nullable String _rawHostname;
-  private @Nullable String _domainName;
-  private final Set<String> _dnsServers;
+  private final Dns _dns;
   private final Sntp _sntp;
   private final Logging _logging;
 
   public FastpathConfiguration() {
-    _dnsServers = new TreeSet<>();
+    _dns = new Dns();
     _sntp = new Sntp();
     _logging = new Logging();
   }
@@ -50,12 +47,9 @@ public final class FastpathConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  public void setDomainName(String domainName) {
-    _domainName = domainName;
-  }
-
-  public void addDnsServer(String server) {
-    _dnsServers.add(server);
+  /** This device's DNS-client configuration. */
+  public @Nonnull Dns getDns() {
+    return _dns;
   }
 
   public @Nonnull Sntp getSntp() {
@@ -78,10 +72,13 @@ public final class FastpathConfiguration extends VendorConfiguration {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
-    if (_domainName != null) {
-      c.setDomainName(_domainName);
+    if (_dns.getDomainName() != null) {
+      c.setDomainName(_dns.getDomainName());
     }
-    c.setDnsServers(ImmutableSet.copyOf(_dnsServers));
+    c.setDnsServers(ImmutableSet.copyOf(_dns.getServers()));
+    if (_dns.getSourceInterface() != null) {
+      c.setDnsSourceInterface(_dns.getSourceInterface());
+    }
     c.setNtpServers(ImmutableSet.copyOf(_sntp.getServers()));
     if (_sntp.getSourceInterface() != null) {
       c.setNtpSourceInterface(_sntp.getSourceInterface());

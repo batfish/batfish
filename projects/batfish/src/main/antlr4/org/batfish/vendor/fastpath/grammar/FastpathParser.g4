@@ -37,19 +37,71 @@ s_ip
 :
   IP
   (
-    ip_name_server
-    | ip_domain_name
+    ip_domain
+    | ip_host_null
+    | ip_name
   )
 ;
 
-ip_name_server
+ip_host_null
 :
-  NAME SERVER ip_address+ NEWLINE
+  HOST null_rest_of_line
 ;
 
-ip_domain_name
+ip_domain
 :
-  DOMAIN NAME domain_name NEWLINE
+  DOMAIN
+  (
+    ipd_list_null
+    | ipd_lookup
+    | ipd_name
+    | ipd_retry_null
+    | ipd_timeout_null
+  )
+;
+
+ipd_list_null
+:
+  LIST null_rest_of_line
+;
+
+ipd_lookup
+:
+  LOOKUP NEWLINE
+;
+
+ipd_name
+:
+  NAME domain_name NEWLINE
+;
+
+ipd_retry_null
+:
+  RETRY null_rest_of_line
+;
+
+ipd_timeout_null
+:
+  TIMEOUT null_rest_of_line
+;
+
+ip_name
+:
+  NAME
+  (
+    ipn_server
+    | ipn_source_interface
+  )
+;
+
+ipn_server
+:
+  SERVER ip_address+ NEWLINE
+;
+
+ipn_source_interface
+:
+  SOURCE_INTERFACE iface = source_interface NEWLINE
 ;
 
 domain_name
@@ -248,15 +300,34 @@ logging_traps_null
 
 s_no
 :
-  NO no_logging
+  NO
+  (
+    no_ip
+    | no_logging
+  )
+;
+
+no_ip
+:
+  IP noip_domain
+;
+
+noip_domain
+:
+  DOMAIN noipd_lookup
+;
+
+noipd_lookup
+:
+  LOOKUP NEWLINE
 ;
 
 no_logging
 :
-  LOGGING nl_console
+  LOGGING nol_console
 ;
 
-nl_console
+nol_console
 :
   CONSOLE NEWLINE
 ;

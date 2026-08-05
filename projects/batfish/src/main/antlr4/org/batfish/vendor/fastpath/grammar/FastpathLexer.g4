@@ -55,7 +55,11 @@ IPV4: 'ipv4';
 
 IPV6: 'ipv6';
 
+LIST: 'list';
+
 LOGGING: 'logging';
+
+LOOKUP: 'lookup';
 
 LOOPBACK: 'loopback';
 
@@ -84,6 +88,8 @@ RECONFIGURE: 'reconfigure';
 
 REMOVE: 'remove';
 
+RETRY: 'retry';
+
 SERVER: 'server';
 
 SERVICEPORT: 'serviceport';
@@ -100,6 +106,8 @@ STATUS
 ;
 
 SYSLOG: 'syslog';
+
+TIMEOUT: 'timeout';
 
 TRAPS: 'traps';
 

@@ -38,6 +38,7 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.fastpath.representation.Dns;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.Logging;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
@@ -143,10 +144,43 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testDns() throws IOException {
-    // DNS client: `ip name server` -> DNS servers, `ip domain name` -> default domain.
+    // DNS client: `ip name server` -> DNS servers, `ip domain name` -> default domain,
+    // `ip name source-interface` -> DNS source interface.
     Configuration c = parseConfig("fastpath_dns");
     assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
     assertThat(c.getDomainName(), equalTo("example.com"));
+    assertThat(c.getDnsSourceInterface(), equalTo("serviceport"));
+  }
+
+  @Test
+  public void testDnsExtraction() {
+    // Vendor model: domain name, servers, source-interface, and disabled lookup. Unmodeled DNS
+    // lines (ip domain list/retry/timeout, ip host) are parsed into _null rules, so they are
+    // silently ignored (no parse warnings).
+    FastpathConfiguration c = parseVendorConfig("fastpath_dns");
+    Dns dns = c.getDns();
+    assertThat(dns.getDomainName(), equalTo("example.com"));
+    assertThat(dns.getServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
+    assertThat(dns.getSourceInterface(), equalTo("serviceport"));
+    assertThat(dns.getLookupEnabled(), equalTo(false));
+    assertThat(c.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testDnsLookup() {
+    // Tri-state: unconfigured -> null (device default is enabled); explicit `ip domain lookup` ->
+    // TRUE; explicit `no ip domain lookup` -> FALSE.
+    assertThat(
+        parseVendorConfigText("ip domain name \"x.com\"\n", "dns_lookup")
+            .getDns()
+            .getLookupEnabled(),
+        nullValue());
+    assertThat(
+        parseVendorConfigText("ip domain lookup\n", "dns_lookup").getDns().getLookupEnabled(),
+        equalTo(true));
+    assertThat(
+        parseVendorConfigText("no ip domain lookup\n", "dns_lookup").getDns().getLookupEnabled(),
+        equalTo(false));
   }
 
   @Test
