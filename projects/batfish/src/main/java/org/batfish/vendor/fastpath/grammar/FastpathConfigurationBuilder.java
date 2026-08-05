@@ -39,12 +39,17 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Nl_consoleContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Quoted_textContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_hostnameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_set_promptContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_serverContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_client_modeContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_source_interfaceContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_modeContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Source_interfaceContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ss_hostContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
+import org.batfish.vendor.fastpath.representation.Sntp;
 
 /** Populates a {@link FastpathConfiguration} by walking a FastPath parse tree. */
 public final class FastpathConfigurationBuilder extends FastpathParserBaseListener
@@ -55,6 +60,10 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   /** Valid range for a logging destination UDP port. */
   private static final IntegerSpace LOGGING_PORT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+
+  /** Valid range for the SNTP client source port ({@code sntp client port}). */
+  private static final IntegerSpace SNTP_CLIENT_PORT_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
 
   public FastpathConfigurationBuilder(
       FastpathCombinedParser parser,
@@ -90,8 +99,34 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitSntp_server(Sntp_serverContext ctx) {
-    _c.addNtpServer(toString(ctx.host_value()));
+  public void exitSs_host(Ss_hostContext ctx) {
+    _c.getSntp().addServer(toString(ctx.host_value()));
+  }
+
+  @Override
+  public void exitSntp_source_interface(Sntp_source_interfaceContext ctx) {
+    _c.getSntp().setSourceInterface(toInterfaceName(ctx.iface));
+  }
+
+  @Override
+  public void exitSntpc_mode(Sntpc_modeContext ctx) {
+    if (ctx.sntp_client_mode() != null) {
+      _c.getSntp().setClientMode(toClientMode(ctx.sntp_client_mode()));
+    }
+  }
+
+  @Override
+  public void exitSntpc_port(Sntpc_portContext ctx) {
+    toIntegerInSpace(ctx, ctx.port, SNTP_CLIENT_PORT_RANGE, "sntp client port")
+        .ifPresent(_c.getSntp()::setClientPort);
+  }
+
+  private static Sntp.ClientMode toClientMode(Sntp_client_modeContext ctx) {
+    if (ctx.BROADCAST() != null) {
+      return Sntp.ClientMode.BROADCAST;
+    }
+    assert ctx.UNICAST() != null;
+    return Sntp.ClientMode.UNICAST;
   }
 
   @Override
@@ -166,6 +201,8 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
       return "tunnel " + ctx.uint16().getText();
     } else if (ctx.VLAN() != null) {
       return "vlan " + ctx.uint16().getText();
+    } else if (ctx.SERVICEPORT() != null) {
+      return "serviceport";
     }
     assert ctx.interface_slot_port() != null;
     // Physical interface, e.g. "0/1" or "1/0/1".

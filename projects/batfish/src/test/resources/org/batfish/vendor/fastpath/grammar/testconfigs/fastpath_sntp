@@ -1,0 +1,12 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_sntp"
+sntp client mode unicast
+sntp client port 123
+sntp unicast client poll-interval 10
+sntp unicast client poll-retry 6
+sntp server "100.104.96.2"
+sntp server "100.104.98.2"
+sntp source-interface serviceport

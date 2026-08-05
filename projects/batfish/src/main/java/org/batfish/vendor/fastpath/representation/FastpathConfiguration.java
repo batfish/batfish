@@ -26,12 +26,12 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private @Nullable String _rawHostname;
   private @Nullable String _domainName;
   private final Set<String> _dnsServers;
-  private final Set<String> _ntpServers;
+  private final Sntp _sntp;
   private final Logging _logging;
 
   public FastpathConfiguration() {
     _dnsServers = new TreeSet<>();
-    _ntpServers = new TreeSet<>();
+    _sntp = new Sntp();
     _logging = new Logging();
   }
 
@@ -58,8 +58,8 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _dnsServers.add(server);
   }
 
-  public void addNtpServer(String server) {
-    _ntpServers.add(server);
+  public @Nonnull Sntp getSntp() {
+    return _sntp;
   }
 
   /** This device's {@code logging} configuration. */
@@ -82,7 +82,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
       c.setDomainName(_domainName);
     }
     c.setDnsServers(ImmutableSet.copyOf(_dnsServers));
-    c.setNtpServers(ImmutableSet.copyOf(_ntpServers));
+    c.setNtpServers(ImmutableSet.copyOf(_sntp.getServers()));
+    if (_sntp.getSourceInterface() != null) {
+      c.setNtpSourceInterface(_sntp.getSourceInterface());
+    }
     c.setLoggingServers(ImmutableSet.copyOf(_logging.getServers().keySet()));
     if (_logging.getSourceInterface() != null) {
       c.setLoggingSourceInterface(_logging.getSourceInterface());

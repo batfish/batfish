@@ -42,6 +42,7 @@ import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.Logging;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
+import org.batfish.vendor.fastpath.representation.Sntp;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -153,6 +154,56 @@ public final class FastpathGrammarTest {
     // SNTP: `sntp server` -> NTP servers.
     Configuration c = parseConfig("fastpath_ntp");
     assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("2.2.2.1", "2.2.2.2")));
+  }
+
+  @Test
+  public void testSntp() throws IOException {
+    // Server IPs and the source-interface are modeled and projected onto the VI configuration.
+    Configuration c = parseConfig("fastpath_sntp");
+    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
+    assertThat(c.getNtpSourceInterface(), equalTo("serviceport"));
+  }
+
+  @Test
+  public void testSntpExtraction() {
+    // Vendor model: servers, client mode, client port, and source-interface.
+    Sntp sntp = parseVendorConfig("fastpath_sntp").getSntp();
+    assertThat(sntp.getServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
+    assertThat(sntp.getClientMode(), equalTo(Sntp.ClientMode.UNICAST));
+    assertThat(sntp.getClientPort(), equalTo(123));
+    assertThat(sntp.getSourceInterface(), equalTo("serviceport"));
+  }
+
+  @Test
+  public void testSntpNullCommandsAreSilent() {
+    // The unicast client poll-interval/poll-retry tuning knobs are parsed into a _null rule: they
+    // must not produce parse warnings.
+    FastpathConfiguration c = parseVendorConfig("fastpath_sntp");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testSntpClientPortOutOfRangeWarns() {
+    // `sntp client port` must be 1-65535; an out-of-range value warns and is not set.
+    FastpathConfiguration c =
+        parseVendorConfigText("sntp client port 0\n", "sntp_client_port_invalid");
+    assertThat(
+        c.getWarnings().getParseWarnings().stream()
+            .map(ParseWarning::getComment)
+            .collect(ImmutableList.toImmutableList()),
+        hasItem(containsString("Expected sntp client port in range")));
+    assertThat(c.getSntp().getClientPort(), nullValue());
+  }
+
+  @Test
+  public void testSntpServerStatusLeakageTolerated() {
+    // Some software versions leak operational `sntp server status is ...` show-output into the
+    // config between real server lines. It must be tolerated silently (parsed into a _null rule).
+    FastpathConfiguration c =
+        parseVendorConfigText(
+            "sntp server status is Server Kiss Of Death\nsntp server \"76.223.76.249\"\n",
+            "sntp_status_leak");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test

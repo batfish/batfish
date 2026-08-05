@@ -13,9 +13,13 @@ tokens {
 
 ALERT: 'alert';
 
+BROADCAST: 'broadcast';
+
 BUFFERED: 'buffered';
 
 CLI_COMMAND: 'cli-command';
+
+CLIENT: 'client';
 
 CONSOLE: 'console';
 
@@ -55,6 +59,8 @@ LOGGING: 'logging';
 
 LOOPBACK: 'loopback';
 
+MODE: 'mode';
+
 NAME: 'name';
 
 NO: 'no';
@@ -62,6 +68,10 @@ NO: 'no';
 NOTICE: 'notice';
 
 PERSISTENT: 'persistent';
+
+POLL_INTERVAL: 'poll-interval';
+
+POLL_RETRY: 'poll-retry';
 
 PORT: 'port';
 
@@ -76,17 +86,26 @@ REMOVE: 'remove';
 
 SERVER: 'server';
 
+SERVICEPORT: 'serviceport';
+
 SET: 'set';
 
 SNTP: 'sntp';
 
 SOURCE_INTERFACE: 'source-interface';
 
+STATUS
+:
+  'status' -> pushMode ( M_Remainder )
+;
+
 SYSLOG: 'syslog';
 
 TRAPS: 'traps';
 
 TUNNEL: 'tunnel';
+
+UNICAST: 'unicast';
 
 VLAN: 'vlan';
 

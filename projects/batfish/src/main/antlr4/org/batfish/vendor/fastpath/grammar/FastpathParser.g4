@@ -59,12 +59,73 @@ domain_name
 
 s_sntp
 :
-  SNTP sntp_server
+  SNTP
+  (
+    sntp_client
+    | sntp_server
+    | sntp_source_interface
+    | sntp_unicast_null
+  )
+;
+
+sntp_client
+:
+  CLIENT
+  (
+    sntpc_mode
+    | sntpc_port
+  )
+;
+
+sntpc_mode
+:
+  MODE sntp_client_mode? NEWLINE
+;
+
+sntp_client_mode
+:
+  BROADCAST
+  | UNICAST
+;
+
+sntpc_port
+:
+  PORT port = uint16 NEWLINE
+;
+
+// Recognized operational tuning; parsed but intentionally not modeled. The tail (`client
+// poll-interval|poll-retry <n>`) lexes into keywords, so null_rest_of_line consumes it.
+sntp_unicast_null
+:
+  UNICAST null_rest_of_line
 ;
 
 sntp_server
 :
-  SERVER host_value uint16* NEWLINE
+  SERVER
+  (
+    ss_host
+    | ss_status_null
+  )
+;
+
+// Fastpath allows an optional `[priority [version [portid]]]` after the host (up to three uint16
+// values), the trailing values are tolerated via `uint16*` and only the server host is extracted
+ss_host
+:
+  host_value uint16* NEWLINE
+;
+
+// Some software versions leak operational `sntp server status is ...` show-output into the config
+// between real server lines; tolerate it silently
+ss_status_null
+:
+  STATUS null_rest_of_line
+;
+
+sntp_source_interface
+:
+  SOURCE_INTERFACE iface = source_interface NEWLINE
 ;
 
 s_logging

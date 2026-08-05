@@ -57,6 +57,7 @@ null_rest_of_line
 source_interface
 :
   LOOPBACK uint16
+  | SERVICEPORT
   | TUNNEL uint16
   | VLAN uint16
   | interface_slot_port
