@@ -27,12 +27,12 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private @Nullable String _domainName;
   private final Set<String> _dnsServers;
   private final Set<String> _ntpServers;
-  private final Set<String> _loggingServers;
+  private final Logging _logging;
 
   public FastpathConfiguration() {
     _dnsServers = new TreeSet<>();
     _ntpServers = new TreeSet<>();
-    _loggingServers = new TreeSet<>();
+    _logging = new Logging();
   }
 
   @Override
@@ -62,12 +62,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _ntpServers.add(server);
   }
 
-  public void addLoggingServer(String server) {
-    _loggingServers.add(server);
+  /** This device's {@code logging} configuration. */
+  public @Nonnull Logging getLogging() {
+    return _logging;
   }
-
-  /** Freeze mutable collections after extraction. No-op until the model grows collections. */
-  public void finalizeStructures() {}
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FASTPATH);
@@ -85,7 +83,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
     }
     c.setDnsServers(ImmutableSet.copyOf(_dnsServers));
     c.setNtpServers(ImmutableSet.copyOf(_ntpServers));
-    c.setLoggingServers(ImmutableSet.copyOf(_loggingServers));
+    c.setLoggingServers(ImmutableSet.copyOf(_logging.getServers().keySet()));
+    if (_logging.getSourceInterface() != null) {
+      c.setLoggingSourceInterface(_logging.getSourceInterface());
+    }
 
     return c;
   }

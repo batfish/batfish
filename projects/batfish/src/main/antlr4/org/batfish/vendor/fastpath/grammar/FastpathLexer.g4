@@ -6,17 +6,31 @@ options {
 
 tokens {
   QUOTED_TEXT,
+  REMAINDER,
   WORD,
   WORD_SEPARATOR
 }
 
 ALERT: 'alert';
 
+BUFFERED: 'buffered';
+
+CLI_COMMAND: 'cli-command';
+
+CONSOLE: 'console';
+
 CRITICAL: 'critical';
 
 DEBUG: 'debug';
 
+DNS: 'dns';
+
 DOMAIN: 'domain';
+
+EMAIL
+:
+  'email' -> pushMode ( M_Remainder )
+;
 
 EMERGENCY: 'emergency';
 
@@ -39,14 +53,26 @@ IPV6: 'ipv6';
 
 LOGGING: 'logging';
 
+LOOPBACK: 'loopback';
+
 NAME: 'name';
 
+NO: 'no';
+
 NOTICE: 'notice';
+
+PERSISTENT: 'persistent';
+
+PORT: 'port';
 
 PROMPT
 :
   'prompt' -> pushMode ( M_Word )
 ;
+
+RECONFIGURE: 'reconfigure';
+
+REMOVE: 'remove';
 
 SERVER: 'server';
 
@@ -54,7 +80,19 @@ SET: 'set';
 
 SNTP: 'sntp';
 
+SOURCE_INTERFACE: 'source-interface';
+
+SYSLOG: 'syslog';
+
+TRAPS: 'traps';
+
+TUNNEL: 'tunnel';
+
+VLAN: 'vlan';
+
 WARNING: 'warning';
+
+WRAP: 'wrap';
 
 // Other Tokens
 
@@ -76,6 +114,8 @@ DOUBLE_QUOTE
 :
   '"' -> pushMode ( M_DoubleQuote )
 ;
+
+FORWARD_SLASH: '/';
 
 IP_ADDRESS
 :
@@ -230,6 +270,18 @@ M_WordValue_WS
 ;
 
 M_WordValue_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+mode M_Remainder;
+
+M_Remainder_REMAINDER
+:
+  F_NonNewlineChar+ -> type ( REMAINDER )
+;
+
+M_Remainder_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;
