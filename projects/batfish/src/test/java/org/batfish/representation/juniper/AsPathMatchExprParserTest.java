@@ -101,7 +101,7 @@ public class AsPathMatchExprParserTest {
 
   @Test
   public void testContainsAsnRange() {
-    for (String regex : new String[] {".* [123-187] .*", ".* 123-187 .*"}) {
+    for (String regex : new String[] {".* [123-187] .*", ".* 123-187 .*", ".* (123-187) .*"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
       assertMatches(res, 123L);
@@ -117,7 +117,7 @@ public class AsPathMatchExprParserTest {
 
   @Test
   public void testSingleAsnRange() {
-    for (String regex : new String[] {"[123-187]", "123-187"}) {
+    for (String regex : new String[] {"[123-187]", "123-187", "(123-187)"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
       assertMatches(res, 123L);

@@ -48,6 +48,14 @@ public final class AsPathMatchExprParser {
   private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_2 =
       Pattern.compile("\\.\\* (\\d+)-(\\d+) \\.\\*");
 
+  // ".* (start-end) .*" : "AS Path contains an ASN in range between start and end included".
+  // A parenthesized range with a dash (as opposed to an alternation like "(600|701)", which uses
+  // "|") is unambiguously a single range; recognizing it routes to the compact AsSetsMatchingRanges
+  // representation rather than the raw-regex fallback, whose automaton for a wide range (e.g.
+  // "(64512-65535)") is enormous.
+  private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_3 =
+      Pattern.compile("\\.\\* \\((\\d+)-(\\d+)\\) \\.\\*");
+
   // "[start-end]" : "AS Path matches single ASN number in range between start and end included"
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_1 =
       Pattern.compile("\\[(\\d+)-(\\d+)\\]");
@@ -55,6 +63,10 @@ public final class AsPathMatchExprParser {
   // "start-end" : "AS Path matches single ASN number in range between start and end included"
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2 =
       Pattern.compile("(\\d+)-(\\d+)");
+
+  // "(start-end)" : "AS Path matches single ASN number in range between start and end included"
+  private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_3 =
+      Pattern.compile("\\((\\d+)-(\\d+)\\)");
 
   // "{len,}" : "AS Path is at least <len> long"
   private static final Pattern AS_PATH_LENGTH_GEQ = Pattern.compile("\\.\\{(\\d+),\\}");
@@ -107,6 +119,16 @@ public final class AsPathMatchExprParser {
           false);
     }
 
+    Matcher asPathContainsAsnRangeParens =
+        AS_PATH_CONTAINS_ASN_RANGE_PATTERN_3.matcher(asPathRegex);
+    if (asPathContainsAsnRangeParens.matches()) {
+      return getAsSetsMatchingRanges(
+          asPathContainsAsnRangeParens.group(1),
+          asPathContainsAsnRangeParens.group(2),
+          false,
+          false);
+    }
+
     Matcher asPathExactMatchAsnRangeBrackets =
         AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_1.matcher(asPathRegex);
     if (asPathExactMatchAsnRangeBrackets.matches()) {
@@ -123,6 +145,16 @@ public final class AsPathMatchExprParser {
       return getAsSetsMatchingRanges(
           asPathExactMatchAsnRangeNoBrackets.group(1),
           asPathExactMatchAsnRangeNoBrackets.group(2),
+          true,
+          true);
+    }
+
+    Matcher asPathExactMatchAsnRangeParens =
+        AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_3.matcher(asPathRegex);
+    if (asPathExactMatchAsnRangeParens.matches()) {
+      return getAsSetsMatchingRanges(
+          asPathExactMatchAsnRangeParens.group(1),
+          asPathExactMatchAsnRangeParens.group(2),
           true,
           true);
     }
