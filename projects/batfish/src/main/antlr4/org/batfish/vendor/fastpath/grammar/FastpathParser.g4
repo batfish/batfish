@@ -19,7 +19,7 @@ statement
   | s_ip
   | s_logging
   | s_no
-  | s_set_prompt
+  | s_set
   | s_sntp
 ;
 
@@ -28,9 +28,14 @@ s_hostname
   HOSTNAME hostname NEWLINE
 ;
 
-s_set_prompt
+s_set
 :
-  SET PROMPT hostname NEWLINE
+  SET set_prompt
+;
+
+set_prompt
+:
+  PROMPT hostname NEWLINE
 ;
 
 s_ip

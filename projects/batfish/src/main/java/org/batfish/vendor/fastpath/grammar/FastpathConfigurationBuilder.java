@@ -41,7 +41,7 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Noipd_lookupContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Nol_consoleContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Quoted_textContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_hostnameContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.S_set_promptContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Set_promptContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_client_modeContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_modeContext;
@@ -87,7 +87,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitS_set_prompt(S_set_promptContext ctx) {
+  public void exitSet_prompt(Set_promptContext ctx) {
     _c.setHostname(toString(ctx.hostname()));
   }
 
