@@ -111,7 +111,7 @@ ipn_source_interface
 
 domain_name
 :
-  double_quoted_string
+  word_content
 ;
 
 s_sntp

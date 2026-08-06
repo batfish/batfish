@@ -36,6 +36,7 @@ host_value
 :
   double_quoted_string
   | ip_address
+  | WORD
 ;
 
 ip_address

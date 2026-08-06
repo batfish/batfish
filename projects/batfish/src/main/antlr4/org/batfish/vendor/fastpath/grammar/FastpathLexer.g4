@@ -39,7 +39,17 @@ EMERGENCY: 'emergency';
 
 ERROR: 'error';
 
-HOST: 'host';
+HOST
+:
+  'host'
+  {
+    // `logging host <host>`: the host (quoted, IP, or bare word) follows in M_HostValue.
+    // `ip host ...` is consumed as a null rest-of-line in DEFAULT mode.
+    if (lastTokenType() == LOGGING) {
+      pushMode(M_HostValue);
+    }
+  }
+;
 
 HOSTNAME
 :
@@ -64,7 +74,17 @@ LOOPBACK: 'loopback';
 
 MODE: 'mode';
 
-NAME: 'name';
+NAME
+:
+  'name'
+  {
+    // `ip domain name <value>`: the domain follows in M_Word (quoted or bare word). Other uses
+    // (`ip name server`, `ip name source-interface`) are followed by keywords in DEFAULT mode.
+    if (lastTokenType() == DOMAIN) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 NO: 'no';
 
@@ -89,7 +109,17 @@ REMOVE: 'remove';
 
 RETRY: 'retry';
 
-SERVER: 'server';
+SERVER
+:
+  'server'
+  {
+    // `sntp server <host>`: the host (quoted, IP, or bare word) follows in M_HostValue.
+    // `ip name server <ip>...` is followed by bare IP addresses in DEFAULT mode.
+    if (lastTokenType() == SNTP) {
+      pushMode(M_HostValue);
+    }
+  }
+;
 
 SERVICEPORT: 'serviceport';
 
@@ -301,6 +331,54 @@ M_Remainder_REMAINDER
 ;
 
 M_Remainder_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+// Host value for `sntp server` / `logging host`: a quoted string, a bare IP, or a bare word
+// (hostname). The keyword alternatives that can appear in this position instead of a host are
+// recognized explicitly so they route to their own parser rules: `status` (sntp operational
+// leakage) and `reconfigure`/`remove` (logging host maintenance). Emits exactly one token then
+// returns to DEFAULT so any trailing tokens (priority/version/port, address-type, severity) lex
+// normally.
+mode M_HostValue;
+
+M_HostValue_STATUS
+:
+  'status' -> type ( STATUS ) , mode ( M_Remainder )
+;
+
+M_HostValue_RECONFIGURE
+:
+  'reconfigure' -> type ( RECONFIGURE ) , popMode
+;
+
+M_HostValue_REMOVE
+:
+  'remove' -> type ( REMOVE ) , popMode
+;
+
+M_HostValue_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
+;
+
+M_HostValue_IP_ADDRESS
+:
+  F_IpAddress -> type ( IP_ADDRESS ) , popMode
+;
+
+M_HostValue_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_HostValue_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_HostValue_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;

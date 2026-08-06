@@ -49,6 +49,7 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ss_hostContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Word_contentContext;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
@@ -103,7 +104,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void exitIpd_name(Ipd_nameContext ctx) {
-    _c.getDns().setDomainName(toString(ctx.domain_name().double_quoted_string().text));
+    _c.getDns().setDomainName(toString(ctx.domain_name().word_content()));
   }
 
   @Override
@@ -284,7 +285,10 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
     if (ctx.double_quoted_string() != null) {
       return toString(ctx.double_quoted_string().text);
     }
-    return toString(ctx.ip_address());
+    if (ctx.ip_address() != null) {
+      return toString(ctx.ip_address());
+    }
+    return ctx.WORD().getText();
   }
 
   private static @Nonnull String toString(Ip_addressContext ctx) {
@@ -296,7 +300,11 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   private static @Nonnull String toString(WordContext ctx) {
-    return ctx.word_content().children.stream()
+    return toString(ctx.word_content());
+  }
+
+  private static @Nonnull String toString(Word_contentContext ctx) {
+    return ctx.children.stream()
         .map(
             child -> {
               if (child instanceof Double_quoted_stringContext) {

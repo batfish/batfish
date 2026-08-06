@@ -181,6 +181,26 @@ public final class FastpathGrammarTest {
   }
 
   @Test
+  public void testUnquotedValuesTolerated() {
+    // FastPath's CLI accepts unquoted domain/host values (show running-config renders them
+    // quoted); both forms must parse and extract identically.
+    assertThat(
+        parseVendorConfigText("ip domain name example.com\n", "dns_unquoted")
+            .getDns()
+            .getDomainName(),
+        equalTo("example.com"));
+    assertThat(
+        parseVendorConfigText("sntp server pool.ntp.org\n", "sntp_unquoted").getSntp().getServers(),
+        equalTo(ImmutableSet.of("pool.ntp.org")));
+    assertThat(
+        parseVendorConfigText("logging host loghost.example.com\n", "logging_unquoted")
+            .getLogging()
+            .getServers()
+            .keySet(),
+        equalTo(ImmutableSet.of("loghost.example.com")));
+  }
+
+  @Test
   public void testSntp() throws IOException {
     Configuration c = parseConfig("fastpath_sntp");
     assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
