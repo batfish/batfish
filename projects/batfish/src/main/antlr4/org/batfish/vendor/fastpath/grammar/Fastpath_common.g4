@@ -24,7 +24,7 @@ word_content
 
 word
 :
-  WORD_SEPARATOR word_content
+  word_content
 ;
 
 hostname

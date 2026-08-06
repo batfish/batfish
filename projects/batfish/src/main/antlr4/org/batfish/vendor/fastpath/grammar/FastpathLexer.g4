@@ -7,8 +7,7 @@ options {
 tokens {
   QUOTED_TEXT,
   REMAINDER,
-  WORD,
-  WORD_SEPARATOR
+  WORD
 }
 
 ALERT: 'alert';
@@ -134,7 +133,7 @@ COMMENT_LINE
   (
     F_Newline
     | EOF
-  ) -> skip
+  ) -> channel ( HIDDEN )
 ;
 
 DOUBLE_QUOTE
@@ -166,7 +165,7 @@ UINT16
 
 WS
 :
-  F_Whitespace+ -> skip
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 // Fragments
@@ -262,16 +261,26 @@ M_DoubleQuote_DOUBLE_QUOTE
   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
+M_DoubleQuote_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
 M_DoubleQuote_QUOTED_TEXT
 :
-  ( F_EscapedDoubleQuote | ~'"' )+ -> type ( QUOTED_TEXT )
+  ( F_EscapedDoubleQuote | ~["\r\n] )+ -> type ( QUOTED_TEXT )
 ;
 
 mode M_Word;
 
-M_Word_WS
+M_Word_DOUBLE_QUOTE
 :
-  F_Whitespace+ -> type ( WORD_SEPARATOR ) , mode ( M_WordValue )
+  '"' -> type ( DOUBLE_QUOTE ) , pushMode ( M_DoubleQuote )
+;
+
+M_Word_WORD
+:
+  F_Word -> type ( WORD )
 ;
 
 M_Word_NEWLINE
@@ -279,26 +288,9 @@ M_Word_NEWLINE
   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
-mode M_WordValue;
-
-M_WordValue_DOUBLE_QUOTE
+M_Word_WS
 :
-  '"' -> type ( DOUBLE_QUOTE ) , pushMode ( M_DoubleQuote )
-;
-
-M_WordValue_WORD
-:
-  F_Word -> type ( WORD )
-;
-
-M_WordValue_WS
-:
-  F_Whitespace+ -> skip , popMode
-;
-
-M_WordValue_NEWLINE
-:
-  F_Newline -> type ( NEWLINE ) , popMode
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Remainder;
