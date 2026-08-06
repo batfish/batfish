@@ -26,6 +26,8 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private final Sntp _sntp;
   private final Logging _logging;
 
+  private transient Configuration _c;
+
   public FastpathConfiguration() {
     _dns = new Dns();
     _sntp = new Sntp();
@@ -62,33 +64,61 @@ public final class FastpathConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
-    Configuration c = new Configuration(_hostname, ConfigurationFormat.FASTPATH);
-    c.setHumanName(_rawHostname);
-    c.setDeviceModel(DeviceModel.FASTPATH_UNSPECIFIED);
-    c.setDefaultCrossZoneAction(LineAction.PERMIT);
-    c.setDefaultInboundAction(LineAction.PERMIT);
+    _c = new Configuration(_hostname, ConfigurationFormat.FASTPATH);
+    _c.setHumanName(_rawHostname);
+    _c.setDeviceModel(DeviceModel.FASTPATH_UNSPECIFIED);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
 
     // Generated default VRF
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
-    c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
+    _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
+    convertDomainName();
+    convertDnsServers();
+    convertDnsSourceInterface();
+    convertNtpServers();
+    convertNtpSourceInterface();
+    convertLoggingServers();
+    convertLoggingSourceInterface();
+
+    return _c;
+  }
+
+  private void convertDomainName() {
     if (_dns.getDomainName() != null) {
-      c.setDomainName(_dns.getDomainName());
+      _c.setDomainName(_dns.getDomainName());
     }
-    c.setDnsServers(ImmutableSet.copyOf(_dns.getServers()));
-    if (_dns.getSourceInterface() != null) {
-      c.setDnsSourceInterface(_dns.getSourceInterface());
-    }
-    c.setNtpServers(ImmutableSet.copyOf(_sntp.getServers()));
-    if (_sntp.getSourceInterface() != null) {
-      c.setNtpSourceInterface(_sntp.getSourceInterface());
-    }
-    c.setLoggingServers(ImmutableSet.copyOf(_logging.getServers().keySet()));
-    if (_logging.getSourceInterface() != null) {
-      c.setLoggingSourceInterface(_logging.getSourceInterface());
-    }
+  }
 
-    return c;
+  private void convertDnsServers() {
+    _c.setDnsServers(ImmutableSet.copyOf(_dns.getServers()));
+  }
+
+  private void convertDnsSourceInterface() {
+    if (_dns.getSourceInterface() != null) {
+      _c.setDnsSourceInterface(_dns.getSourceInterface());
+    }
+  }
+
+  private void convertNtpServers() {
+    _c.setNtpServers(ImmutableSet.copyOf(_sntp.getServers()));
+  }
+
+  private void convertNtpSourceInterface() {
+    if (_sntp.getSourceInterface() != null) {
+      _c.setNtpSourceInterface(_sntp.getSourceInterface());
+    }
+  }
+
+  private void convertLoggingServers() {
+    _c.setLoggingServers(ImmutableSet.copyOf(_logging.getServers().keySet()));
+  }
+
+  private void convertLoggingSourceInterface() {
+    if (_logging.getSourceInterface() != null) {
+      _c.setLoggingSourceInterface(_logging.getSourceInterface());
+    }
   }
 
   @Override
