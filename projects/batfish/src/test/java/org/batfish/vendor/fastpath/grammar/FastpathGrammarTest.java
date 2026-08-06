@@ -2,6 +2,7 @@ package org.batfish.vendor.fastpath.grammar;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.FASTPATH;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -17,7 +18,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,7 +29,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -48,7 +47,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests of the FastPath grammar. */
 @ParametersAreNonnullByDefault
 public final class FastpathGrammarTest {
 
@@ -144,8 +142,6 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testDns() throws IOException {
-    // DNS client: `ip name server` -> DNS servers, `ip domain name` -> default domain,
-    // `ip name source-interface` -> DNS source interface.
     Configuration c = parseConfig("fastpath_dns");
     assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
     assertThat(c.getDomainName(), equalTo("example.com"));
@@ -154,15 +150,16 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testDnsExtraction() {
-    // Vendor model: domain name, servers, source-interface, and disabled lookup. Unmodeled DNS
-    // lines (ip domain list/retry/timeout, ip host) are parsed into _null rules, so they are
-    // silently ignored (no parse warnings).
-    FastpathConfiguration c = parseVendorConfig("fastpath_dns");
-    Dns dns = c.getDns();
+    Dns dns = parseVendorConfig("fastpath_dns").getDns();
     assertThat(dns.getDomainName(), equalTo("example.com"));
     assertThat(dns.getServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
     assertThat(dns.getSourceInterface(), equalTo("serviceport"));
     assertThat(dns.getLookupEnabled(), equalTo(false));
+  }
+
+  @Test
+  public void testDnsNullCommandsAreSilent() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_dns");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
@@ -184,15 +181,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testNtp() throws IOException {
-    // SNTP: `sntp server` -> NTP servers.
-    Configuration c = parseConfig("fastpath_ntp");
-    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("2.2.2.1", "2.2.2.2")));
-  }
-
-  @Test
   public void testSntp() throws IOException {
-    // Server IPs and the source-interface are modeled and projected onto the VI configuration.
     Configuration c = parseConfig("fastpath_sntp");
     assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
     assertThat(c.getNtpSourceInterface(), equalTo("serviceport"));
@@ -200,7 +189,6 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testSntpExtraction() {
-    // Vendor model: servers, client mode, client port, and source-interface.
     Sntp sntp = parseVendorConfig("fastpath_sntp").getSntp();
     assertThat(sntp.getServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
     assertThat(sntp.getClientMode(), equalTo(Sntp.ClientMode.UNICAST));
@@ -210,22 +198,17 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testSntpNullCommandsAreSilent() {
-    // The unicast client poll-interval/poll-retry tuning knobs are parsed into a _null rule: they
-    // must not produce parse warnings.
     FastpathConfiguration c = parseVendorConfig("fastpath_sntp");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
   public void testSntpClientPortOutOfRangeWarns() {
-    // `sntp client port` must be 1-65535; an out-of-range value warns and is not set.
     FastpathConfiguration c =
         parseVendorConfigText("sntp client port 0\n", "sntp_client_port_invalid");
     assertThat(
-        c.getWarnings().getParseWarnings().stream()
-            .map(ParseWarning::getComment)
-            .collect(ImmutableList.toImmutableList()),
-        hasItem(containsString("Expected sntp client port in range")));
+        c.getWarnings().getParseWarnings(),
+        hasItem(hasComment(containsString("Expected sntp client port in range"))));
     assertThat(c.getSntp().getClientPort(), nullValue());
   }
 
@@ -241,18 +224,9 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testSyslog() throws IOException {
-    // Logging: `logging host` -> logging (syslog) servers.
-    Configuration c = parseConfig("fastpath_syslog");
-    assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.3.3.1", "3.3.3.2")));
-  }
-
-  @Test
   public void testLoggingExtraction() {
-    // Vendor model: the full modeled logging surface.
     Logging logging = parseVendorConfig("fastpath_logging").getLogging();
 
-    // Remote logging (syslog) hosts.
     Map<String, LoggingServer> servers = logging.getServers();
     assertThat(
         servers.keySet(),
@@ -278,7 +252,6 @@ public final class FastpathGrammarTest {
     assertThat(s4.getPort(), equalTo(514));
     assertThat(s4.getSeverityLevel(), equalTo(7)); // debug
 
-    // In-memory buffered log.
     LoggingBuffered buffered = logging.getBuffered();
     assertThat(buffered, notNullValue());
     assertThat(buffered.getEnabled(), equalTo(true));
@@ -296,16 +269,12 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testLoggingNullCommandsAreSilent() {
-    // email, traps, host reconfigure/remove, logging port, and logging syslog port are parsed into
-    // _null rules (via null_rest_of_line): they must not produce parse warnings even though they
-    // are not modeled (Tier 3 / effectively unused in the fleet).
     FastpathConfiguration c = parseVendorConfig("fastpath_logging");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
   public void testNoLoggingConsole() {
-    // `no logging console` disables console logging.
     assertThat(
         parseVendorConfigText("no logging console\n", "no_logging_console")
             .getLogging()
@@ -329,26 +298,21 @@ public final class FastpathGrammarTest {
 
   @Test
   public void testInvalidLoggingValuesWarn() {
-    // Numeric severity and destination port are validated against IntegerSpace ranges at extraction
-    // time; out-of-range values must each produce a line-stamped ParseWarning (via warn(ctx, ...))
-    // that the annotate tool can surface.
     FastpathConfiguration c = parseVendorConfig("fastpath_logging_invalid");
-    List<String> comments =
-        c.getWarnings().getParseWarnings().stream()
-            .map(ParseWarning::getComment)
-            .collect(ImmutableList.toImmutableList());
-    assertThat(comments, hasItem(containsString("Expected logging severity in range")));
-    assertThat(comments, hasItem(containsString("Expected logging host port in range")));
+    assertThat(
+        c.getWarnings().getParseWarnings(),
+        hasItem(hasComment(containsString("Expected logging severity in range"))));
+    assertThat(
+        c.getWarnings().getParseWarnings(),
+        hasItem(hasComment(containsString("Expected logging host port in range"))));
   }
 
   @Test
   public void testLoggingServersEndToEnd() throws IOException {
-    // Conversion projects the LoggingServer hosts onto the VI logging-servers set.
     Configuration c = parseConfig("fastpath_logging");
     assertThat(
         c.getLoggingServers(),
         equalTo(ImmutableSet.of("10.0.0.1", "10.0.0.2", "2001:db8::1", "loghost.example.com")));
-    // The syslog source interface is projected onto the VI configuration.
     assertThat(c.getLoggingSourceInterface(), equalTo("loopback 0"));
   }
 

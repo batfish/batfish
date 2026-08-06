@@ -29,7 +29,7 @@ public final class LoggingBuffered implements Serializable {
 
   /**
    * The minimum severity (0-7) for buffered logging, or {@code null} if not configured. Set via
-   * {@code logging buffered <severity>} (a form the fleet uses despite the CLI guide showing no
+   * {@code logging buffered <severity>} (a form devices accept despite the CLI guide showing no
    * argument).
    */
   public @Nullable Integer getSeverity() {
