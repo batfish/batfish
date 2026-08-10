@@ -28,7 +28,7 @@
     "com.google.j2objc:j2objc-annotations": 2003271689,
     "com.google.re2j:re2j": 1525409503,
     "com.ibm.icu:icu4j": 1685361909,
-    "com.puppycrawl.tools:checkstyle": 680098671,
+    "com.puppycrawl.tools:checkstyle": 1315400785,
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
     "commons-io:commons-io": 1305681826,
@@ -130,8 +130,8 @@
     "com.google.re2j:re2j:jar:sources": 485338798,
     "com.ibm.icu:icu4j": -1667183492,
     "com.ibm.icu:icu4j:jar:sources": 1011748514,
-    "com.puppycrawl.tools:checkstyle": -1855956492,
-    "com.puppycrawl.tools:checkstyle:jar:sources": 144819849,
+    "com.puppycrawl.tools:checkstyle": 646388479,
+    "com.puppycrawl.tools:checkstyle:jar:sources": 786114809,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
     "commons-beanutils:commons-beanutils": -882775588,
@@ -557,10 +557,10 @@
     },
     "com.puppycrawl.tools:checkstyle": {
       "shasums": {
-        "jar": "cbe0e5ea088c6f258e8b9f5f39278446bdce2513a6e8609dac7cf2fd1c4e8d4c",
-        "sources": "a4d44289bf05528ae9afc95a7ef1623e3e054989a204edd540582be9d46b4ab6"
+        "jar": "65bd6be8b69d77ace7a16447a20cafbfe2d28601646dfedfe61e2e9ff45fb83b",
+        "sources": "6e7681f85366755f9f6c246cf17223f51923b315d8e6c971cac16786f982ac03"
       },
-      "version": "13.9.0"
+      "version": "13.10.0"
     },
     "com.vaadin.external.google:android-json": {
       "shasums": {
