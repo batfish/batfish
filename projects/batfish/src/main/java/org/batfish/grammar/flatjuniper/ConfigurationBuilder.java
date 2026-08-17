@@ -1020,9 +1020,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_facilityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_severityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_transport_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_secretContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_single_connectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_timeoutContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tacplus_server_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
@@ -1323,6 +1326,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 255));
   private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 65535));
+  private static final IntegerSpace TACPLUS_SERVER_TIMEOUT_RANGE =
+      IntegerSpace.of(new SubRange(1, 90));
   private static final IntegerSpace SRLG_COST_RANGE = IntegerSpace.of(new SubRange(1, 65535));
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace NTP_KEY_NUMBER_RANGE = IntegerSpace.of(new SubRange(1, 65534));
@@ -2682,6 +2687,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private StaticRoute _currentStaticRoute;
 
   private TacplusServer _currentTacplusServer;
+
+  private org.batfish.representation.juniper.TacplusServer _currentJuniperTacplusServer;
 
   private Zone _currentToZone;
 
@@ -4733,7 +4740,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     String hostname = toString(ctx.tacplus_server_host());
-    _currentLogicalSystem.getTacplusServers().add(hostname);
+    _currentJuniperTacplusServer =
+        _currentLogicalSystem
+            .getTacplusServers()
+            .computeIfAbsent(hostname, org.batfish.representation.juniper.TacplusServer::new);
     _currentTacplusServer =
         _currentLogicalSystem
             .getJf()
@@ -9021,6 +9031,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     _currentTacplusServer = null;
+    _currentJuniperTacplusServer = null;
   }
 
   @Override
@@ -9032,7 +9043,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSyt_secret(Syt_secretContext ctx) {
-    _currentTacplusServer.setSecret(applySecret(ctx.secret_string()));
+    String secret = applySecret(ctx.secret_string());
+    _currentTacplusServer.setSecret(secret);
+    _currentJuniperTacplusServer.setSecret(secret);
+  }
+
+  @Override
+  public void exitSyt_port(Syt_portContext ctx) {
+    _currentJuniperTacplusServer.setPort(toInt(ctx.num));
+  }
+
+  @Override
+  public void exitSyt_single_connection(Syt_single_connectionContext ctx) {
+    _currentJuniperTacplusServer.setSingleConnection(true);
+  }
+
+  @Override
+  public void exitSyt_timeout(Syt_timeoutContext ctx) {
+    toIntegerInSpace(ctx, ctx.secs, TACPLUS_SERVER_TIMEOUT_RANGE, "tacplus-server timeout")
+        .ifPresent(_currentJuniperTacplusServer::setTimeout);
   }
 
   private @Nonnull String applySecret(@Nonnull Secret_stringContext ctx) {
@@ -9162,11 +9191,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = toIp(ctx.address);
     _currentTacplusServer.setSourceAddress(sourceAddress);
+    _currentJuniperTacplusServer.setSourceAddress(sourceAddress);
   }
 
   @Override
   public void exitSyt_routing_instance(Syt_routing_instanceContext ctx) {
     String name = toString(ctx.name);
+    _currentJuniperTacplusServer.setRoutingInstance(name);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, TACPLUS_SERVER_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
   }

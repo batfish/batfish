@@ -533,6 +533,7 @@ import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
 import org.batfish.representation.juniper.SwitchOptions;
+import org.batfish.representation.juniper.TacplusServer;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -4424,6 +4425,38 @@ public final class FlatJuniperGrammarTest {
   public void testTacplusPsk() {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
+  }
+
+  @Test
+  public void testTacplusServerModel() {
+    JuniperConfiguration vc = parseJuniperConfig("tacplus-psk");
+    Map<String, TacplusServer> servers = vc.getMasterLogicalSystem().getTacplusServers();
+    assertThat(servers.keySet(), containsInAnyOrder("1.2.3.4", "2.3.4.5", "3.4.5.6"));
+
+    TacplusServer s1 = servers.get("1.2.3.4");
+    assertThat(s1.getSecret(), equalTo(CommonUtil.sha256Digest("psk" + CommonUtil.salt())));
+    assertThat(s1.getPort(), nullValue());
+    assertThat(s1.getTimeout(), nullValue());
+    assertFalse(s1.getSingleConnection());
+    assertThat(s1.getSourceAddress(), nullValue());
+    assertThat(s1.getRoutingInstance(), nullValue());
+
+    TacplusServer s2 = servers.get("2.3.4.5");
+    assertThat(s2.getSecret(), equalTo(CommonUtil.sha256Digest("%CENSORED%" + CommonUtil.salt())));
+    assertThat(s2.getSourceAddress(), equalTo(Ip.parse("6.7.8.9")));
+    assertThat(s2.getRoutingInstance(), equalTo("RI"));
+    assertThat(s2.getPort(), equalTo(4949));
+    assertThat(s2.getTimeout(), equalTo(5));
+    assertTrue(s2.getSingleConnection());
+
+    // timeout 200 is outside the valid 1-90 range, so it should be null.
+    TacplusServer s3 = servers.get("3.4.5.6");
+    assertThat(s3.getSecret(), nullValue());
+    assertThat(s3.getSourceAddress(), nullValue());
+    assertThat(s3.getRoutingInstance(), nullValue());
+    assertFalse(s3.getSingleConnection());
+    assertThat(s3.getPort(), nullValue());
+    assertThat(s3.getTimeout(), nullValue());
   }
 
   @Test

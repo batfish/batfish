@@ -983,12 +983,12 @@ sy_tacplus_server
    )
    (
       apply
-      | syt_port_null
+      | syt_port
       | syt_secret
-      | syt_single_connection_null
+      | syt_single_connection
       | syt_source_address
       | syt_routing_instance
-      | syt_timeout_null
+      | syt_timeout
    )
 ;
 
@@ -996,6 +996,31 @@ tacplus_server_host
 :
   ip_address
   | ipv6_address
+;
+
+syt_secret
+:
+  SECRET secret_string
+;
+
+syt_routing_instance: ROUTING_INSTANCE name = junos_name;
+
+syt_source_address
+:
+   SOURCE_ADDRESS address = ip_address
+;
+
+syt_port
+:
+   PORT num = port_number
+;
+syt_single_connection
+:
+   SINGLE_CONNECTION
+;
+syt_timeout
+:
+   TIMEOUT secs = uint8
 ;
 
 syp_disable
@@ -1152,30 +1177,5 @@ sysp_scheduler_null
 sysp_zone_null
 :
    ZONE null_filler
-;
-
-syt_secret
-:
-  SECRET secret_string
-;
-
-syt_routing_instance: ROUTING_INSTANCE name = junos_name;
-
-syt_source_address
-:
-   SOURCE_ADDRESS address = ip_address
-;
-
-syt_port_null
-:
-   PORT null_filler
-;
-syt_single_connection_null
-:
-   SINGLE_CONNECTION null_filler
-;
-syt_timeout_null
-:
-   TIMEOUT null_filler
 ;
 

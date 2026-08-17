@@ -3602,7 +3602,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getRoutingInstances().clear();
     _masterLogicalSystem.getRoutingInstances().putAll(ls.getRoutingInstances());
     // TODO: something with syslog hosts?
-    // TODO: something with tacplus servers?
+    _masterLogicalSystem.getTacplusServers().putAll(ls.getTacplusServers());
     _masterLogicalSystem.getNamedVlans().clear();
     _masterLogicalSystem.getNamedVlans().putAll(ls.getNamedVlans());
     if (ls.getEvpn() != null) {
@@ -3640,7 +3640,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setDomainName(_masterLogicalSystem.getDefaultRoutingInstance().getDomainName());
     _c.setLoggingServers(ImmutableSortedSet.copyOf(_masterLogicalSystem.getSyslogHosts().keySet()));
     _c.setNtpServers(ImmutableSortedSet.copyOf(_masterLogicalSystem.getNtpServers().keySet()));
-    _c.setTacacsServers(_masterLogicalSystem.getTacplusServers());
+    _c.setTacacsServers(
+        ImmutableSortedSet.copyOf(_masterLogicalSystem.getTacplusServers().keySet()));
     _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());
     _c.setDeviceModel(DeviceModel.JUNIPER_UNSPECIFIED);
     for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {

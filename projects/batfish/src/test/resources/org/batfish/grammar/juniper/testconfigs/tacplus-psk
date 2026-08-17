@@ -2,8 +2,13 @@
 set system host-name tacplus-psk
 #
 set system tacplus-server 1.2.3.4 secret "psk"
-set system tacplus-server 2.3.4.5 secret "$9$czBSK87-wgoG"
+set system tacplus-server 2.3.4.5 secret "%CENSORED%"
 #
 set system tacplus-server 2.3.4.5 source-address 6.7.8.9
 set system tacplus-server 2.3.4.5 routing-instance RI
+set system tacplus-server 2.3.4.5 port 4949
+set system tacplus-server 2.3.4.5 timeout 5
+set system tacplus-server 2.3.4.5 single-connection
+#
+set system tacplus-server 3.4.5.6 timeout 200
 #

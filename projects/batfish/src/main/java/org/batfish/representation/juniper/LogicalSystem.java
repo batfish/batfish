@@ -125,7 +125,7 @@ public class LogicalSystem implements Serializable {
 
   private Map<String, JunosSyslogHost> _syslogHosts;
 
-  private NavigableSet<String> _tacplusServers;
+  private Map<String, TacplusServer> _tacplusServers;
 
   private Map<String, TunnelAttribute> _tunnelAttributes;
 
@@ -188,7 +188,7 @@ public class LogicalSystem implements Serializable {
     _srlgs = new HashMap<>();
     _syslogFiles = new TreeMap<>();
     _syslogHosts = new TreeMap<>();
-    _tacplusServers = new TreeSet<>();
+    _tacplusServers = new TreeMap<>();
     _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
     _vniOptions = new TreeMap<>();
@@ -477,7 +477,7 @@ public class LogicalSystem implements Serializable {
     return _syslogHosts;
   }
 
-  public NavigableSet<String> getTacplusServers() {
+  public Map<String, TacplusServer> getTacplusServers() {
     return _tacplusServers;
   }
 
