@@ -28,7 +28,7 @@
     "com.google.j2objc:j2objc-annotations": 2003271689,
     "com.google.re2j:re2j": 1525409503,
     "com.ibm.icu:icu4j": 1685361909,
-    "com.puppycrawl.tools:checkstyle": 680098671,
+    "com.puppycrawl.tools:checkstyle": -481550574,
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
     "commons-io:commons-io": 1305681826,
@@ -130,11 +130,11 @@
     "com.google.re2j:re2j:jar:sources": 485338798,
     "com.ibm.icu:icu4j": -1667183492,
     "com.ibm.icu:icu4j:jar:sources": 1011748514,
-    "com.puppycrawl.tools:checkstyle": -1855956492,
-    "com.puppycrawl.tools:checkstyle:jar:sources": 144819849,
+    "com.puppycrawl.tools:checkstyle": 877776007,
+    "com.puppycrawl.tools:checkstyle:jar:sources": -1738313781,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
-    "commons-beanutils:commons-beanutils": -882775588,
+    "commons-beanutils:commons-beanutils": 214854525,
     "commons-beanutils:commons-beanutils:jar:sources": 1596942423,
     "commons-cli:commons-cli": -32742453,
     "commons-cli:commons-cli:jar:sources": -2017835649,
@@ -144,8 +144,8 @@
     "commons-collections:commons-collections:jar:sources": -1549695345,
     "commons-io:commons-io": 1072619124,
     "commons-io:commons-io:jar:sources": -238571367,
-    "commons-logging:commons-logging": -102005530,
-    "commons-logging:commons-logging:jar:sources": 147282524,
+    "commons-logging:commons-logging": -2039356713,
+    "commons-logging:commons-logging:jar:sources": 494659498,
     "dk.brics:automaton": 2008063075,
     "dk.brics:automaton:jar:sources": 153550414,
     "info.picocli:picocli": 996750497,
@@ -190,13 +190,13 @@
     "org.antlr:antlr4:jar:sources": 160843354,
     "org.apache.commons:commons-collections4": -1078772699,
     "org.apache.commons:commons-collections4:jar:sources": 899985523,
-    "org.apache.commons:commons-configuration2": 868430628,
+    "org.apache.commons:commons-configuration2": -600946961,
     "org.apache.commons:commons-configuration2:jar:sources": 2125754593,
     "org.apache.commons:commons-lang3": 1841935436,
     "org.apache.commons:commons-lang3:jar:sources": -982252396,
     "org.apache.commons:commons-text": 869132518,
     "org.apache.commons:commons-text:jar:sources": 400790036,
-    "org.apache.httpcomponents:httpclient": -104941259,
+    "org.apache.httpcomponents:httpclient": -584254446,
     "org.apache.httpcomponents:httpclient:jar:sources": -779528763,
     "org.apache.httpcomponents:httpcore": 67453319,
     "org.apache.httpcomponents:httpcore:jar:sources": 2134002822,
@@ -206,30 +206,12 @@
     "org.apache.logging.log4j:log4j-core:jar:sources": -625900064,
     "org.apache.logging.log4j:log4j-slf4j-impl": -1109348669,
     "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources": 670996594,
-    "org.apache.maven.doxia:doxia-core": -1386620481,
-    "org.apache.maven.doxia:doxia-core:jar:sources": -552924920,
-    "org.apache.maven.doxia:doxia-logging-api": 370228106,
-    "org.apache.maven.doxia:doxia-logging-api:jar:sources": -2045371637,
-    "org.apache.maven.doxia:doxia-module-xdoc": -921295205,
-    "org.apache.maven.doxia:doxia-module-xdoc:jar:sources": 178270329,
-    "org.apache.maven.doxia:doxia-sink-api": -1527028335,
-    "org.apache.maven.doxia:doxia-sink-api:jar:sources": 812584004,
-    "org.apache.xbean:xbean-reflect": -780502532,
-    "org.apache.xbean:xbean-reflect:jar:sources": 1604927661,
     "org.apfloat:apfloat": -1689392346,
     "org.apfloat:apfloat:jar:sources": -1889003084,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
     "org.checkerframework:checker-qual": -2134103876,
     "org.checkerframework:checker-qual:jar:sources": 11073524,
-    "org.codehaus.plexus:plexus-classworlds": 830297444,
-    "org.codehaus.plexus:plexus-classworlds:jar:sources": -2122083127,
-    "org.codehaus.plexus:plexus-component-annotations": -599131582,
-    "org.codehaus.plexus:plexus-component-annotations:jar:sources": -1567582380,
-    "org.codehaus.plexus:plexus-container-default": 1876588805,
-    "org.codehaus.plexus:plexus-container-default:jar:sources": 1495289637,
-    "org.codehaus.plexus:plexus-utils": -2106813517,
-    "org.codehaus.plexus:plexus-utils:jar:sources": -1133546446,
     "org.commonmark:commonmark": 1195553091,
     "org.commonmark:commonmark-ext-gfm-tables": -558121472,
     "org.commonmark:commonmark-ext-gfm-tables:jar:sources": 1593227191,
@@ -557,10 +539,10 @@
     },
     "com.puppycrawl.tools:checkstyle": {
       "shasums": {
-        "jar": "cbe0e5ea088c6f258e8b9f5f39278446bdce2513a6e8609dac7cf2fd1c4e8d4c",
-        "sources": "a4d44289bf05528ae9afc95a7ef1623e3e054989a204edd540582be9d46b4ab6"
+        "jar": "4d00e3ec50b757dd340468fd1a4eb23f2a73ac39bb30d4d379922bcf73545261",
+        "sources": "b6296ef9edcc0b59de303a7da49027426ffce1439504a21a8b4f7c522a4f711f"
       },
-      "version": "13.9.0"
+      "version": "13.11.0"
     },
     "com.vaadin.external.google:android-json": {
       "shasums": {
@@ -606,10 +588,10 @@
     },
     "commons-logging:commons-logging": {
       "shasums": {
-        "jar": "f8ead8943401081dea0aa824b5b1ba40a0e4ed297a572a0f02258150a0b62357",
-        "sources": "6e821e03cfc64e509cc162d428af84697b6c4188eb14c0b137c75b69649976ef"
+        "jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc",
+        "sources": "28104e5057a11c6e9cda72e973d767b3a0185e65363fede91bc848bc6a309634"
       },
-      "version": "1.3.6"
+      "version": "1.4.0"
     },
     "dk.brics:automaton": {
       "shasums": {
@@ -821,41 +803,6 @@
       },
       "version": "2.26.1"
     },
-    "org.apache.maven.doxia:doxia-core": {
-      "shasums": {
-        "jar": "5e49cd827bebbcea5829d3b3883d17ad1ce15ebd6394aeb50ad50d7dfd939fcd",
-        "sources": "dda664b7207c3cb136ea981491fa9d568eb0869ffafff448544aad4d6856ebee"
-      },
-      "version": "1.12.0"
-    },
-    "org.apache.maven.doxia:doxia-logging-api": {
-      "shasums": {
-        "jar": "985306162c0a9f4c309d46109447f30f02bf6fc9bc16a3e039d59e1dabd0192f",
-        "sources": "184a5d645c92233365f732acfc596c54aff9fdccc582adde98987d65569add28"
-      },
-      "version": "1.12.0"
-    },
-    "org.apache.maven.doxia:doxia-module-xdoc": {
-      "shasums": {
-        "jar": "e8731ba00a4edd34b20eff9e4a729c2045c62cb796c3e491692607de4476ab01",
-        "sources": "41ad1b3fdecd0b0f50dc1299678835c23d29b043a01e77d8230622726de63164"
-      },
-      "version": "1.12.0"
-    },
-    "org.apache.maven.doxia:doxia-sink-api": {
-      "shasums": {
-        "jar": "5dca6aaaa9e70d8a0766e143ddcf9db09de5fde0fbcc78cb635d74e764dfcca5",
-        "sources": "747968d879494167ce3d393dc43ec6ec47d00df3addf1e1f2351f5aa76e8974a"
-      },
-      "version": "1.12.0"
-    },
-    "org.apache.xbean:xbean-reflect": {
-      "shasums": {
-        "jar": "104e5e9bb5a669f86722f32281960700f7ec8e3209ef51b23eb9b6d23d1629cb",
-        "sources": "ed59780db1ee258d806c6da541d74ef23fb9b05a5c96cc7f28e6fb203d2d4f9e"
-      },
-      "version": "3.7"
-    },
     "org.apfloat:apfloat": {
       "shasums": {
         "jar": "14fa3dee487b9d8de6d0ff7c39526159405c0879a65c817f959c9575e4b14820",
@@ -876,34 +823,6 @@
         "sources": "cd0abd821e0672baba7c3f1af7001056afcc79b7d975e774726a395c7ed12908"
       },
       "version": "4.2.0"
-    },
-    "org.codehaus.plexus:plexus-classworlds": {
-      "shasums": {
-        "jar": "52f77c5ec49f787c9c417ebed5d6efd9922f44a202f217376e4f94c0d74f3549",
-        "sources": "a9dc469d6d1ad442d6661e677614bd102b5fcf30a27d55533ef05af7807cab89"
-      },
-      "version": "2.6.0"
-    },
-    "org.codehaus.plexus:plexus-component-annotations": {
-      "shasums": {
-        "jar": "bde3617ce9b5bcf9584126046080043af6a4b3baea40a3b153f02e7bbc32acac",
-        "sources": "3896689e1df0a4e2707ecdce4946e37c3037fbebbb3d730873c4d9dfb6d25174"
-      },
-      "version": "2.1.0"
-    },
-    "org.codehaus.plexus:plexus-container-default": {
-      "shasums": {
-        "jar": "6dceb1246b188153bdcb6f962d543d51ddb672cca07cad94a78fbabc9edf0a39",
-        "sources": "46f5a62b34ed74daec875416e4405702f9d2d313e5bbffe0e7e08582d0b2f24b"
-      },
-      "version": "2.1.0"
-    },
-    "org.codehaus.plexus:plexus-utils": {
-      "shasums": {
-        "jar": "76d174792540e2775af94d03d10fb2d3c776e2cd0ac0ebf427d3e570072bb9ce",
-        "sources": "a955fb73bd949cbf0bbdfe76e17a054a8180a82f16038d0c8c719cdbecc8504b"
-      },
-      "version": "3.3.0"
     },
     "org.commonmark:commonmark": {
       "shasums": {
@@ -1339,11 +1258,10 @@
     "com.puppycrawl.tools:checkstyle": [
       "com.google.guava:guava",
       "commons-beanutils:commons-beanutils",
+      "commons-logging:commons-logging",
       "info.picocli:picocli",
       "net.sf.saxon:Saxon-HE",
       "org.antlr:antlr4-runtime",
-      "org.apache.maven.doxia:doxia-core",
-      "org.apache.maven.doxia:doxia-module-xdoc",
       "org.reflections:reflections",
       "org.slf4j:slf4j-api",
       "org.slf4j:slf4j-simple"
@@ -1412,33 +1330,6 @@
       "org.apache.logging.log4j:log4j-api",
       "org.apache.logging.log4j:log4j-core",
       "org.slf4j:slf4j-api"
-    ],
-    "org.apache.maven.doxia:doxia-core": [
-      "org.apache.commons:commons-lang3",
-      "org.apache.commons:commons-text",
-      "org.apache.httpcomponents:httpclient",
-      "org.apache.httpcomponents:httpcore",
-      "org.apache.maven.doxia:doxia-logging-api",
-      "org.apache.maven.doxia:doxia-sink-api",
-      "org.codehaus.plexus:plexus-component-annotations",
-      "org.codehaus.plexus:plexus-container-default",
-      "org.codehaus.plexus:plexus-utils"
-    ],
-    "org.apache.maven.doxia:doxia-logging-api": [
-      "org.codehaus.plexus:plexus-container-default"
-    ],
-    "org.apache.maven.doxia:doxia-module-xdoc": [
-      "org.apache.maven.doxia:doxia-core",
-      "org.apache.maven.doxia:doxia-sink-api",
-      "org.codehaus.plexus:plexus-component-annotations",
-      "org.codehaus.plexus:plexus-utils"
-    ],
-    "org.apache.maven.doxia:doxia-sink-api": [
-      "org.apache.maven.doxia:doxia-logging-api"
-    ],
-    "org.codehaus.plexus:plexus-container-default": [
-      "org.apache.xbean:xbean-reflect",
-      "org.codehaus.plexus:plexus-classworlds"
     ],
     "org.commonmark:commonmark-ext-gfm-tables": [
       "org.commonmark:commonmark"
@@ -2008,7 +1899,8 @@
     ],
     "commons-logging:commons-logging": [
       "org.apache.commons.logging",
-      "org.apache.commons.logging.impl"
+      "org.apache.commons.logging.impl",
+      "org.apache.commons.logging.jakarta"
     ],
     "dk.brics:automaton": [
       "dk.brics.automaton"
@@ -2612,36 +2504,6 @@
       "org.apache.logging.slf4j.message",
       "org.slf4j.impl"
     ],
-    "org.apache.maven.doxia:doxia-core": [
-      "org.apache.maven.doxia",
-      "org.apache.maven.doxia.document",
-      "org.apache.maven.doxia.document.io.xpp3",
-      "org.apache.maven.doxia.index",
-      "org.apache.maven.doxia.macro",
-      "org.apache.maven.doxia.macro.manager",
-      "org.apache.maven.doxia.macro.snippet",
-      "org.apache.maven.doxia.macro.toc",
-      "org.apache.maven.doxia.markup",
-      "org.apache.maven.doxia.parser",
-      "org.apache.maven.doxia.parser.manager",
-      "org.apache.maven.doxia.parser.module",
-      "org.apache.maven.doxia.sink.impl",
-      "org.apache.maven.doxia.util"
-    ],
-    "org.apache.maven.doxia:doxia-logging-api": [
-      "org.apache.maven.doxia.logging"
-    ],
-    "org.apache.maven.doxia:doxia-module-xdoc": [
-      "org.apache.maven.doxia.module.xdoc"
-    ],
-    "org.apache.maven.doxia:doxia-sink-api": [
-      "org.apache.maven.doxia.sink",
-      "org.codehaus.doxia.sink"
-    ],
-    "org.apache.xbean:xbean-reflect": [
-      "org.apache.xbean.propertyeditor",
-      "org.apache.xbean.recipe"
-    ],
     "org.apfloat:apfloat": [
       "org.apfloat",
       "org.apfloat.internal",
@@ -2683,59 +2545,6 @@
       "org.checkerframework.common.value.qual",
       "org.checkerframework.dataflow.qual",
       "org.checkerframework.framework.qual"
-    ],
-    "org.codehaus.plexus:plexus-classworlds": [
-      "org.codehaus.classworlds",
-      "org.codehaus.plexus.classworlds",
-      "org.codehaus.plexus.classworlds.launcher",
-      "org.codehaus.plexus.classworlds.realm",
-      "org.codehaus.plexus.classworlds.strategy"
-    ],
-    "org.codehaus.plexus:plexus-component-annotations": [
-      "org.codehaus.plexus.component.annotations"
-    ],
-    "org.codehaus.plexus:plexus-container-default": [
-      "org.codehaus.plexus",
-      "org.codehaus.plexus.component",
-      "org.codehaus.plexus.component.builder",
-      "org.codehaus.plexus.component.collections",
-      "org.codehaus.plexus.component.composition",
-      "org.codehaus.plexus.component.configurator",
-      "org.codehaus.plexus.component.configurator.converters",
-      "org.codehaus.plexus.component.configurator.converters.basic",
-      "org.codehaus.plexus.component.configurator.converters.composite",
-      "org.codehaus.plexus.component.configurator.converters.lookup",
-      "org.codehaus.plexus.component.configurator.converters.special",
-      "org.codehaus.plexus.component.configurator.expression",
-      "org.codehaus.plexus.component.discovery",
-      "org.codehaus.plexus.component.factory",
-      "org.codehaus.plexus.component.factory.java",
-      "org.codehaus.plexus.component.manager",
-      "org.codehaus.plexus.component.repository",
-      "org.codehaus.plexus.component.repository.exception",
-      "org.codehaus.plexus.component.repository.io",
-      "org.codehaus.plexus.configuration",
-      "org.codehaus.plexus.configuration.io",
-      "org.codehaus.plexus.configuration.source",
-      "org.codehaus.plexus.configuration.xml",
-      "org.codehaus.plexus.container.initialization",
-      "org.codehaus.plexus.context",
-      "org.codehaus.plexus.lifecycle",
-      "org.codehaus.plexus.lifecycle.phase",
-      "org.codehaus.plexus.logging",
-      "org.codehaus.plexus.logging.console",
-      "org.codehaus.plexus.personality.plexus.lifecycle.phase"
-    ],
-    "org.codehaus.plexus:plexus-utils": [
-      "org.codehaus.plexus.util",
-      "org.codehaus.plexus.util.cli",
-      "org.codehaus.plexus.util.cli.shell",
-      "org.codehaus.plexus.util.dag",
-      "org.codehaus.plexus.util.introspection",
-      "org.codehaus.plexus.util.io",
-      "org.codehaus.plexus.util.reflection",
-      "org.codehaus.plexus.util.xml",
-      "org.codehaus.plexus.util.xml.pull"
     ],
     "org.commonmark:commonmark": [
       "org.commonmark",
@@ -3435,30 +3244,12 @@
       "org.apache.logging.log4j:log4j-core:jar:sources",
       "org.apache.logging.log4j:log4j-slf4j-impl",
       "org.apache.logging.log4j:log4j-slf4j-impl:jar:sources",
-      "org.apache.maven.doxia:doxia-core",
-      "org.apache.maven.doxia:doxia-core:jar:sources",
-      "org.apache.maven.doxia:doxia-logging-api",
-      "org.apache.maven.doxia:doxia-logging-api:jar:sources",
-      "org.apache.maven.doxia:doxia-module-xdoc",
-      "org.apache.maven.doxia:doxia-module-xdoc:jar:sources",
-      "org.apache.maven.doxia:doxia-sink-api",
-      "org.apache.maven.doxia:doxia-sink-api:jar:sources",
-      "org.apache.xbean:xbean-reflect",
-      "org.apache.xbean:xbean-reflect:jar:sources",
       "org.apfloat:apfloat",
       "org.apfloat:apfloat:jar:sources",
       "org.apiguardian:apiguardian-api",
       "org.apiguardian:apiguardian-api:jar:sources",
       "org.checkerframework:checker-qual",
       "org.checkerframework:checker-qual:jar:sources",
-      "org.codehaus.plexus:plexus-classworlds",
-      "org.codehaus.plexus:plexus-classworlds:jar:sources",
-      "org.codehaus.plexus:plexus-component-annotations",
-      "org.codehaus.plexus:plexus-component-annotations:jar:sources",
-      "org.codehaus.plexus:plexus-container-default",
-      "org.codehaus.plexus:plexus-container-default:jar:sources",
-      "org.codehaus.plexus:plexus-utils",
-      "org.codehaus.plexus:plexus-utils:jar:sources",
       "org.commonmark:commonmark",
       "org.commonmark:commonmark-ext-gfm-tables",
       "org.commonmark:commonmark-ext-gfm-tables:jar:sources",
