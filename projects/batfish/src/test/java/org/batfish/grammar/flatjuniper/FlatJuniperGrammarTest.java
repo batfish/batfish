@@ -413,6 +413,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.Accounting;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.BaseApplication;
@@ -4457,6 +4458,34 @@ public final class FlatJuniperGrammarTest {
     assertFalse(s3.getSingleConnection());
     assertThat(s3.getPort(), nullValue());
     assertThat(s3.getTimeout(), nullValue());
+  }
+
+  @Test
+  public void testAccounting() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-accounting");
+    Accounting accounting = vc.getMasterLogicalSystem().getAccounting();
+    assertThat(accounting, notNullValue());
+    assertThat(
+        accounting.getEvents(),
+        containsInAnyOrder(
+            Accounting.Event.LOGIN,
+            Accounting.Event.CHANGE_LOG,
+            Accounting.Event.INTERACTIVE_COMMANDS));
+    assertTrue(accounting.getTacplusDestination());
+
+    // destination tacplus server sub-block reuses the tacplus server model.
+    assertThat(accounting.getTacplusServers().keySet(), containsInAnyOrder("1.2.3.4"));
+    TacplusServer s = accounting.getTacplusServers().get("1.2.3.4");
+    assertThat(s.getSecret(), equalTo(CommonUtil.sha256Digest("%CENSORED%" + CommonUtil.salt())));
+    assertThat(s.getPort(), equalTo(49));
+    assertThat(s.getTimeout(), equalTo(5));
+    assertTrue(s.getSingleConnection());
+    assertThat(s.getSourceAddress(), equalTo(Ip.parse("6.7.8.9")));
+
+    // The accounting destination server is also surfaced in the VI TACACS+ server set, even though
+    // it is not configured under top-level `system tacplus-server`.
+    Configuration c = parseConfig("juniper-accounting");
+    assertThat(c.getTacacsServers(), hasItem("1.2.3.4"));
   }
 
   @Test

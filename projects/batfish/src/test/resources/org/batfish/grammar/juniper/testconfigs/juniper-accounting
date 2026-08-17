@@ -1,0 +1,17 @@
+#
+set system host-name juniper-accounting
+#
+set system accounting events login
+set system accounting events change-log
+set system accounting events interactive-commands
+set system accounting enhanced-avs-max 10
+#
+set system accounting destination tacplus
+set system accounting destination tacplus server 1.2.3.4 secret "%CENSORED%"
+set system accounting destination tacplus server 1.2.3.4 port 49
+set system accounting destination tacplus server 1.2.3.4 timeout 5
+set system accounting destination tacplus server 1.2.3.4 single-connection
+set system accounting destination tacplus server 1.2.3.4 source-address 6.7.8.9
+#
+set system accounting destination radius server 9.9.9.9 secret "rad"
+#

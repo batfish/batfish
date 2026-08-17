@@ -11,7 +11,7 @@ s_system
    SYSTEM
    (
       apply
-      | sy_accounting_null
+      | sy_accounting
       | sy_allow_v4mapped_packets_null
       | sy_arp_null
       | sy_authentication_order
@@ -227,9 +227,57 @@ ntp_key_number
     uint16
 ;
 
-sy_accounting_null
+sy_accounting
 :
-   ACCOUNTING null_filler
+   ACCOUNTING
+   (
+      apply
+      | sya_destination
+      | sya_enhanced_avs_max_null
+      | sya_events
+      | sya_traceoptions_null
+   )
+;
+sya_destination
+:
+   DESTINATION
+   (
+      syad_radius_null
+      | syad_tacplus
+   )
+;
+syad_radius_null
+:
+   RADIUS null_filler
+;
+syad_tacplus
+:
+   TACPLUS syadt_server?
+;
+syadt_server
+:
+   SERVER ( tacplus_server_host | wildcard )
+   (
+      apply
+      | syt_port
+      | syt_secret
+      | syt_single_connection
+      | syt_source_address
+      | syt_routing_instance
+      | syt_timeout
+   )
+;
+sya_enhanced_avs_max_null
+:
+   ENHANCED_AVS_MAX null_filler
+;
+sya_events
+:
+   EVENTS ( CHANGE_LOG | INTERACTIVE_COMMANDS | LOGIN )
+;
+sya_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 sy_allow_v4mapped_packets_null
 :

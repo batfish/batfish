@@ -985,6 +985,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_costContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_accountingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_orderContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_default_address_selectionContext;
@@ -995,6 +996,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_porttypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_security_profileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sya_eventsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syad_tacplusContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syadt_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressContext;
@@ -1048,6 +1052,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vrf_target_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.juniper.Accounting;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
 import org.batfish.representation.juniper.AddressBook;
 import org.batfish.representation.juniper.AddressBookEntry;
@@ -2689,6 +2694,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private TacplusServer _currentTacplusServer;
 
   private org.batfish.representation.juniper.TacplusServer _currentJuniperTacplusServer;
+
+  private Accounting _currentAccounting;
 
   private Zone _currentToZone;
 
@@ -9035,6 +9042,57 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterSy_accounting(Sy_accountingContext ctx) {
+    if (_currentLogicalSystem.getAccounting() == null) {
+      _currentLogicalSystem.setAccounting(new Accounting());
+    }
+    _currentAccounting = _currentLogicalSystem.getAccounting();
+  }
+
+  @Override
+  public void exitSy_accounting(Sy_accountingContext ctx) {
+    _currentAccounting = null;
+  }
+
+  @Override
+  public void exitSya_events(Sya_eventsContext ctx) {
+    Accounting.Event event;
+    if (ctx.CHANGE_LOG() != null) {
+      event = Accounting.Event.CHANGE_LOG;
+    } else if (ctx.INTERACTIVE_COMMANDS() != null) {
+      event = Accounting.Event.INTERACTIVE_COMMANDS;
+    } else {
+      assert ctx.LOGIN() != null;
+      event = Accounting.Event.LOGIN;
+    }
+    _currentAccounting.getEvents().add(event);
+  }
+
+  @Override
+  public void enterSyad_tacplus(Syad_tacplusContext ctx) {
+    _currentAccounting.setTacplusDestination(true);
+  }
+
+  @Override
+  public void enterSyadt_server(Syadt_serverContext ctx) {
+    // Reuse the top-level tacplus syt_* option handlers, but store on the accounting destination's
+    // own server map; the common model (_currentTacplusServer) is not populated here.
+    _currentTacplusServer = null;
+    String hostname = toString(ctx.tacplus_server_host());
+    _currentJuniperTacplusServer =
+        _currentAccounting
+            .getTacplusServers()
+            .computeIfAbsent(hostname, org.batfish.representation.juniper.TacplusServer::new);
+  }
+
+  @Override
+  public void exitSyadt_server(Syadt_serverContext ctx) {
+    // Only the VS pointer was set in enterSyadt_server; _currentTacplusServer is already null
+    // (accounting servers are never written to the common model), so only this one is cleared.
+    _currentJuniperTacplusServer = null;
+  }
+
+  @Override
   public void exitSyr_encrypted_password(Syr_encrypted_passwordContext ctx) {
     String hash = ctx.password.getText();
     String rehashedPassword = CommonUtil.sha256Digest(hash + CommonUtil.salt());
@@ -9044,7 +9102,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSyt_secret(Syt_secretContext ctx) {
     String secret = applySecret(ctx.secret_string());
-    _currentTacplusServer.setSecret(secret);
+    // _currentTacplusServer is the shared common model, only set for top-level tacplus-server; it
+    // is null when reusing these handlers for accounting destination tacplus servers.
+    if (_currentTacplusServer != null) {
+      _currentTacplusServer.setSecret(secret);
+    }
     _currentJuniperTacplusServer.setSecret(secret);
   }
 
@@ -9190,7 +9252,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = toIp(ctx.address);
-    _currentTacplusServer.setSourceAddress(sourceAddress);
+    if (_currentTacplusServer != null) {
+      _currentTacplusServer.setSourceAddress(sourceAddress);
+    }
     _currentJuniperTacplusServer.setSourceAddress(sourceAddress);
   }
 

@@ -37,6 +37,8 @@ public class LogicalSystem implements Serializable {
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
+  private @Nullable Accounting _accounting;
+
   private final Map<String, NamedCommunity> _namedCommunities;
 
   private boolean _defaultAddressSelection;
@@ -240,6 +242,14 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, JuniperAuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
+  }
+
+  public @Nullable Accounting getAccounting() {
+    return _accounting;
+  }
+
+  public void setAccounting(@Nullable Accounting accounting) {
+    _accounting = accounting;
   }
 
   public Map<String, NamedCommunity> getNamedCommunities() {

@@ -765,7 +765,11 @@ ETHERNET_SWITCH_PROFILE: 'ethernet-switch-profile';
 
 ETHERNET_SWITCHING_OPTIONS: 'ethernet-switching-options';
 
+ENHANCED_AVS_MAX: 'enhanced-avs-max';
+
 EVENT_OPTIONS: 'event-options';
+
+EVENTS: 'events';
 
 EVPN: 'evpn';
 
