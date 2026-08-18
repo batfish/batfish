@@ -12,3 +12,5 @@ set system tacplus-server 2.3.4.5 single-connection
 #
 set system tacplus-server 3.4.5.6 timeout 200
 #
+set system tacplus-server 4.5.6.7 secret "$9$czBSK87-wgoG"
+#

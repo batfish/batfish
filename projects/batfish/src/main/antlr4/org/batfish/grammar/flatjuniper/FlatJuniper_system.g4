@@ -242,7 +242,8 @@ sya_destination
 :
    DESTINATION
    (
-      syad_radius_null
+      apply
+      | syad_radius_null
       | syad_tacplus
    )
 ;

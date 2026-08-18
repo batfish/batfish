@@ -261,6 +261,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.JuniperUtils;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclAclLine;
@@ -4438,7 +4439,7 @@ public final class FlatJuniperGrammarTest {
   public void testTacplusServerModel() {
     JuniperConfiguration vc = parseJuniperConfig("tacplus-psk");
     Map<String, TacplusServer> servers = vc.getMasterLogicalSystem().getTacplusServers();
-    assertThat(servers.keySet(), containsInAnyOrder("1.2.3.4", "2.3.4.5", "3.4.5.6"));
+    assertThat(servers.keySet(), containsInAnyOrder("1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7"));
 
     TacplusServer s1 = servers.get("1.2.3.4");
     assertThat(s1.getSecret(), equalTo(CommonUtil.sha256Digest("psk" + CommonUtil.salt())));
@@ -4464,6 +4465,15 @@ public final class FlatJuniperGrammarTest {
     assertFalse(s3.getSingleConnection());
     assertThat(s3.getPort(), nullValue());
     assertThat(s3.getTimeout(), nullValue());
+
+    TacplusServer s4 = servers.get("4.5.6.7");
+    assertThat(
+        s4.getSecret(), equalTo(JuniperUtils.decryptAndHashJuniper9CipherText("$9$czBSK87-wgoG")));
+    assertThat(s4.getPort(), nullValue());
+    assertThat(s4.getTimeout(), nullValue());
+    assertFalse(s4.getSingleConnection());
+    assertThat(s4.getSourceAddress(), nullValue());
+    assertThat(s4.getRoutingInstance(), nullValue());
   }
 
   @Test
