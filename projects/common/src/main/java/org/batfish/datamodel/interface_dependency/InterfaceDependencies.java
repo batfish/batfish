@@ -3,6 +3,7 @@ package org.batfish.datamodel.interface_dependency;
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.datamodel.InactiveReason.AGGREGATE_NEIGHBOR_DOWN;
 import static org.batfish.datamodel.InactiveReason.BIND_DOWN;
+import static org.batfish.datamodel.InactiveReason.INVALID;
 import static org.batfish.datamodel.InactiveReason.LACP_FAILURE;
 import static org.batfish.datamodel.InactiveReason.NO_ACTIVE_MEMBERS;
 import static org.batfish.datamodel.InactiveReason.NO_MEMBERS;
@@ -106,6 +107,21 @@ public class InterfaceDependencies {
                 _logger.warn(
                     "deactivating AGGREGATE/REDUNDANT interface {} with no dependencies", ifaceId);
                 _interfacesToDeactivate.put(ifaceId, NO_MEMBERS);
+                break;
+              }
+
+              // if the aggregate has dependencies, but one of them doesn't actually exist,
+              // deactivate it.
+              if (iface.getDependencies().stream()
+                  .anyMatch(
+                      dep ->
+                          dep.getType() == AGGREGATE
+                              && !allIfaces.containsKey(dep.getInterfaceName()))) {
+                _logger.warn(
+                    "deactivating AGGREGATE/REDUNDANT interface {} because one of its dependencies"
+                        + " is invalid",
+                    ifaceId);
+                _interfacesToDeactivate.put(ifaceId, INVALID);
                 break;
               }
 
