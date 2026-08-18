@@ -29,7 +29,7 @@ s_system
       | sy_internet_options_null
       | sy_license_null
       | sy_location_null
-      | sy_login_null
+      | sy_login
       | sy_max_configuration_rollbacks_null
       | sy_max_configurations_on_flash_null
       | sy_name_resolution_null
@@ -331,9 +331,441 @@ sy_location_null
 :
    LOCATION null_filler
 ;
-sy_login_null
+
+sy_login
 :
-   LOGIN null_filler
+   LOGIN
+   (
+      apply
+      | syl_announcement_null
+      | syl_class
+      | syl_deny_sources_null
+      | syl_idle_timeout_null
+      | syl_message_null
+      | syl_password
+      | syl_retry_options
+      | syl_user
+   )
+;
+
+syl_class
+:
+   CLASS name = junos_name
+   (
+      apply
+      | sylc_access_end_null
+      | sylc_access_start_null
+      | sylc_allow_commands_null
+      | sylc_allow_commands_regexps_null
+      | sylc_allow_configuration_null
+      | sylc_allow_configuration_exact_match_null
+      | sylc_allow_configuration_regexps_null
+      | sylc_allow_grpc_rpc_regexps_null
+      | sylc_allow_hidden_commands_null
+      | sylc_allow_sources_null
+      | sylc_allow_times_null
+      | sylc_allowed_days_null
+      | sylc_cli_null
+      | sylc_configuration_breadcrumbs_null
+      | sylc_confirm_commands_null
+      | sylc_deny_commands_null
+      | sylc_deny_commands_regexps_null
+      | sylc_deny_configuration_null
+      | sylc_deny_configuration_exact_match_null
+      | sylc_deny_configuration_regexps_null
+      | sylc_deny_grpc_rpc_regexps_null
+      | sylc_deny_sources_null
+      | sylc_deny_times_null
+      | sylc_idle_timeout_null
+      | sylc_logical_system_null
+      | sylc_login_alarms_null
+      | sylc_login_script_null
+      | sylc_login_tip_null
+      | sylc_no_hidden_commands_null
+      | sylc_no_scp_server_null
+      | sylc_no_sftp_server_null
+      | sylc_permissions
+      | sylc_satellite_null
+      | sylc_security_role_null
+      | sylc_tenant_null
+      | sylc_web_ui_hidden_menus_null
+      | sylc_web_ui_read_only_menus_null
+   )
+;
+
+sylc_permissions
+:
+   PERMISSIONS name = junos_name
+;
+
+sylc_access_end_null
+:
+   ACCESS_END null_filler
+;
+sylc_access_start_null
+:
+   ACCESS_START null_filler
+;
+sylc_allow_commands_null
+:
+   ALLOW_COMMANDS null_filler
+;
+sylc_allow_commands_regexps_null
+:
+   ALLOW_COMMANDS_REGEXPS null_filler
+;
+sylc_allow_configuration_null
+:
+   ALLOW_CONFIGURATION null_filler
+;
+sylc_allow_configuration_exact_match_null
+:
+   ALLOW_CONFIGURATION_EXACT_MATCH null_filler
+;
+sylc_allow_configuration_regexps_null
+:
+   ALLOW_CONFIGURATION_REGEXPS null_filler
+;
+sylc_allow_grpc_rpc_regexps_null
+:
+   ALLOW_GRPC_RPC_REGEXPS null_filler
+;
+sylc_allow_hidden_commands_null
+:
+   ALLOW_HIDDEN_COMMANDS null_filler
+;
+sylc_allow_sources_null
+:
+   ALLOW_SOURCES null_filler
+;
+sylc_allow_times_null
+:
+   ALLOW_TIMES null_filler
+;
+sylc_allowed_days_null
+:
+   ALLOWED_DAYS null_filler
+;
+sylc_cli_null
+:
+   CLI null_filler
+;
+sylc_configuration_breadcrumbs_null
+:
+   CONFIGURATION_BREADCRUMBS null_filler
+;
+sylc_confirm_commands_null
+:
+   CONFIRM_COMMANDS null_filler
+;
+sylc_deny_commands_null
+:
+   DENY_COMMANDS null_filler
+;
+sylc_deny_commands_regexps_null
+:
+   DENY_COMMANDS_REGEXPS null_filler
+;
+sylc_deny_configuration_null
+:
+   DENY_CONFIGURATION null_filler
+;
+sylc_deny_configuration_exact_match_null
+:
+   DENY_CONFIGURATION_EXACT_MATCH null_filler
+;
+sylc_deny_configuration_regexps_null
+:
+   DENY_CONFIGURATION_REGEXPS null_filler
+;
+sylc_deny_grpc_rpc_regexps_null
+:
+   DENY_GRPC_RPC_REGEXPS null_filler
+;
+sylc_deny_sources_null
+:
+   DENY_SOURCES null_filler
+;
+sylc_deny_times_null
+:
+   DENY_TIMES null_filler
+;
+sylc_idle_timeout_null
+:
+   IDLE_TIMEOUT null_filler
+;
+sylc_logical_system_null
+:
+   LOGICAL_SYSTEM null_filler
+;
+sylc_login_alarms_null
+:
+   LOGIN_ALARMS null_filler
+;
+sylc_login_script_null
+:
+   LOGIN_SCRIPT null_filler
+;
+sylc_login_tip_null
+:
+   LOGIN_TIP null_filler
+;
+sylc_no_hidden_commands_null
+:
+   NO_HIDDEN_COMMANDS null_filler
+;
+sylc_no_scp_server_null
+:
+   NO_SCP_SERVER null_filler
+;
+sylc_no_sftp_server_null
+:
+   NO_SFTP_SERVER null_filler
+;
+sylc_satellite_null
+:
+   SATELLITE null_filler
+;
+sylc_security_role_null
+:
+   SECURITY_ROLE null_filler
+;
+sylc_tenant_null
+:
+   TENANT null_filler
+;
+sylc_web_ui_hidden_menus_null
+:
+   WEB_UI_HIDDEN_MENUS null_filler
+;
+sylc_web_ui_read_only_menus_null
+:
+   WEB_UI_READ_ONLY_MENUS null_filler
+;
+syl_announcement_null
+:
+   ANNOUNCEMENT null_filler
+;
+syl_deny_sources_null
+:
+   DENY_SOURCES null_filler
+;
+syl_idle_timeout_null
+:
+   IDLE_TIMEOUT null_filler
+;
+syl_message_null
+:
+   MESSAGE null_filler
+;
+
+syl_password
+:
+   PASSWORD
+   (
+      apply
+      | sylp_change_type
+      | sylp_format
+      | sylp_maximum_length
+      | sylp_maximum_lifetime
+      | sylp_minimum_changes
+      | sylp_minimum_character_changes
+      | sylp_minimum_length
+      | sylp_minimum_lifetime
+      | sylp_minimum_lower_cases
+      | sylp_minimum_numerics
+      | sylp_minimum_punctuations
+      | sylp_minimum_reuse
+      | sylp_minimum_upper_cases
+   )
+;
+
+sylp_change_type
+:
+   CHANGE_TYPE ( CHARACTER_SETS | SET_TRANSITIONS )
+;
+
+sylp_format
+:
+   FORMAT ( SHA256 | SHA512 )
+;
+
+sylp_maximum_length
+:
+   MAXIMUM_LENGTH value = uint8
+;
+
+sylp_maximum_lifetime
+:
+   MAXIMUM_LIFETIME value = uint16
+;
+
+sylp_minimum_changes
+:
+   MINIMUM_CHANGES value = dec
+;
+
+sylp_minimum_character_changes
+:
+   MINIMUM_CHARACTER_CHANGES value = uint8
+;
+
+sylp_minimum_length
+:
+   MINIMUM_LENGTH value = uint8
+;
+
+sylp_minimum_lifetime
+:
+   MINIMUM_LIFETIME value = uint8
+;
+
+sylp_minimum_lower_cases
+:
+   MINIMUM_LOWER_CASES value = uint8
+;
+
+sylp_minimum_numerics
+:
+   MINIMUM_NUMERICS value = uint8
+;
+
+sylp_minimum_punctuations
+:
+   MINIMUM_PUNCTUATIONS value = uint8
+;
+
+sylp_minimum_reuse
+:
+   MINIMUM_REUSE value = uint8
+;
+
+sylp_minimum_upper_cases
+:
+   MINIMUM_UPPER_CASES value = uint8
+;
+
+syl_retry_options
+:
+   RETRY_OPTIONS
+   (
+      apply
+      | sylro_backoff_factor
+      | sylro_backoff_threshold
+      | sylro_lockout_period
+      | sylro_maximum_time
+      | sylro_minimum_time
+      | sylro_tries_before_disconnect
+   )
+;
+
+sylro_backoff_factor
+:
+   BACKOFF_FACTOR value = uint8
+;
+
+sylro_backoff_threshold
+:
+   BACKOFF_THRESHOLD value = uint8
+;
+
+sylro_lockout_period
+:
+   LOCKOUT_PERIOD value = uint16
+;
+
+sylro_maximum_time
+:
+   MAXIMUM_TIME value = uint16
+;
+
+sylro_minimum_time
+:
+   MINIMUM_TIME value = uint8
+;
+
+sylro_tries_before_disconnect
+:
+   TRIES_BEFORE_DISCONNECT value = uint8
+;
+
+syl_user
+:
+   USER name = junos_name
+   (
+      apply
+      | sylu_authentication
+      | sylu_class
+      | sylu_cli_null
+      | sylu_full_name
+      | sylu_uid
+   )
+;
+
+sylu_class
+:
+   CLASS name = junos_name
+;
+
+sylu_cli_null
+:
+   CLI null_filler
+;
+
+sylu_uid
+:
+   UID uid = uint16
+;
+
+sylu_full_name
+:
+   FULL_NAME name = junos_name
+;
+
+sylu_authentication
+:
+   AUTHENTICATION
+   (
+      apply
+      | sylua_encrypted_password
+      | sylua_load_key_file_null
+      | sylua_no_public_keys_null
+      | sylua_plain_text_password
+      | sylua_ssh_ecdsa_null
+      | sylua_ssh_ed25519_null
+      | sylua_ssh_rsa_null
+   )
+;
+
+sylua_encrypted_password
+:
+   ENCRYPTED_PASSWORD password = secret_string
+;
+
+sylua_plain_text_password
+:
+   PLAIN_TEXT_PASSWORD
+;
+
+sylua_load_key_file_null
+:
+   LOAD_KEY_FILE null_filler
+;
+sylua_no_public_keys_null
+:
+   NO_PUBLIC_KEYS null_filler
+;
+sylua_ssh_ecdsa_null
+:
+   SSH_ECDSA null_filler
+;
+sylua_ssh_ed25519_null
+:
+   SSH_ED25519 null_filler
+;
+sylua_ssh_rsa_null
+:
+   SSH_RSA null_filler
 ;
 sy_max_configurations_on_flash_null
 :

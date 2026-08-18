@@ -47,6 +47,7 @@ public enum JuniperStructureType implements StructureType {
   IPSEC_POLICY("ipsec policy"),
   IPSEC_PROPOSAL("ipsec proposal"),
   LOGICAL_SYSTEM("logical-system"),
+  LOGIN_CLASS("login class"),
   MPLS_PATH("mpls path"),
   NAT_POOL("nat pool"),
   NAT_RULE("nat rule"),
@@ -103,6 +104,7 @@ public enum JuniperStructureType implements StructureType {
           .put(CLASS_OF_SERVICE_REWRITE_RULE, "default")
           .put(CLASS_OF_SERVICE_SCHEDULER, "default-be")
           .put(CLASS_OF_SERVICE_SCHEDULER_MAP, "default")
+          .putAll(LOGIN_CLASS, "operator", "read-only", "super-user", "superuser", "unauthorized")
           .build();
 
   public static final Set<JuniperStructureType> CONCRETE_STRUCTURES =

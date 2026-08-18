@@ -39,6 +39,8 @@ public class LogicalSystem implements Serializable {
 
   private @Nullable Accounting _accounting;
 
+  private final Login _login;
+
   private final Map<String, NamedCommunity> _namedCommunities;
 
   private boolean _defaultAddressSelection;
@@ -151,6 +153,7 @@ public class LogicalSystem implements Serializable {
     _asPaths = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
+    _login = new Login();
     _namedCommunities = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
@@ -250,6 +253,10 @@ public class LogicalSystem implements Serializable {
 
   public void setAccounting(@Nullable Accounting accounting) {
     _accounting = accounting;
+  }
+
+  public Login getLogin() {
+    return _login;
   }
 
   public Map<String, NamedCommunity> getNamedCommunities() {

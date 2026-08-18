@@ -179,6 +179,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_F
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureType.LOGIN_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
@@ -465,6 +466,11 @@ import org.batfish.representation.juniper.JunosSyslogFile;
 import org.batfish.representation.juniper.JunosSyslogHost;
 import org.batfish.representation.juniper.JunosSyslogSeverity;
 import org.batfish.representation.juniper.JunosSyslogTransportProtocol;
+import org.batfish.representation.juniper.Login;
+import org.batfish.representation.juniper.LoginClass;
+import org.batfish.representation.juniper.LoginPassword;
+import org.batfish.representation.juniper.LoginRetryOptions;
+import org.batfish.representation.juniper.LoginUser;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
@@ -4486,6 +4492,134 @@ public final class FlatJuniperGrammarTest {
     // it is not configured under top-level `system tacplus-server`.
     Configuration c = parseConfig("juniper-accounting");
     assertThat(c.getTacacsServers(), hasItem("1.2.3.4"));
+  }
+
+  @Test
+  public void testLoginClass() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
+    Map<String, LoginClass> classes = vc.getMasterLogicalSystem().getLogin().getClasses();
+    assertThat(classes.keySet(), containsInAnyOrder("ADMIN", "READONLY"));
+    assertThat(classes.get("ADMIN").getPermissions(), containsInAnyOrder("all"));
+    assertThat(
+        classes.get("READONLY").getPermissions(), containsInAnyOrder("view", "view-configuration"));
+  }
+
+  @Test
+  public void testLoginUser() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
+    Map<String, LoginUser> users = vc.getMasterLogicalSystem().getLogin().getUsers();
+    assertThat(users.keySet(), containsInAnyOrder("neteng", "remote", "bootstrap", "sshuser"));
+
+    LoginUser neteng = users.get("neteng");
+    assertThat(neteng.getUid(), equalTo(2000));
+    assertThat(neteng.getClassName(), equalTo("ADMIN"));
+    assertThat(neteng.getFullName(), equalTo("network engineer"));
+    assertThat(
+        neteng.getAuthenticationType(), equalTo(LoginUser.AuthenticationType.ENCRYPTED_PASSWORD));
+
+    LoginUser remote = users.get("remote");
+    assertThat(remote.getClassName(), equalTo("READONLY"));
+    assertThat(remote.getUid(), nullValue());
+    assertThat(remote.getFullName(), nullValue());
+    assertThat(remote.getAuthenticationType(), nullValue());
+
+    LoginUser bootstrap = users.get("bootstrap");
+    assertThat(
+        bootstrap.getAuthenticationType(),
+        equalTo(LoginUser.AuthenticationType.PLAIN_TEXT_PASSWORD));
+    assertThat(bootstrap.getUid(), nullValue());
+    assertThat(bootstrap.getClassName(), nullValue());
+    assertThat(bootstrap.getFullName(), nullValue());
+
+    LoginUser sshuser = users.get("sshuser");
+    assertThat(sshuser.getUid(), nullValue());
+    assertThat(sshuser.getClassName(), nullValue());
+    assertThat(sshuser.getFullName(), nullValue());
+    assertThat(sshuser.getAuthenticationType(), nullValue());
+  }
+
+  @Test
+  public void testLoginRetryOptions() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
+    LoginRetryOptions ro = vc.getMasterLogicalSystem().getLogin().getRetryOptions();
+    assertThat(ro, notNullValue());
+    assertThat(ro.getTriesBeforeDisconnect(), equalTo(4));
+    assertThat(ro.getBackoffThreshold(), equalTo(2));
+    assertThat(ro.getBackoffFactor(), equalTo(10));
+    assertThat(ro.getMinimumTime(), equalTo(20));
+    assertThat(ro.getMaximumTime(), equalTo(120));
+    assertThat(ro.getLockoutPeriod(), equalTo(30));
+  }
+
+  @Test
+  public void testLoginPassword() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
+    LoginPassword pw = vc.getMasterLogicalSystem().getLogin().getPassword();
+    assertThat(pw, notNullValue());
+    assertThat(pw.getMinimumLength(), equalTo(8));
+    assertThat(pw.getMaximumLength(), equalTo(20));
+    assertThat(pw.getMaximumLifetime(), equalTo(90));
+    assertThat(pw.getMinimumLifetime(), equalTo(7));
+    assertThat(pw.getMinimumCharacterChanges(), equalTo(5));
+    assertThat(pw.getFormat(), equalTo(LoginPassword.Format.SHA512));
+    assertThat(pw.getChangeType(), equalTo(LoginPassword.ChangeType.CHARACTER_SETS));
+    assertThat(pw.getMinimumChanges(), equalTo(2));
+    assertThat(pw.getMinimumLowerCases(), equalTo(1));
+    assertThat(pw.getMinimumUpperCases(), equalTo(1));
+    assertThat(pw.getMinimumNumerics(), equalTo(1));
+    assertThat(pw.getMinimumPunctuations(), equalTo(1));
+    assertThat(pw.getMinimumReuse(), equalTo(5));
+  }
+
+  @Test
+  public void testLoginClassReferences() throws IOException {
+    String hostname = "juniper-login-class";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, LOGIN_CLASS, "ADMIN"));
+    assertThat(ccae, hasDefinedStructure(filename, LOGIN_CLASS, "READONLY"));
+    assertThat(ccae, hasNumReferrers(filename, LOGIN_CLASS, "ADMIN", 1));
+    assertThat(ccae, hasNumReferrers(filename, LOGIN_CLASS, "READONLY", 1));
+  }
+
+  @Test
+  public void testLoginRangeChecks() {
+    // All values parse (within the grammar's uint bounds) but violate the documented ranges,
+    // so each should warn and be dropped.
+    JuniperConfiguration vc = parseJuniperConfig("juniper-login-range");
+
+    List<String> comments =
+        vc.getWarnings().getParseWarnings().stream()
+            .map(ParseWarning::getComment)
+            .collect(Collectors.toList());
+    assertThat(comments, everyItem(containsString("in range")));
+    assertThat(comments, hasSize(17));
+
+    Login login = vc.getMasterLogicalSystem().getLogin();
+
+    LoginRetryOptions retry = login.getRetryOptions();
+    assertThat(retry.getBackoffFactor(), nullValue());
+    assertThat(retry.getBackoffThreshold(), nullValue());
+    assertThat(retry.getLockoutPeriod(), nullValue());
+    assertThat(retry.getMaximumTime(), nullValue());
+    assertThat(retry.getMinimumTime(), nullValue());
+    assertThat(retry.getTriesBeforeDisconnect(), nullValue());
+    assertThat(login.getUsers().get("baduser").getUid(), nullValue());
+
+    LoginPassword pw = login.getPassword();
+    assertThat(pw.getMaximumLength(), nullValue());
+    assertThat(pw.getMaximumLifetime(), nullValue());
+    assertThat(pw.getMinimumCharacterChanges(), nullValue());
+    assertThat(pw.getMinimumLength(), nullValue());
+    assertThat(pw.getMinimumLifetime(), nullValue());
+    assertThat(pw.getMinimumLowerCases(), nullValue());
+    assertThat(pw.getMinimumNumerics(), nullValue());
+    assertThat(pw.getMinimumPunctuations(), nullValue());
+    assertThat(pw.getMinimumReuse(), nullValue());
+    assertThat(pw.getMinimumUpperCases(), nullValue());
   }
 
   @Test
