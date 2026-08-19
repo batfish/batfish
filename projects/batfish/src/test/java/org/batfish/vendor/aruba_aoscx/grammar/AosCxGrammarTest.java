@@ -7,6 +7,8 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBA_AOSCX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.notNullValue;
@@ -28,6 +30,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -104,6 +107,49 @@ public final class AosCxGrammarTest {
 
     AosCxStaticRoute r4 = vc.getStaticRoutes().get(4);
     assertThat(r4.getNextHopType(), equalTo(NextHopType.REJECT));
+  }
+
+
+  @Test
+  public void testOspfExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-ospf");
+
+    assertThat(c.getOspfProcesses(), hasKey(1));
+    assertThat(c.getOspfProcesses().get(1).getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+
+    AosCxInterface iface = c.getInterfaces().get("1/1/2");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getBandwidth(), equalTo(1_000_000_000D));
+    assertThat(iface.getOspfProcessId(), equalTo(1));
+    assertThat(iface.getOspfArea(), equalTo("0.0.0.0"));
+    assertThat(
+        iface.getOspfNetworkType(),
+        equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
+  }
+
+
+  @Test
+  public void testOspfConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-ospf");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKey("1"));
+
+    org.batfish.datamodel.ospf.OspfProcess process =
+        c.getDefaultVrf().getOspfProcesses().get("1");
+
+    assertThat(process.getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(process.getAreas(), hasKey(0L));
+    assertThat(process.getAreas().get(0L).getInterfaces(), hasItem("1/1/2"));
+
+    org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("1/1/2");
+    assertThat(iface.getOspfSettings(), notNullValue());
+    assertThat(iface.getOspfSettings().getAreaName(), equalTo(0L));
+    assertThat(iface.getOspfSettings().getProcess(), equalTo("1"));
+    assertThat(iface.getOspfSettings().getNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(iface.getOspfSettings().getHelloInterval(), equalTo(10));
+    assertThat(iface.getOspfSettings().getDeadInterval(), equalTo(40));
   }
 
   @Test

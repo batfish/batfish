@@ -8,6 +8,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 /** Vendor-specific representation of an Aruba AOS-CX interface. */
 public final class AosCxInterface implements Serializable {
 
+  public enum OspfNetworkType {
+    BROADCAST,
+    POINT_TO_POINT
+  }
+
   public AosCxInterface(String name) {
     _name = name;
   }
@@ -24,6 +29,38 @@ public final class AosCxInterface implements Serializable {
     _enabled = enabled;
   }
 
+  public @Nullable Double getBandwidth() {
+    return _bandwidth;
+  }
+
+  public void setBandwidth(double bandwidth) {
+    _bandwidth = bandwidth;
+  }
+
+  public @Nullable Integer getOspfProcessId() {
+    return _ospfProcessId;
+  }
+
+  public void setOspfProcessId(int ospfProcessId) {
+    _ospfProcessId = ospfProcessId;
+  }
+
+  public @Nullable String getOspfArea() {
+    return _ospfArea;
+  }
+
+  public void setOspfArea(String ospfArea) {
+    _ospfArea = ospfArea;
+  }
+
+  public @Nullable OspfNetworkType getOspfNetworkType() {
+    return _ospfNetworkType;
+  }
+
+  public void setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+    _ospfNetworkType = ospfNetworkType;
+  }
+
   public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
@@ -35,4 +72,8 @@ public final class AosCxInterface implements Serializable {
   private final @Nonnull String _name;
   private @Nullable Boolean _enabled;
   private @Nullable ConcreteInterfaceAddress _address;
+  private @Nullable Double _bandwidth;
+  private @Nullable Integer _ospfProcessId;
+  private @Nullable String _ospfArea;
+  private @Nullable OspfNetworkType _ospfNetworkType;
 }

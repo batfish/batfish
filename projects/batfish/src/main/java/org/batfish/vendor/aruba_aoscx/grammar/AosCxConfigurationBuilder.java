@@ -14,11 +14,18 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 
@@ -59,6 +66,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ip_ospf_area(S_ip_ospf_areaContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPF area command outside interface context");
+      return;
+    }
+    _currentInterface.setOspfProcessId(Integer.parseInt(ctx.WORD(0).getText()));
+    _currentInterface.setOspfArea(ctx.WORD(1).getText());
+  }
+
+  @Override
+  public void exitS_ip_ospf_network(S_ip_ospf_networkContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPF network command outside interface context");
+      return;
+    }
+    _currentInterface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
   public void exitS_ip_route(S_ip_routeContext ctx) {
     Prefix prefix = Prefix.parse(ctx.WORD().getText());
     String nextHop = ctx.static_route_next_hop().getText();
@@ -80,6 +106,22 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_router_ospf(S_router_ospfContext ctx) {
+    int processId = Integer.parseInt(ctx.WORD().getText());
+    _currentOspfProcess = _configuration.getOrCreateOspfProcess(processId);
+    _currentInterface = null;
+  }
+
+  @Override
+  public void exitS_router_id(S_router_idContext ctx) {
+    if (_currentOspfProcess == null) {
+      warn(ctx, "Ignoring router-id outside OSPF context");
+      return;
+    }
+    _currentOspfProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+  }
+
+  @Override
   public void exitS_no_shutdown(S_no_shutdownContext ctx) {
     if (_currentInterface != null) {
       _currentInterface.setEnabled(true);
@@ -90,6 +132,42 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_shutdown(S_shutdownContext ctx) {
     if (_currentInterface != null) {
       _currentInterface.setEnabled(false);
+    }
+  }
+
+  @Override
+  public void exitS_speed(S_speedContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring speed command outside interface context");
+      return;
+    }
+
+    String speed = ctx.WORD(0).getText();
+
+    // Auto-negotiation does not tell us the actual negotiated bandwidth.
+    if (speed.equals("auto")) {
+      return;
+    }
+
+    Double bandwidth =
+        switch (speed) {
+          case "10-half", "10-full" -> 10_000_000D;
+          case "100-half", "100-full" -> 100_000_000D;
+          case "1000-full", "1g" -> 1_000_000_000D;
+          case "2.5g" -> 2_500_000_000D;
+          case "5g" -> 5_000_000_000D;
+          case "10g" -> 10_000_000_000D;
+          case "25g" -> 25_000_000_000D;
+          case "40g" -> 40_000_000_000D;
+          case "50g" -> 50_000_000_000D;
+          case "100g" -> 100_000_000_000D;
+          case "200g" -> 200_000_000_000D;
+          case "400g" -> 400_000_000_000D;
+          default -> null;
+        };
+
+    if (bandwidth != null) {
+      _currentInterface.setBandwidth(bandwidth);
     }
   }
 
@@ -139,4 +217,5 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private final @Nonnull Warnings _w;
   private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private AosCxInterface _currentInterface;
+  private AosCxOspfProcess _currentOspfProcess;
 }

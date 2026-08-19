@@ -15,9 +15,14 @@ statement
   s_hostname
   | s_interface
   | s_ip_address
+  | s_ip_ospf_area
+  | s_ip_ospf_network
   | s_ip_route
+  | s_router_ospf
+  | s_router_id
   | s_no_shutdown
   | s_shutdown
+  | s_speed
   | null_statement
 ;
 
@@ -43,6 +48,17 @@ s_ip_address
   IP ADDRESS WORD NEWLINE
 ;
 
+
+s_ip_ospf_area
+:
+  IP OSPF WORD AREA WORD NEWLINE
+;
+
+s_ip_ospf_network
+:
+  IP OSPF NETWORK POINT_TO_POINT NEWLINE
+;
+
 s_ip_route
 :
   IP ROUTE WORD static_route_next_hop NEWLINE
@@ -55,6 +71,17 @@ static_route_next_hop
   | WORD
 ;
 
+
+s_router_ospf
+:
+  ROUTER OSPF WORD NEWLINE
+;
+
+s_router_id
+:
+  ROUTER_ID WORD NEWLINE
+;
+
 s_no_shutdown
 :
   NO SHUTDOWN NEWLINE
@@ -65,7 +92,12 @@ s_shutdown
   SHUTDOWN NEWLINE
 ;
 
+s_speed
+:
+  SPEED WORD+ NEWLINE
+;
+
 null_statement
 :
-  (ADDRESS | HOSTNAME | INTERFACE | IP | LOOPBACK | NO | NULLROUTE | REJECT | ROUTE | SHUTDOWN | VLAN | WORD)+ NEWLINE
+  (ADDRESS | AREA | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | WORD)+ NEWLINE
 ;
