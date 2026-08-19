@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
@@ -16,10 +17,14 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ip_address_prefix_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_ipv4Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
@@ -30,6 +35,9 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxBgpProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
@@ -60,6 +68,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_interface(S_interfaceContext ctx) {
     String name = toInterfaceName(ctx.interface_name());
     _currentInterface = _configuration.getOrCreateInterface(name);
+    _currentRouteMapEntry = null;
   }
 
   @Override
@@ -91,6 +100,34 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ip_prefix_list(S_ip_prefix_listContext ctx) {
+    String name = ctx.WORD(0).getText();
+    AosCxPrefixList prefixList = _configuration.getOrCreatePrefixList(name);
+
+    long sequence =
+        ctx.prefix_list_seq() != null
+            ? Long.parseLong(ctx.prefix_list_seq().WORD().getText())
+            : prefixList.getNextSequence();
+
+    LineAction action =
+        ctx.prefix_list_action().PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
+
+    Prefix prefix = Prefix.parse(ctx.WORD(1).getText());
+
+    Integer ge =
+        ctx.prefix_list_ge() != null
+            ? Integer.parseInt(ctx.prefix_list_ge().WORD().getText())
+            : null;
+
+    Integer le =
+        ctx.prefix_list_le() != null
+            ? Integer.parseInt(ctx.prefix_list_le().WORD().getText())
+            : null;
+
+    prefixList.addEntry(new AosCxPrefixListEntry(sequence, action, prefix, ge, le));
+  }
+
+  @Override
   public void exitS_ip_route(S_ip_routeContext ctx) {
     Prefix prefix = Prefix.parse(ctx.WORD().getText());
     String nextHop = ctx.static_route_next_hop().getText();
@@ -112,9 +149,44 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_route_map(S_route_mapContext ctx) {
+    String name = ctx.WORD(0).getText();
+    long sequence = Long.parseLong(ctx.WORD(1).getText());
+    LineAction action =
+        ctx.route_map_action().PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
+
+    _currentRouteMapEntry =
+        _configuration.getOrCreateRouteMap(name).getOrCreateEntry(sequence, action);
+
+    _currentInterface = null;
+    _currentOspfProcess = null;
+    _currentBgpProcess = null;
+  }
+
+  @Override
+  public void exitS_match_ip_address_prefix_list(
+      S_match_ip_address_prefix_listContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(ctx, "Ignoring route-map match outside route-map context");
+      return;
+    }
+    _currentRouteMapEntry.setMatchPrefixList(ctx.WORD().getText());
+  }
+
+  @Override
+  public void exitS_set_local_preference(S_set_local_preferenceContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(ctx, "Ignoring route-map set outside route-map context");
+      return;
+    }
+    _currentRouteMapEntry.setSetLocalPreference(Long.parseLong(ctx.WORD().getText()));
+  }
+
+  @Override
   public void exitS_router_bgp(S_router_bgpContext ctx) {
     long localAs = Long.parseLong(ctx.WORD().getText());
     _currentBgpProcess = _configuration.getOrCreateBgpProcess(localAs);
+    _currentRouteMapEntry = null;
     _inBgpIpv4Unicast = false;
     _currentOspfProcess = null;
     _currentInterface = null;
@@ -192,6 +264,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_router_ospf(S_router_ospfContext ctx) {
     int processId = Integer.parseInt(ctx.WORD().getText());
     _currentOspfProcess = _configuration.getOrCreateOspfProcess(processId);
+    _currentRouteMapEntry = null;
     _currentInterface = null;
   }
 
@@ -302,5 +375,6 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private AosCxInterface _currentInterface;
   private AosCxOspfProcess _currentOspfProcess;
   private AosCxBgpProcess _currentBgpProcess;
+  private AosCxRouteMapEntry _currentRouteMapEntry;
   private boolean _inBgpIpv4Unicast;
 }

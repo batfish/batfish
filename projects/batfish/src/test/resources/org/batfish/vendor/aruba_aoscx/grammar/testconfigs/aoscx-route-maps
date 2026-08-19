@@ -1,0 +1,9 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+ip prefix-list INTERNAL seq 10 permit 10.0.0.0/8 ge 16 le 24
+route-map FROM-CORE permit seq 10
+    match ip address prefix-list INTERNAL
+    set local-preference 200
+route-map FROM-CORE deny seq 20
+route-map ONLY-INTERNAL permit seq 10
+    match ip address prefix-list INTERNAL

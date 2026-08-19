@@ -1,0 +1,6 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+ip prefix-list DEFAULT seq 10 permit 0.0.0.0/0
+ip prefix-list INTERNAL seq 20 permit 10.0.0.0/8 ge 16 le 24
+ip prefix-list BLOCK deny 192.0.2.0/24
+ip prefix-list BLOCK permit 198.51.100.0/24

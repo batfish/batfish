@@ -17,9 +17,13 @@ statement
   | s_ip_address
   | s_ip_ospf_area
   | s_ip_ospf_network
+  | s_ip_prefix_list
   | s_ip_route
   | s_router_ospf
   | s_router_bgp
+  | s_route_map
+  | s_match_ip_address_prefix_list
+  | s_set_local_preference
   | s_bgp_router_id
   | s_bgp_neighbor_remote_as
   | s_bgp_address_family_ipv4
@@ -64,6 +68,33 @@ s_ip_ospf_network
   IP OSPF NETWORK POINT_TO_POINT NEWLINE
 ;
 
+
+s_ip_prefix_list
+:
+  IP PREFIX_LIST WORD prefix_list_seq? prefix_list_action WORD prefix_list_ge? prefix_list_le? NEWLINE
+;
+
+prefix_list_seq
+:
+  SEQ WORD
+;
+
+prefix_list_action
+:
+  PERMIT
+  | DENY
+;
+
+prefix_list_ge
+:
+  GE WORD
+;
+
+prefix_list_le
+:
+  LE WORD
+;
+
 s_ip_route
 :
   IP ROUTE WORD static_route_next_hop NEWLINE
@@ -77,6 +108,28 @@ static_route_next_hop
 ;
 
 
+
+
+s_route_map
+:
+  ROUTE_MAP WORD route_map_action SEQ WORD NEWLINE
+;
+
+route_map_action
+:
+  PERMIT
+  | DENY
+;
+
+s_match_ip_address_prefix_list
+:
+  MATCH IP ADDRESS PREFIX_LIST WORD NEWLINE
+;
+
+s_set_local_preference
+:
+  SET LOCAL_PREFERENCE WORD NEWLINE
+;
 
 s_router_bgp
 :
@@ -131,5 +184,5 @@ s_speed
 
 null_statement
 :
-  (ADDRESS | AREA | BGP | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | WORD)+ NEWLINE
+  (ADDRESS | AREA | BGP | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

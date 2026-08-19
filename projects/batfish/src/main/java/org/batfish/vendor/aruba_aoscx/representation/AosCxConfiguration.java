@@ -20,10 +20,25 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
@@ -40,6 +55,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private String _hostname;
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
+  private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
+  private final Map<String, AosCxRouteMap> _routeMaps = new HashMap<>();
   private AosCxBgpProcess _bgpProcess;
   private String _rawHostname;
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
@@ -71,6 +88,22 @@ public class AosCxConfiguration extends VendorConfiguration {
       _bgpProcess = new AosCxBgpProcess(localAs);
     }
     return _bgpProcess;
+  }
+
+  public Map<String, AosCxRouteMap> getRouteMaps() {
+    return _routeMaps;
+  }
+
+  public AosCxRouteMap getOrCreateRouteMap(String name) {
+    return _routeMaps.computeIfAbsent(name, AosCxRouteMap::new);
+  }
+
+  public Map<String, AosCxPrefixList> getPrefixLists() {
+    return _prefixLists;
+  }
+
+  public AosCxPrefixList getOrCreatePrefixList(String name) {
+    return _prefixLists.computeIfAbsent(name, AosCxPrefixList::new);
   }
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses() {
@@ -141,6 +174,101 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   private static long toOspfAreaNumber(String area) {
     return area.contains(".") ? Ip.parse(area).asLong() : Long.parseLong(area);
+  }
+
+  private void convertPrefixLists() {
+    _prefixLists.values().forEach(
+        prefixList -> {
+          List<RouteFilterLine> lines = new ArrayList<>();
+
+          prefixList.getEntries().values().forEach(
+              entry -> {
+                int prefixLength = entry.getPrefix().getPrefixLength();
+
+                int minLength =
+                    entry.getGe() != null
+                        ? entry.getGe()
+                        : prefixLength;
+
+                int maxLength =
+                    entry.getLe() != null
+                        ? entry.getLe()
+                        : entry.getGe() != null
+                            ? Prefix.MAX_PREFIX_LENGTH
+                            : prefixLength;
+
+                lines.add(
+                    new RouteFilterLine(
+                        entry.getAction(),
+                        entry.getPrefix(),
+                        new SubRange(minLength, maxLength)));
+              });
+
+          _c.getRouteFilterLists()
+              .put(
+                  prefixList.getName(),
+                  new RouteFilterList(prefixList.getName(), lines));
+        });
+  }
+
+  private static List<Statement> routeMapActionStatements(LineAction action) {
+    return action == LineAction.PERMIT
+        ? ImmutableList.of(
+            new If(
+                BooleanExprs.CALL_EXPR_CONTEXT,
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement())))
+        : ImmutableList.of(
+            new If(
+                BooleanExprs.CALL_EXPR_CONTEXT,
+                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+  }
+
+  private void convertRouteMaps() {
+    _routeMaps.values().forEach(
+        routeMap -> {
+          RoutingPolicy.Builder policy =
+              RoutingPolicy.builder().setOwner(_c).setName(routeMap.getName());
+
+          routeMap.getEntries().values().forEach(
+              entry -> {
+                BooleanExpr guard;
+
+                if (entry.getMatchPrefixList() == null) {
+                  guard = BooleanExprs.TRUE;
+                } else if (_c.getRouteFilterLists().containsKey(entry.getMatchPrefixList())) {
+                  guard =
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(),
+                          new NamedPrefixSet(entry.getMatchPrefixList()));
+                } else {
+                  // An undefined prefix-list must never turn into a match-all entry.
+                  guard = BooleanExprs.FALSE;
+                }
+
+                List<Statement> trueStatements = new ArrayList<>();
+
+                if (entry.getSetLocalPreference() != null) {
+                  trueStatements.add(
+                      new SetLocalPreference(
+                          new LiteralLong(entry.getSetLocalPreference())));
+                }
+
+                trueStatements.addAll(routeMapActionStatements(entry.getAction()));
+
+                policy.addStatement(new If(guard, trueStatements));
+              });
+
+          // AOS-CX route-map fall-through is an implicit deny.
+          policy
+              .addStatement(
+                  new If(
+                      BooleanExprs.CALL_EXPR_CONTEXT,
+                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+              .build();
+        });
   }
 
   private void convertBgpProcess(Vrf vrf) {
@@ -281,6 +409,8 @@ public class AosCxConfiguration extends VendorConfiguration {
     Vrf defaultVrf = new Vrf(DEFAULT_VRF_NAME);
     _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, defaultVrf));
 
+    convertPrefixLists();
+    convertRouteMaps();
     convertOspfProcesses(defaultVrf);
     convertBgpProcess(defaultVrf);
     _interfaces.values().forEach(iface -> convertInterface(iface, defaultVrf));

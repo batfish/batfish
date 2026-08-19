@@ -24,10 +24,13 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -37,8 +40,14 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMap;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 import org.junit.Rule;
@@ -147,6 +156,126 @@ public final class AosCxGrammarTest {
         equalTo(true));
   }
 
+
+
+  @Test
+  public void testPrefixListExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-prefix-lists");
+
+    assertThat(c.getPrefixLists(), hasKey("DEFAULT"));
+    assertThat(c.getPrefixLists(), hasKey("INTERNAL"));
+    assertThat(c.getPrefixLists(), hasKey("BLOCK"));
+
+    AosCxPrefixList defaultList = c.getPrefixLists().get("DEFAULT");
+    assertThat(defaultList.getEntries(), hasKey(10L));
+    AosCxPrefixListEntry defaultEntry = defaultList.getEntries().get(10L);
+    assertThat(defaultEntry.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(defaultEntry.getPrefix(), equalTo(Prefix.ZERO));
+
+    AosCxPrefixList internal = c.getPrefixLists().get("INTERNAL");
+    AosCxPrefixListEntry internalEntry = internal.getEntries().get(20L);
+    assertThat(internalEntry.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(internalEntry.getPrefix(), equalTo(Prefix.parse("10.0.0.0/8")));
+    assertThat(internalEntry.getGe(), equalTo(16));
+    assertThat(internalEntry.getLe(), equalTo(24));
+
+    AosCxPrefixList block = c.getPrefixLists().get("BLOCK");
+    assertThat(block.getEntries(), hasKey(10L));
+    assertThat(block.getEntries(), hasKey(20L));
+    assertThat(block.getEntries().get(10L).getAction(), equalTo(LineAction.DENY));
+    assertThat(
+        block.getEntries().get(10L).getPrefix(),
+        equalTo(Prefix.parse("192.0.2.0/24")));
+    assertThat(block.getEntries().get(20L).getAction(), equalTo(LineAction.PERMIT));
+  }
+
+
+
+  @Test
+  public void testRouteMapExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-route-maps");
+
+    assertThat(c.getRouteMaps(), hasKey("FROM-CORE"));
+
+    AosCxRouteMap routeMap = c.getRouteMaps().get("FROM-CORE");
+    assertThat(routeMap.getEntries(), hasKey(10L));
+    assertThat(routeMap.getEntries(), hasKey(20L));
+
+    AosCxRouteMapEntry entry10 = routeMap.getEntries().get(10L);
+    assertThat(entry10.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(entry10.getMatchPrefixList(), equalTo("INTERNAL"));
+    assertThat(entry10.getSetLocalPreference(), equalTo(200L));
+
+    AosCxRouteMapEntry entry20 = routeMap.getEntries().get(20L);
+    assertThat(entry20.getAction(), equalTo(LineAction.DENY));
+  }
+
+
+  @Test
+  public void testRouteMapConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-route-maps");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getRoutingPolicies(), hasKey("FROM-CORE"));
+    assertThat(c.getRoutingPolicies(), hasKey("ONLY-INTERNAL"));
+
+    RoutingPolicy fromCore = c.getRoutingPolicies().get("FROM-CORE");
+
+    Bgpv4Route internalRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("10.1.0.0/16"))
+            .build();
+    Bgpv4Route.Builder internalOutput = Bgpv4Route.testBuilder();
+
+    assertThat(fromCore.process(internalRoute, internalOutput, Direction.IN), equalTo(true));
+    assertThat(internalOutput.getLocalPreference(), equalTo(200L));
+
+    Bgpv4Route externalRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("203.0.113.0/24"))
+            .build();
+
+    assertThat(
+        fromCore.process(externalRoute, Bgpv4Route.testBuilder(), Direction.IN),
+        equalTo(false));
+
+    RoutingPolicy onlyInternal = c.getRoutingPolicies().get("ONLY-INTERNAL");
+
+    assertThat(
+        onlyInternal.process(internalRoute, Bgpv4Route.testBuilder(), Direction.IN),
+        equalTo(true));
+
+    assertThat(
+        onlyInternal.process(externalRoute, Bgpv4Route.testBuilder(), Direction.IN),
+        equalTo(false));
+  }
+
+  @Test
+  public void testPrefixListConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-prefix-lists");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getRouteFilterLists(), hasKey("DEFAULT"));
+    assertThat(c.getRouteFilterLists(), hasKey("INTERNAL"));
+    assertThat(c.getRouteFilterLists(), hasKey("BLOCK"));
+
+    RouteFilterList defaultList = c.getRouteFilterLists().get("DEFAULT");
+    assertThat(defaultList.permits(Prefix.ZERO), equalTo(true));
+    assertThat(defaultList.permits(Prefix.parse("10.0.0.0/8")), equalTo(false));
+
+    RouteFilterList internal = c.getRouteFilterLists().get("INTERNAL");
+    assertThat(internal.permits(Prefix.parse("10.1.0.0/16")), equalTo(true));
+    assertThat(internal.permits(Prefix.parse("10.1.1.0/24")), equalTo(true));
+    assertThat(internal.permits(Prefix.parse("10.0.0.0/8")), equalTo(false));
+    assertThat(internal.permits(Prefix.parse("10.1.1.128/25")), equalTo(false));
+
+    RouteFilterList block = c.getRouteFilterLists().get("BLOCK");
+    assertThat(block.permits(Prefix.parse("192.0.2.0/24")), equalTo(false));
+    assertThat(block.permits(Prefix.parse("198.51.100.0/24")), equalTo(true));
+    assertThat(block.permits(Prefix.parse("203.0.113.0/24")), equalTo(false));
+  }
 
   @Test
   public void testBgpConversion() throws IOException {
