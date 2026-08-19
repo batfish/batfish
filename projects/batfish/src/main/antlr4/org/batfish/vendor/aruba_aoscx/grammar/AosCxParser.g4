@@ -28,6 +28,7 @@ statement
   | s_bgp_neighbor_remote_as
   | s_bgp_address_family_ipv4
   | s_bgp_neighbor_activate
+  | s_bgp_neighbor_route_map
   | s_router_id
   | s_no_shutdown
   | s_shutdown
@@ -152,6 +153,11 @@ s_bgp_neighbor_activate
   NEIGHBOR WORD ACTIVATE NEWLINE
 ;
 
+s_bgp_neighbor_route_map
+:
+  NEIGHBOR WORD ROUTE_MAP WORD (IN | OUT) NEWLINE
+;
+
 s_bgp_router_id
 :
   BGP ROUTER_ID WORD NEWLINE
@@ -184,5 +190,5 @@ s_speed
 
 null_statement
 :
-  (ADDRESS | AREA | BGP | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ADDRESS | AREA | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

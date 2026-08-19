@@ -302,8 +302,20 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setRemoteAs(neighbor.getRemoteAs());
 
           if (neighbor.getIpv4UnicastActive()) {
-            peer.setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder().build());
+            Ipv4UnicastAddressFamily.Builder addressFamily =
+                Ipv4UnicastAddressFamily.builder();
+
+            if (neighbor.getRouteMapIn() != null
+                && _c.getRoutingPolicies().containsKey(neighbor.getRouteMapIn())) {
+              addressFamily.setImportPolicy(neighbor.getRouteMapIn());
+            }
+
+            if (neighbor.getRouteMapOut() != null
+                && _c.getRoutingPolicies().containsKey(neighbor.getRouteMapOut())) {
+              addressFamily.setExportPolicy(neighbor.getRouteMapOut());
+            }
+
+            peer.setIpv4UnicastAddressFamily(addressFamily.build());
           }
 
           peer.build();

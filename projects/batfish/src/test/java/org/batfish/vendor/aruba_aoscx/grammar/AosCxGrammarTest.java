@@ -154,6 +154,12 @@ public final class AosCxGrammarTest {
     assertThat(
         c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getIpv4UnicastActive(),
         equalTo(true));
+    assertThat(
+        c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getRouteMapIn(),
+        equalTo("FROM-CORE"));
+    assertThat(
+        c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getRouteMapOut(),
+        equalTo("TO-CORE"));
   }
 
 
@@ -295,6 +301,12 @@ public final class AosCxGrammarTest {
     assertThat(peer.getLocalAs(), equalTo(65000L));
     assertThat(peer.getRemoteAsns().contains(65001L), equalTo(true));
     assertThat(peer.getIpv4UnicastAddressFamily(), notNullValue());
+    assertThat(
+        peer.getIpv4UnicastAddressFamily().getImportPolicy(),
+        equalTo("FROM-CORE"));
+    assertThat(
+        peer.getIpv4UnicastAddressFamily().getExportPolicy(),
+        equalTo("TO-CORE"));
   }
 
   @Test

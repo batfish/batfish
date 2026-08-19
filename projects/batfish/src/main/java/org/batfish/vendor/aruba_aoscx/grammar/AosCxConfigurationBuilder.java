@@ -29,6 +29,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_router_idContext
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_ipv4Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
@@ -249,6 +250,31 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentBgpProcess
         .getOrCreateNeighbor(Ip.parse(neighborText))
         .setIpv4UnicastActive(true);
+  }
+
+  @Override
+  public void exitS_bgp_neighbor_route_map(S_bgp_neighbor_route_mapContext ctx) {
+    if (_currentBgpProcess == null || !_inBgpIpv4Unicast) {
+      warn(ctx, "Ignoring BGP neighbor route-map outside IPv4 unicast address-family");
+      return;
+    }
+
+    String neighborText = ctx.WORD(0).getText();
+    if (Ip.tryParse(neighborText).isEmpty()) {
+      warn(ctx, "BGP unnumbered/interface neighbor route-maps are not supported yet");
+      return;
+    }
+
+    String routeMapName = ctx.WORD(1).getText();
+    if (ctx.IN() != null) {
+      _currentBgpProcess
+          .getOrCreateNeighbor(Ip.parse(neighborText))
+          .setRouteMapIn(routeMapName);
+    } else {
+      _currentBgpProcess
+          .getOrCreateNeighbor(Ip.parse(neighborText))
+          .setRouteMapOut(routeMapName);
+    }
   }
 
   @Override

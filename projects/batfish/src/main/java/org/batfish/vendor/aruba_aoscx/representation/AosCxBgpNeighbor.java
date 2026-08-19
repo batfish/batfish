@@ -32,7 +32,25 @@ public final class AosCxBgpNeighbor implements Serializable {
     _ipv4UnicastActive = ipv4UnicastActive;
   }
 
+  public @Nullable String getRouteMapIn() {
+    return _routeMapIn;
+  }
+
+  public void setRouteMapIn(String routeMapIn) {
+    _routeMapIn = routeMapIn;
+  }
+
+  public @Nullable String getRouteMapOut() {
+    return _routeMapOut;
+  }
+
+  public void setRouteMapOut(String routeMapOut) {
+    _routeMapOut = routeMapOut;
+  }
+
   private final @Nonnull Ip _ip;
   private @Nullable Long _remoteAs;
   private boolean _ipv4UnicastActive;
+  private @Nullable String _routeMapIn;
+  private @Nullable String _routeMapOut;
 }
