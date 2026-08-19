@@ -4,7 +4,14 @@ options {
   superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
+ADDRESS: 'address';
 HOSTNAME: 'hostname';
+INTERFACE: 'interface';
+IP: 'ip';
+LOOPBACK: 'loopback';
+NO: 'no';
+SHUTDOWN: 'shutdown';
+VLAN: 'vlan';
 
 NEWLINE: '\r'? '\n';
 

@@ -4,11 +4,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
 
 @ParametersAreNonnullByDefault
 public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
@@ -29,6 +36,46 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     _configuration.setHostname(ctx.WORD().getText());
+  }
+
+  @Override
+  public void exitS_interface(S_interfaceContext ctx) {
+    String name = toInterfaceName(ctx.interface_name());
+    _currentInterface = _configuration.getOrCreateInterface(name);
+  }
+
+  @Override
+  public void exitS_ip_address(S_ip_addressContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring IP address outside interface context");
+      return;
+    }
+    _currentInterface.setAddress(ConcreteInterfaceAddress.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_no_shutdown(S_no_shutdownContext ctx) {
+    if (_currentInterface != null) {
+      _currentInterface.setEnabled(true);
+    }
+  }
+
+  @Override
+  public void exitS_shutdown(S_shutdownContext ctx) {
+    if (_currentInterface != null) {
+      _currentInterface.setEnabled(false);
+    }
+  }
+
+  private static String toInterfaceName(Interface_nameContext ctx) {
+    String id = ctx.WORD().getText();
+    if (ctx.LOOPBACK() != null) {
+      return "loopback " + id;
+    }
+    if (ctx.VLAN() != null) {
+      return "vlan " + id;
+    }
+    return id;
   }
 
   @Override
@@ -65,4 +112,5 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
   private final @Nonnull SilentSyntaxCollection _silentSyntax;
+  private AosCxInterface _currentInterface;
 }

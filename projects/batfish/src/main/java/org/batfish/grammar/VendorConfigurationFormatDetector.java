@@ -34,7 +34,7 @@ public final class VendorConfigurationFormatDetector {
               + " \\([A-Za-z]+-\\d{1,2}-\\d{4},\\d\\d:\\d\\d\\)");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
-  private static final Pattern ARUBA_AOSCX_PATTERN = Pattern.compile("(?m)^!Version ArubaOS-CX .*$");
+  private static final Pattern ARUBA_AOSCX_PATTERN = Pattern.compile("(?m)^!Version (?:ArubaOS-CX|AOS-CX) .*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern CHECK_POINT_GATEWAY_PATTERN =

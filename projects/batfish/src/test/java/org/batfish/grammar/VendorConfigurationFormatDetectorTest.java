@@ -153,8 +153,14 @@ public class VendorConfigurationFormatDetectorTest {
 
   @Test
   public void testArubaAosCx() {
-    String aosCx = "!Version ArubaOS-CX FL.10.13.1040\nhostname ellx-dr-01\n";
-    assertThat(identifyConfigurationFormat(aosCx), equalTo(ARUBA_AOSCX));
+    for (String version :
+        ImmutableList.of(
+            "!Version ArubaOS-CX FL.10.13.1040\n",
+            "!Version AOS-CX FL.10.13.1040\n")) {
+      assertThat(
+          identifyConfigurationFormat(version + "hostname ellx-dr-01\n"),
+          equalTo(ARUBA_AOSCX));
+    }
   }
 
   @Test
