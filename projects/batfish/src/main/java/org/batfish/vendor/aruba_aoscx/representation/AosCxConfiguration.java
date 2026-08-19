@@ -1,5 +1,8 @@
 package org.batfish.vendor.aruba_aoscx.representation;
 
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
@@ -10,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -19,6 +24,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -34,6 +40,7 @@ public class AosCxConfiguration extends VendorConfiguration {
   private String _hostname;
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
+  private AosCxBgpProcess _bgpProcess;
   private String _rawHostname;
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
   private ConfigurationFormat _vendor;
@@ -53,6 +60,17 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public AosCxInterface getOrCreateInterface(String name) {
     return _interfaces.computeIfAbsent(name, AosCxInterface::new);
+  }
+
+  public AosCxBgpProcess getBgpProcess() {
+    return _bgpProcess;
+  }
+
+  public AosCxBgpProcess getOrCreateBgpProcess(long localAs) {
+    if (_bgpProcess == null) {
+      _bgpProcess = new AosCxBgpProcess(localAs);
+    }
+    return _bgpProcess;
   }
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses() {
@@ -123,6 +141,45 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   private static long toOspfAreaNumber(String area) {
     return area.contains(".") ? Ip.parse(area).asLong() : Long.parseLong(area);
+  }
+
+  private void convertBgpProcess(Vrf vrf) {
+    if (_bgpProcess == null || _bgpProcess.getRouterId() == null) {
+      return;
+    }
+
+    BgpProcess viProcess =
+        BgpProcess.builder()
+            .setRouterId(_bgpProcess.getRouterId())
+            .setEbgpAdminCost(20)
+            .setIbgpAdminCost(200)
+            .setLocalAdminCost(200)
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setVrf(vrf)
+            .build();
+
+    _bgpProcess.getNeighbors().values().forEach(
+        neighbor -> {
+          if (neighbor.getRemoteAs() == null) {
+            return;
+          }
+
+          BgpActivePeerConfig.Builder peer =
+              BgpActivePeerConfig.builder()
+                  .setBgpProcess(viProcess)
+                  .setLocalAs(_bgpProcess.getLocalAs())
+                  .setPeerAddress(neighbor.getIp())
+                  .setRemoteAs(neighbor.getRemoteAs());
+
+          if (neighbor.getIpv4UnicastActive()) {
+            peer.setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder().build());
+          }
+
+          peer.build();
+        });
   }
 
   private void convertOspfProcesses(Vrf vrf) {
@@ -225,6 +282,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, defaultVrf));
 
     convertOspfProcesses(defaultVrf);
+    convertBgpProcess(defaultVrf);
     _interfaces.values().forEach(iface -> convertInterface(iface, defaultVrf));
     applyOspfInterfaceSettings();
     _staticRoutes.forEach(route -> convertStaticRoute(route, defaultVrf));

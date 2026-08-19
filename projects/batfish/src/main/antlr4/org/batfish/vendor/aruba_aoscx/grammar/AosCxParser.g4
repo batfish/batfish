@@ -19,6 +19,11 @@ statement
   | s_ip_ospf_network
   | s_ip_route
   | s_router_ospf
+  | s_router_bgp
+  | s_bgp_router_id
+  | s_bgp_neighbor_remote_as
+  | s_bgp_address_family_ipv4
+  | s_bgp_neighbor_activate
   | s_router_id
   | s_no_shutdown
   | s_shutdown
@@ -72,6 +77,33 @@ static_route_next_hop
 ;
 
 
+
+s_router_bgp
+:
+  ROUTER BGP WORD NEWLINE
+;
+
+
+s_bgp_neighbor_remote_as
+:
+  NEIGHBOR WORD REMOTE_AS WORD NEWLINE
+;
+
+s_bgp_address_family_ipv4
+:
+  ADDRESS_FAMILY IPV4 UNICAST NEWLINE
+;
+
+s_bgp_neighbor_activate
+:
+  NEIGHBOR WORD ACTIVATE NEWLINE
+;
+
+s_bgp_router_id
+:
+  BGP ROUTER_ID WORD NEWLINE
+;
+
 s_router_ospf
 :
   ROUTER OSPF WORD NEWLINE
@@ -99,5 +131,5 @@ s_speed
 
 null_statement
 :
-  (ADDRESS | AREA | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | WORD)+ NEWLINE
+  (ADDRESS | AREA | BGP | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | WORD)+ NEWLINE
 ;

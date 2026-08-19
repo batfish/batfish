@@ -22,6 +22,8 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -127,6 +129,44 @@ public final class AosCxGrammarTest {
         equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
   }
 
+
+
+  @Test
+  public void testBgpExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-bgp");
+
+    assertThat(c.getBgpProcess(), notNullValue());
+    assertThat(c.getBgpProcess().getLocalAs(), equalTo(65000L));
+    assertThat(c.getBgpProcess().getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(c.getBgpProcess().getNeighbors(), hasKey(Ip.parse("10.255.1.1")));
+    assertThat(
+        c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getRemoteAs(),
+        equalTo(65001L));
+    assertThat(
+        c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getIpv4UnicastActive(),
+        equalTo(true));
+  }
+
+
+  @Test
+  public void testBgpConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-bgp");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getDefaultVrf().getBgpProcess(), notNullValue());
+
+    BgpProcess process = c.getDefaultVrf().getBgpProcess();
+    assertThat(process.getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(process.getActiveNeighbors(), hasKey(Ip.parse("10.255.1.1")));
+
+    BgpActivePeerConfig peer =
+        process.getActiveNeighbors().get(Ip.parse("10.255.1.1"));
+
+    assertThat(peer.getLocalAs(), equalTo(65000L));
+    assertThat(peer.getRemoteAsns().contains(65001L), equalTo(true));
+    assertThat(peer.getIpv4UnicastAddressFamily(), notNullValue());
+  }
 
   @Test
   public void testOspfConversion() throws IOException {

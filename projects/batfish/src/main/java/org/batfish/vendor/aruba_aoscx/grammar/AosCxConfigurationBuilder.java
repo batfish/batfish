@@ -19,10 +19,16 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkConte
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_router_idContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_ipv4Context;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxBgpProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
@@ -103,6 +109,83 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _configuration
         .getStaticRoutes()
         .add(new AosCxStaticRoute(prefix, nextHopType, nextHop));
+  }
+
+  @Override
+  public void exitS_router_bgp(S_router_bgpContext ctx) {
+    long localAs = Long.parseLong(ctx.WORD().getText());
+    _currentBgpProcess = _configuration.getOrCreateBgpProcess(localAs);
+    _inBgpIpv4Unicast = false;
+    _currentOspfProcess = null;
+    _currentInterface = null;
+  }
+
+  private static long toAsNumber(String text) {
+    if (!text.contains(".")) {
+      return Long.parseLong(text);
+    }
+    String[] parts = text.split("\\.", -1);
+    if (parts.length != 2) {
+      throw new IllegalArgumentException("Invalid AS number: " + text);
+    }
+    long high = Long.parseLong(parts[0]);
+    long low = Long.parseLong(parts[1]);
+    return (high << 16) | low;
+  }
+
+  @Override
+  public void exitS_bgp_neighbor_remote_as(S_bgp_neighbor_remote_asContext ctx) {
+    if (_currentBgpProcess == null) {
+      warn(ctx, "Ignoring BGP neighbor outside BGP context");
+      return;
+    }
+
+    String neighborText = ctx.WORD(0).getText();
+    if (Ip.tryParse(neighborText).isEmpty()) {
+      warn(ctx, "BGP unnumbered/interface neighbors are not supported yet");
+      return;
+    }
+
+    Ip neighborIp = Ip.parse(neighborText);
+    _currentBgpProcess
+        .getOrCreateNeighbor(neighborIp)
+        .setRemoteAs(toAsNumber(ctx.WORD(1).getText()));
+  }
+
+  @Override
+  public void exitS_bgp_address_family_ipv4(S_bgp_address_family_ipv4Context ctx) {
+    if (_currentBgpProcess == null) {
+      warn(ctx, "Ignoring BGP address-family outside BGP context");
+      return;
+    }
+    _inBgpIpv4Unicast = true;
+  }
+
+  @Override
+  public void exitS_bgp_neighbor_activate(S_bgp_neighbor_activateContext ctx) {
+    if (_currentBgpProcess == null || !_inBgpIpv4Unicast) {
+      warn(ctx, "Ignoring BGP neighbor activate outside IPv4 unicast address-family");
+      return;
+    }
+
+    String neighborText = ctx.WORD().getText();
+    if (Ip.tryParse(neighborText).isEmpty()) {
+      warn(ctx, "BGP unnumbered/interface neighbors are not supported yet");
+      return;
+    }
+
+    _currentBgpProcess
+        .getOrCreateNeighbor(Ip.parse(neighborText))
+        .setIpv4UnicastActive(true);
+  }
+
+  @Override
+  public void exitS_bgp_router_id(S_bgp_router_idContext ctx) {
+    if (_currentBgpProcess == null) {
+      warn(ctx, "Ignoring BGP router-id outside BGP context");
+      return;
+    }
+    _currentBgpProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
   }
 
   @Override
@@ -218,4 +301,6 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private AosCxInterface _currentInterface;
   private AosCxOspfProcess _currentOspfProcess;
+  private AosCxBgpProcess _currentBgpProcess;
+  private boolean _inBgpIpv4Unicast;
 }
