@@ -241,7 +241,7 @@ s_bgp_router_id
 
 s_router_ospf
 :
-  ROUTER OSPF WORD NEWLINE
+  ROUTER OSPF WORD (VRF WORD)? NEWLINE
 ;
 
 s_router_id

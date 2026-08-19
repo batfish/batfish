@@ -411,8 +411,15 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_router_ospf(S_router_ospfContext ctx) {
-    int processId = Integer.parseInt(ctx.WORD().getText());
-    _currentOspfProcess = _configuration.getOrCreateOspfProcess(processId);
+    int processId = Integer.parseInt(ctx.WORD(0).getText());
+    String vrfName = ctx.VRF() == null ? null : ctx.WORD(1).getText();
+
+    if (vrfName != null) {
+      _configuration.addVrf(vrfName);
+    }
+
+    _currentOspfProcess =
+        _configuration.getOrCreateOspfProcess(processId, vrfName);
     _currentRouteMapEntry = null;
     _currentInterface = null;
     _currentIpAccessList = null;

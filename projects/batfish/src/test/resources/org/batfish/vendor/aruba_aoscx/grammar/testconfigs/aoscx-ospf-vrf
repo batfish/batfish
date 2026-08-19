@@ -1,0 +1,16 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+interface 1/1/2
+    no shutdown
+    speed 1000-full
+    ip address 192.0.2.1/30
+    ip ospf 1 area 0.0.0.0
+router ospf 1
+    router-id 192.0.2.1
+vrf BLUE
+interface vlan 200
+    vrf attach BLUE
+    ip address 10.20.0.1/24
+    ip ospf 1 area 0.0.0.0
+router ospf 1 vrf BLUE
+    router-id 10.20.0.1

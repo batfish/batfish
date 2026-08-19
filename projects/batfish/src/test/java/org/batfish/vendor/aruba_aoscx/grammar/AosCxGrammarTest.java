@@ -246,6 +246,66 @@ public final class AosCxGrammarTest {
         equalTo(Prefix.ZERO));
   }
 
+
+  @Test
+  public void testOspfVrfExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-ospf-vrf");
+
+    assertThat(c.getOspfProcesses(), hasKey(1));
+    assertThat(
+        c.getOspfProcesses().get(1).getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+
+    assertThat(c.getOspfProcesses("BLUE"), hasKey(1));
+    assertThat(
+        c.getOspfProcesses("BLUE").get(1).getRouterId(),
+        equalTo(Ip.parse("10.20.0.1")));
+
+    AosCxInterface blueInterface =
+        c.getInterfaces().get("vlan 200");
+    assertThat(blueInterface, notNullValue());
+    assertThat(blueInterface.getVrfName(), equalTo("BLUE"));
+    assertThat(blueInterface.getOspfProcessId(), equalTo(1));
+  }
+
+  @Test
+  public void testOspfVrfConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-ospf-vrf");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKey("1"));
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfProcesses()
+            .get("1")
+            .getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+
+    assertThat(c.getVrfs(), hasKey("BLUE"));
+    assertThat(
+        c.getVrfs().get("BLUE").getOspfProcesses(),
+        hasKey("1"));
+    assertThat(
+        c.getVrfs()
+            .get("BLUE")
+            .getOspfProcesses()
+            .get("1")
+            .getRouterId(),
+        equalTo(Ip.parse("10.20.0.1")));
+
+    org.batfish.datamodel.Interface blueInterface =
+        c.getAllInterfaces().get("vlan 200");
+    assertThat(blueInterface, notNullValue());
+    assertThat(blueInterface.getVrfName(), equalTo("BLUE"));
+    assertThat(blueInterface.getOspfSettings(), notNullValue());
+    assertThat(
+        blueInterface.getOspfSettings().getProcess(),
+        equalTo("1"));
+  }
+
   @Test
   public void testOspfExtraction() throws IOException {
     AosCxConfiguration c = parseVendorConfig("aoscx-ospf");
