@@ -644,10 +644,15 @@ public class AosCxConfiguration extends VendorConfiguration {
                   ? OspfNetworkType.POINT_TO_POINT
                   : OspfNetworkType.BROADCAST;
 
+          Integer ospfCost =
+              iface.getOspfCost() != null
+                  ? iface.getOspfCost()
+                  : getInterfaceType(iface) == InterfaceType.LOOPBACK ? 1 : null;
+
           viInterface.setOspfSettings(
               OspfInterfaceSettings.builder()
                   .setAreaName(toOspfAreaNumber(iface.getOspfArea()))
-                  .setCost(iface.getOspfCost())
+                  .setCost(ospfCost)
                   .setProcess(Integer.toString(iface.getOspfProcessId()))
                   .setEnabled(true)
                   .setPassive(false)

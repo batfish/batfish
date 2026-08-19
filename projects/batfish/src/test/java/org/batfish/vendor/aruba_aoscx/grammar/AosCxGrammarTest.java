@@ -94,6 +94,16 @@ public final class AosCxGrammarTest {
     assertThat(lag.getOspfSettings(), notNullValue());
     assertThat(lag.getOspfSettings().getCost(), equalTo(1));
 
+    org.batfish.datamodel.Interface loopback =
+        c.getAllInterfaces().get("loopback 0");
+    assertThat(loopback, notNullValue());
+    assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
+    assertThat(
+        loopback.getAllAddresses(),
+        contains(ConcreteInterfaceAddress.parse("129.237.1.41/32")));
+    assertThat(loopback.getOspfSettings(), notNullValue());
+    assertThat(loopback.getOspfSettings().getCost(), equalTo(1));
+
     assertThat(
         c.getAllInterfaces().get("1/9/3").getChannelGroup(),
         equalTo("lag 13"));
