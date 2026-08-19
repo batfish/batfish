@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.ConfigurationFormat.ARUBA_AOSCX;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
@@ -148,6 +149,12 @@ public class VendorConfigurationFormatDetectorTest {
     for (String text : new String[] {batfish, withRancid, withoutRancid, withoutTmsh}) {
       assertThat(text, identifyConfigurationFormat(text), equalTo(F5_BIGIP_STRUCTURED));
     }
+  }
+
+  @Test
+  public void testArubaAosCx() {
+    String aosCx = "!Version ArubaOS-CX FL.10.13.1040\nhostname ellx-dr-01\n";
+    assertThat(identifyConfigurationFormat(aosCx), equalTo(ARUBA_AOSCX));
   }
 
   @Test

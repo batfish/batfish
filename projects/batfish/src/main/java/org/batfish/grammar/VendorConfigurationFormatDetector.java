@@ -34,6 +34,7 @@ public final class VendorConfigurationFormatDetector {
               + " \\([A-Za-z]+-\\d{1,2}-\\d{4},\\d\\d:\\d\\d\\)");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
+  private static final Pattern ARUBA_AOSCX_PATTERN = Pattern.compile("(?m)^!Version ArubaOS-CX .*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
@@ -151,6 +152,13 @@ public final class VendorConfigurationFormatDetector {
       return ConfigurationFormat.ARISTA;
     }
 
+    return null;
+  }
+
+  private @Nullable ConfigurationFormat checkArubaAosCx() {
+    if (fileTextMatches(ARUBA_AOSCX_PATTERN)) {
+      return ConfigurationFormat.ARUBA_AOSCX;
+    }
     return null;
   }
 
@@ -536,6 +544,7 @@ public final class VendorConfigurationFormatDetector {
     format = (format == null) ? checkJuniper(false) : format;
     format = (format == null) ? checkAlcatelAos() : format;
     format = (format == null) ? checkMss() : format;
+    format = (format == null) ? checkArubaAosCx() : format;
     format = (format == null) ? checkArubaOS() : format;
     format = (format == null) ? checkCisco() : format;
     format = (format == null) ? checkIpTables() : format;

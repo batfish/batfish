@@ -71,6 +71,8 @@ import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.grammar.A10CombinedParser;
 import org.batfish.vendor.a10.grammar.A10ControlPlaneExtractor;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxCombinedParser;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxControlPlaneExtractor;
 import org.batfish.vendor.arista.grammar.AristaCombinedParser;
 import org.batfish.vendor.arista.grammar.AristaControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
@@ -203,6 +205,25 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   _fileResults.get(filename).getSilentSyntax());
           parseFile(filename, a10Parser, extractor);
           vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case ARUBA_AOSCX:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          AosCxCombinedParser aosCxParser = new AosCxCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new AosCxControlPlaneExtractor(
+                  fileText,
+                  aosCxParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, aosCxParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setVendor(format);
           vc.setFilename(filename);
           break;
         }

@@ -6,6 +6,7 @@ public enum ConfigurationFormat {
   ALCATEL_AOS("alcatel_aos"),
   ARISTA("arista"),
   ARUBAOS("aruba"),
+  ARUBA_AOSCX("aruba"),
   AWS("aws"),
   AZURE("azure"),
   BLADENETWORK("bladenetwork"),
