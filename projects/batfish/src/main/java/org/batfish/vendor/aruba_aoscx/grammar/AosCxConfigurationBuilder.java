@@ -17,6 +17,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_acl_entryContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_apply_access_list_ipContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
@@ -164,6 +165,15 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentInterface = _configuration.getOrCreateInterface(name);
     _currentRouteMapEntry = null;
     _currentIpAccessList = null;
+  }
+
+  @Override
+  public void exitS_lag_member(S_lag_memberContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring LAG member command outside interface context");
+      return;
+    }
+    _currentInterface.setLagName("lag " + ctx.WORD().getText());
   }
 
   @Override
@@ -528,6 +538,9 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     }
     if (ctx.VLAN() != null) {
       return "vlan " + id;
+    }
+    if (ctx.LAG() != null) {
+      return "lag " + id;
     }
     return id;
   }

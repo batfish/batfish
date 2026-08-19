@@ -209,6 +209,9 @@ public class AosCxConfiguration extends VendorConfiguration {
     if (name.startsWith("vlan ")) {
       return InterfaceType.VLAN;
     }
+    if (name.startsWith("lag ")) {
+      return InterfaceType.AGGREGATED;
+    }
     return InterfaceType.PHYSICAL;
   }
 
@@ -239,6 +242,7 @@ public class AosCxConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface.builder()
             .setAdminUp(getInterfaceAdminUpEffective(iface))
             .setBandwidth(iface.getBandwidth())
+            .setChannelGroup(iface.getLagName())
             .setType(getInterfaceType(iface))
             .setName(name)
             .setVrf(vrf)
@@ -272,6 +276,36 @@ public class AosCxConfiguration extends VendorConfiguration {
     newIface.build();
   }
 
+
+  private void finalizeLagMembership() {
+    _interfaces.values().stream()
+        .filter(iface -> getInterfaceType(iface) == InterfaceType.AGGREGATED)
+        .forEach(
+            aggregate -> {
+              Interface viAggregate =
+                  _c.getAllInterfaces().get(aggregate.getName());
+              if (viAggregate == null) {
+                return;
+              }
+
+              Set<String> members = new HashSet<>();
+              Set<Interface.Dependency> dependencies = new HashSet<>();
+
+              _interfaces.values().stream()
+                  .filter(member -> aggregate.getName().equals(member.getLagName()))
+                  .forEach(
+                      member -> {
+                        members.add(member.getName());
+                        dependencies.add(
+                            new Interface.Dependency(
+                                member.getName(),
+                                Interface.DependencyType.AGGREGATE));
+                      });
+
+              viAggregate.setChannelGroupMembers(members);
+              viAggregate.setDependencies(dependencies);
+            });
+  }
 
   private static IpSpace toAclIpSpace(String text) {
     if (text.equalsIgnoreCase("any")) {
@@ -669,6 +703,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     convertOspfProcesses();
     convertBgpProcesses();
     _interfaces.values().forEach(this::convertInterface);
+    finalizeLagMembership();
     applyOspfInterfaceSettings();
     _staticRoutes.forEach(this::convertStaticRoute);
 

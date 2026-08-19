@@ -17,6 +17,7 @@ statement
   | s_apply_access_list_ip
   | s_hostname
   | s_interface
+  | s_lag_member
   | s_vrf_attach
   | s_vrf
   | s_ip_address
@@ -117,7 +118,13 @@ interface_name
 :
   LOOPBACK WORD
   | VLAN WORD
+  | LAG WORD
   | WORD
+;
+
+s_lag_member
+:
+  LAG WORD NEWLINE
 ;
 
 s_vrf_attach

@@ -65,6 +65,43 @@ public final class AosCxGrammarTest {
     assertThat(vc.getHostname(), equalTo("ellx-dr-01"));
   }
 
+
+  @Test
+  public void testLagExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-lag");
+
+    assertThat(c.getInterfaces(), hasKey("lag 13"));
+    assertThat(c.getInterfaces().get("1/9/3").getLagName(), equalTo("lag 13"));
+    assertThat(c.getInterfaces().get("1/10/3").getLagName(), equalTo("lag 13"));
+  }
+
+  @Test
+  public void testLagConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-lag");
+    Configuration c = configs.get("ellx-dr-01");
+
+    org.batfish.datamodel.Interface lag =
+        c.getAllInterfaces().get("lag 13");
+
+    assertThat(lag, notNullValue());
+    assertThat(lag.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
+    assertThat(
+        lag.getAllAddresses(),
+        contains(ConcreteInterfaceAddress.parse("129.237.12.230/29")));
+    assertThat(
+        lag.getChannelGroupMembers(),
+        containsInAnyOrder("1/9/3", "1/10/3"));
+    assertThat(lag.getOspfSettings(), notNullValue());
+    assertThat(lag.getOspfSettings().getCost(), equalTo(1));
+
+    assertThat(
+        c.getAllInterfaces().get("1/9/3").getChannelGroup(),
+        equalTo("lag 13"));
+    assertThat(
+        c.getAllInterfaces().get("1/10/3").getChannelGroup(),
+        equalTo("lag 13"));
+  }
+
   @Test
   public void testInterfaceExtraction() {
     AosCxConfiguration vc = parseVendorConfig("aoscx-interfaces");

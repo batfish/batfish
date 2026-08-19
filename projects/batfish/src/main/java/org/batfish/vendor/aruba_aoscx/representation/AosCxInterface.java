@@ -77,6 +77,14 @@ public final class AosCxInterface implements Serializable {
     _address = address;
   }
 
+  public @Nullable String getLagName() {
+    return _lagName;
+  }
+
+  public void setLagName(String lagName) {
+    _lagName = lagName;
+  }
+
   public @Nullable String getVrfName() {
     return _vrfName;
   }
@@ -109,6 +117,7 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _ospfArea;
   private @Nullable Integer _ospfCost;
   private @Nullable OspfNetworkType _ospfNetworkType;
+  private @Nullable String _lagName;
   private @Nullable String _vrfName;
   private @Nullable String _incomingAcl;
   private @Nullable String _outgoingAcl;

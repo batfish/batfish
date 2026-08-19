@@ -22,6 +22,7 @@ IN: 'in';
 IP: 'ip';
 PREFIX_LIST: 'prefix-list';
 IPV4: 'ipv4';
+LAG: 'lag';
 LOOPBACK: 'loopback';
 LOCAL_PREFERENCE: 'local-preference';
 NO: 'no';
