@@ -73,6 +73,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final Map<String, AosCxRouteMap> _routeMaps = new HashMap<>();
   private final Set<String> _vrfs = new HashSet<>();
   private AosCxBgpProcess _bgpProcess;
+  private final Map<String, AosCxBgpProcess> _bgpProcessesByVrf =
+      new HashMap<>();
   private String _rawHostname;
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
   private ConfigurationFormat _vendor;
@@ -106,11 +108,29 @@ public class AosCxConfiguration extends VendorConfiguration {
     return _bgpProcess;
   }
 
-  public AosCxBgpProcess getOrCreateBgpProcess(long localAs) {
-    if (_bgpProcess == null) {
-      _bgpProcess = new AosCxBgpProcess(localAs);
+  public AosCxBgpProcess getBgpProcess(String vrfName) {
+    if (vrfName == null || vrfName.equals(DEFAULT_VRF_NAME)) {
+      return _bgpProcess;
     }
-    return _bgpProcess;
+    return _bgpProcessesByVrf.get(vrfName);
+  }
+
+  public AosCxBgpProcess getOrCreateBgpProcess(long localAs) {
+    return getOrCreateBgpProcess(localAs, null);
+  }
+
+  public AosCxBgpProcess getOrCreateBgpProcess(
+      long localAs, String vrfName) {
+    if (vrfName == null || vrfName.equals(DEFAULT_VRF_NAME)) {
+      if (_bgpProcess == null) {
+        _bgpProcess = new AosCxBgpProcess(localAs);
+      }
+      return _bgpProcess;
+    }
+
+    addVrf(vrfName);
+    return _bgpProcessesByVrf.computeIfAbsent(
+        vrfName, name -> new AosCxBgpProcess(localAs));
   }
 
   public Map<String, AosCxRouteMap> getRouteMaps() {
@@ -452,14 +472,15 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
-  private void convertBgpProcess(Vrf vrf) {
-    if (_bgpProcess == null || _bgpProcess.getRouterId() == null) {
+  private void convertBgpProcess(
+      Vrf vrf, AosCxBgpProcess process) {
+    if (process == null || process.getRouterId() == null) {
       return;
     }
 
     BgpProcess viProcess =
         BgpProcess.builder()
-            .setRouterId(_bgpProcess.getRouterId())
+            .setRouterId(process.getRouterId())
             .setEbgpAdminCost(20)
             .setIbgpAdminCost(200)
             .setLocalAdminCost(200)
@@ -469,7 +490,7 @@ public class AosCxConfiguration extends VendorConfiguration {
             .setVrf(vrf)
             .build();
 
-    _bgpProcess.getNeighbors().values().forEach(
+    process.getNeighbors().values().forEach(
         neighbor -> {
           if (neighbor.getRemoteAs() == null) {
             return;
@@ -478,7 +499,7 @@ public class AosCxConfiguration extends VendorConfiguration {
           BgpActivePeerConfig.Builder peer =
               BgpActivePeerConfig.builder()
                   .setBgpProcess(viProcess)
-                  .setLocalAs(_bgpProcess.getLocalAs())
+                  .setLocalAs(process.getLocalAs())
                   .setPeerAddress(neighbor.getIp())
                   .setRemoteAs(neighbor.getRemoteAs());
 
@@ -487,12 +508,14 @@ public class AosCxConfiguration extends VendorConfiguration {
                 Ipv4UnicastAddressFamily.builder();
 
             if (neighbor.getRouteMapIn() != null
-                && _c.getRoutingPolicies().containsKey(neighbor.getRouteMapIn())) {
+                && _c.getRoutingPolicies()
+                    .containsKey(neighbor.getRouteMapIn())) {
               addressFamily.setImportPolicy(neighbor.getRouteMapIn());
             }
 
             if (neighbor.getRouteMapOut() != null
-                && _c.getRoutingPolicies().containsKey(neighbor.getRouteMapOut())) {
+                && _c.getRoutingPolicies()
+                    .containsKey(neighbor.getRouteMapOut())) {
               addressFamily.setExportPolicy(neighbor.getRouteMapOut());
             }
 
@@ -500,6 +523,18 @@ public class AosCxConfiguration extends VendorConfiguration {
           }
 
           peer.build();
+        });
+  }
+
+  private void convertBgpProcesses() {
+    convertBgpProcess(_c.getDefaultVrf(), _bgpProcess);
+
+    _bgpProcessesByVrf.forEach(
+        (vrfName, process) -> {
+          Vrf vrf = _c.getVrfs().get(vrfName);
+          if (vrf != null) {
+            convertBgpProcess(vrf, process);
+          }
         });
   }
 
@@ -631,7 +666,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     convertPrefixLists();
     convertRouteMaps();
     convertOspfProcesses();
-    convertBgpProcess(defaultVrf);
+    convertBgpProcesses();
     _interfaces.values().forEach(this::convertInterface);
     applyOspfInterfaceSettings();
     _staticRoutes.forEach(this::convertStaticRoute);

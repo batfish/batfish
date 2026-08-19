@@ -1,0 +1,12 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+router bgp 65000
+    bgp router-id 192.0.2.1
+    neighbor 192.0.2.2 remote-as 65001
+    address-family ipv4 unicast
+        neighbor 192.0.2.2 activate
+    vrf BLUE
+        bgp router-id 10.20.0.1
+        neighbor 10.20.0.2 remote-as 65100
+        address-family ipv4 unicast
+            neighbor 10.20.0.2 activate

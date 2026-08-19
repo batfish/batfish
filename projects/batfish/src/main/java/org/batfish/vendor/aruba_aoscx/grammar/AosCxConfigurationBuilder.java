@@ -179,11 +179,34 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_vrf(S_vrfContext ctx) {
-    _configuration.addVrf(ctx.WORD().getText());
+    String vrfName = ctx.WORD().getText();
+
+    /*
+     * AOS-CX uses "vrf NAME" both as a top-level VRF command and
+     * as a nested router-bgp command. show running-config indents
+     * the nested form, so use the token column to distinguish them
+     * while this parser still uses a flat statement stream.
+     */
+    if (_currentBgpLocalAs != null
+        && ctx.getStart().getCharPositionInLine() > 0) {
+      _configuration.addVrf(vrfName);
+      _currentBgpProcess =
+          _configuration.getOrCreateBgpProcess(
+              _currentBgpLocalAs, vrfName);
+      _currentInterface = null;
+      _currentRouteMapEntry = null;
+      _currentOspfProcess = null;
+      _currentIpAccessList = null;
+      _inBgpIpv4Unicast = false;
+      return;
+    }
+
+    _configuration.addVrf(vrfName);
     _currentInterface = null;
     _currentRouteMapEntry = null;
     _currentOspfProcess = null;
     _currentBgpProcess = null;
+    _currentBgpLocalAs = null;
     _currentIpAccessList = null;
     _inBgpIpv4Unicast = false;
   }
@@ -307,8 +330,10 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_router_bgp(S_router_bgpContext ctx) {
-    long localAs = Long.parseLong(ctx.WORD().getText());
-    _currentBgpProcess = _configuration.getOrCreateBgpProcess(localAs);
+    long localAs = toAsNumber(ctx.WORD().getText());
+    _currentBgpLocalAs = localAs;
+    _currentBgpProcess =
+        _configuration.getOrCreateBgpProcess(localAs);
     _currentRouteMapEntry = null;
     _inBgpIpv4Unicast = false;
     _currentOspfProcess = null;
@@ -532,6 +557,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private AosCxInterface _currentInterface;
   private AosCxOspfProcess _currentOspfProcess;
   private AosCxBgpProcess _currentBgpProcess;
+  private Long _currentBgpLocalAs;
   private AosCxRouteMapEntry _currentRouteMapEntry;
   private AosCxIpAccessList _currentIpAccessList;
   private boolean _inBgpIpv4Unicast;

@@ -325,6 +325,86 @@ public final class AosCxGrammarTest {
 
 
 
+
+  @Test
+  public void testBgpVrfExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-bgp-vrf");
+
+    assertThat(c.getBgpProcess(), notNullValue());
+    assertThat(c.getBgpProcess().getLocalAs(), equalTo(65000L));
+    assertThat(
+        c.getBgpProcess().getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        c.getBgpProcess().getNeighbors(),
+        hasKey(Ip.parse("192.0.2.2")));
+
+    assertThat(c.getBgpProcess("BLUE"), notNullValue());
+    assertThat(c.getBgpProcess("BLUE").getLocalAs(), equalTo(65000L));
+    assertThat(
+        c.getBgpProcess("BLUE").getRouterId(),
+        equalTo(Ip.parse("10.20.0.1")));
+    assertThat(
+        c.getBgpProcess("BLUE").getNeighbors(),
+        hasKey(Ip.parse("10.20.0.2")));
+    assertThat(
+        c.getBgpProcess("BLUE")
+            .getNeighbors()
+            .get(Ip.parse("10.20.0.2"))
+            .getRemoteAs(),
+        equalTo(65100L));
+    assertThat(
+        c.getBgpProcess("BLUE")
+            .getNeighbors()
+            .get(Ip.parse("10.20.0.2"))
+            .getIpv4UnicastActive(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testBgpVrfConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-bgp-vrf");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+
+    BgpProcess defaultProcess =
+        c.getDefaultVrf().getBgpProcess();
+    assertThat(defaultProcess, notNullValue());
+    assertThat(
+        defaultProcess.getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        defaultProcess.getActiveNeighbors(),
+        hasKey(Ip.parse("192.0.2.2")));
+
+    assertThat(c.getVrfs(), hasKey("BLUE"));
+
+    BgpProcess blueProcess =
+        c.getVrfs().get("BLUE").getBgpProcess();
+    assertThat(blueProcess, notNullValue());
+    assertThat(
+        blueProcess.getRouterId(),
+        equalTo(Ip.parse("10.20.0.1")));
+    assertThat(
+        blueProcess.getActiveNeighbors(),
+        hasKey(Ip.parse("10.20.0.2")));
+
+    BgpActivePeerConfig bluePeer =
+        blueProcess
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.0.2"));
+
+    assertThat(bluePeer.getLocalAs(), equalTo(65000L));
+    assertThat(
+        bluePeer.getRemoteAsns().contains(65100L),
+        equalTo(true));
+    assertThat(
+        bluePeer.getIpv4UnicastAddressFamily(),
+        notNullValue());
+  }
+
   @Test
   public void testBgpExtraction() throws IOException {
     AosCxConfiguration c = parseVendorConfig("aoscx-bgp");
