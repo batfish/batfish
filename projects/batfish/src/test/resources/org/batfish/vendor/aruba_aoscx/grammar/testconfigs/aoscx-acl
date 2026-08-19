@@ -1,0 +1,16 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+access-list ip EDGE-IN
+    10 permit tcp 10.0.0.0/8 192.0.2.10
+    20 deny any any any
+access-list ip EDGE-OUT
+    permit icmp any 198.51.100.0/24
+    permit ip any any
+interface 1/1/2
+    no shutdown
+    ip address 10.255.1.2/30
+    apply access-list ip EDGE-IN in
+    apply access-list ip EDGE-OUT out
+interface vlan 200
+    ip address 10.20.0.1/24
+    apply access-list ip EDGE-IN routed-in

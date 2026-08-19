@@ -122,6 +122,70 @@ public final class AosCxGrammarTest {
 
 
 
+
+  @Test
+  public void testAclExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-acl");
+
+    assertThat(c.getIpAccessLists(), hasKey("EDGE-IN"));
+    assertThat(c.getIpAccessLists(), hasKey("EDGE-OUT"));
+
+    var edgeIn = c.getIpAccessLists().get("EDGE-IN");
+    assertThat(edgeIn.getEntries().size(), equalTo(2));
+    assertThat(edgeIn.getEntries().get(10L).getAction(), equalTo(LineAction.PERMIT));
+    assertThat(edgeIn.getEntries().get(10L).getProtocol(), equalTo("tcp"));
+    assertThat(edgeIn.getEntries().get(10L).getSource(), equalTo("10.0.0.0/8"));
+    assertThat(edgeIn.getEntries().get(10L).getDestination(), equalTo("192.0.2.10"));
+    assertThat(edgeIn.getEntries().get(20L).getAction(), equalTo(LineAction.DENY));
+
+    var edgeOut = c.getIpAccessLists().get("EDGE-OUT");
+    assertThat(edgeOut.getEntries(), hasKey(10L));
+    assertThat(edgeOut.getEntries(), hasKey(20L));
+
+    AosCxInterface physical = c.getInterfaces().get("1/1/2");
+    assertThat(physical.getIncomingAcl(), equalTo("EDGE-IN"));
+    assertThat(physical.getOutgoingAcl(), equalTo("EDGE-OUT"));
+
+    AosCxInterface svi = c.getInterfaces().get("vlan 200");
+    assertThat(svi.getIncomingAcl(), equalTo("EDGE-IN"));
+  }
+
+  @Test
+  public void testAclConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-acl");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getIpAccessLists(), hasKey("EDGE-IN"));
+    assertThat(c.getIpAccessLists(), hasKey("EDGE-OUT"));
+
+    org.batfish.datamodel.IpAccessList edgeIn =
+        c.getIpAccessLists().get("EDGE-IN");
+    assertThat(edgeIn.getLines().size(), equalTo(2));
+
+    org.batfish.datamodel.ExprAclLine first =
+        (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(0);
+    org.batfish.datamodel.ExprAclLine second =
+        (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(1);
+
+    assertThat(first.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(second.getAction(), equalTo(LineAction.DENY));
+
+    org.batfish.datamodel.Interface physical =
+        c.getAllInterfaces().get("1/1/2");
+    assertThat(physical, notNullValue());
+    assertThat(physical.getIncomingFilter(), notNullValue());
+    assertThat(physical.getIncomingFilter().getName(), equalTo("EDGE-IN"));
+    assertThat(physical.getOutgoingFilter(), notNullValue());
+    assertThat(physical.getOutgoingFilter().getName(), equalTo("EDGE-OUT"));
+
+    org.batfish.datamodel.Interface svi =
+        c.getAllInterfaces().get("vlan 200");
+    assertThat(svi, notNullValue());
+    assertThat(svi.getIncomingFilter(), notNullValue());
+    assertThat(svi.getIncomingFilter().getName(), equalTo("EDGE-IN"));
+  }
+
   @Test
   public void testVrfExtraction() throws IOException {
     AosCxConfiguration c = parseVendorConfig("aoscx-vrf");

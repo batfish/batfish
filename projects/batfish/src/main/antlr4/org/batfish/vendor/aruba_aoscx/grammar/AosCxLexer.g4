@@ -6,6 +6,9 @@ options {
 
 ADDRESS: 'address';
 ADDRESS_FAMILY: 'address-family';
+ACCESS_LIST: 'access-list';
+APPLY: 'apply';
+ANY: 'any';
 BGP: 'bgp';
 ACTIVATE: 'activate';
 AREA: 'area';
@@ -31,6 +34,8 @@ SET: 'set';
 REMOTE_AS: 'remote-as';
 ROUTE: 'route';
 ROUTE_MAP: 'route-map';
+ROUTED_IN: 'routed-in';
+ROUTED_OUT: 'routed-out';
 ROUTER: 'router';
 ROUTER_ID: 'router-id';
 OSPF: 'ospf';

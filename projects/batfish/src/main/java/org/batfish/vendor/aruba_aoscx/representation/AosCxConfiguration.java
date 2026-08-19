@@ -17,11 +17,16 @@ import java.util.Set;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -48,6 +53,9 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for Aruba AOS-CX. */
@@ -56,6 +64,7 @@ public class AosCxConfiguration extends VendorConfiguration {
   private transient Configuration _c;
   private String _hostname;
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
+  private final Map<String, AosCxIpAccessList> _ipAccessLists = new HashMap<>();
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
   private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
   private final Map<String, AosCxRouteMap> _routeMaps = new HashMap<>();
@@ -80,6 +89,14 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public AosCxInterface getOrCreateInterface(String name) {
     return _interfaces.computeIfAbsent(name, AosCxInterface::new);
+  }
+
+  public Map<String, AosCxIpAccessList> getIpAccessLists() {
+    return _ipAccessLists;
+  }
+
+  public AosCxIpAccessList getOrCreateIpAccessList(String name) {
+    return _ipAccessLists.computeIfAbsent(name, AosCxIpAccessList::new);
   }
 
   public AosCxBgpProcess getBgpProcess() {
@@ -190,7 +207,84 @@ public class AosCxConfiguration extends VendorConfiguration {
       newIface.setAddress(iface.getAddress());
     }
 
+    if (iface.getIncomingAcl() != null) {
+      IpAccessList acl = _c.getIpAccessLists().get(iface.getIncomingAcl());
+      if (acl != null) {
+        newIface.setIncomingFilter(acl);
+      }
+    }
+
+    if (iface.getOutgoingAcl() != null) {
+      IpAccessList acl = _c.getIpAccessLists().get(iface.getOutgoingAcl());
+      if (acl != null) {
+        newIface.setOutgoingFilter(acl);
+      }
+    }
+
     newIface.build();
+  }
+
+
+  private static IpSpace toAclIpSpace(String text) {
+    if (text.equalsIgnoreCase("any")) {
+      return UniverseIpSpace.INSTANCE;
+    }
+
+    if (text.contains("/")) {
+      String[] parts = text.split("/", 2);
+      if (parts[1].contains(".")) {
+        return Prefix.create(Ip.parse(parts[0]), Ip.parse(parts[1])).toIpSpace();
+      }
+      return Prefix.parse(text).toIpSpace();
+    }
+
+    return Ip.parse(text).toIpSpace();
+  }
+
+  private static AclLineMatchExpr toAclProtocolMatch(String protocol) {
+    if (protocol.equalsIgnoreCase("any") || protocol.equalsIgnoreCase("ip")) {
+      return AclLineMatchExprs.TRUE;
+    }
+
+    try {
+      IpProtocol ipProtocol =
+          protocol.equalsIgnoreCase("ah")
+              ? IpProtocol.AHP
+              : IpProtocol.fromString(protocol);
+      return AclLineMatchExprs.matchIpProtocol(ipProtocol);
+    } catch (RuntimeException e) {
+      // Never turn an unsupported protocol into a match-all ACE.
+      return AclLineMatchExprs.FALSE;
+    }
+  }
+
+  private void convertIpAccessLists() {
+    _ipAccessLists.values().forEach(
+        acl -> {
+          List<AclLine> lines = new ArrayList<>();
+
+          acl.getEntries().values().forEach(
+              entry -> {
+                AclLineMatchExpr matchCondition =
+                    AclLineMatchExprs.and(
+                        toAclProtocolMatch(entry.getProtocol()),
+                        AclLineMatchExprs.matchSrc(toAclIpSpace(entry.getSource())),
+                        AclLineMatchExprs.matchDst(toAclIpSpace(entry.getDestination())));
+
+                lines.add(
+                    ExprAclLine.builder()
+                        .setName(Long.toString(entry.getSequence()))
+                        .setAction(entry.getAction())
+                        .setMatchCondition(matchCondition)
+                        .build());
+              });
+
+          IpAccessList.builder()
+              .setName(acl.getName())
+              .setOwner(_c)
+              .setLines(lines)
+              .build();
+        });
   }
 
   private static long toOspfAreaNumber(String area) {
@@ -453,6 +547,7 @@ public class AosCxConfiguration extends VendorConfiguration {
 
     Vrf defaultVrf = _c.getDefaultVrf();
 
+    convertIpAccessLists();
     convertPrefixLists();
     convertRouteMaps();
     convertOspfProcesses(defaultVrf);

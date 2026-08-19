@@ -77,6 +77,22 @@ public final class AosCxInterface implements Serializable {
     _vrfName = vrfName;
   }
 
+  public @Nullable String getIncomingAcl() {
+    return _incomingAcl;
+  }
+
+  public void setIncomingAcl(String incomingAcl) {
+    _incomingAcl = incomingAcl;
+  }
+
+  public @Nullable String getOutgoingAcl() {
+    return _outgoingAcl;
+  }
+
+  public void setOutgoingAcl(String outgoingAcl) {
+    _outgoingAcl = outgoingAcl;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Boolean _enabled;
   private @Nullable ConcreteInterfaceAddress _address;
@@ -85,4 +101,6 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _ospfArea;
   private @Nullable OspfNetworkType _ospfNetworkType;
   private @Nullable String _vrfName;
+  private @Nullable String _incomingAcl;
+  private @Nullable String _outgoingAcl;
 }

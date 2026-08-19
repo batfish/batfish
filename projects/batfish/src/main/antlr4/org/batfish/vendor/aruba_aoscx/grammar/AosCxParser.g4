@@ -12,7 +12,10 @@ aoscx_configuration
 
 statement
 :
-  s_hostname
+  s_access_list_ip
+  | s_acl_entry
+  | s_apply_access_list_ip
+  | s_hostname
   | s_interface
   | s_vrf_attach
   | s_vrf
@@ -36,6 +39,49 @@ statement
   | s_shutdown
   | s_speed
   | null_statement
+;
+
+s_access_list_ip
+:
+  ACCESS_LIST IP WORD NEWLINE
+;
+
+s_acl_entry
+:
+  WORD? acl_action acl_protocol acl_address acl_address NEWLINE
+;
+
+acl_action
+:
+  PERMIT
+  | DENY
+;
+
+acl_protocol
+:
+  ANY
+  | IP
+  | OSPF
+  | WORD
+;
+
+acl_address
+:
+  ANY
+  | WORD
+;
+
+s_apply_access_list_ip
+:
+  APPLY ACCESS_LIST IP WORD acl_direction NEWLINE
+;
+
+acl_direction
+:
+  IN
+  | OUT
+  | ROUTED_IN
+  | ROUTED_OUT
 ;
 
 s_hostname
@@ -202,5 +248,5 @@ s_speed
 
 null_statement
 :
-  (ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ACCESS_LIST | APPLY | ANY | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;
