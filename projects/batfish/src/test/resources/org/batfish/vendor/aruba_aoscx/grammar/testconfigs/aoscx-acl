@@ -2,6 +2,7 @@
 hostname ELLX-DR-01
 access-list ip EDGE-IN
     10 permit tcp 10.0.0.0/8 192.0.2.10
+    15 permit tcp 10.0.0.0/8 gt 1023 192.0.2.10 eq 443
     20 deny any any any
 access-list ip EDGE-OUT
     permit icmp any 198.51.100.0/24

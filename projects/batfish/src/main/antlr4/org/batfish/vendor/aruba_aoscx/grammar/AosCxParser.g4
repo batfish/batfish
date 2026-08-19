@@ -48,7 +48,25 @@ s_access_list_ip
 
 s_acl_entry
 :
-  WORD? acl_action acl_protocol acl_address acl_address NEWLINE
+  WORD? acl_action acl_protocol acl_address acl_src_port_spec? acl_address acl_dst_port_spec? NEWLINE
+;
+
+acl_src_port_spec
+:
+  acl_port_spec
+;
+
+acl_dst_port_spec
+:
+  acl_port_spec
+;
+
+acl_port_spec
+:
+  EQ WORD
+  | GT WORD
+  | LT WORD
+  | RANGE WORD WORD
 ;
 
 acl_action
@@ -248,5 +266,5 @@ s_speed
 
 null_statement
 :
-  (ACCESS_LIST | APPLY | ANY | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ACCESS_LIST | APPLY | ANY | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

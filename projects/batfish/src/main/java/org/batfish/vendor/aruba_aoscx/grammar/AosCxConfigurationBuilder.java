@@ -43,6 +43,8 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxBgpProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessListEntry;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec.Operator;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
@@ -93,13 +95,44 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     LineAction action =
         ctx.acl_action().PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
 
+    AosCxPortSpec sourcePort =
+        ctx.acl_src_port_spec() == null
+            ? null
+            : toPortSpec(ctx.acl_src_port_spec().acl_port_spec());
+
+    AosCxPortSpec destinationPort =
+        ctx.acl_dst_port_spec() == null
+            ? null
+            : toPortSpec(ctx.acl_dst_port_spec().acl_port_spec());
+
     _currentIpAccessList.addEntry(
         new AosCxIpAccessListEntry(
             sequence,
             action,
             ctx.acl_protocol().getText(),
             ctx.acl_address(0).getText(),
-            ctx.acl_address(1).getText()));
+            sourcePort,
+            ctx.acl_address(1).getText(),
+            destinationPort));
+  }
+
+  private static AosCxPortSpec toPortSpec(AosCxParser.Acl_port_specContext ctx) {
+    Operator operator;
+    if (ctx.EQ() != null) {
+      operator = Operator.EQ;
+    } else if (ctx.GT() != null) {
+      operator = Operator.GT;
+    } else if (ctx.LT() != null) {
+      operator = Operator.LT;
+    } else {
+      operator = Operator.RANGE;
+    }
+
+    int first = Integer.parseInt(ctx.WORD(0).getText());
+    Integer second =
+        ctx.RANGE() == null ? null : Integer.parseInt(ctx.WORD(1).getText());
+
+    return new AosCxPortSpec(operator, first, second);
   }
 
   @Override

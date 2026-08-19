@@ -2,6 +2,7 @@ package org.batfish.vendor.aruba_aoscx.representation;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
 
 /** One IPv4 ACE in an Aruba AOS-CX access list. */
@@ -13,11 +14,24 @@ public final class AosCxIpAccessListEntry implements Serializable {
       String protocol,
       String source,
       String destination) {
+    this(sequence, action, protocol, source, null, destination, null);
+  }
+
+  public AosCxIpAccessListEntry(
+      long sequence,
+      LineAction action,
+      String protocol,
+      String source,
+      @Nullable AosCxPortSpec sourcePort,
+      String destination,
+      @Nullable AosCxPortSpec destinationPort) {
     _sequence = sequence;
     _action = action;
     _protocol = protocol;
     _source = source;
+    _sourcePort = sourcePort;
     _destination = destination;
+    _destinationPort = destinationPort;
   }
 
   public long getSequence() {
@@ -40,9 +54,19 @@ public final class AosCxIpAccessListEntry implements Serializable {
     return _destination;
   }
 
+  public @Nullable AosCxPortSpec getSourcePort() {
+    return _sourcePort;
+  }
+
+  public @Nullable AosCxPortSpec getDestinationPort() {
+    return _destinationPort;
+  }
+
   private final long _sequence;
   private final @Nonnull LineAction _action;
   private final @Nonnull String _protocol;
   private final @Nonnull String _source;
+  private final @Nullable AosCxPortSpec _sourcePort;
   private final @Nonnull String _destination;
+  private final @Nullable AosCxPortSpec _destinationPort;
 }

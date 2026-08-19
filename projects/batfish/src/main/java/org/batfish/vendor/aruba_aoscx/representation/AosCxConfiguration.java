@@ -23,6 +23,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -241,6 +242,28 @@ public class AosCxConfiguration extends VendorConfiguration {
     return Ip.parse(text).toIpSpace();
   }
 
+  private static IntegerSpace toPortSpace(AosCxPortSpec portSpec) {
+    int first = portSpec.getFirst();
+
+    return switch (portSpec.getOperator()) {
+      case EQ -> IntegerSpace.of(first);
+      case GT ->
+          first >= 65535
+              ? IntegerSpace.EMPTY
+              : IntegerSpace.of(new SubRange(first + 1, 65535));
+      case LT ->
+          first <= 0
+              ? IntegerSpace.EMPTY
+              : IntegerSpace.of(new SubRange(0, first - 1));
+      case RANGE -> {
+        Integer second = portSpec.getSecond();
+        yield second == null
+            ? IntegerSpace.EMPTY
+            : IntegerSpace.of(new SubRange(first, second));
+      }
+    };
+  }
+
   private static AclLineMatchExpr toAclProtocolMatch(String protocol) {
     if (protocol.equalsIgnoreCase("any") || protocol.equalsIgnoreCase("ip")) {
       return AclLineMatchExprs.TRUE;
@@ -265,11 +288,27 @@ public class AosCxConfiguration extends VendorConfiguration {
 
           acl.getEntries().values().forEach(
               entry -> {
+                List<AclLineMatchExpr> conditions = new ArrayList<>();
+                conditions.add(toAclProtocolMatch(entry.getProtocol()));
+                conditions.add(
+                    AclLineMatchExprs.matchSrc(toAclIpSpace(entry.getSource())));
+                conditions.add(
+                    AclLineMatchExprs.matchDst(toAclIpSpace(entry.getDestination())));
+
+                if (entry.getSourcePort() != null) {
+                  conditions.add(
+                      AclLineMatchExprs.matchSrcPort(
+                          toPortSpace(entry.getSourcePort())));
+                }
+
+                if (entry.getDestinationPort() != null) {
+                  conditions.add(
+                      AclLineMatchExprs.matchDstPort(
+                          toPortSpace(entry.getDestinationPort())));
+                }
+
                 AclLineMatchExpr matchCondition =
-                    AclLineMatchExprs.and(
-                        toAclProtocolMatch(entry.getProtocol()),
-                        AclLineMatchExprs.matchSrc(toAclIpSpace(entry.getSource())),
-                        AclLineMatchExprs.matchDst(toAclIpSpace(entry.getDestination())));
+                    AclLineMatchExprs.and(conditions);
 
                 lines.add(
                     ExprAclLine.builder()
