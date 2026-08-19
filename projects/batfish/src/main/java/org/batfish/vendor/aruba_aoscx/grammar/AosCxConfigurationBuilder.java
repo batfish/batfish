@@ -33,6 +33,8 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_m
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vrfContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vrf_attachContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxBgpProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
@@ -70,6 +72,28 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     String name = toInterfaceName(ctx.interface_name());
     _currentInterface = _configuration.getOrCreateInterface(name);
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitS_vrf_attach(S_vrf_attachContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring vrf attach outside interface context");
+      return;
+    }
+
+    String vrfName = ctx.WORD().getText();
+    _configuration.addVrf(vrfName);
+    _currentInterface.setVrfName(vrfName);
+  }
+
+  @Override
+  public void exitS_vrf(S_vrfContext ctx) {
+    _configuration.addVrf(ctx.WORD().getText());
+    _currentInterface = null;
+    _currentRouteMapEntry = null;
+    _currentOspfProcess = null;
+    _currentBgpProcess = null;
+    _inBgpIpv4Unicast = false;
   }
 
   @Override
@@ -130,8 +154,13 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_ip_route(S_ip_routeContext ctx) {
-    Prefix prefix = Prefix.parse(ctx.WORD().getText());
+    Prefix prefix = Prefix.parse(ctx.WORD(0).getText());
     String nextHop = ctx.static_route_next_hop().getText();
+    String vrfName = ctx.VRF() != null ? ctx.WORD(1).getText() : null;
+
+    if (vrfName != null) {
+      _configuration.addVrf(vrfName);
+    }
 
     NextHopType nextHopType;
     if (ctx.static_route_next_hop().NULLROUTE() != null) {
@@ -146,7 +175,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _configuration
         .getStaticRoutes()
-        .add(new AosCxStaticRoute(prefix, nextHopType, nextHop));
+        .add(new AosCxStaticRoute(prefix, nextHopType, nextHop, vrfName));
   }
 
   @Override

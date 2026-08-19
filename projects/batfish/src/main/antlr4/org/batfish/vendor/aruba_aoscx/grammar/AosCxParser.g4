@@ -14,6 +14,8 @@ statement
 :
   s_hostname
   | s_interface
+  | s_vrf_attach
+  | s_vrf
   | s_ip_address
   | s_ip_ospf_area
   | s_ip_ospf_network
@@ -51,6 +53,16 @@ interface_name
   LOOPBACK WORD
   | VLAN WORD
   | WORD
+;
+
+s_vrf_attach
+:
+  VRF ATTACH WORD NEWLINE
+;
+
+s_vrf
+:
+  VRF WORD NEWLINE
 ;
 
 s_ip_address
@@ -98,7 +110,7 @@ prefix_list_le
 
 s_ip_route
 :
-  IP ROUTE WORD static_route_next_hop NEWLINE
+  IP ROUTE WORD static_route_next_hop (VRF WORD)? NEWLINE
 ;
 
 static_route_next_hop
@@ -190,5 +202,5 @@ s_speed
 
 null_statement
 :
-  (ADDRESS | AREA | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REJECT | ROUTE | ROUTER | ROUTER_ID | SHUTDOWN | SPEED | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

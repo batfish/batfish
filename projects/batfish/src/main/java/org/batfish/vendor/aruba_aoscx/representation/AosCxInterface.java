@@ -69,6 +69,14 @@ public final class AosCxInterface implements Serializable {
     _address = address;
   }
 
+  public @Nullable String getVrfName() {
+    return _vrfName;
+  }
+
+  public void setVrfName(String vrfName) {
+    _vrfName = vrfName;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Boolean _enabled;
   private @Nullable ConcreteInterfaceAddress _address;
@@ -76,4 +84,5 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Integer _ospfProcessId;
   private @Nullable String _ospfArea;
   private @Nullable OspfNetworkType _ospfNetworkType;
+  private @Nullable String _vrfName;
 }

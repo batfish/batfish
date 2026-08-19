@@ -9,6 +9,7 @@ ADDRESS_FAMILY: 'address-family';
 BGP: 'bgp';
 ACTIVATE: 'activate';
 AREA: 'area';
+ATTACH: 'attach';
 HOSTNAME: 'hostname';
 GE: 'ge';
 LE: 'le';
@@ -41,6 +42,7 @@ SHUTDOWN: 'shutdown';
 UNICAST: 'unicast';
 SPEED: 'speed';
 VLAN: 'vlan';
+VRF: 'vrf';
 
 NEWLINE: '\r'? '\n';
 

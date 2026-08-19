@@ -121,6 +121,49 @@ public final class AosCxGrammarTest {
   }
 
 
+
+  @Test
+  public void testVrfExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-vrf");
+
+    assertThat(c.getVrfs(), hasItem("BLUE"));
+
+    AosCxInterface iface = c.getInterfaces().get("vlan 200");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getVrfName(), equalTo("BLUE"));
+    assertThat(
+        iface.getAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.20.0.1/24")));
+
+    assertThat(c.getStaticRoutes().size(), equalTo(2));
+    assertThat(c.getStaticRoutes().get(0).getVrfName(), equalTo("BLUE"));
+  }
+
+  @Test
+  public void testVrfConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-vrf");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getVrfs(), hasKey("default"));
+    assertThat(c.getVrfs(), hasKey("BLUE"));
+
+    org.batfish.datamodel.Interface iface =
+        c.getAllInterfaces().get("vlan 200");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getVrfName(), equalTo("BLUE"));
+
+    assertThat(c.getVrfs().get("BLUE").getStaticRoutes().size(), equalTo(1));
+    assertThat(
+        c.getVrfs().get("BLUE").getStaticRoutes().first().getNetwork(),
+        equalTo(Prefix.parse("10.30.0.0/24")));
+
+    assertThat(c.getDefaultVrf().getStaticRoutes().size(), equalTo(1));
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes().first().getNetwork(),
+        equalTo(Prefix.ZERO));
+  }
+
   @Test
   public void testOspfExtraction() throws IOException {
     AosCxConfiguration c = parseVendorConfig("aoscx-ospf");

@@ -9,9 +9,11 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -57,6 +59,7 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
   private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
   private final Map<String, AosCxRouteMap> _routeMaps = new HashMap<>();
+  private final Set<String> _vrfs = new HashSet<>();
   private AosCxBgpProcess _bgpProcess;
   private String _rawHostname;
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
@@ -92,6 +95,14 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public Map<String, AosCxRouteMap> getRouteMaps() {
     return _routeMaps;
+  }
+
+  public Set<String> getVrfs() {
+    return _vrfs;
+  }
+
+  public void addVrf(String name) {
+    _vrfs.add(name);
   }
 
   public AosCxRouteMap getOrCreateRouteMap(String name) {
@@ -150,8 +161,14 @@ public class AosCxConfiguration extends VendorConfiguration {
     return getInterfaceType(iface) != InterfaceType.PHYSICAL;
   }
 
-  private void convertInterface(AosCxInterface iface, Vrf vrf) {
+  private void convertInterface(AosCxInterface iface) {
     String name = iface.getName();
+    String vrfName =
+        iface.getVrfName() == null ? DEFAULT_VRF_NAME : iface.getVrfName();
+    Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      vrf = _c.getDefaultVrf();
+    }
 
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
@@ -164,6 +181,10 @@ public class AosCxConfiguration extends VendorConfiguration {
 
     newIface.setHumanName(name);
     newIface.setDeclaredNames(ImmutableList.of(name));
+
+    if (getInterfaceType(iface) == InterfaceType.VLAN) {
+      newIface.setVlan(Integer.parseInt(name.substring("vlan ".length())));
+    }
 
     if (iface.getAddress() != null) {
       newIface.setAddress(iface.getAddress());
@@ -393,7 +414,14 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
-  private void convertStaticRoute(AosCxStaticRoute route, Vrf vrf) {
+  private void convertStaticRoute(AosCxStaticRoute route) {
+    String vrfName =
+        route.getVrfName() == null ? DEFAULT_VRF_NAME : route.getVrfName();
+    Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      vrf = _c.getDefaultVrf();
+    }
+
     NextHop nextHop =
         switch (route.getNextHopType()) {
           case IP -> NextHopIp.of(Ip.parse(route.getNextHop()));
@@ -418,16 +446,20 @@ public class AosCxConfiguration extends VendorConfiguration {
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
 
-    Vrf defaultVrf = new Vrf(DEFAULT_VRF_NAME);
-    _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, defaultVrf));
+    Map<String, Vrf> viVrfs = new HashMap<>();
+    viVrfs.put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
+    _vrfs.forEach(name -> viVrfs.putIfAbsent(name, new Vrf(name)));
+    _c.setVrfs(ImmutableMap.copyOf(viVrfs));
+
+    Vrf defaultVrf = _c.getDefaultVrf();
 
     convertPrefixLists();
     convertRouteMaps();
     convertOspfProcesses(defaultVrf);
     convertBgpProcess(defaultVrf);
-    _interfaces.values().forEach(iface -> convertInterface(iface, defaultVrf));
+    _interfaces.values().forEach(this::convertInterface);
     applyOspfInterfaceSettings();
-    _staticRoutes.forEach(route -> convertStaticRoute(route, defaultVrf));
+    _staticRoutes.forEach(this::convertStaticRoute);
 
     return ImmutableList.of(_c);
   }

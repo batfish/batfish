@@ -1,0 +1,8 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+vrf BLUE
+interface vlan 200
+    vrf attach BLUE
+    ip address 10.20.0.1/24
+ip route 10.30.0.0/24 10.20.0.2 vrf BLUE
+ip route 0.0.0.0/0 192.0.2.1
