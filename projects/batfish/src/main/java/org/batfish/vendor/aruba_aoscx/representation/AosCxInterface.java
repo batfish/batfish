@@ -53,6 +53,14 @@ public final class AosCxInterface implements Serializable {
     _ospfArea = ospfArea;
   }
 
+  public @Nullable Integer getOspfCost() {
+    return _ospfCost;
+  }
+
+  public void setOspfCost(int ospfCost) {
+    _ospfCost = ospfCost;
+  }
+
   public @Nullable OspfNetworkType getOspfNetworkType() {
     return _ospfNetworkType;
   }
@@ -99,6 +107,7 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Double _bandwidth;
   private @Nullable Integer _ospfProcessId;
   private @Nullable String _ospfArea;
+  private @Nullable Integer _ospfCost;
   private @Nullable OspfNetworkType _ospfNetworkType;
   private @Nullable String _vrfName;
   private @Nullable String _incomingAcl;

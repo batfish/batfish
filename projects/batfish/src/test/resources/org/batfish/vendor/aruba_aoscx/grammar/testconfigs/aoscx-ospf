@@ -7,4 +7,5 @@ interface 1/1/2
     no shutdown
     ip address 10.255.1.2/30
     ip ospf 1 area 0.0.0.0
+    ip ospf cost 25
     ip ospf network point-to-point

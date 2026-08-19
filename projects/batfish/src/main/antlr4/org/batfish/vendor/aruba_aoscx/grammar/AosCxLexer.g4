@@ -10,6 +10,7 @@ ACCESS_LIST: 'access-list';
 APPLY: 'apply';
 ANY: 'any';
 BGP: 'bgp';
+COST: 'cost';
 ACTIVATE: 'activate';
 AREA: 'area';
 ATTACH: 'attach';

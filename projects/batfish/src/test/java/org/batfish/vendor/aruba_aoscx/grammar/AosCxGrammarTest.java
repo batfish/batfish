@@ -318,6 +318,7 @@ public final class AosCxGrammarTest {
     assertThat(iface.getBandwidth(), equalTo(1_000_000_000D));
     assertThat(iface.getOspfProcessId(), equalTo(1));
     assertThat(iface.getOspfArea(), equalTo("0.0.0.0"));
+    assertThat(iface.getOspfCost(), equalTo(25));
     assertThat(
         iface.getOspfNetworkType(),
         equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
@@ -592,6 +593,7 @@ public final class AosCxGrammarTest {
     org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("1/1/2");
     assertThat(iface.getOspfSettings(), notNullValue());
     assertThat(iface.getOspfSettings().getAreaName(), equalTo(0L));
+    assertThat(iface.getOspfSettings().getCost(), equalTo(25));
     assertThat(iface.getOspfSettings().getProcess(), equalTo("1"));
     assertThat(iface.getOspfSettings().getNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
     assertThat(iface.getOspfSettings().getHelloInterval(), equalTo(10));

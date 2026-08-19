@@ -613,6 +613,7 @@ public class AosCxConfiguration extends VendorConfiguration {
           viInterface.setOspfSettings(
               OspfInterfaceSettings.builder()
                   .setAreaName(toOspfAreaNumber(iface.getOspfArea()))
+                  .setCost(iface.getOspfCost())
                   .setProcess(Integer.toString(iface.getOspfProcessId()))
                   .setEnabled(true)
                   .setPassive(false)

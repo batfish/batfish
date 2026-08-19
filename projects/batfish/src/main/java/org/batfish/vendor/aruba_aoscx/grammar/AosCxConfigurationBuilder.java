@@ -19,6 +19,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
@@ -228,6 +229,17 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     }
     _currentInterface.setOspfProcessId(Integer.parseInt(ctx.WORD(0).getText()));
     _currentInterface.setOspfArea(ctx.WORD(1).getText());
+  }
+
+  @Override
+  public void exitS_ip_ospf_cost(S_ip_ospf_costContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPF cost command outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfCost(
+        Integer.parseInt(ctx.WORD().getText()));
   }
 
   @Override
