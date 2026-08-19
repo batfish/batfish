@@ -1,0 +1,9 @@
+!Version AOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+interface 1/1/2
+    no shutdown
+ip route 0.0.0.0/0 10.255.1.1
+ip route 192.0.2.0/24 10.255.1.5
+ip route 192.0.2.0/24 1/1/2
+ip route 198.51.100.0/24 nullroute
+ip route 203.0.113.0/24 reject

@@ -5,6 +5,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -12,10 +14,13 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 
 @ParametersAreNonnullByDefault
 public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
@@ -51,6 +56,27 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentInterface.setAddress(ConcreteInterfaceAddress.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ip_route(S_ip_routeContext ctx) {
+    Prefix prefix = Prefix.parse(ctx.WORD().getText());
+    String nextHop = ctx.static_route_next_hop().getText();
+
+    NextHopType nextHopType;
+    if (ctx.static_route_next_hop().NULLROUTE() != null) {
+      nextHopType = NextHopType.NULL_ROUTE;
+    } else if (ctx.static_route_next_hop().REJECT() != null) {
+      nextHopType = NextHopType.REJECT;
+    } else if (Ip.tryParse(nextHop).isPresent()) {
+      nextHopType = NextHopType.IP;
+    } else {
+      nextHopType = NextHopType.INTERFACE;
+    }
+
+    _configuration
+        .getStaticRoutes()
+        .add(new AosCxStaticRoute(prefix, nextHopType, nextHop));
   }
 
   @Override

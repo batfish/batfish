@@ -15,6 +15,7 @@ statement
   s_hostname
   | s_interface
   | s_ip_address
+  | s_ip_route
   | s_no_shutdown
   | s_shutdown
   | null_statement
@@ -42,6 +43,18 @@ s_ip_address
   IP ADDRESS WORD NEWLINE
 ;
 
+s_ip_route
+:
+  IP ROUTE WORD static_route_next_hop NEWLINE
+;
+
+static_route_next_hop
+:
+  NULLROUTE
+  | REJECT
+  | WORD
+;
+
 s_no_shutdown
 :
   NO SHUTDOWN NEWLINE
@@ -54,5 +67,5 @@ s_shutdown
 
 null_statement
 :
-  (ADDRESS | HOSTNAME | INTERFACE | IP | LOOPBACK | NO | SHUTDOWN | VLAN | WORD)+ NEWLINE
+  (ADDRESS | HOSTNAME | INTERFACE | IP | LOOPBACK | NO | NULLROUTE | REJECT | ROUTE | SHUTDOWN | VLAN | WORD)+ NEWLINE
 ;

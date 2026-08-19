@@ -6,12 +6,18 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
@@ -23,6 +29,7 @@ public class AosCxConfiguration extends VendorConfiguration {
   private String _hostname;
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
   private String _rawHostname;
+  private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
   private ConfigurationFormat _vendor;
 
   @Override
@@ -40,6 +47,10 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public AosCxInterface getOrCreateInterface(String name) {
     return _interfaces.computeIfAbsent(name, AosCxInterface::new);
+  }
+
+  public List<AosCxStaticRoute> getStaticRoutes() {
+    return _staticRoutes;
   }
 
   @Override
@@ -95,6 +106,24 @@ public class AosCxConfiguration extends VendorConfiguration {
     newIface.build();
   }
 
+  private void convertStaticRoute(AosCxStaticRoute route, Vrf vrf) {
+    NextHop nextHop =
+        switch (route.getNextHopType()) {
+          case IP -> NextHopIp.of(Ip.parse(route.getNextHop()));
+          case INTERFACE -> NextHopInterface.of(route.getNextHop());
+          case NULL_ROUTE, REJECT -> NextHopDiscard.instance();
+        };
+
+    vrf.getStaticRoutes()
+        .add(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setNetwork(route.getPrefix())
+                .setNextHop(nextHop)
+                .setAdministrativeCost(1)
+                .setRecursive(route.getNextHopType() == AosCxStaticRoute.NextHopType.IP)
+                .build());
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
@@ -106,6 +135,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, defaultVrf));
 
     _interfaces.values().forEach(iface -> convertInterface(iface, defaultVrf));
+    _staticRoutes.forEach(route -> convertStaticRoute(route, defaultVrf));
 
     return ImmutableList.of(_c);
   }

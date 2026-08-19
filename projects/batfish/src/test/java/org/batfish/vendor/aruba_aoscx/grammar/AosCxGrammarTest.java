@@ -8,6 +8,7 @@ import static org.batfish.datamodel.ConfigurationFormat.ARUBA_AOSCX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -21,12 +22,20 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -61,6 +70,81 @@ public final class AosCxGrammarTest {
     assertThat(
         vlan.getAddress(),
         equalTo(ConcreteInterfaceAddress.parse("129.237.2.137/30")));
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
+    AosCxConfiguration vc = parseVendorConfig("aoscx-static-routes");
+
+    assertThat(vc.getStaticRoutes().size(), equalTo(5));
+
+    AosCxStaticRoute r0 = vc.getStaticRoutes().get(0);
+    assertThat(
+        r0.getPrefix(),
+        equalTo(org.batfish.datamodel.Prefix.parse("0.0.0.0/0")));
+    assertThat(r0.getNextHopType(), equalTo(NextHopType.IP));
+    assertThat(r0.getNextHop(), equalTo("10.255.1.1"));
+
+    AosCxStaticRoute r1 = vc.getStaticRoutes().get(1);
+    assertThat(
+        r1.getPrefix(),
+        equalTo(org.batfish.datamodel.Prefix.parse("192.0.2.0/24")));
+    assertThat(r1.getNextHopType(), equalTo(NextHopType.IP));
+    assertThat(r1.getNextHop(), equalTo("10.255.1.5"));
+
+    AosCxStaticRoute r2 = vc.getStaticRoutes().get(2);
+    assertThat(
+        r2.getPrefix(),
+        equalTo(org.batfish.datamodel.Prefix.parse("192.0.2.0/24")));
+    assertThat(r2.getNextHopType(), equalTo(NextHopType.INTERFACE));
+    assertThat(r2.getNextHop(), equalTo("1/1/2"));
+
+    AosCxStaticRoute r3 = vc.getStaticRoutes().get(3);
+    assertThat(r3.getNextHopType(), equalTo(NextHopType.NULL_ROUTE));
+
+    AosCxStaticRoute r4 = vc.getStaticRoutes().get(4);
+    assertThat(r4.getNextHopType(), equalTo(NextHopType.REJECT));
+  }
+
+  @Test
+  public void testStaticRouteConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-static-routes");
+    Configuration c = configs.get("ellx-dr-01");
+
+    assertThat(c, notNullValue());
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHop(NextHopIp.of(Ip.parse("10.255.1.1")))
+                .setAdministrativeCost(1)
+                .setRecursive(true)
+                .build(),
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("192.0.2.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.255.1.5")))
+                .setAdministrativeCost(1)
+                .setRecursive(true)
+                .build(),
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("192.0.2.0/24"))
+                .setNextHop(NextHopInterface.of("1/1/2"))
+                .setAdministrativeCost(1)
+                .setRecursive(false)
+                .build(),
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("198.51.100.0/24"))
+                .setNextHop(NextHopDiscard.instance())
+                .setAdministrativeCost(1)
+                .setRecursive(false)
+                .build(),
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("203.0.113.0/24"))
+                .setNextHop(NextHopDiscard.instance())
+                .setAdministrativeCost(1)
+                .setRecursive(false)
+                .build()));
   }
 
   @Test

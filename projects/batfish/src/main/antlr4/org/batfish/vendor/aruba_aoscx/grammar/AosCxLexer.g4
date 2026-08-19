@@ -10,6 +10,9 @@ INTERFACE: 'interface';
 IP: 'ip';
 LOOPBACK: 'loopback';
 NO: 'no';
+NULLROUTE: 'nullroute';
+REJECT: 'reject';
+ROUTE: 'route';
 SHUTDOWN: 'shutdown';
 VLAN: 'vlan';
 
