@@ -15,6 +15,14 @@ public final class AosCxOspfProcess implements Serializable {
     return _processId;
   }
 
+  public boolean getRedistributeConnected() {
+    return _redistributeConnected;
+  }
+
+  public void setRedistributeConnected(boolean redistributeConnected) {
+    _redistributeConnected = redistributeConnected;
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -24,5 +32,6 @@ public final class AosCxOspfProcess implements Serializable {
   }
 
   private final int _processId;
+  private boolean _redistributeConnected;
   private @Nullable Ip _routerId;
 }

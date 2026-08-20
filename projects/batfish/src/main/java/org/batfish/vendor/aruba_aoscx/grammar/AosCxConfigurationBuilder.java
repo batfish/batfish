@@ -35,6 +35,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_i
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
@@ -454,6 +455,15 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentBgpProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_redistribute_connected(S_redistribute_connectedContext ctx) {
+    if (_currentOspfProcess == null) {
+      warn(ctx, "Ignoring redistribute connected outside OSPF context");
+      return;
+    }
+    _currentOspfProcess.setRedistributeConnected(true);
   }
 
   @Override

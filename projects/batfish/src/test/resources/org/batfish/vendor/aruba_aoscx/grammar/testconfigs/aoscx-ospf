@@ -2,6 +2,7 @@
 hostname ELLX-DR-01
 router ospf 1
     router-id 129.237.1.41
+    redistribute connected
 interface 1/1/2
     speed 1000-full
     no shutdown

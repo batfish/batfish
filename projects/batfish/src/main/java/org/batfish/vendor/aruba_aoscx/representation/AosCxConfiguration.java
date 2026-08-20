@@ -5,6 +5,7 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -42,14 +44,18 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.LineAction;
@@ -594,6 +600,28 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setAllAdminCosts(110)
                   .setVrf(vrf)
                   .build();
+
+          if (process.getRedistributeConnected()) {
+            String exportPolicyName =
+                generatedOspfExportPolicyName(
+                    vrfName, Integer.toString(process.getProcessId()));
+
+            RoutingPolicy.builder()
+                .setOwner(_c)
+                .setName(exportPolicyName)
+                .addStatement(
+                    new If(
+                        new MatchProtocol(RoutingProtocol.CONNECTED),
+                        ImmutableList.of(
+                            new SetOspfMetricType(OspfMetricType.E2),
+                            new SetMetric(new LiteralLong(25L)),
+                            Statements.ExitAccept.toStaticStatement()),
+                        ImmutableList.of(
+                            Statements.ExitReject.toStaticStatement())))
+                .build();
+
+            viProcess.setExportPolicy(exportPolicyName);
+          }
 
           Map<Long, List<String>> areaInterfaces = new HashMap<>();
           _interfaces.values().stream()

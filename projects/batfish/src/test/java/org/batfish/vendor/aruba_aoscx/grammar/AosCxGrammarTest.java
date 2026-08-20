@@ -359,6 +359,7 @@ public final class AosCxGrammarTest {
 
     assertThat(c.getOspfProcesses(), hasKey(1));
     assertThat(c.getOspfProcesses().get(1).getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(c.getOspfProcesses().get(1).getRedistributeConnected(), equalTo(true));
 
     AosCxInterface iface = c.getInterfaces().get("1/1/2");
     assertThat(iface, notNullValue());
@@ -636,6 +637,38 @@ public final class AosCxGrammarTest {
     assertThat(process.getRouterId(), equalTo(Ip.parse("129.237.1.41")));
     assertThat(process.getAreas(), hasKey(0L));
     assertThat(process.getAreas().get(0L).getInterfaces(), hasItem("1/1/2"));
+
+    assertThat(process.getExportPolicy(), notNullValue());
+    RoutingPolicy exportPolicy =
+        c.getRoutingPolicies().get(process.getExportPolicy());
+    assertThat(exportPolicy, notNullValue());
+
+    org.batfish.datamodel.ConnectedRoute connectedRoute =
+        new org.batfish.datamodel.ConnectedRoute(
+            Prefix.parse("10.10.0.0/24"), "1/1/99");
+    org.batfish.datamodel.OspfExternalRoute.Builder connectedOutput =
+        org.batfish.datamodel.OspfExternalRoute.builder();
+
+    assertThat(
+        exportPolicy.process(
+            connectedRoute, connectedOutput, Direction.OUT),
+        equalTo(true));
+    assertThat(
+        connectedOutput.getOspfMetricType(),
+        equalTo(org.batfish.datamodel.ospf.OspfMetricType.E2));
+    assertThat(connectedOutput.getMetric(), equalTo(25L));
+
+    StaticRoute staticRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("203.0.113.0/24"))
+            .build();
+
+    assertThat(
+        exportPolicy.process(
+            staticRoute,
+            org.batfish.datamodel.OspfExternalRoute.builder(),
+            Direction.OUT),
+        equalTo(false));
 
     org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("1/1/2");
     assertThat(iface.getOspfSettings(), notNullValue());
