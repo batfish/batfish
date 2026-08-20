@@ -354,11 +354,24 @@ public final class AosCxGrammarTest {
     assertThat(c.getIpAccessLists(), hasKey("EDGE-OUT"));
 
     var edgeIn = c.getIpAccessLists().get("EDGE-IN");
-    assertThat(edgeIn.getEntries().size(), equalTo(3));
+    assertThat(edgeIn.getEntries().size(), equalTo(4));
     assertThat(edgeIn.getEntries().get(10L).getAction(), equalTo(LineAction.PERMIT));
     assertThat(edgeIn.getEntries().get(10L).getProtocol(), equalTo("tcp"));
     assertThat(edgeIn.getEntries().get(10L).getSource(), equalTo("10.0.0.0/8"));
     assertThat(edgeIn.getEntries().get(10L).getDestination(), equalTo("192.0.2.10"));
+    assertThat(
+        edgeIn.getEntries().get(12L).getAction(),
+        equalTo(LineAction.PERMIT));
+    assertThat(
+        edgeIn.getEntries().get(12L).getProtocol(),
+        equalTo("any"));
+    assertThat(
+        edgeIn.getEntries().get(12L).getSource(),
+        equalTo("198.51.100.0/255.255.255.0"));
+    assertThat(
+        edgeIn.getEntries().get(12L).getDestination(),
+        equalTo("any"));
+
     assertThat(edgeIn.getEntries().get(20L).getAction(), equalTo(LineAction.DENY));
 
     assertThat(edgeIn.getEntries().get(15L).getSourcePort(), notNullValue());
@@ -398,7 +411,7 @@ public final class AosCxGrammarTest {
 
     org.batfish.datamodel.IpAccessList edgeIn =
         c.getIpAccessLists().get("EDGE-IN");
-    assertThat(edgeIn.getLines().size(), equalTo(3));
+    assertThat(edgeIn.getLines().size(), equalTo(4));
 
     org.batfish.datamodel.ExprAclLine first =
         (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(0);
@@ -406,10 +419,13 @@ public final class AosCxGrammarTest {
         (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(1);
     org.batfish.datamodel.ExprAclLine third =
         (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(2);
+    org.batfish.datamodel.ExprAclLine fourth =
+        (org.batfish.datamodel.ExprAclLine) edgeIn.getLines().get(3);
 
     assertThat(first.getAction(), equalTo(LineAction.PERMIT));
     assertThat(second.getAction(), equalTo(LineAction.PERMIT));
-    assertThat(third.getAction(), equalTo(LineAction.DENY));
+    assertThat(third.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(fourth.getAction(), equalTo(LineAction.DENY));
 
     org.batfish.datamodel.Interface physical =
         c.getAllInterfaces().get("1/1/2");

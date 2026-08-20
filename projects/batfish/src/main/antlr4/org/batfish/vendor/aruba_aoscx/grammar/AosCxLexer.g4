@@ -17,6 +17,7 @@ ANY: 'any';
 BGP: 'bgp';
 COST: 'cost';
 CONNECTED: 'connected';
+COUNT: 'count';
 DEFAULT_GATEWAY: 'default-gateway';
 DESCRIPTION: 'description';
 ACTIVATE: 'activate';
