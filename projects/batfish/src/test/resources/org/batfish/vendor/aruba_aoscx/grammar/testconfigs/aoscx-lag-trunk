@@ -1,0 +1,13 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname ELLX-DR-01
+interface lag 1
+    no shutdown
+    no routing
+    vlan trunk native 1 tag
+    vlan trunk allowed 1000-1001,1005
+interface 1/9/1
+    no shutdown
+    lag 1
+interface 1/10/1
+    no shutdown
+    lag 1

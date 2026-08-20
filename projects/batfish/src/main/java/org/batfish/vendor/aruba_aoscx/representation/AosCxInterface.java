@@ -4,6 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.IntegerSpace;
 
 /** Vendor-specific representation of an Aruba AOS-CX interface. */
 public final class AosCxInterface implements Serializable {
@@ -77,6 +78,38 @@ public final class AosCxInterface implements Serializable {
     _address = address;
   }
 
+  public @Nullable Boolean getSwitchport() {
+    return _switchport;
+  }
+
+  public void setSwitchport(boolean switchport) {
+    _switchport = switchport;
+  }
+
+  public @Nullable Integer getNativeVlan() {
+    return _nativeVlan;
+  }
+
+  public void setNativeVlan(int nativeVlan) {
+    _nativeVlan = nativeVlan;
+  }
+
+  public boolean getNativeVlanTagged() {
+    return _nativeVlanTagged;
+  }
+
+  public void setNativeVlanTagged(boolean nativeVlanTagged) {
+    _nativeVlanTagged = nativeVlanTagged;
+  }
+
+  public @Nullable IntegerSpace getAllowedVlans() {
+    return _allowedVlans;
+  }
+
+  public void setAllowedVlans(IntegerSpace allowedVlans) {
+    _allowedVlans = allowedVlans;
+  }
+
   public @Nullable String getLagName() {
     return _lagName;
   }
@@ -117,6 +150,10 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _ospfArea;
   private @Nullable Integer _ospfCost;
   private @Nullable OspfNetworkType _ospfNetworkType;
+  private @Nullable Boolean _switchport;
+  private @Nullable Integer _nativeVlan;
+  private boolean _nativeVlanTagged;
+  private @Nullable IntegerSpace _allowedVlans;
   private @Nullable String _lagName;
   private @Nullable String _vrfName;
   private @Nullable String _incomingAcl;

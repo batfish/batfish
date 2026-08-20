@@ -5,6 +5,11 @@ options {
 }
 
 ADDRESS: 'address';
+TRUNK: 'trunk';
+TAG: 'tag';
+ROUTING: 'routing';
+NATIVE: 'native';
+ALLOWED: 'allowed';
 ADDRESS_FAMILY: 'address-family';
 ACCESS_LIST: 'access-list';
 APPLY: 'apply';

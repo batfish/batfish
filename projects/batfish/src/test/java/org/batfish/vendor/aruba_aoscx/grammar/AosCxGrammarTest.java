@@ -27,11 +27,13 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -65,6 +67,54 @@ public final class AosCxGrammarTest {
     assertThat(vc.getHostname(), equalTo("ellx-dr-01"));
   }
 
+
+
+
+  @Test
+  public void testLagTrunkConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-lag-trunk");
+    Configuration c = configs.get("ellx-dr-01");
+
+    org.batfish.datamodel.Interface lag =
+        c.getAllInterfaces().get("lag 1");
+
+    assertThat(lag, notNullValue());
+    assertThat(lag.getSwitchport(), equalTo(true));
+    assertThat(lag.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+    assertThat(
+        lag.getAllowedVlans(),
+        equalTo(IntegerSpace.parse("1000-1001,1005")));
+
+    // Native VLAN 1 is configured tagged on AOS-CX, so it must not
+    // become Batfish's untagged native VLAN.
+    assertThat(lag.getNativeVlan(), equalTo(null));
+
+    assertThat(
+        lag.getChannelGroupMembers(),
+        containsInAnyOrder("1/9/1", "1/10/1"));
+  }
+
+  @Test
+  public void testLagTrunkExtraction() throws IOException {
+    AosCxConfiguration c = parseVendorConfig("aoscx-lag-trunk");
+
+    AosCxInterface lag = c.getInterfaces().get("lag 1");
+    assertThat(lag, notNullValue());
+    assertThat(lag.getSwitchport(), equalTo(true));
+    assertThat(lag.getNativeVlan(), equalTo(1));
+    assertThat(lag.getNativeVlanTagged(), equalTo(true));
+    assertThat(
+        lag.getAllowedVlans(),
+        equalTo(IntegerSpace.parse("1000-1001,1005")));
+
+    assertThat(
+        c.getInterfaces().get("1/9/1").getLagName(),
+        equalTo("lag 1"));
+    assertThat(
+        c.getInterfaces().get("1/10/1").getLagName(),
+        equalTo("lag 1"));
+  }
 
   @Test
   public void testLagExtraction() throws IOException {

@@ -34,6 +34,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -256,6 +257,26 @@ public class AosCxConfiguration extends VendorConfiguration {
 
     newIface.setHumanName(name);
     newIface.setDeclaredNames(ImmutableList.of(name));
+
+    if (Boolean.TRUE.equals(iface.getSwitchport())) {
+      newIface.setSwitchport(true);
+
+      // Presence of trunk-specific configuration identifies this as a trunk.
+      if (iface.getAllowedVlans() != null || iface.getNativeVlan() != null) {
+        newIface.setSwitchportMode(SwitchportMode.TRUNK);
+      }
+
+      if (iface.getAllowedVlans() != null) {
+        newIface.setAllowedVlans(iface.getAllowedVlans());
+      }
+
+      // Batfish nativeVlan represents an untagged native VLAN.
+      // AOS-CX "vlan trunk native <id> tag" carries that VLAN tagged,
+      // so model it only through allowedVlans.
+      if (iface.getNativeVlan() != null && !iface.getNativeVlanTagged()) {
+        newIface.setNativeVlan(iface.getNativeVlan());
+      }
+    }
 
     if (getInterfaceType(iface) == InterfaceType.VLAN) {
       newIface.setVlan(Integer.parseInt(name.substring("vlan ".length())));

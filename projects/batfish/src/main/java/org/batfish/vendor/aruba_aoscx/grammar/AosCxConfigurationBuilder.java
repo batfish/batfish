@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -24,6 +25,9 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_routingContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vlan_trunk_nativeContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vlan_trunk_allowedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
@@ -489,6 +493,37 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentOspfProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_no_routing(S_no_routingContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring no routing outside interface context");
+      return;
+    }
+    _currentInterface.setSwitchport(true);
+  }
+
+  @Override
+  public void exitS_vlan_trunk_native(S_vlan_trunk_nativeContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring VLAN trunk native outside interface context");
+      return;
+    }
+    _currentInterface.setSwitchport(true);
+    _currentInterface.setNativeVlan(Integer.parseInt(ctx.WORD().getText()));
+    _currentInterface.setNativeVlanTagged(ctx.TAG() != null);
+  }
+
+  @Override
+  public void exitS_vlan_trunk_allowed(S_vlan_trunk_allowedContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring VLAN trunk allowed outside interface context");
+      return;
+    }
+    _currentInterface.setSwitchport(true);
+    _currentInterface.setAllowedVlans(
+        IntegerSpace.parse(ctx.WORD().getText()));
   }
 
   @Override
