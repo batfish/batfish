@@ -4436,8 +4436,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /**
    * Emit warnings for policy actions that have no effect in the forwarding-table export context. On
-   * Junos, only accept/reject and load-balance/source-class are meaningful; all other attribute
-   * mutations (metric, next-hop, community, etc.) are no-ops.
+   * Junos, only accept/reject, load-balance, and source-class/destination-class are meaningful; all
+   * other attribute mutations (metric, next-hop, community, etc.) are no-ops.
    */
   private void warnForwardingTableExportActions(String policyName) {
     PolicyStatement ps = _masterLogicalSystem.getPolicyStatements().get(policyName);
@@ -4458,13 +4458,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
           || then instanceof PsThenDefaultActionReject
           || then instanceof PsThenNextPolicy
           || then instanceof PsThenNextTerm
-          || then instanceof PsThenLoadBalance) {
-        // Control flow or forwarding-table-specific actions — no warning.
+          || then instanceof PsThenLoadBalance
+          || then instanceof PsThenSourceClass
+          || then instanceof PsThenDestinationClass) {
+        // Control flow or forwarding-table-specific actions — no warning. Source-class and
+        // destination-class (SCU/DCU) are only settable from a forwarding-table export policy.
         continue;
       }
       _w.riskyRedFlag(
-          "forwarding-table export %s term %s: %s has no effect"
-              + " (only accept/reject affects forwarding-table export)",
+          "forwarding-table export %s term %s: %s has no effect (only accept/reject, load-balance,"
+              + " and source-class/destination-class affect forwarding-table export)",
           policyName, term.getName(), then.getClass().getSimpleName());
     }
   }

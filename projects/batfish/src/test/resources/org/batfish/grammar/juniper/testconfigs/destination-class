@@ -1,0 +1,20 @@
+set system host-name destination-class
+
+# Policy statement with destination-class assignment (definition)
+set policy-options policy-statement EXPORT-DCU term REGION-A then destination-class DEST-CLASS-A
+set policy-options policy-statement EXPORT-DCU term REGION-B then destination-class DEST-CLASS-B
+
+# Firewall filter with destination-class matching (reference)
+set firewall family inet filter METERING term METER-A from destination-class DEST-CLASS-A
+set firewall family inet filter METERING term METER-A then count TO-IPv4-A
+set firewall family inet filter METERING term METER-B from destination-class DEST-CLASS-B
+set firewall family inet filter METERING term METER-B then count TO-IPv4-B
+# Undefined destination-class reference
+set firewall family inet filter METERING term METER-UNDEF from destination-class DEST-CLASS-UNDEFINED
+set firewall family inet filter METERING term METER-UNDEF then count TO-IPv4-UNDEF
+set firewall family inet filter METERING term ACCEPT then accept
+
+# IPv6 filter with destination-class matching
+set firewall family inet6 filter METERING-V6 term METER-A from destination-class DEST-CLASS-A
+set firewall family inet6 filter METERING-V6 term METER-A then count TO-IPv6-A
+set firewall family inet6 filter METERING-V6 term ACCEPT then accept

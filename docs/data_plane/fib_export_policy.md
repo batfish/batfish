@@ -27,9 +27,13 @@ Protocol RIBs  --[table-map]--> Main RIB --[FIB export policy]--> FIB
 
 On Juniper, this policy also supports `then load-balance per-packet` for
 ECMP selection. Batfish models all ECMP paths regardless, so the
-per-packet/per-flow distinction has no behavioral effect. Standard route
-attribute mutations (metric, next-hop, etc.) have no effect in this context
-on real Juniper routers.
+per-packet/per-flow distinction has no behavioral effect. It likewise
+supports `then source-class`/`then destination-class` (SCU/DCU), which
+classify prefixes for per-class accounting; these are only settable from a
+forwarding-table export policy, and Batfish does not model the accounting
+they drive. Standard route attribute mutations (metric, next-hop, etc.) have
+no effect in this context on real Juniper routers, and Batfish emits a RISKY
+warning for them.
 
 The default Junos forwarding-table export action is **accept**: routes that
 fall through the policy without a terminal action (accept/reject) are

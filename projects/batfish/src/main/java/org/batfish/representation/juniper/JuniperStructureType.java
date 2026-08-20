@@ -34,6 +34,7 @@ public enum JuniperStructureType implements StructureType {
   CLASS_OF_SERVICE_SCHEDULER_MAP("class-of-service scheduler-map"),
   COMMUNITY("community"),
   CONDITION("condition"),
+  DESTINATION_CLASS("destination-class"),
   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
   FIREWALL_FILTER("firewall filter"),
   FIREWALL_INET6_FILTER("firewall family inet6 filter"),

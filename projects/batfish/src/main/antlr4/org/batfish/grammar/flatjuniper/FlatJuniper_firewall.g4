@@ -123,6 +123,7 @@ fft_from
    (
       fftf_address
       | fftf_destination_address
+      | fftf_destination_class
       | fftf_destination_port
       | fftf_destination_port_except
       | fftf_destination_port_range_optimize
@@ -215,6 +216,11 @@ fftf_destination_address
       | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
+;
+
+fftf_destination_class
+:
+   DESTINATION_CLASS name = junos_name
 ;
 
 fftf_destination_port: DESTINATION_PORT port_range;
