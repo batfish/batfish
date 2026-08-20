@@ -38,6 +38,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -467,6 +468,52 @@ public final class AosCxGrammarTest {
         equalTo(Prefix.ZERO));
   }
 
+
+
+  @Test
+  public void testOspfStubAreaExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-ospf-stub");
+
+    assertThat(c.getOspfProcesses(), hasKey(1));
+    assertThat(
+        c.getOspfProcesses().get(1).getStubAreas().get("0.0.0.10"),
+        equalTo(false));
+    assertThat(
+        c.getOspfProcesses().get(1).getStubAreas().get("0.0.0.20"),
+        equalTo(true));
+  }
+
+  @Test
+  public void testOspfStubAreaConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-ospf-stub");
+    Configuration c = configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.OspfProcess process =
+        c.getDefaultVrf().getOspfProcesses().get("1");
+
+    assertThat(process, notNullValue());
+    assertThat(process.getAreas(), hasKey(10L));
+    assertThat(process.getAreas(), hasKey(20L));
+
+    org.batfish.datamodel.ospf.OspfArea stub =
+        process.getAreas().get(10L);
+
+    assertThat(stub.getStubType(), equalTo(StubType.STUB));
+    assertThat(stub.getStub(), notNullValue());
+    assertThat(stub.getStub().getSuppressType3(), equalTo(false));
+    assertThat(stub.getMetricOfDefaultRoute(), equalTo(1));
+
+    org.batfish.datamodel.ospf.OspfArea totallyStubby =
+        process.getAreas().get(20L);
+
+    assertThat(totallyStubby.getStubType(), equalTo(StubType.STUB));
+    assertThat(totallyStubby.getStub(), notNullValue());
+    assertThat(
+        totallyStubby.getStub().getSuppressType3(),
+        equalTo(true));
+    assertThat(totallyStubby.getMetricOfDefaultRoute(), equalTo(1));
+  }
 
   @Test
   public void testOspfVrfExtraction() {

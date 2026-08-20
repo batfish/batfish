@@ -44,6 +44,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_i
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
@@ -541,6 +542,18 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentBgpProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ospf_area_stub(S_ospf_area_stubContext ctx) {
+    if (_currentOspfProcess == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(ctx, "Ignoring OSPF stub area outside OSPF context");
+      return;
+    }
+
+    _currentOspfProcess.setStubArea(
+        ctx.WORD().getText(), ctx.NO_SUMMARY() != null);
   }
 
   @Override

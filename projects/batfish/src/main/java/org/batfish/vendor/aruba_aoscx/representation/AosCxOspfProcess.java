@@ -1,6 +1,8 @@
 package org.batfish.vendor.aruba_aoscx.representation;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
@@ -23,6 +25,14 @@ public final class AosCxOspfProcess implements Serializable {
     _redistributeConnected = redistributeConnected;
   }
 
+  public Map<String, Boolean> getStubAreas() {
+    return _stubAreas;
+  }
+
+  public void setStubArea(String areaId, boolean suppressType3) {
+    _stubAreas.put(areaId, suppressType3);
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -33,5 +43,6 @@ public final class AosCxOspfProcess implements Serializable {
 
   private final int _processId;
   private boolean _redistributeConnected;
+  private final Map<String, Boolean> _stubAreas = new HashMap<>();
   private @Nullable Ip _routerId;
 }

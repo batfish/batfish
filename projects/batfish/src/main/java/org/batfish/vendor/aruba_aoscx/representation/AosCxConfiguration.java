@@ -59,6 +59,7 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -675,13 +676,39 @@ public class AosCxConfiguration extends VendorConfiguration {
                               area -> new ArrayList<>())
                           .add(iface.getName()));
 
+          Map<Long, Boolean> stubAreas = new HashMap<>();
+
+          process
+              .getStubAreas()
+              .forEach(
+                  (areaId, suppressType3) -> {
+                    long area = toOspfAreaNumber(areaId);
+                    stubAreas.put(area, suppressType3);
+                    areaInterfaces.computeIfAbsent(
+                        area, ignored -> new ArrayList<>());
+                  });
+
           areaInterfaces.forEach(
-              (area, interfaces) ->
-                  OspfArea.builder()
-                      .setNumber(area)
-                      .addInterfaces(interfaces)
-                      .setOspfProcess(viProcess)
-                      .build());
+              (area, interfaces) -> {
+                OspfArea.Builder areaBuilder =
+                    OspfArea.builder()
+                        .setNumber(area)
+                        .addInterfaces(interfaces)
+                        .setOspfProcess(viProcess);
+
+                Boolean suppressType3 = stubAreas.get(area);
+                if (suppressType3 != null) {
+                  areaBuilder
+                      .setStub(
+                          StubSettings.builder()
+                              .setSuppressType3(suppressType3)
+                              .build())
+                      // AOS-CX default cost for the stub default route is 1.
+                      .setMetricOfDefaultRoute(1);
+                }
+
+                areaBuilder.build();
+              });
         });
   }
 

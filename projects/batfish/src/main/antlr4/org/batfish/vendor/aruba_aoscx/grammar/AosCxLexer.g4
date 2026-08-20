@@ -34,6 +34,7 @@ LAG: 'lag';
 LOOPBACK: 'loopback';
 LOCAL_PREFERENCE: 'local-preference';
 NO: 'no';
+NO_SUMMARY: 'no-summary';
 NETWORK: 'network';
 MATCH: 'match';
 MTU: 'mtu';
@@ -63,6 +64,7 @@ SHUTDOWN: 'shutdown';
 UNICAST: 'unicast';
 SPEED: 'speed';
 STATIC: 'static';
+STUB: 'stub';
 VLAN: 'vlan';
 VRF: 'vrf';
 

@@ -1,0 +1,16 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname aoscx-router
+router ospf 1
+    router-id 192.0.2.1
+    area 0.0.0.10 stub
+    area 0.0.0.20 stub no-summary
+interface 1/1/1
+    no shutdown
+    speed 1000-full
+    ip address 192.0.2.1/30
+    ip ospf 1 area 0.0.0.10
+interface 1/1/2
+    no shutdown
+    speed 1000-full
+    ip address 198.51.100.1/30
+    ip ospf 1 area 0.0.0.20
