@@ -30,6 +30,14 @@ public final class AosCxInterface implements Serializable {
     _enabled = enabled;
   }
 
+  public @Nullable String getDescription() {
+    return _description;
+  }
+
+  public void setDescription(String description) {
+    _description = description;
+  }
+
   public @Nullable Double getBandwidth() {
     return _bandwidth;
   }
@@ -160,6 +168,7 @@ public final class AosCxInterface implements Serializable {
 
   private final @Nonnull String _name;
   private @Nullable Boolean _enabled;
+  private @Nullable String _description;
   private @Nullable ConcreteInterfaceAddress _address;
   private @Nullable Double _bandwidth;
   private @Nullable Integer _mtu;

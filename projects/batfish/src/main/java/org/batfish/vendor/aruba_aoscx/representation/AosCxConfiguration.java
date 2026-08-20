@@ -250,6 +250,7 @@ public class AosCxConfiguration extends VendorConfiguration {
             .setAdminUp(getInterfaceAdminUpEffective(iface))
             .setBandwidth(iface.getBandwidth())
             .setChannelGroup(iface.getLagName())
+            .setDescription(iface.getDescription())
             .setType(getInterfaceType(iface))
             .setName(name)
             .setVrf(vrf)

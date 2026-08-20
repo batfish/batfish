@@ -15,6 +15,7 @@ statement
   s_access_list_ip
   | s_acl_entry
   | s_apply_access_list_ip
+  | s_description
   | s_hostname
   | s_interface
   | s_lag_member
@@ -108,6 +109,12 @@ acl_direction
   | OUT
   | ROUTED_IN
   | ROUTED_OUT
+;
+
+
+s_description
+:
+  DESCRIPTION (~NEWLINE)+ NEWLINE
 ;
 
 s_hostname

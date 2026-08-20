@@ -17,6 +17,7 @@ ANY: 'any';
 BGP: 'bgp';
 COST: 'cost';
 CONNECTED: 'connected';
+DESCRIPTION: 'description';
 ACTIVATE: 'activate';
 AREA: 'area';
 ATTACH: 'attach';

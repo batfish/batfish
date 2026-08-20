@@ -16,6 +16,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_access_list_ipContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_acl_entryContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_apply_access_list_ipContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_descriptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
@@ -159,6 +160,24 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     } else {
       _currentInterface.setOutgoingAcl(aclName);
     }
+  }
+
+  @Override
+  public void exitS_description(S_descriptionContext ctx) {
+    if (_currentInterface == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(ctx, "Ignoring description outside interface context");
+      return;
+    }
+
+    String line =
+        _text.substring(
+                ctx.getStart().getStartIndex(),
+                ctx.getStop().getStopIndex() + 1)
+            .trim();
+
+    _currentInterface.setDescription(
+        line.substring("description".length()).trim());
   }
 
   @Override

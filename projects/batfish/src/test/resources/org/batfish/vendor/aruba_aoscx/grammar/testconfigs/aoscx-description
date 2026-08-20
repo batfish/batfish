@@ -1,0 +1,8 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname aoscx-router
+interface 1/1/1
+    description Uplink to vlan 1000
+    no shutdown
+interface lag 10
+    description Core aggregate link
+    no shutdown

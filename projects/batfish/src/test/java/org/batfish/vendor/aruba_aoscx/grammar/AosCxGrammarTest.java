@@ -163,6 +163,45 @@ public final class AosCxGrammarTest {
   }
 
 
+
+  @Test
+  public void testDescriptionExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-description");
+
+    AosCxInterface physical = c.getInterfaces().get("1/1/1");
+    assertThat(physical, notNullValue());
+    assertThat(
+        physical.getDescription(),
+        equalTo("Uplink to vlan 1000"));
+
+    AosCxInterface lag = c.getInterfaces().get("lag 10");
+    assertThat(lag, notNullValue());
+    assertThat(
+        lag.getDescription(),
+        equalTo("Core aggregate link"));
+  }
+
+  @Test
+  public void testDescriptionConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-description");
+    Configuration c = configs.get("aoscx-router");
+
+    org.batfish.datamodel.Interface physical =
+        c.getAllInterfaces().get("1/1/1");
+    assertThat(physical, notNullValue());
+    assertThat(
+        physical.getDescription(),
+        equalTo("Uplink to vlan 1000"));
+
+    org.batfish.datamodel.Interface lag =
+        c.getAllInterfaces().get("lag 10");
+    assertThat(lag, notNullValue());
+    assertThat(
+        lag.getDescription(),
+        equalTo("Core aggregate link"));
+  }
+
   @Test
   public void testMtuExtraction() {
     AosCxConfiguration c = parseVendorConfig("aoscx-mtu");
