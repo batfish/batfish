@@ -258,6 +258,15 @@ public class AosCxConfiguration extends VendorConfiguration {
     newIface.setHumanName(name);
     newIface.setDeclaredNames(ImmutableList.of(name));
 
+    // AOS-CX distinguishes overall interface MTU from IP MTU.
+    // Batfish has a single interface MTU, so prefer the effective
+    // L3 IP MTU when explicitly configured.
+    if (iface.getIpMtu() != null) {
+      newIface.setMtu(iface.getIpMtu());
+    } else if (iface.getMtu() != null) {
+      newIface.setMtu(iface.getMtu());
+    }
+
     if (Boolean.TRUE.equals(iface.getSwitchport())) {
       newIface.setSwitchport(true);
 

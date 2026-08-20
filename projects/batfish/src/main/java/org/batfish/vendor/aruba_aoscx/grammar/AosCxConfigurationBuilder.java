@@ -20,11 +20,13 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_routingContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vlan_trunk_nativeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_vlan_trunk_allowedContext;
@@ -234,6 +236,15 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentInterface.setAddress(ConcreteInterfaceAddress.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ip_mtu(S_ip_mtuContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring IP MTU outside interface context");
+      return;
+    }
+    _currentInterface.setIpMtu(Integer.parseInt(ctx.WORD().getText()));
   }
 
   @Override
@@ -493,6 +504,15 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentOspfProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_mtu(S_mtuContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring MTU outside interface context");
+      return;
+    }
+    _currentInterface.setMtu(Integer.parseInt(ctx.WORD().getText()));
   }
 
   @Override

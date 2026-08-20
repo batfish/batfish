@@ -34,6 +34,7 @@ LOCAL_PREFERENCE: 'local-preference';
 NO: 'no';
 NETWORK: 'network';
 MATCH: 'match';
+MTU: 'mtu';
 NEIGHBOR: 'neighbor';
 NULLROUTE: 'nullroute';
 REJECT: 'reject';

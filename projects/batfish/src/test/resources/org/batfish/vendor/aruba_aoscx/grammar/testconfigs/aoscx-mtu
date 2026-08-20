@@ -1,0 +1,10 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname aoscx-router
+interface 1/1/1
+    no shutdown
+    mtu 9198
+    ip mtu 9178
+    ip address 192.0.2.1/31
+interface 1/1/2
+    no shutdown
+    mtu 9198

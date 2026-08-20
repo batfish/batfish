@@ -162,6 +162,38 @@ public final class AosCxGrammarTest {
         equalTo("lag 13"));
   }
 
+
+  @Test
+  public void testMtuExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-mtu");
+
+    AosCxInterface routed = c.getInterfaces().get("1/1/1");
+    assertThat(routed, notNullValue());
+    assertThat(routed.getMtu(), equalTo(9198));
+    assertThat(routed.getIpMtu(), equalTo(9178));
+
+    AosCxInterface layer2 = c.getInterfaces().get("1/1/2");
+    assertThat(layer2, notNullValue());
+    assertThat(layer2.getMtu(), equalTo(9198));
+    assertThat(layer2.getIpMtu(), equalTo(null));
+  }
+
+  @Test
+  public void testMtuConversion() throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs("aoscx-mtu");
+    Configuration c = configs.get("aoscx-router");
+
+    org.batfish.datamodel.Interface routed =
+        c.getAllInterfaces().get("1/1/1");
+    assertThat(routed, notNullValue());
+    assertThat(routed.getMtu(), equalTo(9178));
+
+    org.batfish.datamodel.Interface layer2 =
+        c.getAllInterfaces().get("1/1/2");
+    assertThat(layer2, notNullValue());
+    assertThat(layer2.getMtu(), equalTo(9198));
+  }
+
   @Test
   public void testInterfaceExtraction() {
     AosCxConfiguration vc = parseVendorConfig("aoscx-interfaces");

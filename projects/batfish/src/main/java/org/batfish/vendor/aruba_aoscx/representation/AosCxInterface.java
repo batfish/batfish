@@ -38,6 +38,22 @@ public final class AosCxInterface implements Serializable {
     _bandwidth = bandwidth;
   }
 
+  public @Nullable Integer getMtu() {
+    return _mtu;
+  }
+
+  public void setMtu(int mtu) {
+    _mtu = mtu;
+  }
+
+  public @Nullable Integer getIpMtu() {
+    return _ipMtu;
+  }
+
+  public void setIpMtu(int ipMtu) {
+    _ipMtu = ipMtu;
+  }
+
   public @Nullable Integer getOspfProcessId() {
     return _ospfProcessId;
   }
@@ -146,6 +162,8 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Boolean _enabled;
   private @Nullable ConcreteInterfaceAddress _address;
   private @Nullable Double _bandwidth;
+  private @Nullable Integer _mtu;
+  private @Nullable Integer _ipMtu;
   private @Nullable Integer _ospfProcessId;
   private @Nullable String _ospfArea;
   private @Nullable Integer _ospfCost;
