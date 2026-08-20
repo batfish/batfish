@@ -1,5 +1,5 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 interface 1/1/2
     no shutdown
     speed 1000-full

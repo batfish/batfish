@@ -1,5 +1,5 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 router bgp 65000
     bgp router-id 192.0.2.1
     neighbor 192.0.2.2 remote-as 65001

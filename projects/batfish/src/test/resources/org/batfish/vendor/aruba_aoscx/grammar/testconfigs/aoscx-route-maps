@@ -1,5 +1,5 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 ip prefix-list INTERNAL seq 10 permit 10.0.0.0/8 ge 16 le 24
 route-map FROM-CORE permit seq 10
     match ip address prefix-list INTERNAL

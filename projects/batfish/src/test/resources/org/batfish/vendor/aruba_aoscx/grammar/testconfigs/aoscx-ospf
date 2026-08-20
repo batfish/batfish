@@ -1,12 +1,12 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 router ospf 1
-    router-id 129.237.1.41
+    router-id 192.0.2.41
     redistribute connected
 interface 1/1/2
     speed 1000-full
     no shutdown
-    ip address 10.255.1.2/30
+    ip address 192.0.2.2/30
     ip ospf 1 area 0.0.0.0
     ip ospf cost 25
     ip ospf network point-to-point

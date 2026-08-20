@@ -64,7 +64,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testHostnameExtraction() {
     AosCxConfiguration vc = parseVendorConfig("aoscx-hostname");
-    assertThat(vc.getHostname(), equalTo("ellx-dr-01"));
+    assertThat(vc.getHostname(), equalTo("aoscx-router"));
   }
 
 
@@ -74,7 +74,7 @@ public final class AosCxGrammarTest {
   public void testLagTrunkConversion() throws IOException {
     Map<String, Configuration> configs =
         parseTextConfigs("aoscx-lag-trunk");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     org.batfish.datamodel.Interface lag =
         c.getAllInterfaces().get("lag 1");
@@ -128,7 +128,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testLagConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-lag");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     org.batfish.datamodel.Interface lag =
         c.getAllInterfaces().get("lag 13");
@@ -137,7 +137,7 @@ public final class AosCxGrammarTest {
     assertThat(lag.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
     assertThat(
         lag.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("129.237.12.230/29")));
+        contains(ConcreteInterfaceAddress.parse("203.0.113.230/29")));
     assertThat(
         lag.getChannelGroupMembers(),
         containsInAnyOrder("1/9/3", "1/10/3"));
@@ -150,7 +150,7 @@ public final class AosCxGrammarTest {
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
     assertThat(
         loopback.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("129.237.1.41/32")));
+        contains(ConcreteInterfaceAddress.parse("192.0.2.41/32")));
     assertThat(loopback.getOspfSettings(), notNullValue());
     assertThat(loopback.getOspfSettings().getCost(), equalTo(1));
 
@@ -294,18 +294,18 @@ public final class AosCxGrammarTest {
     assertThat(physical.getEnabled(), equalTo(true));
     assertThat(
         physical.getAddress(),
-        equalTo(ConcreteInterfaceAddress.parse("10.255.1.2/30")));
+        equalTo(ConcreteInterfaceAddress.parse("192.0.2.2/30")));
 
     AosCxInterface loopback = vc.getInterfaces().get("loopback 0");
     assertThat(
         loopback.getAddress(),
-        equalTo(ConcreteInterfaceAddress.parse("129.237.1.41/32")));
+        equalTo(ConcreteInterfaceAddress.parse("192.0.2.41/32")));
 
     AosCxInterface vlan = vc.getInterfaces().get("vlan 1000");
     assertThat(vlan.getEnabled(), equalTo(false));
     assertThat(
         vlan.getAddress(),
-        equalTo(ConcreteInterfaceAddress.parse("129.237.2.137/30")));
+        equalTo(ConcreteInterfaceAddress.parse("198.51.100.137/30")));
   }
 
   @Test
@@ -389,7 +389,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testAclConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-acl");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getIpAccessLists(), hasKey("EDGE-IN"));
@@ -445,7 +445,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testVrfConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-vrf");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getVrfs(), hasKey("default"));
@@ -493,7 +493,7 @@ public final class AosCxGrammarTest {
   public void testOspfVrfConversion() throws IOException {
     Map<String, Configuration> configs =
         parseTextConfigs("aoscx-ospf-vrf");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
 
@@ -532,7 +532,7 @@ public final class AosCxGrammarTest {
     AosCxConfiguration c = parseVendorConfig("aoscx-ospf");
 
     assertThat(c.getOspfProcesses(), hasKey(1));
-    assertThat(c.getOspfProcesses().get(1).getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(c.getOspfProcesses().get(1).getRouterId(), equalTo(Ip.parse("192.0.2.41")));
     assertThat(c.getOspfProcesses().get(1).getRedistributeConnected(), equalTo(true));
 
     AosCxInterface iface = c.getInterfaces().get("1/1/2");
@@ -588,7 +588,7 @@ public final class AosCxGrammarTest {
   public void testBgpVrfConversion() throws IOException {
     Map<String, Configuration> configs =
         parseTextConfigs("aoscx-bgp-vrf");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
 
@@ -634,7 +634,7 @@ public final class AosCxGrammarTest {
 
     assertThat(c.getBgpProcess(), notNullValue());
     assertThat(c.getBgpProcess().getLocalAs(), equalTo(65000L));
-    assertThat(c.getBgpProcess().getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(c.getBgpProcess().getRouterId(), equalTo(Ip.parse("192.0.2.41")));
     assertThat(c.getBgpProcess().getNeighbors(), hasKey(Ip.parse("10.255.1.1")));
     assertThat(
         c.getBgpProcess().getNeighbors().get(Ip.parse("10.255.1.1")).getRemoteAs(),
@@ -708,7 +708,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testRouteMapConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-route-maps");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getRoutingPolicies(), hasKey("FROM-CORE"));
@@ -748,7 +748,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testPrefixListConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-prefix-lists");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getRouteFilterLists(), hasKey("DEFAULT"));
@@ -774,13 +774,13 @@ public final class AosCxGrammarTest {
   @Test
   public void testBgpConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-bgp");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getDefaultVrf().getBgpProcess(), notNullValue());
 
     BgpProcess process = c.getDefaultVrf().getBgpProcess();
-    assertThat(process.getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(process.getRouterId(), equalTo(Ip.parse("192.0.2.41")));
     assertThat(process.getActiveNeighbors(), hasKey(Ip.parse("10.255.1.1")));
 
     BgpActivePeerConfig peer =
@@ -800,7 +800,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testOspfConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-ospf");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKey("1"));
@@ -808,7 +808,7 @@ public final class AosCxGrammarTest {
     org.batfish.datamodel.ospf.OspfProcess process =
         c.getDefaultVrf().getOspfProcesses().get("1");
 
-    assertThat(process.getRouterId(), equalTo(Ip.parse("129.237.1.41")));
+    assertThat(process.getRouterId(), equalTo(Ip.parse("192.0.2.41")));
     assertThat(process.getAreas(), hasKey(0L));
     assertThat(process.getAreas().get(0L).getInterfaces(), hasItem("1/1/2"));
 
@@ -857,7 +857,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testStaticRouteConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-static-routes");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(
@@ -898,7 +898,7 @@ public final class AosCxGrammarTest {
   @Test
   public void testInterfaceConversion() throws IOException {
     Map<String, Configuration> configs = parseTextConfigs("aoscx-interfaces");
-    Configuration c = configs.get("ellx-dr-01");
+    Configuration c = configs.get("aoscx-router");
 
     assertThat(c, notNullValue());
     assertThat(c.getConfigurationFormat(), equalTo(ARUBA_AOSCX));
@@ -909,7 +909,7 @@ public final class AosCxGrammarTest {
     assertThat(physical.getAdminUp(), equalTo(true));
     assertThat(
         physical.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("10.255.1.2/30")));
+        contains(ConcreteInterfaceAddress.parse("192.0.2.2/30")));
 
     org.batfish.datamodel.Interface loopback =
         c.getAllInterfaces().get("loopback 0");
@@ -917,7 +917,7 @@ public final class AosCxGrammarTest {
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
     assertThat(
         loopback.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("129.237.1.41/32")));
+        contains(ConcreteInterfaceAddress.parse("192.0.2.41/32")));
 
     org.batfish.datamodel.Interface vlan =
         c.getAllInterfaces().get("vlan 1000");
@@ -926,7 +926,7 @@ public final class AosCxGrammarTest {
     assertThat(vlan.getAdminUp(), equalTo(false));
     assertThat(
         vlan.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("129.237.2.137/30")));
+        contains(ConcreteInterfaceAddress.parse("198.51.100.137/30")));
   }
 
   private IBatfish getBatfishForConfigurationNames(String... configurationNames)

@@ -1,5 +1,5 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 access-list ip EDGE-IN
     10 permit tcp 10.0.0.0/8 192.0.2.10
     15 permit tcp 10.0.0.0/8 gt 1023 192.0.2.10 eq 443
@@ -9,7 +9,7 @@ access-list ip EDGE-OUT
     permit ip any any
 interface 1/1/2
     no shutdown
-    ip address 10.255.1.2/30
+    ip address 192.0.2.2/30
     apply access-list ip EDGE-IN in
     apply access-list ip EDGE-OUT out
 interface vlan 200

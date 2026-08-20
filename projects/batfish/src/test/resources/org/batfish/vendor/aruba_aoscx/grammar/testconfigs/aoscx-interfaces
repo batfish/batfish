@@ -1,10 +1,10 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 interface 1/1/2
     no shutdown
-    ip address 10.255.1.2/30
+    ip address 192.0.2.2/30
 interface loopback 0
-    ip address 129.237.1.41/32
+    ip address 192.0.2.41/32
 interface vlan 1000
     shutdown
-    ip address 129.237.2.137/30
+    ip address 198.51.100.137/30

@@ -1,16 +1,16 @@
 !Version ArubaOS-CX FL.10.13.1040
-hostname ELLX-DR-01
+hostname AOSCX-ROUTER
 router ospf 1
-    router-id 129.237.1.41
+    router-id 192.0.2.41
 interface loopback 0
-    ip address 129.237.1.41/32
+    ip address 192.0.2.41/32
     ipv6 address link-local
-    ipv6 address 2001:49d0:8510:1::41/128
+    ipv6 address 2001:db8:1::41/128
     ip ospf 1 area 0.0.0.0
     ipv6 ospfv3 1 area 0.0.0.0
 interface lag 13
     no shutdown
-    ip address 129.237.12.230/29
+    ip address 203.0.113.230/29
     ip ospf 1 area 0.0.0.0
     ip ospf cost 1
     ip ospf network point-to-point
