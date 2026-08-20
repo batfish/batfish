@@ -174,6 +174,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOM
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureType.DESTINATION_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
@@ -431,6 +432,7 @@ import org.batfish.representation.juniper.EvpnIpPrefixRoutesAdvertise;
 import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
+import org.batfish.representation.juniper.FwFromDestinationClass;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHopLimit;
@@ -509,6 +511,7 @@ import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenDestinationClass;
 import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
 import org.batfish.representation.juniper.PsThenLocalPreference;
@@ -11178,6 +11181,86 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testDestinationClassExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("destination-class");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+    Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
+
+    // Test policy-statement then destination-class extraction (definition)
+    PolicyStatement exportDcu = policies.get("EXPORT-DCU");
+    assertThat(exportDcu, notNullValue());
+
+    PsTerm termA = exportDcu.getTerms().get("REGION-A");
+    assertThat(termA.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termA.getThens().getAllThens()),
+        equalTo(new PsThenDestinationClass("DEST-CLASS-A")));
+
+    PsTerm termB = exportDcu.getTerms().get("REGION-B");
+    assertThat(termB.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termB.getThens().getAllThens()),
+        equalTo(new PsThenDestinationClass("DEST-CLASS-B")));
+
+    // Test firewall filter from destination-class extraction (reference)
+    assertThat(filters, hasEntry(equalTo("METERING"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringFilter = (ConcreteFirewallFilter) filters.get("METERING");
+    assertThat(meteringFilter.getTerms(), hasKeys("METER-A", "METER-B", "METER-UNDEF", "ACCEPT"));
+
+    FwTerm fwTermA = meteringFilter.getTerms().get("METER-A");
+    assertThat(fwTermA.getFroms(), hasSize(1));
+    FwFrom fromA = getOnlyElement(fwTermA.getFroms());
+    assertThat(fromA, instanceOf(FwFromDestinationClass.class));
+    assertThat(((FwFromDestinationClass) fromA).getName(), equalTo("DEST-CLASS-A"));
+
+    FwTerm fwTermB = meteringFilter.getTerms().get("METER-B");
+    assertThat(fwTermB.getFroms(), hasSize(1));
+    FwFrom fromB = getOnlyElement(fwTermB.getFroms());
+    assertThat(fromB, instanceOf(FwFromDestinationClass.class));
+    assertThat(((FwFromDestinationClass) fromB).getName(), equalTo("DEST-CLASS-B"));
+
+    // Test undefined destination-class reference
+    FwTerm fwTermUndef = meteringFilter.getTerms().get("METER-UNDEF");
+    assertThat(fwTermUndef.getFroms(), hasSize(1));
+    FwFrom fromUndef = getOnlyElement(fwTermUndef.getFroms());
+    assertThat(fromUndef, instanceOf(FwFromDestinationClass.class));
+    assertThat(((FwFromDestinationClass) fromUndef).getName(), equalTo("DEST-CLASS-UNDEFINED"));
+
+    // Test IPv6 filter with destination-class
+    assertThat(filters, hasEntry(equalTo("METERING-V6"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringV6Filter = (ConcreteFirewallFilter) filters.get("METERING-V6");
+    assertThat(meteringV6Filter.getTerms(), hasKeys("METER-A", "ACCEPT"));
+
+    FwTerm fwTermV6 = meteringV6Filter.getTerms().get("METER-A");
+    assertThat(fwTermV6.getFroms(), hasSize(1));
+    FwFrom fromV6 = getOnlyElement(fwTermV6.getFroms());
+    assertThat(fromV6, instanceOf(FwFromDestinationClass.class));
+    assertThat(((FwFromDestinationClass) fromV6).getName(), equalTo("DEST-CLASS-A"));
+  }
+
+  @Test
+  public void testDestinationClassDefinitionAndReferences() throws IOException {
+    String hostname = "destination-class";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify destination-class definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, DESTINATION_CLASS, "DEST-CLASS-A"));
+    assertThat(ccae, hasDefinedStructure(filename, DESTINATION_CLASS, "DEST-CLASS-B"));
+
+    // Verify destination-class references are tracked
+    // DEST-CLASS-A is referenced 2 times (once in inet filter, once in inet6 filter)
+    assertThat(ccae, hasNumReferrers(filename, DESTINATION_CLASS, "DEST-CLASS-A", 2));
+    // DEST-CLASS-B is referenced 1 time (in inet filter)
+    assertThat(ccae, hasNumReferrers(filename, DESTINATION_CLASS, "DEST-CLASS-B", 1));
+
+    // Verify undefined destination-class reference is identified
+    assertThat(ccae, hasUndefinedReference(filename, DESTINATION_CLASS, "DEST-CLASS-UNDEFINED"));
+  }
+
+  @Test
   public void testPolicyStatementFromProtocol() {
     JuniperConfiguration vc = parseJuniperConfig("policy-statement-from-protocol");
     PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
@@ -11379,6 +11462,27 @@ public final class FlatJuniperGrammarTest {
     Fib fib = dp.getFibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME);
     assertThat(fib.get(Ip.parse("192.168.0.1")), not(empty()));
     assertThat(fib.get(Ip.parse("192.168.1.1")), not(empty()));
+  }
+
+  /**
+   * {@code then source-class}/{@code then destination-class} (SCU/DCU) are only settable from a
+   * forwarding-table export policy, so they must not be reported as having no effect there. Other
+   * attribute mutations, like {@code then metric}, still are.
+   */
+  @Test
+  public void testForwardingTableExport_classActionsNotFlagged() throws IOException {
+    String hostname = "forwarding-table-export-classes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "RISK: forwarding-table export FIB_CLASSES term class-a: PsThenMetric has no effect"
+                    + " (only accept/reject, load-balance, and source-class/destination-class"
+                    + " affect forwarding-table export)")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

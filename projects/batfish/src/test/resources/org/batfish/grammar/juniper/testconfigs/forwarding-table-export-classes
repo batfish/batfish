@@ -1,0 +1,18 @@
+#
+set system host-name forwarding-table-export-classes
+
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+
+set routing-options static route 192.168.0.0/24 next-hop 10.0.0.2
+
+# SCU/DCU classification: source-class and destination-class are only settable from a
+# forwarding-table export policy, so they must not be flagged as having no effect. `then metric`
+# is a genuine no-op in this context and should be flagged.
+set policy-options policy-statement FIB_CLASSES term class-a from route-filter 192.168.0.0/24 exact
+set policy-options policy-statement FIB_CLASSES term class-a then source-class CLASS-A
+set policy-options policy-statement FIB_CLASSES term class-a then destination-class CLASS-B
+set policy-options policy-statement FIB_CLASSES term class-a then metric 100
+set policy-options policy-statement FIB_CLASSES term class-a then accept
+
+set routing-options forwarding-table export FIB_CLASSES

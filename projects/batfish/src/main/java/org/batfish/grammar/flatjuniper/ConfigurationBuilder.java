@@ -32,6 +32,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_S
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_SCHEDULER_MAP;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
+import static org.batfish.representation.juniper.JuniperStructureType.DESTINATION_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
@@ -127,6 +128,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_FROM_DESTINATION_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_FROM_SOURCE_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
@@ -398,6 +400,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_port_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
@@ -678,6 +681,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_destination_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_load_balanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
@@ -1088,6 +1092,7 @@ import org.batfish.representation.juniper.FwFromApplicationOrApplicationSet;
 import org.batfish.representation.juniper.FwFromDestinationAddress;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
+import org.batfish.representation.juniper.FwFromDestinationClass;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
@@ -1243,6 +1248,7 @@ import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
+import org.batfish.representation.juniper.PsThenDestinationClass;
 import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLoadBalance;
 import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
@@ -5363,6 +5369,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_destination_class(Fftf_destination_classContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    FwFrom from = new FwFromDestinationClass(name);
+    _currentFwTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        DESTINATION_CLASS, name, FIREWALL_FILTER_FROM_DESTINATION_CLASS, getLine(ctx.name.start));
+  }
+
+  @Override
   public void exitFftf_destination_port(Fftf_destination_portContext ctx) {
     SubRange ports = toSubRange(ctx.port_range());
     FwFrom from = new FwFromDestinationPort(ports);
@@ -7103,6 +7119,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_default_action_reject(Popst_default_action_rejectContext ctx) {
     addPsThen(new PsThenDefaultActionReject(), ctx);
+  }
+
+  @Override
+  public void exitPopst_destination_class(Popst_destination_classContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    addPsThen(new PsThenDestinationClass(name), ctx);
+    _configuration.defineSingleLineStructure(DESTINATION_CLASS, name, getLine(ctx.name.start));
   }
 
   @Override

@@ -599,6 +599,7 @@ popst_common
    | popst_cos_next_hop_map
    | popst_default_action_accept
    | popst_default_action_reject
+   | popst_destination_class
    | popst_external
    | popst_forwarding_class
    | popst_install_nexthop
@@ -648,6 +649,11 @@ popst_default_action_accept
 popst_default_action_reject
 :
    DEFAULT_ACTION REJECT
+;
+
+popst_destination_class
+:
+   DESTINATION_CLASS name = junos_name
 ;
 
 popst_external

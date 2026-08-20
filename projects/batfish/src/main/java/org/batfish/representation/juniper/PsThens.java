@@ -126,6 +126,7 @@ public final class PsThens implements Serializable {
           "metric2",
           "load-balance",
           "source-class",
+          "destination-class",
           "tunnel-attribute set",
           "tunnel-attribute remove",
           "add-path send-count");
@@ -170,6 +171,8 @@ public final class PsThens implements Serializable {
       return "tunnel-attribute remove";
     } else if (then instanceof PsThenSourceClass) {
       return "source-class";
+    } else if (then instanceof PsThenDestinationClass) {
+      return "destination-class";
     } else if (then instanceof PsThenAddPathSendCount) {
       return "add-path send-count";
     }

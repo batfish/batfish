@@ -600,6 +600,8 @@ DESTINATION_ADDRESS_EXCLUDED: 'destination-address-excluded';
 
 DESTINATION_ADDRESS_NAME: 'destination-address-name' -> pushMode(M_Name);
 
+DESTINATION_CLASS: 'destination-class' -> pushMode(M_Name);
+
 DESTINATION_HOST_PROHIBITED: 'destination-host-prohibited';
 
 DESTINATION_HOST_UNKNOWN: 'destination-host-unknown';
