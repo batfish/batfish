@@ -35,10 +35,14 @@ public abstract class InterfaceAddress implements Serializable, Comparable<Inter
       return UnnumberedAddress.parse(text);
     }
     try {
-      // Try the common case first
+      // Try the common IPv4 case first.
       return ConcreteInterfaceAddress.parse(text);
     } catch (IllegalArgumentException e) {
-      return LinkLocalAddress.parse(text);
+      try {
+        return ConcreteInterfaceAddress6.parse(text);
+      } catch (IllegalArgumentException e6) {
+        return LinkLocalAddress.parse(text);
+      }
     }
   }
 }

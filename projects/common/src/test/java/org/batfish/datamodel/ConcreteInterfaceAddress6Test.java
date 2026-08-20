@@ -53,6 +53,17 @@ public class ConcreteInterfaceAddress6Test {
     assertThat(BatfishObjectMapper.clone(cia, ConcreteInterfaceAddress6.class), equalTo(cia));
   }
 
+
+  @Test
+  public void testInterfaceAddressJsonSerialization() {
+    InterfaceAddress address =
+        ConcreteInterfaceAddress6.parse("2001:db8::1/64");
+
+    assertThat(
+        BatfishObjectMapper.clone(address, InterfaceAddress.class),
+        equalTo(address));
+  }
+
   @Test
   public void testInvalidNumBitsLow() {
     thrown.expect(IllegalArgumentException.class);
