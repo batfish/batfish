@@ -226,6 +226,10 @@ public class AosCxConfiguration extends VendorConfiguration {
     if (iface.getEnabled() != null) {
       return iface.getEnabled();
     }
+    // The dedicated management interface is enabled by default.
+    if (iface.getName().equals("mgmt")) {
+      return true;
+    }
     // Physical AOS-CX interfaces are disabled by default. Loopback and VLAN
     // interfaces commonly appear enabled without an explicit "no shutdown".
     return getInterfaceType(iface) != InterfaceType.PHYSICAL;

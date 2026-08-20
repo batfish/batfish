@@ -17,6 +17,7 @@ ANY: 'any';
 BGP: 'bgp';
 COST: 'cost';
 CONNECTED: 'connected';
+DEFAULT_GATEWAY: 'default-gateway';
 DESCRIPTION: 'description';
 ACTIVATE: 'activate';
 AREA: 'area';
@@ -61,6 +62,7 @@ RANGE: 'range';
 SHUTDOWN: 'shutdown';
 UNICAST: 'unicast';
 SPEED: 'speed';
+STATIC: 'static';
 VLAN: 'vlan';
 VRF: 'vrf';
 

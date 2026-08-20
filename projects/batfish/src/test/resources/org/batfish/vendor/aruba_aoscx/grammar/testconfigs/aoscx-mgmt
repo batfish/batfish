@@ -1,0 +1,5 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname aoscx-router
+interface mgmt
+    ip static 192.0.2.10/24
+    default-gateway 192.0.2.1

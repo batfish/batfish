@@ -16,11 +16,13 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_access_list_ipContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_acl_entryContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_apply_access_list_ipContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_default_gatewayContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_descriptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
@@ -163,6 +165,31 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_default_gateway(S_default_gatewayContext ctx) {
+    if (_currentInterface == null
+        || !_currentInterface.getName().equals("mgmt")) {
+      warn(ctx, "Ignoring default-gateway outside management interface context");
+      return;
+    }
+
+    String gateway = ctx.WORD().getText();
+
+    if (Ip.tryParse(gateway).isEmpty()) {
+      warn(ctx, "Ignoring non-IPv4 management default gateway");
+      return;
+    }
+
+    _configuration
+        .getStaticRoutes()
+        .add(
+            new AosCxStaticRoute(
+                Prefix.ZERO,
+                NextHopType.IP,
+                gateway,
+                "mgmt"));
+  }
+
+  @Override
   public void exitS_description(S_descriptionContext ctx) {
     if (_currentInterface == null
         || ctx.getStart().getCharPositionInLine() == 0) {
@@ -189,6 +216,12 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_interface(S_interfaceContext ctx) {
     String name = toInterfaceName(ctx.interface_name());
     _currentInterface = _configuration.getOrCreateInterface(name);
+
+    if (name.equals("mgmt")) {
+      _configuration.addVrf("mgmt");
+      _currentInterface.setVrfName("mgmt");
+    }
+
     _currentRouteMapEntry = null;
     _currentIpAccessList = null;
   }
@@ -255,6 +288,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentInterface.setAddress(ConcreteInterfaceAddress.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ip_static(S_ip_staticContext ctx) {
+    if (_currentInterface == null
+        || !_currentInterface.getName().equals("mgmt")) {
+      warn(ctx, "Ignoring ip static outside management interface context");
+      return;
+    }
+
+    String address = ctx.WORD().getText();
+
+    if (address.contains(":")) {
+      warn(ctx, "Ignoring IPv6 management static address until IPv6 support is implemented");
+      return;
+    }
+
+    _currentInterface.setAddress(
+        ConcreteInterfaceAddress.parse(address));
   }
 
   @Override

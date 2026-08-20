@@ -15,6 +15,7 @@ statement
   s_access_list_ip
   | s_acl_entry
   | s_apply_access_list_ip
+  | s_default_gateway
   | s_description
   | s_hostname
   | s_interface
@@ -22,6 +23,7 @@ statement
   | s_vrf_attach
   | s_vrf
   | s_ip_address
+  | s_ip_static
   | s_ip_mtu
   | s_ip_ospf_area
   | s_ip_ospf_cost
@@ -112,6 +114,12 @@ acl_direction
 ;
 
 
+
+s_default_gateway
+:
+  DEFAULT_GATEWAY WORD NEWLINE
+;
+
 s_description
 :
   DESCRIPTION (~NEWLINE)+ NEWLINE
@@ -156,6 +164,12 @@ s_ip_address
 ;
 
 
+
+
+s_ip_static
+:
+  IP STATIC WORD NEWLINE
+;
 
 s_ip_mtu
 :
@@ -326,5 +340,5 @@ s_speed
 
 null_statement
 :
-  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | MTU | NATIVE | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | DEFAULT_GATEWAY | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | MTU | NATIVE | NETWORK | NO | NULLROUTE | OSPF | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | STATIC | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

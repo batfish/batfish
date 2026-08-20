@@ -164,6 +164,59 @@ public final class AosCxGrammarTest {
 
 
 
+
+  @Test
+  public void testManagementInterfaceExtraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-mgmt");
+
+    AosCxInterface mgmt = c.getInterfaces().get("mgmt");
+    assertThat(mgmt, notNullValue());
+    assertThat(mgmt.getVrfName(), equalTo("mgmt"));
+    assertThat(
+        mgmt.getAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("192.0.2.10/24")));
+
+    assertThat(c.getStaticRoutes().size(), equalTo(1));
+
+    AosCxStaticRoute defaultRoute = c.getStaticRoutes().get(0);
+    assertThat(defaultRoute.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(defaultRoute.getVrfName(), equalTo("mgmt"));
+    assertThat(defaultRoute.getNextHopType(), equalTo(NextHopType.IP));
+    assertThat(defaultRoute.getNextHop(), equalTo("192.0.2.1"));
+  }
+
+  @Test
+  public void testManagementInterfaceConversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-mgmt");
+    Configuration c = configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+    assertThat(c.getVrfs(), hasKey("mgmt"));
+
+    org.batfish.datamodel.Interface mgmt =
+        c.getAllInterfaces().get("mgmt");
+
+    assertThat(mgmt, notNullValue());
+    assertThat(mgmt.getVrfName(), equalTo("mgmt"));
+    assertThat(mgmt.getAdminUp(), equalTo(true));
+    assertThat(
+        mgmt.getAllAddresses(),
+        contains(ConcreteInterfaceAddress.parse("192.0.2.10/24")));
+
+    assertThat(
+        c.getVrfs().get("mgmt").getStaticRoutes().size(),
+        equalTo(1));
+
+    StaticRoute defaultRoute =
+        c.getVrfs().get("mgmt").getStaticRoutes().first();
+
+    assertThat(defaultRoute.getNetwork(), equalTo(Prefix.ZERO));
+    assertThat(
+        defaultRoute.getNextHop(),
+        equalTo(NextHopIp.of(Ip.parse("192.0.2.1"))));
+  }
+
   @Test
   public void testDescriptionExtraction() {
     AosCxConfiguration c = parseVendorConfig("aoscx-description");
