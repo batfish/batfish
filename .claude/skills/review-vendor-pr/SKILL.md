@@ -233,6 +233,14 @@ independently-written CLIs; an existing `representation/cisco_asa` class is not
 evidence about IOS. A sibling PR for another OS tells you what a reviewer accepted
 there, not what this device parses — check this platform's own book.
 
+**In the `cisco` grammar, IOS fidelity wins.** That grammar and
+`CiscoControlPlaneExtractor` also serve ARUBAOS, CADANT, FORCE10, and FOUNDRY, so a rule
+narrowed to match the IOS command reference can drop input those four used to parse. That
+is the accepted tradeoff — do not raise the lost coverage as a finding, and do not go
+looking for their manuals. See
+[`docs/parsing/vendors/cisco_ios.md`](../../../docs/parsing/vendors/cisco_ios.md). Wrong
+extraction for those formats is still a defect; only lost coverage is licensed.
+
 ## 3. Trace by reading, not by running
 
 For each hypothesis, answer it by reading both revisions. The question is always

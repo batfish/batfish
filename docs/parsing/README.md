@@ -17,6 +17,7 @@ then processed by an [extractor](../extraction/README.md).
 
 Different vendors have unique configuration formats and parsing requirements. For vendor-specific guidance, see:
 
+- [Cisco IOS](vendors/cisco_ios.md) - the five formats sharing the `cisco` grammar, and which one wins
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
 - [Nokia SR-OS](vendors/sros.md) - SR-OS-specific parsing and extraction details
