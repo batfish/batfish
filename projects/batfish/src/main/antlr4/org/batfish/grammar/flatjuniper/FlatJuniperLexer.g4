@@ -50,10 +50,6 @@ tokens {
 
 ACCEPT: 'accept';
 
-ACCESS_END: 'access-end';
-
-ACCESS_START: 'access-start';
-
 ACCEPT_DATA: 'accept-data';
 
 ACCEPTED_PREFIX_LIMIT: 'accepted-prefix-limit';
@@ -62,9 +58,13 @@ ACCESS: 'access';
 
 ACCESS_DISABLE_EXTERNAL: 'access-disable-external';
 
+ACCESS_END: 'access-end';
+
 ACCESS_INTERNAL: 'access-internal';
 
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
+
+ACCESS_START: 'access-start';
 
 ACCOUNTING: 'accounting';
 ACTIVATE: 'activate';
@@ -194,24 +194,6 @@ ALL_PATHS: 'all-paths';
 ALL_INTERNAL_INTERFACES: 'all-internal-interfaces';
 ALLOW: 'allow';
 
-ALLOW_DUPLICATES: 'allow-duplicates';
-
-ALLOW_SNOOPED_CLIENTS: 'allow-snooped-clients';
-
-ALLOW_TCP_FORWARDING: 'allow-tcp-forwarding';
-
-ALLOW_V4MAPPED_PACKETS: 'allow-v4mapped-packets';
-
-ALTERNATE_FORMAT: 'alternate-format';
-
-ALWAYS_COMPARE_MED: 'always-compare-med';
-
-ALWAYS_SEND: 'always-send';
-
-ALWAYS_WRITE_GIADDR: 'always-write-giaddr';
-
-ANALYZER: 'analyzer';
-
 ALLOW_COMMANDS: 'allow-commands';
 
 ALLOW_COMMANDS_REGEXPS: 'allow-commands-regexps';
@@ -222,15 +204,33 @@ ALLOW_CONFIGURATION_EXACT_MATCH: 'allow-configuration-exact-match';
 
 ALLOW_CONFIGURATION_REGEXPS: 'allow-configuration-regexps';
 
+ALLOW_DUPLICATES: 'allow-duplicates';
+
 ALLOW_GRPC_RPC_REGEXPS: 'allow-grpc-rpc-regexps';
 
 ALLOW_HIDDEN_COMMANDS: 'allow-hidden-commands';
 
+ALLOW_SNOOPED_CLIENTS: 'allow-snooped-clients';
+
 ALLOW_SOURCES: 'allow-sources';
+
+ALLOW_TCP_FORWARDING: 'allow-tcp-forwarding';
 
 ALLOW_TIMES: 'allow-times';
 
+ALLOW_V4MAPPED_PACKETS: 'allow-v4mapped-packets';
+
 ALLOWED_DAYS: 'allowed-days';
+
+ALTERNATE_FORMAT: 'alternate-format';
+
+ALWAYS_COMPARE_MED: 'always-compare-med';
+
+ALWAYS_SEND: 'always-send';
+
+ALWAYS_WRITE_GIADDR: 'always-write-giaddr';
+
+ANALYZER: 'analyzer';
 
 ANNOUNCEMENT: 'announcement';
 
@@ -366,15 +366,15 @@ AUTONOMOUS_SYSTEM: 'autonomous-system' -> pushMode(M_BgpAsn);
 
 AUXILIARY: 'auxiliary';
 
+BACKOFF_FACTOR: 'backoff-factor';
+
+BACKOFF_THRESHOLD: 'backoff-threshold';
+
 BAD_INNER_HEADER: 'bad-inner-header';
 
 BAD_OPTION: 'bad-option';
 
 BACKUP_ROUTER: 'backup-router';
-
-BACKOFF_FACTOR: 'backoff-factor';
-
-BACKOFF_THRESHOLD: 'backoff-threshold';
 
 BANDWIDTH: 'bandwidth' -> pushMode ( M_Bandwidth );
 BANDWIDTH_LIMIT: 'bandwidth-limit' -> pushMode(M_Bandwidth);
@@ -433,9 +433,9 @@ CHANGE_LOG: 'change-log';
 
 CHANGE_TYPE: 'change-type';
 
-CHASSIS: 'chassis';
-
 CHARACTER_SETS: 'character-sets';
+
+CHASSIS: 'chassis';
 
 CIPHERS: 'ciphers';
 
@@ -456,6 +456,8 @@ CLASS_OF_SERVICE: 'class-of-service';
 CLASSIFIERS: 'classifiers';
 
 CLEAR: 'clear';
+
+CLI: 'cli';
 
 CLIENT: 'client';
 
@@ -516,15 +518,13 @@ CONDITIONAL_METRIC: 'conditional-metric';
 
 CONFEDERATION: 'confederation';
 
-CONFLICT_LOG: 'conflict-log';
-
-CONNECTIONS: 'connections';
-
-CLI: 'cli';
-
 CONFIGURATION_BREADCRUMBS: 'configuration-breadcrumbs';
 
 CONFIRM_COMMANDS: 'confirm-commands';
+
+CONFLICT_LOG: 'conflict-log';
+
+CONNECTIONS: 'connections';
 
 CONNECTION_LIMIT: 'connection-limit';
 
@@ -617,15 +617,6 @@ DENY: 'deny';
 
 DENY_ALL: 'deny-all';
 
-DES_CBC: 'des-cbc';
-
-DESCRIPTION
-:
-   'description' -> pushMode ( M_Description )
-;
-
-DESIGNATED_FORWARDER_ELECTION_HOLD_TIME: 'designated-forwarder-election-hold-time';
-
 DENY_COMMANDS: 'deny-commands';
 
 DENY_COMMANDS_REGEXPS: 'deny-commands-regexps';
@@ -641,6 +632,15 @@ DENY_GRPC_RPC_REGEXPS: 'deny-grpc-rpc-regexps';
 DENY_SOURCES: 'deny-sources';
 
 DENY_TIMES: 'deny-times';
+
+DES_CBC: 'des-cbc';
+
+DESCRIPTION
+:
+   'description' -> pushMode ( M_Description )
+;
+
+DESIGNATED_FORWARDER_ELECTION_HOLD_TIME: 'designated-forwarder-election-hold-time';
 
 DESTINATION: 'destination';
 
@@ -801,6 +801,8 @@ ENFORCE_FIRST_AS: 'enforce-first-as';
 
 ENGINE_ID: 'engine-id';
 
+ENHANCED_AVS_MAX: 'enhanced-avs-max';
+
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
 
 EQUAL_COST_PATHS: 'equal-cost-paths';
@@ -822,8 +824,6 @@ ETHERNET_SWITCHING: 'ethernet-switching';
 ETHERNET_SWITCH_PROFILE: 'ethernet-switch-profile';
 
 ETHERNET_SWITCHING_OPTIONS: 'ethernet-switching-options';
-
-ENHANCED_AVS_MAX: 'enhanced-avs-max';
 
 EVENT_OPTIONS: 'event-options';
 
@@ -936,6 +936,8 @@ FORCE_UP: 'force-up';
 
 FOREVER: 'forever';
 
+FORMAT: 'format';
+
 FORWARD_SNOOPED_CLIENTS: 'forward-snooped-clients';
 
 FORWARDERS: 'forwarders';
@@ -970,11 +972,7 @@ FRAGMENT_OFFSET_EXCEPT: 'fragment-offset-except' -> pushMode(M_SubRange);
 
 FRAMING: 'framing';
 
-FORMAT: 'format';
-
 FROM: 'from';
-
-FULL_NAME: 'full-name' -> pushMode ( M_Name );
 
 FROM_ZONE: 'from-zone' -> pushMode(M_Zone);
 
@@ -983,6 +981,8 @@ FTP: 'ftp';
 FTP_DATA: 'ftp-data';
 
 FULL_DUPLEX: 'full-duplex';
+
+FULL_NAME: 'full-name' -> pushMode ( M_Name );
 
 G: 'g';
 
@@ -1929,13 +1929,14 @@ LOG_UPDOWN: 'log-updown';
 LOGICAL_INTERFACE_POLICER: 'logical-interface-policer';
 LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
 
+LOGICAL_SYSTEMS: 'logical-systems' -> pushMode(M_Name);
+LOGIN: 'login';
+
 LOGIN_ALARMS: 'login-alarms';
 
 LOGIN_SCRIPT: 'login-script';
 
 LOGIN_TIP: 'login-tip';
-LOGICAL_SYSTEMS: 'logical-systems' -> pushMode(M_Name);
-LOGIN: 'login';
 
 LONGER: 'longer';
 
@@ -2062,6 +2063,8 @@ MEMBERSHIP_REPORT: 'membership-report';
 
 MEMBERSHIP_QUERY: 'membership-query';
 
+MESSAGE: 'message';
+
 METRIC: 'metric';
 
 METRIC2: 'metric2';
@@ -2079,7 +2082,27 @@ MGCP_UA: 'mgcp-ua';
 
 MINIMUM_BANDWIDTH: 'minimum-bandwidth';
 
+MINIMUM_CHANGES: 'minimum-changes';
+
+MINIMUM_CHARACTER_CHANGES: 'minimum-character-changes';
+
 MINIMUM_INTERVAL: 'minimum-interval';
+
+MINIMUM_LENGTH: 'minimum-length';
+
+MINIMUM_LIFETIME: 'minimum-lifetime';
+
+MINIMUM_LOWER_CASES: 'minimum-lower-cases';
+
+MINIMUM_NUMERICS: 'minimum-numerics';
+
+MINIMUM_PUNCTUATIONS: 'minimum-punctuations';
+
+MINIMUM_REUSE: 'minimum-reuse';
+
+MINIMUM_TIME: 'minimum-time';
+
+MINIMUM_UPPER_CASES: 'minimum-upper-cases';
 
 MS_RPC: 'ms-rpc';
 
@@ -2104,28 +2127,6 @@ MPLS_INET_BOTH_NON_VPN: 'mpls-inet-both-non-vpn';
 MSDP: 'msdp';
 
 MSTP: 'mstp';
-
-MESSAGE: 'message';
-
-MINIMUM_CHANGES: 'minimum-changes';
-
-MINIMUM_CHARACTER_CHANGES: 'minimum-character-changes';
-
-MINIMUM_LENGTH: 'minimum-length';
-
-MINIMUM_LIFETIME: 'minimum-lifetime';
-
-MINIMUM_LOWER_CASES: 'minimum-lower-cases';
-
-MINIMUM_NUMERICS: 'minimum-numerics';
-
-MINIMUM_PUNCTUATIONS: 'minimum-punctuations';
-
-MINIMUM_REUSE: 'minimum-reuse';
-
-MINIMUM_TIME: 'minimum-time';
-
-MINIMUM_UPPER_CASES: 'minimum-upper-cases';
 
 MTU: 'mtu';
 
@@ -2254,6 +2255,7 @@ NO_EXPORT: 'no-export';
 NO_EXPORT_SUBCONFED: 'no-export-subconfed';
 NO_FLOW_CONTROL: 'no-flow-control';
 NO_GATEWAY_COMMUNITY: 'no-gateway-community';
+NO_HIDDEN_COMMANDS: 'no-hidden-commands';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
@@ -2269,20 +2271,17 @@ NO_PING_TIME_STAMP: 'no-ping-time-stamp';
 NO_PREEMPT: 'no-preempt';
 NO_PREPEND_GLOBAL_AS: 'no-prepend-global-as';
 NO_PUBLIC_KEYS: 'no-public-keys';
-NO_HIDDEN_COMMANDS: 'no-hidden-commands';
-
 NO_READVERTISE: 'no-readvertise';
 
-NO_SCP_SERVER: 'no-scp-server';
-
-NO_SFTP_SERVER: 'no-sftp-server';
 NO_REDIRECTS: 'no-redirects';
 NO_REDIRECTS_IPV6: 'no-redirects-ipv6';
 NO_RESOLVE: 'no-resolve';
 NO_RETAIN: 'no-retain';
 NO_RFC_1583: 'no-rfc-1583';
 NO_ROOT_PORT: 'no-root-port';
+NO_SCP_SERVER: 'no-scp-server';
 NO_SELF_PING: 'no-self-ping';
+NO_SFTP_SERVER: 'no-sftp-server';
 NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
@@ -2381,6 +2380,7 @@ PER_PREFIX: 'per-prefix';
 PER_UNIT_SCHEDULER: 'per-unit-scheduler';
 PERCENT: 'percent';
 PERFECT_FORWARD_SECRECY: 'perfect-forward-secrecy';
+PERMISSIONS: 'permissions' -> pushMode(M_Name);
 PERMIT: 'permit';
 
 PERMIT_ALL: 'permit-all';
@@ -2393,11 +2393,11 @@ PGM: 'pgm';
 
 PIM: 'pim';
 
-PLAIN_TEXT_PASSWORD: 'plain-text-password';
-
 PING: 'ping';
 
 PING_DEATH: 'ping-death';
+
+PLAIN_TEXT_PASSWORD: 'plain-text-password';
 
 POE: 'poe';
 
@@ -2450,8 +2450,6 @@ POP_POP: 'pop-pop';
 POP_SWAP: 'pop-swap';
 
 POP3: 'pop3';
-
-PERMISSIONS: 'permissions' -> pushMode(M_Name);
 
 PORT: 'port' -> pushMode(M_Port);
 PORT_EXCEPT: 'port-except' -> pushMode(M_Port);
@@ -2812,6 +2810,8 @@ SAMPLING: 'sampling';
 
 SAP: 'sap';
 
+SATELLITE: 'satellite';
+
 SAVED_CORE_CONTEXT: 'saved-core-context';
 
 SAVED_CORE_FILES: 'saved-core-files';
@@ -2863,15 +2863,11 @@ SCREEN
 
 SCRIPTS: 'scripts';
 
-SATELLITE: 'satellite';
-
 SCTP: 'sctp';
 
 SCRUBBED: F_Scrubbed;
 
 SECRET: 'secret' -> pushMode(M_SecretString);
-
-SECURITY_ROLE: 'security-role';
 
 SECONDARY: 'secondary' -> pushMode(M_Name);
 
@@ -2880,6 +2876,8 @@ SECURITY: 'security';
 SECURITY_OPTION: 'security-option';
 
 SECURITY_PROFILE: 'security-profile' -> pushMode(M_Name);
+
+SECURITY_ROLE: 'security-role';
 
 SECURITY_ZONE: 'security-zone' -> pushMode(M_Zone);
 
@@ -2933,9 +2931,9 @@ SFM_DPD_OPTION: 'SFM-DPD-option';
 SHA_256: 'sha-256';
 SHA256: 'sha256';
 
-SHA512: 'sha512';
 SHA_384: 'sha-384';
 SHA1: 'sha1';
+SHA512: 'sha512';
 SHAPING_RATE: 'shaping-rate';
 SHARED_BUFFER: 'shared-buffer';
 SHARED_IKE_ID: 'shared-ike-id';
@@ -3151,9 +3149,8 @@ TEAR_DROP: 'tear-drop';
 TEARDOWN: 'teardown';
 TELNET: 'telnet';
 TEMPORAL: 'temporal' -> pushMode(M_Bandwidth);
-TEREDO: 'teredo';
 TENANT: 'tenant';
-
+TEREDO: 'teredo';
 TERM: 'term' -> pushMode(M_Name);
 
 TFTP: 'tftp';
@@ -3195,11 +3192,12 @@ TRAP: 'trap';
 TRAP_DESTINATIONS: 'trap-destinations';
 TRAP_GROUP: 'trap-group' -> pushMode(M_Name);
 
-TRIES_BEFORE_DISCONNECT: 'tries-before-disconnect';
 TRAP_OPTIONS: 'trap-options';
 TRAPS: 'traps';
 
 TRI_COLOR: 'tri-color';
+
+TRIES_BEFORE_DISCONNECT: 'tries-before-disconnect';
 
 TRUNK: 'trunk';
 
@@ -3236,9 +3234,9 @@ UDP: 'udp';
 
 UDP_SWEEP: 'udp-sweep';
 
-UNICAST: 'unicast';
-
 UID: 'uid';
+
+UNICAST: 'unicast';
 
 UNIT: 'unit';
 
@@ -3348,10 +3346,6 @@ VRF_TARGET
 
 VRRP: 'vrrp';
 
-WEB_UI_HIDDEN_MENUS: 'web-ui-hidden-menus';
-
-WEB_UI_READ_ONLY_MENUS: 'web-ui-read-only-menus';
-
 VRRP_GROUP: 'vrrp-group';
 
 VSTP: 'vstp';
@@ -3368,6 +3362,10 @@ VXLAN_ROUTING: 'vxlan-routing';
 WARNING: 'warning';
 
 WEB_MANAGEMENT: 'web-management';
+
+WEB_UI_HIDDEN_MENUS: 'web-ui-hidden-menus';
+
+WEB_UI_READ_ONLY_MENUS: 'web-ui-read-only-menus';
 
 WEBAPI: 'webapi';
 

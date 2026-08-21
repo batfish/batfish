@@ -53,7 +53,7 @@ set system login password minimum-lifetime 7
 set system login password minimum-character-changes 5
 set system login password format sha512
 set system login password change-type character-sets
-set system login password minimum-changes 2
+set system login password minimum-changes 2147483647
 set system login password minimum-lower-cases 1
 set system login password minimum-upper-cases 1
 set system login password minimum-numerics 1

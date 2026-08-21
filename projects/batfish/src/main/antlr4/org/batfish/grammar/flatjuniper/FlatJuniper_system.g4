@@ -588,7 +588,7 @@ sylp_change_type
 
 sylp_format
 :
-   FORMAT ( SHA256 | SHA512 )
+   FORMAT ( MD5 | SHA1 | SHA256 | SHA512 )
 ;
 
 sylp_maximum_length
@@ -603,7 +603,7 @@ sylp_maximum_lifetime
 
 sylp_minimum_changes
 :
-   MINIMUM_CHANGES value = dec
+   MINIMUM_CHANGES value = uint32
 ;
 
 sylp_minimum_character_changes

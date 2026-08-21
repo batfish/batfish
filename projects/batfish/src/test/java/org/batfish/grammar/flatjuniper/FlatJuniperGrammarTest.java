@@ -4573,7 +4573,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(pw.getMinimumCharacterChanges(), equalTo(5));
     assertThat(pw.getFormat(), equalTo(LoginPassword.Format.SHA512));
     assertThat(pw.getChangeType(), equalTo(LoginPassword.ChangeType.CHARACTER_SETS));
-    assertThat(pw.getMinimumChanges(), equalTo(2));
+    assertThat(pw.getMinimumChanges(), equalTo((long) Integer.MAX_VALUE));
     assertThat(pw.getMinimumLowerCases(), equalTo(1));
     assertThat(pw.getMinimumUpperCases(), equalTo(1));
     assertThat(pw.getMinimumNumerics(), equalTo(1));

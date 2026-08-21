@@ -11,6 +11,8 @@ public class LoginPassword implements Serializable {
 
   /** Password hashing/authentication algorithm ({@code format}). */
   public enum Format {
+    MD5,
+    SHA1,
     SHA256,
     SHA512,
   }
@@ -25,7 +27,7 @@ public class LoginPassword implements Serializable {
   private @Nullable ChangeType _changeType;
   private @Nullable Integer _minimumLength;
   private @Nullable Integer _maximumLength;
-  private @Nullable Integer _minimumChanges;
+  private @Nullable Long _minimumChanges;
   private @Nullable Integer _minimumCharacterChanges;
   private @Nullable Integer _minimumLowerCases;
   private @Nullable Integer _minimumUpperCases;
@@ -67,11 +69,11 @@ public class LoginPassword implements Serializable {
     _maximumLength = maximumLength;
   }
 
-  public @Nullable Integer getMinimumChanges() {
+  public @Nullable Long getMinimumChanges() {
     return _minimumChanges;
   }
 
-  public void setMinimumChanges(@Nullable Integer minimumChanges) {
+  public void setMinimumChanges(@Nullable Long minimumChanges) {
     _minimumChanges = minimumChanges;
   }
 

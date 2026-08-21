@@ -9297,8 +9297,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSylp_format(Sylp_formatContext ctx) {
-    _currentLoginPassword.setFormat(
-        ctx.SHA256() != null ? LoginPassword.Format.SHA256 : LoginPassword.Format.SHA512);
+    LoginPassword.Format format;
+    if (ctx.MD5() != null) {
+      format = LoginPassword.Format.MD5;
+    } else if (ctx.SHA1() != null) {
+      format = LoginPassword.Format.SHA1;
+    } else if (ctx.SHA256() != null) {
+      format = LoginPassword.Format.SHA256;
+    } else {
+      assert ctx.SHA512() != null;
+      format = LoginPassword.Format.SHA512;
+    }
+    _currentLoginPassword.setFormat(format);
   }
 
   @Override
@@ -9323,8 +9333,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSylp_minimum_changes(Sylp_minimum_changesContext ctx) {
-    // Range is not specified by CLI doc, so no range check here
-    _currentLoginPassword.setMinimumChanges(toInt(ctx.value));
+    _currentLoginPassword.setMinimumChanges(toLong(ctx.value));
   }
 
   @Override
