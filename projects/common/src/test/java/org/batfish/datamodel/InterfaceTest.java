@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
@@ -47,6 +48,42 @@ public class InterfaceTest {
         .addEqualityGroup(new Dependency("i1", DependencyType.AGGREGATE))
         .addEqualityGroup(new Dependency("i2", DependencyType.BIND))
         .testEquals();
+  }
+
+
+  @Test
+  public void testIpv6AddressAccessors() {
+    ConcreteInterfaceAddress ipv4 =
+        ConcreteInterfaceAddress.parse("192.0.2.1/24");
+    ConcreteInterfaceAddress6 ipv6Primary =
+        ConcreteInterfaceAddress6.parse("2001:db8::1/64");
+    ConcreteInterfaceAddress6 ipv6Secondary =
+        ConcreteInterfaceAddress6.parse("2001:db8::2/64");
+
+    Interface iface =
+        Interface.builder()
+            .setName("foo")
+            .setType(LOGICAL)
+            .setAddresses(
+                ipv6Primary,
+                ImmutableSet.of(ipv4, ipv6Secondary))
+            .build();
+
+    assertThat(iface.getAddress(), equalTo(ipv6Primary));
+    assertThat(iface.getConcreteAddress(), nullValue());
+    assertThat(iface.getConcreteAddress6(), equalTo(ipv6Primary));
+
+    assertThat(
+        iface.getAllConcreteAddresses(),
+        equalTo(ImmutableSet.of(ipv4)));
+
+    assertThat(
+        iface.getAllConcreteAddresses6(),
+        equalTo(ImmutableSet.of(ipv6Primary, ipv6Secondary)));
+
+    assertThat(
+        iface.getAllAddresses(),
+        equalTo(ImmutableSet.of(ipv4, ipv6Primary, ipv6Secondary)));
   }
 
   @Test

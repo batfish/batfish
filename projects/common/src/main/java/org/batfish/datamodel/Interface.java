@@ -712,8 +712,11 @@ public final class Interface extends ComparableStructure<String> {
   private @Nonnull SortedSet<InterfaceAddress> _allAddresses;
   private @Nonnull SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
 
-  /** Cache of all concrete addresses */
+  /** Cache of all concrete IPv4 addresses */
   private transient @Nullable Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+
+  /** Cache of all concrete IPv6 addresses */
+  private transient @Nullable Set<ConcreteInterfaceAddress6> _allConcreteAddresses6;
 
   /** Cache of all link-local addresses */
   private transient @Nullable Set<LinkLocalAddress> _allLinkLocalAddresses;
@@ -971,6 +974,19 @@ public final class Interface extends ComparableStructure<String> {
               .collect(ImmutableSet.toImmutableSet());
     }
     return _allConcreteAddresses;
+  }
+
+  /** All concrete IPv6 address/network assignments on this interface. */
+  @JsonIgnore
+  public Set<ConcreteInterfaceAddress6> getAllConcreteAddresses6() {
+    if (_allConcreteAddresses6 == null) {
+      _allConcreteAddresses6 =
+          _allAddresses.stream()
+              .filter(a -> a instanceof ConcreteInterfaceAddress6)
+              .map(a -> (ConcreteInterfaceAddress6) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allConcreteAddresses6;
   }
 
   /**
@@ -1268,6 +1284,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  public @Nullable ConcreteInterfaceAddress6 getConcreteAddress6() {
+    return _address instanceof ConcreteInterfaceAddress6
+        ? (ConcreteInterfaceAddress6) _address
+        : null;
+  }
+
+  @JsonIgnore
   public @Nullable LinkLocalAddress getLinkLocalAddress() {
     return _address instanceof LinkLocalAddress ? (LinkLocalAddress) _address : null;
   }
@@ -1440,6 +1463,7 @@ public final class Interface extends ComparableStructure<String> {
     // Clear cached values
     _allLinkLocalAddresses = null;
     _allConcreteAddresses = null;
+    _allConcreteAddresses6 = null;
     _allUnnumberedAddresses = null;
   }
 
