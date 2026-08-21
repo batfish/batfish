@@ -1,0 +1,23 @@
+#
+set system host-name juniper-login-range
+#
+set system login retry-options backoff-factor 99
+set system login retry-options backoff-threshold 9
+set system login retry-options lockout-period 50000
+set system login retry-options maximum-time 500
+set system login retry-options minimum-time 99
+set system login retry-options tries-before-disconnect 99
+#
+set system login user baduser uid 99
+#
+set system login password maximum-length 200
+set system login password maximum-lifetime 500
+set system login password minimum-character-changes 99
+set system login password minimum-length 99
+set system login password minimum-lifetime 99
+set system login password minimum-lower-cases 200
+set system login password minimum-numerics 200
+set system login password minimum-punctuations 200
+set system login password minimum-reuse 50
+set system login password minimum-upper-cases 200
+#

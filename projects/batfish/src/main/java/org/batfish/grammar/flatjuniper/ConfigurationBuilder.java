@@ -46,6 +46,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureType.LOGIN_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
@@ -159,6 +160,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.LOGIN_USER_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
@@ -989,6 +991,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_costContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_accountingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_orderContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_default_address_selectionContext;
@@ -999,6 +1002,38 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_porttypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_security_profileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sya_eventsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syad_tacplusContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syadt_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syl_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syl_passwordContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syl_retry_optionsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syl_userContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylc_permissionsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_change_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_formatContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_maximum_lengthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_maximum_lifetimeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_changesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_character_changesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_lengthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_lifetimeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_lower_casesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_numericsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_punctuationsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_reuseContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylp_minimum_upper_casesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_backoff_factorContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_backoff_thresholdContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_lockout_periodContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_maximum_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_minimum_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylro_tries_before_disconnectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylu_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylu_full_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylu_uidContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylua_encrypted_passwordContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sylua_plain_text_passwordContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressContext;
@@ -1024,9 +1059,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_facilityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_severityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syslog_transport_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_secretContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_single_connectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_timeoutContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tacplus_server_hostContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
@@ -1049,6 +1087,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vrf_target_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.juniper.Accounting;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
 import org.batfish.representation.juniper.AddressBook;
 import org.batfish.representation.juniper.AddressBookEntry;
@@ -1169,6 +1208,11 @@ import org.batfish.representation.juniper.JunosSyslogSeverity;
 import org.batfish.representation.juniper.JunosSyslogTransportProtocol;
 import org.batfish.representation.juniper.LiteralCommunityMember;
 import org.batfish.representation.juniper.LogicalSystem;
+import org.batfish.representation.juniper.Login;
+import org.batfish.representation.juniper.LoginClass;
+import org.batfish.representation.juniper.LoginPassword;
+import org.batfish.representation.juniper.LoginRetryOptions;
+import org.batfish.representation.juniper.LoginUser;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
@@ -1329,6 +1373,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 255));
   private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 65535));
+  private static final IntegerSpace TACPLUS_SERVER_TIMEOUT_RANGE =
+      IntegerSpace.of(new SubRange(1, 90));
+  private static final IntegerSpace LOGIN_RETRY_BACKOFF_FACTOR_RANGE =
+      IntegerSpace.of(new SubRange(5, 10));
+  private static final IntegerSpace LOGIN_RETRY_BACKOFF_THRESHOLD_RANGE =
+      IntegerSpace.of(new SubRange(1, 3));
+  private static final IntegerSpace LOGIN_RETRY_LOCKOUT_PERIOD_RANGE =
+      IntegerSpace.of(new SubRange(1, 43200));
+  private static final IntegerSpace LOGIN_RETRY_MAXIMUM_TIME_RANGE =
+      IntegerSpace.of(new SubRange(20, 300));
+  private static final IntegerSpace LOGIN_RETRY_MINIMUM_TIME_RANGE =
+      IntegerSpace.of(new SubRange(20, 60));
+  private static final IntegerSpace LOGIN_RETRY_TRIES_BEFORE_DISCONNECT_RANGE =
+      IntegerSpace.of(new SubRange(2, 10));
+  private static final IntegerSpace LOGIN_USER_UID_RANGE =
+      IntegerSpace.of(new SubRange(100, 64000));
+  private static final IntegerSpace LOGIN_PASSWORD_MAXIMUM_LENGTH_RANGE =
+      IntegerSpace.of(new SubRange(20, 128));
+  private static final IntegerSpace LOGIN_PASSWORD_MAXIMUM_LIFETIME_RANGE =
+      IntegerSpace.of(new SubRange(30, 365));
+  private static final IntegerSpace LOGIN_PASSWORD_MINIMUM_CHARACTER_CHANGES_RANGE =
+      IntegerSpace.of(new SubRange(4, 15));
+  private static final IntegerSpace LOGIN_PASSWORD_MINIMUM_LENGTH_RANGE =
+      IntegerSpace.of(new SubRange(6, 20));
+  private static final IntegerSpace LOGIN_PASSWORD_MINIMUM_LIFETIME_RANGE =
+      IntegerSpace.of(new SubRange(1, 30));
+  private static final IntegerSpace LOGIN_PASSWORD_MINIMUM_REUSE_RANGE =
+      IntegerSpace.of(new SubRange(1, 20));
+  private static final IntegerSpace LOGIN_PASSWORD_MINIMUM_CHARACTER_CLASS_RANGE =
+      IntegerSpace.of(new SubRange(1, 128));
   private static final IntegerSpace SRLG_COST_RANGE = IntegerSpace.of(new SubRange(1, 65535));
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace NTP_KEY_NUMBER_RANGE = IntegerSpace.of(new SubRange(1, 65534));
@@ -2688,6 +2762,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private StaticRoute _currentStaticRoute;
 
   private TacplusServer _currentTacplusServer;
+
+  private org.batfish.representation.juniper.TacplusServer _currentJuniperTacplusServer;
+
+  private Accounting _currentAccounting;
+
+  private LoginClass _currentLoginClass;
+
+  private LoginUser _currentLoginUser;
+
+  private LoginRetryOptions _currentRetryOptions;
+
+  private LoginPassword _currentLoginPassword;
 
   private Zone _currentToZone;
 
@@ -4739,7 +4825,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     String hostname = toString(ctx.tacplus_server_host());
-    _currentLogicalSystem.getTacplusServers().add(hostname);
+    _currentJuniperTacplusServer =
+        _currentLogicalSystem
+            .getTacplusServers()
+            .computeIfAbsent(hostname, org.batfish.representation.juniper.TacplusServer::new);
     _currentTacplusServer =
         _currentLogicalSystem
             .getJf()
@@ -9045,6 +9134,300 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     _currentTacplusServer = null;
+    _currentJuniperTacplusServer = null;
+  }
+
+  @Override
+  public void enterSy_accounting(Sy_accountingContext ctx) {
+    if (_currentLogicalSystem.getAccounting() == null) {
+      _currentLogicalSystem.setAccounting(new Accounting());
+    }
+    _currentAccounting = _currentLogicalSystem.getAccounting();
+  }
+
+  @Override
+  public void exitSy_accounting(Sy_accountingContext ctx) {
+    _currentAccounting = null;
+  }
+
+  @Override
+  public void exitSya_events(Sya_eventsContext ctx) {
+    Accounting.Event event;
+    if (ctx.CHANGE_LOG() != null) {
+      event = Accounting.Event.CHANGE_LOG;
+    } else if (ctx.INTERACTIVE_COMMANDS() != null) {
+      event = Accounting.Event.INTERACTIVE_COMMANDS;
+    } else {
+      assert ctx.LOGIN() != null;
+      event = Accounting.Event.LOGIN;
+    }
+    _currentAccounting.getEvents().add(event);
+  }
+
+  @Override
+  public void enterSyad_tacplus(Syad_tacplusContext ctx) {
+    _currentAccounting.setTacplusDestination(true);
+  }
+
+  @Override
+  public void enterSyadt_server(Syadt_serverContext ctx) {
+    // Reuse the top-level tacplus syt_* option handlers, but store on the accounting destination's
+    // own server map; the common model (_currentTacplusServer) is not populated here.
+    _currentTacplusServer = null;
+    String hostname = toString(ctx.tacplus_server_host());
+    _currentJuniperTacplusServer =
+        _currentAccounting
+            .getTacplusServers()
+            .computeIfAbsent(hostname, org.batfish.representation.juniper.TacplusServer::new);
+  }
+
+  @Override
+  public void exitSyadt_server(Syadt_serverContext ctx) {
+    // Only the VS pointer was set in enterSyadt_server; _currentTacplusServer is already null
+    // (accounting servers are never written to the common model), so only this one is cleared.
+    _currentJuniperTacplusServer = null;
+  }
+
+  @Override
+  public void enterSyl_class(Syl_classContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(LOGIN_CLASS, name, ctx, _parser);
+    _currentLoginClass =
+        _currentLogicalSystem.getLogin().getClasses().computeIfAbsent(name, LoginClass::new);
+  }
+
+  @Override
+  public void exitSyl_class(Syl_classContext ctx) {
+    _currentLoginClass = null;
+  }
+
+  @Override
+  public void exitSylc_permissions(Sylc_permissionsContext ctx) {
+    _currentLoginClass.getPermissions().add(toString(ctx.name));
+  }
+
+  @Override
+  public void enterSyl_user(Syl_userContext ctx) {
+    _currentLoginUser =
+        _currentLogicalSystem
+            .getLogin()
+            .getUsers()
+            .computeIfAbsent(toString(ctx.name), LoginUser::new);
+  }
+
+  @Override
+  public void exitSyl_user(Syl_userContext ctx) {
+    _currentLoginUser = null;
+  }
+
+  @Override
+  public void exitSylu_uid(Sylu_uidContext ctx) {
+    toIntegerInSpace(ctx, ctx.uid, LOGIN_USER_UID_RANGE, "login user uid")
+        .ifPresent(_currentLoginUser::setUid);
+  }
+
+  @Override
+  public void exitSylu_class(Sylu_classContext ctx) {
+    // user-to-class mapping; the class is defined under `system login class`
+    _currentLoginUser.setClassName(toString(ctx.name));
+    referenceBuiltIn(ctx.name, LOGIN_CLASS, LOGIN_USER_CLASS);
+  }
+
+  @Override
+  public void exitSylu_full_name(Sylu_full_nameContext ctx) {
+    _currentLoginUser.setFullName(toString(ctx.name));
+  }
+
+  @Override
+  public void exitSylua_encrypted_password(Sylua_encrypted_passwordContext ctx) {
+    _currentLoginUser.setAuthenticationType(LoginUser.AuthenticationType.ENCRYPTED_PASSWORD);
+  }
+
+  @Override
+  public void exitSylua_plain_text_password(Sylua_plain_text_passwordContext ctx) {
+    _currentLoginUser.setAuthenticationType(LoginUser.AuthenticationType.PLAIN_TEXT_PASSWORD);
+  }
+
+  @Override
+  public void enterSyl_retry_options(Syl_retry_optionsContext ctx) {
+    Login login = _currentLogicalSystem.getLogin();
+    if (login.getRetryOptions() == null) {
+      login.setRetryOptions(new LoginRetryOptions());
+    }
+    _currentRetryOptions = login.getRetryOptions();
+  }
+
+  @Override
+  public void exitSyl_retry_options(Syl_retry_optionsContext ctx) {
+    _currentRetryOptions = null;
+  }
+
+  @Override
+  public void exitSylro_tries_before_disconnect(Sylro_tries_before_disconnectContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_RETRY_TRIES_BEFORE_DISCONNECT_RANGE,
+            "retry-options tries-before-disconnect")
+        .ifPresent(_currentRetryOptions::setTriesBeforeDisconnect);
+  }
+
+  @Override
+  public void exitSylro_backoff_threshold(Sylro_backoff_thresholdContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.value, LOGIN_RETRY_BACKOFF_THRESHOLD_RANGE, "retry-options backoff-threshold")
+        .ifPresent(_currentRetryOptions::setBackoffThreshold);
+  }
+
+  @Override
+  public void exitSylro_backoff_factor(Sylro_backoff_factorContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.value, LOGIN_RETRY_BACKOFF_FACTOR_RANGE, "retry-options backoff-factor")
+        .ifPresent(_currentRetryOptions::setBackoffFactor);
+  }
+
+  @Override
+  public void exitSylro_minimum_time(Sylro_minimum_timeContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, LOGIN_RETRY_MINIMUM_TIME_RANGE, "retry-options minimum-time")
+        .ifPresent(_currentRetryOptions::setMinimumTime);
+  }
+
+  @Override
+  public void exitSylro_maximum_time(Sylro_maximum_timeContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, LOGIN_RETRY_MAXIMUM_TIME_RANGE, "retry-options maximum-time")
+        .ifPresent(_currentRetryOptions::setMaximumTime);
+  }
+
+  @Override
+  public void exitSylro_lockout_period(Sylro_lockout_periodContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.value, LOGIN_RETRY_LOCKOUT_PERIOD_RANGE, "retry-options lockout-period")
+        .ifPresent(_currentRetryOptions::setLockoutPeriod);
+  }
+
+  @Override
+  public void enterSyl_password(Syl_passwordContext ctx) {
+    Login login = _currentLogicalSystem.getLogin();
+    if (login.getPassword() == null) {
+      login.setPassword(new LoginPassword());
+    }
+    _currentLoginPassword = login.getPassword();
+  }
+
+  @Override
+  public void exitSyl_password(Syl_passwordContext ctx) {
+    _currentLoginPassword = null;
+  }
+
+  @Override
+  public void exitSylp_format(Sylp_formatContext ctx) {
+    LoginPassword.Format format;
+    if (ctx.MD5() != null) {
+      format = LoginPassword.Format.MD5;
+    } else if (ctx.SHA1() != null) {
+      format = LoginPassword.Format.SHA1;
+    } else if (ctx.SHA256() != null) {
+      format = LoginPassword.Format.SHA256;
+    } else {
+      assert ctx.SHA512() != null;
+      format = LoginPassword.Format.SHA512;
+    }
+    _currentLoginPassword.setFormat(format);
+  }
+
+  @Override
+  public void exitSylp_change_type(Sylp_change_typeContext ctx) {
+    _currentLoginPassword.setChangeType(
+        ctx.CHARACTER_SETS() != null
+            ? LoginPassword.ChangeType.CHARACTER_SETS
+            : LoginPassword.ChangeType.SET_TRANSITIONS);
+  }
+
+  @Override
+  public void exitSylp_minimum_length(Sylp_minimum_lengthContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, LOGIN_PASSWORD_MINIMUM_LENGTH_RANGE, "password minimum-length")
+        .ifPresent(_currentLoginPassword::setMinimumLength);
+  }
+
+  @Override
+  public void exitSylp_maximum_length(Sylp_maximum_lengthContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, LOGIN_PASSWORD_MAXIMUM_LENGTH_RANGE, "password maximum-length")
+        .ifPresent(_currentLoginPassword::setMaximumLength);
+  }
+
+  @Override
+  public void exitSylp_minimum_changes(Sylp_minimum_changesContext ctx) {
+    _currentLoginPassword.setMinimumChanges(toLong(ctx.value));
+  }
+
+  @Override
+  public void exitSylp_minimum_character_changes(Sylp_minimum_character_changesContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_PASSWORD_MINIMUM_CHARACTER_CHANGES_RANGE,
+            "password minimum-character-changes")
+        .ifPresent(_currentLoginPassword::setMinimumCharacterChanges);
+  }
+
+  @Override
+  public void exitSylp_minimum_lower_cases(Sylp_minimum_lower_casesContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_PASSWORD_MINIMUM_CHARACTER_CLASS_RANGE,
+            "password minimum-lower-cases")
+        .ifPresent(_currentLoginPassword::setMinimumLowerCases);
+  }
+
+  @Override
+  public void exitSylp_minimum_upper_cases(Sylp_minimum_upper_casesContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_PASSWORD_MINIMUM_CHARACTER_CLASS_RANGE,
+            "password minimum-upper-cases")
+        .ifPresent(_currentLoginPassword::setMinimumUpperCases);
+  }
+
+  @Override
+  public void exitSylp_minimum_numerics(Sylp_minimum_numericsContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_PASSWORD_MINIMUM_CHARACTER_CLASS_RANGE,
+            "password minimum-numerics")
+        .ifPresent(_currentLoginPassword::setMinimumNumerics);
+  }
+
+  @Override
+  public void exitSylp_minimum_punctuations(Sylp_minimum_punctuationsContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            LOGIN_PASSWORD_MINIMUM_CHARACTER_CLASS_RANGE,
+            "password minimum-punctuations")
+        .ifPresent(_currentLoginPassword::setMinimumPunctuations);
+  }
+
+  @Override
+  public void exitSylp_minimum_reuse(Sylp_minimum_reuseContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, LOGIN_PASSWORD_MINIMUM_REUSE_RANGE, "password minimum-reuse")
+        .ifPresent(_currentLoginPassword::setMinimumReuse);
+  }
+
+  @Override
+  public void exitSylp_minimum_lifetime(Sylp_minimum_lifetimeContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.value, LOGIN_PASSWORD_MINIMUM_LIFETIME_RANGE, "password minimum-lifetime")
+        .ifPresent(_currentLoginPassword::setMinimumLifetime);
+  }
+
+  @Override
+  public void exitSylp_maximum_lifetime(Sylp_maximum_lifetimeContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.value, LOGIN_PASSWORD_MAXIMUM_LIFETIME_RANGE, "password maximum-lifetime")
+        .ifPresent(_currentLoginPassword::setMaximumLifetime);
   }
 
   @Override
@@ -9056,7 +9439,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSyt_secret(Syt_secretContext ctx) {
-    _currentTacplusServer.setSecret(applySecret(ctx.secret_string()));
+    String secret = applySecret(ctx.secret_string());
+    // _currentTacplusServer is the shared common model, only set for top-level tacplus-server; it
+    // is null when reusing these handlers for accounting destination tacplus servers.
+    if (_currentTacplusServer != null) {
+      _currentTacplusServer.setSecret(secret);
+    }
+    _currentJuniperTacplusServer.setSecret(secret);
+  }
+
+  @Override
+  public void exitSyt_port(Syt_portContext ctx) {
+    _currentJuniperTacplusServer.setPort(toInt(ctx.num));
+  }
+
+  @Override
+  public void exitSyt_single_connection(Syt_single_connectionContext ctx) {
+    _currentJuniperTacplusServer.setSingleConnection(true);
+  }
+
+  @Override
+  public void exitSyt_timeout(Syt_timeoutContext ctx) {
+    toIntegerInSpace(ctx, ctx.secs, TACPLUS_SERVER_TIMEOUT_RANGE, "tacplus-server timeout")
+        .ifPresent(_currentJuniperTacplusServer::setTimeout);
   }
 
   private @Nonnull String applySecret(@Nonnull Secret_stringContext ctx) {
@@ -9185,12 +9590,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = toIp(ctx.address);
-    _currentTacplusServer.setSourceAddress(sourceAddress);
+    if (_currentTacplusServer != null) {
+      _currentTacplusServer.setSourceAddress(sourceAddress);
+    }
+    _currentJuniperTacplusServer.setSourceAddress(sourceAddress);
   }
 
   @Override
   public void exitSyt_routing_instance(Syt_routing_instanceContext ctx) {
     String name = toString(ctx.name);
+    _currentJuniperTacplusServer.setRoutingInstance(name);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, TACPLUS_SERVER_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
   }

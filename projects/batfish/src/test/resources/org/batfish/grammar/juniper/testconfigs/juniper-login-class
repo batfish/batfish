@@ -1,0 +1,62 @@
+#
+set system host-name juniper-login-class
+#
+set system login class ADMIN permissions all
+set system login class READONLY permissions view
+set system login class READONLY permissions view-configuration
+set system login class READONLY idle-timeout 30
+set system login class READONLY allow-commands "^show"
+set system login class READONLY deny-commands "^configure"
+set system login class READONLY allow-configuration "system"
+set system login class READONLY deny-configuration "interfaces"
+set system login class READONLY allow-configuration-regexps "protocols bgp"
+set system login class READONLY allow-commands-regexps "show"
+set system login class READONLY deny-commands-regexps "clear"
+set system login class READONLY deny-configuration-regexps "system"
+set system login class READONLY allow-hidden-commands
+set system login class READONLY no-hidden-commands
+set system login class READONLY access-start 08:00
+set system login class READONLY access-end 18:00
+set system login class READONLY allowed-days monday
+set system login class READONLY login-alarms
+set system login class READONLY login-tip
+set system login class READONLY configuration-breadcrumbs
+set system login class READONLY cli prompt ">"
+set system login class READONLY security-role audit-administrator
+set system login class READONLY allow-sources 10.0.0.0/8
+#
+set system login user neteng uid 2000
+set system login user neteng class ADMIN
+set system login user neteng full-name "network engineer"
+set system login user neteng authentication encrypted-password "%CENSORED%"
+set system login user neteng cli prompt "neteng>"
+set system login user remote class READONLY
+set system login user bootstrap authentication plain-text-password
+set system login user sshuser authentication ssh-rsa "AAAAB3NzaC1yc2E"
+#
+set system login retry-options tries-before-disconnect 4
+set system login retry-options backoff-threshold 2
+set system login retry-options backoff-factor 10
+set system login retry-options minimum-time 20
+set system login retry-options maximum-time 120
+set system login retry-options lockout-period 30
+#
+set system login idle-timeout 60
+set system login announcement "maintenance window tonight"
+set system login message "authorized users only"
+set system login deny-sources address 10.0.0.0/8
+#
+set system login password minimum-length 8
+set system login password maximum-length 20
+set system login password maximum-lifetime 90
+set system login password minimum-lifetime 7
+set system login password minimum-character-changes 5
+set system login password format sha512
+set system login password change-type character-sets
+set system login password minimum-changes 2147483647
+set system login password minimum-lower-cases 1
+set system login password minimum-upper-cases 1
+set system login password minimum-numerics 1
+set system login password minimum-punctuations 1
+set system login password minimum-reuse 5
+#

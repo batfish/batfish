@@ -37,6 +37,10 @@ public class LogicalSystem implements Serializable {
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
+  private @Nullable Accounting _accounting;
+
+  private final Login _login;
+
   private final Map<String, NamedCommunity> _namedCommunities;
 
   private boolean _defaultAddressSelection;
@@ -125,7 +129,7 @@ public class LogicalSystem implements Serializable {
 
   private Map<String, JunosSyslogHost> _syslogHosts;
 
-  private NavigableSet<String> _tacplusServers;
+  private Map<String, TacplusServer> _tacplusServers;
 
   private Map<String, TunnelAttribute> _tunnelAttributes;
 
@@ -149,6 +153,7 @@ public class LogicalSystem implements Serializable {
     _asPaths = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
+    _login = new Login();
     _namedCommunities = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
@@ -188,7 +193,7 @@ public class LogicalSystem implements Serializable {
     _srlgs = new HashMap<>();
     _syslogFiles = new TreeMap<>();
     _syslogHosts = new TreeMap<>();
-    _tacplusServers = new TreeSet<>();
+    _tacplusServers = new TreeMap<>();
     _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
     _vniOptions = new TreeMap<>();
@@ -240,6 +245,18 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, JuniperAuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
+  }
+
+  public @Nullable Accounting getAccounting() {
+    return _accounting;
+  }
+
+  public void setAccounting(@Nullable Accounting accounting) {
+    _accounting = accounting;
+  }
+
+  public Login getLogin() {
+    return _login;
   }
 
   public Map<String, NamedCommunity> getNamedCommunities() {
@@ -477,7 +494,7 @@ public class LogicalSystem implements Serializable {
     return _syslogHosts;
   }
 
-  public NavigableSet<String> getTacplusServers() {
+  public Map<String, TacplusServer> getTacplusServers() {
     return _tacplusServers;
   }
 
