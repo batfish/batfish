@@ -11,6 +11,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.datamodel.ConfigurationFormat.CUMULUS_CONCATENATED;
 import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
+import static org.batfish.datamodel.ConfigurationFormat.FASTPATH;
 import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.IBM_BNT;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
@@ -51,6 +52,68 @@ public class VendorConfigurationFormatDetectorTest {
   public void testA10BatfishFormat() {
     String fileText = "!BATFISH_FORMAT: a10_acos\n";
     assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
+  }
+
+  @Test
+  public void testFastPath() {
+    String fastpathHeader =
+        """
+        !Current Configuration:
+        !
+        !System Description "Accton AS4610-54T HVDC, 3.4.3.10, Linux 4.4.39"
+        !System Software Version "3.4.3.10"
+        !Current SNTP Synchronized Time: SNTP Client Mode Is Disabled
+        !
+        hostname "sw1"
+        ip access-list foo
+        exit
+        interface 0/1
+        exit
+        """;
+
+    String fastpathVlanParticipation =
+        """
+        hostname "sw1"
+        interface 0/1
+        vlan participation include 100
+        exit
+        """;
+    String fastpathRancid = "!RANCID-CONTENT-TYPE: fastpath\n!\nhostname \"sw1\"\n";
+    String fastpathBatfish = "!BATFISH_FORMAT: fastpath\n";
+
+    String fastpathNo1583 =
+        """
+        hostname "sw1"
+        router ospf
+        no 1583compatibility
+        exit
+        """;
+
+    String fastpathServiceport =
+        "hostname \"sw1\"\nserviceport ip 192.0.2.1 255.255.255.0 192.0.2.254\n";
+
+    String fastpathSetPrompt =
+        """
+        !Current Configuration:
+        !
+        !System Software Version "1.2.0.14"
+        set prompt "sw1"
+        exit
+        """;
+
+    for (String fileText :
+        ImmutableList.of(
+            fastpathHeader,
+            fastpathVlanParticipation,
+            fastpathRancid,
+            fastpathBatfish,
+            fastpathNo1583,
+            fastpathServiceport,
+            fastpathSetPrompt)) {
+      assertThat(identifyConfigurationFormat(fileText), equalTo(FASTPATH));
+    }
+
+    assertThat(identifyConfigurationFormat(fastpathHeader), not(equalTo(CISCO_IOS)));
   }
 
   @Test

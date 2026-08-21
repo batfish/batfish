@@ -54,6 +54,16 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
 
+  private static final Pattern FASTPATH_SW_VERSION_PATTERN =
+      Pattern.compile("(?m)^!System Software Version");
+  private static final Pattern FASTPATH_SNTP_TIME_PATTERN =
+      Pattern.compile("(?m)^!Current SNTP Synchronized Time:");
+  private static final Pattern FASTPATH_OSPF_1583_PATTERN =
+      Pattern.compile("(?m)^no 1583compatibility");
+  private static final Pattern FASTPATH_VLAN_PARTICIPATION_PATTERN =
+      Pattern.compile("(?m)^vlan participation ");
+  private static final Pattern FASTPATH_SERVICEPORT_PATTERN = Pattern.compile("(?m)^serviceport ");
+
   // checkSros patterns (Nokia SR-OS / SR-SIM, MD-CLI). SR-OS configs are emitted by
   // `admin show configuration` (brace/hierarchical, rooted at `configure {`) and can also
   // be supplied in the absolute-path flat form (`/configure ...` lines, the Junos-`set`
@@ -178,6 +188,17 @@ public final class VendorConfigurationFormatDetector {
   private @Nullable ConfigurationFormat checkCheckPoint() {
     if (fileTextMatches(CHECK_POINT_GATEWAY_PATTERN)) {
       return ConfigurationFormat.CHECK_POINT_GATEWAY;
+    }
+    return null;
+  }
+
+  private @Nullable ConfigurationFormat checkFastPath() {
+    if (fileTextMatches(FASTPATH_SW_VERSION_PATTERN)
+        || fileTextMatches(FASTPATH_SNTP_TIME_PATTERN)
+        || fileTextMatches(FASTPATH_OSPF_1583_PATTERN)
+        || fileTextMatches(FASTPATH_VLAN_PARTICIPATION_PATTERN)
+        || fileTextMatches(FASTPATH_SERVICEPORT_PATTERN)) {
+      return ConfigurationFormat.FASTPATH;
     }
     return null;
   }
@@ -407,6 +428,8 @@ public final class VendorConfigurationFormatDetector {
       case "sros":
       case "sros-md":
         return ConfigurationFormat.NOKIA_SROS;
+      case "fastpath":
+        return ConfigurationFormat.FASTPATH;
       case "agm":
       case "alteon":
       case "arbor":
@@ -516,6 +539,7 @@ public final class VendorConfigurationFormatDetector {
     // tokens (e.g. `policy-options {`, `interface ...`) that those heuristics would
     // otherwise claim. checkSros keys on SR-OS-specific tells, so it is safe to run early.
     format = (format == null) ? checkSros() : format;
+    format = (format == null) ? checkFastPath() : format;
     format = (format == null) ? checkCheckPoint() : format;
     format = (format == null) ? checkFortios() : format;
     format = (format == null) ? checkRuckusIcx() : format;

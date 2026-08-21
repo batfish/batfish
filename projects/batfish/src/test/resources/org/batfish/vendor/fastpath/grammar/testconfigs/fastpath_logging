@@ -1,0 +1,23 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_logging"
+logging buffered 7
+logging buffered wrap
+logging cli-command
+logging console error
+logging persistent 4
+logging port 5140
+logging syslog
+logging syslog port 5145
+logging syslog source-interface loopback 0
+logging host "10.0.0.1" ipv4 514 debug
+logging host "10.0.0.2" dns 1514 warning
+logging host "2001:db8::1" ipv6 514 debug
+logging host "loghost.example.com" dns
+logging host reconfigure 1
+logging host remove 2
+logging email urgent 1
+logging email from-addr switch@example.com
+logging traps 6

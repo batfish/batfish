@@ -1,0 +1,6 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!Additional banner line with special chars: # @ $
+!
+hostname "fastpath_banner"

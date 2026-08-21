@@ -1,0 +1,98 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_complete_config"
+enable password abc123 encrypted
+serviceport protocol none
+serviceport ip 4.4.4.2 255.255.255.0 4.4.4.1
+vlan database
+vlan 100,296,298
+vlan name 296 "IPMI"
+vlan routing 296 1
+exit
+
+no ip http server
+ip ssh server enable
+sshcon timeout 30
+no ip telnet server enable
+configure
+sntp client mode unicast
+sntp server "2.2.2.1"
+sntp server "2.2.2.2"
+sntp server "2.2.2.3"
+ip domain name "example.com"
+ip name server 1.1.1.1 1.1.1.2
+logging persistent 7
+logging host "3.3.3.1" ipv4 514 debug
+logging host "3.3.3.2" ipv4 514 debug
+logging syslog
+logging cli-command
+ip routing
+no ip redirects
+username "admin" password abc123 level 15 encrypted
+aaa authentication login "net-authen" tacacs local
+aaa authentication enable "net-enable" tacacs enable
+
+line console
+serial timeout 10
+login authentication net-authen
+exit
+
+snmp-server sysname "fastpath_complete_config"
+snmp-server community abc123 ro
+ip access-list control_plane_protection
+permit tcp 5.5.5.0 0.0.0.255 any eq 22
+deny tcp any any eq 22
+permit ip any any
+exit
+
+interface 0/1
+spanning-tree edgeport
+switchport mode access
+switchport access vlan 296
+lldp transmit
+lldp receive
+lldp med
+exit
+
+interface 0/51
+description "uplink to spine"
+routing
+ip address 6.6.6.2 255.255.255.252
+ip ospf area 0.0.0.0
+ip ospf network point-to-point
+exit
+
+interface vlan 296
+routing
+ip address 7.7.7.1 255.255.255.240
+ip ospf area 0.0.0.0
+exit
+
+interface lag 49
+no port-channel static
+switchport mode access
+switchport access vlan 298
+exit
+
+logging syslog source-interface serviceport
+sntp source-interface serviceport
+ip name source-interface serviceport
+router ospf
+router-id 8.8.8.8
+no 1583compatibility
+passive-interface default
+no passive-interface 0/51
+exit
+ipv6 router ospf
+exit
+service dhcp
+ip dhcp pool "HOST-IPMI"
+network 7.7.7.0 255.255.255.240
+default-router 7.7.7.1
+exit
+
+tacacs-server host "9.9.9.9"
+exit
+tacacs-server timeout 10
