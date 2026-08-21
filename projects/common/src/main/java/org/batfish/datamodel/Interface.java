@@ -590,6 +590,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ADMIN_UP = "adminUp";
   private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
   private static final String PROP_ADDRESS_METADATA = "addressMetadata";
+  private static final String PROP_ALL_ADDRESSES = "allAddresses";
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
   private static final String PROP_ALLOWED_VLANS = "allowedVlans";
   private static final String PROP_AUTOSTATE = "autostate";
@@ -1017,6 +1018,7 @@ public final class Interface extends ComparableStructure<String> {
     return _allUnnumberedAddresses;
   }
 
+  @JsonProperty(PROP_ALL_ADDRESSES)
   public @Nonnull Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
@@ -1457,10 +1459,29 @@ public final class Interface extends ComparableStructure<String> {
     _allowedVlans = firstNonNull(allowedVlans, IntegerSpace.EMPTY);
   }
 
-  @JsonProperty(PROP_ALL_PREFIXES)
+  @JsonProperty(PROP_ALL_ADDRESSES)
   public void setAllAddresses(Iterable<? extends InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
-    // Clear cached values
+    clearAddressCaches();
+  }
+
+  /**
+   * Legacy JSON support for the IPv4-only allPrefixes property.
+   *
+   * <p>Merge rather than replace so deserialization is independent of
+   * property ordering when both allAddresses and allPrefixes are present.
+   */
+  @JsonProperty(PROP_ALL_PREFIXES)
+  private void setAllPrefixes(Iterable<ConcreteInterfaceAddress> allPrefixes) {
+    _allAddresses =
+        ImmutableSortedSet.<InterfaceAddress>naturalOrder()
+            .addAll(_allAddresses)
+            .addAll(allPrefixes)
+            .build();
+    clearAddressCaches();
+  }
+
+  private void clearAddressCaches() {
     _allLinkLocalAddresses = null;
     _allConcreteAddresses = null;
     _allConcreteAddresses6 = null;

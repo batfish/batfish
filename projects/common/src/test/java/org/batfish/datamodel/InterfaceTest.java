@@ -86,6 +86,38 @@ public class InterfaceTest {
         equalTo(ImmutableSet.of(ipv4, ipv6Primary, ipv6Secondary)));
   }
 
+
+  @Test
+  public void testIpv6AddressSerialization() {
+    ConcreteInterfaceAddress ipv4 =
+        ConcreteInterfaceAddress.parse("192.0.2.1/24");
+    ConcreteInterfaceAddress6 ipv6Primary =
+        ConcreteInterfaceAddress6.parse("2001:db8::1/64");
+    ConcreteInterfaceAddress6 ipv6Secondary =
+        ConcreteInterfaceAddress6.parse("2001:db8::2/64");
+
+    Interface iface =
+        Interface.builder()
+            .setName("foo")
+            .setType(LOGICAL)
+            .setAddresses(
+                ipv6Primary,
+                ImmutableSet.of(ipv4, ipv6Secondary))
+            .build();
+
+    Interface clone =
+        BatfishObjectMapper.clone(iface, Interface.class);
+
+    assertThat(clone, equalTo(iface));
+    assertThat(clone.getAddress(), equalTo(ipv6Primary));
+    assertThat(
+        clone.getAllAddresses(),
+        equalTo(ImmutableSet.of(ipv4, ipv6Primary, ipv6Secondary)));
+    assertThat(
+        clone.getAllConcreteAddresses6(),
+        equalTo(ImmutableSet.of(ipv6Primary, ipv6Secondary)));
+  }
+
   @Test
   public void testInterfaceStatus() {
     // no line status
