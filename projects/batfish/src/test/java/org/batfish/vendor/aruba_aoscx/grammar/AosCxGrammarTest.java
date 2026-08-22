@@ -1090,9 +1090,45 @@ public final class AosCxGrammarTest {
             ConcreteInterfaceAddress6.parse(
                 "2001:db8:10::1/64")));
 
+    assertThat(routed.getOspfv3Settings(), notNullValue());
+    assertThat(
+        routed.getOspfv3Settings().getAreaName(),
+        equalTo(area0));
+    assertThat(
+        routed.getOspfv3Settings().getCost(),
+        equalTo(25));
+    assertThat(
+        routed.getOspfv3Settings().getProcess(),
+        equalTo("1"));
+    assertThat(
+        routed.getOspfv3Settings().getNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        routed.getOspfv3Settings().getHelloInterval(),
+        equalTo(10));
+    assertThat(
+        routed.getOspfv3Settings().getDeadInterval(),
+        equalTo(40));
+    assertThat(
+        routed.getOspfv3Settings().getEnabled(),
+        equalTo(true));
+    assertThat(
+        routed.getOspfv3Settings().getPassive(),
+        equalTo(false));
+
     org.batfish.datamodel.Interface linkLocal =
         c.getAllInterfaces().get("1/1/2");
     assertThat(linkLocal, notNullValue());
+    assertThat(linkLocal.getOspfv3Settings(), notNullValue());
+    assertThat(
+        linkLocal.getOspfv3Settings().getAreaName(),
+        equalTo(area10));
+    assertThat(
+        linkLocal.getOspfv3Settings().getProcess(),
+        equalTo("1"));
+    assertThat(
+        linkLocal.getOspfv3Settings().getNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 
   @Test

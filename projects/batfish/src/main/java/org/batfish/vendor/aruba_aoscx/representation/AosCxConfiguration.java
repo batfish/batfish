@@ -61,6 +61,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.LineAction;
@@ -834,6 +835,49 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
+  private void applyOspfv3InterfaceSettings() {
+    _interfaces.values().forEach(
+        iface -> {
+          if (iface.getOspfv3ProcessId() == null
+              || iface.getOspfv3Area() == null) {
+            return;
+          }
+
+          Interface viInterface =
+              _c.getAllInterfaces().get(iface.getName());
+          if (viInterface == null) {
+            return;
+          }
+
+          OspfNetworkType networkType =
+              iface.getOspfv3NetworkType()
+                      == AosCxInterface.OspfNetworkType.POINT_TO_POINT
+                  ? OspfNetworkType.POINT_TO_POINT
+                  : OspfNetworkType.BROADCAST;
+
+          Integer ospfv3Cost =
+              iface.getOspfv3Cost() != null
+                  ? iface.getOspfv3Cost()
+                  : getInterfaceType(iface) == InterfaceType.LOOPBACK
+                      ? 1
+                      : null;
+
+          viInterface.setOspfv3Settings(
+              Ospfv3InterfaceSettings.builder()
+                  .setAreaName(
+                      toOspfAreaNumber(iface.getOspfv3Area()))
+                  .setCost(ospfv3Cost)
+                  .setProcess(
+                      Integer.toString(iface.getOspfv3ProcessId()))
+                  .setEnabled(true)
+                  .setPassive(false)
+                  .setHelloInterval(10)
+                  .setDeadInterval(40)
+                  .setNetworkType(networkType)
+                  .build());
+        });
+  }
+
   private void convertStaticRoute(AosCxStaticRoute route) {
     String vrfName =
         route.getVrfName() == null ? DEFAULT_VRF_NAME : route.getVrfName();
@@ -882,6 +926,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     _interfaces.values().forEach(this::convertInterface);
     finalizeLagMembership();
     applyOspfInterfaceSettings();
+    applyOspfv3InterfaceSettings();
     _staticRoutes.forEach(this::convertStaticRoute);
 
     return ImmutableList.of(_c);
