@@ -44,9 +44,11 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
@@ -273,6 +275,55 @@ public class VirtualRouterTest {
                             new ConnectedRoute(e.getValue().getPrefix(), e.getKey()),
                             DEFAULT_VRF_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
+  }
+
+
+  /** Check IPv6 connected routes are installed into IPv6 RIBs. */
+  @Test
+  public void testInitConnectedRib6() {
+    VirtualRouter vr = makeIosVirtualRouter("n1");
+
+    NetworkFactory nf = new NetworkFactory();
+    Interface.Builder ib =
+        nf.interfaceBuilder()
+            .setOwner(vr.getConfiguration())
+            .setVrf(vr.getConfiguration().getDefaultVrf());
+
+    ConcreteInterfaceAddress6 address1 =
+        ConcreteInterfaceAddress6.parse(
+            "2001:db8:1::1/64");
+    ConcreteInterfaceAddress6 address2 =
+        ConcreteInterfaceAddress6.parse(
+            "2001:db8:2::1/64");
+
+    ib.setName("Ethernet1")
+        .setAddress(address1)
+        .setBandwidth(100d)
+        .build();
+
+    ib.setName("Ethernet2")
+        .setAddress(address2)
+        .setBandwidth(100d)
+        .build();
+
+    ConnectedRoute6 route1 =
+        new ConnectedRoute6(
+            address1.getPrefix(), "Ethernet1");
+    ConnectedRoute6 route2 =
+        new ConnectedRoute6(
+            address2.getPrefix(), "Ethernet2");
+
+    vr.initRibs();
+    vr.initForIgpComputation(
+        TopologyContext.builder().build());
+
+    assertThat(
+        vr.getConnectedRib6().getRoutes(),
+        equalTo(ImmutableSet.of(route1, route2)));
+
+    assertThat(
+        vr.getMainRib6().getRoutes(),
+        equalTo(ImmutableSet.of(route1, route2)));
   }
 
   /** Check that initialization of Kernel RIB is as expected */

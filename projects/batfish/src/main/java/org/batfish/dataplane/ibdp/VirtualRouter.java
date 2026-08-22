@@ -57,6 +57,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EvpnRoute;
@@ -112,10 +113,12 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.ConnectedRib6;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
 import org.batfish.dataplane.rib.LocalRib;
 import org.batfish.dataplane.rib.Rib;
+import org.batfish.dataplane.rib.Rib6;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RipInternalRib;
@@ -134,6 +137,7 @@ public final class VirtualRouter {
 
   /** The RIB containing connected routes */
   private ConnectedRib _connectedRib;
+  private ConnectedRib6 _connectedRib6;
 
   /**
    * Queues containing routes that are coming in from other VRFs (as a result of explicitly
@@ -147,6 +151,7 @@ public final class VirtualRouter {
    * iterations (hence, independent).
    */
   Rib _independentRib;
+  Rib6 _independentRib6;
 
   /** Incoming messages into this router from each IS-IS circuit */
   SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
@@ -166,6 +171,7 @@ public final class VirtualRouter {
 
   /** The default main RIB, contains routes from different protocol RIBs */
   private final Rib _mainRib;
+  private final Rib6 _mainRib6;
 
   /** All named main RIBs, including {@link RibId#DEFAULT_RIB_NAME} */
   private final Map<String, Rib> _mainRibs;
@@ -237,6 +243,7 @@ public final class VirtualRouter {
             : _c.getRoutingPolicies().get(resolutionPolicy)::processReadOnly;
     // Main RIB + delta builder
     _mainRib = new Rib(_c.getMainRibEnforceResolvability() ? _resolutionRestriction : null);
+    _mainRib6 = new Rib6();
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
     _mainRibDeltaPrevRound = RibDelta.empty();
     _mainRibRouteDeltaBuilder = RibDelta.builder();
@@ -299,6 +306,7 @@ public final class VirtualRouter {
   @VisibleForTesting
   void initForIgpComputation(TopologyContext topologyContext) {
     initConnectedRib();
+    initConnectedRib6();
     initKernelRoutes();
     initLocalRib();
     initStaticRibs();
@@ -308,6 +316,15 @@ public final class VirtualRouter {
     importRib(_independentRib, _staticUnconditionalRib, _name);
     importRib(_mainRib, _independentRib);
     importRib(_mainRib, _connectedRib);
+
+    // Seed the IPv6 independent and main RIBs with connected routes.
+    _connectedRib6
+        .getRoutes()
+        .forEach(
+            route -> {
+              _independentRib6.mergeRoute(route);
+              _mainRib6.mergeRoute(route);
+            });
 
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
@@ -776,6 +793,24 @@ public final class VirtualRouter {
   }
 
   /**
+   * Initialize the IPv6 connected RIB from concrete IPv6 addresses on
+   * active interfaces in this VRF.
+   */
+  @VisibleForTesting
+  void initConnectedRib6() {
+    _c.getActiveInterfaces(_name).values().stream()
+        .flatMap(
+            iface ->
+                iface.getAllConcreteAddresses6().stream()
+                    .map(
+                        address ->
+                            new ConnectedRoute6(
+                                address.getPrefix(),
+                                iface.getName())))
+        .forEach(_connectedRib6::mergeRoute);
+  }
+
+  /**
    * Recompute connected and local routes, applying deltas to the main RIB. Called when VXLAN-aware
    * autostate changes interface status during topology iteration.
    */
@@ -1120,9 +1155,11 @@ public final class VirtualRouter {
   final void initRibs() {
     // Non-learned-protocol RIBs
     _connectedRib = new ConnectedRib();
+    _connectedRib6 = new ConnectedRib6();
     _localRib = new LocalRib();
     _generatedRib = new Rib();
     _independentRib = new Rib();
+    _independentRib6 = new Rib6();
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
@@ -1435,12 +1472,20 @@ public final class VirtualRouter {
     return _connectedRib;
   }
 
+  ConnectedRib6 getConnectedRib6() {
+    return _connectedRib6;
+  }
+
   public Fib getFib() {
     return _fib;
   }
 
   Rib getMainRib() {
     return _mainRib;
+  }
+
+  Rib6 getMainRib6() {
+    return _mainRib6;
   }
 
   /** Get current BGP routes. After dataplane computation, gets convergent BGP routes. */
