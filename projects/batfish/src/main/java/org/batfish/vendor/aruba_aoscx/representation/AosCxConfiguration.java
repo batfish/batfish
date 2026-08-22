@@ -60,6 +60,8 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
@@ -738,6 +740,64 @@ public class AosCxConfiguration extends VendorConfiguration {
     _ospfProcessesByVrf.forEach(this::convertOspfProcessesForVrf);
   }
 
+  private void convertOspfv3Processes() {
+    Vrf vrf = _c.getDefaultVrf();
+
+    _ospfv3Processes.values().forEach(
+        process -> {
+          // Automatic router-ID selection is not implemented yet.
+          if (process.getRouterId() == null) {
+            return;
+          }
+
+          Map<Long, List<String>> areaInterfaces = new HashMap<>();
+
+          // Preserve explicitly declared process areas, even when no
+          // interface is currently assigned to them.
+          process
+              .getAreas()
+              .forEach(
+                  area ->
+                      areaInterfaces.computeIfAbsent(
+                          toOspfAreaNumber(area),
+                          ignored -> new ArrayList<>()));
+
+          // Associate AOS-CX interfaces with their OSPFv3 areas.
+          _interfaces.values().stream()
+              .filter(
+                  iface ->
+                      getInterfaceVrfName(iface).equals(DEFAULT_VRF_NAME)
+                          && iface.getOspfv3ProcessId() != null
+                          && iface.getOspfv3ProcessId()
+                              == process.getProcessId()
+                          && iface.getOspfv3Area() != null)
+              .forEach(
+                  iface ->
+                      areaInterfaces
+                          .computeIfAbsent(
+                              toOspfAreaNumber(iface.getOspfv3Area()),
+                              ignored -> new ArrayList<>())
+                          .add(iface.getName()));
+
+          Map<Long, Ospfv3Area> areas = new HashMap<>();
+          areaInterfaces.forEach(
+              (area, interfaces) ->
+                  areas.put(
+                      area,
+                      Ospfv3Area.builder()
+                          .setNumber(area)
+                          .addInterfaces(interfaces)
+                          .build()));
+
+          Ospfv3Process.builder()
+              .setProcessId(Integer.toString(process.getProcessId()))
+              .setRouterId(process.getRouterId())
+              .setAreas(areas)
+              .setVrf(vrf)
+              .build();
+        });
+  }
+
   private void applyOspfInterfaceSettings() {
     _interfaces.values().forEach(
         iface -> {
@@ -817,6 +877,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     convertPrefixLists();
     convertRouteMaps();
     convertOspfProcesses();
+    convertOspfv3Processes();
     convertBgpProcesses();
     _interfaces.values().forEach(this::convertInterface);
     finalizeLagMembership();

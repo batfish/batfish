@@ -1051,6 +1051,50 @@ public final class AosCxGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/aruba_aoscx/grammar/testconfigs/";
+
+  @Test
+  public void testOspfv3Conversion() throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs("aoscx-ospfv3");
+    Configuration c = configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf().getOspfv3Processes().get("1");
+
+    assertThat(process, notNullValue());
+    assertThat(
+        process.getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+
+    long area0 = 0L;
+    long area10 = Ip.parse("10.0.0.1").asLong();
+
+    assertThat(process.getAreas(), hasKey(area0));
+    assertThat(process.getAreas(), hasKey(area10));
+
+    assertThat(
+        process.getAreas().get(area0).getInterfaces(),
+        contains("1/1/1"));
+    assertThat(
+        process.getAreas().get(area10).getInterfaces(),
+        contains("1/1/2"));
+
+    org.batfish.datamodel.Interface routed =
+        c.getAllInterfaces().get("1/1/1");
+    assertThat(routed, notNullValue());
+    assertThat(
+        routed.getAllConcreteAddresses6(),
+        contains(
+            ConcreteInterfaceAddress6.parse(
+                "2001:db8:10::1/64")));
+
+    org.batfish.datamodel.Interface linkLocal =
+        c.getAllInterfaces().get("1/1/2");
+    assertThat(linkLocal, notNullValue());
+  }
+
   @Test
   public void testOspfv3Extraction() {
     AosCxConfiguration c = parseVendorConfig("aoscx-ospfv3");
