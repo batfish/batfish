@@ -48,6 +48,28 @@ public final class Ospfv3Rib6
     }
 
     // Lower OSPF metric is preferable.
-    return Long.compare(rhs.getMetric(), lhs.getMetric());
+    int metricComparison =
+        Long.compare(
+            rhs.getMetric(),
+            lhs.getMetric());
+
+    if (metricComparison != 0) {
+      return metricComparison;
+    }
+
+    // For equal E2 metrics, prefer the lower internal cost to the ASBR.
+    if (lhs instanceof Ospfv3ExternalType2Route6
+        && rhs instanceof Ospfv3ExternalType2Route6) {
+      Ospfv3ExternalType2Route6 lhsExternal =
+          (Ospfv3ExternalType2Route6) lhs;
+      Ospfv3ExternalType2Route6 rhsExternal =
+          (Ospfv3ExternalType2Route6) rhs;
+
+      return Long.compare(
+          rhsExternal.getCostToAdvertiser(),
+          lhsExternal.getCostToAdvertiser());
+    }
+
+    return 0;
   }
 }

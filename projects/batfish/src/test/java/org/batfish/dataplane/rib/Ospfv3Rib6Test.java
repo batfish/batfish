@@ -52,4 +52,53 @@ public final class Ospfv3Rib6Test {
         equalTo(
             ImmutableSet.<AbstractRoute6>of(external)));
   }
+  @Test
+  public void testExternalType2CostToAdvertiserTieBreak() {
+    Prefix6 prefix =
+        Prefix6.parse("2001:db8:20::/64");
+
+    Ospfv3ExternalType2Route6 farther =
+        new Ospfv3ExternalType2Route6(
+            prefix,
+            "Ethernet2",
+            Ip6.parse("2001:db8:12::2"),
+            110,
+            25,
+            0L,
+            50L,
+            Ip.parse("192.0.2.1"));
+
+    Ospfv3ExternalType2Route6 closer =
+        new Ospfv3ExternalType2Route6(
+            prefix,
+            "Ethernet1",
+            Ip6.parse("2001:db8:13::1"),
+            110,
+            25,
+            0L,
+            10L,
+            Ip.parse("192.0.2.1"));
+
+    Ospfv3Rib6 rib = new Ospfv3Rib6();
+
+    assertThat(
+        rib.mergeRoute(farther),
+        equalTo(true));
+    assertThat(
+        rib.mergeRoute(closer),
+        equalTo(true));
+
+    assertThat(
+        rib.getRoutes(),
+        equalTo(
+            ImmutableSet.<AbstractRoute6>of(
+                closer)));
+
+    assertThat(
+        rib.getBackupRoutes(),
+        equalTo(
+            ImmutableSet.<AbstractRoute6>of(
+                farther)));
+  }
+
 }

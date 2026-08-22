@@ -36,8 +36,11 @@ public final class Ospfv3Route6Test {
         new Ospfv3ExternalType2Route6(
             Prefix6.parse("2001:db8:2::/64"),
             "Ethernet2",
+            Ip6.parse("2001:db8:12::1"),
             110,
             25,
+            10L,
+            30L,
             Ip.parse("192.0.2.1"));
 
     Ospfv3ExternalType2Route6 clone =
@@ -49,5 +52,12 @@ public final class Ospfv3Route6Test {
     assertThat(
         clone.getAdvertiser(),
         equalTo(Ip.parse("192.0.2.1")));
+    assertThat(clone.getArea(), equalTo(10L));
+    assertThat(
+        clone.getCostToAdvertiser(),
+        equalTo(30L));
+    assertThat(
+        clone.getNextHopIp(),
+        equalTo(Ip6.parse("2001:db8:12::1")));
   }
 }

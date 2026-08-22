@@ -237,12 +237,22 @@ final class Ospfv3RoutingProcess {
             continue;
           }
 
+          Set<AbstractRoute6> remoteRoutes =
+              remoteProcess.getRoutes();
+
           changed |=
               importIntraAreaRoutesFromNeighbor(
                   localIface,
                   remoteIface,
                   localSettings.getAreaName(),
-                  remoteProcess.getRoutes());
+                  remoteRoutes);
+
+          changed |=
+              importExternalRoutesFromNeighbor(
+                  localIface,
+                  remoteIface,
+                  localSettings.getAreaName(),
+                  remoteRoutes);
         }
       }
     }
@@ -392,6 +402,85 @@ final class Ospfv3RoutingProcess {
                   newMetric,
                   area,
                   intra.getTag()));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Import OSPFv3 external type-2 routes from a neighbor.
+   *
+   * <p>The external metric is not incremented for an E2 route. Instead we
+   * separately track the internal cost to the advertising ASBR and use it as
+   * the E2 tie breaker, matching the existing IPv4 OSPF model.
+   */
+  private boolean importExternalRoutesFromNeighbor(
+      Interface localIface,
+      Interface remoteIface,
+      long area,
+      Set<AbstractRoute6> remoteRoutes) {
+    boolean changed = false;
+
+    long incrementalCost =
+        computeInterfaceCost(localIface);
+
+    @Nullable Ip6 peerIp =
+        findPeerNextHopIp(
+                localIface,
+                remoteIface)
+            .orElse(null);
+
+    for (AbstractRoute6 route : remoteRoutes) {
+      if (!(route
+          instanceof Ospfv3ExternalType2Route6)) {
+        continue;
+      }
+
+      Ospfv3ExternalType2Route6 external =
+          (Ospfv3ExternalType2Route6) route;
+
+      // Do not accept our own external advertisement back from the network.
+      if (external
+              .getAdvertiser()
+              .equals(_process.getRouterId())
+          && external.getCostToAdvertiser() != 0L) {
+        continue;
+      }
+
+      // Do not immediately send a learned route back toward the neighbor from
+      // which it was learned. Resetting the OSPFv3 RIB before convergence
+      // handles longer-path withdrawal cleanly.
+      if (remoteIface
+          .getName()
+          .equals(
+              external.getNextHopInterface())) {
+        continue;
+      }
+
+      if (external.getCostToAdvertiser()
+              >= LS_INFINITY
+          || incrementalCost
+              >= LS_INFINITY
+                  - external.getCostToAdvertiser()) {
+        continue;
+      }
+
+      long newCostToAdvertiser =
+          external.getCostToAdvertiser()
+              + incrementalCost;
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3ExternalType2Route6(
+                  external.getNetwork(),
+                  localIface.getName(),
+                  peerIp,
+                  _process.getAdminCost(),
+                  external.getMetric(),
+                  area,
+                  newCostToAdvertiser,
+                  external.getAdvertiser(),
+                  external.getTag()));
     }
 
     return changed;
