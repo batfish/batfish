@@ -1,18 +1,25 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
@@ -23,12 +30,16 @@ import org.batfish.dataplane.rib.Ospfv3Rib6;
 /**
  * Dataplane OSPFv3 process.
  *
- * <p>This first implementation handles locally originated intra-area
- * IPv6 routes and connected-route redistribution. Neighbor exchange
- * and SPF propagation are intentionally layered on top later.
+ * <p>Supports locally originated intra-area IPv6 routes, connected-route
+ * redistribution, and intra-area route exchange between compatible OSPFv3
+ * interfaces. Inter-area routing and external LSA propagation are layered on
+ * top separately.
  */
 @ParametersAreNonnullByDefault
 final class Ospfv3RoutingProcess {
+
+  /** RFC 2328/5340 LSInfinity. */
+  private static final long LS_INFINITY = 0xFFFFFFL;
 
   Ospfv3RoutingProcess(
       Ospfv3Process process,
@@ -40,6 +51,12 @@ final class Ospfv3RoutingProcess {
     _ospfv3Rib = new Ospfv3Rib6();
   }
 
+  /**
+   * Reset this process to routes originated locally by this router.
+   *
+   * <p>Learned routes are intentionally discarded here so a new IGP
+   * convergence pass naturally withdraws routes whose adjacencies disappeared.
+   */
   void initialize(ConnectedRib6 connectedRib) {
     _ospfv3Rib.clear();
     initializeIntraAreaRoutes();
@@ -97,8 +114,8 @@ final class Ospfv3RoutingProcess {
     for (ConnectedRoute6 connected :
         connectedRib.getRoutes()) {
 
-      // Networks already originated by this OSPFv3 process are internal,
-      // not redistributed back into the same process as external routes.
+      // A network already originated by this process is internal and must not
+      // also be originated by the same process as an external route.
       if (isInternallyOriginatedConnectedRoute(connected)) {
         continue;
       }
@@ -130,6 +147,281 @@ final class Ospfv3RoutingProcess {
         .anyMatch(route.getNetwork()::equals);
   }
 
+  /**
+   * Import active intra-area routes from currently adjacent OSPFv3 neighbors.
+   *
+   * @return true iff this process's active OSPFv3 route set changed
+   */
+  boolean propagateRoutes(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+    boolean changed = false;
+
+    for (Interface localIface :
+        _c.getAllInterfaces().values()) {
+
+      if (!isAdjacencyInterface(localIface)) {
+        continue;
+      }
+
+      Ospfv3InterfaceSettings localSettings =
+          localIface.getOspfv3Settings();
+
+      assert localSettings != null;
+      assert localSettings.getAreaName() != null;
+
+      NodeInterfacePair localId =
+          NodeInterfacePair.of(
+              _c.getHostname(), localIface.getName());
+
+      for (Node remoteNode : allNodes.values()) {
+        Configuration remoteConfig =
+            remoteNode.getConfiguration();
+
+        // An OSPF router never establishes an adjacency with itself.
+        if (_c.getHostname()
+            .equals(remoteConfig.getHostname())) {
+          continue;
+        }
+
+        for (Interface remoteIface :
+            remoteConfig.getAllInterfaces().values()) {
+
+          if (!remoteIface.getActive()) {
+            continue;
+          }
+
+          Ospfv3InterfaceSettings remoteSettings =
+              remoteIface.getOspfv3Settings();
+
+          if (!areInterfaceSettingsCompatible(
+              localSettings, remoteSettings)) {
+            continue;
+          }
+
+          NodeInterfacePair remoteId =
+              NodeInterfacePair.of(
+                  remoteConfig.getHostname(),
+                  remoteIface.getName());
+
+          if (!areTopologicallyAdjacent(
+              localId,
+              localIface,
+              remoteId,
+              remoteIface,
+              l3Adjacencies)) {
+            continue;
+          }
+
+          if (remoteSettings == null
+              || remoteSettings.getProcess() == null) {
+            continue;
+          }
+
+          VirtualRouter remoteVr =
+              remoteNode
+                  .getVirtualRouter(
+                      remoteIface.getVrfName())
+                  .orElse(null);
+
+          if (remoteVr == null) {
+            continue;
+          }
+
+          Ospfv3RoutingProcess remoteProcess =
+              remoteVr
+                  .getOspfv3Processes()
+                  .get(remoteSettings.getProcess());
+
+          if (remoteProcess == null) {
+            continue;
+          }
+
+          changed |=
+              importIntraAreaRoutesFromNeighbor(
+                  localIface,
+                  remoteIface,
+                  localSettings.getAreaName(),
+                  remoteProcess.getRoutes());
+        }
+      }
+    }
+
+    return changed;
+  }
+
+  private boolean isAdjacencyInterface(Interface iface) {
+    if (!iface.getActive()
+        || !_vrfName.equals(iface.getVrfName())
+        || !isEnabledForThisProcess(iface)) {
+      return false;
+    }
+
+    Ospfv3InterfaceSettings settings =
+        iface.getOspfv3Settings();
+
+    return settings != null
+        && !settings.getPassive()
+        && settings.getAreaName() != null;
+  }
+
+  @VisibleForTesting
+  static boolean areInterfaceSettingsCompatible(
+      Ospfv3InterfaceSettings local,
+      @Nullable Ospfv3InterfaceSettings remote) {
+    if (remote == null
+        || !local.getEnabled()
+        || !remote.getEnabled()
+        || local.getPassive()
+        || remote.getPassive()
+        || local.getAreaName() == null
+        || remote.getAreaName() == null
+        || !Objects.equals(
+            local.getAreaName(), remote.getAreaName())
+        || local.getHelloInterval()
+            != remote.getHelloInterval()
+        || local.getDeadInterval()
+            != remote.getDeadInterval()) {
+      return false;
+    }
+
+    OspfNetworkType localType =
+        local.getNetworkType();
+    OspfNetworkType remoteType =
+        remote.getNetworkType();
+
+    return localType == null
+        || remoteType == null
+        || localType == remoteType;
+  }
+
+  private static boolean areTopologicallyAdjacent(
+      NodeInterfacePair localId,
+      Interface localIface,
+      NodeInterfacePair remoteId,
+      Interface remoteIface,
+      L3Adjacencies l3Adjacencies) {
+
+    // When L1/L2 information proves a physical point-to-point pairing, no
+    // global IPv6 address is required. This is important for OSPFv3 links
+    // configured with link-local addressing only.
+    if (l3Adjacencies.inSamePointToPointDomain(
+        localId, remoteId)) {
+      return true;
+    }
+
+    if (!l3Adjacencies.inSameBroadcastDomain(
+        localId, remoteId)) {
+      return false;
+    }
+
+    // Without an explicit point-to-point pairing, require a matching concrete
+    // IPv6 network. This prevents GlobalBroadcastNoPointToPoint from turning
+    // every OSPFv3 interface in the network into a neighbor.
+    return haveMatchingIpv6Network(
+        localIface, remoteIface);
+  }
+
+  private static boolean haveMatchingIpv6Network(
+      Interface lhs, Interface rhs) {
+    for (ConcreteInterfaceAddress6 left :
+        lhs.getAllConcreteAddresses6()) {
+      for (ConcreteInterfaceAddress6 right :
+          rhs.getAllConcreteAddresses6()) {
+        if (left.getPrefix().equals(right.getPrefix())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean importIntraAreaRoutesFromNeighbor(
+      Interface localIface,
+      Interface remoteIface,
+      long area,
+      Set<AbstractRoute6> remoteRoutes) {
+    boolean changed = false;
+    long incrementalCost =
+        computeInterfaceCost(localIface);
+
+    @Nullable Ip6 peerIp =
+        findPeerNextHopIp(
+                localIface, remoteIface)
+            .orElse(null);
+
+    for (AbstractRoute6 route : remoteRoutes) {
+      if (!(route
+          instanceof Ospfv3IntraAreaRoute6)) {
+        continue;
+      }
+
+      Ospfv3IntraAreaRoute6 intra =
+          (Ospfv3IntraAreaRoute6) route;
+
+      if (intra.getArea() != area) {
+        continue;
+      }
+
+      // Split horizon. A route whose next hop on the remote router is the
+      // interface facing us was learned from us and should not be sent back.
+      // This also suppresses the shared transit prefix, which is already
+      // directly connected on our side.
+      if (remoteIface
+          .getName()
+          .equals(intra.getNextHopInterface())) {
+        continue;
+      }
+
+      if (intra.getMetric() >= LS_INFINITY
+          || incrementalCost
+              >= LS_INFINITY - intra.getMetric()) {
+        continue;
+      }
+
+      long newMetric =
+          intra.getMetric() + incrementalCost;
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3IntraAreaRoute6(
+                  intra.getNetwork(),
+                  localIface.getName(),
+                  peerIp,
+                  _process.getAdminCost(),
+                  newMetric,
+                  area,
+                  intra.getTag()));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Return the remote IPv6 address on the common numbered link when one is
+   * modeled. OSPFv3 normally uses a link-local next hop; until explicit IPv6
+   * link-local addresses are represented, the peer's concrete address is the
+   * best available next-hop identity. Interface-only next hops are retained
+   * for link-local-only links.
+   */
+  private static Optional<Ip6> findPeerNextHopIp(
+      Interface localIface, Interface remoteIface) {
+
+    for (ConcreteInterfaceAddress6 localAddress :
+        localIface.getAllConcreteAddresses6()) {
+      for (ConcreteInterfaceAddress6 remoteAddress :
+          remoteIface.getAllConcreteAddresses6()) {
+        if (localAddress
+            .getPrefix()
+            .equals(remoteAddress.getPrefix())) {
+          return Optional.of(remoteAddress.getIp());
+        }
+      }
+    }
+
+    return Optional.empty();
+  }
+
   private boolean isEnabledForThisProcess(Interface iface) {
     Ospfv3InterfaceSettings settings =
         iface.getOspfv3Settings();
@@ -144,9 +436,9 @@ final class Ospfv3RoutingProcess {
   /**
    * Compute effective interface cost.
    *
-   * <p>Explicit interface cost wins. AOS-CX uses 1 Gbps as the
-   * calculated link speed for VLAN interfaces. For other interfaces
-   * with known bandwidth, reference-bandwidth/link-bandwidth is used.
+   * <p>Explicit interface cost wins. AOS-CX uses 1 Gbps as the calculated
+   * link speed for VLAN interfaces. For other interfaces with known bandwidth,
+   * reference-bandwidth/link-bandwidth is used.
    */
   @VisibleForTesting
   long computeInterfaceCost(Interface iface) {
@@ -169,9 +461,8 @@ final class Ospfv3RoutingProcess {
             : iface.getBandwidth();
 
     if (bandwidth == null || bandwidth <= 0D) {
-      // We cannot infer physical link speed from configuration alone.
-      // Preserve reachability with minimum OSPF cost until speed is
-      // available in the VI model.
+      // Link speed is not available in the VI model. Preserve reachability
+      // with minimum OSPF cost until that speed can be inferred.
       return 1L;
     }
 
@@ -180,7 +471,8 @@ final class Ospfv3RoutingProcess {
             (_process.getReferenceBandwidth()
                 / bandwidth);
 
-    return Math.max(1L, Math.min(65535L, calculated));
+    return Math.max(
+        1L, Math.min(65535L, calculated));
   }
 
   private static @Nonnull Prefix6 getAdvertisedNetwork(

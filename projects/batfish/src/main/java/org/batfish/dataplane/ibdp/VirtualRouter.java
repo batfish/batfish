@@ -46,7 +46,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -194,6 +196,9 @@ public final class VirtualRouter {
   private Map<String, OspfRoutingProcess> _ospfProcesses;
   private Map<String, Ospfv3RoutingProcess> _ospfv3Processes;
 
+  /** OSPFv3 routes currently installed as candidates in main RIB6. */
+  private Set<AbstractRoute6> _installedOspfv3Routes;
+
   RipInternalRib _ripInternalRib;
   RipInternalRib _ripInternalStagingRib;
   RipRib _ripRib;
@@ -256,6 +261,7 @@ public final class VirtualRouter {
     _eigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
     _ospfv3Processes = ImmutableMap.of();
+    _installedOspfv3Routes = ImmutableSet.of();
     _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
     _layer3Vnis = ImmutableMap.copyOf(_vrf.getLayer3Vnis());
     if (_vrf.getBgpProcess() != null) {
@@ -345,23 +351,32 @@ public final class VirtualRouter {
   }
 
   private void removeOspfv3RoutesFromMainRib6() {
-    _ospfv3Processes
-        .values()
-        .forEach(
-            process ->
-                process
-                    .getRoutes()
-                    .forEach(_mainRib6::removeRoute));
+    _installedOspfv3Routes.forEach(_mainRib6::removeRoute);
+    _installedOspfv3Routes = ImmutableSet.of();
   }
 
   private void installOspfv3RoutesInMainRib6() {
+    ImmutableSet.Builder<AbstractRoute6> installed =
+        ImmutableSet.builder();
+
     _ospfv3Processes
         .values()
         .forEach(
             process ->
                 process
                     .getRoutes()
-                    .forEach(_mainRib6::mergeRoute));
+                    .forEach(
+                        route -> {
+                          _mainRib6.mergeRoute(route);
+                          installed.add(route);
+                        }));
+
+    _installedOspfv3Routes = installed.build();
+  }
+
+  private void syncOspfv3RoutesToMainRib6() {
+    removeOspfv3RoutesFromMainRib6();
+    installOspfv3RoutesInMainRib6();
   }
 
   private void initOspfv3Processes() {
@@ -395,6 +410,38 @@ public final class VirtualRouter {
                 process.initialize(_connectedRib6));
 
     installOspfv3RoutesInMainRib6();
+  }
+
+  /**
+   * Reset OSPFv3 to locally originated state before a new IGP convergence
+   * pass. This withdraws all previously learned OSPFv3 routes from main RIB6.
+   */
+  void resetOspfv3ForIgp() {
+    refreshOspfv3Routes();
+  }
+
+  /**
+   * Execute one OSPFv3 intra-area propagation pass.
+   *
+   * @return true iff an active OSPFv3 route changed
+   */
+  boolean ospfv3Iteration(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+    boolean changed = false;
+
+    for (Ospfv3RoutingProcess process :
+        _ospfv3Processes.values()) {
+      changed |=
+          process.propagateRoutes(
+              allNodes, l3Adjacencies);
+    }
+
+    if (changed) {
+      syncOspfv3RoutesToMainRib6();
+    }
+
+    return changed;
   }
 
   /**

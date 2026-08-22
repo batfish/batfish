@@ -958,7 +958,15 @@ final class IncrementalBdpEngine {
     vrs.stream().forEach(VirtualRouter::applyRibGroupsForIgp);
 
     // OSPF internal routes
-    numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
+    numOspfInternalIterations =
+        initOspfInternalRoutes(
+            nodes, topologyContext.getOspfTopology());
+
+    // OSPFv3 internal IPv6 routes
+    initOspfv3InternalRoutes(
+        nodes,
+        vrs,
+        topologyContext.getL3Adjacencies());
 
     // RIP internal routes
     initRipInternalRoutes(nodes, vrs, topologyContext.getLayer3Topology());
@@ -1194,6 +1202,61 @@ final class IncrementalBdpEngine {
       }
     }
     return ospfInternalIterations;
+  }
+
+  /**
+   * Run OSPFv3 intra-area IPv6 route exchange until convergence.
+   *
+   * <p>OSPFv3 is reset to locally originated state first, which gives this
+   * computation withdrawal semantics when an adjacency or interface disappears.
+   */
+  @VisibleForTesting
+  static int initOspfv3InternalRoutes(
+      Map<String, Node> allNodes,
+      List<VirtualRouter> vrs,
+      L3Adjacencies l3Adjacencies) {
+
+    boolean hasOspfv3 =
+        vrs.stream()
+            .anyMatch(
+                vr ->
+                    !vr.getOspfv3Processes().isEmpty());
+
+    if (!hasOspfv3) {
+      return 0;
+    }
+
+    vrs.forEach(VirtualRouter::resetOspfv3ForIgp);
+
+    int iterations = 0;
+    boolean dirty = true;
+
+    while (dirty) {
+      iterations++;
+      LOGGER.info(
+          "OSPFv3 internal: Iteration {}", iterations);
+
+      dirty = false;
+
+      // Keep this sequential for now. OSPFv3 processes read neighbor RIBs
+      // directly, so a sequential pass avoids concurrent mutation while still
+      // converging to the same fixed point.
+      for (VirtualRouter vr : vrs) {
+        if (vr.ospfv3Iteration(
+            allNodes, l3Adjacencies)) {
+          dirty = true;
+        }
+      }
+
+      if (iterations > MAX_OSPF_INTERNAL_ITERATIONS) {
+        throw new BdpOscillationException(
+            "OSPFv3 did not converge after "
+                + MAX_OSPF_INTERNAL_ITERATIONS
+                + " iterations");
+      }
+    }
+
+    return iterations;
   }
 
   /**
