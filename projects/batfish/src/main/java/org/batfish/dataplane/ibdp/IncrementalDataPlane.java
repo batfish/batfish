@@ -26,6 +26,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FinalMainRib;
+import org.batfish.datamodel.FinalMainRib6;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
@@ -47,6 +48,22 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                     FinalMainRib.of(
                         vr.getMainRib().getRoutes().stream()
                             .map(AnnotatedRoute::getAbstractRoute))));
+  }
+
+  @VisibleForTesting
+  static @Nonnull Table<String, String, FinalMainRib6>
+      computeRibs6(List<VirtualRouter> vrs) {
+    return vrs.parallelStream()
+        .collect(
+            ImmutableTable.toImmutableTable(
+                vr ->
+                    vr.getConfiguration()
+                        .getHostname(),
+                VirtualRouter::getName,
+                vr ->
+                    FinalMainRib6.of(
+                        vr.getMainRib6()
+                            .getRoutes())));
   }
 
   @Override
@@ -98,6 +115,11 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public @Nonnull Table<String, String, FinalMainRib> getRibs() {
     return _ribs;
+  }
+
+  @Override
+  public @Nonnull Table<String, String, FinalMainRib6> getRibs6() {
+    return _ribs6;
   }
 
   @VisibleForTesting
@@ -154,6 +176,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final @Nonnull Table<String, String, FinalMainRib> _ribs;
 
+  private final @Nonnull Table<String, String, FinalMainRib6> _ribs6;
+
   private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracerSummary;
 
@@ -179,6 +203,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes, _evpnRoutes);
     LOGGER.info("Computing main RIBs");
     _ribs = computeRibs(vrs);
+    LOGGER.info("Computing IPv6 main RIBs");
+    _ribs6 = computeRibs6(vrs);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);

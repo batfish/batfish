@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.io.Serializable;
 import java.util.Map;
@@ -39,6 +40,17 @@ public interface DataPlane extends Serializable {
    */
   @Nonnull
   Table<String, String, FinalMainRib> getRibs();
+
+  /**
+   * Return finalized IPv6 main RIBs.
+   *
+   * <p>Dataplane implementations that do not yet compute IPv6 routes return
+   * an empty table.
+   */
+  @Nonnull
+  default Table<String, String, FinalMainRib6> getRibs6() {
+    return ImmutableTable.of();
+  }
 
   /**
    * Return the summary of route prefix propagation. Map structure: Hostname -&gt; VRF name -&gt;
