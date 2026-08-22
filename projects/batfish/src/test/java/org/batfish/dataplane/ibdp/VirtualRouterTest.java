@@ -40,6 +40,7 @@ import java.util.function.Function;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
@@ -54,6 +55,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -67,6 +69,7 @@ import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -91,6 +94,10 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
+import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -341,6 +348,103 @@ public class VirtualRouterTest {
     assertThat(
         vr.getMainRib6().getRoutes(),
         equalTo(ImmutableSet.of(route1)));
+  }
+
+
+  @Test
+  public void testOspfv3ProcessInitializationAndAutostate() {
+    VirtualRouter vr = makeIosVirtualRouter("n1");
+    Configuration c = vr.getConfiguration();
+    Vrf vrf = c.getDefaultVrf();
+
+    ConcreteInterfaceAddress6 address =
+        ConcreteInterfaceAddress6.parse(
+            "2001:db8:60::1/64");
+
+    Interface.builder()
+        .setName("Ethernet6")
+        .setOwner(c)
+        .setVrf(vrf)
+        .setType(InterfaceType.PHYSICAL)
+        .setAddress(address)
+        .setBandwidth(10_000_000_000D)
+        .setOspfv3Settings(
+            Ospfv3InterfaceSettings.builder()
+                .setAreaName(0L)
+                .setCost(7)
+                .setProcess("1")
+                .setEnabled(true)
+                .setPassive(false)
+                .setHelloInterval(10)
+                .setDeadInterval(40)
+                .setNetworkType(
+                    OspfNetworkType.POINT_TO_POINT)
+                .build())
+        .build();
+
+    Ospfv3Area area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterface("Ethernet6")
+            .build();
+
+    Ospfv3Process.builder()
+        .setProcessId("1")
+        .setRouterId(Ip.parse("192.0.2.6"))
+        .setAreas(ImmutableMap.of(0L, area))
+        .setVrf(vrf)
+        .build();
+
+    vr.initRibs();
+    vr.initForIgpComputation(
+        TopologyContext.builder().build());
+
+    assertThat(
+        vr.getOspfv3Processes().containsKey("1"),
+        equalTo(true));
+
+    Ospfv3RoutingProcess routingProcess =
+        vr.getOspfv3Processes().get("1");
+
+    assertThat(
+        routingProcess.getRoutes(),
+        hasSize(1));
+
+    AbstractRoute6 ospfv3Route =
+        routingProcess.getRoutes().iterator().next();
+
+    assertThat(
+        ospfv3Route.getNetwork(),
+        equalTo(address.getPrefix()));
+    assertThat(
+        ospfv3Route.getMetric(),
+        equalTo(7L));
+    assertThat(
+        ospfv3Route.getProtocol(),
+        equalTo(RoutingProtocol.OSPF3));
+    assertThat(
+        ospfv3Route instanceof Ospfv3IntraAreaRoute6,
+        equalTo(true));
+
+    // Connected wins in the main RIB, while the OSPFv3 route
+    // is retained as the lower-preference candidate.
+    assertThat(
+        vr.getMainRib6().getBackupRoutes(),
+        hasItem(ospfv3Route));
+
+    c.getAllInterfaces()
+        .get("Ethernet6")
+        .deactivate(
+            InactiveReason.AUTOSTATE_FAILURE);
+
+    vr.updateConnectedAndLocalRoutesForAutostateChange();
+
+    assertThat(
+        routingProcess.getRoutes(),
+        empty());
+    assertThat(
+        vr.getMainRib6().getRoutes(),
+        empty());
   }
 
   /** Check that initialization of Kernel RIB is as expected */

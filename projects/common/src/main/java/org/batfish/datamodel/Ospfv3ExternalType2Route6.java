@@ -6,81 +6,91 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents a directly connected IPv6 route. */
+/** An IPv6 OSPFv3 external type-2 route. */
 @ParametersAreNonnullByDefault
-public final class ConnectedRoute6 extends AbstractRoute6 {
+public final class Ospfv3ExternalType2Route6
+    extends AbstractRoute6 {
+
+  private static final String PROP_ADVERTISER = "advertiser";
 
   @JsonCreator
-  private static ConnectedRoute6 create(
+  private static Ospfv3ExternalType2Route6 create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix6 network,
-      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) long adminCost,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE)
+          @Nullable String nextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST)
+          @Nullable Long admin,
       @JsonProperty(PROP_METRIC) @Nullable Long metric,
-      @JsonProperty(PROP_TAG) long tag) {
-    checkArgument(
-        network != null,
-        "Cannot create IPv6 connected route: missing %s",
-        PROP_NETWORK);
-    // Connected routes always have metric 0. Accept a missing metric for
-    // backwards compatibility with IPv6 route JSON written before metric
-    // became a common AbstractRoute6 property.
-    checkArgument(
-        metric == null || metric == 0L,
-        "Invalid IPv6 connected route metric: %s",
-        metric);
+      @JsonProperty(PROP_ADVERTISER) @Nullable Ip advertiser,
+      @JsonProperty(PROP_TAG) @Nullable Long tag) {
+    checkArgument(network != null, "Missing %s", PROP_NETWORK);
+    checkArgument(admin != null, "Missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(metric != null, "Missing %s", PROP_METRIC);
+    checkArgument(advertiser != null, "Missing %s", PROP_ADVERTISER);
 
-    return new ConnectedRoute6(
+    return new Ospfv3ExternalType2Route6(
         network,
         firstNonNull(
             nextHopInterface,
             Route.UNSET_NEXT_HOP_INTERFACE),
-        adminCost,
-        tag);
+        admin,
+        metric,
+        advertiser,
+        firstNonNull(tag, Route.UNSET_ROUTE_TAG));
   }
 
-  /** Create an IPv6 connected route with administrative cost 0. */
-  public ConnectedRoute6(
-      Prefix6 network, String nextHopInterface) {
-    this(network, nextHopInterface, 0);
-  }
-
-  public ConnectedRoute6(
+  public Ospfv3ExternalType2Route6(
       Prefix6 network,
       String nextHopInterface,
-      long adminCost) {
+      long admin,
+      long metric,
+      Ip advertiser) {
     this(
         network,
         nextHopInterface,
-        adminCost,
+        admin,
+        metric,
+        advertiser,
         Route.UNSET_ROUTE_TAG);
   }
 
-  public ConnectedRoute6(
+  public Ospfv3ExternalType2Route6(
       Prefix6 network,
       String nextHopInterface,
-      long adminCost,
+      long admin,
+      long metric,
+      Ip advertiser,
       long tag) {
     super(
         network,
-        adminCost,
+        admin,
         tag,
         false,
         false,
         nextHopInterface,
         null);
+    _metric = metric;
+    _advertiser = advertiser;
+  }
+
+  @JsonProperty(PROP_ADVERTISER)
+  public @Nonnull Ip getAdvertiser() {
+    return _advertiser;
   }
 
   @Override
+  @JsonProperty(PROP_METRIC)
   public long getMetric() {
-    return 0L;
+    return _metric;
   }
 
   @Override
   public RoutingProtocol getProtocol() {
-    return RoutingProtocol.CONNECTED;
+    return RoutingProtocol.OSPF3;
   }
 
   @Override
@@ -88,14 +98,18 @@ public final class ConnectedRoute6 extends AbstractRoute6 {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ConnectedRoute6)) {
+    if (!(o instanceof Ospfv3ExternalType2Route6)) {
       return false;
     }
 
-    ConnectedRoute6 rhs = (ConnectedRoute6) o;
+    Ospfv3ExternalType2Route6 rhs =
+        (Ospfv3ExternalType2Route6) o;
+
     return _network.equals(rhs._network)
         && getAdministrativeCost()
             == rhs.getAdministrativeCost()
+        && getMetric() == rhs.getMetric()
+        && _advertiser.equals(rhs._advertiser)
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNextHopInterface()
@@ -110,10 +124,15 @@ public final class ConnectedRoute6 extends AbstractRoute6 {
     return Objects.hash(
         _network,
         getAdministrativeCost(),
+        getMetric(),
+        _advertiser,
         getNonRouting(),
         getNonForwarding(),
         getNextHopInterface(),
         getNextHopIp(),
         getTag());
   }
+
+  private final @Nonnull Ip _advertiser;
+  private final long _metric;
 }

@@ -794,6 +794,11 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setProcessId(Integer.toString(process.getProcessId()))
               .setRouterId(process.getRouterId())
               .setAreas(areas)
+              .setAdminCost(110)
+              .setReferenceBandwidth(100_000_000_000D)
+              .setRedistributeConnected(
+                  process.getRedistributeConnected())
+              .setRedistributionMetric(25L)
               .setVrf(vrf)
               .build();
         });

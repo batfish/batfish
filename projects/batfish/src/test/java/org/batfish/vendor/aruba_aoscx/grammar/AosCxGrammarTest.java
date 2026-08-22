@@ -1067,6 +1067,16 @@ public final class AosCxGrammarTest {
     assertThat(
         process.getRouterId(),
         equalTo(Ip.parse("192.0.2.1")));
+    assertThat(process.getAdminCost(), equalTo(110));
+    assertThat(
+        process.getReferenceBandwidth(),
+        equalTo(100_000_000_000D));
+    assertThat(
+        process.getRedistributeConnected(),
+        equalTo(true));
+    assertThat(
+        process.getRedistributionMetric(),
+        equalTo(25L));
 
     long area0 = 0L;
     long area10 = Ip.parse("10.0.0.1").asLong();

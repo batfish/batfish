@@ -9,78 +9,91 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents a directly connected IPv6 route. */
+/** An IPv6 OSPFv3 intra-area route. */
 @ParametersAreNonnullByDefault
-public final class ConnectedRoute6 extends AbstractRoute6 {
+public final class Ospfv3IntraAreaRoute6 extends AbstractRoute6 {
+
+  private static final String PROP_AREA = "area";
 
   @JsonCreator
-  private static ConnectedRoute6 create(
+  private static Ospfv3IntraAreaRoute6 create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix6 network,
-      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) long adminCost,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE)
+          @Nullable String nextHopInterface,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip6 nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST)
+          @Nullable Long admin,
       @JsonProperty(PROP_METRIC) @Nullable Long metric,
-      @JsonProperty(PROP_TAG) long tag) {
-    checkArgument(
-        network != null,
-        "Cannot create IPv6 connected route: missing %s",
-        PROP_NETWORK);
-    // Connected routes always have metric 0. Accept a missing metric for
-    // backwards compatibility with IPv6 route JSON written before metric
-    // became a common AbstractRoute6 property.
-    checkArgument(
-        metric == null || metric == 0L,
-        "Invalid IPv6 connected route metric: %s",
-        metric);
+      @JsonProperty(PROP_AREA) @Nullable Long area,
+      @JsonProperty(PROP_TAG) @Nullable Long tag) {
+    checkArgument(network != null, "Missing %s", PROP_NETWORK);
+    checkArgument(admin != null, "Missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(metric != null, "Missing %s", PROP_METRIC);
+    checkArgument(area != null, "Missing %s", PROP_AREA);
 
-    return new ConnectedRoute6(
+    return new Ospfv3IntraAreaRoute6(
         network,
         firstNonNull(
             nextHopInterface,
             Route.UNSET_NEXT_HOP_INTERFACE),
-        adminCost,
-        tag);
+        nextHopIp,
+        admin,
+        metric,
+        area,
+        firstNonNull(tag, Route.UNSET_ROUTE_TAG));
   }
 
-  /** Create an IPv6 connected route with administrative cost 0. */
-  public ConnectedRoute6(
-      Prefix6 network, String nextHopInterface) {
-    this(network, nextHopInterface, 0);
-  }
-
-  public ConnectedRoute6(
+  public Ospfv3IntraAreaRoute6(
       Prefix6 network,
       String nextHopInterface,
-      long adminCost) {
+      @Nullable Ip6 nextHopIp,
+      long admin,
+      long metric,
+      long area) {
     this(
         network,
         nextHopInterface,
-        adminCost,
+        nextHopIp,
+        admin,
+        metric,
+        area,
         Route.UNSET_ROUTE_TAG);
   }
 
-  public ConnectedRoute6(
+  public Ospfv3IntraAreaRoute6(
       Prefix6 network,
       String nextHopInterface,
-      long adminCost,
+      @Nullable Ip6 nextHopIp,
+      long admin,
+      long metric,
+      long area,
       long tag) {
     super(
         network,
-        adminCost,
+        admin,
         tag,
         false,
         false,
         nextHopInterface,
-        null);
+        nextHopIp);
+    _metric = metric;
+    _area = area;
+  }
+
+  @JsonProperty(PROP_AREA)
+  public long getArea() {
+    return _area;
   }
 
   @Override
+  @JsonProperty(PROP_METRIC)
   public long getMetric() {
-    return 0L;
+    return _metric;
   }
 
   @Override
   public RoutingProtocol getProtocol() {
-    return RoutingProtocol.CONNECTED;
+    return RoutingProtocol.OSPF3;
   }
 
   @Override
@@ -88,14 +101,18 @@ public final class ConnectedRoute6 extends AbstractRoute6 {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ConnectedRoute6)) {
+    if (!(o instanceof Ospfv3IntraAreaRoute6)) {
       return false;
     }
 
-    ConnectedRoute6 rhs = (ConnectedRoute6) o;
+    Ospfv3IntraAreaRoute6 rhs =
+        (Ospfv3IntraAreaRoute6) o;
+
     return _network.equals(rhs._network)
         && getAdministrativeCost()
             == rhs.getAdministrativeCost()
+        && getMetric() == rhs.getMetric()
+        && getArea() == rhs.getArea()
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
         && getNextHopInterface()
@@ -110,10 +127,15 @@ public final class ConnectedRoute6 extends AbstractRoute6 {
     return Objects.hash(
         _network,
         getAdministrativeCost(),
+        getMetric(),
+        getArea(),
         getNonRouting(),
         getNonForwarding(),
         getNextHopInterface(),
         getNextHopIp(),
         getTag());
   }
+
+  private final long _area;
+  private final long _metric;
 }

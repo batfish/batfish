@@ -63,7 +63,7 @@ public abstract class AbstractRoute6 implements Serializable {
     return Integer.toUnsignedLong(_admin);
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_METRIC)
   public abstract long getMetric();
 
   @JsonProperty(PROP_NETWORK)

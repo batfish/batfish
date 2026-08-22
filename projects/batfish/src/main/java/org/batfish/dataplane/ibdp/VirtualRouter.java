@@ -192,6 +192,7 @@ public final class VirtualRouter {
   private final @Nonnull Node _node;
 
   private Map<String, OspfRoutingProcess> _ospfProcesses;
+  private Map<String, Ospfv3RoutingProcess> _ospfv3Processes;
 
   RipInternalRib _ripInternalRib;
   RipInternalRib _ripInternalStagingRib;
@@ -254,6 +255,7 @@ public final class VirtualRouter {
     _prefixTracer = new PrefixTracer();
     _eigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
+    _ospfv3Processes = ImmutableMap.of();
     _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
     _layer3Vnis = ImmutableMap.copyOf(_vrf.getLayer3Vnis());
     if (_vrf.getBgpProcess() != null) {
@@ -336,8 +338,63 @@ public final class VirtualRouter {
                             e.getValue(), _name, _c, topologyContext.getOspfTopology())));
     _ospfProcesses.values().forEach(p -> p.initialize(_node));
 
+    initOspfv3Processes();
+
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  private void removeOspfv3RoutesFromMainRib6() {
+    _ospfv3Processes
+        .values()
+        .forEach(
+            process ->
+                process
+                    .getRoutes()
+                    .forEach(_mainRib6::removeRoute));
+  }
+
+  private void installOspfv3RoutesInMainRib6() {
+    _ospfv3Processes
+        .values()
+        .forEach(
+            process ->
+                process
+                    .getRoutes()
+                    .forEach(_mainRib6::mergeRoute));
+  }
+
+  private void initOspfv3Processes() {
+    removeOspfv3RoutesFromMainRib6();
+
+    _ospfv3Processes =
+        _vrf.getOspfv3Processes().entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey,
+                    e ->
+                        new Ospfv3RoutingProcess(
+                            e.getValue(), _name, _c)));
+
+    _ospfv3Processes
+        .values()
+        .forEach(
+            process ->
+                process.initialize(_connectedRib6));
+
+    installOspfv3RoutesInMainRib6();
+  }
+
+  private void refreshOspfv3Routes() {
+    removeOspfv3RoutesFromMainRib6();
+
+    _ospfv3Processes
+        .values()
+        .forEach(
+            process ->
+                process.initialize(_connectedRib6));
+
+    installOspfv3RoutesInMainRib6();
   }
 
   /**
@@ -848,6 +905,10 @@ public final class VirtualRouter {
 
     // Add current IPv6 connected routes to the IPv6 main RIB.
     _connectedRib6.getRoutes().forEach(_mainRib6::mergeRoute);
+
+    // OSPFv3 interface-originated and redistributed routes depend on
+    // the currently active IPv6 interfaces.
+    refreshOspfv3Routes();
   }
 
   /** Generate connected routes for a given active interface. */
@@ -1549,6 +1610,7 @@ public final class VirtualRouter {
     return Streams.concat(
             // RIB State
             Stream.of(_mainRib.getRoutes()),
+            Stream.of(_mainRib6.getRoutes()),
             // Message queues
             messageQueueStream(_isisIncomingRoutes),
             messageQueueStream(_crossVrfIncomingRoutes),
@@ -1556,6 +1618,7 @@ public final class VirtualRouter {
             _routesForIsisRedistribution.build().stream(),
             // Processes
             _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
+            _ospfv3Processes.values().stream().map(Ospfv3RoutingProcess::iterationHashCode),
             _eigrpProcesses.values().stream().map(EigrpRoutingProcess::computeIterationHashCode),
             Stream.of(_bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.iterationHashCode()))
         .collect(toOrderedHashCode());
@@ -1659,6 +1722,11 @@ public final class VirtualRouter {
   /** Return all OSPF processes for this VRF */
   public Map<String, OspfRoutingProcess> getOspfProcesses() {
     return _ospfProcesses;
+  }
+
+  /** Return all OSPFv3 processes for this VRF. */
+  Map<String, Ospfv3RoutingProcess> getOspfv3Processes() {
+    return _ospfv3Processes;
   }
 
   /** Return the current set of {@link Layer2Vni} associated with this VRF */
