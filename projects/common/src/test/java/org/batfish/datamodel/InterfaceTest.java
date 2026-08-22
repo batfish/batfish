@@ -121,6 +121,76 @@ public class InterfaceTest {
         equalTo(ImmutableSet.of(ipv6Primary, ipv6Secondary)));
   }
 
+
+  @Test
+  public void testIpv4TrafficHelpersWithIpv6Addresses() {
+    Interface ipv6Only =
+        TestInterface.builder()
+            .setName("ipv6Only")
+            .setType(PHYSICAL)
+            .setAddress(
+                ConcreteInterfaceAddress6.parse(
+                    "2001:db8::1/64"))
+            .build();
+
+    // IPv6 is valid L3 configuration, but the legacy Ip traffic
+    // helpers specifically describe IPv4 behavior.
+    assertThat(ipv6Only.isActiveL3(), equalTo(true));
+    assertThat(
+        ipv6Only.canOriginateIpTraffic(),
+        equalTo(false));
+    assertThat(
+        ipv6Only.canReceiveIpTraffic(),
+        equalTo(false));
+    assertThat(
+        ipv6Only.canSendIpTraffic(),
+        equalTo(false));
+
+    Interface ipv4Only =
+        TestInterface.builder()
+            .setName("ipv4Only")
+            .setType(PHYSICAL)
+            .setAddress(
+                ConcreteInterfaceAddress.parse(
+                    "192.0.2.1/24"))
+            .build();
+
+    assertThat(ipv4Only.isActiveL3(), equalTo(true));
+    assertThat(
+        ipv4Only.canOriginateIpTraffic(),
+        equalTo(true));
+    assertThat(
+        ipv4Only.canReceiveIpTraffic(),
+        equalTo(true));
+    assertThat(
+        ipv4Only.canSendIpTraffic(),
+        equalTo(true));
+
+    Interface dualStack =
+        TestInterface.builder()
+            .setName("dualStack")
+            .setType(PHYSICAL)
+            .setAddresses(
+                ConcreteInterfaceAddress6.parse(
+                    "2001:db8::1/64"),
+                ImmutableSet.of(
+                    ConcreteInterfaceAddress.parse(
+                        "192.0.2.1/24")))
+            .build();
+
+    // IPv4 behavior must still work when the IPv6 address happens
+    // to be the interface's primary address.
+    assertThat(
+        dualStack.canOriginateIpTraffic(),
+        equalTo(true));
+    assertThat(
+        dualStack.canReceiveIpTraffic(),
+        equalTo(true));
+    assertThat(
+        dualStack.canSendIpTraffic(),
+        equalTo(true));
+  }
+
   @Test
   public void testInterfaceStatus() {
     // no line status

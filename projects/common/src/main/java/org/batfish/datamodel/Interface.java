@@ -668,6 +668,17 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
+   * Returns whether this interface has an address usable by the IPv4
+   * dataplane. InterfaceAddress also contains IPv6 addresses, while the
+   * legacy IP traffic helpers below are explicitly IPv4-only.
+   */
+  private boolean hasIpv4Address() {
+    return !getAllConcreteAddresses().isEmpty()
+        || !getAllLinkLocalAddresses().isEmpty()
+        || !getAllUnnumberedAddresses().isEmpty();
+  }
+
+  /**
    * Returns {@code true} if this {@link Interface} can be the source of an IPv4 packet.
    *
    * <p>Note that this means originating traffic in the VRF, not that traffic can be forwarded out a
@@ -675,7 +686,7 @@ public final class Interface extends ComparableStructure<String> {
    */
   @JsonIgnore
   public boolean canOriginateIpTraffic() {
-    return isActiveL3();
+    return isActiveL3() && hasIpv4Address();
   }
 
   /**
@@ -712,7 +723,7 @@ public final class Interface extends ComparableStructure<String> {
     // NHint routes will send arps that can be answered by any same-broadcast-domain device,
     // regardless of L3 compatibility. We are not yet able to fix this for the `enter[iface]`
     // case, but we can for the `exit[iface]` case.
-    return isActiveL3() && !isLoopback();
+    return isActiveL3() && hasIpv4Address() && !isLoopback();
   }
 
   private @Nullable Integer _accessVlan;
