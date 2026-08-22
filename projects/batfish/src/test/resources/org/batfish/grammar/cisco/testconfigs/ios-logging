@@ -1,0 +1,16 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-logging
+!
+logging host 10.1.1.100 transport tcp port 6514
+logging host 10.1.1.101 transport udp
+logging host 10.1.1.102
+logging host 10.1.1.103 vrf MGMT-TOR
+logging host 10.1.1.104 vrf MGMT-TOR transport tcp port 10
+logging host 2001::1:1 transport tcp port 601
+logging facility local7
+logging trap notifications
+logging buffered discriminator MYDISC 32768 warnings
+!
+end

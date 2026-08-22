@@ -2065,6 +2065,8 @@ FILE_TRANSFER: 'file-transfer';
 
 FILTER: 'filter';
 
+FILTERED: 'filtered';
+
 FILTER_LIST: 'filter-list';
 
 FIREWALL
