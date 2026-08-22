@@ -30,6 +30,7 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 
@@ -105,6 +106,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
+  private static final String PROP_OSPFV3_PROCESSES = "ospfv3Processes";
   private static final String PROP_FIB_EXPORT_POLICY = "fibExportPolicy";
   private static final String PROP_RESOLUTION_POLICY = "resolutionPolicy";
   private static final String PROP_RIP_PROCESS = "ripProcess";
@@ -130,6 +132,7 @@ public class Vrf extends ComparableStructure<String> {
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
   private @Nonnull SortedMap<String, OspfProcess> _ospfProcesses;
+  private @Nonnull SortedMap<String, Ospfv3Process> _ospfv3Processes;
   private @Nullable String _resolutionPolicy;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
@@ -147,6 +150,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedRoutes = new TreeSet<>();
     _kernelRoutes = ImmutableSortedSet.of();
     _ospfProcesses = ImmutableSortedMap.of();
+    _ospfv3Processes = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
@@ -157,6 +161,8 @@ public class Vrf extends ComparableStructure<String> {
   private static Vrf create(
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_OSPF_PROCESSES) @Nullable Map<String, OspfProcess> ospfProcesses,
+      @JsonProperty(PROP_OSPFV3_PROCESSES)
+          @Nullable Map<String, Ospfv3Process> ospfv3Processes,
       // For backwards compatible deserialization
       @JsonProperty(PROP_OSPF_PROCESS) @Nullable OspfProcess ospfProcess) {
     checkArgument(name != null, "%s must be provided", PROP_NAME);
@@ -165,6 +171,9 @@ public class Vrf extends ComparableStructure<String> {
       v.setOspfProcesses(ImmutableSortedMap.copyOf(ospfProcesses));
     } else if (ospfProcess != null) {
       v.setOspfProcesses(ImmutableSortedMap.of(ospfProcess.getProcessId(), ospfProcess));
+    }
+    if (ospfv3Processes != null) {
+      v.setOspfv3Processes(ImmutableSortedMap.copyOf(ospfv3Processes));
     }
     return v;
   }
@@ -234,6 +243,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PROCESSES)
   public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
     return _ospfProcesses;
+  }
+
+  /** OSPFv3 routing processes for this VRF, keyed on process ID. */
+  @JsonProperty(PROP_OSPFV3_PROCESSES)
+  public @Nonnull Map<String, Ospfv3Process> getOspfv3Processes() {
+    return _ospfv3Processes;
   }
 
   @JsonProperty(PROP_RIP_PROCESS)
@@ -384,6 +399,20 @@ public class Vrf extends ComparableStructure<String> {
         ImmutableSortedMap.<String, OspfProcess>naturalOrder()
             .putAll(_ospfProcesses)
             .put(ospfProcess.getProcessId(), ospfProcess)
+            .build();
+  }
+
+  @JsonIgnore
+  public void setOspfv3Processes(
+      @Nonnull SortedMap<String, Ospfv3Process> processes) {
+    _ospfv3Processes = processes;
+  }
+
+  public void addOspfv3Process(@Nonnull Ospfv3Process ospfv3Process) {
+    _ospfv3Processes =
+        ImmutableSortedMap.<String, Ospfv3Process>naturalOrder()
+            .putAll(_ospfv3Processes)
+            .put(ospfv3Process.getProcessId(), ospfv3Process)
             .build();
   }
 

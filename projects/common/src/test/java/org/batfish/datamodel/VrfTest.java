@@ -11,9 +11,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.junit.Test;
 
 public class VrfTest {
@@ -29,6 +32,17 @@ public class VrfTest {
                 .setRouterId(Ip.ZERO)
                 .setReferenceBandwidth(1d)
                 .build()));
+    Ospfv3Area ospfv3Area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterface("iface6")
+            .build();
+    vrf.addOspfv3Process(
+        Ospfv3Process.builder()
+            .setProcessId("1")
+            .setRouterId(Ip.parse("192.0.2.1"))
+            .setAreas(ImmutableSortedMap.of(0L, ospfv3Area))
+            .build());
     vrf.setBgpProcess(BgpProcess.testBgpProcess(Ip.ZERO));
     IsoAddress isoAddress = new IsoAddress("49.0001.0100.0500.5005.00");
     vrf.setIsisProcess(IsisProcess.builder().setNetAddress(isoAddress).build());
@@ -38,6 +52,15 @@ public class VrfTest {
     Vrf clonedVrf = BatfishObjectMapper.clone(vrf, Vrf.class);
     assertThat(clonedVrf, hasName(equalTo("vrf")));
     assertThat(clonedVrf, hasOspfProcess("ospf", hasReferenceBandwidth(1d)));
+    Ospfv3Process clonedOspfv3 =
+        clonedVrf.getOspfv3Processes().get("1");
+    assertThat(clonedOspfv3, notNullValue());
+    assertThat(
+        clonedOspfv3.getRouterId(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        clonedOspfv3.getAreas().get(0L).getInterfaces(),
+        equalTo(ImmutableSortedSet.of("iface6")));
     assertThat(clonedVrf, hasBgpProcess(notNullValue()));
     assertThat(clonedVrf, hasIsisProcess(hasNetAddress(equalTo(isoAddress))));
   }
