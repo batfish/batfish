@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.io.Serializable;
@@ -31,6 +32,17 @@ public interface DataPlane extends Serializable {
   /** Return a {@link Fib} for each node/VRF */
   @Nonnull
   Map<String, Map<String, Fib>> getFibs();
+
+  /**
+   * Return an IPv6 FIB for each node/VRF.
+   *
+   * <p>Dataplane implementations that do not yet compute IPv6 forwarding
+   * return an empty map.
+   */
+  @Nonnull
+  default Map<String, Map<String, Fib6>> getFibs6() {
+    return ImmutableMap.of();
+  }
 
   @Nonnull
   ForwardingAnalysis getForwardingAnalysis();

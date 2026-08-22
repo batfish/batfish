@@ -7,10 +7,13 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.Table;
 import java.util.List;
+import java.util.Map;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute6;
+import org.batfish.datamodel.Fib6;
+import org.batfish.datamodel.FibEntry6;
 import org.batfish.datamodel.FinalMainRib6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -78,4 +81,65 @@ public final class IncrementalDataPlaneIpv6Test {
         rib.getRoutes(),
         hasItem(route));
   }
+  @Test
+  public void testComputeFibs6() {
+    Node node =
+        TestUtils.makeIosRouter("n1");
+
+    Configuration c =
+        node.getConfiguration();
+
+    Interface.builder()
+        .setName("Ethernet6")
+        .setOwner(c)
+        .setVrf(c.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
+        .setAddress(
+            ConcreteInterfaceAddress6.parse(
+                "2001:db8:60::1/64"))
+        .build();
+
+    VirtualRouter vr =
+        node.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    vr.initForIgpComputation(
+        TopologyContext.builder().build());
+
+    Table<String, String, FinalMainRib6>
+        ribs6 =
+            IncrementalDataPlane.computeRibs6(
+                List.of(vr));
+
+    Map<String, Map<String, Fib6>>
+        fibs6 =
+            IncrementalDataPlane.computeFibs6(
+                ribs6);
+
+    Fib6 fib =
+        fibs6
+            .get("n1")
+            .get(
+                Configuration.DEFAULT_VRF_NAME);
+
+    assertThat(
+        fib,
+        notNullValue());
+
+    FibEntry6 entry =
+        fib.get(
+                org.batfish.datamodel.Ip6.parse(
+                    "2001:db8:60::abcd"))
+            .iterator()
+            .next();
+
+    assertThat(
+        entry.getInterfaceName(),
+        equalTo("Ethernet6"));
+
+    assertThat(
+        entry.getNextHopIp().isEmpty(),
+        equalTo(true));
+  }
+
 }

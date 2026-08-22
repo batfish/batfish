@@ -25,6 +25,8 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.Fib6;
+import org.batfish.datamodel.Fib6Impl;
 import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.FinalMainRib6;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -66,9 +68,42 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                             .getRoutes())));
   }
 
+  @VisibleForTesting
+  static @Nonnull Map<String, Map<String, Fib6>>
+      computeFibs6(
+          Table<String, String, FinalMainRib6> ribs6) {
+
+    ImmutableMap.Builder<String, Map<String, Fib6>>
+        outer = ImmutableMap.builder();
+
+    for (String hostname : ribs6.rowKeySet()) {
+      ImmutableMap.Builder<String, Fib6>
+          inner = ImmutableMap.builder();
+
+      ribs6
+          .row(hostname)
+          .forEach(
+              (vrf, rib) ->
+                  inner.put(
+                      vrf,
+                      new Fib6Impl(rib)));
+
+      outer.put(
+          hostname,
+          inner.build());
+    }
+
+    return outer.build();
+  }
+
   @Override
   public @Nonnull Map<String, Map<String, Fib>> getFibs() {
     return _fibs;
+  }
+
+  @Override
+  public @Nonnull Map<String, Map<String, Fib6>> getFibs6() {
+    return _fibs6;
   }
 
   @Override
@@ -164,6 +199,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
   private final @Nonnull Map<String, Map<String, Fib>> _fibs;
+  private final @Nonnull Map<String, Map<String, Fib6>> _fibs6;
   private final @Nonnull ForwardingAnalysis _forwardingAnalysis;
   private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
@@ -205,6 +241,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _ribs = computeRibs(vrs);
     LOGGER.info("Computing IPv6 main RIBs");
     _ribs6 = computeRibs6(vrs);
+    LOGGER.info("Computing IPv6 FIBs");
+    _fibs6 = computeFibs6(_ribs6);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
