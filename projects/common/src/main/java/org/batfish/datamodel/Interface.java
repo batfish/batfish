@@ -39,6 +39,7 @@ import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.transformation.Transformation;
 
@@ -76,6 +77,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Supplier<String> _nameGenerator;
     private @Nullable Integer _nativeVlan;
     private OspfInterfaceSettings _ospfSettings;
+    private Ospfv3InterfaceSettings _ospfv3Settings;
     private @Nullable IpAccessList _outgoingFilter;
     private @Nullable IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
@@ -186,6 +188,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setZoneName(_zoneName);
 
       iface.setOspfSettings(_ospfSettings);
+      iface.setOspfv3Settings(_ospfv3Settings);
       processStatus(iface);
       return iface;
     }
@@ -407,6 +410,12 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setOspfv3Settings(
+        Ospfv3InterfaceSettings ospfv3Settings) {
+      _ospfv3Settings = ospfv3Settings;
+      return this;
+    }
+
     public Builder setOutgoingFilter(IpAccessList outgoingFilter) {
       _outgoingFilter = outgoingFilter;
       return this;
@@ -620,6 +629,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_MTU = "mtu";
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
   private static final String PROP_OSPF_SETTINGS = "ospfSettings";
+  private static final String PROP_OSPFV3_SETTINGS = "ospfv3Settings";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
   private static final String PROP_OUTGOING_ORIGINAL_FLOW_FILTER = "outgoingOriginalFlowFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
@@ -755,6 +765,7 @@ public final class Interface extends ComparableStructure<String> {
   private int _mtu;
   private @Nullable Integer _nativeVlan;
   private @Nullable OspfInterfaceSettings _ospfSettings;
+  private @Nullable Ospfv3InterfaceSettings _ospfv3Settings;
   private @Nullable String _outgoingFilterName;
   private @Nullable String _outgoingOriginalFlowFilterName;
   private Transformation _outgoingTransformation;
@@ -888,6 +899,9 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(_ospfSettings, other._ospfSettings)) {
+      return false;
+    }
+    if (!Objects.equals(_ospfv3Settings, other._ospfv3Settings)) {
       return false;
     }
     // TODO: check OSPF settings for equality.
@@ -1188,6 +1202,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_SETTINGS)
   public @Nullable OspfInterfaceSettings getOspfSettings() {
     return _ospfSettings;
+  }
+
+  /** {@link Ospfv3InterfaceSettings} associated with this interface. */
+  @JsonProperty(PROP_OSPFV3_SETTINGS)
+  public @Nullable Ospfv3InterfaceSettings getOspfv3Settings() {
+    return _ospfv3Settings;
   }
 
   /** The OSPF area to which this interface belongs. */
@@ -1644,6 +1664,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_SETTINGS)
   public void setOspfSettings(@Nullable OspfInterfaceSettings ospfSettings) {
     _ospfSettings = ospfSettings;
+  }
+
+  @JsonProperty(PROP_OSPFV3_SETTINGS)
+  public void setOspfv3Settings(
+      @Nullable Ospfv3InterfaceSettings ospfv3Settings) {
+    _ospfv3Settings = ospfv3Settings;
   }
 
   @JsonIgnore

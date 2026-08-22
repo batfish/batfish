@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +29,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -618,12 +621,25 @@ public class InterfaceTest {
             .setName("ifaceName")
             .setType(InterfaceType.PHYSICAL)
             .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().build())
+            .setOspfv3Settings(
+                Ospfv3InterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(0L)
+                    .setCost(25)
+                    .setProcess("1")
+                    .build())
             .setHmm(true)
             .build();
 
     // test (de)serialization
     Interface iDeserial = BatfishObjectMapper.clone(i, Interface.class);
     assertThat(i, equalTo(iDeserial));
+    assertThat(iDeserial.getOspfv3Settings(), notNullValue());
+    assertThat(iDeserial.getOspfv3Settings().getAreaName(), equalTo(0L));
+    assertThat(iDeserial.getOspfv3Settings().getCost(), equalTo(25));
+    assertThat(iDeserial.getOspfv3Settings().getProcess(), equalTo("1"));
+    assertThat(
+        iDeserial.getOspfv3Settings().getNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 
   @Test
