@@ -1,7 +1,10 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -13,6 +16,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** An ordered access-list for filtering IPv6 flows. */
 @ParametersAreNonnullByDefault
 public final class Ip6AccessList implements Serializable {
+
+  private static final String PROP_LINES = "lines";
+  private static final String PROP_NAME = "name";
 
   public static final class Builder {
 
@@ -55,6 +61,24 @@ public final class Ip6AccessList implements Serializable {
     return new Builder();
   }
 
+  @JsonCreator
+  private static Ip6AccessList create(
+      @JsonProperty(PROP_NAME)
+          @Nullable String name,
+      @JsonProperty(PROP_LINES)
+          @Nullable List<Ip6AccessListLine> lines) {
+    checkArgument(
+        name != null,
+        "IPv6 ACL missing %s",
+        PROP_NAME);
+
+    return new Ip6AccessList(
+        name,
+        firstNonNull(
+            lines,
+            ImmutableList.of()));
+  }
+
   private Ip6AccessList(
       String name,
       List<Ip6AccessListLine> lines) {
@@ -86,11 +110,13 @@ public final class Ip6AccessList implements Serializable {
         LineAction.DENY);
   }
 
+  @JsonProperty(PROP_LINES)
   public @Nonnull List<Ip6AccessListLine>
       getLines() {
     return _lines;
   }
 
+  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }

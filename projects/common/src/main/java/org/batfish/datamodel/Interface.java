@@ -68,6 +68,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable String _humanName;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
     private @Nullable IpAccessList _incomingFilter;
+    private @Nullable Ip6AccessList _incomingFilter6;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
     private @Nullable Boolean _lineUp;
@@ -79,6 +80,7 @@ public final class Interface extends ComparableStructure<String> {
     private OspfInterfaceSettings _ospfSettings;
     private Ospfv3InterfaceSettings _ospfv3Settings;
     private @Nullable IpAccessList _outgoingFilter;
+    private @Nullable Ip6AccessList _outgoingFilter6;
     private @Nullable IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
@@ -154,6 +156,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setHumanName(_humanName);
       iface.setFirewallSessionInterfaceInfo(_firewallSessionInterfaceInfo);
       iface.setIncomingFilter(_incomingFilter);
+      iface.setIncomingFilter6(_incomingFilter6);
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
       iface.setMlagId(_mlagId);
@@ -164,6 +167,7 @@ public final class Interface extends ComparableStructure<String> {
         iface.setNativeVlan(_nativeVlan);
       }
       iface.setOutgoingFilter(_outgoingFilter);
+      iface.setOutgoingFilter6(_outgoingFilter6);
       iface.setOutgoingOriginalFlowFilter(_outgoingOriginalFlowFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
@@ -368,6 +372,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setIncomingFilter6(Ip6AccessList incomingFilter6) {
+      _incomingFilter6 = incomingFilter6;
+      return this;
+    }
+
     public Builder setIncomingTransformation(Transformation incomingTransformation) {
       _incomingTransformation = incomingTransformation;
       return this;
@@ -418,6 +427,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOutgoingFilter(IpAccessList outgoingFilter) {
       _outgoingFilter = outgoingFilter;
+      return this;
+    }
+
+    public Builder setOutgoingFilter6(Ip6AccessList outgoingFilter6) {
+      _outgoingFilter6 = outgoingFilter6;
       return this;
     }
 
@@ -621,6 +635,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_INACTIVE_REASON = "inactiveReason";
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
+  private static final String PROP_INCOMING_FILTER6 = "incomingFilter6";
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
   private static final String PROP_INTERFACE_TYPE = "type";
   private static final String PROP_ISIS = "isis";
@@ -631,6 +646,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_SETTINGS = "ospfSettings";
   private static final String PROP_OSPFV3_SETTINGS = "ospfv3Settings";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
+  private static final String PROP_OUTGOING_FILTER6 = "outgoingFilter6";
   private static final String PROP_OUTGOING_ORIGINAL_FLOW_FILTER = "outgoingOriginalFlowFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
   private static final String PROP_POST_TRANSFORMATION_INCOMING_FILTER =
@@ -768,6 +784,7 @@ public final class Interface extends ComparableStructure<String> {
   private @Nullable InactiveReason _inactiveReason;
   private @Nullable String _inboundFilterName;
   private @Nullable String _incomingFilterName;
+  private @Nullable String _incomingFilter6Name;
   private Transformation _incomingTransformation;
   private InterfaceType _interfaceType;
   private IsisInterfaceSettings _isis;
@@ -778,6 +795,7 @@ public final class Interface extends ComparableStructure<String> {
   private @Nullable OspfInterfaceSettings _ospfSettings;
   private @Nullable Ospfv3InterfaceSettings _ospfv3Settings;
   private @Nullable String _outgoingFilterName;
+  private @Nullable String _outgoingFilter6Name;
   private @Nullable String _outgoingOriginalFlowFilterName;
   private Transformation _outgoingTransformation;
   private Configuration _owner;
@@ -887,6 +905,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_incomingFilterName, other._incomingFilterName)) {
       return false;
     }
+    if (!Objects.equals(_incomingFilter6Name, other._incomingFilter6Name)) {
+      return false;
+    }
     if (_interfaceType != other._interfaceType) {
       return false;
     }
@@ -917,6 +938,9 @@ public final class Interface extends ComparableStructure<String> {
     }
     // TODO: check OSPF settings for equality.
     if (!Objects.equals(_outgoingFilterName, other._outgoingFilterName)) {
+      return false;
+    }
+    if (!Objects.equals(_outgoingFilter6Name, other._outgoingFilter6Name)) {
       return false;
     }
     if (!Objects.equals(_outgoingOriginalFlowFilterName, other._outgoingOriginalFlowFilterName)) {
@@ -1176,6 +1200,17 @@ public final class Interface extends ComparableStructure<String> {
     return _incomingFilterName;
   }
 
+  /** The IPv6 access-list used to filter traffic that arrives on this interface. */
+  @JsonIgnore
+  public @Nullable Ip6AccessList getIncomingFilter6() {
+    return getIp6AccessList(_incomingFilter6Name);
+  }
+
+  @JsonProperty(PROP_INCOMING_FILTER6)
+  private @Nullable String getIncomingFilter6Name() {
+    return _incomingFilter6Name;
+  }
+
   @JsonProperty(PROP_INCOMING_TRANSFORMATION)
   public Transformation getIncomingTransformation() {
     return _incomingTransformation;
@@ -1282,6 +1317,17 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OUTGOING_FILTER)
   private @Nullable String getOutgoingFilterName() {
     return _outgoingFilterName;
+  }
+
+  /** The IPv6 access-list used to filter traffic that is sent out this interface. */
+  @JsonIgnore
+  public @Nullable Ip6AccessList getOutgoingFilter6() {
+    return getIp6AccessList(_outgoingFilter6Name);
+  }
+
+  @JsonProperty(PROP_OUTGOING_FILTER6)
+  private @Nullable String getOutgoingFilter6Name() {
+    return _outgoingFilter6Name;
   }
 
   /**
@@ -1642,6 +1688,21 @@ public final class Interface extends ComparableStructure<String> {
     _incomingFilterName = incomingFilterName;
   }
 
+  @JsonIgnore
+  public void setIncomingFilter6(
+      @Nullable Ip6AccessList incomingFilter6) {
+    _incomingFilter6Name =
+        incomingFilter6 == null
+            ? null
+            : incomingFilter6.getName();
+  }
+
+  @JsonProperty(PROP_INCOMING_FILTER6)
+  public void setIncomingFilter6Name(
+      @Nullable String incomingFilter6Name) {
+    _incomingFilter6Name = incomingFilter6Name;
+  }
+
   @JsonProperty(PROP_INTERFACE_TYPE)
   private void setInterfaceType(InterfaceType it) {
     _interfaceType = it;
@@ -1691,6 +1752,21 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OUTGOING_FILTER)
   public void setOutgoingFilterName(@Nullable String outgoingFilterName) {
     _outgoingFilterName = outgoingFilterName;
+  }
+
+  @JsonIgnore
+  public void setOutgoingFilter6(
+      @Nullable Ip6AccessList outgoingFilter6) {
+    _outgoingFilter6Name =
+        outgoingFilter6 == null
+            ? null
+            : outgoingFilter6.getName();
+  }
+
+  @JsonProperty(PROP_OUTGOING_FILTER6)
+  public void setOutgoingFilter6Name(
+      @Nullable String outgoingFilter6Name) {
+    _outgoingFilter6Name = outgoingFilter6Name;
   }
 
   @JsonIgnore
@@ -2090,5 +2166,15 @@ public final class Interface extends ComparableStructure<String> {
     return _owner == null || name == null
         ? null
         : checkNotNull(_owner.getIpAccessLists().get(name));
+  }
+
+
+  /** Helper to get an Ip6AccessList object given its name. */
+  private @Nullable Ip6AccessList getIp6AccessList(
+      @Nullable String name) {
+    return _owner == null || name == null
+        ? null
+        : checkNotNull(
+            _owner.getIp6AccessLists().get(name));
   }
 }

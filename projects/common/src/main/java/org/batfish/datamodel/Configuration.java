@@ -260,6 +260,8 @@ public final class Configuration implements Serializable {
 
   private Map<String, Interface> _interfaces;
 
+  private Map<String, Ip6AccessList> _ip6AccessLists;
+
   private Map<String, IpAccessList> _ipAccessLists;
 
   private Map<String, IpSpace> _ipSpaces;
@@ -351,6 +353,7 @@ public final class Configuration implements Serializable {
     _ikePhase1Policies = new TreeMap<>();
     _ikePhase1Proposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
+    _ip6AccessLists = new TreeMap<>();
     _ipAccessLists = new TreeMap<>();
     _ipSpaces = new HashMap<>();
     _ipSpaceMetadata = new TreeMap<>();
@@ -647,6 +650,12 @@ public final class Configuration implements Serializable {
     return _disconnectAdminDownInterfaces;
   }
 
+  /** Dictionary of all IPv6 access-lists for this node. */
+  @JsonProperty(PROP_IP6_ACCESS_LISTS)
+  public Map<String, Ip6AccessList> getIp6AccessLists() {
+    return _ip6AccessLists;
+  }
+
   /** Dictionary of all IPV4 access-lists for this node. */
   @JsonProperty(PROP_IP_ACCESS_LISTS)
   public Map<String, IpAccessList> getIpAccessLists() {
@@ -937,9 +946,14 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
-  @Deprecated
-  @SuppressWarnings("unused")
-  private void setIp6AccessListsDeprecatedForJson(Object unused) {}
+  public void setIp6AccessLists(
+      @Nullable Map<String, Ip6AccessList> ip6AccessLists) {
+    _ip6AccessLists =
+        new TreeMap<>(
+            firstNonNull(
+                ip6AccessLists,
+                ImmutableMap.of()));
+  }
 
   @JsonProperty(PROP_IP_ACCESS_LISTS)
   public void setIpAccessLists(Map<String, IpAccessList> ipAccessLists) {

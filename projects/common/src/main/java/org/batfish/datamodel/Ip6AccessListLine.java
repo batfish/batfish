@@ -1,5 +1,9 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -9,6 +13,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** One ordered IPv6 access-list entry. */
 @ParametersAreNonnullByDefault
 public final class Ip6AccessListLine implements Serializable {
+
+  private static final String PROP_ACTION = "action";
+  private static final String PROP_DST_PORTS = "dstPorts";
+  private static final String PROP_DST_PREFIX = "dstPrefix";
+  private static final String PROP_ICMP_CODE = "icmpCode";
+  private static final String PROP_ICMP_TYPE = "icmpType";
+  private static final String PROP_NAME = "name";
+  private static final String PROP_PROTOCOL = "protocol";
+  private static final String PROP_SRC_PORTS = "srcPorts";
+  private static final String PROP_SRC_PREFIX = "srcPrefix";
 
   public static final class Builder {
 
@@ -97,6 +111,44 @@ public final class Ip6AccessListLine implements Serializable {
     return new Builder();
   }
 
+  @JsonCreator
+  private static Ip6AccessListLine create(
+      @JsonProperty(PROP_NAME)
+          @Nullable String name,
+      @JsonProperty(PROP_ACTION)
+          @Nullable LineAction action,
+      @JsonProperty(PROP_SRC_PREFIX)
+          @Nullable Prefix6 srcPrefix,
+      @JsonProperty(PROP_DST_PREFIX)
+          @Nullable Prefix6 dstPrefix,
+      @JsonProperty(PROP_PROTOCOL)
+          @Nullable IpProtocol protocol,
+      @JsonProperty(PROP_SRC_PORTS)
+          @Nullable SubRange srcPorts,
+      @JsonProperty(PROP_DST_PORTS)
+          @Nullable SubRange dstPorts,
+      @JsonProperty(PROP_ICMP_TYPE)
+          @Nullable Integer icmpType,
+      @JsonProperty(PROP_ICMP_CODE)
+          @Nullable Integer icmpCode) {
+
+    checkArgument(
+        action != null,
+        "IPv6 ACL line missing %s",
+        PROP_ACTION);
+
+    return new Ip6AccessListLine(
+        name,
+        action,
+        srcPrefix,
+        dstPrefix,
+        protocol,
+        srcPorts,
+        dstPorts,
+        icmpType,
+        icmpCode);
+  }
+
   private Ip6AccessListLine(
       @Nullable String name,
       LineAction action,
@@ -135,12 +187,14 @@ public final class Ip6AccessListLine implements Serializable {
     }
 
     if (_srcPorts != null
-        && !_srcPorts.includes(flow.getSrcPort())) {
+        && (flow.getSrcPort() == null
+            || !_srcPorts.includes(flow.getSrcPort()))) {
       return false;
     }
 
     if (_dstPorts != null
-        && !_dstPorts.includes(flow.getDstPort())) {
+        && (flow.getDstPort() == null
+            || !_dstPorts.includes(flow.getDstPort()))) {
       return false;
     }
 
@@ -157,38 +211,47 @@ public final class Ip6AccessListLine implements Serializable {
             flow.getIcmpCode());
   }
 
+  @JsonProperty(PROP_ACTION)
   public @Nonnull LineAction getAction() {
     return _action;
   }
 
+  @JsonProperty(PROP_DST_PREFIX)
   public @Nullable Prefix6 getDstPrefix() {
     return _dstPrefix;
   }
 
+  @JsonProperty(PROP_DST_PORTS)
   public @Nullable SubRange getDstPorts() {
     return _dstPorts;
   }
 
+  @JsonProperty(PROP_ICMP_CODE)
   public @Nullable Integer getIcmpCode() {
     return _icmpCode;
   }
 
+  @JsonProperty(PROP_ICMP_TYPE)
   public @Nullable Integer getIcmpType() {
     return _icmpType;
   }
 
+  @JsonProperty(PROP_NAME)
   public @Nullable String getName() {
     return _name;
   }
 
+  @JsonProperty(PROP_PROTOCOL)
   public @Nullable IpProtocol getProtocol() {
     return _protocol;
   }
 
+  @JsonProperty(PROP_SRC_PREFIX)
   public @Nullable Prefix6 getSrcPrefix() {
     return _srcPrefix;
   }
 
+  @JsonProperty(PROP_SRC_PORTS)
   public @Nullable SubRange getSrcPorts() {
     return _srcPorts;
   }
