@@ -6,8 +6,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
@@ -20,10 +23,44 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 /** Tests route/FIB-level IPv6 path tracing. */
 public final class TracerouteEngine6Test {
+
+  private static final class TestL3Adjacencies
+      implements L3Adjacencies {
+
+    private final Map<
+            NodeInterfacePair, NodeInterfacePair>
+        _pairs = new HashMap<>();
+
+    void addPair(
+        NodeInterfacePair lhs,
+        NodeInterfacePair rhs) {
+      _pairs.put(lhs, rhs);
+      _pairs.put(rhs, lhs);
+    }
+
+    @Override
+    public boolean inSameBroadcastDomain(
+        NodeInterfacePair i1,
+        NodeInterfacePair i2) {
+      return Optional.ofNullable(
+              _pairs.get(i1))
+          .map(i2::equals)
+          .orElse(false);
+    }
+
+    @Override
+    public Optional<NodeInterfacePair>
+        pairedPointToPointL3Interface(
+            NodeInterfacePair iface) {
+      return Optional.ofNullable(
+          _pairs.get(iface));
+    }
+  }
 
   private static Configuration configuration(
       String hostname) {
@@ -490,4 +527,160 @@ public final class TracerouteEngine6Test {
                         == Ipv6TraceDisposition.ACCEPTED),
         equalTo(true));
   }
+  @Test
+  public void testLinkLocalOnlyPointToPointForwarding() {
+    Configuration n1 =
+        configuration("n1");
+    Configuration n2 =
+        configuration("n2");
+
+    /*
+     * Deliberately give the transit interfaces no concrete global IPv6
+     * addresses. This represents an OSPFv3 link configured with only
+     * automatically generated link-local addressing.
+     */
+    Interface.builder()
+        .setName("eth12")
+        .setOwner(n1)
+        .setVrf(n1.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
+        .build();
+
+    Interface.builder()
+        .setName("eth21")
+        .setOwner(n2)
+        .setVrf(n2.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
+        .build();
+
+    addInterface(
+        n2,
+        "loopback0",
+        "2001:db8:2::2/128",
+        InterfaceType.LOOPBACK);
+
+    Prefix6 destination =
+        Prefix6.parse(
+            "2001:db8:2::2/128");
+
+    /*
+     * No next-hop Ip6 is supplied. The OSPFv3 dataplane uses this form when
+     * the physical peer is known but its generated link-local address is not.
+     */
+    Ospfv3IntraAreaRoute6 route =
+        new Ospfv3IntraAreaRoute6(
+            destination,
+            "eth12",
+            null,
+            110,
+            10,
+            0L);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(route)),
+                "n2",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(
+                        new ConnectedRoute6(
+                            destination,
+                            "loopback0")))),
+            adjacencies);
+
+    Ipv6Trace trace =
+        engine.computeTraces(
+                "n1",
+                Configuration.DEFAULT_VRF_NAME,
+                Ip6.parse(
+                    "2001:db8:2::2"))
+            .get(0);
+
+    assertThat(
+        trace.getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition.ACCEPTED));
+
+    assertThat(
+        trace.getHops()
+            .stream()
+            .map(Ipv6TraceHop::getNode)
+            .toList(),
+        contains("n1", "n2"));
+
+    /*
+     * We know which physical peer receives the packet, but we intentionally
+     * do not invent the peer's automatically generated fe80:: address.
+     */
+    assertThat(
+        trace.getHops()
+            .get(0)
+            .getNdTarget()
+            .isEmpty(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testLinkLocalOnlyRouteWithoutTopologyIsUnreachable() {
+    Configuration n1 =
+        configuration("n1");
+
+    Interface.builder()
+        .setName("eth1")
+        .setOwner(n1)
+        .setVrf(n1.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
+        .build();
+
+    Ospfv3IntraAreaRoute6 route =
+        new Ospfv3IntraAreaRoute6(
+            Prefix6.parse(
+                "2001:db8:99::/64"),
+            "eth1",
+            null,
+            110,
+            10,
+            0L);
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(route))));
+
+    Ipv6Trace trace =
+        engine.computeTraces(
+                "n1",
+                Configuration.DEFAULT_VRF_NAME,
+                Ip6.parse(
+                    "2001:db8:99::1"))
+            .get(0);
+
+    assertThat(
+        trace.getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition
+                .NEIGHBOR_UNREACHABLE));
+  }
+
 }

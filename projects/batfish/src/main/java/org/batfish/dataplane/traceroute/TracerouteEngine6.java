@@ -12,14 +12,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib6;
 import org.batfish.datamodel.FibEntry6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * Route/FIB-level IPv6 path tracer.
@@ -54,17 +58,45 @@ public final class TracerouteEngine6 {
       DataPlane dataPlane) {
     return new TracerouteEngine6(
         configurations,
-        dataPlane.getFibs6());
+        dataPlane.getFibs6(),
+        null);
+  }
+
+  /**
+   * Build an IPv6 tracer with L3 adjacency information.
+   *
+   * <p>The topology is needed to forward routes whose OSPFv3 next hop is an
+   * implicitly generated link-local address on a physical point-to-point link.
+   */
+  public static TracerouteEngine6 fromDataPlane(
+      Map<String, Configuration> configurations,
+      DataPlane dataPlane,
+      L3Adjacencies l3Adjacencies) {
+    return new TracerouteEngine6(
+        configurations,
+        dataPlane.getFibs6(),
+        l3Adjacencies);
   }
 
   public TracerouteEngine6(
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib6>> fibs) {
+    this(
+        configurations,
+        fibs,
+        null);
+  }
+
+  public TracerouteEngine6(
+      Map<String, Configuration> configurations,
+      Map<String, Map<String, Fib6>> fibs,
+      @Nullable L3Adjacencies l3Adjacencies) {
     _configurations =
         ImmutableMap.copyOf(configurations);
     _fibs = deepCopyFibs(fibs);
     _addressOwners =
         computeAddressOwners(_configurations);
+    _l3Adjacencies = l3Adjacencies;
   }
 
   public @Nonnull List<Ipv6Trace> computeTraces(
@@ -280,6 +312,30 @@ public final class TracerouteEngine6 {
     boolean hasExplicitNextHop =
         entry.getNextHopIp().isPresent();
 
+    /*
+     * OSPFv3 may learn a route over a point-to-point link that has only an
+     * automatically generated link-local address. In that case the route has
+     * a resolved outgoing interface but deliberately has no fabricated Ip6
+     * next hop. Use the physical L3 pairing to reach the neighbor.
+     *
+     * Connected routes are different: no next-hop IP means the destination
+     * itself is on-link and should still use normal NDP behavior below.
+     */
+    if (!hasExplicitNextHop
+        && !(entry.getTopLevelRoute()
+            instanceof ConnectedRoute6)
+        && forwardAcrossPointToPointLink(
+            node,
+            vrf,
+            outgoingInterfaceName,
+            destination,
+            maxHops,
+            hops,
+            visited,
+            traces)) {
+      return;
+    }
+
     Ip6 ndTarget =
         entry.getNextHopIp()
             .orElse(destination);
@@ -348,6 +404,102 @@ public final class TracerouteEngine6 {
                   .NEIGHBOR_UNREACHABLE,
               forwarded));
     }
+  }
+
+  /**
+   * Forward across an explicitly paired physical point-to-point interface.
+   *
+   * @return true if topology supplied a point-to-point peer and this method
+   *     handled the forwarding attempt
+   */
+  private boolean forwardAcrossPointToPointLink(
+      String node,
+      String vrf,
+      String outgoingInterface,
+      Ip6 destination,
+      int maxHops,
+      List<Ipv6TraceHop> hops,
+      Set<String> visited,
+      List<Ipv6Trace> traces) {
+
+    if (_l3Adjacencies == null) {
+      return false;
+    }
+
+    NodeInterfacePair local =
+        NodeInterfacePair.of(
+            node,
+            outgoingInterface);
+
+    java.util.Optional<NodeInterfacePair> peerOptional =
+        _l3Adjacencies
+            .pairedPointToPointL3Interface(local);
+
+    if (peerOptional.isEmpty()) {
+      return false;
+    }
+
+    NodeInterfacePair peer =
+        peerOptional.get();
+
+    if (!_l3Adjacencies
+        .inSamePointToPointDomain(
+            local, peer)) {
+      return false;
+    }
+
+    /*
+     * The actual generated fe80:: neighbor address is intentionally unknown,
+     * so record an empty NDP target rather than inventing one.
+     */
+    List<Ipv6TraceHop> forwarded =
+        new ArrayList<>(hops);
+
+    forwarded.add(
+        Ipv6TraceHop.forwarding(
+            node,
+            vrf,
+            outgoingInterface,
+            null));
+
+    Configuration remoteConfiguration =
+        _configurations.get(
+            peer.getHostname());
+
+    if (remoteConfiguration == null) {
+      traces.add(
+          new Ipv6Trace(
+              Ipv6TraceDisposition
+                  .NEIGHBOR_UNREACHABLE,
+              forwarded));
+      return true;
+    }
+
+    Interface remoteInterface =
+        remoteConfiguration
+            .getAllInterfaces()
+            .get(peer.getInterface());
+
+    if (remoteInterface == null
+        || !remoteInterface.getActive()) {
+      traces.add(
+          new Ipv6Trace(
+              Ipv6TraceDisposition
+                  .NEIGHBOR_UNREACHABLE,
+              forwarded));
+      return true;
+    }
+
+    trace(
+        peer.getHostname(),
+        remoteInterface.getVrfName(),
+        destination,
+        maxHops,
+        forwarded,
+        new HashSet<>(visited),
+        traces);
+
+    return true;
   }
 
   private Fib6 getFib(
@@ -468,6 +620,8 @@ public final class TracerouteEngine6 {
   private final @Nonnull
       Map<Ip6, List<InterfaceLocation>>
           _addressOwners;
+  private final @Nullable L3Adjacencies
+      _l3Adjacencies;
   private final @Nonnull
       Map<String, Configuration>
           _configurations;

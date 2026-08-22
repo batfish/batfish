@@ -16,7 +16,7 @@ public final class Ipv6TraceHop implements Serializable {
       String node,
       String vrf,
       String outgoingInterface,
-      Ip6 ndTarget) {
+      @Nullable Ip6 ndTarget) {
     return new Ipv6TraceHop(
         node,
         vrf,
@@ -63,7 +63,9 @@ public final class Ipv6TraceHop implements Serializable {
    * IPv6 address for which Neighbor Discovery is performed on this hop.
    *
    * <p>For a routed next hop this is the neighbor address. For an on-link
-   * destination this is the destination itself.
+   * destination this is the destination itself. An empty value represents a
+   * point-to-point neighbor whose generated link-local address is not
+   * explicitly modeled.
    */
   public @Nonnull Optional<Ip6> getNdTarget() {
     return Optional.ofNullable(_ndTarget);
