@@ -54,6 +54,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
@@ -324,6 +325,22 @@ public class VirtualRouterTest {
     assertThat(
         vr.getMainRib6().getRoutes(),
         equalTo(ImmutableSet.of(route1, route2)));
+
+    // Simulate an autostate-driven interface transition.
+    vr.getConfiguration()
+        .getAllInterfaces()
+        .get("Ethernet2")
+        .deactivate(InactiveReason.AUTOSTATE_FAILURE);
+
+    vr.updateConnectedAndLocalRoutesForAutostateChange();
+
+    assertThat(
+        vr.getConnectedRib6().getRoutes(),
+        equalTo(ImmutableSet.of(route1)));
+
+    assertThat(
+        vr.getMainRib6().getRoutes(),
+        equalTo(ImmutableSet.of(route1)));
   }
 
   /** Check that initialization of Kernel RIB is as expected */

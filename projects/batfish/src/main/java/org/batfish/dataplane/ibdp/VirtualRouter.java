@@ -821,20 +821,33 @@ public final class VirtualRouter {
           _mainRib.removeRouteGetDelta(
               new AnnotatedRoute<>(route.getRoute(), route.getSourceVrf())));
     }
+
+    // Withdraw old IPv6 connected routes from the IPv6 main RIB.
+    _connectedRib6.getRoutes().forEach(_mainRib6::removeRoute);
+
     // Withdraw old local routes from main RIB
     for (AnnotatedRoute<LocalRoute> route : _localRib.getRoutes()) {
       _mainRibRouteDeltaBuilder.from(
           _mainRib.removeRouteGetDelta(
               new AnnotatedRoute<>(route.getRoute(), route.getSourceVrf())));
     }
+
     // Rebuild connected and local RIBs from current active interfaces
     _connectedRib = new ConnectedRib();
     initConnectedRib();
+
+    _connectedRib6 = new ConnectedRib6();
+    initConnectedRib6();
+
     _localRib = new LocalRib();
     initLocalRib();
+
     // Add new routes to main RIB
     _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _connectedRib));
     _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _localRib));
+
+    // Add current IPv6 connected routes to the IPv6 main RIB.
+    _connectedRib6.getRoutes().forEach(_mainRib6::mergeRoute);
   }
 
   /** Generate connected routes for a given active interface. */
