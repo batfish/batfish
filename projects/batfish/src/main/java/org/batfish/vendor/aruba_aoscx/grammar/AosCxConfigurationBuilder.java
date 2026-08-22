@@ -5,6 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.LineAction;
@@ -22,6 +23,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
@@ -289,6 +291,24 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
     _currentInterface.setAddress(ConcreteInterfaceAddress.parse(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ipv6_address(S_ipv6_addressContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring IPv6 address outside interface context");
+      return;
+    }
+
+    if (ctx.LINK_LOCAL() != null) {
+      // AOS-CX generates the actual link-local address. Preserve the
+      // configured state without fabricating an fe80:: address.
+      _currentInterface.setIpv6LinkLocalEnabled(true);
+      return;
+    }
+
+    _currentInterface.addIpv6Address(
+        ConcreteInterfaceAddress6.parse(ctx.WORD().getText()));
   }
 
   @Override

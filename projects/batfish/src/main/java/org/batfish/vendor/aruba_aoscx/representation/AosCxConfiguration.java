@@ -22,6 +22,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IntegerSpace;
@@ -297,8 +298,17 @@ public class AosCxConfiguration extends VendorConfiguration {
       newIface.setVlan(Integer.parseInt(name.substring("vlan ".length())));
     }
 
+    List<InterfaceAddress> addresses = new ArrayList<>();
     if (iface.getAddress() != null) {
-      newIface.setAddress(iface.getAddress());
+      // Preserve the existing IPv4 address as primary when dual-stack.
+      addresses.add(iface.getAddress());
+    }
+    addresses.addAll(iface.getIpv6Addresses());
+
+    if (!addresses.isEmpty()) {
+      newIface.setAddresses(
+          addresses.get(0),
+          addresses.subList(1, addresses.size()));
     }
 
     if (iface.getIncomingAcl() != null) {

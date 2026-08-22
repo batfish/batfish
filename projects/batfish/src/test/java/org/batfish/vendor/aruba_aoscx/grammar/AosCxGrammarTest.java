@@ -22,6 +22,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
@@ -121,6 +122,13 @@ public final class AosCxGrammarTest {
   public void testLagExtraction() throws IOException {
     AosCxConfiguration c = parseVendorConfig("aoscx-lag");
 
+    AosCxInterface loopback = c.getInterfaces().get("loopback 0");
+    assertThat(loopback, notNullValue());
+    assertThat(loopback.getIpv6LinkLocalEnabled(), equalTo(true));
+    assertThat(
+        loopback.getIpv6Addresses(),
+        contains(ConcreteInterfaceAddress6.parse("2001:db8:1::41/128")));
+
     assertThat(c.getInterfaces(), hasKey("lag 13"));
     assertThat(c.getInterfaces().get("1/9/3").getLagName(), equalTo("lag 13"));
     assertThat(c.getInterfaces().get("1/10/3").getLagName(), equalTo("lag 13"));
@@ -151,7 +159,12 @@ public final class AosCxGrammarTest {
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
     assertThat(
         loopback.getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("192.0.2.41/32")));
+        containsInAnyOrder(
+            ConcreteInterfaceAddress.parse("192.0.2.41/32"),
+            ConcreteInterfaceAddress6.parse("2001:db8:1::41/128")));
+    assertThat(
+        loopback.getAllConcreteAddresses6(),
+        contains(ConcreteInterfaceAddress6.parse("2001:db8:1::41/128")));
     assertThat(loopback.getOspfSettings(), notNullValue());
     assertThat(loopback.getOspfSettings().getCost(), equalTo(1));
 

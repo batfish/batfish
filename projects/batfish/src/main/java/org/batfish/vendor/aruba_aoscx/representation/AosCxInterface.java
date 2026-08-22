@@ -1,9 +1,12 @@
 package org.batfish.vendor.aruba_aoscx.representation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.IntegerSpace;
 
 /** Vendor-specific representation of an Aruba AOS-CX interface. */
@@ -102,6 +105,22 @@ public final class AosCxInterface implements Serializable {
     _address = address;
   }
 
+  public @Nonnull List<ConcreteInterfaceAddress6> getIpv6Addresses() {
+    return _ipv6Addresses;
+  }
+
+  public void addIpv6Address(ConcreteInterfaceAddress6 address) {
+    _ipv6Addresses.add(address);
+  }
+
+  public boolean getIpv6LinkLocalEnabled() {
+    return _ipv6LinkLocalEnabled;
+  }
+
+  public void setIpv6LinkLocalEnabled(boolean enabled) {
+    _ipv6LinkLocalEnabled = enabled;
+  }
+
   public @Nullable Boolean getSwitchport() {
     return _switchport;
   }
@@ -170,6 +189,9 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Boolean _enabled;
   private @Nullable String _description;
   private @Nullable ConcreteInterfaceAddress _address;
+  private final @Nonnull List<ConcreteInterfaceAddress6> _ipv6Addresses =
+      new ArrayList<>();
+  private boolean _ipv6LinkLocalEnabled;
   private @Nullable Double _bandwidth;
   private @Nullable Integer _mtu;
   private @Nullable Integer _ipMtu;
