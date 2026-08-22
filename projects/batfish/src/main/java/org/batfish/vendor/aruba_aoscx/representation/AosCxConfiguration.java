@@ -76,6 +76,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
   private final Map<String, AosCxIpAccessList> _ipAccessLists = new HashMap<>();
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
+  private final Map<Integer, AosCxOspfv3Process> _ospfv3Processes =
+      new HashMap<>();
   private final Map<String, Map<Integer, AosCxOspfProcess>> _ospfProcessesByVrf =
       new HashMap<>();
   private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
@@ -168,6 +170,15 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses() {
     return _ospfProcesses;
+  }
+
+  public Map<Integer, AosCxOspfv3Process> getOspfv3Processes() {
+    return _ospfv3Processes;
+  }
+
+  public AosCxOspfv3Process getOrCreateOspfv3Process(int processId) {
+    return _ospfv3Processes.computeIfAbsent(
+        processId, AosCxOspfv3Process::new);
   }
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses(String vrfName) {

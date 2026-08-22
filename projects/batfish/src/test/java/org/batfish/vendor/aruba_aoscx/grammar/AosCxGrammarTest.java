@@ -48,6 +48,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMap;
@@ -1050,4 +1051,37 @@ public final class AosCxGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/aruba_aoscx/grammar/testconfigs/";
+  @Test
+  public void testOspfv3Extraction() {
+    AosCxConfiguration c = parseVendorConfig("aoscx-ospfv3");
+
+    assertThat(c.getOspfv3Processes(), hasKey(1));
+
+    AosCxOspfv3Process process = c.getOspfv3Processes().get(1);
+    assertThat(process.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
+    assertThat(process.getRedistributeConnected(), equalTo(true));
+    assertThat(
+        process.getAreas(),
+        containsInAnyOrder("0.0.0.0", "10.0.0.1"));
+
+    AosCxInterface routed = c.getInterfaces().get("1/1/1");
+    assertThat(routed, notNullValue());
+    assertThat(routed.getOspfv3ProcessId(), equalTo(1));
+    assertThat(routed.getOspfv3Area(), equalTo("0.0.0.0"));
+    assertThat(routed.getOspfv3Cost(), equalTo(25));
+    assertThat(
+        routed.getOspfv3NetworkType(),
+        equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
+
+    AosCxInterface linkLocal = c.getInterfaces().get("1/1/2");
+    assertThat(linkLocal, notNullValue());
+    assertThat(linkLocal.getIpv6LinkLocalEnabled(), equalTo(true));
+    assertThat(linkLocal.getOspfv3ProcessId(), equalTo(1));
+    assertThat(linkLocal.getOspfv3Area(), equalTo("10.0.0.1"));
+    assertThat(
+        linkLocal.getOspfv3NetworkType(),
+        equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
+  }
+
+
 }

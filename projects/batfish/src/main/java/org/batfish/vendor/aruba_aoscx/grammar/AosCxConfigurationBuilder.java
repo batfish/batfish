@@ -24,6 +24,11 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_interfaceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfv3Context;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
@@ -65,6 +70,7 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 
@@ -370,6 +376,40 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ipv6_ospfv3_area(S_ipv6_ospfv3_areaContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPFv3 area command outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfv3ProcessId(
+        Integer.parseInt(ctx.WORD(0).getText()));
+    _currentInterface.setOspfv3Area(ctx.WORD(1).getText());
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_cost(S_ipv6_ospfv3_costContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPFv3 cost command outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfv3Cost(
+        Integer.parseInt(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_network(S_ipv6_ospfv3_networkContext ctx) {
+    if (_currentInterface == null) {
+      warn(ctx, "Ignoring OSPFv3 network command outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfv3NetworkType(
+        OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
   public void exitS_ip_prefix_list(S_ip_prefix_listContext ctx) {
     String name = ctx.WORD(0).getText();
     AosCxPrefixList prefixList = _configuration.getOrCreatePrefixList(name);
@@ -565,6 +605,14 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ospf_area(S_ospf_areaContext ctx) {
+    if (_currentOspfv3Process != null
+        && ctx.getStart().getCharPositionInLine() > 0) {
+      _currentOspfv3Process.addArea(ctx.WORD().getText());
+    }
+  }
+
+  @Override
   public void exitS_ospf_area_stub(S_ospf_area_stubContext ctx) {
     if (_currentOspfProcess == null
         || ctx.getStart().getCharPositionInLine() == 0) {
@@ -578,11 +626,29 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_redistribute_connected(S_redistribute_connectedContext ctx) {
-    if (_currentOspfProcess == null) {
-      warn(ctx, "Ignoring redistribute connected outside OSPF context");
+    if (_currentOspfProcess != null) {
+      _currentOspfProcess.setRedistributeConnected(true);
       return;
     }
-    _currentOspfProcess.setRedistributeConnected(true);
+
+    if (_currentOspfv3Process != null) {
+      _currentOspfv3Process.setRedistributeConnected(true);
+      return;
+    }
+
+    warn(ctx, "Ignoring redistribute connected outside OSPF context");
+  }
+
+  @Override
+  public void exitS_router_ospfv3(S_router_ospfv3Context ctx) {
+    int processId = Integer.parseInt(ctx.WORD().getText());
+
+    _currentOspfv3Process =
+        _configuration.getOrCreateOspfv3Process(processId);
+    _currentOspfProcess = null;
+    _currentRouteMapEntry = null;
+    _currentInterface = null;
+    _currentIpAccessList = null;
   }
 
   @Override
@@ -596,6 +662,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentOspfProcess =
         _configuration.getOrCreateOspfProcess(processId, vrfName);
+    _currentOspfv3Process = null;
     _currentRouteMapEntry = null;
     _currentInterface = null;
     _currentIpAccessList = null;
@@ -603,11 +670,19 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
   @Override
   public void exitS_router_id(S_router_idContext ctx) {
-    if (_currentOspfProcess == null) {
-      warn(ctx, "Ignoring router-id outside OSPF context");
+    Ip routerId = Ip.parse(ctx.WORD().getText());
+
+    if (_currentOspfProcess != null) {
+      _currentOspfProcess.setRouterId(routerId);
       return;
     }
-    _currentOspfProcess.setRouterId(Ip.parse(ctx.WORD().getText()));
+
+    if (_currentOspfv3Process != null) {
+      _currentOspfv3Process.setRouterId(routerId);
+      return;
+    }
+
+    warn(ctx, "Ignoring router-id outside OSPF context");
   }
 
   @Override
@@ -750,6 +825,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private AosCxInterface _currentInterface;
   private AosCxOspfProcess _currentOspfProcess;
+  private AosCxOspfv3Process _currentOspfv3Process;
   private AosCxBgpProcess _currentBgpProcess;
   private Long _currentBgpLocalAs;
   private AosCxRouteMapEntry _currentRouteMapEntry;

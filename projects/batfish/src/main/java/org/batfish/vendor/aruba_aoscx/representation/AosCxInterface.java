@@ -97,6 +97,38 @@ public final class AosCxInterface implements Serializable {
     _ospfNetworkType = ospfNetworkType;
   }
 
+  public @Nullable Integer getOspfv3ProcessId() {
+    return _ospfv3ProcessId;
+  }
+
+  public void setOspfv3ProcessId(int processId) {
+    _ospfv3ProcessId = processId;
+  }
+
+  public @Nullable String getOspfv3Area() {
+    return _ospfv3Area;
+  }
+
+  public void setOspfv3Area(String area) {
+    _ospfv3Area = area;
+  }
+
+  public @Nullable Integer getOspfv3Cost() {
+    return _ospfv3Cost;
+  }
+
+  public void setOspfv3Cost(int cost) {
+    _ospfv3Cost = cost;
+  }
+
+  public @Nullable OspfNetworkType getOspfv3NetworkType() {
+    return _ospfv3NetworkType;
+  }
+
+  public void setOspfv3NetworkType(OspfNetworkType networkType) {
+    _ospfv3NetworkType = networkType;
+  }
+
   public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
@@ -199,6 +231,10 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _ospfArea;
   private @Nullable Integer _ospfCost;
   private @Nullable OspfNetworkType _ospfNetworkType;
+  private @Nullable Integer _ospfv3ProcessId;
+  private @Nullable String _ospfv3Area;
+  private @Nullable Integer _ospfv3Cost;
+  private @Nullable OspfNetworkType _ospfv3NetworkType;
   private @Nullable Boolean _switchport;
   private @Nullable Integer _nativeVlan;
   private boolean _nativeVlanTagged;

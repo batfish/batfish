@@ -24,6 +24,9 @@ statement
   | s_vrf
   | s_ip_address
   | s_ipv6_address
+  | s_ipv6_ospfv3_area
+  | s_ipv6_ospfv3_cost
+  | s_ipv6_ospfv3_network
   | s_ip_static
   | s_ip_mtu
   | s_ip_ospf_area
@@ -32,6 +35,8 @@ statement
   | s_ip_prefix_list
   | s_ip_route
   | s_router_ospf
+  | s_router_ospfv3
+  | s_ospf_area
   | s_ospf_area_stub
   | s_redistribute_connected
   | s_router_bgp
@@ -171,6 +176,21 @@ s_ipv6_address
   IPV6 ADDRESS (LINK_LOCAL | WORD) NEWLINE
 ;
 
+s_ipv6_ospfv3_area
+:
+  IPV6 OSPFV3 WORD AREA WORD NEWLINE
+;
+
+s_ipv6_ospfv3_cost
+:
+  IPV6 OSPFV3 COST WORD NEWLINE
+;
+
+s_ipv6_ospfv3_network
+:
+  IPV6 OSPFV3 NETWORK POINT_TO_POINT NEWLINE
+;
+
 
 
 s_ip_static
@@ -297,7 +317,17 @@ s_router_ospf
   ROUTER OSPF WORD (VRF WORD)? NEWLINE
 ;
 
+s_router_ospfv3
+:
+  ROUTER OSPFV3 WORD NEWLINE
+;
 
+
+
+s_ospf_area
+:
+  AREA WORD NEWLINE
+;
 
 s_ospf_area_stub
 :
@@ -353,5 +383,5 @@ s_speed
 
 null_statement
 :
-  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | COUNT | DEFAULT_GATEWAY | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | IPV6 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | LINK_LOCAL | MTU | NATIVE | NETWORK | NO | NO_SUMMARY | NULLROUTE | OSPF | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | STATIC | STUB | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
+  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | COUNT | DEFAULT_GATEWAY | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | IPV6 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | LINK_LOCAL | MTU | NATIVE | NETWORK | NO | NO_SUMMARY | NULLROUTE | OSPF | OSPFV3 | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | STATIC | STUB | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | WORD)+ NEWLINE
 ;

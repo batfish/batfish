@@ -1,0 +1,18 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute connected
+    area 0.0.0.0
+    area 10.0.0.1
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:10::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 cost 25
+    ipv6 ospfv3 network point-to-point
+interface 1/1/2
+    no shutdown
+    ipv6 address link-local
+    ipv6 ospfv3 1 area 10.0.0.1
+    ipv6 ospfv3 network point-to-point

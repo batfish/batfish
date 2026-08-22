@@ -55,6 +55,7 @@ ROUTED_OUT: 'routed-out';
 ROUTER: 'router';
 ROUTER_ID: 'router-id';
 OSPF: 'ospf';
+OSPFV3: 'ospfv3';
 OUT: 'out';
 POINT_TO_POINT: 'point-to-point';
 PERMIT: 'permit';
