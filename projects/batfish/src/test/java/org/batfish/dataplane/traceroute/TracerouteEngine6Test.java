@@ -17,6 +17,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.Fib6;
 import org.batfish.datamodel.Fib6Impl;
+import org.batfish.datamodel.Flow6;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.FinalMainRib6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -681,6 +683,101 @@ public final class TracerouteEngine6Test {
         equalTo(
             Ipv6TraceDisposition
                 .NEIGHBOR_UNREACHABLE));
+  }
+
+  @Test
+  public void testFlow6Api() {
+    Configuration n1 =
+        configuration("n1");
+    Configuration n2 =
+        configuration("n2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "loopback0",
+        "2001:db8:2::2/128",
+        InterfaceType.LOOPBACK);
+
+    Prefix6 destination =
+        Prefix6.parse(
+            "2001:db8:2::2/128");
+
+    Ospfv3IntraAreaRoute6 route =
+        new Ospfv3IntraAreaRoute6(
+            destination,
+            "eth12",
+            Ip6.parse(
+                "2001:db8:12::2"),
+            110,
+            10,
+            0L);
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(route)),
+                "n2",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(
+                        new ConnectedRoute6(
+                            destination,
+                            "loopback0")))));
+
+    Flow6 flow =
+        Flow6.builder()
+            .setIngressNode("n1")
+            .setSrcIp(
+                Ip6.parse(
+                    "2001:db8:1::10"))
+            .setDstIp(
+                Ip6.parse(
+                    "2001:db8:2::2"))
+            .setIpProtocol(
+                IpProtocol.TCP)
+            .setSrcPort(49152)
+            .setDstPort(443)
+            .setPacketLength(80)
+            .build();
+
+    List<Ipv6Trace> traces =
+        engine.computeTraces(flow);
+
+    assertThat(
+        traces,
+        hasSize(1));
+
+    assertThat(
+        traces.get(0)
+            .getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition.ACCEPTED));
+
+    assertThat(
+        traces.get(0)
+            .getHops()
+            .stream()
+            .map(Ipv6TraceHop::getNode)
+            .toList(),
+        contains("n1", "n2"));
   }
 
 }

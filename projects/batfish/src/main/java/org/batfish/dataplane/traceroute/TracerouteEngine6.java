@@ -20,6 +20,7 @@ import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib6;
 import org.batfish.datamodel.FibEntry6;
+import org.batfish.datamodel.Flow6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Route;
@@ -97,6 +98,21 @@ public final class TracerouteEngine6 {
     _addressOwners =
         computeAddressOwners(_configurations);
     _l3Adjacencies = l3Adjacencies;
+  }
+
+  /**
+   * Trace an IPv6 packet flow.
+   *
+   * <p>The current IPv6 forwarding engine consumes the routing-relevant
+   * fields now. Transport and ICMPv6 fields are retained in Flow6 so ACL and
+   * packet-policy processing can be layered onto the same API.
+   */
+  public @Nonnull List<Ipv6Trace> computeTraces(
+      Flow6 flow) {
+    return computeTraces(
+        flow.getIngressNode(),
+        flow.getIngressVrf(),
+        flow.getDstIp());
   }
 
   public @Nonnull List<Ipv6Trace> computeTraces(
