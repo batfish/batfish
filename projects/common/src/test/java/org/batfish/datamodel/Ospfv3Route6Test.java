@@ -60,4 +60,32 @@ public final class Ospfv3Route6Test {
         clone.getNextHopIp(),
         equalTo(Ip6.parse("2001:db8:12::1")));
   }
+  @Test
+  public void testInterAreaSerialization() {
+    Ospfv3InterAreaRoute6 route =
+        new Ospfv3InterAreaRoute6(
+            Prefix6.parse("2001:db8:30::/64"),
+            "Ethernet3",
+            Ip6.parse("2001:db8:23::2"),
+            110,
+            40,
+            2L);
+
+    Ospfv3InterAreaRoute6 clone =
+        BatfishObjectMapper.clone(
+            route,
+            Ospfv3InterAreaRoute6.class);
+
+    assertThat(clone, equalTo(route));
+    assertThat(clone.getArea(), equalTo(2L));
+    assertThat(clone.getMetric(), equalTo(40L));
+    assertThat(
+        clone.getNextHopIp(),
+        equalTo(
+            Ip6.parse("2001:db8:23::2")));
+    assertThat(
+        clone.getProtocol(),
+        equalTo(RoutingProtocol.OSPF3));
+  }
+
 }

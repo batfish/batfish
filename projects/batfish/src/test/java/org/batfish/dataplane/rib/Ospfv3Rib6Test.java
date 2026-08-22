@@ -8,6 +8,7 @@ import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
+import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
 import org.junit.Test;
@@ -99,6 +100,64 @@ public final class Ospfv3Rib6Test {
         equalTo(
             ImmutableSet.<AbstractRoute6>of(
                 farther)));
+  }
+
+  @Test
+  public void testRouteTypePreference() {
+    Prefix6 prefix =
+        Prefix6.parse("2001:db8:40::/64");
+
+    Ospfv3ExternalType2Route6 external =
+        new Ospfv3ExternalType2Route6(
+            prefix,
+            "Ethernet3",
+            110,
+            1,
+            Ip.parse("192.0.2.3"));
+
+    Ospfv3InterAreaRoute6 inter =
+        new Ospfv3InterAreaRoute6(
+            prefix,
+            "Ethernet2",
+            Ip6.parse("2001:db8:2::2"),
+            110,
+            500,
+            0L);
+
+    Ospfv3IntraAreaRoute6 intra =
+        new Ospfv3IntraAreaRoute6(
+            prefix,
+            "Ethernet1",
+            Ip6.parse("2001:db8:1::1"),
+            110,
+            1000,
+            1L);
+
+    Ospfv3Rib6 rib = new Ospfv3Rib6();
+
+    assertThat(
+        rib.mergeRoute(external),
+        equalTo(true));
+
+    assertThat(
+        rib.mergeRoute(inter),
+        equalTo(true));
+
+    assertThat(
+        rib.getRoutes(),
+        equalTo(
+            ImmutableSet.<AbstractRoute6>of(
+                inter)));
+
+    assertThat(
+        rib.mergeRoute(intra),
+        equalTo(true));
+
+    assertThat(
+        rib.getRoutes(),
+        equalTo(
+            ImmutableSet.<AbstractRoute6>of(
+                intra)));
   }
 
 }

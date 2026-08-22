@@ -17,6 +17,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
+import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -248,6 +249,14 @@ final class Ospfv3RoutingProcess {
                   remoteRoutes);
 
           changed |=
+              importInterAreaRoutesFromNeighbor(
+                  localIface,
+                  remoteIface,
+                  localSettings.getAreaName(),
+                  remoteProcess,
+                  remoteRoutes);
+
+          changed |=
               importExternalRoutesFromNeighbor(
                   localIface,
                   remoteIface,
@@ -405,6 +414,132 @@ final class Ospfv3RoutingProcess {
     }
 
     return changed;
+  }
+
+  /**
+   * Import OSPFv3 inter-area routes.
+   *
+   * <p>Within an area, summary routes accumulate the local cost toward the
+   * advertising ABR. An ABR may translate routes between an attached
+   * non-backbone area and area 0. Traffic between two non-backbone areas must
+   * therefore cross the backbone rather than being leaked directly.
+   */
+  private boolean importInterAreaRoutesFromNeighbor(
+      Interface localIface,
+      Interface remoteIface,
+      long localArea,
+      Ospfv3RoutingProcess remoteProcess,
+      Set<AbstractRoute6> remoteRoutes) {
+
+    boolean changed = false;
+
+    long incrementalCost =
+        computeInterfaceCost(localIface);
+
+    @Nullable Ip6 peerIp =
+        findPeerNextHopIp(
+                localIface,
+                remoteIface)
+            .orElse(null);
+
+    for (AbstractRoute6 route : remoteRoutes) {
+
+      long sourceArea;
+      long remoteMetric;
+      long tag;
+
+      if (route instanceof Ospfv3IntraAreaRoute6) {
+        Ospfv3IntraAreaRoute6 intra =
+            (Ospfv3IntraAreaRoute6) route;
+
+        sourceArea = intra.getArea();
+
+        // Same-area routes remain intra-area and were handled above.
+        if (sourceArea == localArea) {
+          continue;
+        }
+
+        if (!remoteProcess.canAdvertiseBetweenAreas(
+            sourceArea, localArea)) {
+          continue;
+        }
+
+        remoteMetric = intra.getMetric();
+        tag = intra.getTag();
+
+      } else if (
+          route instanceof Ospfv3InterAreaRoute6) {
+
+        Ospfv3InterAreaRoute6 inter =
+            (Ospfv3InterAreaRoute6) route;
+
+        sourceArea = inter.getArea();
+
+        // Propagation inside the area does not require the remote router to
+        // be an ABR. Crossing into a different area does.
+        if (sourceArea != localArea
+            && !remoteProcess.canAdvertiseBetweenAreas(
+                sourceArea, localArea)) {
+          continue;
+        }
+
+        remoteMetric = inter.getMetric();
+        tag = inter.getTag();
+
+      } else {
+        continue;
+      }
+
+      // Do not immediately advertise a learned route back toward the
+      // interface from which it was learned.
+      if (remoteIface
+          .getName()
+          .equals(route.getNextHopInterface())) {
+        continue;
+      }
+
+      if (remoteMetric >= LS_INFINITY
+          || incrementalCost
+              >= LS_INFINITY - remoteMetric) {
+        continue;
+      }
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3InterAreaRoute6(
+                  route.getNetwork(),
+                  localIface.getName(),
+                  peerIp,
+                  _process.getAdminCost(),
+                  remoteMetric
+                      + incrementalCost,
+                  localArea,
+                  tag));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Return whether this process can act as the ABR transition between two
+   * areas.
+   *
+   * <p>Inter-area OSPF traffic must traverse area 0. A router attached only to
+   * two non-backbone areas is therefore not treated as a valid transit ABR.
+   */
+  @VisibleForTesting
+  boolean canAdvertiseBetweenAreas(
+      long sourceArea,
+      long targetArea) {
+
+    if (sourceArea == targetArea) {
+      return false;
+    }
+
+    return _process.getAreas().containsKey(0L)
+        && _process.getAreas().containsKey(sourceArea)
+        && _process.getAreas().containsKey(targetArea)
+        && (sourceArea == 0L || targetArea == 0L);
   }
 
   /**
