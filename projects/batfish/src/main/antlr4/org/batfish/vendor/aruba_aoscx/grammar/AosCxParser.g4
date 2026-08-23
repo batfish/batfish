@@ -345,7 +345,7 @@ s_router_ospf
 
 s_router_ospfv3
 :
-  ROUTER OSPFV3 WORD NEWLINE
+  ROUTER OSPFV3 WORD (VRF WORD)? NEWLINE
 ;
 
 

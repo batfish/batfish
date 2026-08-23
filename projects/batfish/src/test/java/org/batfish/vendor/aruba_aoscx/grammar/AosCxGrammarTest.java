@@ -1524,4 +1524,170 @@ public final class AosCxGrammarTest {
         equalTo(12345L));
   }
 
+  @Test
+  public void testOspfv3VrfExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-vrf");
+
+    assertThat(
+        c.getOspfv3Processes(),
+        hasKey(1));
+
+    assertThat(
+        c.getOspfv3Processes()
+            .get(1)
+            .getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.1")));
+
+    assertThat(
+        c.getOspfv3Processes("BLUE"),
+        hasKey(1));
+
+    AosCxOspfv3Process blue =
+        c.getOspfv3Processes("BLUE")
+            .get(1);
+
+    assertThat(
+        blue.getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.200")));
+
+    assertThat(
+        blue.getRedistributeConnected(),
+        equalTo(true));
+
+    assertThat(
+        blue.getAreas(),
+        contains("0.0.0.10"));
+
+    AosCxInterface blueInterface =
+        c.getInterfaces()
+            .get("vlan 200");
+
+    assertThat(
+        blueInterface,
+        notNullValue());
+
+    assertThat(
+        blueInterface.getVrfName(),
+        equalTo("BLUE"));
+
+    assertThat(
+        blueInterface.getOspfv3ProcessId(),
+        equalTo(1));
+
+    assertThat(
+        blueInterface.getOspfv3Area(),
+        equalTo("0.0.0.10"));
+
+    assertThat(
+        blueInterface.getOspfv3Cost(),
+        equalTo(15));
+  }
+
+  @Test
+  public void testOspfv3VrfConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-vrf");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes(),
+        hasKey("1"));
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        defaultProcess =
+            c.getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(
+        defaultProcess.getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.1")));
+
+    assertThat(
+        defaultProcess.getAreas(),
+        hasKey(0L));
+
+    assertThat(
+        defaultProcess.getAreas()
+            .get(0L)
+            .getInterfaces(),
+        contains("1/1/1"));
+
+    assertThat(
+        c.getVrfs(),
+        hasKey("BLUE"));
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        blueProcess =
+            c.getVrfs()
+                .get("BLUE")
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(
+        blueProcess,
+        notNullValue());
+
+    assertThat(
+        blueProcess.getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.200")));
+
+    assertThat(
+        blueProcess.getRedistributeConnected(),
+        equalTo(true));
+
+    assertThat(
+        blueProcess.getAreas(),
+        hasKey(10L));
+
+    assertThat(
+        blueProcess.getAreas()
+            .get(10L)
+            .getInterfaces(),
+        contains("vlan 200"));
+
+    org.batfish.datamodel.Interface blueInterface =
+        c.getAllInterfaces()
+            .get("vlan 200");
+
+    assertThat(
+        blueInterface.getVrfName(),
+        equalTo("BLUE"));
+
+    assertThat(
+        blueInterface.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        blueInterface
+            .getOspfv3Settings()
+            .getProcess(),
+        equalTo("1"));
+
+    assertThat(
+        blueInterface
+            .getOspfv3Settings()
+            .getAreaName(),
+        equalTo(10L));
+
+    assertThat(
+        blueInterface
+            .getOspfv3Settings()
+            .getCost(),
+        equalTo(15));
+  }
+
 }

@@ -16,6 +16,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.InactiveReason;
@@ -23,6 +24,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
@@ -62,6 +64,91 @@ public final class Ospfv3PropagationTest {
             NodeInterfacePair iface) {
       return Optional.ofNullable(_pairs.get(iface));
     }
+  }
+
+  private static Node makeRouterWithBlueVrf(
+      String hostname) {
+    Configuration c =
+        Configuration.builder()
+            .setHostname(hostname)
+            .setConfigurationFormat(
+                ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Vrf.builder()
+        .setName(
+            Configuration.DEFAULT_VRF_NAME)
+        .setOwner(c)
+        .build();
+
+    Vrf.builder()
+        .setName("BLUE")
+        .setOwner(c)
+        .build();
+
+    return new Node(c);
+  }
+
+  private static Interface addInterfaceInVrf(
+      Node node,
+      String vrfName,
+      String name,
+      String address,
+      InterfaceType type,
+      int cost,
+      OspfNetworkType networkType) {
+    Configuration c =
+        node.getConfiguration();
+
+    return Interface.builder()
+        .setName(name)
+        .setOwner(c)
+        .setVrf(
+            c.getVrfs().get(vrfName))
+        .setType(type)
+        .setAddress(
+            ConcreteInterfaceAddress6.parse(
+                address))
+        .setBandwidth(
+            10_000_000_000D)
+        .setOspfv3Settings(
+            Ospfv3InterfaceSettings.builder()
+                .setAreaName(0L)
+                .setCost(cost)
+                .setProcess("1")
+                .setEnabled(true)
+                .setPassive(false)
+                .setHelloInterval(10)
+                .setDeadInterval(40)
+                .setNetworkType(networkType)
+                .build())
+        .build();
+  }
+
+  private static void addProcessInVrf(
+      Node node,
+      String vrfName,
+      String routerId,
+      String... interfaces) {
+    Ospfv3Area area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterfaces(
+                List.of(interfaces))
+            .build();
+
+    Ospfv3Process.builder()
+        .setProcessId("1")
+        .setRouterId(
+            Ip.parse(routerId))
+        .setAreas(
+            ImmutableMap.of(
+                0L, area))
+        .setVrf(
+            node.getConfiguration()
+                .getVrfs()
+                .get(vrfName))
+        .build();
   }
 
   private static Interface addInterface(
@@ -369,4 +456,136 @@ public final class Ospfv3PropagationTest {
                 baseline, wrongTimers),
         equalTo(false));
   }
+  @Test
+  public void testNamedVrfPropagation() {
+    Node n1 =
+        makeRouterWithBlueVrf("n1");
+    Node n2 =
+        makeRouterWithBlueVrf("n2");
+
+    addInterfaceInVrf(
+        n1,
+        "BLUE",
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL,
+        10,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addInterfaceInVrf(
+        n1,
+        "BLUE",
+        "loopback0",
+        "2001:db8:100::1/128",
+        InterfaceType.LOOPBACK,
+        1,
+        OspfNetworkType.BROADCAST);
+
+    addInterfaceInVrf(
+        n2,
+        "BLUE",
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL,
+        20,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addProcessInVrf(
+        n1,
+        "BLUE",
+        "192.0.2.1",
+        "eth12",
+        "loopback0");
+
+    addProcessInVrf(
+        n2,
+        "BLUE",
+        "192.0.2.2",
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            "BLUE");
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            "BLUE");
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(
+        topology);
+    vr2.initForIgpComputation(
+        topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    int iterations =
+        IncrementalBdpEngine
+            .initOspfv3InternalRoutes(
+                ImmutableMap.of(
+                    "n1", n1,
+                    "n2", n2),
+                List.of(vr1, vr2),
+                adjacencies);
+
+    assertThat(
+        iterations > 0,
+        equalTo(true));
+
+    Prefix6 loopback =
+        Prefix6.parse(
+            "2001:db8:100::1/128");
+
+    Ospfv3IntraAreaRoute6 learned =
+        findIntraRoute(
+            vr2,
+            loopback);
+
+    assertThat(
+        learned,
+        notNullValue());
+
+    assertThat(
+        learned.getNextHopInterface(),
+        equalTo("eth21"));
+
+    assertThat(
+        learned.getNextHopIp(),
+        equalTo(
+            Ip6.parse(
+                "2001:db8:12::1")));
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(loopback),
+        hasItem(learned));
+
+    /*
+     * The route/process belongs only to BLUE. The default routing
+     * table remains independent.
+     */
+    assertThat(
+        n1.getConfiguration()
+            .getDefaultVrf()
+            .getOspfv3Processes()
+            .isEmpty(),
+        equalTo(true));
+
+    assertThat(
+        n2.getConfiguration()
+            .getDefaultVrf()
+            .getOspfv3Processes()
+            .isEmpty(),
+        equalTo(true));
+  }
+
 }

@@ -89,6 +89,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
   private final Map<Integer, AosCxOspfv3Process> _ospfv3Processes =
       new HashMap<>();
+  private final Map<String, Map<Integer, AosCxOspfv3Process>>
+      _ospfv3ProcessesByVrf = new HashMap<>();
   private final Map<String, Map<Integer, AosCxOspfProcess>> _ospfProcessesByVrf =
       new HashMap<>();
   private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
@@ -200,9 +202,42 @@ public class AosCxConfiguration extends VendorConfiguration {
     return _ospfv3Processes;
   }
 
-  public AosCxOspfv3Process getOrCreateOspfv3Process(int processId) {
-    return _ospfv3Processes.computeIfAbsent(
-        processId, AosCxOspfv3Process::new);
+  public Map<Integer, AosCxOspfv3Process> getOspfv3Processes(
+      String vrfName) {
+    if (vrfName == null
+        || vrfName.equals(DEFAULT_VRF_NAME)) {
+      return _ospfv3Processes;
+    }
+
+    return _ospfv3ProcessesByVrf.getOrDefault(
+        vrfName, Map.of());
+  }
+
+  public AosCxOspfv3Process getOrCreateOspfv3Process(
+      int processId) {
+    return getOrCreateOspfv3Process(
+        processId, null);
+  }
+
+  public AosCxOspfv3Process getOrCreateOspfv3Process(
+      int processId,
+      String vrfName) {
+    if (vrfName == null
+        || vrfName.equals(DEFAULT_VRF_NAME)) {
+      return _ospfv3Processes.computeIfAbsent(
+          processId,
+          AosCxOspfv3Process::new);
+    }
+
+    addVrf(vrfName);
+
+    return _ospfv3ProcessesByVrf
+        .computeIfAbsent(
+            vrfName,
+            name -> new HashMap<>())
+        .computeIfAbsent(
+            processId,
+            AosCxOspfv3Process::new);
   }
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses(String vrfName) {
@@ -941,46 +976,61 @@ public class AosCxConfiguration extends VendorConfiguration {
     _ospfProcessesByVrf.forEach(this::convertOspfProcessesForVrf);
   }
 
-  private void convertOspfv3Processes() {
-    Vrf vrf = _c.getDefaultVrf();
+  private void convertOspfv3ProcessesForVrf(
+      String vrfName,
+      Map<Integer, AosCxOspfv3Process> processes) {
+    Vrf vrf =
+        _c.getVrfs().get(vrfName);
 
-    _ospfv3Processes.values().forEach(
+    if (vrf == null) {
+      return;
+    }
+
+    processes.values().forEach(
         process -> {
           // Automatic router-ID selection is not implemented yet.
           if (process.getRouterId() == null) {
             return;
           }
 
-          Map<Long, List<String>> areaInterfaces = new HashMap<>();
+          Map<Long, List<String>> areaInterfaces =
+              new HashMap<>();
 
-          // Preserve explicitly declared process areas, even when no
-          // interface is currently assigned to them.
+          // Preserve explicitly declared process areas.
           process
               .getAreas()
               .forEach(
                   area ->
                       areaInterfaces.computeIfAbsent(
                           toOspfAreaNumber(area),
-                          ignored -> new ArrayList<>()));
+                          ignored ->
+                              new ArrayList<>()));
 
-          // Associate AOS-CX interfaces with their OSPFv3 areas.
+          // Associate only interfaces in this process's VRF.
           _interfaces.values().stream()
               .filter(
                   iface ->
-                      getInterfaceVrfName(iface).equals(DEFAULT_VRF_NAME)
-                          && iface.getOspfv3ProcessId() != null
+                      getInterfaceVrfName(iface)
+                              .equals(vrfName)
+                          && iface.getOspfv3ProcessId()
+                              != null
                           && iface.getOspfv3ProcessId()
                               == process.getProcessId()
-                          && iface.getOspfv3Area() != null)
+                          && iface.getOspfv3Area()
+                              != null)
               .forEach(
                   iface ->
                       areaInterfaces
                           .computeIfAbsent(
-                              toOspfAreaNumber(iface.getOspfv3Area()),
-                              ignored -> new ArrayList<>())
+                              toOspfAreaNumber(
+                                  iface.getOspfv3Area()),
+                              ignored ->
+                                  new ArrayList<>())
                           .add(iface.getName()));
 
-          Map<Long, Ospfv3Area> areas = new HashMap<>();
+          Map<Long, Ospfv3Area> areas =
+              new HashMap<>();
+
           areaInterfaces.forEach(
               (area, interfaces) ->
                   areas.put(
@@ -991,17 +1041,30 @@ public class AosCxConfiguration extends VendorConfiguration {
                           .build()));
 
           Ospfv3Process.builder()
-              .setProcessId(Integer.toString(process.getProcessId()))
-              .setRouterId(process.getRouterId())
+              .setProcessId(
+                  Integer.toString(
+                      process.getProcessId()))
+              .setRouterId(
+                  process.getRouterId())
               .setAreas(areas)
               .setAdminCost(110)
-              .setReferenceBandwidth(100_000_000_000D)
+              .setReferenceBandwidth(
+                  100_000_000_000D)
               .setRedistributeConnected(
                   process.getRedistributeConnected())
               .setRedistributionMetric(25L)
               .setVrf(vrf)
               .build();
         });
+  }
+
+  private void convertOspfv3Processes() {
+    convertOspfv3ProcessesForVrf(
+        DEFAULT_VRF_NAME,
+        _ospfv3Processes);
+
+    _ospfv3ProcessesByVrf.forEach(
+        this::convertOspfv3ProcessesForVrf);
   }
 
   private void applyOspfInterfaceSettings() {
