@@ -35,6 +35,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_int
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_hello_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_passiveContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfv3Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_areaContext;
@@ -70,6 +71,8 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContex
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
@@ -632,6 +635,21 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentInterface.setOspfv3Passive(
         ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_shutdown(
+      S_ipv6_ospfv3_shutdownContext ctx) {
+    if (_currentInterface == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 shutdown outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfv3Enabled(
+        ctx.NO() != null);
   }
 
   @Override
@@ -1331,6 +1349,122 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentOspfv3Process
         .setRedistributionMetric(metric);
+  }
+
+  @Override
+  public void exitS_ospfv3_distance(
+      S_ospfv3_distanceContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 distance outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      AosCxParser.Ospfv3_distance_typeContext type =
+          ctx.ospfv3_distance_type();
+
+      if (type == null) {
+        _currentOspfv3Process
+            .resetDistance();
+      } else if (type.INTRA_AREA() != null) {
+        _currentOspfv3Process
+            .resetIntraAreaDistance();
+      } else if (type.INTER_AREA() != null) {
+        _currentOspfv3Process
+            .resetInterAreaDistance();
+      } else {
+        _currentOspfv3Process
+            .resetExternalDistance();
+      }
+
+      return;
+    }
+
+    if (ctx.ospfv3_distance_value().isEmpty()) {
+      int distance;
+
+      try {
+        distance =
+            Integer.parseInt(
+                ctx.WORD().getText());
+      } catch (NumberFormatException e) {
+        warn(
+            ctx,
+            "Ignoring invalid OSPFv3 administrative distance");
+        return;
+      }
+
+      if (distance < 1 || distance > 255) {
+        warn(
+            ctx,
+            "Ignoring OSPFv3 administrative distance outside 1-255");
+        return;
+      }
+
+      _currentOspfv3Process
+          .setDistance(distance);
+      return;
+    }
+
+    for (AosCxParser.Ospfv3_distance_valueContext value :
+        ctx.ospfv3_distance_value()) {
+
+      int distance;
+
+      try {
+        distance =
+            Integer.parseInt(
+                value.WORD().getText());
+      } catch (NumberFormatException e) {
+        warn(
+            ctx,
+            "Ignoring invalid OSPFv3 administrative distance");
+        return;
+      }
+
+      if (distance < 1 || distance > 255) {
+        warn(
+            ctx,
+            "Ignoring OSPFv3 administrative distance outside 1-255");
+        return;
+      }
+
+      if (value
+              .ospfv3_distance_type()
+              .INTRA_AREA()
+          != null) {
+        _currentOspfv3Process
+            .setIntraAreaDistance(distance);
+      } else if (
+          value
+                  .ospfv3_distance_type()
+                  .INTER_AREA()
+              != null) {
+        _currentOspfv3Process
+            .setInterAreaDistance(distance);
+      } else {
+        _currentOspfv3Process
+            .setExternalDistance(distance);
+      }
+    }
+  }
+
+  @Override
+  public void exitS_ospfv3_process_state(
+      S_ospfv3_process_stateContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 enable/disable outside OSPFv3 context");
+      return;
+    }
+
+    _currentOspfv3Process.setEnabled(
+        ctx.ENABLE() != null);
   }
 
   @Override

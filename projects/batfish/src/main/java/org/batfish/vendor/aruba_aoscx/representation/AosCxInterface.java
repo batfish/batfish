@@ -174,6 +174,20 @@ public final class AosCxInterface implements Serializable {
     _ospfv3Passive = passive;
   }
 
+  /**
+   * Explicit protocol-level enable state for OSPFv3 on this interface.
+   *
+   * <p>Null means the AOS-CX default: OSPFv3 is enabled when the
+   * interface is attached to an OSPFv3 area.
+   */
+  public @Nullable Boolean getOspfv3Enabled() {
+    return _ospfv3Enabled;
+  }
+
+  public void setOspfv3Enabled(boolean enabled) {
+    _ospfv3Enabled = enabled;
+  }
+
   public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
@@ -301,6 +315,7 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Integer _ospfv3DeadInterval;
   private @Nullable OspfNetworkType _ospfv3NetworkType;
   private @Nullable Boolean _ospfv3Passive;
+  private @Nullable Boolean _ospfv3Enabled;
   private @Nullable Boolean _switchport;
   private @Nullable Integer _nativeVlan;
   private boolean _nativeVlanTagged;

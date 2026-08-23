@@ -2385,4 +2385,143 @@ public final class AosCxGrammarTest {
         equalTo(202L));
   }
 
+  @Test
+  public void testOspfv3DistanceStateExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-distance-state");
+
+    AosCxOspfv3Process p1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(p1, notNullValue());
+    assertThat(
+        p1.getIntraAreaDistance(),
+        equalTo(24));
+    assertThat(
+        p1.getInterAreaDistance(),
+        equalTo(66));
+    assertThat(
+        p1.getExternalDistance(),
+        equalTo(77));
+    assertThat(
+        p1.getEnabled(),
+        equalTo(true));
+
+    AosCxOspfv3Process p2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(p2, notNullValue());
+
+    /*
+     * distance 99 changes all three; no distance inter-area
+     * restores only the inter-area distance to 110.
+     */
+    assertThat(
+        p2.getIntraAreaDistance(),
+        equalTo(99));
+    assertThat(
+        p2.getInterAreaDistance(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_ADMIN_DISTANCE));
+    assertThat(
+        p2.getExternalDistance(),
+        equalTo(99));
+    assertThat(
+        p2.getEnabled(),
+        equalTo(false));
+
+    AosCxInterface shutdown =
+        c.getInterfaces().get("1/1/1");
+
+    AosCxInterface reenabled =
+        c.getInterfaces().get("1/1/2");
+
+    assertThat(shutdown, notNullValue());
+    assertThat(
+        shutdown.getOspfv3Enabled(),
+        equalTo(false));
+
+    assertThat(reenabled, notNullValue());
+    assertThat(
+        reenabled.getOspfv3Enabled(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testOspfv3DistanceStateConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-distance-state");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(p1, notNullValue());
+    assertThat(
+        p1.getIntraAreaAdminCost(),
+        equalTo(24));
+    assertThat(
+        p1.getInterAreaAdminCost(),
+        equalTo(66));
+    assertThat(
+        p1.getExternalAdminCost(),
+        equalTo(77));
+    assertThat(
+        p1.getEnabled(),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3Process p2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(p2, notNullValue());
+    assertThat(
+        p2.getIntraAreaAdminCost(),
+        equalTo(99));
+    assertThat(
+        p2.getInterAreaAdminCost(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_ADMIN_COST));
+    assertThat(
+        p2.getExternalAdminCost(),
+        equalTo(99));
+    assertThat(
+        p2.getEnabled(),
+        equalTo(false));
+
+    org.batfish.datamodel.Interface shutdown =
+        c.getAllInterfaces().get("1/1/1");
+
+    org.batfish.datamodel.Interface reenabled =
+        c.getAllInterfaces().get("1/1/2");
+
+    assertThat(
+        shutdown.getOspfv3Settings(),
+        notNullValue());
+    assertThat(
+        shutdown
+            .getOspfv3Settings()
+            .getEnabled(),
+        equalTo(false));
+
+    assertThat(
+        reenabled.getOspfv3Settings(),
+        notNullValue());
+    assertThat(
+        reenabled
+            .getOspfv3Settings()
+            .getEnabled(),
+        equalTo(true));
+  }
+
 }

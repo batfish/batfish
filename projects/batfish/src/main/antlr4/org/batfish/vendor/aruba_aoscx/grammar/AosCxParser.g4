@@ -32,6 +32,7 @@ statement
   | s_ipv6_ospfv3_hello_interval
   | s_ipv6_ospfv3_network
   | s_ipv6_ospfv3_passive
+  | s_ipv6_ospfv3_shutdown
   | s_ospfv3_passive_default
   | s_ospfv3_reference_bandwidth
   | s_ipv6_route
@@ -50,6 +51,8 @@ statement
   | s_ospfv3_area_default_metric
   | s_ospfv3_default_information
   | s_ospfv3_default_metric
+  | s_ospfv3_distance
+  | s_ospfv3_process_state
   | s_redistribute_connected
   | s_redistribute_static
   | s_router_bgp
@@ -239,6 +242,12 @@ s_ipv6_ospfv3_network
 s_ipv6_ospfv3_passive
 :
   NO? IPV6 OSPFV3 PASSIVE NEWLINE
+;
+
+s_ipv6_ospfv3_shutdown
+:
+  IPV6 OSPFV3 SHUTDOWN NEWLINE
+  | NO IPV6 OSPFV3 SHUTDOWN NEWLINE
 ;
 
 s_ospfv3_passive_default
@@ -437,6 +446,31 @@ s_ospfv3_default_metric
   | NO DEFAULT_METRIC NEWLINE
 ;
 
+ospfv3_distance_type
+:
+  INTRA_AREA
+  | INTER_AREA
+  | EXTERNAL
+;
+
+ospfv3_distance_value
+:
+  ospfv3_distance_type WORD
+;
+
+s_ospfv3_distance
+:
+  DISTANCE WORD NEWLINE
+  | DISTANCE ospfv3_distance_value+ NEWLINE
+  | NO DISTANCE ospfv3_distance_type? WORD? NEWLINE
+;
+
+s_ospfv3_process_state
+:
+  ENABLE NEWLINE
+  | DISABLE NEWLINE
+;
+
 ospfv3_metric_option
 :
   METRIC WORD
@@ -507,5 +541,5 @@ s_speed
 
 null_statement
 :
-  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | COUNT | DEFAULT_GATEWAY | DISTANCE | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | IPV6 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | LINK_LOCAL | MTU | NATIVE | NETWORK | NO | NO_SUMMARY | NULLROUTE | OSPF | OSPFV3 | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | STATIC | STUB | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | DEFAULT | PASSIVE | PASSIVE_INTERFACE | REFERENCE_BANDWIDTH | BROADCAST | DEAD_INTERVAL | HELLO_INTERVAL | DEFAULT_METRIC | ALWAYS | DEFAULT_INFORMATION | METRIC | ORIGINATE | WORD)+ NEWLINE
+  (ACCESS_LIST | ALLOWED | APPLY | ANY | CONNECTED | COST | COUNT | DEFAULT_GATEWAY | DISTANCE | EQ | GT | LT | RANGE | ROUTED_IN | ROUTED_OUT | ADDRESS | AREA | ATTACH | VRF | BGP | IN | OUT | UNICAST | REMOTE_AS | NEIGHBOR | IPV4 | IPV6 | ADDRESS_FAMILY | ACTIVATE | HOSTNAME | INTERFACE | IP | LOOPBACK | LINK_LOCAL | MTU | NATIVE | NETWORK | NO | NO_SUMMARY | NULLROUTE | OSPF | OSPFV3 | POINT_TO_POINT | REDISTRIBUTE | REJECT | ROUTE | ROUTER | ROUTER_ID | ROUTING | SHUTDOWN | SPEED | STATIC | STUB | TAG | TRUNK | VLAN | PREFIX_LIST | SEQ | PERMIT | DENY | GE | LE | ROUTE_MAP | MATCH | SET | LOCAL_PREFERENCE | DEFAULT | PASSIVE | PASSIVE_INTERFACE | REFERENCE_BANDWIDTH | BROADCAST | DEAD_INTERVAL | HELLO_INTERVAL | DEFAULT_METRIC | ALWAYS | DEFAULT_INFORMATION | METRIC | ORIGINATE | DISABLE | ENABLE | EXTERNAL | INTER_AREA | INTRA_AREA | WORD)+ NEWLINE
 ;

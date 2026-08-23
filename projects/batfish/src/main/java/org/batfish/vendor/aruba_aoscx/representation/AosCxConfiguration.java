@@ -1291,7 +1291,14 @@ public class AosCxConfiguration extends VendorConfiguration {
                       process.getProcessId()))
               .setRouterId(routerId)
               .setAreas(areas)
-              .setAdminCost(110)
+              .setAdminCost(
+                  process.getIntraAreaDistance())
+              .setInterAreaAdminCost(
+                  process.getInterAreaDistance())
+              .setExternalAdminCost(
+                  process.getExternalDistance())
+              .setEnabled(
+                  process.getEnabled())
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
               .setRedistributeConnected(
@@ -1415,7 +1422,9 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setCost(ospfv3Cost)
                   .setProcess(
                       Integer.toString(iface.getOspfv3ProcessId()))
-                  .setEnabled(true)
+                  .setEnabled(
+                      iface.getOspfv3Enabled() == null
+                          || iface.getOspfv3Enabled())
                   .setPassive(passive)
                   .setHelloInterval(
                       iface.getOspfv3HelloInterval() != null

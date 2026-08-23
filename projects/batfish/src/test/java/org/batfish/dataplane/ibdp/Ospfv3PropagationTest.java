@@ -201,6 +201,42 @@ public final class Ospfv3PropagationTest {
         .build();
   }
 
+  private static void addProcessWithStateAndDistances(
+      Node node,
+      String routerId,
+      boolean enabled,
+      int intraAreaDistance,
+      int interAreaDistance,
+      int externalDistance,
+      String... interfaces) {
+
+    Ospfv3Area area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterfaces(
+                List.of(interfaces))
+            .build();
+
+    Ospfv3Process.builder()
+        .setProcessId("1")
+        .setRouterId(
+            Ip.parse(routerId))
+        .setAreas(
+            ImmutableMap.of(
+                0L, area))
+        .setAdminCost(
+            intraAreaDistance)
+        .setInterAreaAdminCost(
+            interAreaDistance)
+        .setExternalAdminCost(
+            externalDistance)
+        .setEnabled(enabled)
+        .setVrf(
+            node.getConfiguration()
+                .getDefaultVrf())
+        .build();
+  }
+
   private static Ospfv3IntraAreaRoute6 findIntraRoute(
       VirtualRouter vr, Prefix6 prefix) {
     AbstractRoute6 route =
@@ -586,6 +622,206 @@ public final class Ospfv3PropagationTest {
             .getOspfv3Processes()
             .isEmpty(),
         equalTo(true));
+  }
+
+  @Test
+  public void testIntraAreaAdministrativeDistance() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL,
+        10,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addInterface(
+        n1,
+        "loopback0",
+        "2001:db8:100::1/128",
+        InterfaceType.LOOPBACK,
+        1,
+        OspfNetworkType.BROADCAST);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL,
+        20,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addProcess(
+        n1,
+        "192.0.2.1",
+        "eth12",
+        "loopback0");
+
+    addProcessWithStateAndDistances(
+        n2,
+        "192.0.2.2",
+        true,
+        222,
+        223,
+        224,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            List.of(
+                vr1, vr2),
+            adjacencies);
+
+    Ospfv3IntraAreaRoute6 learned =
+        findIntraRoute(
+            vr2,
+            Prefix6.parse(
+                "2001:db8:100::1/128"));
+
+    assertThat(
+        learned,
+        notNullValue());
+
+    assertThat(
+        learned.getAdministrativeCost(),
+        equalTo(222L));
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(
+                Prefix6.parse(
+                    "2001:db8:100::1/128")),
+        hasItem(learned));
+  }
+
+  @Test
+  public void testDisabledOspfv3ProcessSuppressesRouting() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL,
+        10,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addInterface(
+        n1,
+        "loopback0",
+        "2001:db8:100::1/128",
+        InterfaceType.LOOPBACK,
+        1,
+        OspfNetworkType.BROADCAST);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL,
+        20,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addProcess(
+        n1,
+        "192.0.2.1",
+        "eth12",
+        "loopback0");
+
+    addProcessWithStateAndDistances(
+        n2,
+        "192.0.2.2",
+        false,
+        110,
+        110,
+        110,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            List.of(
+                vr1, vr2),
+            adjacencies);
+
+    Prefix6 loopback =
+        Prefix6.parse(
+            "2001:db8:100::1/128");
+
+    assertThat(
+        findIntraRoute(
+            vr2,
+            loopback),
+        nullValue());
+
+    assertThat(
+        vr2.getOspfv3Processes()
+            .get("1")
+            .getRoutes(),
+        empty());
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(loopback),
+        empty());
   }
 
 }

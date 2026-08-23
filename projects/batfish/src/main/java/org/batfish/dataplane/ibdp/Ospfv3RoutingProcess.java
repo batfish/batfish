@@ -67,6 +67,11 @@ final class Ospfv3RoutingProcess {
    */
   void initialize(ConnectedRib6 connectedRib) {
     _ospfv3Rib.clear();
+
+    if (!_process.getEnabled()) {
+      return;
+    }
+
     initializeIntraAreaRoutes();
   }
 
@@ -106,7 +111,7 @@ final class Ospfv3RoutingProcess {
                 getAdvertisedNetwork(iface, address),
                 iface.getName(),
                 address.getIp(),
-                _process.getAdminCost(),
+                _process.getIntraAreaAdminCost(),
                 cost,
                 area.getAreaNumber()));
       }
@@ -130,6 +135,16 @@ final class Ospfv3RoutingProcess {
 
     Set<Ospfv3ExternalType2Route6> desired =
         new HashSet<>();
+
+    if (!_process.getEnabled()) {
+      if (_localExternalAdvertisements.isEmpty()) {
+        return false;
+      }
+
+      _localExternalAdvertisements =
+          ImmutableSet.of();
+      return true;
+    }
 
     if (_process.getRedistributeConnected()) {
       for (ConnectedRoute6 connected :
@@ -163,7 +178,7 @@ final class Ospfv3RoutingProcess {
             new Ospfv3ExternalType2Route6(
                 connected.getNetwork(),
                 Route.UNSET_NEXT_HOP_INTERFACE,
-                _process.getAdminCost(),
+                _process.getExternalAdminCost(),
                 result.getMetric(),
                 _process.getRouterId(),
                 result.getTag()));
@@ -191,7 +206,7 @@ final class Ospfv3RoutingProcess {
             new Ospfv3ExternalType2Route6(
                 route.getNetwork(),
                 Route.UNSET_NEXT_HOP_INTERFACE,
-                _process.getAdminCost(),
+                _process.getExternalAdminCost(),
                 result.getMetric(),
                 _process.getRouterId(),
                 result.getTag()));
@@ -207,7 +222,7 @@ final class Ospfv3RoutingProcess {
           new Ospfv3ExternalType2Route6(
               Prefix6.ZERO,
               Route.UNSET_NEXT_HOP_INTERFACE,
-              _process.getAdminCost(),
+              _process.getExternalAdminCost(),
               _process.getDefaultInformationMetric(),
               _process.getRouterId()));
     }
@@ -294,6 +309,10 @@ final class Ospfv3RoutingProcess {
   boolean propagateRoutes(
       Map<String, Node> allNodes,
       L3Adjacencies l3Adjacencies) {
+    if (!_process.getEnabled()) {
+      return false;
+    }
+
     boolean changed = false;
 
     for (Interface localIface :
@@ -536,7 +555,7 @@ final class Ospfv3RoutingProcess {
             Prefix6.ZERO,
             localIface.getName(),
             peerIp,
-            _process.getAdminCost(),
+            _process.getInterAreaAdminCost(),
             incrementalCost
                 + defaultMetric,
             area));
@@ -680,7 +699,7 @@ final class Ospfv3RoutingProcess {
                   intra.getNetwork(),
                   localIface.getName(),
                   peerIp,
-                  _process.getAdminCost(),
+                  _process.getIntraAreaAdminCost(),
                   newMetric,
                   area,
                   intra.getTag()));
@@ -795,7 +814,7 @@ final class Ospfv3RoutingProcess {
                   route.getNetwork(),
                   localIface.getName(),
                   peerIp,
-                  _process.getAdminCost(),
+                  _process.getInterAreaAdminCost(),
                   remoteMetric
                       + incrementalCost,
                   localArea,
@@ -901,7 +920,7 @@ final class Ospfv3RoutingProcess {
                   external.getNetwork(),
                   localIface.getName(),
                   peerIp,
-                  _process.getAdminCost(),
+                  _process.getExternalAdminCost(),
                   external.getMetric(),
                   area,
                   newCostToAdvertiser,

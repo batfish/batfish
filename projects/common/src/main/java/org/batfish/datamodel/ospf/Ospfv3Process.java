@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -43,6 +44,9 @@ public final class Ospfv3Process
 
   public static final class Builder {
     private int _adminCost;
+    private int _interAreaAdminCost;
+    private int _externalAdminCost;
+    private boolean _enabled;
     private @Nonnull Map<Long, Ospfv3Area> _areas;
     private boolean _defaultInformationOriginate;
     private boolean _defaultInformationOriginateAlways;
@@ -62,6 +66,11 @@ public final class Ospfv3Process
     private Builder() {
       _adminCost =
           DEFAULT_ADMIN_COST;
+      _interAreaAdminCost =
+          DEFAULT_ADMIN_COST;
+      _externalAdminCost =
+          DEFAULT_ADMIN_COST;
+      _enabled = true;
       _areas =
           ImmutableMap.of();
       _defaultInformationMetric =
@@ -83,8 +92,18 @@ public final class Ospfv3Process
 
       checkArgument(
           _adminCost >= 0,
-          "Invalid admin cost %s",
+          "Invalid intra-area admin cost %s",
           _adminCost);
+
+      checkArgument(
+          _interAreaAdminCost >= 0,
+          "Invalid inter-area admin cost %s",
+          _interAreaAdminCost);
+
+      checkArgument(
+          _externalAdminCost >= 0,
+          "Invalid external admin cost %s",
+          _externalAdminCost);
 
       checkArgument(
           _referenceBandwidth > 0,
@@ -109,6 +128,9 @@ public final class Ospfv3Process
               _routerId,
               _areas,
               _adminCost,
+              _interAreaAdminCost,
+              _externalAdminCost,
+              _enabled,
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeStatic,
@@ -127,9 +149,37 @@ public final class Ospfv3Process
       return process;
     }
 
+    /**
+     * Set one administrative distance for all OSPFv3 route types.
+     */
     public Builder setAdminCost(
         int adminCost) {
       _adminCost = adminCost;
+      _interAreaAdminCost = adminCost;
+      _externalAdminCost = adminCost;
+      return this;
+    }
+
+    public Builder setIntraAreaAdminCost(
+        int adminCost) {
+      _adminCost = adminCost;
+      return this;
+    }
+
+    public Builder setInterAreaAdminCost(
+        int adminCost) {
+      _interAreaAdminCost = adminCost;
+      return this;
+    }
+
+    public Builder setExternalAdminCost(
+        int adminCost) {
+      _externalAdminCost = adminCost;
+      return this;
+    }
+
+    public Builder setEnabled(boolean enabled) {
+      _enabled = enabled;
       return this;
     }
 
@@ -227,6 +277,12 @@ public final class Ospfv3Process
 
   private static final String PROP_ADMIN_COST =
       "adminCost";
+  private static final String PROP_INTER_AREA_ADMIN_COST =
+      "interAreaAdminCost";
+  private static final String PROP_EXTERNAL_ADMIN_COST =
+      "externalAdminCost";
+  private static final String PROP_ENABLED =
+      "enabled";
   private static final String PROP_AREAS =
       "areas";
   private static final String
@@ -271,6 +327,12 @@ public final class Ospfv3Process
           @Nullable Map<Long, Ospfv3Area> areas,
       @JsonProperty(PROP_ADMIN_COST)
           @Nullable Integer adminCost,
+      @JsonProperty(PROP_INTER_AREA_ADMIN_COST)
+          @Nullable Integer interAreaAdminCost,
+      @JsonProperty(PROP_EXTERNAL_ADMIN_COST)
+          @Nullable Integer externalAdminCost,
+      @JsonProperty(PROP_ENABLED)
+          @Nullable Boolean enabled,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
@@ -305,15 +367,27 @@ public final class Ospfv3Process
             defaultInformationOriginateAlways,
             false);
 
+    int effectiveIntraAreaAdminCost =
+        firstNonNull(
+            adminCost,
+            DEFAULT_ADMIN_COST);
+
     return new Ospfv3Process(
         processId,
         routerId,
         firstNonNull(
             areas,
             ImmutableMap.of()),
+        effectiveIntraAreaAdminCost,
         firstNonNull(
-            adminCost,
-            DEFAULT_ADMIN_COST),
+            interAreaAdminCost,
+            effectiveIntraAreaAdminCost),
+        firstNonNull(
+            externalAdminCost,
+            effectiveIntraAreaAdminCost),
+        firstNonNull(
+            enabled,
+            true),
         firstNonNull(
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
@@ -343,6 +417,9 @@ public final class Ospfv3Process
       Ip routerId,
       Map<Long, Ospfv3Area> areas,
       int adminCost,
+      int interAreaAdminCost,
+      int externalAdminCost,
+      boolean enabled,
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeStatic,
@@ -370,6 +447,11 @@ public final class Ospfv3Process
     _areas =
         ImmutableSortedMap.copyOf(areas);
     _adminCost = adminCost;
+    _interAreaAdminCost =
+        interAreaAdminCost;
+    _externalAdminCost =
+        externalAdminCost;
+    _enabled = enabled;
     _referenceBandwidth =
         referenceBandwidth;
     _redistributeConnected =
@@ -391,9 +473,42 @@ public final class Ospfv3Process
         defaultInformationMetric;
   }
 
+  /**
+   * Legacy/common OSPF administrative cost accessor.
+   *
+   * <p>For OSPFv3 this is the intra-area administrative distance.
+   */
   @JsonProperty(PROP_ADMIN_COST)
   public int getAdminCost() {
     return _adminCost;
+  }
+
+  /**
+   * Return the OSPFv3 intra-area administrative distance.
+   *
+   * <p>This is a convenience alias for {@link #getAdminCost()}.
+   * Keep it out of JSON so the serialized representation retains
+   * the historical {@code adminCost} property without duplicating it
+   * as {@code intraAreaAdminCost}.
+   */
+  @JsonIgnore
+  public int getIntraAreaAdminCost() {
+    return _adminCost;
+  }
+
+  @JsonProperty(PROP_INTER_AREA_ADMIN_COST)
+  public int getInterAreaAdminCost() {
+    return _interAreaAdminCost;
+  }
+
+  @JsonProperty(PROP_EXTERNAL_ADMIN_COST)
+  public int getExternalAdminCost() {
+    return _externalAdminCost;
+  }
+
+  @JsonProperty(PROP_ENABLED)
+  public boolean getEnabled() {
+    return _enabled;
   }
 
   @JsonProperty(PROP_PROCESS_ID)
@@ -460,6 +575,9 @@ public final class Ospfv3Process
   }
 
   private final int _adminCost;
+  private final int _interAreaAdminCost;
+  private final int _externalAdminCost;
+  private final boolean _enabled;
   private final @Nonnull String _processId;
   private final @Nonnull Ip _routerId;
   private final @Nonnull SortedMap<Long, Ospfv3Area>

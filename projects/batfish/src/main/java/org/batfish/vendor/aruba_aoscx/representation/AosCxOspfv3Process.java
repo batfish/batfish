@@ -13,6 +13,10 @@ import org.batfish.datamodel.Ip;
 public final class AosCxOspfv3Process
     implements Serializable {
 
+  /** AOS-CX default administrative distance for OSPFv3. */
+  public static final int DEFAULT_ADMIN_DISTANCE =
+      110;
+
   /** AOS-CX default reference bandwidth: 100000 Mbps. */
   public static final double DEFAULT_REFERENCE_BANDWIDTH =
       100_000_000_000D;
@@ -31,6 +35,63 @@ public final class AosCxOspfv3Process
 
   public int getProcessId() {
     return _processId;
+  }
+
+  public boolean getEnabled() {
+    return _enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    _enabled = enabled;
+  }
+
+  public int getIntraAreaDistance() {
+    return _intraAreaDistance;
+  }
+
+  public int getInterAreaDistance() {
+    return _interAreaDistance;
+  }
+
+  public int getExternalDistance() {
+    return _externalDistance;
+  }
+
+  public void setDistance(int distance) {
+    _intraAreaDistance = distance;
+    _interAreaDistance = distance;
+    _externalDistance = distance;
+  }
+
+  public void setIntraAreaDistance(int distance) {
+    _intraAreaDistance = distance;
+  }
+
+  public void setInterAreaDistance(int distance) {
+    _interAreaDistance = distance;
+  }
+
+  public void setExternalDistance(int distance) {
+    _externalDistance = distance;
+  }
+
+  public void resetDistance() {
+    setDistance(DEFAULT_ADMIN_DISTANCE);
+  }
+
+  public void resetIntraAreaDistance() {
+    _intraAreaDistance =
+        DEFAULT_ADMIN_DISTANCE;
+  }
+
+  public void resetInterAreaDistance() {
+    _interAreaDistance =
+        DEFAULT_ADMIN_DISTANCE;
+  }
+
+  public void resetExternalDistance() {
+    _externalDistance =
+        DEFAULT_ADMIN_DISTANCE;
   }
 
   public boolean getRedistributeConnected() {
@@ -223,6 +284,14 @@ public final class AosCxOspfv3Process
   }
 
   private final int _processId;
+
+  private boolean _enabled = true;
+  private int _intraAreaDistance =
+      DEFAULT_ADMIN_DISTANCE;
+  private int _interAreaDistance =
+      DEFAULT_ADMIN_DISTANCE;
+  private int _externalDistance =
+      DEFAULT_ADMIN_DISTANCE;
 
   private boolean _defaultInformationOriginate;
   private boolean _defaultInformationOriginateAlways;

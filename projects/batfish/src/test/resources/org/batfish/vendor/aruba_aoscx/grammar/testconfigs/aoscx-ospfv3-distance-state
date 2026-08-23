@@ -1,0 +1,32 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+    distance 100
+    distance intra-area 24 external 55 inter-area 66
+    no distance external
+    distance external 77
+    disable
+    enable
+
+router ospfv3 2
+    router-id 192.0.2.2
+    area 0.0.0.0
+    distance 99
+    no distance inter-area
+    disable
+
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:10::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 shutdown
+
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:20::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 shutdown
+    no ipv6 ospfv3 shutdown

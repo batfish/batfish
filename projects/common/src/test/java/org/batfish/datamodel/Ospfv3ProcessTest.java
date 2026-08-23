@@ -24,6 +24,18 @@ public final class Ospfv3ProcessTest {
         process.getAdminCost(),
         equalTo(Ospfv3Process.DEFAULT_ADMIN_COST));
     assertThat(
+        process.getIntraAreaAdminCost(),
+        equalTo(Ospfv3Process.DEFAULT_ADMIN_COST));
+    assertThat(
+        process.getInterAreaAdminCost(),
+        equalTo(Ospfv3Process.DEFAULT_ADMIN_COST));
+    assertThat(
+        process.getExternalAdminCost(),
+        equalTo(Ospfv3Process.DEFAULT_ADMIN_COST));
+    assertThat(
+        process.getEnabled(),
+        equalTo(true));
+    assertThat(
         process.getReferenceBandwidth(),
         equalTo(
             Ospfv3Process.DEFAULT_REFERENCE_BANDWIDTH));
@@ -76,6 +88,9 @@ public final class Ospfv3ProcessTest {
             .setRouterId(Ip.parse("192.0.2.1"))
             .setAreas(ImmutableMap.of(0L, area))
             .setAdminCost(111)
+            .setInterAreaAdminCost(112)
+            .setExternalAdminCost(113)
+            .setEnabled(false)
             .setReferenceBandwidth(40_000_000_000D)
             .setRedistributeConnected(true)
             .setRedistributeConnectedRouteMap(
@@ -114,6 +129,18 @@ public final class Ospfv3ProcessTest {
             .getDefaultMetric(),
         equalTo(17L));
     assertThat(clone.getAdminCost(), equalTo(111));
+    assertThat(
+        clone.getIntraAreaAdminCost(),
+        equalTo(111));
+    assertThat(
+        clone.getInterAreaAdminCost(),
+        equalTo(112));
+    assertThat(
+        clone.getExternalAdminCost(),
+        equalTo(113));
+    assertThat(
+        clone.getEnabled(),
+        equalTo(false));
     assertThat(
         clone.getReferenceBandwidth(),
         equalTo(40_000_000_000D));
