@@ -1003,15 +1003,32 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_ospf_area_stub(S_ospf_area_stubContext ctx) {
-    if (_currentOspfProcess == null
-        || ctx.getStart().getCharPositionInLine() == 0) {
-      warn(ctx, "Ignoring OSPF stub area outside OSPF context");
+  public void exitS_ospf_area_stub(
+      S_ospf_area_stubContext ctx) {
+    if (ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPF stub area outside OSPF context");
       return;
     }
 
-    _currentOspfProcess.setStubArea(
-        ctx.WORD().getText(), ctx.NO_SUMMARY() != null);
+    if (_currentOspfProcess != null) {
+      _currentOspfProcess.setStubArea(
+          ctx.WORD().getText(),
+          ctx.NO_SUMMARY() != null);
+      return;
+    }
+
+    if (_currentOspfv3Process != null) {
+      _currentOspfv3Process.setStubArea(
+          ctx.WORD().getText(),
+          ctx.NO_SUMMARY() != null);
+      return;
+    }
+
+    warn(
+        ctx,
+        "Ignoring OSPF stub area outside OSPF context");
   }
 
   @Override

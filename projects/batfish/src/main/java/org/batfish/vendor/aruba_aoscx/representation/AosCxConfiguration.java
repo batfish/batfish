@@ -1083,17 +1083,41 @@ public class AosCxConfiguration extends VendorConfiguration {
                                   new ArrayList<>())
                           .add(iface.getName()));
 
+          Map<Long, Boolean> stubAreas =
+              new HashMap<>();
+
+          process
+              .getStubAreas()
+              .forEach(
+                  (areaId, suppressInterArea) ->
+                      stubAreas.put(
+                          toOspfAreaNumber(areaId),
+                          suppressInterArea));
+
           Map<Long, Ospfv3Area> areas =
               new HashMap<>();
 
           areaInterfaces.forEach(
-              (area, interfaces) ->
-                  areas.put(
-                      area,
-                      Ospfv3Area.builder()
-                          .setNumber(area)
-                          .addInterfaces(interfaces)
-                          .build()));
+              (area, interfaces) -> {
+                Ospfv3Area.Builder areaBuilder =
+                    Ospfv3Area.builder()
+                        .setNumber(area)
+                        .addInterfaces(interfaces);
+
+                Boolean suppressInterArea =
+                    stubAreas.get(area);
+
+                if (suppressInterArea != null) {
+                  areaBuilder
+                      .setStub(true)
+                      .setSuppressInterArea(
+                          suppressInterArea);
+                }
+
+                areas.put(
+                    area,
+                    areaBuilder.build());
+              });
 
           Ospfv3Process.builder()
               .setProcessId(

@@ -1922,4 +1922,89 @@ public final class AosCxGrammarTest {
             Ip.parse("10.0.2.200")));
   }
 
+  @Test
+  public void testOspfv3StubAreaExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-stub");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(process, notNullValue());
+
+    assertThat(
+        process.getAreas(),
+        containsInAnyOrder(
+            "0.0.0.0",
+            "0.0.0.10",
+            "0.0.0.20"));
+
+    assertThat(
+        process.getStubAreas(),
+        hasKey("0.0.0.10"));
+
+    assertThat(
+        process.getStubAreas()
+            .get("0.0.0.10"),
+        equalTo(false));
+
+    assertThat(
+        process.getStubAreas()
+            .get("0.0.0.20"),
+        equalTo(true));
+  }
+
+  @Test
+  public void testOspfv3StubAreaConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-stub");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        process =
+            c.getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(process, notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        backbone =
+            process.getAreas().get(0L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        stub =
+            process.getAreas().get(10L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        totallyStubby =
+            process.getAreas().get(20L);
+
+    assertThat(backbone, notNullValue());
+    assertThat(
+        backbone.getStub(),
+        equalTo(false));
+
+    assertThat(stub, notNullValue());
+    assertThat(
+        stub.getStub(),
+        equalTo(true));
+    assertThat(
+        stub.getSuppressInterArea(),
+        equalTo(false));
+
+    assertThat(totallyStubby, notNullValue());
+    assertThat(
+        totallyStubby.getStub(),
+        equalTo(true));
+    assertThat(
+        totallyStubby.getSuppressInterArea(),
+        equalTo(true));
+  }
+
 }

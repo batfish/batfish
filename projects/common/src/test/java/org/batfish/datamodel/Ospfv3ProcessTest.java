@@ -42,6 +42,8 @@ public final class Ospfv3ProcessTest {
         Ospfv3Area.builder()
             .setNumber(0L)
             .addInterface("Ethernet1")
+            .setStub(true)
+            .setSuppressInterArea(true)
             .build();
 
     Ospfv3Process process =
@@ -63,7 +65,17 @@ public final class Ospfv3ProcessTest {
     assertThat(
         clone.getRouterId(),
         equalTo(Ip.parse("192.0.2.1")));
-    assertThat(clone.getAreas().keySet(), equalTo(process.getAreas().keySet()));
+    assertThat(
+        clone.getAreas().keySet(),
+        equalTo(process.getAreas().keySet()));
+    assertThat(
+        clone.getAreas().get(0L).getStub(),
+        equalTo(true));
+    assertThat(
+        clone.getAreas()
+            .get(0L)
+            .getSuppressInterArea(),
+        equalTo(true));
     assertThat(clone.getAdminCost(), equalTo(111));
     assertThat(
         clone.getReferenceBandwidth(),

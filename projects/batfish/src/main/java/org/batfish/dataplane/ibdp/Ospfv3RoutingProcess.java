@@ -42,6 +42,9 @@ final class Ospfv3RoutingProcess {
   /** RFC 2328/5340 LSInfinity. */
   private static final long LS_INFINITY = 0xFFFFFFL;
 
+  /** Default metric advertised by an ABR into a stub area. */
+  private static final long DEFAULT_STUB_DEFAULT_METRIC = 1L;
+
   Ospfv3RoutingProcess(
       Ospfv3Process process,
       String vrfName,
@@ -238,8 +241,29 @@ final class Ospfv3RoutingProcess {
             continue;
           }
 
+          long localArea =
+              localSettings.getAreaName();
+
+          /*
+           * The OSPF stub capability must agree between neighbors.
+           * no-summary is intentionally not compared: that is an
+           * ABR advertisement policy, not a Hello compatibility bit.
+           */
+          if (!areAreaTypesCompatible(
+              localArea,
+              remoteProcess)) {
+            continue;
+          }
+
           Set<AbstractRoute6> remoteRoutes =
               remoteProcess.getRoutes();
+
+          changed |=
+              importStubDefaultFromNeighbor(
+                  localIface,
+                  remoteIface,
+                  localArea,
+                  remoteProcess);
 
           changed |=
               importIntraAreaRoutesFromNeighbor(
@@ -267,6 +291,107 @@ final class Ospfv3RoutingProcess {
     }
 
     return changed;
+  }
+
+  private boolean areAreaTypesCompatible(
+      long area,
+      Ospfv3RoutingProcess remoteProcess) {
+    Ospfv3Area localArea =
+        _process.getAreas().get(area);
+
+    Ospfv3Area remoteArea =
+        remoteProcess
+            ._process
+            .getAreas()
+            .get(area);
+
+    return localArea != null
+        && remoteArea != null
+        && localArea.getStub()
+            == remoteArea.getStub();
+  }
+
+  private boolean isStubArea(long area) {
+    Ospfv3Area settings =
+        _process.getAreas().get(area);
+
+    return settings != null
+        && settings.getStub();
+  }
+
+  private boolean isAreaBorderRouterFor(
+      long area) {
+    return area != 0L
+        && _process.getAreas().containsKey(0L)
+        && _process.getAreas().containsKey(area);
+  }
+
+  private boolean suppressesInterAreaInto(
+      long area) {
+    Ospfv3Area settings =
+        _process.getAreas().get(area);
+
+    return settings != null
+        && settings.getStub()
+        && settings.getSuppressInterArea()
+        && isAreaBorderRouterFor(area);
+  }
+
+  private boolean shouldSuppressInterAreaRoute(
+      long area,
+      Ospfv3RoutingProcess remoteProcess) {
+    Ospfv3Area localArea =
+        _process.getAreas().get(area);
+
+    boolean localSuppression =
+        localArea != null
+            && localArea.getStub()
+            && localArea.getSuppressInterArea();
+
+    return localSuppression
+        || remoteProcess
+            .suppressesInterAreaInto(area);
+  }
+
+  /**
+   * Install the default summary originated by an ABR toward a stub area.
+   */
+  private boolean importStubDefaultFromNeighbor(
+      Interface localIface,
+      Interface remoteIface,
+      long area,
+      Ospfv3RoutingProcess remoteProcess) {
+
+    if (!isStubArea(area)
+        || !remoteProcess
+            .isAreaBorderRouterFor(area)) {
+      return false;
+    }
+
+    long incrementalCost =
+        computeInterfaceCost(localIface);
+
+    if (incrementalCost >=
+        LS_INFINITY
+            - DEFAULT_STUB_DEFAULT_METRIC) {
+      return false;
+    }
+
+    @Nullable Ip6 peerIp =
+        findPeerNextHopIp(
+                localIface,
+                remoteIface)
+            .orElse(null);
+
+    return _ospfv3Rib.mergeRoute(
+        new Ospfv3InterAreaRoute6(
+            Prefix6.ZERO,
+            localIface.getName(),
+            peerIp,
+            _process.getAdminCost(),
+            incrementalCost
+                + DEFAULT_STUB_DEFAULT_METRIC,
+            area));
   }
 
   private boolean isAdjacencyInterface(Interface iface) {
@@ -444,6 +569,18 @@ final class Ospfv3RoutingProcess {
 
     for (AbstractRoute6 route : remoteRoutes) {
 
+      /*
+       * A totally-stubby ABR suppresses Type-3 summaries other than
+       * the stub default. Also honor the setting locally if a device
+       * carries no-summary on its own area declaration.
+       */
+      if (!route.getNetwork().equals(Prefix6.ZERO)
+          && shouldSuppressInterAreaRoute(
+              localArea,
+              remoteProcess)) {
+        continue;
+      }
+
       long sourceArea;
       long remoteMetric;
       long tag;
@@ -554,6 +691,12 @@ final class Ospfv3RoutingProcess {
       Interface remoteIface,
       long area,
       Set<AbstractRoute6> remoteRoutes) {
+
+    // Type-5 external LSAs are not flooded into OSPF stub areas.
+    if (isStubArea(area)) {
+      return false;
+    }
+
     boolean changed = false;
 
     long incrementalCost =

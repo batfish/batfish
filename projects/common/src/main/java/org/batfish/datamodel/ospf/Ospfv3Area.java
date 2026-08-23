@@ -20,14 +20,28 @@ public final class Ospfv3Area implements Serializable {
   public static final class Builder {
     private @Nonnull ImmutableSortedSet.Builder<String> _interfaces;
     private @Nullable Long _number;
+    private boolean _stub;
+    private boolean _suppressInterArea;
 
     private Builder() {
-      _interfaces = ImmutableSortedSet.naturalOrder();
+      _interfaces =
+          ImmutableSortedSet.naturalOrder();
     }
 
     public Ospfv3Area build() {
-      checkArgument(_number != null, "Must set area number before building");
-      return new Ospfv3Area(_number, _interfaces.build());
+      checkArgument(
+          _number != null,
+          "Must set area number before building");
+
+      checkArgument(
+          !_suppressInterArea || _stub,
+          "Cannot suppress inter-area routes in a non-stub area");
+
+      return new Ospfv3Area(
+          _number,
+          _interfaces.build(),
+          _stub,
+          _suppressInterArea);
     }
 
     public Builder setNumber(long number) {
@@ -35,19 +49,43 @@ public final class Ospfv3Area implements Serializable {
       return this;
     }
 
-    public Builder addInterface(String interfaceName) {
+    public Builder addInterface(
+        String interfaceName) {
       _interfaces.add(interfaceName);
       return this;
     }
 
-    public Builder addInterfaces(Collection<String> interfaceNames) {
+    public Builder addInterfaces(
+        Collection<String> interfaceNames) {
       _interfaces.addAll(interfaceNames);
+      return this;
+    }
+
+    public Builder setStub(boolean stub) {
+      _stub = stub;
+      return this;
+    }
+
+    /**
+     * Suppress normal inter-area summaries into this stub area.
+     *
+     * <p>This corresponds to AOS-CX {@code area ... stub no-summary}.
+     */
+    public Builder setSuppressInterArea(
+        boolean suppressInterArea) {
+      _suppressInterArea = suppressInterArea;
       return this;
     }
   }
 
-  private static final String PROP_INTERFACES = "interfaces";
-  private static final String PROP_NAME = "name";
+  private static final String PROP_INTERFACES =
+      "interfaces";
+  private static final String PROP_NAME =
+      "name";
+  private static final String PROP_STUB =
+      "stub";
+  private static final String PROP_SUPPRESS_INTER_AREA =
+      "suppressInterArea";
 
   public static Builder builder() {
     return new Builder();
@@ -55,15 +93,41 @@ public final class Ospfv3Area implements Serializable {
 
   @JsonCreator
   private static Ospfv3Area create(
-      @JsonProperty(PROP_NAME) long number,
-      @JsonProperty(PROP_INTERFACES) @Nullable SortedSet<String> interfaces) {
+      @JsonProperty(PROP_NAME)
+          long number,
+      @JsonProperty(PROP_INTERFACES)
+          @Nullable SortedSet<String> interfaces,
+      @JsonProperty(PROP_STUB)
+          @Nullable Boolean stub,
+      @JsonProperty(PROP_SUPPRESS_INTER_AREA)
+          @Nullable Boolean suppressInterArea) {
+
     return new Ospfv3Area(
-        number, firstNonNull(interfaces, ImmutableSortedSet.of()));
+        number,
+        firstNonNull(
+            interfaces,
+            ImmutableSortedSet.of()),
+        firstNonNull(stub, false),
+        firstNonNull(
+            suppressInterArea,
+            false));
   }
 
-  private Ospfv3Area(long areaNumber, Collection<String> interfaces) {
+  private Ospfv3Area(
+      long areaNumber,
+      Collection<String> interfaces,
+      boolean stub,
+      boolean suppressInterArea) {
+
+    checkArgument(
+        !suppressInterArea || stub,
+        "Cannot suppress inter-area routes in a non-stub area");
+
     _areaNumber = areaNumber;
-    _interfaces = ImmutableSortedSet.copyOf(interfaces);
+    _interfaces =
+        ImmutableSortedSet.copyOf(interfaces);
+    _stub = stub;
+    _suppressInterArea = suppressInterArea;
   }
 
   @JsonProperty(PROP_NAME)
@@ -72,10 +136,24 @@ public final class Ospfv3Area implements Serializable {
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public @Nonnull SortedSet<String> getInterfaces() {
+  public @Nonnull SortedSet<String>
+      getInterfaces() {
     return _interfaces;
   }
 
+  @JsonProperty(PROP_STUB)
+  public boolean getStub() {
+    return _stub;
+  }
+
+  @JsonProperty(PROP_SUPPRESS_INTER_AREA)
+  public boolean getSuppressInterArea() {
+    return _suppressInterArea;
+  }
+
   private final long _areaNumber;
-  private final @Nonnull SortedSet<String> _interfaces;
+  private final @Nonnull SortedSet<String>
+      _interfaces;
+  private final boolean _stub;
+  private final boolean _suppressInterArea;
 }
