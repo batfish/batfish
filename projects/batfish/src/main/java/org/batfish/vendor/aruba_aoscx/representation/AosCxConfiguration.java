@@ -1114,6 +1114,37 @@ public class AosCxConfiguration extends VendorConfiguration {
                           suppressInterArea);
                 }
 
+                Long defaultMetric =
+                    process
+                        .getAreaDefaultMetrics()
+                        .get(
+                            Long.toUnsignedString(
+                                area));
+
+                /*
+                 * Area IDs are commonly configured in dotted-decimal
+                 * notation, so fall back to comparing normalized values.
+                 */
+                if (defaultMetric == null) {
+                  for (Map.Entry<String, Long> entry :
+                      process
+                          .getAreaDefaultMetrics()
+                          .entrySet()) {
+                    if (toOspfAreaNumber(
+                            entry.getKey())
+                        == area) {
+                      defaultMetric =
+                          entry.getValue();
+                      break;
+                    }
+                  }
+                }
+
+                if (defaultMetric != null) {
+                  areaBuilder.setDefaultMetric(
+                      defaultMetric);
+                }
+
                 areas.put(
                     area,
                     areaBuilder.build());

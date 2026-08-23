@@ -17,13 +17,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Ospfv3Area implements Serializable {
 
+  public static final long DEFAULT_STUB_DEFAULT_METRIC =
+      1L;
+
   public static final class Builder {
-    private @Nonnull ImmutableSortedSet.Builder<String> _interfaces;
+    private long _defaultMetric;
+    private @Nonnull ImmutableSortedSet.Builder<String>
+        _interfaces;
     private @Nullable Long _number;
     private boolean _stub;
     private boolean _suppressInterArea;
 
     private Builder() {
+      _defaultMetric =
+          DEFAULT_STUB_DEFAULT_METRIC;
       _interfaces =
           ImmutableSortedSet.naturalOrder();
     }
@@ -37,11 +44,18 @@ public final class Ospfv3Area implements Serializable {
           !_suppressInterArea || _stub,
           "Cannot suppress inter-area routes in a non-stub area");
 
+      checkArgument(
+          _defaultMetric >= 0L
+              && _defaultMetric <= 0xFFFFFFL,
+          "Invalid OSPFv3 area default metric %s",
+          _defaultMetric);
+
       return new Ospfv3Area(
           _number,
           _interfaces.build(),
           _stub,
-          _suppressInterArea);
+          _suppressInterArea,
+          _defaultMetric);
     }
 
     public Builder setNumber(long number) {
@@ -76,8 +90,16 @@ public final class Ospfv3Area implements Serializable {
       _suppressInterArea = suppressInterArea;
       return this;
     }
+
+    public Builder setDefaultMetric(
+        long defaultMetric) {
+      _defaultMetric = defaultMetric;
+      return this;
+    }
   }
 
+  private static final String PROP_DEFAULT_METRIC =
+      "defaultMetric";
   private static final String PROP_INTERFACES =
       "interfaces";
   private static final String PROP_NAME =
@@ -100,7 +122,9 @@ public final class Ospfv3Area implements Serializable {
       @JsonProperty(PROP_STUB)
           @Nullable Boolean stub,
       @JsonProperty(PROP_SUPPRESS_INTER_AREA)
-          @Nullable Boolean suppressInterArea) {
+          @Nullable Boolean suppressInterArea,
+      @JsonProperty(PROP_DEFAULT_METRIC)
+          @Nullable Long defaultMetric) {
 
     return new Ospfv3Area(
         number,
@@ -110,24 +134,35 @@ public final class Ospfv3Area implements Serializable {
         firstNonNull(stub, false),
         firstNonNull(
             suppressInterArea,
-            false));
+            false),
+        firstNonNull(
+            defaultMetric,
+            DEFAULT_STUB_DEFAULT_METRIC));
   }
 
   private Ospfv3Area(
       long areaNumber,
       Collection<String> interfaces,
       boolean stub,
-      boolean suppressInterArea) {
+      boolean suppressInterArea,
+      long defaultMetric) {
 
     checkArgument(
         !suppressInterArea || stub,
         "Cannot suppress inter-area routes in a non-stub area");
+
+    checkArgument(
+        defaultMetric >= 0L
+            && defaultMetric <= 0xFFFFFFL,
+        "Invalid OSPFv3 area default metric %s",
+        defaultMetric);
 
     _areaNumber = areaNumber;
     _interfaces =
         ImmutableSortedSet.copyOf(interfaces);
     _stub = stub;
     _suppressInterArea = suppressInterArea;
+    _defaultMetric = defaultMetric;
   }
 
   @JsonProperty(PROP_NAME)
@@ -151,7 +186,13 @@ public final class Ospfv3Area implements Serializable {
     return _suppressInterArea;
   }
 
+  @JsonProperty(PROP_DEFAULT_METRIC)
+  public long getDefaultMetric() {
+    return _defaultMetric;
+  }
+
   private final long _areaNumber;
+  private final long _defaultMetric;
   private final @Nonnull SortedSet<String>
       _interfaces;
   private final boolean _stub;

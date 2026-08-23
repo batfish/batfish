@@ -63,6 +63,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activat
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
@@ -1012,23 +1013,95 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
 
+    String area =
+        ctx.WORD().getText();
+
     if (_currentOspfProcess != null) {
-      _currentOspfProcess.setStubArea(
-          ctx.WORD().getText(),
-          ctx.NO_SUMMARY() != null);
+      if (ctx.NO() == null) {
+        _currentOspfProcess.setStubArea(
+            area,
+            ctx.NO_SUMMARY() != null);
+      } else if (ctx.NO_SUMMARY() != null) {
+        if (_currentOspfProcess
+            .getStubAreas()
+            .containsKey(area)) {
+          _currentOspfProcess.setStubArea(
+              area,
+              false);
+        }
+      } else {
+        _currentOspfProcess
+            .getStubAreas()
+            .remove(area);
+      }
       return;
     }
 
     if (_currentOspfv3Process != null) {
-      _currentOspfv3Process.setStubArea(
-          ctx.WORD().getText(),
-          ctx.NO_SUMMARY() != null);
+      if (ctx.NO() == null) {
+        _currentOspfv3Process.setStubArea(
+            area,
+            ctx.NO_SUMMARY() != null);
+      } else if (ctx.NO_SUMMARY() != null) {
+        _currentOspfv3Process
+            .clearStubNoSummary(area);
+      } else {
+        _currentOspfv3Process
+            .clearStubArea(area);
+      }
       return;
     }
 
     warn(
         ctx,
         "Ignoring OSPF stub area outside OSPF context");
+  }
+
+  @Override
+  public void exitS_ospfv3_area_default_metric(
+      S_ospfv3_area_default_metricContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area default-metric outside OSPFv3 context");
+      return;
+    }
+
+    String area =
+        ctx.WORD(0).getText();
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .clearAreaDefaultMetric(area);
+      return;
+    }
+
+    long metric;
+
+    try {
+      metric =
+          Long.parseLong(
+              ctx.WORD(1).getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 area default metric");
+      return;
+    }
+
+    if (metric < 0L
+        || metric > 0xFFFFFFL) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area default metric outside 0-16777215");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setAreaDefaultMetric(
+            area,
+            metric);
   }
 
   @Override

@@ -87,6 +87,43 @@ public final class AosCxOspfv3Process
         suppressInterArea);
   }
 
+  /**
+   * Convert an area back to normal while retaining the area itself.
+   */
+  public void clearStubArea(String area) {
+    _areas.add(area);
+    _stubAreas.remove(area);
+  }
+
+  /**
+   * Retain stub status while clearing no-summary.
+   */
+  public void clearStubNoSummary(String area) {
+    _areas.add(area);
+
+    if (_stubAreas.containsKey(area)) {
+      _stubAreas.put(area, false);
+    }
+  }
+
+  public @Nonnull Map<String, Long>
+      getAreaDefaultMetrics() {
+    return _areaDefaultMetrics;
+  }
+
+  public void setAreaDefaultMetric(
+      String area,
+      long metric) {
+    _areas.add(area);
+    _areaDefaultMetrics.put(area, metric);
+  }
+
+  public void clearAreaDefaultMetric(
+      String area) {
+    _areas.add(area);
+    _areaDefaultMetrics.remove(area);
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -104,5 +141,7 @@ public final class AosCxOspfv3Process
       new HashSet<>();
   private final @Nonnull Map<String, Boolean>
       _stubAreas = new HashMap<>();
+  private final @Nonnull Map<String, Long>
+      _areaDefaultMetrics = new HashMap<>();
   private @Nullable Ip _routerId;
 }

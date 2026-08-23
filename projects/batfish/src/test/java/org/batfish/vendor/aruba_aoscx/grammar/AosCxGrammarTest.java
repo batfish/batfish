@@ -1922,6 +1922,7 @@ public final class AosCxGrammarTest {
             Ip.parse("10.0.2.200")));
   }
 
+
   @Test
   public void testOspfv3StubAreaExtraction() {
     AosCxConfiguration c =
@@ -1938,21 +1939,62 @@ public final class AosCxGrammarTest {
         containsInAnyOrder(
             "0.0.0.0",
             "0.0.0.10",
-            "0.0.0.20"));
+            "0.0.0.20",
+            "0.0.0.30",
+            "0.0.0.40",
+            "0.0.0.50"));
 
-    assertThat(
-        process.getStubAreas(),
-        hasKey("0.0.0.10"));
-
+    /*
+     * Ordinary stub remains ordinary stub.
+     */
     assertThat(
         process.getStubAreas()
             .get("0.0.0.10"),
         equalTo(false));
 
+    /*
+     * no-summary remains set.
+     */
     assertThat(
         process.getStubAreas()
             .get("0.0.0.20"),
         equalTo(true));
+
+    /*
+     * no area ... stub no-summary retains stub status
+     * but clears summary suppression.
+     */
+    assertThat(
+        process.getStubAreas()
+            .get("0.0.0.30"),
+        equalTo(false));
+
+    /*
+     * no area ... stub returns the area to normal.
+     */
+    assertThat(
+        process.getStubAreas()
+            .containsKey("0.0.0.40"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .get("0.0.0.10"),
+        equalTo(7L));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .get("0.0.0.20"),
+        equalTo(11L));
+
+    /*
+     * no area ... default-metric restores the default,
+     * represented by absence of an explicit override.
+     */
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .containsKey("0.0.0.50"),
+        equalTo(false));
   }
 
   @Test
@@ -1985,10 +2027,25 @@ public final class AosCxGrammarTest {
         totallyStubby =
             process.getAreas().get(20L);
 
+    org.batfish.datamodel.ospf.Ospfv3Area
+        resetNoSummary =
+            process.getAreas().get(30L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        resetStub =
+            process.getAreas().get(40L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        resetMetric =
+            process.getAreas().get(50L);
+
     assertThat(backbone, notNullValue());
     assertThat(
         backbone.getStub(),
         equalTo(false));
+    assertThat(
+        backbone.getDefaultMetric(),
+        equalTo(1L));
 
     assertThat(stub, notNullValue());
     assertThat(
@@ -1997,6 +2054,9 @@ public final class AosCxGrammarTest {
     assertThat(
         stub.getSuppressInterArea(),
         equalTo(false));
+    assertThat(
+        stub.getDefaultMetric(),
+        equalTo(7L));
 
     assertThat(totallyStubby, notNullValue());
     assertThat(
@@ -2005,6 +2065,30 @@ public final class AosCxGrammarTest {
     assertThat(
         totallyStubby.getSuppressInterArea(),
         equalTo(true));
+    assertThat(
+        totallyStubby.getDefaultMetric(),
+        equalTo(11L));
+
+    assertThat(resetNoSummary, notNullValue());
+    assertThat(
+        resetNoSummary.getStub(),
+        equalTo(true));
+    assertThat(
+        resetNoSummary.getSuppressInterArea(),
+        equalTo(false));
+
+    assertThat(resetStub, notNullValue());
+    assertThat(
+        resetStub.getStub(),
+        equalTo(false));
+
+    assertThat(resetMetric, notNullValue());
+    assertThat(
+        resetMetric.getStub(),
+        equalTo(true));
+    assertThat(
+        resetMetric.getDefaultMetric(),
+        equalTo(1L));
   }
 
 }

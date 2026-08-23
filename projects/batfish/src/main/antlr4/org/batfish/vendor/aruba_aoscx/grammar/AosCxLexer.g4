@@ -20,6 +20,7 @@ COST: 'cost';
 CONNECTED: 'connected';
 COUNT: 'count';
 DEFAULT_GATEWAY: 'default-gateway';
+DEFAULT_METRIC: 'default-metric';
 DEFAULT: 'default';
 DESCRIPTION: 'description';
 DEAD_INTERVAL: 'dead-interval';

@@ -44,6 +44,7 @@ public final class Ospfv3ProcessTest {
             .addInterface("Ethernet1")
             .setStub(true)
             .setSuppressInterArea(true)
+            .setDefaultMetric(17L)
             .build();
 
     Ospfv3Process process =
@@ -76,6 +77,11 @@ public final class Ospfv3ProcessTest {
             .get(0L)
             .getSuppressInterArea(),
         equalTo(true));
+    assertThat(
+        clone.getAreas()
+            .get(0L)
+            .getDefaultMetric(),
+        equalTo(17L));
     assertThat(clone.getAdminCost(), equalTo(111));
     assertThat(
         clone.getReferenceBandwidth(),

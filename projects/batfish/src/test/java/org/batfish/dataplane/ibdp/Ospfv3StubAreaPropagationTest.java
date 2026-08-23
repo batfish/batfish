@@ -156,10 +156,26 @@ public final class Ospfv3StubAreaPropagationTest {
       boolean stub,
       boolean suppressInterArea,
       String... interfaces) {
+    return area(
+        number,
+        stub,
+        suppressInterArea,
+        Ospfv3Area.DEFAULT_STUB_DEFAULT_METRIC,
+        interfaces);
+  }
+
+  private static Ospfv3Area area(
+      long number,
+      boolean stub,
+      boolean suppressInterArea,
+      long defaultMetric,
+      String... interfaces) {
 
     Ospfv3Area.Builder builder =
         Ospfv3Area.builder()
-            .setNumber(number);
+            .setNumber(number)
+            .setDefaultMetric(
+                defaultMetric);
 
     for (String iface : interfaces) {
       builder.addInterface(iface);
@@ -359,11 +375,13 @@ public final class Ospfv3StubAreaPropagationTest {
             1L,
             true,
             false,
+            7L,
             "abr-stub"),
         area(
             2L,
             true,
             true,
+            11L,
             "abr-total"));
 
     addProcess(
@@ -486,7 +504,7 @@ public final class Ospfv3StubAreaPropagationTest {
 
     assertThat(
         stubDefault.getMetric(),
-        equalTo(11L));
+        equalTo(17L));
 
     assertThat(
         findExternal(
@@ -516,7 +534,7 @@ public final class Ospfv3StubAreaPropagationTest {
 
     assertThat(
         totalDefault.getMetric(),
-        equalTo(11L));
+        equalTo(21L));
 
     assertThat(
         findInter(

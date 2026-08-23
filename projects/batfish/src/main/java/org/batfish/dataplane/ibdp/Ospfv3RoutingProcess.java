@@ -42,9 +42,6 @@ final class Ospfv3RoutingProcess {
   /** RFC 2328/5340 LSInfinity. */
   private static final long LS_INFINITY = 0xFFFFFFL;
 
-  /** Default metric advertised by an ABR into a stub area. */
-  private static final long DEFAULT_STUB_DEFAULT_METRIC = 1L;
-
   Ospfv3RoutingProcess(
       Ospfv3Process process,
       String vrfName,
@@ -368,12 +365,25 @@ final class Ospfv3RoutingProcess {
       return false;
     }
 
+    Ospfv3Area remoteArea =
+        remoteProcess
+            ._process
+            .getAreas()
+            .get(area);
+
+    if (remoteArea == null) {
+      return false;
+    }
+
+    long defaultMetric =
+        remoteArea.getDefaultMetric();
+
     long incrementalCost =
         computeInterfaceCost(localIface);
 
-    if (incrementalCost >=
-        LS_INFINITY
-            - DEFAULT_STUB_DEFAULT_METRIC) {
+    if (defaultMetric >= LS_INFINITY
+        || incrementalCost
+            >= LS_INFINITY - defaultMetric) {
       return false;
     }
 
@@ -390,7 +400,7 @@ final class Ospfv3RoutingProcess {
             peerIp,
             _process.getAdminCost(),
             incrementalCost
-                + DEFAULT_STUB_DEFAULT_METRIC,
+                + defaultMetric,
             area));
   }
 
