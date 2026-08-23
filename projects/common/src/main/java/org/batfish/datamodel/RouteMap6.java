@@ -4,10 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,89 +17,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * Ordered IPv6 route-map representation.
  *
- * <p>Each route-map entry optionally references an embedded IPv6
- * prefix-list. Route-map entries and prefix-list lines both use first-match
- * semantics, with implicit deny when no entry matches.
+ * <p>Each route-map entry optionally references a reusable {@link PrefixList6}.
+ * Route-map entries and prefix-list lines both use first-match semantics, with
+ * implicit deny when no entry or prefix-list line matches.
  */
 @ParametersAreNonnullByDefault
 public final class RouteMap6 implements Serializable {
-
-  /** One line in an IPv6 prefix list. */
-  public static final class PrefixListLine
-      implements Serializable {
-
-    @JsonCreator
-    public PrefixListLine(
-        @JsonProperty("action")
-            @Nullable LineAction action,
-        @JsonProperty("prefix")
-            @Nullable Prefix6 prefix,
-        @JsonProperty("lengthRange")
-            @Nullable SubRange lengthRange) {
-      _action = requireNonNull(action);
-      _prefix = requireNonNull(prefix);
-      _lengthRange =
-          requireNonNull(lengthRange);
-    }
-
-    @JsonProperty("action")
-    public @Nonnull LineAction getAction() {
-      return _action;
-    }
-
-    @JsonProperty("prefix")
-    public @Nonnull Prefix6 getPrefix() {
-      return _prefix;
-    }
-
-    @JsonProperty("lengthRange")
-    public @Nonnull SubRange getLengthRange() {
-      return _lengthRange;
-    }
-
-    public boolean matches(Prefix6 candidate) {
-      int candidateLength =
-          candidate.getPrefixLength();
-
-      return candidateLength
-              >= _prefix.getPrefixLength()
-          && _lengthRange.includes(
-              candidateLength)
-          && _prefix.contains(
-              candidate.getNetworkAddress());
-    }
-
-    @Override
-    public boolean equals(@Nullable Object o) {
-      if (this == o) {
-        return true;
-      }
-
-      if (!(o instanceof PrefixListLine)) {
-        return false;
-      }
-
-      PrefixListLine rhs =
-          (PrefixListLine) o;
-
-      return _action == rhs._action
-          && _prefix.equals(rhs._prefix)
-          && _lengthRange.equals(
-              rhs._lengthRange);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(
-          _action,
-          _prefix,
-          _lengthRange);
-    }
-
-    private final @Nonnull LineAction _action;
-    private final @Nonnull Prefix6 _prefix;
-    private final @Nonnull SubRange _lengthRange;
-  }
 
   /** One ordered route-map sequence. */
   public static final class Entry
@@ -112,27 +33,29 @@ public final class RouteMap6 implements Serializable {
         @JsonProperty("action")
             @Nullable LineAction action,
         @JsonProperty("matchPrefixList")
-            @Nullable List<PrefixListLine>
-                matchPrefixList,
+            @Nullable PrefixList6 matchPrefixList,
         @JsonProperty("setMetric")
             @Nullable Long setMetric,
         @JsonProperty("setTag")
             @Nullable Long setTag) {
-      _action = requireNonNull(action);
+
+      _action =
+          requireNonNull(action);
 
       /*
-       * Null means this entry has no IPv6 prefix-list match and therefore
-       * matches all IPv6 prefixes. An empty list means a prefix-list that
-       * can never permit anything (for example, an undefined reference).
+       * Null means this route-map sequence has no IPv6 prefix-list
+       * match condition and therefore matches every IPv6 prefix.
+       *
+       * PrefixList6.denyAll() represents an undefined or otherwise
+       * never-matching prefix-list reference.
        */
       _matchPrefixList =
-          matchPrefixList == null
-              ? null
-              : ImmutableList.copyOf(
-                  matchPrefixList);
+          matchPrefixList;
 
-      _setMetric = setMetric;
-      _setTag = setTag;
+      _setMetric =
+          setMetric;
+      _setTag =
+          setTag;
     }
 
     @JsonProperty("action")
@@ -141,7 +64,7 @@ public final class RouteMap6 implements Serializable {
     }
 
     @JsonProperty("matchPrefixList")
-    public @Nullable List<PrefixListLine>
+    public @Nullable PrefixList6
         getMatchPrefixList() {
       return _matchPrefixList;
     }
@@ -156,23 +79,10 @@ public final class RouteMap6 implements Serializable {
       return _setTag;
     }
 
-    private boolean matches(Prefix6 prefix) {
-      if (_matchPrefixList == null) {
-        return true;
-      }
-
-      for (PrefixListLine line :
-          _matchPrefixList) {
-        if (!line.matches(prefix)) {
-          continue;
-        }
-
-        return line.getAction()
-            == LineAction.PERMIT;
-      }
-
-      // Prefix-list implicit deny.
-      return false;
+    private boolean matches(
+        Prefix6 prefix) {
+      return _matchPrefixList == null
+          || _matchPrefixList.permits(prefix);
     }
 
     @Override
@@ -185,7 +95,8 @@ public final class RouteMap6 implements Serializable {
         return false;
       }
 
-      Entry rhs = (Entry) o;
+      Entry rhs =
+          (Entry) o;
 
       return _action == rhs._action
           && Objects.equals(
@@ -209,8 +120,8 @@ public final class RouteMap6 implements Serializable {
     }
 
     private final @Nonnull LineAction _action;
-    private final @Nullable
-        List<PrefixListLine> _matchPrefixList;
+    private final @Nullable PrefixList6
+        _matchPrefixList;
     private final @Nullable Long _setMetric;
     private final @Nullable Long _setTag;
   }
@@ -243,7 +154,8 @@ public final class RouteMap6 implements Serializable {
         return false;
       }
 
-      Result rhs = (Result) o;
+      Result rhs =
+          (Result) o;
 
       return _metric == rhs._metric
           && _tag == rhs._tag;
@@ -264,6 +176,7 @@ public final class RouteMap6 implements Serializable {
   public RouteMap6(
       @JsonProperty("entries")
           @Nullable Map<Long, Entry> entries) {
+
     _entries =
         entries == null
             ? ImmutableSortedMap.of()
@@ -329,9 +242,11 @@ public final class RouteMap6 implements Serializable {
       return false;
     }
 
-    RouteMap6 rhs = (RouteMap6) o;
+    RouteMap6 rhs =
+        (RouteMap6) o;
 
-    return _entries.equals(rhs._entries);
+    return _entries.equals(
+        rhs._entries);
   }
 
   @Override

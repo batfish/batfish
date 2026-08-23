@@ -24,6 +24,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.SubRange;
@@ -921,13 +922,14 @@ public final class Ospfv3ExternalPropagationTest {
                 10L,
                 new RouteMap6.Entry(
                     LineAction.PERMIT,
-                    List.of(
-                        new RouteMap6.PrefixListLine(
-                            LineAction.PERMIT,
-                            Prefix6.parse(
-                                "2001:db8:100::/48"),
-                            new SubRange(
-                                64, 64))),
+                    new PrefixList6(
+                        List.of(
+                            new PrefixList6.Line(
+                                LineAction.PERMIT,
+                                Prefix6.parse(
+                                    "2001:db8:100::/48"),
+                                new SubRange(
+                                    64, 64)))),
                     31L,
                     101L)));
 
@@ -937,24 +939,26 @@ public final class Ospfv3ExternalPropagationTest {
                 10L,
                 new RouteMap6.Entry(
                     LineAction.DENY,
-                    List.of(
-                        new RouteMap6.PrefixListLine(
-                            LineAction.PERMIT,
-                            Prefix6.parse(
-                                "2001:db8:400::/48"),
-                            new SubRange(
-                                48, 128))),
+                    new PrefixList6(
+                        List.of(
+                            new PrefixList6.Line(
+                                LineAction.PERMIT,
+                                Prefix6.parse(
+                                    "2001:db8:400::/48"),
+                                new SubRange(
+                                    48, 128)))),
                     null,
                     null),
                 20L,
                 new RouteMap6.Entry(
                     LineAction.PERMIT,
-                    List.of(
-                        new RouteMap6.PrefixListLine(
-                            LineAction.PERMIT,
-                            Prefix6.ZERO,
-                            new SubRange(
-                                0, 128))),
+                    new PrefixList6(
+                        List.of(
+                            new PrefixList6.Line(
+                                LineAction.PERMIT,
+                                Prefix6.ZERO,
+                                new SubRange(
+                                    0, 128)))),
                     41L,
                     202L)));
 

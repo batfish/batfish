@@ -847,83 +847,32 @@ public class AosCxConfiguration extends VendorConfiguration {
         .values()
         .forEach(
             entry -> {
-              List<RouteMap6.PrefixListLine>
-                  matchPrefixList = null;
+              PrefixList6 matchPrefixList =
+                  null;
 
               /*
                * An IPv4 prefix-list match cannot match an IPv6 route.
-               * Model that sequence as never matching IPv6.
+               * Represent that sequence using the same deny-all
+               * PrefixList6 used for undefined IPv6 references.
                */
-              if (entry.getMatchPrefixList() != null) {
+              if (entry.getMatchPrefixList()
+                  != null) {
                 matchPrefixList =
-                    ImmutableList.of();
+                    PrefixList6.denyAll();
 
               } else if (
                   entry.getMatchIpv6PrefixList()
                       != null) {
 
-                AosCxIpv6PrefixList prefixList =
-                    _ipv6PrefixLists.get(
+                /*
+                 * Reuse the common IPv6 prefix-list conversion path.
+                 * toPrefixList6() already converts undefined
+                 * references to deny-all.
+                 */
+                matchPrefixList =
+                    toPrefixList6(
                         entry
                             .getMatchIpv6PrefixList());
-
-                if (prefixList == null) {
-                  /*
-                   * Undefined referenced prefix-list:
-                   * never turn it into match-all.
-                   */
-                  matchPrefixList =
-                      ImmutableList.of();
-                } else {
-                  ImmutableList.Builder<
-                          RouteMap6.PrefixListLine>
-                      lines =
-                          ImmutableList.builder();
-
-                  prefixList
-                      .getEntries()
-                      .values()
-                      .forEach(
-                          prefixEntry -> {
-                            int prefixLength =
-                                prefixEntry
-                                    .getPrefix()
-                                    .getPrefixLength();
-
-                            int minLength =
-                                prefixEntry.getGe()
-                                        != null
-                                    ? prefixEntry
-                                        .getGe()
-                                    : prefixLength;
-
-                            int maxLength =
-                                prefixEntry.getLe()
-                                        != null
-                                    ? prefixEntry
-                                        .getLe()
-                                    : prefixEntry
-                                                .getGe()
-                                            != null
-                                        ? Prefix6
-                                            .MAX_PREFIX_LENGTH
-                                        : prefixLength;
-
-                            lines.add(
-                                new RouteMap6
-                                    .PrefixListLine(
-                                        prefixEntry
-                                            .getAction(),
-                                        prefixEntry
-                                            .getPrefix(),
-                                        new SubRange(
-                                            minLength,
-                                            maxLength)));
-                          });
-
-                  matchPrefixList =
-                      lines.build();
-                }
               }
 
               entries.put(
