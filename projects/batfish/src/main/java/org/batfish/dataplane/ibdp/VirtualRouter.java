@@ -341,8 +341,6 @@ public final class VirtualRouter {
               _mainRib6.mergeRoute(route);
             });
 
-    refreshStaticRoutes6();
-
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
             .collect(
@@ -354,6 +352,7 @@ public final class VirtualRouter {
     _ospfProcesses.values().forEach(p -> p.initialize(_node));
 
     initOspfv3Processes();
+    refreshStaticRoutes6();
 
     initEigrp();
     initBaseRipRoutes();
@@ -366,26 +365,62 @@ public final class VirtualRouter {
    * directly connected. This prevents an unresolved low-admin static from
    * suppressing a valid OSPFv3 route.
    */
-  private void refreshStaticRoutes6() {
+  /**
+   * Resolve and install configured IPv6 static routes.
+   *
+   * <p>Resolution is a fixed-point computation. A static route may resolve
+   * through a connected route, OSPFv3 route, or another already-resolved
+   * static route. Routes whose next hops remain unreachable are not installed.
+   *
+   * <p>The resolved route carries the final outgoing interface and immediate
+   * IPv6 neighbor, so the IPv6 FIB and tracer do not need to perform recursive
+   * route lookup.
+   */
+  @VisibleForTesting
+  void refreshStaticRoutes6() {
     _installedStaticRoutes6.forEach(
         _mainRib6::removeRoute);
+
+    Set<StaticRoute6> unresolved =
+        new HashSet<>(
+            _vrf.getStaticRoutes6());
 
     ImmutableSet.Builder<StaticRoute6> installed =
         ImmutableSet.builder();
 
-    for (StaticRoute6 configured :
-        _vrf.getStaticRoutes6()) {
-      for (StaticRoute6 resolved :
-          resolveStaticRoute6(configured)) {
-        _mainRib6.mergeRoute(resolved);
-        installed.add(resolved);
+    boolean progress;
+
+    do {
+      progress = false;
+
+      for (StaticRoute6 configured :
+          new HashSet<>(unresolved)) {
+        Set<StaticRoute6> resolvedRoutes =
+            resolveStaticRoute6(configured);
+
+        if (resolvedRoutes.isEmpty()) {
+          continue;
+        }
+
+        for (StaticRoute6 resolved :
+            resolvedRoutes) {
+          _mainRib6.mergeRoute(resolved);
+          installed.add(resolved);
+        }
+
+        unresolved.remove(configured);
+        progress = true;
       }
-    }
+    } while (progress);
 
     _installedStaticRoutes6 =
         installed.build();
   }
 
+  /**
+   * Resolve one configured IPv6 static route against the current active IPv6
+   * main RIB.
+   */
   private Set<StaticRoute6> resolveStaticRoute6(
       StaticRoute6 route) {
     String nextHopInterface =
@@ -396,6 +431,10 @@ public final class VirtualRouter {
       return ImmutableSet.of(route);
     }
 
+    /*
+     * Interface-only statics are already resolved. They remain active only
+     * while the configured interface is active in this VRF.
+     */
     if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(
         nextHopInterface)) {
       Interface iface =
@@ -419,6 +458,10 @@ public final class VirtualRouter {
       return ImmutableSet.of();
     }
 
+    /*
+     * A route whose configured next hop is one of this node's own addresses
+     * is not a usable forwarding static.
+     */
     boolean nextHopIsLocal =
         _c.getAllInterfaces(_name)
             .values()
@@ -436,25 +479,75 @@ public final class VirtualRouter {
       return ImmutableSet.of();
     }
 
-    return _c.getActiveInterfaces(_name)
-        .values()
-        .stream()
-        .filter(
-            iface ->
-                iface.getAllConcreteAddresses6()
-                    .stream()
-                    .anyMatch(
-                        address ->
-                            address.getPrefix()
-                                .contains(nextHopIp)))
-        .map(
-            iface ->
-                route.toBuilder()
-                    .setNextHopInterface(
-                        iface.getName())
-                    .build())
-        .collect(
-            ImmutableSet.toImmutableSet());
+    ImmutableSet.Builder<StaticRoute6> resolved =
+        ImmutableSet.builder();
+
+    for (AbstractRoute6 resolutionRoute :
+        _mainRib6.longestPrefixMatch(
+            nextHopIp)) {
+
+      if (resolutionRoute.getNonForwarding()) {
+        continue;
+      }
+
+      /*
+       * Do not resolve a static through a route for the exact same prefix.
+       * Once the lower-admin static were installed, that would turn into
+       * self-recursion.
+       */
+      if (resolutionRoute
+          .getNetwork()
+          .equals(route.getNetwork())) {
+        continue;
+      }
+
+      String resolvedInterface =
+          resolutionRoute
+              .getNextHopInterface();
+
+      if (Route.UNSET_NEXT_HOP_INTERFACE.equals(
+              resolvedInterface)
+          || Interface.NULL_INTERFACE_NAME.equals(
+              resolvedInterface)) {
+        continue;
+      }
+
+      Interface iface =
+          _c.getAllInterfaces()
+              .get(resolvedInterface);
+
+      if (iface == null
+          || !iface.getActive()
+          || !_name.equals(
+              iface.getVrfName())) {
+        continue;
+      }
+
+      /*
+       * For a connected resolution route, the configured recursive next hop
+       * itself is the NDP target.
+       *
+       * For a recursively learned route, inherit its already-resolved
+       * immediate next hop. A null next hop is preserved for point-to-point
+       * OSPFv3 forwarding where topology supplies the peer.
+       */
+      Ip6 immediateNextHop =
+          resolutionRoute
+                  instanceof ConnectedRoute6
+              ? nextHopIp
+              : resolutionRoute
+                  .getNextHopIp();
+
+      resolved.add(
+          route.toBuilder()
+              .setNextHopInterface(
+                  resolvedInterface)
+              .setNextHopIp(
+                  immediateNextHop)
+              .build());
+    }
+
+    return resolved.build();
   }
 
   private void removeOspfv3RoutesFromMainRib6() {
@@ -525,6 +618,7 @@ public final class VirtualRouter {
    */
   void resetOspfv3ForIgp() {
     refreshOspfv3Routes();
+    refreshStaticRoutes6();
   }
 
   /**
@@ -546,6 +640,7 @@ public final class VirtualRouter {
 
     if (changed) {
       syncOspfv3RoutesToMainRib6();
+      refreshStaticRoutes6();
     }
 
     return changed;
@@ -1060,12 +1155,12 @@ public final class VirtualRouter {
     // Add current IPv6 connected routes to the IPv6 main RIB.
     _connectedRib6.getRoutes().forEach(_mainRib6::mergeRoute);
 
-    // Re-evaluate IPv6 statics whose interface reachability may have changed.
-    refreshStaticRoutes6();
-
     // OSPFv3 interface-originated and redistributed routes depend on
     // the currently active IPv6 interfaces.
     refreshOspfv3Routes();
+
+    // Static routes may recursively depend on connected or OSPFv3 routes.
+    refreshStaticRoutes6();
   }
 
   /** Generate connected routes for a given active interface. */

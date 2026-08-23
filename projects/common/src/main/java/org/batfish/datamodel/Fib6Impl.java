@@ -11,9 +11,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * IPv6 FIB built from a finalized IPv6 main RIB.
  *
- * <p>The current IPv6 route model already carries its resolved outgoing
- * interface and optional IPv6 next hop. Recursive IPv6 route resolution can be
- * added when next-hop-only IPv6 static/BGP routes are introduced.
+ * <p>The IPv6 dataplane resolves recursive static next hops before
+ * finalizing the RIB. FIB entries therefore carry the resolved outgoing
+ * interface and immediate IPv6 next hop needed for forwarding.
  */
 @ParametersAreNonnullByDefault
 public final class Fib6Impl implements Fib6 {
