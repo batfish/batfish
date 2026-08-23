@@ -10,6 +10,10 @@ import org.batfish.datamodel.Ip;
 /** Vendor-specific representation of an Aruba AOS-CX OSPFv3 process. */
 public final class AosCxOspfv3Process implements Serializable {
 
+  /** AOS-CX default reference bandwidth: 100000 Mbps. */
+  public static final double DEFAULT_REFERENCE_BANDWIDTH =
+      100_000_000_000D;
+
   public AosCxOspfv3Process(int processId) {
     _processId = processId;
   }
@@ -24,6 +28,29 @@ public final class AosCxOspfv3Process implements Serializable {
 
   public void setRedistributeConnected(boolean redistributeConnected) {
     _redistributeConnected = redistributeConnected;
+  }
+
+  public boolean getPassiveInterfaceDefault() {
+    return _passiveInterfaceDefault;
+  }
+
+  public void setPassiveInterfaceDefault(
+      boolean passiveInterfaceDefault) {
+    _passiveInterfaceDefault = passiveInterfaceDefault;
+  }
+
+  public double getReferenceBandwidth() {
+    return _referenceBandwidth;
+  }
+
+  public void setReferenceBandwidthMbps(long bandwidthMbps) {
+    _referenceBandwidth =
+        bandwidthMbps * 1_000_000D;
+  }
+
+  public void resetReferenceBandwidth() {
+    _referenceBandwidth =
+        DEFAULT_REFERENCE_BANDWIDTH;
   }
 
   public @Nonnull Set<String> getAreas() {
@@ -44,6 +71,9 @@ public final class AosCxOspfv3Process implements Serializable {
 
   private final int _processId;
   private boolean _redistributeConnected;
+  private boolean _passiveInterfaceDefault;
+  private double _referenceBandwidth =
+      DEFAULT_REFERENCE_BANDWIDTH;
   private final @Nonnull Set<String> _areas = new HashSet<>();
   private @Nullable Ip _routerId;
 }

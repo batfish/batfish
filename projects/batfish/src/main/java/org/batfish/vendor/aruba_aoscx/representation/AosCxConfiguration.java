@@ -1049,7 +1049,7 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setAreas(areas)
               .setAdminCost(110)
               .setReferenceBandwidth(
-                  100_000_000_000D)
+                  process.getReferenceBandwidth())
               .setRedistributeConnected(
                   process.getRedistributeConnected())
               .setRedistributionMetric(25L)
@@ -1130,6 +1130,23 @@ public class AosCxConfiguration extends VendorConfiguration {
                       ? 1
                       : null;
 
+          String vrfName =
+              getInterfaceVrfName(iface);
+
+          AosCxOspfv3Process vendorProcess =
+              getOspfv3Processes(vrfName)
+                  .get(iface.getOspfv3ProcessId());
+
+          Boolean passiveOverride =
+              iface.getOspfv3Passive();
+
+          boolean passive =
+              passiveOverride != null
+                  ? passiveOverride
+                  : vendorProcess != null
+                      && vendorProcess
+                          .getPassiveInterfaceDefault();
+
           viInterface.setOspfv3Settings(
               Ospfv3InterfaceSettings.builder()
                   .setAreaName(
@@ -1138,7 +1155,7 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setProcess(
                       Integer.toString(iface.getOspfv3ProcessId()))
                   .setEnabled(true)
-                  .setPassive(false)
+                  .setPassive(passive)
                   .setHelloInterval(10)
                   .setDeadInterval(40)
                   .setNetworkType(networkType)

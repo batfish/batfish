@@ -1332,7 +1332,7 @@ public final class AosCxGrammarTest {
     assertThat(process.getAdminCost(), equalTo(110));
     assertThat(
         process.getReferenceBandwidth(),
-        equalTo(100_000_000_000D));
+        equalTo(40_000_000_000D));
     assertThat(
         process.getRedistributeConnected(),
         equalTo(true));
@@ -1401,6 +1401,9 @@ public final class AosCxGrammarTest {
     assertThat(
         linkLocal.getOspfv3Settings().getNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        linkLocal.getOspfv3Settings().getPassive(),
+        equalTo(true));
   }
 
   @Test
@@ -1413,6 +1416,12 @@ public final class AosCxGrammarTest {
     assertThat(process.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
     assertThat(process.getRedistributeConnected(), equalTo(true));
     assertThat(
+        process.getReferenceBandwidth(),
+        equalTo(40_000_000_000D));
+    assertThat(
+        process.getPassiveInterfaceDefault(),
+        equalTo(true));
+    assertThat(
         process.getAreas(),
         containsInAnyOrder("0.0.0.0", "10.0.0.1"));
 
@@ -1421,6 +1430,9 @@ public final class AosCxGrammarTest {
     assertThat(routed.getOspfv3ProcessId(), equalTo(1));
     assertThat(routed.getOspfv3Area(), equalTo("0.0.0.0"));
     assertThat(routed.getOspfv3Cost(), equalTo(25));
+    assertThat(
+        routed.getOspfv3Passive(),
+        equalTo(false));
     assertThat(
         routed.getOspfv3NetworkType(),
         equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));

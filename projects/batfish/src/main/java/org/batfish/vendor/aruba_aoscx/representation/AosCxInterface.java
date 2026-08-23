@@ -129,6 +129,19 @@ public final class AosCxInterface implements Serializable {
     _ospfv3NetworkType = networkType;
   }
 
+  /**
+   * Explicit interface-level OSPFv3 passive setting.
+   *
+   * <p>Null means inherit the process passive-interface default.
+   */
+  public @Nullable Boolean getOspfv3Passive() {
+    return _ospfv3Passive;
+  }
+
+  public void setOspfv3Passive(boolean passive) {
+    _ospfv3Passive = passive;
+  }
+
   public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
@@ -253,6 +266,7 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _ospfv3Area;
   private @Nullable Integer _ospfv3Cost;
   private @Nullable OspfNetworkType _ospfv3NetworkType;
+  private @Nullable Boolean _ospfv3Passive;
   private @Nullable Boolean _switchport;
   private @Nullable Integer _nativeVlan;
   private boolean _nativeVlanTagged;

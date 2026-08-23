@@ -32,9 +32,12 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_passiveContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfv3Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_areaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_passive_defaultContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_reference_bandwidthContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
@@ -307,6 +310,11 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     }
 
     _currentRouteMapEntry = null;
+    _currentOspfProcess = null;
+    _currentOspfv3Process = null;
+    _currentBgpProcess = null;
+    _currentBgpLocalAs = null;
+    _inBgpIpv4Unicast = false;
     _currentIpAccessList = null;
     _currentIpv6AccessList = null;
   }
@@ -485,6 +493,79 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentInterface.setOspfv3NetworkType(
         OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_passive(
+      S_ipv6_ospfv3_passiveContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 passive command outside interface context");
+      return;
+    }
+
+    _currentInterface.setOspfv3Passive(
+        ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ospfv3_passive_default(
+      S_ospfv3_passive_defaultContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring passive-interface outside OSPFv3 context");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setPassiveInterfaceDefault(
+            ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ospfv3_reference_bandwidth(
+      S_ospfv3_reference_bandwidthContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring reference-bandwidth outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .resetReferenceBandwidth();
+      return;
+    }
+
+    long bandwidthMbps;
+
+    try {
+      bandwidthMbps =
+          Long.parseLong(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 reference bandwidth");
+      return;
+    }
+
+    if (bandwidthMbps < 1L
+        || bandwidthMbps > 4_000_000L) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 reference bandwidth outside 1-4000000 Mbps");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setReferenceBandwidthMbps(
+            bandwidthMbps);
   }
 
   @Override
