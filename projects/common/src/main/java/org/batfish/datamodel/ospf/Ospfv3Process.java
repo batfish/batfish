@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.Vrf;
 
@@ -47,6 +48,10 @@ public final class Ospfv3Process
     private int _interAreaAdminCost;
     private int _externalAdminCost;
     private boolean _enabled;
+    private @Nullable PrefixList6
+        _inboundDistributeList;
+    private @Nullable PrefixList6
+        _outboundDistributeList;
     private @Nonnull Map<Long, Ospfv3Area> _areas;
     private boolean _defaultInformationOriginate;
     private boolean _defaultInformationOriginateAlways;
@@ -131,6 +136,8 @@ public final class Ospfv3Process
               _interAreaAdminCost,
               _externalAdminCost,
               _enabled,
+              _inboundDistributeList,
+              _outboundDistributeList,
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeStatic,
@@ -180,6 +187,20 @@ public final class Ospfv3Process
 
     public Builder setEnabled(boolean enabled) {
       _enabled = enabled;
+      return this;
+    }
+
+    public Builder setInboundDistributeList(
+        @Nullable PrefixList6 prefixList) {
+      _inboundDistributeList =
+          prefixList;
+      return this;
+    }
+
+    public Builder setOutboundDistributeList(
+        @Nullable PrefixList6 prefixList) {
+      _outboundDistributeList =
+          prefixList;
       return this;
     }
 
@@ -283,6 +304,12 @@ public final class Ospfv3Process
       "externalAdminCost";
   private static final String PROP_ENABLED =
       "enabled";
+  private static final String
+      PROP_INBOUND_DISTRIBUTE_LIST =
+          "inboundDistributeList";
+  private static final String
+      PROP_OUTBOUND_DISTRIBUTE_LIST =
+          "outboundDistributeList";
   private static final String PROP_AREAS =
       "areas";
   private static final String
@@ -333,6 +360,10 @@ public final class Ospfv3Process
           @Nullable Integer externalAdminCost,
       @JsonProperty(PROP_ENABLED)
           @Nullable Boolean enabled,
+      @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
+          @Nullable PrefixList6 inboundDistributeList,
+      @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
+          @Nullable PrefixList6 outboundDistributeList,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
@@ -388,6 +419,8 @@ public final class Ospfv3Process
         firstNonNull(
             enabled,
             true),
+        inboundDistributeList,
+        outboundDistributeList,
         firstNonNull(
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
@@ -420,6 +453,8 @@ public final class Ospfv3Process
       int interAreaAdminCost,
       int externalAdminCost,
       boolean enabled,
+      @Nullable PrefixList6 inboundDistributeList,
+      @Nullable PrefixList6 outboundDistributeList,
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeStatic,
@@ -452,6 +487,10 @@ public final class Ospfv3Process
     _externalAdminCost =
         externalAdminCost;
     _enabled = enabled;
+    _inboundDistributeList =
+        inboundDistributeList;
+    _outboundDistributeList =
+        outboundDistributeList;
     _referenceBandwidth =
         referenceBandwidth;
     _redistributeConnected =
@@ -509,6 +548,18 @@ public final class Ospfv3Process
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;
+  }
+
+  @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
+  public @Nullable PrefixList6
+      getInboundDistributeList() {
+    return _inboundDistributeList;
+  }
+
+  @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
+  public @Nullable PrefixList6
+      getOutboundDistributeList() {
+    return _outboundDistributeList;
   }
 
   @JsonProperty(PROP_PROCESS_ID)
@@ -578,6 +629,10 @@ public final class Ospfv3Process
   private final int _interAreaAdminCost;
   private final int _externalAdminCost;
   private final boolean _enabled;
+  private final @Nullable PrefixList6
+      _inboundDistributeList;
+  private final @Nullable PrefixList6
+      _outboundDistributeList;
   private final @Nonnull String _processId;
   private final @Nonnull Ip _routerId;
   private final @Nonnull SortedMap<Long, Ospfv3Area>

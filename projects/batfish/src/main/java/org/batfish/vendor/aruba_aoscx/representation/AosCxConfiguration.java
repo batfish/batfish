@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -37,6 +38,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RouteMap6;
@@ -763,6 +765,61 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
+  private @Nullable PrefixList6 toPrefixList6(
+      @Nullable String prefixListName) {
+    if (prefixListName == null) {
+      return null;
+    }
+
+    AosCxIpv6PrefixList prefixList =
+        _ipv6PrefixLists.get(prefixListName);
+
+    /*
+     * A dangling reference must never become permit-all.
+     */
+    if (prefixList == null) {
+      return PrefixList6.denyAll();
+    }
+
+    ImmutableList.Builder<PrefixList6.Line>
+        lines =
+            ImmutableList.builder();
+
+    prefixList
+        .getEntries()
+        .values()
+        .forEach(
+            entry -> {
+              int prefixLength =
+                  entry
+                      .getPrefix()
+                      .getPrefixLength();
+
+              int minLength =
+                  entry.getGe() != null
+                      ? entry.getGe()
+                      : prefixLength;
+
+              int maxLength =
+                  entry.getLe() != null
+                      ? entry.getLe()
+                      : entry.getGe() != null
+                          ? Prefix6.MAX_PREFIX_LENGTH
+                          : prefixLength;
+
+              lines.add(
+                  new PrefixList6.Line(
+                      entry.getAction(),
+                      entry.getPrefix(),
+                      new SubRange(
+                          minLength,
+                          maxLength)));
+            });
+
+    return new PrefixList6(
+        lines.build());
+  }
+
   private RouteMap6 toRouteMap6(
       String routeMapName) {
     if (routeMapName == null) {
@@ -1319,6 +1376,12 @@ public class AosCxConfiguration extends VendorConfiguration {
                   process.getExternalDistance())
               .setEnabled(
                   process.getEnabled())
+              .setInboundDistributeList(
+                  toPrefixList6(
+                      process.getDistributeListIn()))
+              .setOutboundDistributeList(
+                  toPrefixList6(
+                      process.getDistributeListOut()))
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
               .setRedistributeConnected(

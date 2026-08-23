@@ -23,6 +23,7 @@ import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.StaticRoute6;
@@ -160,6 +161,11 @@ final class Ospfv3RoutingProcess {
           continue;
         }
 
+        if (!permitsOutboundRedistribution(
+            connected.getNetwork())) {
+          continue;
+        }
+
         Optional<RouteMap6.Result> transformed =
             applyRedistributionRouteMap(
                 _process
@@ -185,6 +191,11 @@ final class Ospfv3RoutingProcess {
 
     if (_process.getRedistributeStatic()) {
       for (StaticRoute6 route : staticRoutes) {
+        if (!permitsOutboundRedistribution(
+            route.getNetwork())) {
+          continue;
+        }
+
         Optional<RouteMap6.Result> transformed =
             applyRedistributionRouteMap(
                 _process
@@ -282,6 +293,15 @@ final class Ospfv3RoutingProcess {
                         area.getAreaNumber(),
                         _process.getRouterId(),
                         tag)));
+  }
+
+  private boolean permitsOutboundRedistribution(
+      Prefix6 prefix) {
+    PrefixList6 distributeList =
+        _process.getOutboundDistributeList();
+
+    return distributeList == null
+        || distributeList.permits(prefix);
   }
 
   private static Optional<RouteMap6.Result>
@@ -1235,10 +1255,34 @@ final class Ospfv3RoutingProcess {
         .build();
   }
 
-  /** Routes that should actually be installed into this router's main RIB. */
+  /**
+   * Routes that should actually be installed into this router's main RIB.
+   *
+   * <p>An inbound OSPFv3 distribute-list filters routing-table installation
+   * only. The unfiltered OSPFv3 route set remains available through
+   * {@link #getRoutes()} so advertisements continue to propagate.
+   */
   @Nonnull
   Set<AbstractRoute6> getRoutingRoutes() {
-    return _ospfv3Rib.getRoutes();
+    PrefixList6 distributeList =
+        _process.getInboundDistributeList();
+
+    if (distributeList == null) {
+      return _ospfv3Rib.getRoutes();
+    }
+
+    ImmutableSet.Builder<AbstractRoute6> permitted =
+        ImmutableSet.builder();
+
+    for (AbstractRoute6 route :
+        _ospfv3Rib.getRoutes()) {
+      if (distributeList.permits(
+          route.getNetwork())) {
+        permitted.add(route);
+      }
+    }
+
+    return permitted.build();
   }
 
   int iterationHashCode() {

@@ -73,6 +73,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
@@ -1492,6 +1493,43 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         _currentOspfv3Process
             .setExternalDistance(distance);
       }
+    }
+  }
+
+  @Override
+  public void exitS_ospfv3_distribute_list(
+      S_ospfv3_distribute_listContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 distribute-list outside OSPFv3 context");
+      return;
+    }
+
+    boolean inbound =
+        ctx.IN() != null;
+
+    if (ctx.NO() != null) {
+      if (inbound) {
+        _currentOspfv3Process
+            .clearDistributeListIn();
+      } else {
+        _currentOspfv3Process
+            .clearDistributeListOut();
+      }
+      return;
+    }
+
+    String prefixList =
+        ctx.WORD().getText();
+
+    if (inbound) {
+      _currentOspfv3Process
+          .setDistributeListIn(prefixList);
+    } else {
+      _currentOspfv3Process
+          .setDistributeListOut(prefixList);
     }
   }
 

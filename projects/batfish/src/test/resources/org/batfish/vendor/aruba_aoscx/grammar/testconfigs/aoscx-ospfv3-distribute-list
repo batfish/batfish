@@ -1,0 +1,23 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+ipv6 prefix-list DL-IN seq 10 deny 2001:db8:100::/48 le 128
+ipv6 prefix-list DL-IN seq 20 permit ::/0 le 128
+
+ipv6 prefix-list DL-OUT seq 10 deny 2001:db8:300::/48 le 128
+ipv6 prefix-list DL-OUT seq 20 permit ::/0 le 128
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+    redistribute connected
+    distribute-list prefix DL-IN in
+    distribute-list prefix DL-OUT out
+
+router ospfv3 2
+    router-id 192.0.2.2
+    area 0.0.0.0
+    distribute-list prefix TEMP in
+    no distribute-list prefix TEMP in
+    distribute-list prefix TEMP out
+    no distribute-list prefix TEMP out

@@ -205,4 +205,40 @@ public final class Ospfv3ProcessTest {
         clone.getDefaultInformationMetric(),
         equalTo(9L));
   }
+  @Test
+  public void testDistributeListSerialization() {
+    PrefixList6 prefixList =
+        new PrefixList6(
+            java.util.List.of(
+                new PrefixList6.Line(
+                    LineAction.PERMIT,
+                    Prefix6.ZERO,
+                    new SubRange(
+                        0, 128))));
+
+    Ospfv3Process process =
+        Ospfv3Process.builder()
+            .setProcessId("1")
+            .setRouterId(
+                Ip.parse("192.0.2.1"))
+            .setInboundDistributeList(
+                prefixList)
+            .setOutboundDistributeList(
+                prefixList)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            process,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getInboundDistributeList(),
+        equalTo(prefixList));
+
+    assertThat(
+        clone.getOutboundDistributeList(),
+        equalTo(prefixList));
+  }
+
 }

@@ -37,6 +37,30 @@ public final class AosCxOspfv3Process
     return _processId;
   }
 
+  public @Nullable String getDistributeListIn() {
+    return _distributeListIn;
+  }
+
+  public void setDistributeListIn(String name) {
+    _distributeListIn = name;
+  }
+
+  public void clearDistributeListIn() {
+    _distributeListIn = null;
+  }
+
+  public @Nullable String getDistributeListOut() {
+    return _distributeListOut;
+  }
+
+  public void setDistributeListOut(String name) {
+    _distributeListOut = name;
+  }
+
+  public void clearDistributeListOut() {
+    _distributeListOut = null;
+  }
+
   public boolean getEnabled() {
     return _enabled;
   }
@@ -331,6 +355,9 @@ public final class AosCxOspfv3Process
   }
 
   private final int _processId;
+
+  private @Nullable String _distributeListIn;
+  private @Nullable String _distributeListOut;
 
   private boolean _enabled = true;
   private int _intraAreaDistance =

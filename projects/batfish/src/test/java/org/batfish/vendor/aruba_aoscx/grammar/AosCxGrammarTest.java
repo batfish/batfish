@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Route;
@@ -2681,6 +2683,110 @@ public final class AosCxGrammarTest {
     assertThat(
         changedToStub.getNssa(),
         equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3DistributeListExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-distribute-list");
+
+    AosCxOspfv3Process p1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(p1, notNullValue());
+
+    assertThat(
+        p1.getDistributeListIn(),
+        equalTo("DL-IN"));
+
+    assertThat(
+        p1.getDistributeListOut(),
+        equalTo("DL-OUT"));
+
+    AosCxOspfv3Process p2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(p2, notNullValue());
+
+    assertThat(
+        p2.getDistributeListIn(),
+        nullValue());
+
+    assertThat(
+        p2.getDistributeListOut(),
+        nullValue());
+  }
+
+  @Test
+  public void testOspfv3DistributeListConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-distribute-list");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(p1, notNullValue());
+
+    PrefixList6 inbound =
+        p1.getInboundDistributeList();
+
+    PrefixList6 outbound =
+        p1.getOutboundDistributeList();
+
+    assertThat(
+        inbound,
+        notNullValue());
+
+    assertThat(
+        inbound.permits(
+            Prefix6.parse(
+                "2001:db8:100:1::/64")),
+        equalTo(false));
+
+    assertThat(
+        inbound.permits(
+            Prefix6.parse(
+                "2001:db8:200:1::/64")),
+        equalTo(true));
+
+    assertThat(
+        outbound,
+        notNullValue());
+
+    assertThat(
+        outbound.permits(
+            Prefix6.parse(
+                "2001:db8:300:1::/64")),
+        equalTo(false));
+
+    assertThat(
+        outbound.permits(
+            Prefix6.parse(
+                "2001:db8:400:1::/64")),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3Process p2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(p2, notNullValue());
+
+    assertThat(
+        p2.getInboundDistributeList(),
+        nullValue());
+
+    assertThat(
+        p2.getOutboundDistributeList(),
+        nullValue());
   }
 
 }
