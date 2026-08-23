@@ -161,6 +161,42 @@ public final class AosCxInterface implements Serializable {
     _ospfv3NetworkType = null;
   }
 
+  public @Nullable Integer getOspfv3Priority() {
+    return _ospfv3Priority;
+  }
+
+  public void setOspfv3Priority(int priority) {
+    _ospfv3Priority = priority;
+  }
+
+  public void clearOspfv3Priority() {
+    _ospfv3Priority = null;
+  }
+
+  public @Nullable Integer getOspfv3RetransmitInterval() {
+    return _ospfv3RetransmitInterval;
+  }
+
+  public void setOspfv3RetransmitInterval(int interval) {
+    _ospfv3RetransmitInterval = interval;
+  }
+
+  public void clearOspfv3RetransmitInterval() {
+    _ospfv3RetransmitInterval = null;
+  }
+
+  public @Nullable Integer getOspfv3TransitDelay() {
+    return _ospfv3TransitDelay;
+  }
+
+  public void setOspfv3TransitDelay(int delay) {
+    _ospfv3TransitDelay = delay;
+  }
+
+  public void clearOspfv3TransitDelay() {
+    _ospfv3TransitDelay = null;
+  }
+
   /**
    * Explicit interface-level OSPFv3 passive setting.
    *
@@ -314,6 +350,9 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Integer _ospfv3HelloInterval;
   private @Nullable Integer _ospfv3DeadInterval;
   private @Nullable OspfNetworkType _ospfv3NetworkType;
+  private @Nullable Integer _ospfv3Priority;
+  private @Nullable Integer _ospfv3RetransmitInterval;
+  private @Nullable Integer _ospfv3TransitDelay;
   private @Nullable Boolean _ospfv3Passive;
   private @Nullable Boolean _ospfv3Enabled;
   private @Nullable Boolean _switchport;

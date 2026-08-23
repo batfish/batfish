@@ -2789,4 +2789,172 @@ public final class AosCxGrammarTest {
         nullValue());
   }
 
+  @Test
+  public void testOspfv3AdditionalInterfaceKnobsExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-interface-knobs");
+
+    AosCxInterface configured =
+        c.getInterfaces().get("1/1/1");
+
+    assertThat(
+        configured,
+        notNullValue());
+
+    assertThat(
+        configured.getOspfv3Priority(),
+        equalTo(200));
+
+    assertThat(
+        configured.getOspfv3RetransmitInterval(),
+        equalTo(17));
+
+    assertThat(
+        configured.getOspfv3TransitDelay(),
+        equalTo(9));
+
+    /*
+     * No explicit values on 1/1/2:
+     * vendor representation preserves absence.
+     */
+    AosCxInterface defaults =
+        c.getInterfaces().get("1/1/2");
+
+    assertThat(
+        defaults,
+        notNullValue());
+
+    assertThat(
+        defaults.getOspfv3Priority(),
+        equalTo(null));
+
+    assertThat(
+        defaults.getOspfv3RetransmitInterval(),
+        equalTo(null));
+
+    assertThat(
+        defaults.getOspfv3TransitDelay(),
+        equalTo(null));
+
+    /*
+     * Explicit commands followed by "no" also return to
+     * the implicit platform defaults.
+     */
+    AosCxInterface reset =
+        c.getInterfaces().get("1/1/3");
+
+    assertThat(
+        reset,
+        notNullValue());
+
+    assertThat(
+        reset.getOspfv3Priority(),
+        equalTo(null));
+
+    assertThat(
+        reset.getOspfv3RetransmitInterval(),
+        equalTo(null));
+
+    assertThat(
+        reset.getOspfv3TransitDelay(),
+        equalTo(null));
+  }
+
+  @Test
+  public void testOspfv3AdditionalInterfaceKnobsConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-interface-knobs");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.Interface configured =
+        c.getAllInterfaces().get("1/1/1");
+
+    assertThat(
+        configured.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getPriority(),
+        equalTo(200));
+
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getRetransmitInterval(),
+        equalTo(17));
+
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getTransitDelay(),
+        equalTo(9));
+
+    org.batfish.datamodel.Interface defaults =
+        c.getAllInterfaces().get("1/1/2");
+
+    assertThat(
+        defaults.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        defaults
+            .getOspfv3Settings()
+            .getPriority(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3InterfaceSettings
+                .DEFAULT_PRIORITY));
+
+    assertThat(
+        defaults
+            .getOspfv3Settings()
+            .getRetransmitInterval(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3InterfaceSettings
+                .DEFAULT_RETRANSMIT_INTERVAL));
+
+    assertThat(
+        defaults
+            .getOspfv3Settings()
+            .getTransitDelay(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3InterfaceSettings
+                .DEFAULT_TRANSIT_DELAY));
+
+    org.batfish.datamodel.Interface reset =
+        c.getAllInterfaces().get("1/1/3");
+
+    assertThat(
+        reset.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getPriority(),
+        equalTo(1));
+
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getRetransmitInterval(),
+        equalTo(5));
+
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getTransitDelay(),
+        equalTo(1));
+  }
+
 }

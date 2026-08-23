@@ -1467,6 +1467,19 @@ public class AosCxConfiguration extends VendorConfiguration {
                           ? iface.getOspfv3DeadInterval()
                           : 40)
                   .setNetworkType(networkType)
+                  .setPriority(
+                      iface.getOspfv3Priority() != null
+                          ? iface.getOspfv3Priority()
+                          : Ospfv3InterfaceSettings.DEFAULT_PRIORITY)
+                  .setRetransmitInterval(
+                      iface.getOspfv3RetransmitInterval() != null
+                          ? iface.getOspfv3RetransmitInterval()
+                          : Ospfv3InterfaceSettings
+                              .DEFAULT_RETRANSMIT_INTERVAL)
+                  .setTransitDelay(
+                      iface.getOspfv3TransitDelay() != null
+                          ? iface.getOspfv3TransitDelay()
+                          : Ospfv3InterfaceSettings.DEFAULT_TRANSIT_DELAY)
                   .build());
         });
   }

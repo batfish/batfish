@@ -35,6 +35,9 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_int
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_hello_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_passiveContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_priorityContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_retransmit_intervalContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_transit_delayContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfv3Context;
@@ -623,6 +626,127 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         ctx.POINT_TO_POINT() != null
             ? OspfNetworkType.POINT_TO_POINT
             : OspfNetworkType.BROADCAST);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_priority(
+      S_ipv6_ospfv3_priorityContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 priority outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3Priority();
+      return;
+    }
+
+    int priority;
+
+    try {
+      priority =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 priority");
+      return;
+    }
+
+    if (priority < 0 || priority > 255) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 priority outside 0-255");
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3Priority(priority);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_retransmit_interval(
+      S_ipv6_ospfv3_retransmit_intervalContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 retransmit-interval outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3RetransmitInterval();
+      return;
+    }
+
+    int interval;
+
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 retransmit interval");
+      return;
+    }
+
+    if (interval < 1 || interval > 3600) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 retransmit interval outside 1-3600");
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3RetransmitInterval(
+            interval);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_transit_delay(
+      S_ipv6_ospfv3_transit_delayContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 transit-delay outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3TransitDelay();
+      return;
+    }
+
+    int delay;
+
+    try {
+      delay =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 transit delay");
+      return;
+    }
+
+    if (delay < 1 || delay > 3600) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 transit delay outside 1-3600");
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3TransitDelay(delay);
   }
 
   @Override

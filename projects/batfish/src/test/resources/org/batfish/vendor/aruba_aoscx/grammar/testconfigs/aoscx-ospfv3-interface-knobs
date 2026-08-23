@@ -11,6 +11,9 @@ interface 1/1/1
     ipv6 ospfv3 hello-interval 5
     ipv6 ospfv3 dead-interval 20
     ipv6 ospfv3 network point-to-point
+    ipv6 ospfv3 priority 200
+    ipv6 ospfv3 retransmit-interval 17
+    ipv6 ospfv3 transit-delay 9
 interface 1/1/2
     no shutdown
     ipv6 address 2001:db8:20::1/64
@@ -28,3 +31,9 @@ interface 1/1/3
     no ipv6 ospfv3 dead-interval
     ipv6 ospfv3 network point-to-point
     no ipv6 ospfv3 network
+    ipv6 ospfv3 priority 50
+    no ipv6 ospfv3 priority
+    ipv6 ospfv3 retransmit-interval 30
+    no ipv6 ospfv3 retransmit-interval
+    ipv6 ospfv3 transit-delay 40
+    no ipv6 ospfv3 transit-delay
