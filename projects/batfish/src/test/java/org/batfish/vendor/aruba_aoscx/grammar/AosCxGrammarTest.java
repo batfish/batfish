@@ -3193,4 +3193,143 @@ public final class AosCxGrammarTest {
         equalTo(false));
   }
 
+  @Test
+  public void testOspfv3NssaRangeExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-nssa-range");
+
+    AosCxOspfv3Process p10 =
+        c.getOspfv3Processes().get(10);
+
+    assertThat(
+        p10,
+        notNullValue());
+
+    assertThat(
+        p10.getNssaRanges()
+            .get("1")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:700::/48")),
+        equalTo(true));
+
+    assertThat(
+        p10.getNssaRanges()
+            .get("1")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:800::/48")),
+        equalTo(false));
+
+    AosCxOspfv3Process p20 =
+        c.getOspfv3Processes().get(20);
+
+    assertThat(
+        p20,
+        notNullValue());
+
+    assertThat(
+        p20.getNssaRanges()
+            .get("2")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:900::/48")),
+        equalTo(true));
+
+    AosCxOspfv3Process p30 =
+        c.getOspfv3Processes().get(30);
+
+    assertThat(
+        p30,
+        notNullValue());
+
+    assertThat(
+        p30.getNssaRanges()
+            .containsKey("3"),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3NssaRangeConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-nssa-range");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p10 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("10");
+
+    assertThat(
+        p10,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Area area =
+        p10.getAreas().get(1L);
+
+    assertThat(
+        area,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3AreaRange
+        advertised =
+            area.getRanges()
+                .stream()
+                .filter(
+                    range ->
+                        range.getPrefix()
+                            .equals(
+                                Prefix6.parse(
+                                    "2001:db8:700::/48")))
+                .findFirst()
+                .orElse(null);
+
+    assertThat(
+        advertised,
+        notNullValue());
+
+    assertThat(
+        advertised.getType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3AreaRange.Type.NSSA));
+
+    assertThat(
+        advertised.getAdvertise(),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3AreaRange
+        suppressed =
+            area.getRanges()
+                .stream()
+                .filter(
+                    range ->
+                        range.getPrefix()
+                            .equals(
+                                Prefix6.parse(
+                                    "2001:db8:800::/48")))
+                .findFirst()
+                .orElse(null);
+
+    assertThat(
+        suppressed,
+        notNullValue());
+
+    assertThat(
+        suppressed.getType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3AreaRange.Type.NSSA));
+
+    assertThat(
+        suppressed.getAdvertise(),
+        equalTo(false));
+  }
+
 }

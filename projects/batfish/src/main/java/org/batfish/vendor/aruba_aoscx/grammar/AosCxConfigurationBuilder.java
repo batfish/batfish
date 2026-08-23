@@ -1463,38 +1463,37 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     Prefix6 prefix =
         Prefix6.parse(prefixText);
 
-    /*
-     * Parse NSSA ranges now so they do not become silent syntax, but
-     * leave their routing semantics for the NSSA aggregation commit.
-     */
-    if (ctx
-            .ospfv3_area_range_type()
-            .NSSA()
-        != null) {
-
-      warn(
-          ctx,
-          "OSPFv3 NSSA area-range aggregation is not modeled yet");
-
-      return;
-    }
+    boolean nssa =
+        ctx
+                .ospfv3_area_range_type()
+                .NSSA()
+            != null;
 
     if (ctx.NO() != null) {
 
-      /*
-       * Aruba documents:
-       *
-       * no area ... range ... type inter-area no-advertise
-       *
-       * as removing only the DoNotAdvertise property, so the range
-       * remains configured and becomes advertised.
-       */
       if (ctx.NO_ADVERTISE() != null) {
+
+        if (nssa) {
+          _currentOspfv3Process
+              .enableNssaRangeAdvertisement(
+                  area,
+                  prefix);
+        } else {
+          _currentOspfv3Process
+              .enableInterAreaRangeAdvertisement(
+                  area,
+                  prefix);
+        }
+
+      } else if (nssa) {
+
         _currentOspfv3Process
-            .enableInterAreaRangeAdvertisement(
+            .removeNssaRange(
                 area,
                 prefix);
+
       } else {
+
         _currentOspfv3Process
             .removeInterAreaRange(
                 area,
@@ -1504,11 +1503,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
 
-    _currentOspfv3Process
-        .setInterAreaRange(
-            area,
-            prefix,
-            ctx.NO_ADVERTISE() == null);
+    boolean advertise =
+        ctx.NO_ADVERTISE() == null;
+
+    if (nssa) {
+
+      _currentOspfv3Process
+          .setNssaRange(
+              area,
+              prefix,
+              advertise);
+
+    } else {
+
+      _currentOspfv3Process
+          .setInterAreaRange(
+              area,
+              prefix,
+              advertise);
+    }
   }
 
   @Override

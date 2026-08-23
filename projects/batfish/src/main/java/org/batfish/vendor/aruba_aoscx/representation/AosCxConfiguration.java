@@ -1331,6 +1331,26 @@ public class AosCxConfiguration extends VendorConfiguration {
                                           advertise)));
                         });
 
+                process
+                    .getNssaRanges()
+                    .forEach(
+                        (configuredArea, ranges) -> {
+                          if (toOspfAreaNumber(
+                                  configuredArea)
+                              != area) {
+                            return;
+                          }
+
+                          ranges.forEach(
+                              (prefix, advertise) ->
+                                  areaBuilder.addRange(
+                                      new Ospfv3AreaRange(
+                                          prefix,
+                                          Ospfv3AreaRange.Type
+                                              .NSSA,
+                                          advertise)));
+                        });
+
                 areas.put(
                     area,
                     areaBuilder.build());

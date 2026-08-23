@@ -594,6 +594,9 @@ final class Ospfv3RoutingProcess {
       }
     }
 
+    changed |=
+        refreshTranslatedNssaAdvertisements();
+
     return changed;
   }
 
@@ -1100,14 +1103,6 @@ final class Ospfv3RoutingProcess {
    * advertising ABR. An ABR may translate routes between an attached
    * non-backbone area and area 0. Traffic between two non-backbone areas must
    * therefore cross the backbone rather than being leaked directly.
-   */
-  /**
-   * Import OSPFv3 inter-area routes.
-   *
-   * <p>Within an area, summary routes accumulate the local cost toward the
-   * advertising ABR. An ABR may translate routes between an attached
-   * non-backbone area and area 0. Traffic between two non-backbone areas must
-   * therefore cross the backbone rather than being leaked directly.
    *
    * <p>When the advertising ABR has an inter-area range on the source area,
    * matching intra-area routes are replaced by the configured summary. The
@@ -1191,9 +1186,10 @@ final class Ospfv3RoutingProcess {
          */
         @Nullable Ospfv3AreaRange range =
             remoteProcess
-                .getMatchingInterAreaRange(
+                .getMatchingAreaRange(
                     sourceArea,
-                    intra.getNetwork());
+                    intra.getNetwork(),
+                    Ospfv3AreaRange.Type.INTER_AREA);
 
         if (range != null) {
 
@@ -1291,15 +1287,20 @@ final class Ospfv3RoutingProcess {
    * Return the most-specific configured inter-area range that contains a
    * source-area route.
    */
+  /**
+   * Return the most-specific configured range of {@code type} that contains
+   * the supplied route prefix.
+   */
   private @Nullable Ospfv3AreaRange
-      getMatchingInterAreaRange(
-          long sourceArea,
-          Prefix6 network) {
+      getMatchingAreaRange(
+          long areaNumber,
+          Prefix6 network,
+          Ospfv3AreaRange.Type type) {
 
     Ospfv3Area area =
         _process
             .getAreas()
-            .get(sourceArea);
+            .get(areaNumber);
 
     if (area == null) {
       return null;
@@ -1311,8 +1312,7 @@ final class Ospfv3RoutingProcess {
     for (Ospfv3AreaRange range :
         area.getRanges()) {
 
-      if (range.getType()
-              != Ospfv3AreaRange.Type.INTER_AREA
+      if (range.getType() != type
           || !prefixContains(
               range.getPrefix(),
               network)) {
@@ -1574,47 +1574,206 @@ final class Ospfv3RoutingProcess {
       changed |=
           _ospfv3Rib.mergeRoute(learned);
 
-      /*
-       * A backbone-connected NSSA ABR translates Type-7 to Type-5.
-       * This route is advertised as being originated by the translator ABR.
-       *
-       * Translator election between multiple ABRs is intentionally not
-       * modeled yet; the normal RIB tie-breaking logic handles multiple
-       * translated advertisements if they exist.
-       */
-      if (isAreaBorderRouterFor(area)) {
-        changed |=
-            addTranslatedNssaAdvertisement(
-                external);
-      }
     }
 
     return changed;
   }
 
-  private boolean addTranslatedNssaAdvertisement(
-      Ospfv3NssaExternalType2Route6 external) {
+  /**
+   * Rebuild Type-7 to Type-5 translations from the ABR's complete
+   * currently visible NSSA state.
+   */
+  private boolean refreshTranslatedNssaAdvertisements() {
 
-    Set<Ospfv3ExternalType2Route6> updated =
-        new HashSet<>(
-            _translatedNssaExternalAdvertisements);
+    Set<Ospfv3NssaExternalType2Route6>
+        type7Routes =
+            new HashSet<>();
 
-    boolean changed =
-        updated.add(
-            new Ospfv3ExternalType2Route6(
-                external.getNetwork(),
-                Route.UNSET_NEXT_HOP_INTERFACE,
-                _process.getExternalAdminCost(),
-                external.getMetric(),
-                _process.getRouterId(),
-                external.getTag()));
+    for (AbstractRoute6 route :
+        _ospfv3Rib.getRoutes()) {
 
-    if (changed) {
-      _translatedNssaExternalAdvertisements =
-          ImmutableSet.copyOf(updated);
+      if (route
+          instanceof Ospfv3NssaExternalType2Route6) {
+
+        type7Routes.add(
+            (Ospfv3NssaExternalType2Route6)
+                route);
+      }
     }
 
-    return changed;
+    /*
+     * An ABR may also be an ASBR.
+     */
+    for (AbstractRoute6 route :
+        _localExternalAdvertisements) {
+
+      if (route
+          instanceof Ospfv3NssaExternalType2Route6) {
+
+        type7Routes.add(
+            (Ospfv3NssaExternalType2Route6)
+                route);
+      }
+    }
+
+    Set<Ospfv3ExternalType2Route6> desired =
+        new HashSet<>();
+
+    Set<String> emittedRanges =
+        new HashSet<>();
+
+    for (Ospfv3NssaExternalType2Route6 external :
+        type7Routes) {
+
+      long area =
+          external.getArea();
+
+      if (!isAreaBorderRouterFor(area)) {
+        continue;
+      }
+
+      @Nullable Ospfv3AreaRange range =
+          getMatchingAreaRange(
+              area,
+              external.getNetwork(),
+              Ospfv3AreaRange.Type.NSSA);
+
+      if (range == null) {
+
+        desired.add(
+            toTranslatedType5(
+                external.getNetwork(),
+                external.getMetric(),
+                external.getTag()));
+
+        continue;
+      }
+
+      if (!range.getAdvertise()) {
+        continue;
+      }
+
+      String rangeKey =
+          Long.toUnsignedString(area)
+              + "|"
+              + range.getPrefix();
+
+      if (!emittedRanges.add(rangeKey)) {
+        continue;
+      }
+
+      @Nullable Ospfv3ExternalType2Route6 aggregate =
+          computeNssaRangeTranslation(
+              area,
+              range,
+              type7Routes);
+
+      if (aggregate != null) {
+        desired.add(aggregate);
+      }
+    }
+
+    Set<Ospfv3ExternalType2Route6>
+        immutableDesired =
+            ImmutableSet.copyOf(desired);
+
+    if (_translatedNssaExternalAdvertisements
+        .equals(immutableDesired)) {
+      return false;
+    }
+
+    _translatedNssaExternalAdvertisements =
+        immutableDesired;
+
+    return true;
+  }
+
+  private @Nullable Ospfv3ExternalType2Route6
+      computeNssaRangeTranslation(
+          long area,
+          Ospfv3AreaRange range,
+          Set<Ospfv3NssaExternalType2Route6>
+              type7Routes) {
+
+    int contributors =
+        0;
+
+    long maximumMetric =
+        -1L;
+
+    Ospfv3NssaExternalType2Route6
+        soleContributor =
+            null;
+
+    for (Ospfv3NssaExternalType2Route6 external :
+        type7Routes) {
+
+      if (external.getArea() != area) {
+        continue;
+      }
+
+      Ospfv3AreaRange bestRange =
+          getMatchingAreaRange(
+              area,
+              external.getNetwork(),
+              Ospfv3AreaRange.Type.NSSA);
+
+      if (!range.equals(bestRange)) {
+        continue;
+      }
+
+      contributors++;
+
+      soleContributor =
+          external;
+
+      maximumMetric =
+          Math.max(
+              maximumMetric,
+              external.getMetric());
+    }
+
+    if (contributors == 0) {
+      return null;
+    }
+
+    if (contributors == 1
+        && soleContributor != null
+        && soleContributor
+            .getNetwork()
+            .equals(range.getPrefix())) {
+
+      return toTranslatedType5(
+          range.getPrefix(),
+          soleContributor.getMetric(),
+          soleContributor.getTag());
+    }
+
+    if (maximumMetric < 0L
+        || maximumMetric
+            >= Ospfv3Process.MAX_METRIC) {
+      return null;
+    }
+
+    return toTranslatedType5(
+        range.getPrefix(),
+        maximumMetric + 1L,
+        Route.UNSET_ROUTE_TAG);
+  }
+
+  private Ospfv3ExternalType2Route6
+      toTranslatedType5(
+          Prefix6 network,
+          long metric,
+          long tag) {
+
+    return new Ospfv3ExternalType2Route6(
+        network,
+        Route.UNSET_NEXT_HOP_INTERFACE,
+        _process.getExternalAdminCost(),
+        metric,
+        _process.getRouterId(),
+        tag);
   }
 
   /**

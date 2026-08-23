@@ -434,6 +434,76 @@ public final class AosCxOspfv3Process
     }
   }
 
+  /**
+   * NSSA Type-7 aggregation ranges keyed first by configured area ID,
+   * then by IPv6 prefix. The Boolean value is true when the translated
+   * aggregate should be advertised.
+   */
+  public @Nonnull Map<String, Map<Prefix6, Boolean>>
+      getNssaRanges() {
+    return _nssaRanges;
+  }
+
+  public void setNssaRange(
+      String area,
+      Prefix6 prefix,
+      boolean advertise) {
+
+    _areas.add(area);
+
+    _nssaRanges
+        .computeIfAbsent(
+            area,
+            ignored ->
+                new HashMap<>())
+        .put(
+            prefix,
+            advertise);
+  }
+
+  public void removeNssaRange(
+      String area,
+      Prefix6 prefix) {
+
+    Map<Prefix6, Boolean> ranges =
+        _nssaRanges.get(area);
+
+    if (ranges == null) {
+      return;
+    }
+
+    ranges.remove(prefix);
+
+    if (ranges.isEmpty()) {
+      _nssaRanges.remove(area);
+    }
+  }
+
+  /**
+   * Implements:
+   *
+   * <pre>
+   * no area ... range ... type nssa no-advertise
+   * </pre>
+   *
+   * by retaining an existing range and restoring advertisement.
+   */
+  public void enableNssaRangeAdvertisement(
+      String area,
+      Prefix6 prefix) {
+
+    Map<Prefix6, Boolean> ranges =
+        _nssaRanges.get(area);
+
+    if (ranges != null
+        && ranges.containsKey(prefix)) {
+
+      ranges.put(
+          prefix,
+          true);
+    }
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -492,6 +562,11 @@ public final class AosCxOspfv3Process
   private final @Nonnull
       Map<String, Map<Prefix6, Boolean>>
           _interAreaRanges =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Prefix6, Boolean>>
+          _nssaRanges =
               new HashMap<>();
 
   private @Nullable Ip _routerId;
