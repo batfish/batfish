@@ -54,6 +54,7 @@ NO_SUMMARY: 'no-summary';
 NSSA: 'nssa';
 NETWORK: 'network';
 MATCH: 'match';
+MAXIMUM_PATHS: 'maximum-paths';
 METRIC: 'metric';
 MTU: 'mtu';
 NEIGHBOR: 'neighbor';

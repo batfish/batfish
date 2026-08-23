@@ -1331,6 +1331,8 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setOutboundDistributeList(
                   toPrefixList6(
                       process.getDistributeListOut()))
+              .setMaximumPaths(
+                  process.getMaximumPaths())
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
               .setRedistributeConnected(

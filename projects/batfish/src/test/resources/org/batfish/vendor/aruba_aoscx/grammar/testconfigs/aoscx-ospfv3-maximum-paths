@@ -1,0 +1,20 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+    maximum-paths 12
+
+router ospfv3 2
+    router-id 192.0.2.2
+    area 0.0.0.0
+    maximum-paths 32
+    no maximum-paths
+
+router ospfv3 3
+    router-id 192.0.2.3
+    area 0.0.0.0
+    maximum-paths 0
+    maximum-paths 33
+    maximum-paths invalid

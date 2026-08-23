@@ -43,6 +43,10 @@ public final class Ospfv3Process
   public static final long MAX_METRIC =
       0xFFFFFEL;
 
+  /** AOS-CX default number of OSPFv3 ECMP paths. */
+  public static final int DEFAULT_MAXIMUM_PATHS =
+      4;
+
   public static final class Builder {
     private int _adminCost;
     private int _interAreaAdminCost;
@@ -52,6 +56,7 @@ public final class Ospfv3Process
         _inboundDistributeList;
     private @Nullable PrefixList6
         _outboundDistributeList;
+    private int _maximumPaths;
     private @Nonnull Map<Long, Ospfv3Area> _areas;
     private boolean _defaultInformationOriginate;
     private boolean _defaultInformationOriginateAlways;
@@ -76,6 +81,8 @@ public final class Ospfv3Process
       _externalAdminCost =
           DEFAULT_ADMIN_COST;
       _enabled = true;
+      _maximumPaths =
+          DEFAULT_MAXIMUM_PATHS;
       _areas =
           ImmutableMap.of();
       _defaultInformationMetric =
@@ -116,6 +123,12 @@ public final class Ospfv3Process
           _referenceBandwidth);
 
       checkArgument(
+          _maximumPaths >= 1
+              && _maximumPaths <= 32,
+          "Invalid OSPFv3 maximum paths %s",
+          _maximumPaths);
+
+      checkArgument(
           _redistributionMetric >= 0
               && _redistributionMetric <= MAX_METRIC,
           "Invalid redistribution metric %s",
@@ -138,6 +151,7 @@ public final class Ospfv3Process
               _enabled,
               _inboundDistributeList,
               _outboundDistributeList,
+              _maximumPaths,
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeStatic,
@@ -201,6 +215,13 @@ public final class Ospfv3Process
         @Nullable PrefixList6 prefixList) {
       _outboundDistributeList =
           prefixList;
+      return this;
+    }
+
+    public Builder setMaximumPaths(
+        int maximumPaths) {
+      _maximumPaths =
+          maximumPaths;
       return this;
     }
 
@@ -310,6 +331,8 @@ public final class Ospfv3Process
   private static final String
       PROP_OUTBOUND_DISTRIBUTE_LIST =
           "outboundDistributeList";
+  private static final String PROP_MAXIMUM_PATHS =
+      "maximumPaths";
   private static final String PROP_AREAS =
       "areas";
   private static final String
@@ -364,6 +387,8 @@ public final class Ospfv3Process
           @Nullable PrefixList6 inboundDistributeList,
       @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
           @Nullable PrefixList6 outboundDistributeList,
+      @JsonProperty(PROP_MAXIMUM_PATHS)
+          @Nullable Integer maximumPaths,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
@@ -422,6 +447,9 @@ public final class Ospfv3Process
         inboundDistributeList,
         outboundDistributeList,
         firstNonNull(
+            maximumPaths,
+            DEFAULT_MAXIMUM_PATHS),
+        firstNonNull(
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
         firstNonNull(
@@ -455,6 +483,7 @@ public final class Ospfv3Process
       boolean enabled,
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
+      int maximumPaths,
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeStatic,
@@ -464,6 +493,12 @@ public final class Ospfv3Process
       boolean defaultInformationOriginate,
       boolean defaultInformationOriginateAlways,
       long defaultInformationMetric) {
+
+    checkArgument(
+        maximumPaths >= 1
+            && maximumPaths <= 32,
+        "Invalid OSPFv3 maximum paths %s",
+        maximumPaths);
 
     checkArgument(
         redistributionMetric >= 0
@@ -491,6 +526,8 @@ public final class Ospfv3Process
         inboundDistributeList;
     _outboundDistributeList =
         outboundDistributeList;
+    _maximumPaths =
+        maximumPaths;
     _referenceBandwidth =
         referenceBandwidth;
     _redistributeConnected =
@@ -560,6 +597,11 @@ public final class Ospfv3Process
   public @Nullable PrefixList6
       getOutboundDistributeList() {
     return _outboundDistributeList;
+  }
+
+  @JsonProperty(PROP_MAXIMUM_PATHS)
+  public int getMaximumPaths() {
+    return _maximumPaths;
   }
 
   @JsonProperty(PROP_PROCESS_ID)
@@ -633,6 +675,7 @@ public final class Ospfv3Process
       _inboundDistributeList;
   private final @Nullable PrefixList6
       _outboundDistributeList;
+  private final int _maximumPaths;
   private final @Nonnull String _processId;
   private final @Nonnull Ip _routerId;
   private final @Nonnull SortedMap<Long, Ospfv3Area>

@@ -29,12 +29,30 @@ public final class AosCxOspfv3Process
   public static final long DEFAULT_INFORMATION_METRIC =
       1L;
 
+  /** AOS-CX default number of OSPFv3 ECMP paths. */
+  public static final int DEFAULT_MAXIMUM_PATHS =
+      4;
+
   public AosCxOspfv3Process(int processId) {
     _processId = processId;
   }
 
   public int getProcessId() {
     return _processId;
+  }
+
+  public int getMaximumPaths() {
+    return _maximumPaths;
+  }
+
+  public void setMaximumPaths(
+      int maximumPaths) {
+    _maximumPaths = maximumPaths;
+  }
+
+  public void resetMaximumPaths() {
+    _maximumPaths =
+        DEFAULT_MAXIMUM_PATHS;
   }
 
   public @Nullable String getDistributeListIn() {
@@ -358,6 +376,9 @@ public final class AosCxOspfv3Process
 
   private @Nullable String _distributeListIn;
   private @Nullable String _distributeListOut;
+
+  private int _maximumPaths =
+      DEFAULT_MAXIMUM_PATHS;
 
   private boolean _enabled = true;
   private int _intraAreaDistance =

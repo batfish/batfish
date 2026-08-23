@@ -241,4 +241,37 @@ public final class Ospfv3ProcessTest {
         equalTo(prefixList));
   }
 
+  @Test
+  public void testMaximumPathsDefaultsAndSerialization() {
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId("1")
+            .setRouterId(
+                Ip.parse("192.0.2.1"))
+            .build();
+
+    assertThat(
+        defaults.getMaximumPaths(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_MAXIMUM_PATHS));
+
+    Ospfv3Process configured =
+        Ospfv3Process.builder()
+            .setProcessId("2")
+            .setRouterId(
+                Ip.parse("192.0.2.2"))
+            .setMaximumPaths(12)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            configured,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getMaximumPaths(),
+        equalTo(12));
+  }
+
 }

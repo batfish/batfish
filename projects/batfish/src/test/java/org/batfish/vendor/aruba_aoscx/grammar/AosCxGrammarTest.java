@@ -2957,4 +2957,108 @@ public final class AosCxGrammarTest {
         equalTo(1));
   }
 
+  @Test
+  public void testOspfv3MaximumPathsExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-maximum-paths");
+
+    AosCxOspfv3Process p1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        p1,
+        notNullValue());
+
+    assertThat(
+        p1.getMaximumPaths(),
+        equalTo(12));
+
+    AosCxOspfv3Process p2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(
+        p2,
+        notNullValue());
+
+    /*
+     * no maximum-paths restores the AOS-CX default.
+     */
+    assertThat(
+        p2.getMaximumPaths(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_MAXIMUM_PATHS));
+
+    AosCxOspfv3Process p3 =
+        c.getOspfv3Processes().get(3);
+
+    assertThat(
+        p3,
+        notNullValue());
+
+    /*
+     * Invalid values are ignored, leaving the default intact.
+     */
+    assertThat(
+        p3.getMaximumPaths(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_MAXIMUM_PATHS));
+  }
+
+  @Test
+  public void testOspfv3MaximumPathsConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-maximum-paths");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        p1,
+        notNullValue());
+
+    assertThat(
+        p1.getMaximumPaths(),
+        equalTo(12));
+
+    org.batfish.datamodel.ospf.Ospfv3Process p2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        p2,
+        notNullValue());
+
+    assertThat(
+        p2.getMaximumPaths(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3Process
+                .DEFAULT_MAXIMUM_PATHS));
+
+    org.batfish.datamodel.ospf.Ospfv3Process p3 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        p3,
+        notNullValue());
+
+    assertThat(
+        p3.getMaximumPaths(),
+        equalTo(4));
+  }
+
 }

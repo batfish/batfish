@@ -3,12 +3,14 @@ package org.batfish.dataplane.ibdp;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -1557,25 +1559,90 @@ final class Ospfv3RoutingProcess {
    */
   @Nonnull
   Set<AbstractRoute6> getRoutingRoutes() {
-    PrefixList6 distributeList =
-        _process.getInboundDistributeList();
+    return selectRoutingRoutes(
+        _ospfv3Rib.getRoutes(),
+        _process.getInboundDistributeList(),
+        _process.getMaximumPaths());
+  }
 
-    if (distributeList == null) {
-      return _ospfv3Rib.getRoutes();
+  /**
+   * Apply routing-table-only OSPFv3 policy.
+   *
+   * <p>The inbound distribute-list filters installation without changing
+   * OSPF control-plane state. maximum-paths then limits the number of
+   * equally preferred OSPFv3 routes installed for each destination prefix.
+   */
+  @VisibleForTesting
+  static @Nonnull Set<AbstractRoute6>
+      selectRoutingRoutes(
+          Set<AbstractRoute6> routes,
+          @Nullable PrefixList6 distributeList,
+          int maximumPaths) {
+
+    if (maximumPaths < 1) {
+      throw new IllegalArgumentException(
+          "maximumPaths must be positive");
     }
 
-    ImmutableSet.Builder<AbstractRoute6> permitted =
+    Map<Prefix6, List<AbstractRoute6>>
+        routesByPrefix =
+            new TreeMap<>();
+
+    for (AbstractRoute6 route : routes) {
+      if (distributeList != null
+          && !distributeList.permits(
+              route.getNetwork())) {
+        continue;
+      }
+
+      routesByPrefix
+          .computeIfAbsent(
+              route.getNetwork(),
+              ignored ->
+                  new ArrayList<>())
+          .add(route);
+    }
+
+    Comparator<AbstractRoute6> routeOrder =
+        Comparator
+            .comparing(
+                AbstractRoute6::getNextHopInterface)
+            .thenComparing(
+                AbstractRoute6::getNextHopIp,
+                Comparator.nullsFirst(
+                    Comparator.naturalOrder()))
+            .thenComparing(
+                route ->
+                    route.getClass().getName())
+            .thenComparingLong(
+                AbstractRoute6::getAdministrativeCost)
+            .thenComparingLong(
+                AbstractRoute6::getMetric)
+            .thenComparingLong(
+                AbstractRoute6::getTag)
+            .thenComparingInt(
+                AbstractRoute6::hashCode);
+
+    ImmutableSet.Builder<AbstractRoute6> selected =
         ImmutableSet.builder();
 
-    for (AbstractRoute6 route :
-        _ospfv3Rib.getRoutes()) {
-      if (distributeList.permits(
-          route.getNetwork())) {
-        permitted.add(route);
+    for (List<AbstractRoute6> candidates :
+        routesByPrefix.values()) {
+
+      candidates.sort(routeOrder);
+
+      int count =
+          Math.min(
+              maximumPaths,
+              candidates.size());
+
+      for (int i = 0; i < count; i++) {
+        selected.add(
+            candidates.get(i));
       }
     }
 
-    return permitted.build();
+    return selected.build();
   }
 
   int iterationHashCode() {

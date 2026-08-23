@@ -77,6 +77,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_infor
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
@@ -1655,6 +1656,50 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       _currentOspfv3Process
           .setDistributeListOut(prefixList);
     }
+  }
+
+  @Override
+  public void exitS_ospfv3_maximum_paths(
+      S_ospfv3_maximum_pathsContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring maximum-paths outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .resetMaximumPaths();
+      return;
+    }
+
+    int maximumPaths;
+
+    try {
+      maximumPaths =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 maximum-paths value");
+      return;
+    }
+
+    if (maximumPaths < 1
+        || maximumPaths > 32) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 maximum-paths outside 1-32");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setMaximumPaths(
+            maximumPaths);
   }
 
   @Override
