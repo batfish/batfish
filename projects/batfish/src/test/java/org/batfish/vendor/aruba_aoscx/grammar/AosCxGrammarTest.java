@@ -1702,4 +1702,129 @@ public final class AosCxGrammarTest {
         equalTo(15));
   }
 
+  @Test
+  public void testOspfv3InterfaceKnobsExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-interface-knobs");
+
+    AosCxInterface configured =
+        c.getInterfaces().get("1/1/1");
+
+    assertThat(configured, notNullValue());
+    assertThat(
+        configured.getOspfv3Cost(),
+        equalTo(25));
+    assertThat(
+        configured.getOspfv3HelloInterval(),
+        equalTo(5));
+    assertThat(
+        configured.getOspfv3DeadInterval(),
+        equalTo(20));
+    assertThat(
+        configured.getOspfv3NetworkType(),
+        equalTo(
+            AosCxInterface.OspfNetworkType
+                .POINT_TO_POINT));
+
+    AosCxInterface broadcast =
+        c.getInterfaces().get("1/1/2");
+
+    assertThat(
+        broadcast.getOspfv3NetworkType(),
+        equalTo(
+            AosCxInterface.OspfNetworkType
+                .BROADCAST));
+
+    AosCxInterface reset =
+        c.getInterfaces().get("1/1/3");
+
+    assertThat(reset, notNullValue());
+    assertThat(
+        reset.getOspfv3Cost(),
+        equalTo(null));
+    assertThat(
+        reset.getOspfv3HelloInterval(),
+        equalTo(null));
+    assertThat(
+        reset.getOspfv3DeadInterval(),
+        equalTo(null));
+    assertThat(
+        reset.getOspfv3NetworkType(),
+        equalTo(null));
+  }
+
+  @Test
+  public void testOspfv3InterfaceKnobsConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-interface-knobs");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.Interface configured =
+        c.getAllInterfaces().get("1/1/1");
+
+    assertThat(
+        configured.getOspfv3Settings(),
+        notNullValue());
+    assertThat(
+        configured.getOspfv3Settings().getCost(),
+        equalTo(25));
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getHelloInterval(),
+        equalTo(5));
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getDeadInterval(),
+        equalTo(20));
+    assertThat(
+        configured
+            .getOspfv3Settings()
+            .getNetworkType(),
+        equalTo(
+            OspfNetworkType.POINT_TO_POINT));
+
+    org.batfish.datamodel.Interface broadcast =
+        c.getAllInterfaces().get("1/1/2");
+
+    assertThat(
+        broadcast
+            .getOspfv3Settings()
+            .getNetworkType(),
+        equalTo(
+            OspfNetworkType.BROADCAST));
+
+    org.batfish.datamodel.Interface reset =
+        c.getAllInterfaces().get("1/1/3");
+
+    assertThat(
+        reset.getOspfv3Settings(),
+        notNullValue());
+    assertThat(
+        reset.getOspfv3Settings().getCost(),
+        equalTo(null));
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getHelloInterval(),
+        equalTo(10));
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getDeadInterval(),
+        equalTo(40));
+    assertThat(
+        reset
+            .getOspfv3Settings()
+            .getNetworkType(),
+        equalTo(
+            OspfNetworkType.BROADCAST));
+  }
+
 }

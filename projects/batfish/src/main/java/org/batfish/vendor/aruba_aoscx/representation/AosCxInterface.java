@@ -121,12 +121,44 @@ public final class AosCxInterface implements Serializable {
     _ospfv3Cost = cost;
   }
 
+  public void clearOspfv3Cost() {
+    _ospfv3Cost = null;
+  }
+
+  public @Nullable Integer getOspfv3HelloInterval() {
+    return _ospfv3HelloInterval;
+  }
+
+  public void setOspfv3HelloInterval(int interval) {
+    _ospfv3HelloInterval = interval;
+  }
+
+  public void clearOspfv3HelloInterval() {
+    _ospfv3HelloInterval = null;
+  }
+
+  public @Nullable Integer getOspfv3DeadInterval() {
+    return _ospfv3DeadInterval;
+  }
+
+  public void setOspfv3DeadInterval(int interval) {
+    _ospfv3DeadInterval = interval;
+  }
+
+  public void clearOspfv3DeadInterval() {
+    _ospfv3DeadInterval = null;
+  }
+
   public @Nullable OspfNetworkType getOspfv3NetworkType() {
     return _ospfv3NetworkType;
   }
 
   public void setOspfv3NetworkType(OspfNetworkType networkType) {
     _ospfv3NetworkType = networkType;
+  }
+
+  public void clearOspfv3NetworkType() {
+    _ospfv3NetworkType = null;
   }
 
   /**
@@ -265,6 +297,8 @@ public final class AosCxInterface implements Serializable {
   private @Nullable Integer _ospfv3ProcessId;
   private @Nullable String _ospfv3Area;
   private @Nullable Integer _ospfv3Cost;
+  private @Nullable Integer _ospfv3HelloInterval;
+  private @Nullable Integer _ospfv3DeadInterval;
   private @Nullable OspfNetworkType _ospfv3NetworkType;
   private @Nullable Boolean _ospfv3Passive;
   private @Nullable Boolean _switchport;

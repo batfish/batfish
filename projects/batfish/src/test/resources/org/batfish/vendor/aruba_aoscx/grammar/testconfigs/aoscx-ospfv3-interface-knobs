@@ -1,0 +1,30 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:10::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 cost 25
+    ipv6 ospfv3 hello-interval 5
+    ipv6 ospfv3 dead-interval 20
+    ipv6 ospfv3 network point-to-point
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:20::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 network broadcast
+interface 1/1/3
+    no shutdown
+    ipv6 address 2001:db8:30::1/64
+    ipv6 ospfv3 1 area 0.0.0.0
+    ipv6 ospfv3 cost 100
+    no ipv6 ospfv3 cost
+    ipv6 ospfv3 hello-interval 30
+    no ipv6 ospfv3 hello-interval
+    ipv6 ospfv3 dead-interval 120
+    no ipv6 ospfv3 dead-interval
+    ipv6 ospfv3 network point-to-point
+    no ipv6 ospfv3 network

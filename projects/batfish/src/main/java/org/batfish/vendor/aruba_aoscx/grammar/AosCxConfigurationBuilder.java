@@ -31,6 +31,8 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_intervalContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_hello_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_passiveContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_routeContext;
@@ -474,25 +476,138 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_ipv6_ospfv3_cost(S_ipv6_ospfv3_costContext ctx) {
+  public void exitS_ipv6_ospfv3_cost(
+      S_ipv6_ospfv3_costContext ctx) {
     if (_currentInterface == null) {
-      warn(ctx, "Ignoring OSPFv3 cost command outside interface context");
+      warn(
+          ctx,
+          "Ignoring OSPFv3 cost command outside interface context");
       return;
     }
 
-    _currentInterface.setOspfv3Cost(
-        Integer.parseInt(ctx.WORD().getText()));
+    if (ctx.NO() != null) {
+      _currentInterface.clearOspfv3Cost();
+      return;
+    }
+
+    int cost;
+    try {
+      cost =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(ctx, "Ignoring invalid OSPFv3 cost");
+      return;
+    }
+
+    if (cost < 1 || cost > 65535) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 cost outside 1-65535");
+      return;
+    }
+
+    _currentInterface.setOspfv3Cost(cost);
   }
 
   @Override
-  public void exitS_ipv6_ospfv3_network(S_ipv6_ospfv3_networkContext ctx) {
+  public void exitS_ipv6_ospfv3_hello_interval(
+      S_ipv6_ospfv3_hello_intervalContext ctx) {
     if (_currentInterface == null) {
-      warn(ctx, "Ignoring OSPFv3 network command outside interface context");
+      warn(
+          ctx,
+          "Ignoring OSPFv3 hello-interval outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3HelloInterval();
+      return;
+    }
+
+    int interval;
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 hello interval");
+      return;
+    }
+
+    if (interval < 1 || interval > 65535) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 hello interval outside 1-65535");
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3HelloInterval(interval);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_dead_interval(
+      S_ipv6_ospfv3_dead_intervalContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 dead-interval outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3DeadInterval();
+      return;
+    }
+
+    int interval;
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 dead interval");
+      return;
+    }
+
+    if (interval < 1 || interval > 65535) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 dead interval outside 1-65535");
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3DeadInterval(interval);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_network(
+      S_ipv6_ospfv3_networkContext ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 network command outside interface context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentInterface
+          .clearOspfv3NetworkType();
       return;
     }
 
     _currentInterface.setOspfv3NetworkType(
-        OspfNetworkType.POINT_TO_POINT);
+        ctx.POINT_TO_POINT() != null
+            ? OspfNetworkType.POINT_TO_POINT
+            : OspfNetworkType.BROADCAST);
   }
 
   @Override

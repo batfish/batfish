@@ -1156,8 +1156,14 @@ public class AosCxConfiguration extends VendorConfiguration {
                       Integer.toString(iface.getOspfv3ProcessId()))
                   .setEnabled(true)
                   .setPassive(passive)
-                  .setHelloInterval(10)
-                  .setDeadInterval(40)
+                  .setHelloInterval(
+                      iface.getOspfv3HelloInterval() != null
+                          ? iface.getOspfv3HelloInterval()
+                          : 10)
+                  .setDeadInterval(
+                      iface.getOspfv3DeadInterval() != null
+                          ? iface.getOspfv3DeadInterval()
+                          : 40)
                   .setNetworkType(networkType)
                   .build());
         });
