@@ -1229,6 +1229,17 @@ public class AosCxConfiguration extends VendorConfiguration {
                           toOspfAreaNumber(areaId),
                           suppressInterArea));
 
+          Map<Long, Boolean> nssaAreas =
+              new HashMap<>();
+
+          process
+              .getNssaAreas()
+              .forEach(
+                  (areaId, suppressInterArea) ->
+                      nssaAreas.put(
+                          toOspfAreaNumber(areaId),
+                          suppressInterArea));
+
           Map<Long, Ospfv3Area> areas =
               new HashMap<>();
 
@@ -1239,14 +1250,23 @@ public class AosCxConfiguration extends VendorConfiguration {
                         .setNumber(area)
                         .addInterfaces(interfaces);
 
-                Boolean suppressInterArea =
+                Boolean nssaSuppressInterArea =
+                    nssaAreas.get(area);
+
+                Boolean stubSuppressInterArea =
                     stubAreas.get(area);
 
-                if (suppressInterArea != null) {
+                if (nssaSuppressInterArea != null) {
+                  areaBuilder
+                      .setNssa(true)
+                      .setSuppressInterArea(
+                          nssaSuppressInterArea);
+                } else if (
+                    stubSuppressInterArea != null) {
                   areaBuilder
                       .setStub(true)
                       .setSuppressInterArea(
-                          suppressInterArea);
+                          stubSuppressInterArea);
                 }
 
                 Long defaultMetric =

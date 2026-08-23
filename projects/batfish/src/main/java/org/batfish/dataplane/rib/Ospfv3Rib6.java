@@ -4,6 +4,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
+import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 
 /**
@@ -24,7 +25,9 @@ public final class Ospfv3Rib6
     if (route instanceof Ospfv3InterAreaRoute6) {
       return 2;
     }
-    if (route instanceof Ospfv3ExternalType2Route6) {
+    if (route instanceof Ospfv3ExternalType2Route6
+        || route
+            instanceof Ospfv3NssaExternalType2Route6) {
       return 1;
     }
     return 0;
@@ -61,19 +64,34 @@ public final class Ospfv3Rib6
       return metricComparison;
     }
 
-    // For equal E2 metrics, prefer the lower internal cost to the ASBR.
-    if (lhs instanceof Ospfv3ExternalType2Route6
-        && rhs instanceof Ospfv3ExternalType2Route6) {
-      Ospfv3ExternalType2Route6 lhsExternal =
-          (Ospfv3ExternalType2Route6) lhs;
-      Ospfv3ExternalType2Route6 rhsExternal =
-          (Ospfv3ExternalType2Route6) rhs;
+    // For equal external metrics, prefer lower internal cost to the ASBR.
+    Long lhsCost =
+        externalCostToAdvertiser(lhs);
+    Long rhsCost =
+        externalCostToAdvertiser(rhs);
 
+    if (lhsCost != null && rhsCost != null) {
       return Long.compare(
-          rhsExternal.getCostToAdvertiser(),
-          lhsExternal.getCostToAdvertiser());
+          rhsCost,
+          lhsCost);
     }
 
     return 0;
+  }
+
+  private static Long externalCostToAdvertiser(
+      AbstractRoute6 route) {
+    if (route instanceof Ospfv3ExternalType2Route6) {
+      return ((Ospfv3ExternalType2Route6) route)
+          .getCostToAdvertiser();
+    }
+
+    if (route
+        instanceof Ospfv3NssaExternalType2Route6) {
+      return ((Ospfv3NssaExternalType2Route6) route)
+          .getCostToAdvertiser();
+    }
+
+    return null;
   }
 }

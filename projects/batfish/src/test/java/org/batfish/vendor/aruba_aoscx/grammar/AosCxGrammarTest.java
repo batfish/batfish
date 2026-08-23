@@ -2524,4 +2524,163 @@ public final class AosCxGrammarTest {
         equalTo(true));
   }
 
+  @Test
+  public void testOspfv3NssaExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-nssa");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(process, notNullValue());
+
+    assertThat(
+        process.getNssaAreas()
+            .get("0.0.0.1"),
+        equalTo(false));
+
+    assertThat(
+        process.getNssaAreas()
+            .get("0.0.0.2"),
+        equalTo(true));
+
+    /*
+     * no area ... nssa no-summary retains NSSA
+     * but clears summary suppression.
+     */
+    assertThat(
+        process.getNssaAreas()
+            .get("0.0.0.3"),
+        equalTo(false));
+
+    /*
+     * no area ... nssa changes the area back to normal.
+     */
+    assertThat(
+        process.getNssaAreas()
+            .containsKey("0.0.0.4"),
+        equalTo(false));
+
+    /*
+     * Changing stub -> NSSA replaces the old area type.
+     */
+    assertThat(
+        process.getNssaAreas()
+            .get("0.0.0.5"),
+        equalTo(false));
+    assertThat(
+        process.getStubAreas()
+            .containsKey("0.0.0.5"),
+        equalTo(false));
+
+    /*
+     * Changing NSSA -> stub replaces NSSA type.
+     */
+    assertThat(
+        process.getStubAreas()
+            .get("0.0.0.6"),
+        equalTo(false));
+    assertThat(
+        process.getNssaAreas()
+            .containsKey("0.0.0.6"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .get("0.0.0.1"),
+        equalTo(7L));
+  }
+
+  @Test
+  public void testOspfv3NssaConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-nssa");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        process =
+            c.getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(process, notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        nssa =
+            process.getAreas().get(1L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        noSummary =
+            process.getAreas().get(2L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        resetNoSummary =
+            process.getAreas().get(3L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        resetNssa =
+            process.getAreas().get(4L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        changedToNssa =
+            process.getAreas().get(5L);
+
+    org.batfish.datamodel.ospf.Ospfv3Area
+        changedToStub =
+            process.getAreas().get(6L);
+
+    assertThat(
+        nssa.getNssa(),
+        equalTo(true));
+    assertThat(
+        nssa.getStub(),
+        equalTo(false));
+    assertThat(
+        nssa.getSuppressInterArea(),
+        equalTo(false));
+    assertThat(
+        nssa.getDefaultMetric(),
+        equalTo(7L));
+
+    assertThat(
+        noSummary.getNssa(),
+        equalTo(true));
+    assertThat(
+        noSummary.getSuppressInterArea(),
+        equalTo(true));
+
+    assertThat(
+        resetNoSummary.getNssa(),
+        equalTo(true));
+    assertThat(
+        resetNoSummary.getSuppressInterArea(),
+        equalTo(false));
+
+    assertThat(
+        resetNssa.getNssa(),
+        equalTo(false));
+    assertThat(
+        resetNssa.getStub(),
+        equalTo(false));
+
+    assertThat(
+        changedToNssa.getNssa(),
+        equalTo(true));
+    assertThat(
+        changedToNssa.getStub(),
+        equalTo(false));
+
+    assertThat(
+        changedToStub.getStub(),
+        equalTo(true));
+    assertThat(
+        changedToStub.getNssa(),
+        equalTo(false));
+  }
+
 }

@@ -68,6 +68,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activat
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_asContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
@@ -1204,7 +1205,9 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_ospf_area(S_ospf_areaContext ctx) {
     if (_currentOspfv3Process != null
         && ctx.getStart().getCharPositionInLine() > 0) {
-      _currentOspfv3Process.addArea(ctx.WORD().getText());
+      _currentOspfv3Process
+          .setNormalArea(
+              ctx.WORD().getText());
     }
   }
 
@@ -1260,6 +1263,46 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     warn(
         ctx,
         "Ignoring OSPF stub area outside OSPF context");
+  }
+
+  @Override
+  public void exitS_ospf_area_nssa(
+      S_ospf_area_nssaContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 NSSA area outside OSPFv3 context");
+      return;
+    }
+
+    String area =
+        ctx.WORD().getText();
+
+    if (ctx.NO() == null) {
+      _currentOspfv3Process
+          .setNssaArea(
+              area,
+              ctx.NO_SUMMARY() != null);
+      return;
+    }
+
+    if (ctx.NO_SUMMARY() != null) {
+      /*
+       * AOS-CX:
+       * no area X nssa no-summary
+       * keeps NSSA type and restores inter-area summaries.
+       */
+      _currentOspfv3Process
+          .clearNssaNoSummary(area);
+      return;
+    }
+
+    /*
+     * no area X nssa changes the configured area back to normal.
+     */
+    _currentOspfv3Process
+        .clearNssaArea(area);
   }
 
   @Override

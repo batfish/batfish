@@ -82,11 +82,23 @@ public final class Ospfv3ProcessTest {
             .setDefaultMetric(17L)
             .build();
 
+    Ospfv3Area nssaArea =
+        Ospfv3Area.builder()
+            .setNumber(1L)
+            .addInterface("Ethernet2")
+            .setNssa(true)
+            .setSuppressInterArea(true)
+            .setDefaultMetric(19L)
+            .build();
+
     Ospfv3Process process =
         Ospfv3Process.builder()
             .setProcessId("1")
             .setRouterId(Ip.parse("192.0.2.1"))
-            .setAreas(ImmutableMap.of(0L, area))
+            .setAreas(
+                ImmutableMap.of(
+                    0L, area,
+                    1L, nssaArea))
             .setAdminCost(111)
             .setInterAreaAdminCost(112)
             .setExternalAdminCost(113)
@@ -128,6 +140,30 @@ public final class Ospfv3ProcessTest {
             .get(0L)
             .getDefaultMetric(),
         equalTo(17L));
+
+    assertThat(
+        clone.getAreas()
+            .get(1L)
+            .getNssa(),
+        equalTo(true));
+
+    assertThat(
+        clone.getAreas()
+            .get(1L)
+            .getStub(),
+        equalTo(false));
+
+    assertThat(
+        clone.getAreas()
+            .get(1L)
+            .getSuppressInterArea(),
+        equalTo(true));
+
+    assertThat(
+        clone.getAreas()
+            .get(1L)
+            .getDefaultMetric(),
+        equalTo(19L));
     assertThat(clone.getAdminCost(), equalTo(111));
     assertThat(
         clone.getIntraAreaAdminCost(),

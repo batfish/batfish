@@ -1,0 +1,17 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+    area 0.0.0.1 nssa
+    area 0.0.0.1 default-metric 7
+    area 0.0.0.2 nssa no-summary
+    area 0.0.0.3 nssa no-summary
+    no area 0.0.0.3 nssa no-summary
+    area 0.0.0.4 nssa
+    no area 0.0.0.4 nssa
+    area 0.0.0.5 stub
+    area 0.0.0.5 nssa
+    area 0.0.0.6 nssa
+    area 0.0.0.6 stub

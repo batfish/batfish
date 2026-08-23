@@ -223,6 +223,13 @@ public final class AosCxOspfv3Process
     _areas.add(area);
   }
 
+  /** Change an existing area to normal area type. */
+  public void setNormalArea(String area) {
+    _areas.add(area);
+    _stubAreas.remove(area);
+    _nssaAreas.remove(area);
+  }
+
   /**
    * Return stub areas keyed by configured area ID.
    *
@@ -237,12 +244,13 @@ public final class AosCxOspfv3Process
       String area,
       boolean suppressInterArea) {
     _areas.add(area);
+    _nssaAreas.remove(area);
     _stubAreas.put(
         area,
         suppressInterArea);
   }
 
-  /** Convert an area back to normal while retaining the area itself. */
+  /** Clear stub type while retaining the area declaration. */
   public void clearStubArea(String area) {
     _areas.add(area);
     _stubAreas.remove(area);
@@ -254,6 +262,45 @@ public final class AosCxOspfv3Process
 
     if (_stubAreas.containsKey(area)) {
       _stubAreas.put(area, false);
+    }
+  }
+
+  /**
+   * Return NSSA areas keyed by configured area ID.
+   *
+   * <p>The Boolean value is true for {@code no-summary}.
+   */
+  public @Nonnull Map<String, Boolean>
+      getNssaAreas() {
+    return _nssaAreas;
+  }
+
+  public void setNssaArea(
+      String area,
+      boolean suppressInterArea) {
+    _areas.add(area);
+    _stubAreas.remove(area);
+    _nssaAreas.put(
+        area,
+        suppressInterArea);
+  }
+
+  /**
+   * Clear NSSA type, changing the area back to normal.
+   */
+  public void clearNssaArea(String area) {
+    _areas.add(area);
+    _nssaAreas.remove(area);
+  }
+
+  /**
+   * Retain NSSA status while clearing no-summary.
+   */
+  public void clearNssaNoSummary(String area) {
+    _areas.add(area);
+
+    if (_nssaAreas.containsKey(area)) {
+      _nssaAreas.put(area, false);
     }
   }
 
@@ -317,6 +364,9 @@ public final class AosCxOspfv3Process
 
   private final @Nonnull Map<String, Boolean>
       _stubAreas = new HashMap<>();
+
+  private final @Nonnull Map<String, Boolean>
+      _nssaAreas = new HashMap<>();
 
   private final @Nonnull Map<String, Long>
       _areaDefaultMetrics = new HashMap<>();

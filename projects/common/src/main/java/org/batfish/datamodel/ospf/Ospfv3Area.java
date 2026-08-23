@@ -24,6 +24,7 @@ public final class Ospfv3Area implements Serializable {
     private long _defaultMetric;
     private @Nonnull ImmutableSortedSet.Builder<String>
         _interfaces;
+    private boolean _nssa;
     private @Nullable Long _number;
     private boolean _stub;
     private boolean _suppressInterArea;
@@ -41,8 +42,14 @@ public final class Ospfv3Area implements Serializable {
           "Must set area number before building");
 
       checkArgument(
-          !_suppressInterArea || _stub,
-          "Cannot suppress inter-area routes in a non-stub area");
+          !(_stub && _nssa),
+          "An OSPFv3 area cannot be both stub and NSSA");
+
+      checkArgument(
+          !_suppressInterArea
+              || _stub
+              || _nssa,
+          "Cannot suppress inter-area routes in a normal area");
 
       checkArgument(
           _defaultMetric >= 0L
@@ -54,6 +61,7 @@ public final class Ospfv3Area implements Serializable {
           _number,
           _interfaces.build(),
           _stub,
+          _nssa,
           _suppressInterArea,
           _defaultMetric);
     }
@@ -77,17 +85,34 @@ public final class Ospfv3Area implements Serializable {
 
     public Builder setStub(boolean stub) {
       _stub = stub;
+
+      if (stub) {
+        _nssa = false;
+      }
+
+      return this;
+    }
+
+    public Builder setNssa(boolean nssa) {
+      _nssa = nssa;
+
+      if (nssa) {
+        _stub = false;
+      }
+
       return this;
     }
 
     /**
-     * Suppress normal inter-area summaries into this stub area.
+     * Suppress ordinary inter-area summaries into this restricted area.
      *
-     * <p>This corresponds to AOS-CX {@code area ... stub no-summary}.
+     * <p>This represents {@code stub no-summary} and
+     * {@code nssa no-summary}.
      */
     public Builder setSuppressInterArea(
         boolean suppressInterArea) {
-      _suppressInterArea = suppressInterArea;
+      _suppressInterArea =
+          suppressInterArea;
       return this;
     }
 
@@ -104,6 +129,8 @@ public final class Ospfv3Area implements Serializable {
       "interfaces";
   private static final String PROP_NAME =
       "name";
+  private static final String PROP_NSSA =
+      "nssa";
   private static final String PROP_STUB =
       "stub";
   private static final String PROP_SUPPRESS_INTER_AREA =
@@ -121,6 +148,8 @@ public final class Ospfv3Area implements Serializable {
           @Nullable SortedSet<String> interfaces,
       @JsonProperty(PROP_STUB)
           @Nullable Boolean stub,
+      @JsonProperty(PROP_NSSA)
+          @Nullable Boolean nssa,
       @JsonProperty(PROP_SUPPRESS_INTER_AREA)
           @Nullable Boolean suppressInterArea,
       @JsonProperty(PROP_DEFAULT_METRIC)
@@ -132,6 +161,7 @@ public final class Ospfv3Area implements Serializable {
             interfaces,
             ImmutableSortedSet.of()),
         firstNonNull(stub, false),
+        firstNonNull(nssa, false),
         firstNonNull(
             suppressInterArea,
             false),
@@ -144,12 +174,19 @@ public final class Ospfv3Area implements Serializable {
       long areaNumber,
       Collection<String> interfaces,
       boolean stub,
+      boolean nssa,
       boolean suppressInterArea,
       long defaultMetric) {
 
     checkArgument(
-        !suppressInterArea || stub,
-        "Cannot suppress inter-area routes in a non-stub area");
+        !(stub && nssa),
+        "An OSPFv3 area cannot be both stub and NSSA");
+
+    checkArgument(
+        !suppressInterArea
+            || stub
+            || nssa,
+        "Cannot suppress inter-area routes in a normal area");
 
     checkArgument(
         defaultMetric >= 0L
@@ -161,6 +198,7 @@ public final class Ospfv3Area implements Serializable {
     _interfaces =
         ImmutableSortedSet.copyOf(interfaces);
     _stub = stub;
+    _nssa = nssa;
     _suppressInterArea = suppressInterArea;
     _defaultMetric = defaultMetric;
   }
@@ -181,6 +219,11 @@ public final class Ospfv3Area implements Serializable {
     return _stub;
   }
 
+  @JsonProperty(PROP_NSSA)
+  public boolean getNssa() {
+    return _nssa;
+  }
+
   @JsonProperty(PROP_SUPPRESS_INTER_AREA)
   public boolean getSuppressInterArea() {
     return _suppressInterArea;
@@ -195,6 +238,7 @@ public final class Ospfv3Area implements Serializable {
   private final long _defaultMetric;
   private final @Nonnull SortedSet<String>
       _interfaces;
+  private final boolean _nssa;
   private final boolean _stub;
   private final boolean _suppressInterArea;
 }

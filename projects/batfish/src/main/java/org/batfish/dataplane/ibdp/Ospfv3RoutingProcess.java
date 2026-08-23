@@ -20,6 +20,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
+import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route;
@@ -57,6 +58,8 @@ final class Ospfv3RoutingProcess {
     _ospfv3Rib = new Ospfv3Rib6();
     _localExternalAdvertisements =
         ImmutableSet.of();
+    _translatedNssaExternalAdvertisements =
+        ImmutableSet.of();
   }
 
   /**
@@ -67,6 +70,8 @@ final class Ospfv3RoutingProcess {
    */
   void initialize(ConnectedRib6 connectedRib) {
     _ospfv3Rib.clear();
+    _translatedNssaExternalAdvertisements =
+        ImmutableSet.of();
 
     if (!_process.getEnabled()) {
       return;
@@ -133,7 +138,7 @@ final class Ospfv3RoutingProcess {
       Set<StaticRoute6> staticRoutes,
       boolean nonOspfv3DefaultRoutePresent) {
 
-    Set<Ospfv3ExternalType2Route6> desired =
+    Set<AbstractRoute6> desired =
         new HashSet<>();
 
     if (!_process.getEnabled()) {
@@ -150,10 +155,6 @@ final class Ospfv3RoutingProcess {
       for (ConnectedRoute6 connected :
           connectedRib.getRoutes()) {
 
-        /*
-         * A network already originated internally by this process
-         * must not also be originated as an external route.
-         */
         if (isInternallyOriginatedConnectedRoute(
             connected)) {
           continue;
@@ -174,14 +175,11 @@ final class Ospfv3RoutingProcess {
         RouteMap6.Result result =
             transformed.get();
 
-        desired.add(
-            new Ospfv3ExternalType2Route6(
-                connected.getNetwork(),
-                Route.UNSET_NEXT_HOP_INTERFACE,
-                _process.getExternalAdminCost(),
-                result.getMetric(),
-                _process.getRouterId(),
-                result.getTag()));
+        addLocallyOriginatedExternalAdvertisements(
+            desired,
+            connected.getNetwork(),
+            result.getMetric(),
+            result.getTag());
       }
     }
 
@@ -202,14 +200,11 @@ final class Ospfv3RoutingProcess {
         RouteMap6.Result result =
             transformed.get();
 
-        desired.add(
-            new Ospfv3ExternalType2Route6(
-                route.getNetwork(),
-                Route.UNSET_NEXT_HOP_INTERFACE,
-                _process.getExternalAdminCost(),
-                result.getMetric(),
-                _process.getRouterId(),
-                result.getTag()));
+        addLocallyOriginatedExternalAdvertisements(
+            desired,
+            route.getNetwork(),
+            result.getMetric(),
+            result.getTag());
       }
     }
 
@@ -217,17 +212,14 @@ final class Ospfv3RoutingProcess {
         && (_process
                 .getDefaultInformationOriginateAlways()
             || nonOspfv3DefaultRoutePresent)) {
-
-      desired.add(
-          new Ospfv3ExternalType2Route6(
-              Prefix6.ZERO,
-              Route.UNSET_NEXT_HOP_INTERFACE,
-              _process.getExternalAdminCost(),
-              _process.getDefaultInformationMetric(),
-              _process.getRouterId()));
+      addLocallyOriginatedExternalAdvertisements(
+          desired,
+          Prefix6.ZERO,
+          _process.getDefaultInformationMetric(),
+          Route.UNSET_ROUTE_TAG);
     }
 
-    Set<Ospfv3ExternalType2Route6> immutableDesired =
+    Set<AbstractRoute6> immutableDesired =
         ImmutableSet.copyOf(desired);
 
     if (_localExternalAdvertisements.equals(
@@ -239,6 +231,57 @@ final class Ospfv3RoutingProcess {
         immutableDesired;
 
     return true;
+  }
+
+  /**
+   * Originate Type-5 advertisements toward normal areas and Type-7
+   * advertisements toward each NSSA.
+   *
+   * <p>Ordinary stub areas receive neither external LSA type.
+   */
+  private void addLocallyOriginatedExternalAdvertisements(
+      Set<AbstractRoute6> advertisements,
+      Prefix6 network,
+      long metric,
+      long tag) {
+
+    boolean hasNormalArea =
+        _process
+            .getAreas()
+            .values()
+            .stream()
+            .anyMatch(
+                area ->
+                    !area.getStub()
+                        && !area.getNssa());
+
+    if (hasNormalArea) {
+      advertisements.add(
+          new Ospfv3ExternalType2Route6(
+              network,
+              Route.UNSET_NEXT_HOP_INTERFACE,
+              _process.getExternalAdminCost(),
+              metric,
+              _process.getRouterId(),
+              tag));
+    }
+
+    _process
+        .getAreas()
+        .values()
+        .stream()
+        .filter(Ospfv3Area::getNssa)
+        .forEach(
+            area ->
+                advertisements.add(
+                    new Ospfv3NssaExternalType2Route6(
+                        network,
+                        Route.UNSET_NEXT_HOP_INTERFACE,
+                        _process.getExternalAdminCost(),
+                        metric,
+                        area.getAreaNumber(),
+                        _process.getRouterId(),
+                        tag)));
   }
 
   private static Optional<RouteMap6.Result>
@@ -413,7 +456,7 @@ final class Ospfv3RoutingProcess {
               remoteProcess.getRoutes();
 
           changed |=
-              importStubDefaultFromNeighbor(
+              importRestrictedAreaDefaultFromNeighbor(
                   localIface,
                   remoteIface,
                   localArea,
@@ -440,6 +483,13 @@ final class Ospfv3RoutingProcess {
                   remoteIface,
                   localSettings.getAreaName(),
                   remoteRoutes);
+
+          changed |=
+              importNssaExternalRoutesFromNeighbor(
+                  localIface,
+                  remoteIface,
+                  localSettings.getAreaName(),
+                  remoteRoutes);
         }
       }
     }
@@ -462,7 +512,9 @@ final class Ospfv3RoutingProcess {
     return localArea != null
         && remoteArea != null
         && localArea.getStub()
-            == remoteArea.getStub();
+            == remoteArea.getStub()
+        && localArea.getNssa()
+            == remoteArea.getNssa();
   }
 
   private boolean isStubArea(long area) {
@@ -471,6 +523,19 @@ final class Ospfv3RoutingProcess {
 
     return settings != null
         && settings.getStub();
+  }
+
+  private boolean isNssaArea(long area) {
+    Ospfv3Area settings =
+        _process.getAreas().get(area);
+
+    return settings != null
+        && settings.getNssa();
+  }
+
+  private boolean isRestrictedArea(long area) {
+    return isStubArea(area)
+        || isNssaArea(area);
   }
 
   private boolean isAreaBorderRouterFor(
@@ -486,7 +551,8 @@ final class Ospfv3RoutingProcess {
         _process.getAreas().get(area);
 
     return settings != null
-        && settings.getStub()
+        && (settings.getStub()
+            || settings.getNssa())
         && settings.getSuppressInterArea()
         && isAreaBorderRouterFor(area);
   }
@@ -499,7 +565,8 @@ final class Ospfv3RoutingProcess {
 
     boolean localSuppression =
         localArea != null
-            && localArea.getStub()
+            && (localArea.getStub()
+                || localArea.getNssa())
             && localArea.getSuppressInterArea();
 
     return localSuppression
@@ -510,13 +577,13 @@ final class Ospfv3RoutingProcess {
   /**
    * Install the default summary originated by an ABR toward a stub area.
    */
-  private boolean importStubDefaultFromNeighbor(
+  private boolean importRestrictedAreaDefaultFromNeighbor(
       Interface localIface,
       Interface remoteIface,
       long area,
       Ospfv3RoutingProcess remoteProcess) {
 
-    if (!isStubArea(area)
+    if (!isRestrictedArea(area)
         || !remoteProcess
             .isAreaBorderRouterFor(area)) {
       return false;
@@ -859,8 +926,8 @@ final class Ospfv3RoutingProcess {
       long area,
       Set<AbstractRoute6> remoteRoutes) {
 
-    // Type-5 external LSAs are not flooded into OSPF stub areas.
-    if (isStubArea(area)) {
+    // Type-5 external LSAs are not flooded into stub or NSSA areas.
+    if (isRestrictedArea(area)) {
       return false;
     }
 
@@ -926,6 +993,132 @@ final class Ospfv3RoutingProcess {
                   newCostToAdvertiser,
                   external.getAdvertiser(),
                   external.getTag()));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Import NSSA Type-7 external routes inside their originating NSSA.
+   *
+   * <p>An ABR attached to area 0 translates a received Type-7 advertisement
+   * into a locally originated Type-5 advertisement for normal areas. The
+   * translated advertisement is control-plane state only and is not installed
+   * as an additional local forwarding candidate.
+   */
+  private boolean importNssaExternalRoutesFromNeighbor(
+      Interface localIface,
+      Interface remoteIface,
+      long area,
+      Set<AbstractRoute6> remoteRoutes) {
+
+    if (!isNssaArea(area)) {
+      return false;
+    }
+
+    boolean changed = false;
+
+    long incrementalCost =
+        computeInterfaceCost(localIface);
+
+    @Nullable Ip6 peerIp =
+        findPeerNextHopIp(
+                localIface,
+                remoteIface)
+            .orElse(null);
+
+    for (AbstractRoute6 route : remoteRoutes) {
+      if (!(route
+          instanceof Ospfv3NssaExternalType2Route6)) {
+        continue;
+      }
+
+      Ospfv3NssaExternalType2Route6 external =
+          (Ospfv3NssaExternalType2Route6) route;
+
+      if (external.getArea() != area) {
+        continue;
+      }
+
+      if (external
+              .getAdvertiser()
+              .equals(_process.getRouterId())
+          && external.getCostToAdvertiser() != 0L) {
+        continue;
+      }
+
+      if (remoteIface
+          .getName()
+          .equals(
+              external.getNextHopInterface())) {
+        continue;
+      }
+
+      if (external.getCostToAdvertiser()
+              >= LS_INFINITY
+          || incrementalCost
+              >= LS_INFINITY
+                  - external.getCostToAdvertiser()) {
+        continue;
+      }
+
+      long newCostToAdvertiser =
+          external.getCostToAdvertiser()
+              + incrementalCost;
+
+      Ospfv3NssaExternalType2Route6 learned =
+          new Ospfv3NssaExternalType2Route6(
+              external.getNetwork(),
+              localIface.getName(),
+              peerIp,
+              _process.getExternalAdminCost(),
+              external.getMetric(),
+              area,
+              newCostToAdvertiser,
+              external.getAdvertiser(),
+              external.getTag());
+
+      changed |=
+          _ospfv3Rib.mergeRoute(learned);
+
+      /*
+       * A backbone-connected NSSA ABR translates Type-7 to Type-5.
+       * This route is advertised as being originated by the translator ABR.
+       *
+       * Translator election between multiple ABRs is intentionally not
+       * modeled yet; the normal RIB tie-breaking logic handles multiple
+       * translated advertisements if they exist.
+       */
+      if (isAreaBorderRouterFor(area)) {
+        changed |=
+            addTranslatedNssaAdvertisement(
+                external);
+      }
+    }
+
+    return changed;
+  }
+
+  private boolean addTranslatedNssaAdvertisement(
+      Ospfv3NssaExternalType2Route6 external) {
+
+    Set<Ospfv3ExternalType2Route6> updated =
+        new HashSet<>(
+            _translatedNssaExternalAdvertisements);
+
+    boolean changed =
+        updated.add(
+            new Ospfv3ExternalType2Route6(
+                external.getNetwork(),
+                Route.UNSET_NEXT_HOP_INTERFACE,
+                _process.getExternalAdminCost(),
+                external.getMetric(),
+                _process.getRouterId(),
+                external.getTag()));
+
+    if (changed) {
+      _translatedNssaExternalAdvertisements =
+          ImmutableSet.copyOf(updated);
     }
 
     return changed;
@@ -1037,6 +1230,8 @@ final class Ospfv3RoutingProcess {
         .<AbstractRoute6>builder()
         .addAll(_ospfv3Rib.getRoutes())
         .addAll(_localExternalAdvertisements)
+        .addAll(
+            _translatedNssaExternalAdvertisements)
         .build();
   }
 
@@ -1049,12 +1244,15 @@ final class Ospfv3RoutingProcess {
   int iterationHashCode() {
     return Objects.hash(
         _ospfv3Rib.getRoutes(),
-        _localExternalAdvertisements);
+        _localExternalAdvertisements,
+        _translatedNssaExternalAdvertisements);
   }
 
   private final @Nonnull Configuration _c;
-  private Set<Ospfv3ExternalType2Route6>
+  private Set<AbstractRoute6>
       _localExternalAdvertisements;
+  private Set<Ospfv3ExternalType2Route6>
+      _translatedNssaExternalAdvertisements;
   private final @Nonnull Ospfv3Process _process;
   private final @Nonnull Ospfv3Rib6 _ospfv3Rib;
   private final @Nonnull String _vrfName;

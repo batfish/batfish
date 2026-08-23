@@ -48,6 +48,7 @@ LOCAL_PREFERENCE: 'local-preference';
 LINK_LOCAL: 'link-local';
 NO: 'no';
 NO_SUMMARY: 'no-summary';
+NSSA: 'nssa';
 NETWORK: 'network';
 MATCH: 'match';
 METRIC: 'metric';
