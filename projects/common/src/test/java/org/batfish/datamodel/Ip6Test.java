@@ -30,4 +30,35 @@ public class Ip6Test {
     assertThat("tie-break left", Ip6.parse("4:0:0:5:6:7:0:0").toString(), equalTo("4::5:6:7:0:0"));
     assertThat("localhost", Ip6.parse("::1").toString(), equalTo("::1"));
   }
+  @Test
+  public void testGetBitAtPosition() {
+    Ip6 ip =
+        Ip6.parse(
+            "8000::1");
+
+    assertThat(
+        ip.getBitAtPosition(0),
+        equalTo(true));
+
+    assertThat(
+        ip.getBitAtPosition(1),
+        equalTo(false));
+
+    assertThat(
+        ip.getBitAtPosition(126),
+        equalTo(false));
+
+    assertThat(
+        ip.getBitAtPosition(127),
+        equalTo(true));
+
+    assertThat(
+        Ip6.ZERO.getBitAtPosition(0),
+        equalTo(false));
+
+    assertThat(
+        Ip6.MAX.getBitAtPosition(127),
+        equalTo(true));
+  }
+
 }

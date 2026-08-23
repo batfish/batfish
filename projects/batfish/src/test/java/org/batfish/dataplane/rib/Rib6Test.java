@@ -142,4 +142,216 @@ public final class Rib6Test {
         rib.getRoutes(),
         equalTo(ImmutableSet.of(r1, r2)));
   }
+  @Test
+  public void testLongestPrefixMatchDefaultAndHostRoute() {
+    Rib6 rib =
+        new Rib6();
+
+    ConnectedRoute6 defaultRoute =
+        new ConnectedRoute6(
+            Prefix6.ZERO,
+            "default");
+
+    ConnectedRoute6 aggregate =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8::/32"),
+            "aggregate");
+
+    ConnectedRoute6 subnet =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8:10::/64"),
+            "subnet");
+
+    ConnectedRoute6 host =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8:10::1234/128"),
+            "host");
+
+    rib.mergeRoute(defaultRoute);
+    rib.mergeRoute(aggregate);
+    rib.mergeRoute(subnet);
+    rib.mergeRoute(host);
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:10::1234")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(host)));
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:10::abcd")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(subnet)));
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:20::1")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(aggregate)));
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db9::1")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(defaultRoute)));
+  }
+
+  @Test
+  public void testLongestPrefixMatchTrieRemovalFallback() {
+    Rib6 rib =
+        new Rib6();
+
+    ConnectedRoute6 aggregate =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8::/32"),
+            "aggregate");
+
+    ConnectedRoute6 subnet =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8:10::/64"),
+            "subnet");
+
+    ConnectedRoute6 host =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8:10::1234/128"),
+            "host");
+
+    rib.mergeRoute(aggregate);
+    rib.mergeRoute(subnet);
+    rib.mergeRoute(host);
+
+    Ip6 destination =
+        Ip6.parse(
+            "2001:db8:10::1234");
+
+    assertThat(
+        rib.longestPrefixMatch(destination),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(host)));
+
+    /*
+     * Removing /128 must prune only that leaf and expose /64.
+     */
+    rib.removeRoute(host);
+
+    assertThat(
+        rib.longestPrefixMatch(destination),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(subnet)));
+
+    /*
+     * Removing /64 must preserve the shared /32 branch.
+     */
+    rib.removeRoute(subnet);
+
+    assertThat(
+        rib.longestPrefixMatch(destination),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(aggregate)));
+
+    rib.removeRoute(aggregate);
+
+    assertThat(
+        rib.longestPrefixMatch(destination),
+        equalTo(
+            ImmutableSet.of()));
+  }
+
+  @Test
+  public void testLongestPrefixMatchPreservesEcmp() {
+    Rib6 rib =
+        new Rib6();
+
+    Prefix6 prefix =
+        Prefix6.parse(
+            "2001:db8:55::/64");
+
+    ConnectedRoute6 r1 =
+        new ConnectedRoute6(
+            prefix,
+            "Ethernet1",
+            10);
+
+    ConnectedRoute6 r2 =
+        new ConnectedRoute6(
+            prefix,
+            "Ethernet2",
+            10);
+
+    rib.mergeRoute(r1);
+    rib.mergeRoute(r2);
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:55::abcd")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(
+                    r1,
+                    r2)));
+
+    /*
+     * Losing one ECMP candidate must not remove the prefix from the trie.
+     */
+    rib.removeRoute(r1);
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:55::abcd")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(r2)));
+  }
+
+  @Test
+  public void testClearRemovesTrieState() {
+    Rib6 rib =
+        new Rib6();
+
+    ConnectedRoute6 route =
+        new ConnectedRoute6(
+            Prefix6.parse(
+                "2001:db8:99::/64"),
+            "Ethernet99");
+
+    rib.mergeRoute(route);
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:99::1")),
+        equalTo(
+            ImmutableSet
+                .<AbstractRoute6>of(route)));
+
+    rib.clear();
+
+    assertThat(
+        rib.longestPrefixMatch(
+            Ip6.parse(
+                "2001:db8:99::1")),
+        equalTo(
+            ImmutableSet.of()));
+  }
+
 }

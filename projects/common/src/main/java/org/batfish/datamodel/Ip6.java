@@ -82,6 +82,23 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     return _ip6;
   }
 
+  /**
+   * Return the bit at {@code position}, where 0 is the most-significant
+   * IPv6 bit and 127 is the least-significant bit.
+   */
+  public boolean getBitAtPosition(int position) {
+    checkArgument(
+        position >= 0
+            && position < Prefix6.MAX_PREFIX_LENGTH,
+        "Invalid IPv6 bit position %s",
+        position);
+
+    return _ip6.testBit(
+        Prefix6.MAX_PREFIX_LENGTH
+            - 1
+            - position);
+  }
+
   @Override
   public int compareTo(Ip6 rhs) {
     return _ip6.compareTo(rhs._ip6);
