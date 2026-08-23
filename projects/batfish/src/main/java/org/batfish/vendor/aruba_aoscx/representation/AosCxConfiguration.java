@@ -40,6 +40,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -98,6 +99,7 @@ public class AosCxConfiguration extends VendorConfiguration {
       new HashMap<>();
   private String _rawHostname;
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
+  private final List<AosCxStaticRoute6> _staticRoutes6 = new ArrayList<>();
   private ConfigurationFormat _vendor;
 
   @Override
@@ -229,6 +231,10 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public List<AosCxStaticRoute> getStaticRoutes() {
     return _staticRoutes;
+  }
+
+  public List<AosCxStaticRoute6> getStaticRoutes6() {
+    return _staticRoutes6;
   }
 
   @Override
@@ -1102,6 +1108,41 @@ public class AosCxConfiguration extends VendorConfiguration {
                 .build());
   }
 
+  private void convertStaticRoute6(
+      AosCxStaticRoute6 route) {
+    String vrfName =
+        route.getVrfName() == null
+            ? DEFAULT_VRF_NAME
+            : route.getVrfName();
+
+    Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      vrf = _c.getDefaultVrf();
+    }
+
+    StaticRoute6.Builder builder =
+        StaticRoute6.builder()
+            .setNetwork(route.getPrefix())
+            .setAdministrativeCost(
+                StaticRoute6.DEFAULT_ADMINISTRATIVE_COST);
+
+    switch (route.getNextHopType()) {
+      case IP ->
+          builder.setNextHopIp(
+              Ip6.parse(route.getNextHop()));
+
+      case INTERFACE ->
+          builder.setNextHopInterface(
+              route.getNextHop());
+
+      case NULL_ROUTE, REJECT ->
+          builder.setNextHopInterface(
+              Interface.NULL_INTERFACE_NAME);
+    }
+
+    vrf.getStaticRoutes6().add(builder.build());
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
@@ -1128,6 +1169,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     applyOspfInterfaceSettings();
     applyOspfv3InterfaceSettings();
     _staticRoutes.forEach(this::convertStaticRoute);
+    _staticRoutes6.forEach(this::convertStaticRoute6);
 
     return ImmutableList.of(_c);
   }

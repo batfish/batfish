@@ -29,6 +29,7 @@ statement
   | s_ipv6_ospfv3_area
   | s_ipv6_ospfv3_cost
   | s_ipv6_ospfv3_network
+  | s_ipv6_route
   | s_ip_static
   | s_ip_mtu
   | s_ip_ospf_area
@@ -205,6 +206,11 @@ s_ipv6_ospfv3_network
 ;
 
 
+
+s_ipv6_route
+:
+  IPV6 ROUTE WORD static_route_next_hop (VRF WORD)? NEWLINE
+;
 
 s_ip_static
 :

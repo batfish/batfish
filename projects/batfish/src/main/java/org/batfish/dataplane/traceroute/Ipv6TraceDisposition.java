@@ -9,5 +9,6 @@ public enum Ipv6TraceDisposition {
   LOOP,
   MAX_HOPS,
   NEIGHBOR_UNREACHABLE,
-  NO_ROUTE
+  NO_ROUTE,
+  NULL_ROUTED
 }

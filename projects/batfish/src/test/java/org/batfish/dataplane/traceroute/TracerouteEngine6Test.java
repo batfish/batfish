@@ -25,6 +25,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
@@ -1001,5 +1002,43 @@ public final class TracerouteEngine6Test {
                 .DENIED_IN));
   }
 
+
+  @Test
+  public void testNullRouteDisposition() {
+    Configuration n1 =
+        configuration("n1");
+
+    StaticRoute6 nullRoute =
+        StaticRoute6.builder()
+            .setNetwork(
+                Prefix6.parse(
+                    "2001:db8:dead::/64"))
+            .setNextHopInterface(
+                Interface.NULL_INTERFACE_NAME)
+            .build();
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(nullRoute))));
+
+    Ipv6Trace trace =
+        engine.computeTraces(
+                "n1",
+                Configuration.DEFAULT_VRF_NAME,
+                Ip6.parse(
+                    "2001:db8:dead::1"))
+            .get(0);
+
+    assertThat(
+        trace.getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition.NULL_ROUTED));
+  }
 
 }

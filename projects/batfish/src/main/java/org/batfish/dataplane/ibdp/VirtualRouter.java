@@ -71,6 +71,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LocalRoute;
@@ -81,7 +82,9 @@ import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
@@ -199,6 +202,9 @@ public final class VirtualRouter {
   /** OSPFv3 routes currently installed as candidates in main RIB6. */
   private Set<AbstractRoute6> _installedOspfv3Routes;
 
+  /** IPv6 static routes currently installed as candidates in main RIB6. */
+  private Set<StaticRoute6> _installedStaticRoutes6;
+
   RipInternalRib _ripInternalRib;
   RipInternalRib _ripInternalStagingRib;
   RipRib _ripRib;
@@ -262,6 +268,7 @@ public final class VirtualRouter {
     _ospfProcesses = ImmutableMap.of();
     _ospfv3Processes = ImmutableMap.of();
     _installedOspfv3Routes = ImmutableSet.of();
+    _installedStaticRoutes6 = ImmutableSet.of();
     _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
     _layer3Vnis = ImmutableMap.copyOf(_vrf.getLayer3Vnis());
     if (_vrf.getBgpProcess() != null) {
@@ -334,6 +341,8 @@ public final class VirtualRouter {
               _mainRib6.mergeRoute(route);
             });
 
+    refreshStaticRoutes6();
+
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
             .collect(
@@ -348,6 +357,104 @@ public final class VirtualRouter {
 
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  /**
+   * Resolve and install configured IPv6 static routes.
+   *
+   * <p>For now, next-hop-IP statics activate only when the next hop is
+   * directly connected. This prevents an unresolved low-admin static from
+   * suppressing a valid OSPFv3 route.
+   */
+  private void refreshStaticRoutes6() {
+    _installedStaticRoutes6.forEach(
+        _mainRib6::removeRoute);
+
+    ImmutableSet.Builder<StaticRoute6> installed =
+        ImmutableSet.builder();
+
+    for (StaticRoute6 configured :
+        _vrf.getStaticRoutes6()) {
+      for (StaticRoute6 resolved :
+          resolveStaticRoute6(configured)) {
+        _mainRib6.mergeRoute(resolved);
+        installed.add(resolved);
+      }
+    }
+
+    _installedStaticRoutes6 =
+        installed.build();
+  }
+
+  private Set<StaticRoute6> resolveStaticRoute6(
+      StaticRoute6 route) {
+    String nextHopInterface =
+        route.getNextHopInterface();
+
+    if (Interface.NULL_INTERFACE_NAME.equals(
+        nextHopInterface)) {
+      return ImmutableSet.of(route);
+    }
+
+    if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(
+        nextHopInterface)) {
+      Interface iface =
+          _c.getAllInterfaces().get(
+              nextHopInterface);
+
+      if (iface == null
+          || !iface.getActive()
+          || !_name.equals(
+              iface.getVrfName())) {
+        return ImmutableSet.of();
+      }
+
+      return ImmutableSet.of(route);
+    }
+
+    Ip6 nextHopIp =
+        route.getNextHopIp();
+
+    if (nextHopIp == null) {
+      return ImmutableSet.of();
+    }
+
+    boolean nextHopIsLocal =
+        _c.getAllInterfaces(_name)
+            .values()
+            .stream()
+            .flatMap(
+                iface ->
+                    iface.getAllConcreteAddresses6()
+                        .stream())
+            .anyMatch(
+                address ->
+                    address.getIp()
+                        .equals(nextHopIp));
+
+    if (nextHopIsLocal) {
+      return ImmutableSet.of();
+    }
+
+    return _c.getActiveInterfaces(_name)
+        .values()
+        .stream()
+        .filter(
+            iface ->
+                iface.getAllConcreteAddresses6()
+                    .stream()
+                    .anyMatch(
+                        address ->
+                            address.getPrefix()
+                                .contains(nextHopIp)))
+        .map(
+            iface ->
+                route.toBuilder()
+                    .setNextHopInterface(
+                        iface.getName())
+                    .build())
+        .collect(
+            ImmutableSet.toImmutableSet());
   }
 
   private void removeOspfv3RoutesFromMainRib6() {
@@ -952,6 +1059,9 @@ public final class VirtualRouter {
 
     // Add current IPv6 connected routes to the IPv6 main RIB.
     _connectedRib6.getRoutes().forEach(_mainRib6::mergeRoute);
+
+    // Re-evaluate IPv6 statics whose interface reachability may have changed.
+    refreshStaticRoutes6();
 
     // OSPFv3 interface-originated and redistributed routes depend on
     // the currently active IPv6 interfaces.

@@ -111,6 +111,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_RESOLUTION_POLICY = "resolutionPolicy";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
+  private static final String PROP_STATIC_ROUTES6 = "staticRoutes6";
   private static final String PROP_VRF_LEAK_CONFIG = "vrfLeakConfig";
   private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
@@ -137,6 +138,7 @@ public class Vrf extends ComparableStructure<String> {
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
+  private SortedSet<StaticRoute6> _staticRoutes6;
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
   private @Nullable VrfLeakConfig _vrfLeakConfig;
@@ -152,6 +154,7 @@ public class Vrf extends ComparableStructure<String> {
     _ospfProcesses = ImmutableSortedMap.of();
     _ospfv3Processes = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
+    _staticRoutes6 = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
     _sourceIpInference = InferFromFib.instance();
@@ -264,6 +267,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_STATIC_ROUTES)
   public SortedSet<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
+  }
+
+  /** IPv6 static routes for this VRF. */
+  @JsonProperty(PROP_STATIC_ROUTES6)
+  public SortedSet<StaticRoute6> getStaticRoutes6() {
+    return _staticRoutes6;
   }
 
   @JsonIgnore
@@ -453,6 +462,15 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_STATIC_ROUTES)
   public void setStaticRoutes(SortedSet<StaticRoute> staticRoutes) {
     _staticRoutes = staticRoutes;
+  }
+
+  @JsonProperty(PROP_STATIC_ROUTES6)
+  public void setStaticRoutes6(
+      @Nullable SortedSet<StaticRoute6> staticRoutes6) {
+    _staticRoutes6 =
+        staticRoutes6 == null
+            ? new TreeSet<>()
+            : new TreeSet<>(staticRoutes6);
   }
 
   /** Source IP inference of locally generated IP packets, defaults to {@link InferFromFib}. */

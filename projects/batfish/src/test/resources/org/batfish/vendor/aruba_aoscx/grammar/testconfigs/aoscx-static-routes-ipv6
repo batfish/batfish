@@ -1,0 +1,11 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+vrf BLUE
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:10::1/64
+ipv6 route 2001:db8:100::/64 2001:db8:10::2
+ipv6 route 2001:db8:200::/64 1/1/2
+ipv6 route 2001:db8:300::/64 nullroute
+ipv6 route 2001:db8:400::/64 reject
+ipv6 route 2001:db8:500::/64 nullroute vrf BLUE

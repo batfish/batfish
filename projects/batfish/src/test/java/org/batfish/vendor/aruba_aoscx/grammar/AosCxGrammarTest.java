@@ -32,6 +32,8 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
@@ -615,6 +617,104 @@ public final class AosCxGrammarTest {
     assertThat(svi, notNullValue());
     assertThat(svi.getIncomingFilter(), notNullValue());
     assertThat(svi.getIncomingFilter().getName(), equalTo("EDGE-IN"));
+  }
+
+  @Test
+  public void testIpv6StaticRouteConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-static-routes-ipv6");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+
+    assertThat(
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .size(),
+        equalTo(4));
+
+    StaticRoute6 nextHopRoute =
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getNetwork().equals(
+                        Prefix6.parse(
+                            "2001:db8:100::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        nextHopRoute.getNextHopIp(),
+        equalTo(
+            org.batfish.datamodel.Ip6.parse(
+                "2001:db8:10::2")));
+
+    assertThat(
+        nextHopRoute.getNextHopInterface(),
+        equalTo(
+            org.batfish.datamodel.Route
+                .UNSET_NEXT_HOP_INTERFACE));
+
+    StaticRoute6 interfaceRoute =
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getNetwork().equals(
+                        Prefix6.parse(
+                            "2001:db8:200::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        interfaceRoute.getNextHopInterface(),
+        equalTo("1/1/2"));
+
+    StaticRoute6 nullRoute =
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getNetwork().equals(
+                        Prefix6.parse(
+                            "2001:db8:300::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        nullRoute.getNextHopInterface(),
+        equalTo(
+            org.batfish.datamodel.Interface
+                .NULL_INTERFACE_NAME));
+
+    assertThat(
+        c.getVrfs(),
+        hasKey("BLUE"));
+
+    assertThat(
+        c.getVrfs()
+            .get("BLUE")
+            .getStaticRoutes6()
+            .size(),
+        equalTo(1));
+
+    assertThat(
+        c.getVrfs()
+            .get("BLUE")
+            .getStaticRoutes6()
+            .first()
+            .getNetwork(),
+        equalTo(
+            Prefix6.parse(
+                "2001:db8:500::/64")));
   }
 
   @Test

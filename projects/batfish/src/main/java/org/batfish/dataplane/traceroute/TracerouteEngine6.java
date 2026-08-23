@@ -372,6 +372,17 @@ public final class TracerouteEngine6 {
       return;
     }
 
+    if (Interface.NULL_INTERFACE_NAME.equals(
+        outgoingInterfaceName)) {
+      addTerminal(
+          traces,
+          hops,
+          node,
+          vrf,
+          Ipv6TraceDisposition.NULL_ROUTED);
+      return;
+    }
+
     Interface outgoingInterface =
         configuration
             .getAllInterfaces()

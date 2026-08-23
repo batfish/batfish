@@ -7,9 +7,11 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -29,6 +31,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_networkContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfv3Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_staticContext;
@@ -76,6 +79,7 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkT
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute6;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 
 @ParametersAreNonnullByDefault
@@ -534,6 +538,46 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _configuration
         .getStaticRoutes()
         .add(new AosCxStaticRoute(prefix, nextHopType, nextHop, vrfName));
+  }
+
+  @Override
+  public void exitS_ipv6_route(
+      S_ipv6_routeContext ctx) {
+    Prefix6 prefix =
+        Prefix6.parse(ctx.WORD(0).getText());
+
+    String nextHop =
+        ctx.static_route_next_hop().getText();
+
+    String vrfName =
+        ctx.VRF() != null
+            ? ctx.WORD(1).getText()
+            : null;
+
+    if (vrfName != null) {
+      _configuration.addVrf(vrfName);
+    }
+
+    NextHopType nextHopType;
+
+    if (ctx.static_route_next_hop().NULLROUTE() != null) {
+      nextHopType = NextHopType.NULL_ROUTE;
+    } else if (ctx.static_route_next_hop().REJECT() != null) {
+      nextHopType = NextHopType.REJECT;
+    } else if (Ip6.tryParse(nextHop).isPresent()) {
+      nextHopType = NextHopType.IP;
+    } else {
+      nextHopType = NextHopType.INTERFACE;
+    }
+
+    _configuration
+        .getStaticRoutes6()
+        .add(
+            new AosCxStaticRoute6(
+                prefix,
+                nextHopType,
+                nextHop,
+                vrfName));
   }
 
   @Override
