@@ -78,6 +78,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -352,7 +353,6 @@ public final class VirtualRouter {
     _ospfProcesses.values().forEach(p -> p.initialize(_node));
 
     initOspfv3Processes();
-    refreshStaticRoutes6();
 
     initEigrp();
     initBaseRipRoutes();
@@ -551,8 +551,11 @@ public final class VirtualRouter {
   }
 
   private void removeOspfv3RoutesFromMainRib6() {
-    _installedOspfv3Routes.forEach(_mainRib6::removeRoute);
-    _installedOspfv3Routes = ImmutableSet.of();
+    _installedOspfv3Routes.forEach(
+        _mainRib6::removeRoute);
+
+    _installedOspfv3Routes =
+        ImmutableSet.of();
   }
 
   private void installOspfv3RoutesInMainRib6() {
@@ -564,14 +567,15 @@ public final class VirtualRouter {
         .forEach(
             process ->
                 process
-                    .getRoutes()
+                    .getRoutingRoutes()
                     .forEach(
                         route -> {
                           _mainRib6.mergeRoute(route);
                           installed.add(route);
                         }));
 
-    _installedOspfv3Routes = installed.build();
+    _installedOspfv3Routes =
+        installed.build();
   }
 
   private void syncOspfv3RoutesToMainRib6() {
@@ -579,71 +583,144 @@ public final class VirtualRouter {
     installOspfv3RoutesInMainRib6();
   }
 
+  /**
+   * Return whether a non-OSPFv3 default route is currently active.
+   *
+   * <p>Ignoring an OSPFv3-learned default here prevents conditional default
+   * origination from becoming self-sustaining solely because OSPF supplied
+   * the default that triggered the advertisement.
+   */
+  private boolean hasNonOspfv3DefaultRoute() {
+    return _mainRib6
+        .getRoutes(Prefix6.ZERO)
+        .stream()
+        .anyMatch(
+            route ->
+                route.getProtocol()
+                    != RoutingProtocol.OSPF3);
+  }
+
+  /**
+   * Recompute control-plane external advertisements for all OSPFv3 processes.
+   */
+  private boolean
+      refreshOspfv3LocalExternalAdvertisements() {
+
+    boolean changed = false;
+
+    boolean defaultRoutePresent =
+        hasNonOspfv3DefaultRoute();
+
+    for (Ospfv3RoutingProcess process :
+        _ospfv3Processes.values()) {
+
+      changed |=
+          process.refreshLocalExternalAdvertisements(
+              _connectedRib6,
+              _installedStaticRoutes6,
+              defaultRoutePresent);
+    }
+
+    return changed;
+  }
+
+  /**
+   * Reset OSPFv3 routing state and re-evaluate its dependent static routes
+   * and locally originated external advertisements.
+   */
+  private void refreshOspfv3Routes() {
+    /*
+     * Remove learned OSPFv3 routes first. This also prevents recursive
+     * statics from remaining active solely because a withdrawn OSPFv3
+     * resolver is still present.
+     */
+    removeOspfv3RoutesFromMainRib6();
+
+    /*
+     * Re-evaluate statics without old OSPFv3 routes. Connected/null/interface
+     * statics remain available as redistribution/default-information sources.
+     */
+    refreshStaticRoutes6();
+
+    _ospfv3Processes
+        .values()
+        .forEach(
+            process ->
+                process.initialize(
+                    _connectedRib6));
+
+    /*
+     * Install locally originated internal OSPFv3 routes, then permit recursive
+     * statics to resolve through those local routes.
+     */
+    installOspfv3RoutesInMainRib6();
+    refreshStaticRoutes6();
+
+    refreshOspfv3LocalExternalAdvertisements();
+  }
+
   private void initOspfv3Processes() {
     removeOspfv3RoutesFromMainRib6();
 
     _ospfv3Processes =
-        _vrf.getOspfv3Processes().entrySet().stream()
+        _vrf.getOspfv3Processes()
+            .entrySet()
+            .stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,
                     e ->
                         new Ospfv3RoutingProcess(
-                            e.getValue(), _name, _c)));
+                            e.getValue(),
+                            _name,
+                            _c)));
 
-    _ospfv3Processes
-        .values()
-        .forEach(
-            process ->
-                process.initialize(_connectedRib6));
-
-    installOspfv3RoutesInMainRib6();
-  }
-
-  private void refreshOspfv3Routes() {
-    removeOspfv3RoutesFromMainRib6();
-
-    _ospfv3Processes
-        .values()
-        .forEach(
-            process ->
-                process.initialize(_connectedRib6));
-
-    installOspfv3RoutesInMainRib6();
+    refreshOspfv3Routes();
   }
 
   /**
    * Reset OSPFv3 to locally originated state before a new IGP convergence
-   * pass. This withdraws all previously learned OSPFv3 routes from main RIB6.
+   * pass. This gives the computation withdrawal semantics when an adjacency,
+   * source route, or interface disappears.
    */
   void resetOspfv3ForIgp() {
     refreshOspfv3Routes();
-    refreshStaticRoutes6();
   }
 
   /**
-   * Execute one OSPFv3 intra-area propagation pass.
+   * Execute one OSPFv3 propagation pass.
    *
-   * @return true iff an active OSPFv3 route changed
+   * @return true iff routing state or locally originated advertisements changed
    */
   boolean ospfv3Iteration(
       Map<String, Node> allNodes,
       L3Adjacencies l3Adjacencies) {
-    boolean changed = false;
+
+    boolean routingChanged = false;
 
     for (Ospfv3RoutingProcess process :
         _ospfv3Processes.values()) {
-      changed |=
+
+      routingChanged |=
           process.propagateRoutes(
-              allNodes, l3Adjacencies);
+              allNodes,
+              l3Adjacencies);
     }
 
-    if (changed) {
+    if (routingChanged) {
+      /*
+       * New OSPFv3 reachability can activate recursive IPv6 statics.
+       * Those statics may themselves be redistribution sources.
+       */
       syncOspfv3RoutesToMainRib6();
       refreshStaticRoutes6();
     }
 
-    return changed;
+    boolean advertisementsChanged =
+        refreshOspfv3LocalExternalAdvertisements();
+
+    return routingChanged
+        || advertisementsChanged;
   }
 
   /**

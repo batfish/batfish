@@ -1161,7 +1161,16 @@ public class AosCxConfiguration extends VendorConfiguration {
                   process.getReferenceBandwidth())
               .setRedistributeConnected(
                   process.getRedistributeConnected())
-              .setRedistributionMetric(25L)
+              .setRedistributeStatic(
+                  process.getRedistributeStatic())
+              .setRedistributionMetric(
+                  process.getRedistributionMetric())
+              .setDefaultInformationOriginate(
+                  process.getDefaultInformationOriginate())
+              .setDefaultInformationOriginateAlways(
+                  process.getDefaultInformationOriginateAlways())
+              .setDefaultInformationMetric(
+                  process.getDefaultInformationMetric())
               .setVrf(vrf)
               .build();
         });

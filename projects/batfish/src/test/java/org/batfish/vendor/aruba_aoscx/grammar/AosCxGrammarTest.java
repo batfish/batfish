@@ -2091,4 +2091,126 @@ public final class AosCxGrammarTest {
         equalTo(1L));
   }
 
+  @Test
+  public void testOspfv3ExternalControlsExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-external-controls");
+
+    AosCxOspfv3Process p1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(p1, notNullValue());
+    assertThat(
+        p1.getRedistributeConnected(),
+        equalTo(true));
+    assertThat(
+        p1.getRedistributeStatic(),
+        equalTo(true));
+    assertThat(
+        p1.getRedistributionMetric(),
+        equalTo(36L));
+    assertThat(
+        p1.getDefaultInformationOriginate(),
+        equalTo(true));
+    assertThat(
+        p1.getDefaultInformationOriginateAlways(),
+        equalTo(true));
+    assertThat(
+        p1.getDefaultInformationMetric(),
+        equalTo(7L));
+
+    AosCxOspfv3Process p2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(p2, notNullValue());
+    assertThat(
+        p2.getRedistributeConnected(),
+        equalTo(false));
+    assertThat(
+        p2.getRedistributeStatic(),
+        equalTo(false));
+    assertThat(
+        p2.getRedistributionMetric(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_REDISTRIBUTION_METRIC));
+    assertThat(
+        p2.getDefaultInformationOriginate(),
+        equalTo(false));
+    assertThat(
+        p2.getDefaultInformationOriginateAlways(),
+        equalTo(false));
+    assertThat(
+        p2.getDefaultInformationMetric(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_INFORMATION_METRIC));
+  }
+
+  @Test
+  public void testOspfv3ExternalControlsConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-external-controls");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(p1, notNullValue());
+    assertThat(
+        p1.getRedistributeConnected(),
+        equalTo(true));
+    assertThat(
+        p1.getRedistributeStatic(),
+        equalTo(true));
+    assertThat(
+        p1.getRedistributionMetric(),
+        equalTo(36L));
+    assertThat(
+        p1.getDefaultInformationOriginate(),
+        equalTo(true));
+    assertThat(
+        p1.getDefaultInformationOriginateAlways(),
+        equalTo(true));
+    assertThat(
+        p1.getDefaultInformationMetric(),
+        equalTo(7L));
+
+    org.batfish.datamodel.ospf.Ospfv3Process p2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(p2, notNullValue());
+    assertThat(
+        p2.getRedistributeConnected(),
+        equalTo(false));
+    assertThat(
+        p2.getRedistributeStatic(),
+        equalTo(false));
+    assertThat(
+        p2.getRedistributionMetric(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_REDISTRIBUTION_METRIC));
+    assertThat(
+        p2.getDefaultInformationOriginate(),
+        equalTo(false));
+    assertThat(
+        p2.getDefaultInformationOriginateAlways(),
+        equalTo(false));
+    assertThat(
+        p2.getDefaultInformationMetric(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_INFORMATION_METRIC));
+  }
+
 }

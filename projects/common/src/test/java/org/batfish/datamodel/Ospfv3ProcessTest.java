@@ -31,9 +31,22 @@ public final class Ospfv3ProcessTest {
         process.getRedistributeConnected(),
         equalTo(false));
     assertThat(
+        process.getRedistributeStatic(),
+        equalTo(false));
+    assertThat(
         process.getRedistributionMetric(),
         equalTo(
             Ospfv3Process.DEFAULT_REDISTRIBUTION_METRIC));
+    assertThat(
+        process.getDefaultInformationOriginate(),
+        equalTo(false));
+    assertThat(
+        process.getDefaultInformationOriginateAlways(),
+        equalTo(false));
+    assertThat(
+        process.getDefaultInformationMetric(),
+        equalTo(
+            Ospfv3Process.DEFAULT_INFORMATION_METRIC));
   }
 
   @Test
@@ -55,7 +68,11 @@ public final class Ospfv3ProcessTest {
             .setAdminCost(111)
             .setReferenceBandwidth(40_000_000_000D)
             .setRedistributeConnected(true)
+            .setRedistributeStatic(true)
             .setRedistributionMetric(37L)
+            .setDefaultInformationOriginate(true)
+            .setDefaultInformationOriginateAlways(true)
+            .setDefaultInformationMetric(9L)
             .build();
 
     Ospfv3Process clone =
@@ -90,7 +107,19 @@ public final class Ospfv3ProcessTest {
         clone.getRedistributeConnected(),
         equalTo(true));
     assertThat(
+        clone.getRedistributeStatic(),
+        equalTo(true));
+    assertThat(
         clone.getRedistributionMetric(),
         equalTo(37L));
+    assertThat(
+        clone.getDefaultInformationOriginate(),
+        equalTo(true));
+    assertThat(
+        clone.getDefaultInformationOriginateAlways(),
+        equalTo(true));
+    assertThat(
+        clone.getDefaultInformationMetric(),
+        equalTo(9L));
   }
 }

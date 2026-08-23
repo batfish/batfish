@@ -1,6 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +22,8 @@ import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
@@ -50,6 +54,8 @@ final class Ospfv3RoutingProcess {
     _vrfName = vrfName;
     _c = configuration;
     _ospfv3Rib = new Ospfv3Rib6();
+    _localExternalAdvertisements =
+        ImmutableSet.of();
   }
 
   /**
@@ -61,10 +67,6 @@ final class Ospfv3RoutingProcess {
   void initialize(ConnectedRib6 connectedRib) {
     _ospfv3Rib.clear();
     initializeIntraAreaRoutes();
-
-    if (_process.getRedistributeConnected()) {
-      initializeRedistributedConnectedRoutes(connectedRib);
-    }
   }
 
   private void initializeIntraAreaRoutes() {
@@ -110,25 +112,86 @@ final class Ospfv3RoutingProcess {
     }
   }
 
-  private void initializeRedistributedConnectedRoutes(
-      ConnectedRib6 connectedRib) {
-    for (ConnectedRoute6 connected :
-        connectedRib.getRoutes()) {
+  /**
+   * Recompute locally originated OSPFv3 external advertisements.
+   *
+   * <p>These advertisements are intentionally separate from the local
+   * OSPFv3 routing RIB. A router must advertise redistributed/static/default
+   * routes to neighbors without preferring its own OSPF copy over the source
+   * route that caused the advertisement.
+   *
+   * @return true iff the local advertisement set changed
+   */
+  boolean refreshLocalExternalAdvertisements(
+      ConnectedRib6 connectedRib,
+      Set<StaticRoute6> staticRoutes,
+      boolean nonOspfv3DefaultRoutePresent) {
 
-      // A network already originated by this process is internal and must not
-      // also be originated by the same process as an external route.
-      if (isInternallyOriginatedConnectedRoute(connected)) {
-        continue;
+    Set<Ospfv3ExternalType2Route6> desired =
+        new HashSet<>();
+
+    if (_process.getRedistributeConnected()) {
+      for (ConnectedRoute6 connected :
+          connectedRib.getRoutes()) {
+
+        /*
+         * A network already originated internally by this process
+         * must not also be originated as an external route.
+         */
+        if (isInternallyOriginatedConnectedRoute(
+            connected)) {
+          continue;
+        }
+
+        desired.add(
+            new Ospfv3ExternalType2Route6(
+                connected.getNetwork(),
+                Route.UNSET_NEXT_HOP_INTERFACE,
+                _process.getAdminCost(),
+                _process.getRedistributionMetric(),
+                _process.getRouterId()));
       }
+    }
 
-      _ospfv3Rib.mergeRoute(
+    if (_process.getRedistributeStatic()) {
+      for (StaticRoute6 route : staticRoutes) {
+        desired.add(
+            new Ospfv3ExternalType2Route6(
+                route.getNetwork(),
+                Route.UNSET_NEXT_HOP_INTERFACE,
+                _process.getAdminCost(),
+                _process.getRedistributionMetric(),
+                _process.getRouterId(),
+                route.getTag()));
+      }
+    }
+
+    if (_process.getDefaultInformationOriginate()
+        && (_process
+                .getDefaultInformationOriginateAlways()
+            || nonOspfv3DefaultRoutePresent)) {
+
+      desired.add(
           new Ospfv3ExternalType2Route6(
-              connected.getNetwork(),
-              connected.getNextHopInterface(),
+              Prefix6.ZERO,
+              Route.UNSET_NEXT_HOP_INTERFACE,
               _process.getAdminCost(),
-              _process.getRedistributionMetric(),
+              _process.getDefaultInformationMetric(),
               _process.getRouterId()));
     }
+
+    Set<Ospfv3ExternalType2Route6> immutableDesired =
+        ImmutableSet.copyOf(desired);
+
+    if (_localExternalAdvertisements.equals(
+        immutableDesired)) {
+      return false;
+    }
+
+    _localExternalAdvertisements =
+        immutableDesired;
+
+    return true;
   }
 
   private boolean isInternallyOriginatedConnectedRoute(
@@ -868,16 +931,36 @@ final class Ospfv3RoutingProcess {
     return address.getPrefix();
   }
 
+  /**
+   * Routes visible to OSPFv3 neighbors.
+   *
+   * <p>This includes local external advertisements, which are control-plane
+   * advertisements but are not installed as local routing candidates.
+   */
   @Nonnull
   Set<AbstractRoute6> getRoutes() {
+    return ImmutableSet
+        .<AbstractRoute6>builder()
+        .addAll(_ospfv3Rib.getRoutes())
+        .addAll(_localExternalAdvertisements)
+        .build();
+  }
+
+  /** Routes that should actually be installed into this router's main RIB. */
+  @Nonnull
+  Set<AbstractRoute6> getRoutingRoutes() {
     return _ospfv3Rib.getRoutes();
   }
 
   int iterationHashCode() {
-    return _ospfv3Rib.getRoutes().hashCode();
+    return Objects.hash(
+        _ospfv3Rib.getRoutes(),
+        _localExternalAdvertisements);
   }
 
   private final @Nonnull Configuration _c;
+  private Set<Ospfv3ExternalType2Route6>
+      _localExternalAdvertisements;
   private final @Nonnull Ospfv3Process _process;
   private final @Nonnull Ospfv3Rib6 _ospfv3Rib;
   private final @Nonnull String _vrfName;

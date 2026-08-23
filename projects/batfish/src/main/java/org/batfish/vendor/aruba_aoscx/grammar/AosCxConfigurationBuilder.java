@@ -64,7 +64,10 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_speedContext;
@@ -1105,18 +1108,163 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_redistribute_connected(S_redistribute_connectedContext ctx) {
+  public void exitS_ospfv3_default_metric(
+      S_ospfv3_default_metricContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 default-metric outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .resetRedistributionMetric();
+      return;
+    }
+
+    long metric;
+
+    try {
+      metric =
+          Long.parseLong(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 default metric");
+      return;
+    }
+
+    if (metric < 1L
+        || metric > 0xFFFFFEL) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 default metric outside 1-16777214");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setRedistributionMetric(metric);
+  }
+
+  @Override
+  public void exitS_ospfv3_default_information(
+      S_ospfv3_default_informationContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring default-information outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .disableDefaultInformationOriginate();
+      return;
+    }
+
+    long metric =
+        AosCxOspfv3Process
+            .DEFAULT_INFORMATION_METRIC;
+
+    if (ctx.ospfv3_metric_option() != null) {
+      try {
+        metric =
+            Long.parseLong(
+                ctx.ospfv3_metric_option()
+                    .WORD()
+                    .getText());
+      } catch (NumberFormatException e) {
+        warn(
+            ctx,
+            "Ignoring invalid OSPFv3 default-information metric");
+        return;
+      }
+
+      if (metric < 1L
+          || metric > 0xFFFFFEL) {
+        warn(
+            ctx,
+            "Ignoring OSPFv3 default-information metric outside 1-16777214");
+        return;
+      }
+    }
+
+    _currentOspfv3Process
+        .setDefaultInformationOriginate(
+            ctx.ALWAYS() != null,
+            metric);
+  }
+
+  @Override
+  public void exitS_redistribute_connected(
+      S_redistribute_connectedContext ctx) {
+    if (ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring redistribute connected outside OSPF context");
+      return;
+    }
+
+    if (ctx.redistribute_route_map() != null) {
+      /*
+       * IPv6 route-map redistribution filtering is not modeled yet.
+       * Do not silently redistribute every route when a filter exists.
+       */
+      warn(
+          ctx,
+          "Ignoring redistribute connected with route-map until OSPFv3 IPv6 route-map filtering is supported");
+      return;
+    }
+
+    boolean enabled =
+        ctx.NO() == null;
+
     if (_currentOspfProcess != null) {
-      _currentOspfProcess.setRedistributeConnected(true);
+      _currentOspfProcess
+          .setRedistributeConnected(enabled);
       return;
     }
 
     if (_currentOspfv3Process != null) {
-      _currentOspfv3Process.setRedistributeConnected(true);
+      _currentOspfv3Process
+          .setRedistributeConnected(enabled);
       return;
     }
 
-    warn(ctx, "Ignoring redistribute connected outside OSPF context");
+    warn(
+        ctx,
+        "Ignoring redistribute connected outside OSPF context");
+  }
+
+  @Override
+  public void exitS_redistribute_static(
+      S_redistribute_staticContext ctx) {
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+      warn(
+          ctx,
+          "Ignoring redistribute static outside OSPFv3 context");
+      return;
+    }
+
+    if (ctx.redistribute_route_map() != null) {
+      /*
+       * A filtered redistribution must not be over-approximated as
+       * unfiltered redistribution.
+       */
+      warn(
+          ctx,
+          "Ignoring redistribute static with route-map until OSPFv3 IPv6 route-map filtering is supported");
+      return;
+    }
+
+    _currentOspfv3Process
+        .setRedistributeStatic(
+            ctx.NO() == null);
   }
 
   @Override

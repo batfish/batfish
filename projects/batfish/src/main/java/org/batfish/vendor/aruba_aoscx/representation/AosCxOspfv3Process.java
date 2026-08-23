@@ -17,6 +17,14 @@ public final class AosCxOspfv3Process
   public static final double DEFAULT_REFERENCE_BANDWIDTH =
       100_000_000_000D;
 
+  /** AOS-CX default metric for redistributed OSPFv3 routes. */
+  public static final long DEFAULT_REDISTRIBUTION_METRIC =
+      25L;
+
+  /** AOS-CX default metric for default-information origination. */
+  public static final long DEFAULT_INFORMATION_METRIC =
+      1L;
+
   public AosCxOspfv3Process(int processId) {
     _processId = processId;
   }
@@ -33,6 +41,58 @@ public final class AosCxOspfv3Process
       boolean redistributeConnected) {
     _redistributeConnected =
         redistributeConnected;
+  }
+
+  public boolean getRedistributeStatic() {
+    return _redistributeStatic;
+  }
+
+  public void setRedistributeStatic(
+      boolean redistributeStatic) {
+    _redistributeStatic =
+        redistributeStatic;
+  }
+
+  public long getRedistributionMetric() {
+    return _redistributionMetric;
+  }
+
+  public void setRedistributionMetric(
+      long redistributionMetric) {
+    _redistributionMetric =
+        redistributionMetric;
+  }
+
+  public void resetRedistributionMetric() {
+    _redistributionMetric =
+        DEFAULT_REDISTRIBUTION_METRIC;
+  }
+
+  public boolean getDefaultInformationOriginate() {
+    return _defaultInformationOriginate;
+  }
+
+  public boolean getDefaultInformationOriginateAlways() {
+    return _defaultInformationOriginateAlways;
+  }
+
+  public long getDefaultInformationMetric() {
+    return _defaultInformationMetric;
+  }
+
+  public void setDefaultInformationOriginate(
+      boolean always,
+      long metric) {
+    _defaultInformationOriginate = true;
+    _defaultInformationOriginateAlways = always;
+    _defaultInformationMetric = metric;
+  }
+
+  public void disableDefaultInformationOriginate() {
+    _defaultInformationOriginate = false;
+    _defaultInformationOriginateAlways = false;
+    _defaultInformationMetric =
+        DEFAULT_INFORMATION_METRIC;
   }
 
   public boolean getPassiveInterfaceDefault() {
@@ -87,17 +147,13 @@ public final class AosCxOspfv3Process
         suppressInterArea);
   }
 
-  /**
-   * Convert an area back to normal while retaining the area itself.
-   */
+  /** Convert an area back to normal while retaining the area itself. */
   public void clearStubArea(String area) {
     _areas.add(area);
     _stubAreas.remove(area);
   }
 
-  /**
-   * Retain stub status while clearing no-summary.
-   */
+  /** Retain stub status while clearing no-summary. */
   public void clearStubNoSummary(String area) {
     _areas.add(area);
 
@@ -133,15 +189,30 @@ public final class AosCxOspfv3Process
   }
 
   private final int _processId;
+
+  private boolean _defaultInformationOriginate;
+  private boolean _defaultInformationOriginateAlways;
+  private long _defaultInformationMetric =
+      DEFAULT_INFORMATION_METRIC;
+
   private boolean _redistributeConnected;
+  private boolean _redistributeStatic;
+  private long _redistributionMetric =
+      DEFAULT_REDISTRIBUTION_METRIC;
+
   private boolean _passiveInterfaceDefault;
+
   private double _referenceBandwidth =
       DEFAULT_REFERENCE_BANDWIDTH;
+
   private final @Nonnull Set<String> _areas =
       new HashSet<>();
+
   private final @Nonnull Map<String, Boolean>
       _stubAreas = new HashMap<>();
+
   private final @Nonnull Map<String, Long>
       _areaDefaultMetrics = new HashMap<>();
+
   private @Nullable Ip _routerId;
 }

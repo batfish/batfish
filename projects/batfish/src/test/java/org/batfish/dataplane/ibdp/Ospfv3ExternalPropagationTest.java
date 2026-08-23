@@ -23,6 +23,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
@@ -130,6 +132,49 @@ public final class Ospfv3ExternalPropagationTest {
             redistributeConnected)
         .setVrf(
             node.getConfiguration().getDefaultVrf())
+        .build();
+  }
+
+  private static void addProcessWithExternalControls(
+      Node node,
+      String routerId,
+      boolean redistributeConnected,
+      boolean redistributeStatic,
+      long redistributionMetric,
+      boolean defaultInformationOriginate,
+      boolean defaultInformationOriginateAlways,
+      long defaultInformationMetric,
+      String... interfaces) {
+
+    Ospfv3Area area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterfaces(
+                List.of(interfaces))
+            .build();
+
+    Ospfv3Process.builder()
+        .setProcessId("1")
+        .setRouterId(
+            Ip.parse(routerId))
+        .setAreas(
+            ImmutableMap.of(
+                0L, area))
+        .setRedistributeConnected(
+            redistributeConnected)
+        .setRedistributeStatic(
+            redistributeStatic)
+        .setRedistributionMetric(
+            redistributionMetric)
+        .setDefaultInformationOriginate(
+            defaultInformationOriginate)
+        .setDefaultInformationOriginateAlways(
+            defaultInformationOriginateAlways)
+        .setDefaultInformationMetric(
+            defaultInformationMetric)
+        .setVrf(
+            node.getConfiguration()
+                .getDefaultVrf())
         .build();
   }
 
@@ -351,4 +396,422 @@ public final class Ospfv3ExternalPropagationTest {
             .getRoutes(externalPrefix),
         empty());
   }
+  @Test
+  public void testStaticRedistributionAndWithdrawal() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    Prefix6 staticPrefix =
+        Prefix6.parse(
+            "2001:db8:200::/64");
+
+    StaticRoute6 staticRoute =
+        StaticRoute6.builder()
+            .setNetwork(staticPrefix)
+            .setNextHopInterface(
+                Interface.NULL_INTERFACE_NAME)
+            .setTag(123L)
+            .build();
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(staticRoute);
+
+    addProcessWithExternalControls(
+        n1,
+        "192.0.2.1",
+        false,
+        true,
+        37L,
+        false,
+        false,
+        Ospfv3Process.DEFAULT_INFORMATION_METRIC,
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    Map<String, Node> nodes =
+        ImmutableMap.of(
+            "n1", n1,
+            "n2", n2);
+
+    List<VirtualRouter> vrs =
+        List.of(vr1, vr2);
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    Ospfv3ExternalType2Route6 localAdvertisement =
+        findExternal(
+            vr1,
+            staticPrefix);
+
+    assertThat(
+        localAdvertisement,
+        notNullValue());
+
+    assertThat(
+        localAdvertisement.getMetric(),
+        equalTo(37L));
+
+    assertThat(
+        localAdvertisement.getTag(),
+        equalTo(123L));
+
+    /*
+     * The source static remains the local forwarding route. The router's
+     * own redistributed OSPF advertisement must not compete with it.
+     */
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(staticPrefix)
+            .stream()
+            .anyMatch(
+                r ->
+                    r instanceof StaticRoute6),
+        equalTo(true));
+
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(staticPrefix)
+            .stream()
+            .anyMatch(
+                r ->
+                    r instanceof
+                        Ospfv3ExternalType2Route6),
+        equalTo(false));
+
+    Ospfv3ExternalType2Route6 learned =
+        findExternal(
+            vr2,
+            staticPrefix);
+
+    assertThat(
+        learned,
+        notNullValue());
+
+    assertThat(
+        learned.getMetric(),
+        equalTo(37L));
+
+    assertThat(
+        learned.getTag(),
+        equalTo(123L));
+
+    assertThat(
+        learned.getAdvertiser(),
+        equalTo(
+            Ip.parse("192.0.2.1")));
+
+    /*
+     * Remove the source static. Re-convergence must withdraw the
+     * advertisement downstream.
+     */
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .clear();
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    assertThat(
+        findExternal(
+            vr1,
+            staticPrefix),
+        nullValue());
+
+    assertThat(
+        findExternal(
+            vr2,
+            staticPrefix),
+        nullValue());
+  }
+
+  @Test
+  public void testConditionalDefaultInformationOriginate() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    StaticRoute6 defaultRoute =
+        StaticRoute6.builder()
+            .setNetwork(Prefix6.ZERO)
+            .setNextHopInterface(
+                Interface.NULL_INTERFACE_NAME)
+            .build();
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(defaultRoute);
+
+    addProcessWithExternalControls(
+        n1,
+        "192.0.2.1",
+        false,
+        false,
+        Ospfv3Process.DEFAULT_REDISTRIBUTION_METRIC,
+        true,
+        false,
+        7L,
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    Map<String, Node> nodes =
+        ImmutableMap.of(
+            "n1", n1,
+            "n2", n2);
+
+    List<VirtualRouter> vrs =
+        List.of(vr1, vr2);
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    Ospfv3ExternalType2Route6 learned =
+        findExternal(
+            vr2,
+            Prefix6.ZERO);
+
+    assertThat(
+        learned,
+        notNullValue());
+
+    assertThat(
+        learned.getMetric(),
+        equalTo(7L));
+
+    /*
+     * n1's local route remains STATIC, not its own OSPF advertisement.
+     */
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(Prefix6.ZERO)
+            .stream()
+            .anyMatch(
+                r ->
+                    r.getProtocol()
+                        == RoutingProtocol.STATIC),
+        equalTo(true));
+
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(Prefix6.ZERO)
+            .stream()
+            .anyMatch(
+                r ->
+                    r.getProtocol()
+                        == RoutingProtocol.OSPF3),
+        equalTo(false));
+
+    /*
+     * Conditional origination stops when the local default disappears.
+     */
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .clear();
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    assertThat(
+        findExternal(
+            vr2,
+            Prefix6.ZERO),
+        nullValue());
+  }
+
+  @Test
+  public void testDefaultInformationOriginateAlways() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    addProcessWithExternalControls(
+        n1,
+        "192.0.2.1",
+        false,
+        false,
+        Ospfv3Process.DEFAULT_REDISTRIBUTION_METRIC,
+        true,
+        true,
+        9L,
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            List.of(
+                vr1, vr2),
+            adjacencies);
+
+    Ospfv3ExternalType2Route6 learned =
+        findExternal(
+            vr2,
+            Prefix6.ZERO);
+
+    assertThat(
+        learned,
+        notNullValue());
+
+    assertThat(
+        learned.getMetric(),
+        equalTo(9L));
+
+    /*
+     * "always" is a control-plane advertisement. It must not fabricate
+     * a forwarding default on the originating router.
+     */
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(Prefix6.ZERO),
+        empty());
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(Prefix6.ZERO),
+        hasItem(learned));
+  }
+
 }

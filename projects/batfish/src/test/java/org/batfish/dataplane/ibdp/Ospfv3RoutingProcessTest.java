@@ -99,9 +99,29 @@ public final class Ospfv3RoutingProcessTest {
 
     routingProcess.initialize(connectedRib);
 
+    /*
+     * Locally redistributed routes are control-plane advertisements,
+     * not locally installed OSPF routing candidates. The source
+     * connected route remains the router's forwarding route.
+     */
+    assertThat(
+        routingProcess.getRoutingRoutes(),
+        hasSize(1));
+
+    assertThat(
+        routingProcess.refreshLocalExternalAdvertisements(
+            connectedRib,
+            Set.of(),
+            false),
+        equalTo(true));
+
     Set<AbstractRoute6> routes =
         routingProcess.getRoutes();
 
+    /*
+     * Neighbors see both the internal OSPF route and the locally
+     * originated external advertisement.
+     */
     assertThat(routes, hasSize(2));
 
     Ospfv3IntraAreaRoute6 internal =
