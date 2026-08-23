@@ -348,4 +348,111 @@ public final class StaticRoute6DataplaneTest {
         hasSize(0));
   }
 
+  @Test
+  public void testFloatingStaticPreference() {
+    Node node =
+        TestUtils.makeIosRouter("n1");
+
+    Configuration c =
+        node.getConfiguration();
+
+    Interface.builder()
+        .setName("Ethernet1")
+        .setOwner(c)
+        .setVrf(c.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
+        .setAddress(
+            ConcreteInterfaceAddress6.parse(
+                "2001:db8:10::1/64"))
+        .build();
+
+    Prefix6 destination =
+        Prefix6.parse(
+            "2001:db8:900::/64");
+
+    StaticRoute6 floatingStatic =
+        StaticRoute6.builder()
+            .setNetwork(destination)
+            .setNextHopIp(
+                Ip6.parse(
+                    "2001:db8:10::2"))
+            .setAdministrativeCost(200)
+            .build();
+
+    c.getDefaultVrf()
+        .getStaticRoutes6()
+        .add(floatingStatic);
+
+    VirtualRouter vr =
+        node.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    vr.initForIgpComputation(
+        TopologyContext.builder().build());
+
+    AbstractRoute6 initial =
+        vr.getMainRib6()
+            .getRoutes(destination)
+            .iterator()
+            .next();
+
+    assertThat(
+        initial instanceof StaticRoute6,
+        equalTo(true));
+
+    assertThat(
+        initial.getAdministrativeCost(),
+        equalTo(200L));
+
+    Ospfv3IntraAreaRoute6 ospf =
+        new Ospfv3IntraAreaRoute6(
+            destination,
+            "Ethernet1",
+            Ip6.parse(
+                "2001:db8:10::2"),
+            110,
+            10,
+            0L);
+
+    vr.getMainRib6()
+        .mergeRoute(ospf);
+
+    vr.refreshStaticRoutes6();
+
+    AbstractRoute6 preferred =
+        vr.getMainRib6()
+            .getRoutes(destination)
+            .iterator()
+            .next();
+
+    assertThat(
+        preferred
+            instanceof Ospfv3IntraAreaRoute6,
+        equalTo(true));
+
+    assertThat(
+        preferred.getAdministrativeCost(),
+        equalTo(110L));
+
+    // When OSPF disappears, the floating static becomes active again.
+    vr.getMainRib6()
+        .removeRoute(ospf);
+
+    vr.refreshStaticRoutes6();
+
+    AbstractRoute6 fallback =
+        vr.getMainRib6()
+            .getRoutes(destination)
+            .iterator()
+            .next();
+
+    assertThat(
+        fallback instanceof StaticRoute6,
+        equalTo(true));
+
+    assertThat(
+        fallback.getAdministrativeCost(),
+        equalTo(200L));
+  }
+
 }

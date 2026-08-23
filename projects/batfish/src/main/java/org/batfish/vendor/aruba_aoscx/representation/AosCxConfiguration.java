@@ -1124,7 +1124,8 @@ public class AosCxConfiguration extends VendorConfiguration {
         StaticRoute6.builder()
             .setNetwork(route.getPrefix())
             .setAdministrativeCost(
-                StaticRoute6.DEFAULT_ADMINISTRATIVE_COST);
+                route.getAdministrativeDistance())
+            .setTag(route.getTag());
 
     switch (route.getNextHopType()) {
       case IP ->

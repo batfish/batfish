@@ -20,6 +20,7 @@ CONNECTED: 'connected';
 COUNT: 'count';
 DEFAULT_GATEWAY: 'default-gateway';
 DESCRIPTION: 'description';
+DISTANCE: 'distance';
 ACTIVATE: 'activate';
 AREA: 'area';
 ATTACH: 'attach';

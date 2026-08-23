@@ -56,6 +56,7 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMap;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute6;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute.NextHopType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec.Operator;
 import org.junit.Rule;
@@ -635,7 +636,7 @@ public final class AosCxGrammarTest {
         c.getDefaultVrf()
             .getStaticRoutes6()
             .size(),
-        equalTo(4));
+        equalTo(6));
 
     StaticRoute6 nextHopRoute =
         c.getDefaultVrf()
@@ -1434,5 +1435,93 @@ public final class AosCxGrammarTest {
         equalTo(AosCxInterface.OspfNetworkType.POINT_TO_POINT));
   }
 
+
+  @Test
+  public void testIpv6StaticRouteAttributes()
+      throws IOException {
+    AosCxConfiguration vc =
+        parseVendorConfig(
+            "aoscx-static-routes-ipv6");
+
+    AosCxStaticRoute6 distanceRoute =
+        vc.getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getPrefix().equals(
+                        Prefix6.parse(
+                            "2001:db8:600::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        distanceRoute.getAdministrativeDistance(),
+        equalTo(200L));
+
+    assertThat(
+        distanceRoute.getTag(),
+        equalTo(
+            org.batfish.datamodel.Route
+                .UNSET_ROUTE_TAG));
+
+    AosCxStaticRoute6 taggedRoute =
+        vc.getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getPrefix().equals(
+                        Prefix6.parse(
+                            "2001:db8:700::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        taggedRoute.getAdministrativeDistance(),
+        equalTo(1L));
+
+    assertThat(
+        taggedRoute.getTag(),
+        equalTo(12345L));
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-static-routes-ipv6");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    StaticRoute6 viDistanceRoute =
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getNetwork().equals(
+                        Prefix6.parse(
+                            "2001:db8:600::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        viDistanceRoute
+            .getAdministrativeCost(),
+        equalTo(200L));
+
+    StaticRoute6 viTaggedRoute =
+        c.getDefaultVrf()
+            .getStaticRoutes6()
+            .stream()
+            .filter(
+                route ->
+                    route.getNetwork().equals(
+                        Prefix6.parse(
+                            "2001:db8:700::/64")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        viTaggedRoute.getTag(),
+        equalTo(12345L));
+  }
 
 }

@@ -12,6 +12,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Route;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -544,15 +545,79 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_ipv6_route(
       S_ipv6_routeContext ctx) {
     Prefix6 prefix =
-        Prefix6.parse(ctx.WORD(0).getText());
+        Prefix6.parse(
+            ctx.WORD().getText());
 
     String nextHop =
-        ctx.static_route_next_hop().getText();
+        ctx.static_route_next_hop()
+            .getText();
 
-    String vrfName =
-        ctx.VRF() != null
-            ? ctx.WORD(1).getText()
-            : null;
+    String vrfName = null;
+    long administrativeDistance =
+        AosCxStaticRoute6
+            .DEFAULT_ADMINISTRATIVE_DISTANCE;
+    long tag =
+        Route.UNSET_ROUTE_TAG;
+
+    for (AosCxParser.Ipv6_static_route_optionContext option :
+        ctx.ipv6_static_route_option()) {
+
+      if (option.VRF() != null) {
+        vrfName =
+            option.WORD().getText();
+        continue;
+      }
+
+      if (option.DISTANCE() != null) {
+        long value;
+
+        try {
+          value =
+              Long.parseLong(
+                  option.WORD().getText());
+        } catch (NumberFormatException e) {
+          warn(
+              ctx,
+              "Ignoring IPv6 static route with invalid distance");
+          return;
+        }
+
+        if (value < 1L || value > 255L) {
+          warn(
+              ctx,
+              "Ignoring IPv6 static route with distance outside 1-255");
+          return;
+        }
+
+        administrativeDistance = value;
+        continue;
+      }
+
+      if (option.TAG() != null) {
+        long value;
+
+        try {
+          value =
+              Long.parseLong(
+                  option.WORD().getText());
+        } catch (NumberFormatException e) {
+          warn(
+              ctx,
+              "Ignoring IPv6 static route with invalid tag");
+          return;
+        }
+
+        if (value < 1L
+            || value > 0xFFFFFFFFL) {
+          warn(
+              ctx,
+              "Ignoring IPv6 static route with tag outside 1-4294967295");
+          return;
+        }
+
+        tag = value;
+      }
+    }
 
     if (vrfName != null) {
       _configuration.addVrf(vrfName);
@@ -560,14 +625,22 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     NextHopType nextHopType;
 
-    if (ctx.static_route_next_hop().NULLROUTE() != null) {
-      nextHopType = NextHopType.NULL_ROUTE;
-    } else if (ctx.static_route_next_hop().REJECT() != null) {
-      nextHopType = NextHopType.REJECT;
-    } else if (Ip6.tryParse(nextHop).isPresent()) {
-      nextHopType = NextHopType.IP;
+    if (ctx.static_route_next_hop()
+        .NULLROUTE() != null) {
+      nextHopType =
+          NextHopType.NULL_ROUTE;
+    } else if (
+        ctx.static_route_next_hop()
+            .REJECT() != null) {
+      nextHopType =
+          NextHopType.REJECT;
+    } else if (
+        Ip6.tryParse(nextHop).isPresent()) {
+      nextHopType =
+          NextHopType.IP;
     } else {
-      nextHopType = NextHopType.INTERFACE;
+      nextHopType =
+          NextHopType.INTERFACE;
     }
 
     _configuration
@@ -577,7 +650,9 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
                 prefix,
                 nextHopType,
                 nextHop,
-                vrfName));
+                vrfName,
+                administrativeDistance,
+                tag));
   }
 
   @Override

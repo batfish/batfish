@@ -9,3 +9,5 @@ ipv6 route 2001:db8:200::/64 1/1/2
 ipv6 route 2001:db8:300::/64 nullroute
 ipv6 route 2001:db8:400::/64 reject
 ipv6 route 2001:db8:500::/64 nullroute vrf BLUE
+ipv6 route 2001:db8:600::/64 2001:db8:10::2 distance 200
+ipv6 route 2001:db8:700::/64 nullroute tag 12345
