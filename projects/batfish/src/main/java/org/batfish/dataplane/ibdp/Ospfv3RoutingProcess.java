@@ -2,7 +2,9 @@ package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
@@ -48,6 +51,61 @@ final class Ospfv3RoutingProcess {
 
   /** RFC 2328/5340 LSInfinity. */
   private static final long LS_INFINITY = 0xFFFFFFL;
+
+  /**
+   * Result of a deterministic OSPFv3 broadcast-network election.
+   *
+   * <p>The dataplane is computed from a configuration snapshot rather than
+   * from an existing neighbor state machine, so this models a cold-start
+   * election. Priority wins first, followed by router ID.
+   */
+  @VisibleForTesting
+  static final class BroadcastElection {
+    private BroadcastElection(
+        @Nullable NodeInterfacePair dr,
+        @Nullable NodeInterfacePair bdr) {
+      _dr = dr;
+      _bdr = bdr;
+    }
+
+    static BroadcastElection empty() {
+      return new BroadcastElection(
+          null,
+          null);
+    }
+
+    @Nullable NodeInterfacePair getDr() {
+      return _dr;
+    }
+
+    @Nullable NodeInterfacePair getBdr() {
+      return _bdr;
+    }
+
+    boolean isDrOrBdr(
+        NodeInterfacePair id) {
+      return id.equals(_dr)
+          || id.equals(_bdr);
+    }
+
+    private final @Nullable NodeInterfacePair _dr;
+    private final @Nullable NodeInterfacePair _bdr;
+  }
+
+  private static final class BroadcastElectionCandidate {
+    private BroadcastElectionCandidate(
+        NodeInterfacePair id,
+        int priority,
+        Ip routerId) {
+      _id = id;
+      _priority = priority;
+      _routerId = routerId;
+    }
+
+    private final @Nonnull NodeInterfacePair _id;
+    private final int _priority;
+    private final @Nonnull Ip _routerId;
+  }
 
   Ospfv3RoutingProcess(
       Ospfv3Process process,
@@ -395,6 +453,16 @@ final class Ospfv3RoutingProcess {
           NodeInterfacePair.of(
               _c.getHostname(), localIface.getName());
 
+      BroadcastElection broadcastElection =
+          localSettings.getNetworkType()
+                  == OspfNetworkType.BROADCAST
+              ? electBroadcastDesignatedRouters(
+                  localIface,
+                  localId,
+                  allNodes,
+                  l3Adjacencies)
+              : BroadcastElection.empty();
+
       for (Node remoteNode : allNodes.values()) {
         Configuration remoteConfig =
             remoteNode.getConfiguration();
@@ -472,6 +540,15 @@ final class Ospfv3RoutingProcess {
             continue;
           }
 
+          if (!shouldFormFullAdjacency(
+              localSettings,
+              remoteSettings,
+              localId,
+              remoteId,
+              broadcastElection)) {
+            continue;
+          }
+
           Set<AbstractRoute6> remoteRoutes =
               remoteProcess.getRoutes();
 
@@ -515,6 +592,196 @@ final class Ospfv3RoutingProcess {
     }
 
     return changed;
+  }
+
+  /**
+   * Elect DR and BDR for the broadcast segment containing {@code localIface}.
+   *
+   * <p>Interfaces with priority zero participate in OSPF but are ineligible
+   * for DR/BDR election. Eligible candidates are ordered by priority, then
+   * router ID. A final interface-ID comparison provides deterministic behavior
+   * for invalid configurations containing duplicate router IDs.
+   */
+  @VisibleForTesting
+  BroadcastElection electBroadcastDesignatedRouters(
+      Interface localIface,
+      NodeInterfacePair localId,
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    Ospfv3InterfaceSettings localSettings =
+        localIface.getOspfv3Settings();
+
+    if (localSettings == null
+        || localSettings.getNetworkType()
+            != OspfNetworkType.BROADCAST
+        || localSettings.getAreaName() == null) {
+      return BroadcastElection.empty();
+    }
+
+    List<BroadcastElectionCandidate> candidates =
+        new ArrayList<>();
+
+    if (localSettings.getPriority() > 0) {
+      candidates.add(
+          new BroadcastElectionCandidate(
+              localId,
+              localSettings.getPriority(),
+              _process.getRouterId()));
+    }
+
+    long localArea =
+        localSettings.getAreaName();
+
+    for (Node remoteNode :
+        allNodes.values()) {
+
+      Configuration remoteConfig =
+          remoteNode.getConfiguration();
+
+      if (_c.getHostname()
+          .equals(remoteConfig.getHostname())) {
+        continue;
+      }
+
+      for (Interface remoteIface :
+          remoteConfig
+              .getAllInterfaces()
+              .values()) {
+
+        if (!remoteIface.getActive()) {
+          continue;
+        }
+
+        Ospfv3InterfaceSettings remoteSettings =
+            remoteIface.getOspfv3Settings();
+
+        if (remoteSettings == null
+            || remoteSettings.getNetworkType()
+                != OspfNetworkType.BROADCAST
+            || remoteSettings.getPriority() == 0
+            || !areInterfaceSettingsCompatible(
+                localSettings,
+                remoteSettings)
+            || remoteSettings.getProcess()
+                == null) {
+          continue;
+        }
+
+        NodeInterfacePair remoteId =
+            NodeInterfacePair.of(
+                remoteConfig.getHostname(),
+                remoteIface.getName());
+
+        if (!areTopologicallyAdjacent(
+            localId,
+            localIface,
+            remoteId,
+            remoteIface,
+            l3Adjacencies)) {
+          continue;
+        }
+
+        VirtualRouter remoteVr =
+            remoteNode
+                .getVirtualRouter(
+                    remoteIface.getVrfName())
+                .orElse(null);
+
+        if (remoteVr == null) {
+          continue;
+        }
+
+        Ospfv3RoutingProcess remoteProcess =
+            remoteVr
+                .getOspfv3Processes()
+                .get(
+                    remoteSettings.getProcess());
+
+        if (remoteProcess == null
+            || !remoteProcess
+                ._process
+                .getEnabled()
+            || !areAreaTypesCompatible(
+                localArea,
+                remoteProcess)) {
+          continue;
+        }
+
+        candidates.add(
+            new BroadcastElectionCandidate(
+                remoteId,
+                remoteSettings.getPriority(),
+                remoteProcess
+                    ._process
+                    .getRouterId()));
+      }
+    }
+
+    candidates.sort(
+        (lhs, rhs) -> {
+          int priority =
+              Integer.compare(
+                  rhs._priority,
+                  lhs._priority);
+
+          if (priority != 0) {
+            return priority;
+          }
+
+          int routerId =
+              rhs._routerId.compareTo(
+                  lhs._routerId);
+
+          if (routerId != 0) {
+            return routerId;
+          }
+
+          return rhs
+              ._id
+              .toString()
+              .compareTo(
+                  lhs._id.toString());
+        });
+
+    NodeInterfacePair dr =
+        candidates.isEmpty()
+            ? null
+            : candidates.get(0)._id;
+
+    NodeInterfacePair bdr =
+        candidates.size() < 2
+            ? null
+            : candidates.get(1)._id;
+
+    return new BroadcastElection(
+        dr,
+        bdr);
+  }
+
+  /**
+   * Return whether two compatible neighbors exchange the full OSPF database.
+   *
+   * <p>Point-to-point neighbors remain fully adjacent. On a broadcast
+   * network, DR and BDR form full adjacencies with all routers, while two
+   * DROTHER routers remain in 2-Way state and do not exchange LSAs directly.
+   */
+  private static boolean shouldFormFullAdjacency(
+      Ospfv3InterfaceSettings localSettings,
+      Ospfv3InterfaceSettings remoteSettings,
+      NodeInterfacePair localId,
+      NodeInterfacePair remoteId,
+      BroadcastElection election) {
+
+    if (localSettings.getNetworkType()
+            != OspfNetworkType.BROADCAST
+        || remoteSettings.getNetworkType()
+            != OspfNetworkType.BROADCAST) {
+      return true;
+    }
+
+    return election.isDrOrBdr(localId)
+        || election.isDrOrBdr(remoteId);
   }
 
   private boolean areAreaTypesCompatible(
@@ -734,6 +1001,34 @@ final class Ospfv3RoutingProcess {
     return false;
   }
 
+  /**
+   * Return whether a route learned through the sender's interface should be
+   * suppressed when received back from that sender.
+   *
+   * <p>Traditional split horizon remains useful for this route-level
+   * approximation on point-to-point links. Broadcast OSPF is different:
+   * a DR/BDR must be able to flood an LSA received on a broadcast interface
+   * back onto that same interface toward other fully adjacent routers.
+   */
+  private static boolean shouldApplySplitHorizon(
+      Interface remoteIface,
+      AbstractRoute6 route) {
+
+    if (!remoteIface
+        .getName()
+        .equals(
+            route.getNextHopInterface())) {
+      return false;
+    }
+
+    Ospfv3InterfaceSettings settings =
+        remoteIface.getOspfv3Settings();
+
+    return settings == null
+        || settings.getNetworkType()
+            != OspfNetworkType.BROADCAST;
+  }
+
   private boolean importIntraAreaRoutesFromNeighbor(
       Interface localIface,
       Interface remoteIface,
@@ -765,9 +1060,9 @@ final class Ospfv3RoutingProcess {
       // interface facing us was learned from us and should not be sent back.
       // This also suppresses the shared transit prefix, which is already
       // directly connected on our side.
-      if (remoteIface
-          .getName()
-          .equals(intra.getNextHopInterface())) {
+      if (shouldApplySplitHorizon(
+          remoteIface,
+          intra)) {
         continue;
       }
 
@@ -883,9 +1178,9 @@ final class Ospfv3RoutingProcess {
 
       // Do not immediately advertise a learned route back toward the
       // interface from which it was learned.
-      if (remoteIface
-          .getName()
-          .equals(route.getNextHopInterface())) {
+      if (shouldApplySplitHorizon(
+          remoteIface,
+          route)) {
         continue;
       }
 
@@ -982,10 +1277,9 @@ final class Ospfv3RoutingProcess {
       // Do not immediately send a learned route back toward the neighbor from
       // which it was learned. Resetting the OSPFv3 RIB before convergence
       // handles longer-path withdrawal cleanly.
-      if (remoteIface
-          .getName()
-          .equals(
-              external.getNextHopInterface())) {
+      if (shouldApplySplitHorizon(
+          remoteIface,
+          external)) {
         continue;
       }
 
@@ -1067,10 +1361,9 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      if (remoteIface
-          .getName()
-          .equals(
-              external.getNextHopInterface())) {
+      if (shouldApplySplitHorizon(
+          remoteIface,
+          external)) {
         continue;
       }
 
