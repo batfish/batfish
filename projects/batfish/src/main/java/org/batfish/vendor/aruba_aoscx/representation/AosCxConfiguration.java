@@ -976,6 +976,51 @@ public class AosCxConfiguration extends VendorConfiguration {
     _ospfProcessesByVrf.forEach(this::convertOspfProcessesForVrf);
   }
 
+  /**
+   * Compute the dynamic AOS-CX OSPFv3 router ID for a VRF.
+   *
+   * <p>AOS-CX prefers the highest IPv4 address on an active loopback.
+   * If no active loopback has an IPv4 address, it uses the highest IPv4
+   * address on an active interface in the VRF.
+   */
+  private Ip getDynamicOspfv3RouterId(
+      String vrfName) {
+    Ip highestLoopback = null;
+    Ip highestInterface = null;
+
+    for (AosCxInterface iface :
+        _interfaces.values()) {
+
+      if (!getInterfaceVrfName(iface)
+              .equals(vrfName)
+          || !getInterfaceAdminUpEffective(iface)
+          || iface.getAddress() == null) {
+        continue;
+      }
+
+      Ip candidate =
+          iface.getAddress().getIp();
+
+      if (highestInterface == null
+          || candidate.asLong()
+              > highestInterface.asLong()) {
+        highestInterface = candidate;
+      }
+
+      if (getInterfaceType(iface)
+              == InterfaceType.LOOPBACK
+          && (highestLoopback == null
+              || candidate.asLong()
+                  > highestLoopback.asLong())) {
+        highestLoopback = candidate;
+      }
+    }
+
+    return highestLoopback != null
+        ? highestLoopback
+        : highestInterface;
+  }
+
   private void convertOspfv3ProcessesForVrf(
       String vrfName,
       Map<Integer, AosCxOspfv3Process> processes) {
@@ -988,8 +1033,18 @@ public class AosCxConfiguration extends VendorConfiguration {
 
     processes.values().forEach(
         process -> {
-          // Automatic router-ID selection is not implemented yet.
-          if (process.getRouterId() == null) {
+          Ip routerId =
+              process.getRouterId() != null
+                  ? process.getRouterId()
+                  : getDynamicOspfv3RouterId(
+                      vrfName);
+
+          /*
+           * AOS-CX cannot bring up OSPFv3 without an IPv4-format
+           * router ID, whether configured explicitly or dynamically
+           * selected from an interface address.
+           */
+          if (routerId == null) {
             return;
           }
 
@@ -1044,8 +1099,7 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setProcessId(
                   Integer.toString(
                       process.getProcessId()))
-              .setRouterId(
-                  process.getRouterId())
+              .setRouterId(routerId)
               .setAreas(areas)
               .setAdminCost(110)
               .setReferenceBandwidth(

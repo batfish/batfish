@@ -1827,4 +1827,99 @@ public final class AosCxGrammarTest {
             OspfNetworkType.BROADCAST));
   }
 
+  @Test
+  public void testOspfv3AutomaticRouterId()
+      throws IOException {
+    AosCxConfiguration vc =
+        parseVendorConfig(
+            "aoscx-ospfv3-auto-router-id");
+
+    // No explicit router IDs were configured.
+    assertThat(
+        vc.getOspfv3Processes()
+            .get(1)
+            .getRouterId(),
+        equalTo(null));
+
+    assertThat(
+        vc.getOspfv3Processes("BLUE")
+            .get(2)
+            .getRouterId(),
+        equalTo(null));
+
+    assertThat(
+        vc.getOspfv3Processes("RED")
+            .get(3)
+            .getRouterId(),
+        equalTo(null));
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-auto-router-id");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+
+    /*
+     * Default VRF: loopback wins over the numerically higher
+     * physical-interface address.
+     */
+    org.batfish.datamodel.ospf.Ospfv3Process
+        defaultProcess =
+            c.getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(
+        defaultProcess,
+        notNullValue());
+
+    assertThat(
+        defaultProcess.getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.10")));
+
+    /*
+     * BLUE: router-ID selection is VRF-local and again prefers
+     * the loopback.
+     */
+    org.batfish.datamodel.ospf.Ospfv3Process
+        blueProcess =
+            c.getVrfs()
+                .get("BLUE")
+                .getOspfv3Processes()
+                .get("2");
+
+    assertThat(
+        blueProcess,
+        notNullValue());
+
+    assertThat(
+        blueProcess.getRouterId(),
+        equalTo(
+            Ip.parse("192.0.2.200")));
+
+    /*
+     * RED: there is no IPv4 loopback, so the highest active
+     * physical-interface IPv4 address is selected.
+     */
+    org.batfish.datamodel.ospf.Ospfv3Process
+        redProcess =
+            c.getVrfs()
+                .get("RED")
+                .getOspfv3Processes()
+                .get("3");
+
+    assertThat(
+        redProcess,
+        notNullValue());
+
+    assertThat(
+        redProcess.getRouterId(),
+        equalTo(
+            Ip.parse("10.0.2.200")));
+  }
+
 }
