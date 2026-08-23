@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,8 +24,13 @@ public final class Ospfv3Area implements Serializable {
 
   public static final class Builder {
     private long _defaultMetric;
+
     private @Nonnull ImmutableSortedSet.Builder<String>
         _interfaces;
+
+    private @Nonnull ImmutableList.Builder<Ospfv3AreaRange>
+        _ranges;
+
     private boolean _nssa;
     private @Nullable Long _number;
     private boolean _stub;
@@ -32,8 +39,12 @@ public final class Ospfv3Area implements Serializable {
     private Builder() {
       _defaultMetric =
           DEFAULT_STUB_DEFAULT_METRIC;
+
       _interfaces =
           ImmutableSortedSet.naturalOrder();
+
+      _ranges =
+          ImmutableList.builder();
     }
 
     public Ospfv3Area build() {
@@ -63,7 +74,8 @@ public final class Ospfv3Area implements Serializable {
           _stub,
           _nssa,
           _suppressInterArea,
-          _defaultMetric);
+          _defaultMetric,
+          _ranges.build());
     }
 
     public Builder setNumber(long number) {
@@ -80,6 +92,18 @@ public final class Ospfv3Area implements Serializable {
     public Builder addInterfaces(
         Collection<String> interfaceNames) {
       _interfaces.addAll(interfaceNames);
+      return this;
+    }
+
+    public Builder addRange(
+        Ospfv3AreaRange range) {
+      _ranges.add(range);
+      return this;
+    }
+
+    public Builder addRanges(
+        Collection<Ospfv3AreaRange> ranges) {
+      _ranges.addAll(ranges);
       return this;
     }
 
@@ -125,14 +149,22 @@ public final class Ospfv3Area implements Serializable {
 
   private static final String PROP_DEFAULT_METRIC =
       "defaultMetric";
+
   private static final String PROP_INTERFACES =
       "interfaces";
+
   private static final String PROP_NAME =
       "name";
+
   private static final String PROP_NSSA =
       "nssa";
+
+  private static final String PROP_RANGES =
+      "ranges";
+
   private static final String PROP_STUB =
       "stub";
+
   private static final String PROP_SUPPRESS_INTER_AREA =
       "suppressInterArea";
 
@@ -153,21 +185,30 @@ public final class Ospfv3Area implements Serializable {
       @JsonProperty(PROP_SUPPRESS_INTER_AREA)
           @Nullable Boolean suppressInterArea,
       @JsonProperty(PROP_DEFAULT_METRIC)
-          @Nullable Long defaultMetric) {
+          @Nullable Long defaultMetric,
+      @JsonProperty(PROP_RANGES)
+          @Nullable List<Ospfv3AreaRange> ranges) {
 
     return new Ospfv3Area(
         number,
         firstNonNull(
             interfaces,
             ImmutableSortedSet.of()),
-        firstNonNull(stub, false),
-        firstNonNull(nssa, false),
+        firstNonNull(
+            stub,
+            false),
+        firstNonNull(
+            nssa,
+            false),
         firstNonNull(
             suppressInterArea,
             false),
         firstNonNull(
             defaultMetric,
-            DEFAULT_STUB_DEFAULT_METRIC));
+            DEFAULT_STUB_DEFAULT_METRIC),
+        firstNonNull(
+            ranges,
+            ImmutableList.of()));
   }
 
   private Ospfv3Area(
@@ -176,7 +217,8 @@ public final class Ospfv3Area implements Serializable {
       boolean stub,
       boolean nssa,
       boolean suppressInterArea,
-      long defaultMetric) {
+      long defaultMetric,
+      Collection<Ospfv3AreaRange> ranges) {
 
     checkArgument(
         !(stub && nssa),
@@ -195,12 +237,23 @@ public final class Ospfv3Area implements Serializable {
         defaultMetric);
 
     _areaNumber = areaNumber;
+
     _interfaces =
-        ImmutableSortedSet.copyOf(interfaces);
+        ImmutableSortedSet.copyOf(
+            interfaces);
+
     _stub = stub;
     _nssa = nssa;
-    _suppressInterArea = suppressInterArea;
-    _defaultMetric = defaultMetric;
+
+    _suppressInterArea =
+        suppressInterArea;
+
+    _defaultMetric =
+        defaultMetric;
+
+    _ranges =
+        ImmutableList.copyOf(
+            ranges);
   }
 
   @JsonProperty(PROP_NAME)
@@ -234,11 +287,23 @@ public final class Ospfv3Area implements Serializable {
     return _defaultMetric;
   }
 
+  @JsonProperty(PROP_RANGES)
+  public @Nonnull List<Ospfv3AreaRange>
+      getRanges() {
+    return _ranges;
+  }
+
   private final long _areaNumber;
   private final long _defaultMetric;
+
   private final @Nonnull SortedSet<String>
       _interfaces;
+
   private final boolean _nssa;
+
+  private final @Nonnull List<Ospfv3AreaRange>
+      _ranges;
+
   private final boolean _stub;
   private final boolean _suppressInterArea;
 }

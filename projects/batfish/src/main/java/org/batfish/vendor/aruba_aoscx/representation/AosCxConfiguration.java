@@ -71,6 +71,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3AreaRange;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.ospf.StubSettings;
@@ -1305,6 +1306,30 @@ public class AosCxConfiguration extends VendorConfiguration {
                   areaBuilder.setDefaultMetric(
                       defaultMetric);
                 }
+
+                /*
+                 * Normalize dotted-decimal and decimal area IDs before
+                 * attaching inter-area ranges to the VI area.
+                 */
+                process
+                    .getInterAreaRanges()
+                    .forEach(
+                        (configuredArea, ranges) -> {
+                          if (toOspfAreaNumber(
+                                  configuredArea)
+                              != area) {
+                            return;
+                          }
+
+                          ranges.forEach(
+                              (prefix, advertise) ->
+                                  areaBuilder.addRange(
+                                      new Ospfv3AreaRange(
+                                          prefix,
+                                          Ospfv3AreaRange.Type
+                                              .INTER_AREA,
+                                          advertise)));
+                        });
 
                 areas.put(
                     area,

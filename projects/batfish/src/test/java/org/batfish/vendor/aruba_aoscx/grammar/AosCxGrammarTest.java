@@ -3061,4 +3061,136 @@ public final class AosCxGrammarTest {
         equalTo(4));
   }
 
+  @Test
+  public void testOspfv3AreaRangeExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-area-range");
+
+    AosCxOspfv3Process p1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        p1,
+        notNullValue());
+
+    assertThat(
+        p1.getInterAreaRanges()
+            .get("1")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:100::/48")),
+        equalTo(true));
+
+    assertThat(
+        p1.getInterAreaRanges()
+            .get("2")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:200::/48")),
+        equalTo(false));
+
+    AosCxOspfv3Process p2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(
+        p2,
+        notNullValue());
+
+    /*
+     * "no ... no-advertise" retains the range but restores
+     * advertisement.
+     */
+    assertThat(
+        p2.getInterAreaRanges()
+            .get("3")
+            .get(
+                Prefix6.parse(
+                    "2001:db8:300::/48")),
+        equalTo(true));
+
+    AosCxOspfv3Process p3 =
+        c.getOspfv3Processes().get(3);
+
+    assertThat(
+        p3,
+        notNullValue());
+
+    /*
+     * Plain "no area ... range" removes the range.
+     */
+    assertThat(
+        p3.getInterAreaRanges()
+            .containsKey("4"),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3AreaRangeConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-area-range");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process p1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        p1,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Area area1 =
+        p1.getAreas().get(1L);
+
+    assertThat(
+        area1,
+        notNullValue());
+
+    assertThat(
+        area1.getRanges().size(),
+        equalTo(1));
+
+    assertThat(
+        area1.getRanges()
+            .get(0)
+            .getPrefix(),
+        equalTo(
+            Prefix6.parse(
+                "2001:db8:100::/48")));
+
+    assertThat(
+        area1.getRanges()
+            .get(0)
+            .getType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3AreaRange.Type
+                .INTER_AREA));
+
+    assertThat(
+        area1.getRanges()
+            .get(0)
+            .getAdvertise(),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3Area area2 =
+        p1.getAreas().get(2L);
+
+    assertThat(
+        area2,
+        notNullValue());
+
+    assertThat(
+        area2.getRanges()
+            .get(0)
+            .getAdvertise(),
+        equalTo(false));
+  }
+
 }

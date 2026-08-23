@@ -1,0 +1,26 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 1
+    area 1 range 2001:db8:100::/48 type inter-area
+    area 2
+    area 2 range 2001:db8:200::/48 type inter-area no-advertise
+
+router ospfv3 2
+    router-id 192.0.2.2
+    area 3
+    area 3 range 2001:db8:300::/48 type inter-area no-advertise
+    no area 3 range 2001:db8:300::/48 type inter-area no-advertise
+
+router ospfv3 3
+    router-id 192.0.2.3
+    area 4
+    area 4 range 2001:db8:400::/48 type inter-area
+    no area 4 range 2001:db8:400::/48 type inter-area
+
+router ospfv3 4
+    router-id 192.0.2.4
+    area 5 nssa
+    area 5 range 2001:db8:500::/48 type nssa

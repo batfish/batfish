@@ -72,6 +72,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_rangeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
@@ -1429,6 +1430,85 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
      */
     _currentOspfv3Process
         .clearNssaArea(area);
+  }
+
+  @Override
+  public void exitS_ospfv3_area_range(
+      S_ospfv3_area_rangeContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area range outside OSPFv3 context");
+
+      return;
+    }
+
+    String area =
+        ctx.WORD(0).getText();
+
+    String prefixText =
+        ctx.WORD(1).getText();
+
+    if (Prefix6.tryParse(prefixText).isEmpty()) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 area-range IPv6 prefix");
+
+      return;
+    }
+
+    Prefix6 prefix =
+        Prefix6.parse(prefixText);
+
+    /*
+     * Parse NSSA ranges now so they do not become silent syntax, but
+     * leave their routing semantics for the NSSA aggregation commit.
+     */
+    if (ctx
+            .ospfv3_area_range_type()
+            .NSSA()
+        != null) {
+
+      warn(
+          ctx,
+          "OSPFv3 NSSA area-range aggregation is not modeled yet");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      /*
+       * Aruba documents:
+       *
+       * no area ... range ... type inter-area no-advertise
+       *
+       * as removing only the DoNotAdvertise property, so the range
+       * remains configured and becomes advertised.
+       */
+      if (ctx.NO_ADVERTISE() != null) {
+        _currentOspfv3Process
+            .enableInterAreaRangeAdvertisement(
+                area,
+                prefix);
+      } else {
+        _currentOspfv3Process
+            .removeInterAreaRange(
+                area,
+                prefix);
+      }
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setInterAreaRange(
+            area,
+            prefix,
+            ctx.NO_ADVERTISE() == null);
   }
 
   @Override

@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix6;
 
 /** Vendor-specific representation of an Aruba AOS-CX OSPFv3 process. */
 public final class AosCxOspfv3Process
@@ -364,6 +365,75 @@ public final class AosCxOspfv3Process
     _areaDefaultMetrics.remove(area);
   }
 
+  /**
+   * Inter-area aggregation ranges keyed first by configured area ID,
+   * then by IPv6 prefix. The Boolean value is true when the range
+   * should be advertised.
+   */
+  public @Nonnull Map<String, Map<Prefix6, Boolean>>
+      getInterAreaRanges() {
+    return _interAreaRanges;
+  }
+
+  public void setInterAreaRange(
+      String area,
+      Prefix6 prefix,
+      boolean advertise) {
+
+    _areas.add(area);
+
+    _interAreaRanges
+        .computeIfAbsent(
+            area,
+            ignored ->
+                new HashMap<>())
+        .put(
+            prefix,
+            advertise);
+  }
+
+  public void removeInterAreaRange(
+      String area,
+      Prefix6 prefix) {
+
+    Map<Prefix6, Boolean> ranges =
+        _interAreaRanges.get(area);
+
+    if (ranges == null) {
+      return;
+    }
+
+    ranges.remove(prefix);
+
+    if (ranges.isEmpty()) {
+      _interAreaRanges.remove(area);
+    }
+  }
+
+  /**
+   * Implements:
+   *
+   * <pre>
+   * no area ... range ... type inter-area no-advertise
+   * </pre>
+   *
+   * by retaining an existing range and restoring advertisement.
+   */
+  public void enableInterAreaRangeAdvertisement(
+      String area,
+      Prefix6 prefix) {
+
+    Map<Prefix6, Boolean> ranges =
+        _interAreaRanges.get(area);
+
+    if (ranges != null
+        && ranges.containsKey(prefix)) {
+      ranges.put(
+          prefix,
+          true);
+    }
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -418,6 +488,11 @@ public final class AosCxOspfv3Process
 
   private final @Nonnull Map<String, Long>
       _areaDefaultMetrics = new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Prefix6, Boolean>>
+          _interAreaRanges =
+              new HashMap<>();
 
   private @Nullable Ip _routerId;
 }

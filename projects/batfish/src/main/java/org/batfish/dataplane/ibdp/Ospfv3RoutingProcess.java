@@ -35,6 +35,7 @@ import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3AreaRange;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.dataplane.rib.ConnectedRib6;
@@ -1100,6 +1101,20 @@ final class Ospfv3RoutingProcess {
    * non-backbone area and area 0. Traffic between two non-backbone areas must
    * therefore cross the backbone rather than being leaked directly.
    */
+  /**
+   * Import OSPFv3 inter-area routes.
+   *
+   * <p>Within an area, summary routes accumulate the local cost toward the
+   * advertising ABR. An ABR may translate routes between an attached
+   * non-backbone area and area 0. Traffic between two non-backbone areas must
+   * therefore cross the backbone rather than being leaked directly.
+   *
+   * <p>When the advertising ABR has an inter-area range on the source area,
+   * matching intra-area routes are replaced by the configured summary. The
+   * summary metric is the largest active component metric at that ABR.
+   * A no-advertise range suppresses both the summary and its component
+   * specifics across the area boundary.
+   */
   private boolean importInterAreaRoutesFromNeighbor(
       Interface localIface,
       Interface remoteIface,
@@ -1118,14 +1133,15 @@ final class Ospfv3RoutingProcess {
                 remoteIface)
             .orElse(null);
 
-    for (AbstractRoute6 route : remoteRoutes) {
+    for (AbstractRoute6 route :
+        remoteRoutes) {
 
       /*
-       * A totally-stubby ABR suppresses Type-3 summaries other than
-       * the stub default. Also honor the setting locally if a device
-       * carries no-summary on its own area declaration.
+       * A totally-stubby or no-summary NSSA ABR suppresses ordinary
+       * inter-area summaries other than the injected default.
        */
-      if (!route.getNetwork().equals(Prefix6.ZERO)
+      if (!route.getNetwork().equals(
+              Prefix6.ZERO)
           && shouldSuppressInterAreaRoute(
               localArea,
               remoteProcess)) {
@@ -1136,50 +1152,111 @@ final class Ospfv3RoutingProcess {
       long remoteMetric;
       long tag;
 
-      if (route instanceof Ospfv3IntraAreaRoute6) {
+      Prefix6 advertisedNetwork =
+          route.getNetwork();
+
+      if (route
+          instanceof Ospfv3IntraAreaRoute6) {
+
         Ospfv3IntraAreaRoute6 intra =
             (Ospfv3IntraAreaRoute6) route;
 
-        sourceArea = intra.getArea();
+        sourceArea =
+            intra.getArea();
 
-        // Same-area routes remain intra-area and were handled above.
+        /*
+         * Same-area routes remain intra-area and were handled by
+         * importIntraAreaRoutesFromNeighbor().
+         */
         if (sourceArea == localArea) {
           continue;
         }
 
-        if (!remoteProcess.canAdvertiseBetweenAreas(
-            sourceArea, localArea)) {
+        if (!remoteProcess
+            .canAdvertiseBetweenAreas(
+                sourceArea,
+                localArea)) {
           continue;
         }
 
-        remoteMetric = intra.getMetric();
-        tag = intra.getTag();
+        remoteMetric =
+            intra.getMetric();
+
+        tag =
+            intra.getTag();
+
+        /*
+         * Area range summarization is applied by the advertising ABR
+         * when an intra-area route crosses out of its source area.
+         */
+        @Nullable Ospfv3AreaRange range =
+            remoteProcess
+                .getMatchingInterAreaRange(
+                    sourceArea,
+                    intra.getNetwork());
+
+        if (range != null) {
+
+          if (!range.getAdvertise()) {
+            continue;
+          }
+
+          long summaryMetric =
+              computeInterAreaSummaryMetric(
+                  sourceArea,
+                  range,
+                  remoteRoutes);
+
+          if (summaryMetric < 0L) {
+            continue;
+          }
+
+          advertisedNetwork =
+              range.getPrefix();
+
+          remoteMetric =
+              summaryMetric;
+
+          /*
+           * A range summarizes potentially unrelated component route
+           * metadata, so do not copy a component tag onto the summary.
+           */
+          tag =
+              Route.UNSET_ROUTE_TAG;
+        }
 
       } else if (
-          route instanceof Ospfv3InterAreaRoute6) {
+          route
+              instanceof Ospfv3InterAreaRoute6) {
 
         Ospfv3InterAreaRoute6 inter =
             (Ospfv3InterAreaRoute6) route;
 
-        sourceArea = inter.getArea();
+        sourceArea =
+            inter.getArea();
 
-        // Propagation inside the area does not require the remote router to
-        // be an ABR. Crossing into a different area does.
+        /*
+         * Propagation inside the area does not require the remote router
+         * to be an ABR. Crossing into a different area does.
+         */
         if (sourceArea != localArea
-            && !remoteProcess.canAdvertiseBetweenAreas(
-                sourceArea, localArea)) {
+            && !remoteProcess
+                .canAdvertiseBetweenAreas(
+                    sourceArea,
+                    localArea)) {
           continue;
         }
 
-        remoteMetric = inter.getMetric();
-        tag = inter.getTag();
+        remoteMetric =
+            inter.getMetric();
+
+        tag =
+            inter.getTag();
 
       } else {
         continue;
       }
 
-      // Do not immediately advertise a learned route back toward the
-      // interface from which it was learned.
       if (shouldApplySplitHorizon(
           remoteIface,
           route)) {
@@ -1188,17 +1265,19 @@ final class Ospfv3RoutingProcess {
 
       if (remoteMetric >= LS_INFINITY
           || incrementalCost
-              >= LS_INFINITY - remoteMetric) {
+              >= LS_INFINITY
+                  - remoteMetric) {
         continue;
       }
 
       changed |=
           _ospfv3Rib.mergeRoute(
               new Ospfv3InterAreaRoute6(
-                  route.getNetwork(),
+                  advertisedNetwork,
                   localIface.getName(),
                   peerIp,
-                  _process.getInterAreaAdminCost(),
+                  _process
+                      .getInterAreaAdminCost(),
                   remoteMetric
                       + incrementalCost,
                   localArea,
@@ -1206,6 +1285,105 @@ final class Ospfv3RoutingProcess {
     }
 
     return changed;
+  }
+
+  /**
+   * Return the most-specific configured inter-area range that contains a
+   * source-area route.
+   */
+  private @Nullable Ospfv3AreaRange
+      getMatchingInterAreaRange(
+          long sourceArea,
+          Prefix6 network) {
+
+    Ospfv3Area area =
+        _process
+            .getAreas()
+            .get(sourceArea);
+
+    if (area == null) {
+      return null;
+    }
+
+    Ospfv3AreaRange best =
+        null;
+
+    for (Ospfv3AreaRange range :
+        area.getRanges()) {
+
+      if (range.getType()
+              != Ospfv3AreaRange.Type.INTER_AREA
+          || !prefixContains(
+              range.getPrefix(),
+              network)) {
+        continue;
+      }
+
+      if (best == null
+          || range
+                  .getPrefix()
+                  .getPrefixLength()
+              > best
+                  .getPrefix()
+                  .getPrefixLength()) {
+
+        best =
+            range;
+      }
+    }
+
+    return best;
+  }
+
+  private static boolean prefixContains(
+      Prefix6 container,
+      Prefix6 contained) {
+
+    return contained.getPrefixLength()
+            >= container.getPrefixLength()
+        && container.contains(
+            contained.getNetworkAddress());
+  }
+
+  /**
+   * Compute the range metric from active component intra-area routes.
+   *
+   * @return the largest matching metric, or -1 when no component exists
+   */
+  private static long computeInterAreaSummaryMetric(
+      long sourceArea,
+      Ospfv3AreaRange range,
+      Set<AbstractRoute6> routes) {
+
+    long maximumMetric =
+        -1L;
+
+    for (AbstractRoute6 route :
+        routes) {
+
+      if (!(route
+          instanceof Ospfv3IntraAreaRoute6)) {
+        continue;
+      }
+
+      Ospfv3IntraAreaRoute6 intra =
+          (Ospfv3IntraAreaRoute6) route;
+
+      if (intra.getArea()
+              != sourceArea
+          || !prefixContains(
+              range.getPrefix(),
+              intra.getNetwork())) {
+        continue;
+      }
+
+      maximumMetric =
+          Math.max(
+              maximumMetric,
+              intra.getMetric());
+    }
+
+    return maximumMetric;
   }
 
   /**
