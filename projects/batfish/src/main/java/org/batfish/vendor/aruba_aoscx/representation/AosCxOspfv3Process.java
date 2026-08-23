@@ -39,8 +39,25 @@ public final class AosCxOspfv3Process
 
   public void setRedistributeConnected(
       boolean redistributeConnected) {
+    setRedistributeConnected(
+        redistributeConnected,
+        null);
+  }
+
+  public void setRedistributeConnected(
+      boolean redistributeConnected,
+      @Nullable String routeMap) {
     _redistributeConnected =
         redistributeConnected;
+    _redistributeConnectedRouteMap =
+        redistributeConnected
+            ? routeMap
+            : null;
+  }
+
+  public @Nullable String
+      getRedistributeConnectedRouteMap() {
+    return _redistributeConnectedRouteMap;
   }
 
   public boolean getRedistributeStatic() {
@@ -49,8 +66,25 @@ public final class AosCxOspfv3Process
 
   public void setRedistributeStatic(
       boolean redistributeStatic) {
+    setRedistributeStatic(
+        redistributeStatic,
+        null);
+  }
+
+  public void setRedistributeStatic(
+      boolean redistributeStatic,
+      @Nullable String routeMap) {
     _redistributeStatic =
         redistributeStatic;
+    _redistributeStaticRouteMap =
+        redistributeStatic
+            ? routeMap
+            : null;
+  }
+
+  public @Nullable String
+      getRedistributeStaticRouteMap() {
+    return _redistributeStaticRouteMap;
   }
 
   public long getRedistributionMetric() {
@@ -196,7 +230,11 @@ public final class AosCxOspfv3Process
       DEFAULT_INFORMATION_METRIC;
 
   private boolean _redistributeConnected;
+  private @Nullable String
+      _redistributeConnectedRouteMap;
   private boolean _redistributeStatic;
+  private @Nullable String
+      _redistributeStaticRouteMap;
   private long _redistributionMetric =
       DEFAULT_REDISTRIBUTION_METRIC;
 

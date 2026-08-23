@@ -23,6 +23,7 @@ import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -143,26 +144,57 @@ final class Ospfv3RoutingProcess {
           continue;
         }
 
+        Optional<RouteMap6.Result> transformed =
+            applyRedistributionRouteMap(
+                _process
+                    .getRedistributeConnectedRouteMap(),
+                connected.getNetwork(),
+                _process.getRedistributionMetric(),
+                Route.UNSET_ROUTE_TAG);
+
+        if (transformed.isEmpty()) {
+          continue;
+        }
+
+        RouteMap6.Result result =
+            transformed.get();
+
         desired.add(
             new Ospfv3ExternalType2Route6(
                 connected.getNetwork(),
                 Route.UNSET_NEXT_HOP_INTERFACE,
                 _process.getAdminCost(),
-                _process.getRedistributionMetric(),
-                _process.getRouterId()));
+                result.getMetric(),
+                _process.getRouterId(),
+                result.getTag()));
       }
     }
 
     if (_process.getRedistributeStatic()) {
       for (StaticRoute6 route : staticRoutes) {
+        Optional<RouteMap6.Result> transformed =
+            applyRedistributionRouteMap(
+                _process
+                    .getRedistributeStaticRouteMap(),
+                route.getNetwork(),
+                _process.getRedistributionMetric(),
+                route.getTag());
+
+        if (transformed.isEmpty()) {
+          continue;
+        }
+
+        RouteMap6.Result result =
+            transformed.get();
+
         desired.add(
             new Ospfv3ExternalType2Route6(
                 route.getNetwork(),
                 Route.UNSET_NEXT_HOP_INTERFACE,
                 _process.getAdminCost(),
-                _process.getRedistributionMetric(),
+                result.getMetric(),
                 _process.getRouterId(),
-                route.getTag()));
+                result.getTag()));
       }
     }
 
@@ -192,6 +224,49 @@ final class Ospfv3RoutingProcess {
         immutableDesired;
 
     return true;
+  }
+
+  private static Optional<RouteMap6.Result>
+      applyRedistributionRouteMap(
+          @Nullable RouteMap6 routeMap,
+          Prefix6 prefix,
+          long initialMetric,
+          long initialTag) {
+
+    Optional<RouteMap6.Result> result =
+        routeMap == null
+            ? Optional.of(
+                new RouteMap6.Result(
+                    initialMetric,
+                    initialTag))
+            : routeMap.process(
+                prefix,
+                initialMetric,
+                initialTag);
+
+    if (result.isEmpty()) {
+      return Optional.empty();
+    }
+
+    RouteMap6.Result transformed =
+        result.get();
+
+    if (transformed.getMetric() < 0L
+        || transformed.getMetric()
+            > Ospfv3Process.MAX_METRIC) {
+      return Optional.empty();
+    }
+
+    long tag =
+        transformed.getTag();
+
+    if (tag != Route.UNSET_ROUTE_TAG
+        && (tag < 0L
+            || tag > AbstractRoute6.MAX_TAG)) {
+      return Optional.empty();
+    }
+
+    return result;
   }
 
   private boolean isInternallyOriginatedConnectedRoute(

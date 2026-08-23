@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.Vrf;
 
 /** An OSPFv3 routing process. */
@@ -49,7 +50,11 @@ public final class Ospfv3Process
     private @Nullable String _processId;
     private double _referenceBandwidth;
     private boolean _redistributeConnected;
+    private @Nullable RouteMap6
+        _redistributeConnectedRouteMap;
     private boolean _redistributeStatic;
+    private @Nullable RouteMap6
+        _redistributeStaticRouteMap;
     private long _redistributionMetric;
     private @Nullable Ip _routerId;
     private @Nullable Vrf _vrf;
@@ -107,6 +112,8 @@ public final class Ospfv3Process
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeStatic,
+              _redistributeConnectedRouteMap,
+              _redistributeStaticRouteMap,
               _redistributionMetric,
               _defaultInformationOriginate
                   || _defaultInformationOriginateAlways,
@@ -162,6 +169,20 @@ public final class Ospfv3Process
         boolean redistributeStatic) {
       _redistributeStatic =
           redistributeStatic;
+      return this;
+    }
+
+    public Builder setRedistributeConnectedRouteMap(
+        @Nullable RouteMap6 routeMap) {
+      _redistributeConnectedRouteMap =
+          routeMap;
+      return this;
+    }
+
+    public Builder setRedistributeStaticRouteMap(
+        @Nullable RouteMap6 routeMap) {
+      _redistributeStaticRouteMap =
+          routeMap;
       return this;
     }
 
@@ -223,8 +244,14 @@ public final class Ospfv3Process
       "referenceBandwidth";
   private static final String PROP_REDISTRIBUTE_CONNECTED =
       "redistributeConnected";
+  private static final String
+      PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP =
+          "redistributeConnectedRouteMap";
   private static final String PROP_REDISTRIBUTE_STATIC =
       "redistributeStatic";
+  private static final String
+      PROP_REDISTRIBUTE_STATIC_ROUTE_MAP =
+          "redistributeStaticRouteMap";
   private static final String PROP_REDISTRIBUTION_METRIC =
       "redistributionMetric";
   private static final String PROP_ROUTER_ID =
@@ -250,6 +277,10 @@ public final class Ospfv3Process
           @Nullable Boolean redistributeConnected,
       @JsonProperty(PROP_REDISTRIBUTE_STATIC)
           @Nullable Boolean redistributeStatic,
+      @JsonProperty(PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP)
+          @Nullable RouteMap6 redistributeConnectedRouteMap,
+      @JsonProperty(PROP_REDISTRIBUTE_STATIC_ROUTE_MAP)
+          @Nullable RouteMap6 redistributeStaticRouteMap,
       @JsonProperty(PROP_REDISTRIBUTION_METRIC)
           @Nullable Long redistributionMetric,
       @JsonProperty(PROP_DEFAULT_INFORMATION_ORIGINATE)
@@ -292,6 +323,8 @@ public final class Ospfv3Process
         firstNonNull(
             redistributeStatic,
             false),
+        redistributeConnectedRouteMap,
+        redistributeStaticRouteMap,
         firstNonNull(
             redistributionMetric,
             DEFAULT_REDISTRIBUTION_METRIC),
@@ -313,6 +346,8 @@ public final class Ospfv3Process
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeStatic,
+      @Nullable RouteMap6 redistributeConnectedRouteMap,
+      @Nullable RouteMap6 redistributeStaticRouteMap,
       long redistributionMetric,
       boolean defaultInformationOriginate,
       boolean defaultInformationOriginateAlways,
@@ -339,8 +374,12 @@ public final class Ospfv3Process
         referenceBandwidth;
     _redistributeConnected =
         redistributeConnected;
+    _redistributeConnectedRouteMap =
+        redistributeConnectedRouteMap;
     _redistributeStatic =
         redistributeStatic;
+    _redistributeStaticRouteMap =
+        redistributeStaticRouteMap;
     _redistributionMetric =
         redistributionMetric;
     _defaultInformationOriginate =
@@ -388,6 +427,18 @@ public final class Ospfv3Process
     return _redistributeStatic;
   }
 
+  @JsonProperty(PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP)
+  public @Nullable RouteMap6
+      getRedistributeConnectedRouteMap() {
+    return _redistributeConnectedRouteMap;
+  }
+
+  @JsonProperty(PROP_REDISTRIBUTE_STATIC_ROUTE_MAP)
+  public @Nullable RouteMap6
+      getRedistributeStaticRouteMap() {
+    return _redistributeStaticRouteMap;
+  }
+
   @JsonProperty(PROP_REDISTRIBUTION_METRIC)
   public long getRedistributionMetric() {
     return _redistributionMetric;
@@ -415,7 +466,11 @@ public final class Ospfv3Process
       _areas;
   private final double _referenceBandwidth;
   private final boolean _redistributeConnected;
+  private final @Nullable RouteMap6
+      _redistributeConnectedRouteMap;
   private final boolean _redistributeStatic;
+  private final @Nullable RouteMap6
+      _redistributeStaticRouteMap;
   private final long _redistributionMetric;
   private final boolean _defaultInformationOriginate;
   private final boolean

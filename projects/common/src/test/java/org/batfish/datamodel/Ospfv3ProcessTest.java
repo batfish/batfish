@@ -51,6 +51,16 @@ public final class Ospfv3ProcessTest {
 
   @Test
   public void testSerialization() {
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    33L,
+                    44L)));
+
     Ospfv3Area area =
         Ospfv3Area.builder()
             .setNumber(0L)
@@ -68,7 +78,11 @@ public final class Ospfv3ProcessTest {
             .setAdminCost(111)
             .setReferenceBandwidth(40_000_000_000D)
             .setRedistributeConnected(true)
+            .setRedistributeConnectedRouteMap(
+                routeMap)
             .setRedistributeStatic(true)
+            .setRedistributeStaticRouteMap(
+                routeMap)
             .setRedistributionMetric(37L)
             .setDefaultInformationOriginate(true)
             .setDefaultInformationOriginateAlways(true)
@@ -109,6 +123,12 @@ public final class Ospfv3ProcessTest {
     assertThat(
         clone.getRedistributeStatic(),
         equalTo(true));
+    assertThat(
+        clone.getRedistributeConnectedRouteMap(),
+        equalTo(routeMap));
+    assertThat(
+        clone.getRedistributeStaticRouteMap(),
+        equalTo(routeMap));
     assertThat(
         clone.getRedistributionMetric(),
         equalTo(37L));

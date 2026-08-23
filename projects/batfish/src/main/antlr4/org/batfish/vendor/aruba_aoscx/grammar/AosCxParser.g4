@@ -41,6 +41,7 @@ statement
   | s_ip_ospf_cost
   | s_ip_ospf_network
   | s_ip_prefix_list
+  | s_ipv6_prefix_list
   | s_ip_route
   | s_router_ospf
   | s_router_ospfv3
@@ -54,7 +55,10 @@ statement
   | s_router_bgp
   | s_route_map
   | s_match_ip_address_prefix_list
+  | s_match_ipv6_address_prefix_list
   | s_set_local_preference
+  | s_set_metric
+  | s_set_tag
   | s_bgp_router_id
   | s_bgp_neighbor_remote_as
   | s_bgp_address_family_ipv4
@@ -291,6 +295,11 @@ s_ip_prefix_list
   IP PREFIX_LIST WORD prefix_list_seq? prefix_list_action WORD prefix_list_ge? prefix_list_le? NEWLINE
 ;
 
+s_ipv6_prefix_list
+:
+  IPV6 PREFIX_LIST WORD prefix_list_seq? prefix_list_action WORD prefix_list_ge? prefix_list_le? NEWLINE
+;
+
 prefix_list_seq
 :
   SEQ WORD
@@ -343,9 +352,24 @@ s_match_ip_address_prefix_list
   MATCH IP ADDRESS PREFIX_LIST WORD NEWLINE
 ;
 
+s_match_ipv6_address_prefix_list
+:
+  MATCH IPV6 ADDRESS PREFIX_LIST WORD NEWLINE
+;
+
 s_set_local_preference
 :
   SET LOCAL_PREFERENCE WORD NEWLINE
+;
+
+s_set_metric
+:
+  SET METRIC WORD NEWLINE
+;
+
+s_set_tag
+:
+  SET TAG WORD NEWLINE
 ;
 
 s_router_bgp

@@ -1,0 +1,24 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+ipv6 prefix-list CONN_OK seq 10 permit 2001:db8:100::/48 ge 64 le 64
+ipv6 prefix-list STATIC_BLOCK seq 10 permit 2001:db8:400::/48 le 128
+ipv6 prefix-list STATIC_ALL seq 10 permit ::/0 le 128
+
+route-map RM-CONN permit seq 10
+    match ipv6 address prefix-list CONN_OK
+    set metric 31
+    set tag 101
+
+route-map RM-STATIC deny seq 10
+    match ipv6 address prefix-list STATIC_BLOCK
+route-map RM-STATIC permit seq 20
+    match ipv6 address prefix-list STATIC_ALL
+    set metric 41
+    set tag 202
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0.0.0.0
+    redistribute connected route-map RM-CONN
+    redistribute static route-map RM-STATIC

@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.StaticRoute6;
@@ -94,6 +96,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final Map<String, Map<Integer, AosCxOspfProcess>> _ospfProcessesByVrf =
       new HashMap<>();
   private final Map<String, AosCxPrefixList> _prefixLists = new HashMap<>();
+  private final Map<String, AosCxIpv6PrefixList> _ipv6PrefixLists =
+      new HashMap<>();
   private final Map<String, AosCxRouteMap> _routeMaps = new HashMap<>();
   private final Set<String> _vrfs = new HashSet<>();
   private AosCxBgpProcess _bgpProcess;
@@ -192,6 +196,18 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public AosCxPrefixList getOrCreatePrefixList(String name) {
     return _prefixLists.computeIfAbsent(name, AosCxPrefixList::new);
+  }
+
+  public Map<String, AosCxIpv6PrefixList>
+      getIpv6PrefixLists() {
+    return _ipv6PrefixLists;
+  }
+
+  public AosCxIpv6PrefixList
+      getOrCreateIpv6PrefixList(String name) {
+    return _ipv6PrefixLists.computeIfAbsent(
+        name,
+        AosCxIpv6PrefixList::new);
   }
 
   public Map<Integer, AosCxOspfProcess> getOspfProcesses() {
@@ -747,6 +763,125 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
+  private RouteMap6 toRouteMap6(
+      String routeMapName) {
+    if (routeMapName == null) {
+      return null;
+    }
+
+    AosCxRouteMap routeMap =
+        _routeMaps.get(routeMapName);
+
+    /*
+     * An undefined route-map must not become permit-all.
+     * A route-map with no matching sequence also implicitly denies.
+     */
+    if (routeMap == null) {
+      return RouteMap6.denyAll();
+    }
+
+    ImmutableSortedMap.Builder<
+            Long, RouteMap6.Entry>
+        entries =
+            ImmutableSortedMap.naturalOrder();
+
+    routeMap
+        .getEntries()
+        .values()
+        .forEach(
+            entry -> {
+              List<RouteMap6.PrefixListLine>
+                  matchPrefixList = null;
+
+              /*
+               * An IPv4 prefix-list match cannot match an IPv6 route.
+               * Model that sequence as never matching IPv6.
+               */
+              if (entry.getMatchPrefixList() != null) {
+                matchPrefixList =
+                    ImmutableList.of();
+
+              } else if (
+                  entry.getMatchIpv6PrefixList()
+                      != null) {
+
+                AosCxIpv6PrefixList prefixList =
+                    _ipv6PrefixLists.get(
+                        entry
+                            .getMatchIpv6PrefixList());
+
+                if (prefixList == null) {
+                  /*
+                   * Undefined referenced prefix-list:
+                   * never turn it into match-all.
+                   */
+                  matchPrefixList =
+                      ImmutableList.of();
+                } else {
+                  ImmutableList.Builder<
+                          RouteMap6.PrefixListLine>
+                      lines =
+                          ImmutableList.builder();
+
+                  prefixList
+                      .getEntries()
+                      .values()
+                      .forEach(
+                          prefixEntry -> {
+                            int prefixLength =
+                                prefixEntry
+                                    .getPrefix()
+                                    .getPrefixLength();
+
+                            int minLength =
+                                prefixEntry.getGe()
+                                        != null
+                                    ? prefixEntry
+                                        .getGe()
+                                    : prefixLength;
+
+                            int maxLength =
+                                prefixEntry.getLe()
+                                        != null
+                                    ? prefixEntry
+                                        .getLe()
+                                    : prefixEntry
+                                                .getGe()
+                                            != null
+                                        ? Prefix6
+                                            .MAX_PREFIX_LENGTH
+                                        : prefixLength;
+
+                            lines.add(
+                                new RouteMap6
+                                    .PrefixListLine(
+                                        prefixEntry
+                                            .getAction(),
+                                        prefixEntry
+                                            .getPrefix(),
+                                        new SubRange(
+                                            minLength,
+                                            maxLength)));
+                          });
+
+                  matchPrefixList =
+                      lines.build();
+                }
+              }
+
+              entries.put(
+                  entry.getSequence(),
+                  new RouteMap6.Entry(
+                      entry.getAction(),
+                      matchPrefixList,
+                      entry.getSetMetric(),
+                      entry.getSetTag()));
+            });
+
+    return new RouteMap6(
+        entries.build());
+  }
+
   private static List<Statement> routeMapActionStatements(LineAction action) {
     return action == LineAction.PERMIT
         ? ImmutableList.of(
@@ -1161,8 +1296,16 @@ public class AosCxConfiguration extends VendorConfiguration {
                   process.getReferenceBandwidth())
               .setRedistributeConnected(
                   process.getRedistributeConnected())
+              .setRedistributeConnectedRouteMap(
+                  toRouteMap6(
+                      process
+                          .getRedistributeConnectedRouteMap()))
               .setRedistributeStatic(
                   process.getRedistributeStatic())
+              .setRedistributeStaticRouteMap(
+                  toRouteMap6(
+                      process
+                          .getRedistributeStaticRouteMap()))
               .setRedistributionMetric(
                   process.getRedistributionMetric())
               .setDefaultInformationOriginate(

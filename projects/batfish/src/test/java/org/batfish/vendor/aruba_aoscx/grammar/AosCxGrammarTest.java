@@ -35,6 +35,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -2211,6 +2213,176 @@ public final class AosCxGrammarTest {
         equalTo(
             org.batfish.datamodel.ospf.Ospfv3Process
                 .DEFAULT_INFORMATION_METRIC));
+  }
+
+  @Test
+  public void testOspfv3RedistributionRouteMapExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-redistribution-route-map");
+
+    assertThat(
+        c.getIpv6PrefixLists(),
+        hasKey("CONN_OK"));
+
+    assertThat(
+        c.getIpv6PrefixLists()
+            .get("CONN_OK")
+            .getEntries()
+            .get(10L)
+            .getPrefix(),
+        equalTo(
+            Prefix6.parse(
+                "2001:db8:100::/48")));
+
+    assertThat(
+        c.getIpv6PrefixLists()
+            .get("CONN_OK")
+            .getEntries()
+            .get(10L)
+            .getGe(),
+        equalTo(64));
+
+    assertThat(
+        c.getIpv6PrefixLists()
+            .get("CONN_OK")
+            .getEntries()
+            .get(10L)
+            .getLe(),
+        equalTo(64));
+
+    AosCxRouteMapEntry connEntry =
+        c.getRouteMaps()
+            .get("RM-CONN")
+            .getEntries()
+            .get(10L);
+
+    assertThat(
+        connEntry.getMatchIpv6PrefixList(),
+        equalTo("CONN_OK"));
+    assertThat(
+        connEntry.getSetMetric(),
+        equalTo(31L));
+    assertThat(
+        connEntry.getSetTag(),
+        equalTo(101L));
+
+    AosCxRouteMapEntry staticDeny =
+        c.getRouteMaps()
+            .get("RM-STATIC")
+            .getEntries()
+            .get(10L);
+
+    assertThat(
+        staticDeny.getAction(),
+        equalTo(LineAction.DENY));
+    assertThat(
+        staticDeny.getMatchIpv6PrefixList(),
+        equalTo("STATIC_BLOCK"));
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(process, notNullValue());
+
+    assertThat(
+        process.getRedistributeConnected(),
+        equalTo(true));
+    assertThat(
+        process.getRedistributeConnectedRouteMap(),
+        equalTo("RM-CONN"));
+
+    assertThat(
+        process.getRedistributeStatic(),
+        equalTo(true));
+    assertThat(
+        process.getRedistributeStaticRouteMap(),
+        equalTo("RM-STATIC"));
+  }
+
+  @Test
+  public void testOspfv3RedistributionRouteMapConversion()
+      throws IOException {
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-redistribution-route-map");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        process =
+            c.getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(process, notNullValue());
+
+    RouteMap6 connectedMap =
+        process.getRedistributeConnectedRouteMap();
+
+    assertThat(
+        connectedMap,
+        notNullValue());
+
+    RouteMap6.Result connectedAllowed =
+        connectedMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:100:1::/64"),
+                process.getRedistributionMetric(),
+                Route.UNSET_ROUTE_TAG)
+            .orElseThrow();
+
+    assertThat(
+        connectedAllowed.getMetric(),
+        equalTo(31L));
+    assertThat(
+        connectedAllowed.getTag(),
+        equalTo(101L));
+
+    assertThat(
+        connectedMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:200:1::/64"),
+                process.getRedistributionMetric(),
+                Route.UNSET_ROUTE_TAG)
+            .isEmpty(),
+        equalTo(true));
+
+    RouteMap6 staticMap =
+        process.getRedistributeStaticRouteMap();
+
+    assertThat(
+        staticMap,
+        notNullValue());
+
+    assertThat(
+        staticMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:400::/64"),
+                process.getRedistributionMetric(),
+                999L)
+            .isEmpty(),
+        equalTo(true));
+
+    RouteMap6.Result staticAllowed =
+        staticMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:300::/64"),
+                process.getRedistributionMetric(),
+                999L)
+            .orElseThrow();
+
+    assertThat(
+        staticAllowed.getMetric(),
+        equalTo(41L));
+    assertThat(
+        staticAllowed.getTag(),
+        equalTo(202L));
   }
 
 }

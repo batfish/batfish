@@ -46,6 +46,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_ospf_networkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_prefix_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_routeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_mtuContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_routingContext;
@@ -55,8 +56,11 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_no_shutdownContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ip_address_prefix_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_tagContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_ipv4Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_activateContext;
@@ -80,6 +84,8 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6AccessList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6AccessListEntry;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6PrefixList;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6PrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec.Operator;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
@@ -716,6 +722,98 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ipv6_prefix_list(
+      S_ipv6_prefix_listContext ctx) {
+
+    String name =
+        ctx.WORD(0).getText();
+
+    AosCxIpv6PrefixList prefixList =
+        _configuration
+            .getOrCreateIpv6PrefixList(name);
+
+    long sequence =
+        ctx.prefix_list_seq() != null
+            ? Long.parseLong(
+                ctx.prefix_list_seq()
+                    .WORD()
+                    .getText())
+            : prefixList.getNextSequence();
+
+    LineAction action =
+        ctx.prefix_list_action()
+                    .PERMIT()
+                != null
+            ? LineAction.PERMIT
+            : LineAction.DENY;
+
+    Prefix6 prefix;
+
+    try {
+      prefix =
+          Prefix6.parse(
+              ctx.WORD(1).getText());
+    } catch (IllegalArgumentException e) {
+      warn(
+          ctx,
+          "Ignoring invalid IPv6 prefix-list prefix");
+      return;
+    }
+
+    Integer ge =
+        ctx.prefix_list_ge() != null
+            ? Integer.parseInt(
+                ctx.prefix_list_ge()
+                    .WORD()
+                    .getText())
+            : null;
+
+    Integer le =
+        ctx.prefix_list_le() != null
+            ? Integer.parseInt(
+                ctx.prefix_list_le()
+                    .WORD()
+                    .getText())
+            : null;
+
+    int prefixLength =
+        prefix.getPrefixLength();
+
+    int minLength =
+        ge != null
+            ? ge
+            : prefixLength;
+
+    int maxLength =
+        le != null
+            ? le
+            : ge != null
+                ? Prefix6.MAX_PREFIX_LENGTH
+                : prefixLength;
+
+    if (minLength < prefixLength
+        || minLength
+            > Prefix6.MAX_PREFIX_LENGTH
+        || maxLength < prefixLength
+        || maxLength
+            > Prefix6.MAX_PREFIX_LENGTH
+        || minLength > maxLength) {
+      warn(
+          ctx,
+          "Ignoring IPv6 prefix-list entry with invalid ge/le range");
+      return;
+    }
+
+    prefixList.addEntry(
+        new AosCxIpv6PrefixListEntry(
+            sequence,
+            action,
+            prefix,
+            ge,
+            le));
+  }
+
+  @Override
   public void exitS_ip_route(S_ip_routeContext ctx) {
     Prefix prefix = Prefix.parse(ctx.WORD(0).getText());
     String nextHop = ctx.static_route_next_hop().getText();
@@ -867,6 +965,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentInterface = null;
     _currentOspfProcess = null;
+    _currentOspfv3Process = null;
     _currentBgpProcess = null;
     _currentIpAccessList = null;
     _currentIpv6AccessList = null;
@@ -883,12 +982,97 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_match_ipv6_address_prefix_list(
+      S_match_ipv6_address_prefix_listContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(
+          ctx,
+          "Ignoring IPv6 route-map match outside route-map context");
+      return;
+    }
+
+    _currentRouteMapEntry
+        .setMatchIpv6PrefixList(
+            ctx.WORD().getText());
+  }
+
+  @Override
   public void exitS_set_local_preference(S_set_local_preferenceContext ctx) {
     if (_currentRouteMapEntry == null) {
       warn(ctx, "Ignoring route-map set outside route-map context");
       return;
     }
     _currentRouteMapEntry.setSetLocalPreference(Long.parseLong(ctx.WORD().getText()));
+  }
+
+  @Override
+  public void exitS_set_metric(
+      S_set_metricContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(
+          ctx,
+          "Ignoring route-map set metric outside route-map context");
+      return;
+    }
+
+    long metric;
+
+    try {
+      metric =
+          Long.parseLong(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid route-map metric");
+      return;
+    }
+
+    if (metric < 0L
+        || metric > 0xFFFFFFFFL) {
+      warn(
+          ctx,
+          "Ignoring route-map metric outside 0-4294967295");
+      return;
+    }
+
+    _currentRouteMapEntry
+        .setSetMetric(metric);
+  }
+
+  @Override
+  public void exitS_set_tag(
+      S_set_tagContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(
+          ctx,
+          "Ignoring route-map set tag outside route-map context");
+      return;
+    }
+
+    long tag;
+
+    try {
+      tag =
+          Long.parseLong(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+      warn(
+          ctx,
+          "Ignoring invalid route-map tag");
+      return;
+    }
+
+    if (tag < 0L
+        || tag > 0xFFFFFFFFL) {
+      warn(
+          ctx,
+          "Ignoring route-map tag outside 0-4294967295");
+      return;
+    }
+
+    _currentRouteMapEntry
+        .setSetTag(tag);
   }
 
   @Override
@@ -1209,28 +1393,33 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
 
-    if (ctx.redistribute_route_map() != null) {
-      /*
-       * IPv6 route-map redistribution filtering is not modeled yet.
-       * Do not silently redistribute every route when a filter exists.
-       */
-      warn(
-          ctx,
-          "Ignoring redistribute connected with route-map until OSPFv3 IPv6 route-map filtering is supported");
-      return;
-    }
-
     boolean enabled =
         ctx.NO() == null;
 
-    if (_currentOspfProcess != null) {
-      _currentOspfProcess
-          .setRedistributeConnected(enabled);
-      return;
-    }
+    String routeMap =
+        ctx.redistribute_route_map() == null
+            ? null
+            : ctx.redistribute_route_map()
+                .WORD()
+                .getText();
 
     if (_currentOspfv3Process != null) {
       _currentOspfv3Process
+          .setRedistributeConnected(
+              enabled,
+              routeMap);
+      return;
+    }
+
+    if (_currentOspfProcess != null) {
+      if (routeMap != null) {
+        warn(
+            ctx,
+            "Ignoring OSPFv2 redistribute connected with route-map");
+        return;
+      }
+
+      _currentOspfProcess
           .setRedistributeConnected(enabled);
       return;
     }
@@ -1251,20 +1440,20 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       return;
     }
 
-    if (ctx.redistribute_route_map() != null) {
-      /*
-       * A filtered redistribution must not be over-approximated as
-       * unfiltered redistribution.
-       */
-      warn(
-          ctx,
-          "Ignoring redistribute static with route-map until OSPFv3 IPv6 route-map filtering is supported");
-      return;
-    }
+    boolean enabled =
+        ctx.NO() == null;
+
+    String routeMap =
+        ctx.redistribute_route_map() == null
+            ? null
+            : ctx.redistribute_route_map()
+                .WORD()
+                .getText();
 
     _currentOspfv3Process
         .setRedistributeStatic(
-            ctx.NO() == null);
+            enabled,
+            routeMap);
   }
 
   @Override

@@ -21,9 +21,12 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.RouteMap6;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -172,6 +175,42 @@ public final class Ospfv3ExternalPropagationTest {
             defaultInformationOriginateAlways)
         .setDefaultInformationMetric(
             defaultInformationMetric)
+        .setVrf(
+            node.getConfiguration()
+                .getDefaultVrf())
+        .build();
+  }
+
+  private static void addProcessWithRouteMaps(
+      Node node,
+      String routerId,
+      RouteMap6 connectedRouteMap,
+      RouteMap6 staticRouteMap,
+      String... interfaces) {
+
+    Ospfv3Area area =
+        Ospfv3Area.builder()
+            .setNumber(0L)
+            .addInterfaces(
+                List.of(interfaces))
+            .build();
+
+    Ospfv3Process.builder()
+        .setProcessId("1")
+        .setRouterId(
+            Ip.parse(routerId))
+        .setAreas(
+            ImmutableMap.of(
+                0L, area))
+        .setRedistributeConnected(true)
+        .setRedistributeConnectedRouteMap(
+            connectedRouteMap)
+        .setRedistributeStatic(true)
+        .setRedistributeStaticRouteMap(
+            staticRouteMap)
+        .setRedistributionMetric(
+            Ospfv3Process
+                .DEFAULT_REDISTRIBUTION_METRIC)
         .setVrf(
             node.getConfiguration()
                 .getDefaultVrf())
@@ -812,6 +851,235 @@ public final class Ospfv3ExternalPropagationTest {
         vr2.getMainRib6()
             .getRoutes(Prefix6.ZERO),
         hasItem(learned));
+  }
+
+  @Test
+  public void testRedistributionRouteMaps() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    addConnectedInterface(
+        n1,
+        "connected-allowed",
+        "2001:db8:100:1::1/64");
+
+    addConnectedInterface(
+        n1,
+        "connected-denied",
+        "2001:db8:200:1::1/64");
+
+    Prefix6 staticAllowedPrefix =
+        Prefix6.parse(
+            "2001:db8:300::/64");
+
+    Prefix6 staticDeniedPrefix =
+        Prefix6.parse(
+            "2001:db8:400::/64");
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    staticAllowedPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .setTag(999L)
+                .build());
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    staticDeniedPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .setTag(888L)
+                .build());
+
+    RouteMap6 connectedRouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    List.of(
+                        new RouteMap6.PrefixListLine(
+                            LineAction.PERMIT,
+                            Prefix6.parse(
+                                "2001:db8:100::/48"),
+                            new SubRange(
+                                64, 64))),
+                    31L,
+                    101L)));
+
+    RouteMap6 staticRouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.DENY,
+                    List.of(
+                        new RouteMap6.PrefixListLine(
+                            LineAction.PERMIT,
+                            Prefix6.parse(
+                                "2001:db8:400::/48"),
+                            new SubRange(
+                                48, 128))),
+                    null,
+                    null),
+                20L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    List.of(
+                        new RouteMap6.PrefixListLine(
+                            LineAction.PERMIT,
+                            Prefix6.ZERO,
+                            new SubRange(
+                                0, 128))),
+                    41L,
+                    202L)));
+
+    addProcessWithRouteMaps(
+        n1,
+        "192.0.2.1",
+        connectedRouteMap,
+        staticRouteMap,
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder().build();
+
+    vr1.initForIgpComputation(topology);
+    vr2.initForIgpComputation(topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1", "eth12"),
+        NodeInterfacePair.of(
+            "n2", "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            List.of(
+                vr1, vr2),
+            adjacencies);
+
+    Prefix6 connectedAllowedPrefix =
+        Prefix6.parse(
+            "2001:db8:100:1::/64");
+
+    Prefix6 connectedDeniedPrefix =
+        Prefix6.parse(
+            "2001:db8:200:1::/64");
+
+    Ospfv3ExternalType2Route6
+        connectedAllowed =
+            findExternal(
+                vr2,
+                connectedAllowedPrefix);
+
+    assertThat(
+        connectedAllowed,
+        notNullValue());
+    assertThat(
+        connectedAllowed.getMetric(),
+        equalTo(31L));
+    assertThat(
+        connectedAllowed.getTag(),
+        equalTo(101L));
+
+    assertThat(
+        findExternal(
+            vr2,
+            connectedDeniedPrefix),
+        nullValue());
+
+    Ospfv3ExternalType2Route6
+        staticAllowed =
+            findExternal(
+                vr2,
+                staticAllowedPrefix);
+
+    assertThat(
+        staticAllowed,
+        notNullValue());
+    assertThat(
+        staticAllowed.getMetric(),
+        equalTo(41L));
+    assertThat(
+        staticAllowed.getTag(),
+        equalTo(202L));
+
+    assertThat(
+        findExternal(
+            vr2,
+            staticDeniedPrefix),
+        nullValue());
+
+    /*
+     * Route-map transformation changes the advertisement only.
+     * The ASBR's source static remains the actual local forwarding route.
+     */
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(
+                staticAllowedPrefix)
+            .stream()
+            .anyMatch(
+                r ->
+                    r instanceof StaticRoute6
+                        && r.getTag() == 999L),
+        equalTo(true));
+
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(
+                staticAllowedPrefix)
+            .stream()
+            .anyMatch(
+                r ->
+                    r instanceof
+                        Ospfv3ExternalType2Route6),
+        equalTo(false));
   }
 
 }
