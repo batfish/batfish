@@ -15,8 +15,10 @@ import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.Interface_nameContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_access_list_ipContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_access_list_ipv6Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_acl_entryContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_apply_access_list_ipContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_apply_access_list_ipv6Context;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_default_gatewayContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_descriptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_hostnameContext;
@@ -63,6 +65,8 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxBgpProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxIpAccessListEntry;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6AccessList;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxIpv6AccessListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPortSpec.Operator;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
@@ -94,6 +98,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   public void exitS_access_list_ip(S_access_list_ipContext ctx) {
     _currentIpAccessList =
         _configuration.getOrCreateIpAccessList(ctx.WORD().getText());
+    _currentIpv6AccessList = null;
     _currentInterface = null;
     _currentRouteMapEntry = null;
     _currentOspfProcess = null;
@@ -102,29 +107,69 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_access_list_ipv6(
+      S_access_list_ipv6Context ctx) {
+    _currentIpv6AccessList =
+        _configuration.getOrCreateIpv6AccessList(
+            ctx.WORD().getText());
+    _currentIpAccessList = null;
+    _currentInterface = null;
+    _currentRouteMapEntry = null;
+    _currentOspfProcess = null;
+    _currentOspfv3Process = null;
+    _currentBgpProcess = null;
+    _inBgpIpv4Unicast = false;
+  }
+
+  @Override
   public void exitS_acl_entry(S_acl_entryContext ctx) {
-    if (_currentIpAccessList == null) {
-      warn(ctx, "Ignoring ACL entry outside IPv4 ACL context");
+    if (_currentIpAccessList == null
+        && _currentIpv6AccessList == null) {
+      warn(
+          ctx,
+          "Ignoring ACL entry outside ACL context");
       return;
     }
 
     long sequence =
         ctx.WORD() != null
-            ? Long.parseLong(ctx.WORD().getText())
-            : _currentIpAccessList.getNextSequence();
+            ? Long.parseLong(
+                ctx.WORD().getText())
+            : _currentIpv6AccessList != null
+                ? _currentIpv6AccessList.getNextSequence()
+                : _currentIpAccessList.getNextSequence();
 
     LineAction action =
-        ctx.acl_action().PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
+        ctx.acl_action().PERMIT() != null
+            ? LineAction.PERMIT
+            : LineAction.DENY;
 
     AosCxPortSpec sourcePort =
         ctx.acl_src_port_spec() == null
             ? null
-            : toPortSpec(ctx.acl_src_port_spec().acl_port_spec());
+            : toPortSpec(
+                ctx.acl_src_port_spec()
+                    .acl_port_spec());
 
     AosCxPortSpec destinationPort =
         ctx.acl_dst_port_spec() == null
             ? null
-            : toPortSpec(ctx.acl_dst_port_spec().acl_port_spec());
+            : toPortSpec(
+                ctx.acl_dst_port_spec()
+                    .acl_port_spec());
+
+    if (_currentIpv6AccessList != null) {
+      _currentIpv6AccessList.addEntry(
+          new AosCxIpv6AccessListEntry(
+              sequence,
+              action,
+              ctx.acl_protocol().getText(),
+              ctx.acl_address(0).getText(),
+              sourcePort,
+              ctx.acl_address(1).getText(),
+              destinationPort));
+      return;
+    }
 
     _currentIpAccessList.addEntry(
         new AosCxIpAccessListEntry(
@@ -170,6 +215,31 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       _currentInterface.setIncomingAcl(aclName);
     } else {
       _currentInterface.setOutgoingAcl(aclName);
+    }
+  }
+
+  @Override
+  public void exitS_apply_access_list_ipv6(
+      S_apply_access_list_ipv6Context ctx) {
+    if (_currentInterface == null) {
+      warn(
+          ctx,
+          "Ignoring apply access-list ipv6 outside interface context");
+      return;
+    }
+
+    String aclName =
+        ctx.WORD().getText();
+    String direction =
+        ctx.acl_direction().getText();
+
+    if (direction.equals("in")
+        || direction.equals("routed-in")) {
+      _currentInterface.setIncomingIpv6Acl(
+          aclName);
+    } else {
+      _currentInterface.setOutgoingIpv6Acl(
+          aclName);
     }
   }
 
@@ -233,6 +303,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentRouteMapEntry = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
   }
 
   @Override
@@ -276,6 +347,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       _currentRouteMapEntry = null;
       _currentOspfProcess = null;
       _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
       _inBgpIpv4Unicast = false;
       return;
     }
@@ -287,6 +359,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentBgpProcess = null;
     _currentBgpLocalAs = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
     _inBgpIpv4Unicast = false;
   }
 
@@ -477,6 +550,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentOspfProcess = null;
     _currentBgpProcess = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
   }
 
   @Override
@@ -509,6 +583,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentOspfProcess = null;
     _currentInterface = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
   }
 
   private static long toAsNumber(String text) {
@@ -649,6 +724,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentRouteMapEntry = null;
     _currentInterface = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
   }
 
   @Override
@@ -666,6 +742,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentRouteMapEntry = null;
     _currentInterface = null;
     _currentIpAccessList = null;
+    _currentIpv6AccessList = null;
   }
 
   @Override
@@ -830,5 +907,6 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private Long _currentBgpLocalAs;
   private AosCxRouteMapEntry _currentRouteMapEntry;
   private AosCxIpAccessList _currentIpAccessList;
+  private AosCxIpv6AccessList _currentIpv6AccessList;
   private boolean _inBgpIpv4Unicast;
 }

@@ -780,4 +780,226 @@ public final class TracerouteEngine6Test {
         contains("n1", "n2"));
   }
 
+  @Test
+  public void testFlow6DeniedOutgoing() {
+    Configuration n1 =
+        configuration("n1");
+    Configuration n2 =
+        configuration("n2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "loopback0",
+        "2001:db8:2::2/128",
+        InterfaceType.LOOPBACK);
+
+    org.batfish.datamodel.Ip6AccessList blockHttps =
+        org.batfish.datamodel.Ip6AccessList.builder()
+            .setName("BLOCK-HTTPS")
+            .setLines(
+                org.batfish.datamodel.Ip6AccessListLine.builder()
+                    .setAction(
+                        org.batfish.datamodel.LineAction.DENY)
+                    .setProtocol(IpProtocol.TCP)
+                    .setDstPorts(
+                        org.batfish.datamodel.SubRange.singleton(
+                            443))
+                    .build(),
+                org.batfish.datamodel.Ip6AccessListLine.builder()
+                    .setAction(
+                        org.batfish.datamodel.LineAction.PERMIT)
+                    .build())
+            .build();
+
+    n1.getIp6AccessLists()
+        .put(
+            blockHttps.getName(),
+            blockHttps);
+
+    n1.getAllInterfaces()
+        .get("eth12")
+        .setOutgoingFilter6(
+            blockHttps);
+
+    Prefix6 destination =
+        Prefix6.parse(
+            "2001:db8:2::2/128");
+
+    Ospfv3IntraAreaRoute6 route =
+        new Ospfv3IntraAreaRoute6(
+            destination,
+            "eth12",
+            Ip6.parse(
+                "2001:db8:12::2"),
+            110,
+            10,
+            0L);
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(route)),
+                "n2",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(
+                        new ConnectedRoute6(
+                            destination,
+                            "loopback0")))));
+
+    Flow6 flow =
+        Flow6.builder()
+            .setIngressNode("n1")
+            .setSrcIp(
+                Ip6.parse(
+                    "2001:db8:1::10"))
+            .setDstIp(
+                Ip6.parse(
+                    "2001:db8:2::2"))
+            .setIpProtocol(
+                IpProtocol.TCP)
+            .setSrcPort(40000)
+            .setDstPort(443)
+            .setPacketLength(80)
+            .build();
+
+    Ipv6Trace trace =
+        engine.computeTraces(flow).get(0);
+
+    assertThat(
+        trace.getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition
+                .DENIED_OUT));
+  }
+
+  @Test
+  public void testFlow6DeniedIncoming() {
+    Configuration n1 =
+        configuration("n1");
+    Configuration n2 =
+        configuration("n2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        InterfaceType.PHYSICAL);
+
+    addInterface(
+        n2,
+        "loopback0",
+        "2001:db8:2::2/128",
+        InterfaceType.LOOPBACK);
+
+    org.batfish.datamodel.Ip6AccessList blockSource =
+        org.batfish.datamodel.Ip6AccessList.builder()
+            .setName("BLOCK-SOURCE")
+            .setLines(
+                org.batfish.datamodel.Ip6AccessListLine.builder()
+                    .setAction(
+                        org.batfish.datamodel.LineAction.DENY)
+                    .setSrcPrefix(
+                        Prefix6.parse(
+                            "2001:db8:1::/64"))
+                    .build(),
+                org.batfish.datamodel.Ip6AccessListLine.builder()
+                    .setAction(
+                        org.batfish.datamodel.LineAction.PERMIT)
+                    .build())
+            .build();
+
+    n2.getIp6AccessLists()
+        .put(
+            blockSource.getName(),
+            blockSource);
+
+    n2.getAllInterfaces()
+        .get("eth21")
+        .setIncomingFilter6(
+            blockSource);
+
+    Prefix6 destination =
+        Prefix6.parse(
+            "2001:db8:2::2/128");
+
+    Ospfv3IntraAreaRoute6 route =
+        new Ospfv3IntraAreaRoute6(
+            destination,
+            "eth12",
+            Ip6.parse(
+                "2001:db8:12::2"),
+            110,
+            10,
+            0L);
+
+    TracerouteEngine6 engine =
+        new TracerouteEngine6(
+            ImmutableMap.of(
+                "n1", n1,
+                "n2", n2),
+            ImmutableMap.of(
+                "n1",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(route)),
+                "n2",
+                ImmutableMap.of(
+                    Configuration.DEFAULT_VRF_NAME,
+                    fib(
+                        new ConnectedRoute6(
+                            destination,
+                            "loopback0")))));
+
+    Flow6 flow =
+        Flow6.builder()
+            .setIngressNode("n1")
+            .setSrcIp(
+                Ip6.parse(
+                    "2001:db8:1::10"))
+            .setDstIp(
+                Ip6.parse(
+                    "2001:db8:2::2"))
+            .setIpProtocol(
+                IpProtocol.TCP)
+            .setSrcPort(40000)
+            .setDstPort(443)
+            .setPacketLength(80)
+            .build();
+
+    Ipv6Trace trace =
+        engine.computeTraces(flow).get(0);
+
+    assertThat(
+        trace.getDisposition(),
+        equalTo(
+            Ipv6TraceDisposition
+                .DENIED_IN));
+  }
+
+
 }

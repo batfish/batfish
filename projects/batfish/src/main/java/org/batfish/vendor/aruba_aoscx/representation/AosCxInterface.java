@@ -217,6 +217,24 @@ public final class AosCxInterface implements Serializable {
     _outgoingAcl = outgoingAcl;
   }
 
+  public @Nullable String getIncomingIpv6Acl() {
+    return _incomingIpv6Acl;
+  }
+
+  public void setIncomingIpv6Acl(
+      String incomingIpv6Acl) {
+    _incomingIpv6Acl = incomingIpv6Acl;
+  }
+
+  public @Nullable String getOutgoingIpv6Acl() {
+    return _outgoingIpv6Acl;
+  }
+
+  public void setOutgoingIpv6Acl(
+      String outgoingIpv6Acl) {
+    _outgoingIpv6Acl = outgoingIpv6Acl;
+  }
+
   private final @Nonnull String _name;
   private @Nullable Boolean _enabled;
   private @Nullable String _description;
@@ -243,4 +261,6 @@ public final class AosCxInterface implements Serializable {
   private @Nullable String _vrfName;
   private @Nullable String _incomingAcl;
   private @Nullable String _outgoingAcl;
+  private @Nullable String _incomingIpv6Acl;
+  private @Nullable String _outgoingIpv6Acl;
 }

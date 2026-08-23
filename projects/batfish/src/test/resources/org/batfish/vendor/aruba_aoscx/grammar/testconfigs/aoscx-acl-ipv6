@@ -1,0 +1,18 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+access-list ipv6 V6-IN
+    10 deny tcp 2001:db8:10::/64 2001:db8:20::/64 eq 22
+    20 permit tcp 2001:db8:10::/64 gt 1023 2001:db8:20::/64 eq 443
+    30 permit icmpv6 any any
+    40 permit ipv6 any any
+access-list ipv6 V6-OUT
+    10 permit udp any 2001:db8:30::/64 range 5000 5100
+    20 deny ipv6 any any
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:12::1/64
+    apply access-list ipv6 V6-IN in
+    apply access-list ipv6 V6-OUT out
+interface vlan 200
+    ipv6 address 2001:db8:200::1/64
+    apply access-list ipv6 V6-IN routed-in

@@ -360,6 +360,167 @@ public final class AosCxGrammarTest {
 
 
 
+
+  @Test
+  public void testIpv6AclExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig("aoscx-acl-ipv6");
+
+    assertThat(
+        c.getIpv6AccessLists(),
+        hasKey("V6-IN"));
+    assertThat(
+        c.getIpv6AccessLists(),
+        hasKey("V6-OUT"));
+
+    var v6In =
+        c.getIpv6AccessLists().get("V6-IN");
+
+    assertThat(
+        v6In.getEntries().size(),
+        equalTo(4));
+
+    assertThat(
+        v6In.getEntries()
+            .get(10L)
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    assertThat(
+        v6In.getEntries()
+            .get(20L)
+            .getProtocol(),
+        equalTo("tcp"));
+
+    assertThat(
+        v6In.getEntries()
+            .get(20L)
+            .getSource(),
+        equalTo(
+            "2001:db8:10::/64"));
+
+    assertThat(
+        v6In.getEntries()
+            .get(20L)
+            .getSourcePort()
+            .getOperator(),
+        equalTo(Operator.GT));
+
+    assertThat(
+        v6In.getEntries()
+            .get(20L)
+            .getDestinationPort()
+            .getOperator(),
+        equalTo(Operator.EQ));
+
+    assertThat(
+        v6In.getEntries()
+            .get(40L)
+            .getProtocol(),
+        equalTo("ipv6"));
+
+    AosCxInterface physical =
+        c.getInterfaces().get("1/1/2");
+
+    assertThat(
+        physical.getIncomingIpv6Acl(),
+        equalTo("V6-IN"));
+
+    assertThat(
+        physical.getOutgoingIpv6Acl(),
+        equalTo("V6-OUT"));
+
+    AosCxInterface svi =
+        c.getInterfaces().get("vlan 200");
+
+    assertThat(
+        svi.getIncomingIpv6Acl(),
+        equalTo("V6-IN"));
+  }
+
+  @Test
+  public void testIpv6AclConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-acl-ipv6");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(c, notNullValue());
+
+    assertThat(
+        c.getIp6AccessLists(),
+        hasKey("V6-IN"));
+
+    org.batfish.datamodel.Ip6AccessList acl =
+        c.getIp6AccessLists().get("V6-IN");
+
+    assertThat(
+        acl.getLines().size(),
+        equalTo(4));
+
+    org.batfish.datamodel.Flow6 ssh =
+        org.batfish.datamodel.Flow6.builder()
+            .setIngressNode(
+                "aoscx-router")
+            .setSrcIp(
+                org.batfish.datamodel.Ip6.parse(
+                    "2001:db8:10::10"))
+            .setDstIp(
+                org.batfish.datamodel.Ip6.parse(
+                    "2001:db8:20::20"))
+            .setIpProtocol(
+                org.batfish.datamodel.IpProtocol.TCP)
+            .setSrcPort(40000)
+            .setDstPort(22)
+            .setPacketLength(80)
+            .build();
+
+    assertThat(
+        acl.filter(ssh).getAction(),
+        equalTo(LineAction.DENY));
+
+    org.batfish.datamodel.Flow6 https =
+        ssh.toBuilder()
+            .setDstPort(443)
+            .build();
+
+    assertThat(
+        acl.filter(https).getAction(),
+        equalTo(LineAction.PERMIT));
+
+    org.batfish.datamodel.Interface physical =
+        c.getAllInterfaces().get("1/1/2");
+
+    assertThat(
+        physical.getIncomingFilter6(),
+        notNullValue());
+
+    assertThat(
+        physical.getIncomingFilter6()
+            .getName(),
+        equalTo("V6-IN"));
+
+    assertThat(
+        physical.getOutgoingFilter6(),
+        notNullValue());
+
+    assertThat(
+        physical.getOutgoingFilter6()
+            .getName(),
+        equalTo("V6-OUT"));
+
+    org.batfish.datamodel.Interface svi =
+        c.getAllInterfaces().get("vlan 200");
+
+    assertThat(
+        svi.getIncomingFilter6(),
+        notNullValue());
+  }
+
   @Test
   public void testAclExtraction() {
     AosCxConfiguration c = parseVendorConfig("aoscx-acl");

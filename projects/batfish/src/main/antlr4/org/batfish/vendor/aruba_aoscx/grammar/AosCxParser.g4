@@ -13,8 +13,10 @@ aoscx_configuration
 statement
 :
   s_access_list_ip
+  | s_access_list_ipv6
   | s_acl_entry
   | s_apply_access_list_ip
+  | s_apply_access_list_ipv6
   | s_default_gateway
   | s_description
   | s_hostname
@@ -64,6 +66,11 @@ s_access_list_ip
   ACCESS_LIST IP WORD NEWLINE
 ;
 
+s_access_list_ipv6
+:
+  ACCESS_LIST IPV6 WORD NEWLINE
+;
+
 s_acl_entry
 :
   WORD? acl_action acl_protocol acl_address acl_src_port_spec? acl_address acl_dst_port_spec? COUNT? NEWLINE
@@ -97,6 +104,7 @@ acl_protocol
 :
   ANY
   | IP
+  | IPV6
   | OSPF
   | WORD
 ;
@@ -110,6 +118,11 @@ acl_address
 s_apply_access_list_ip
 :
   APPLY ACCESS_LIST IP WORD acl_direction NEWLINE
+;
+
+s_apply_access_list_ipv6
+:
+  APPLY ACCESS_LIST IPV6 WORD acl_direction NEWLINE
 ;
 
 acl_direction

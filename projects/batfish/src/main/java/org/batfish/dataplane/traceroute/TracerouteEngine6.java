@@ -23,6 +23,8 @@ import org.batfish.datamodel.FibEntry6;
 import org.batfish.datamodel.Flow6;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -110,9 +112,39 @@ public final class TracerouteEngine6 {
   public @Nonnull List<Ipv6Trace> computeTraces(
       Flow6 flow) {
     return computeTraces(
+        flow,
+        DEFAULT_MAX_HOPS);
+  }
+
+  public @Nonnull List<Ipv6Trace> computeTraces(
+      Flow6 flow,
+      int maxHops) {
+
+    checkArgument(
+        maxHops > 0,
+        "maxHops must be positive");
+
+    checkArgument(
+        _configurations.containsKey(
+            flow.getIngressNode()),
+        "Unknown ingress node %s",
+        flow.getIngressNode());
+
+    List<Ipv6Trace> traces =
+        new ArrayList<>();
+
+    trace(
         flow.getIngressNode(),
         flow.getIngressVrf(),
-        flow.getDstIp());
+        flow.getDstIp(),
+        flow,
+        flow.getIngressInterface(),
+        maxHops,
+        new ArrayList<>(),
+        new HashSet<>(),
+        traces);
+
+    return ImmutableList.copyOf(traces);
   }
 
   public @Nonnull List<Ipv6Trace> computeTraces(
@@ -149,6 +181,8 @@ public final class TracerouteEngine6 {
         ingressNode,
         ingressVrf,
         destination,
+        null,
+        null,
         maxHops,
         new ArrayList<>(),
         new HashSet<>(),
@@ -161,6 +195,8 @@ public final class TracerouteEngine6 {
       String node,
       String vrf,
       Ip6 destination,
+      @Nullable Flow6 flow,
+      @Nullable String incomingInterfaceName,
       int maxHops,
       List<Ipv6TraceHop> hops,
       Set<String> visited,
@@ -209,6 +245,34 @@ public final class TracerouteEngine6 {
                   .NEIGHBOR_UNREACHABLE,
               terminal));
       return;
+    }
+
+    if (flow != null
+        && incomingInterfaceName != null) {
+      Interface incomingInterface =
+          configuration
+              .getAllInterfaces()
+              .get(incomingInterfaceName);
+
+      if (incomingInterface != null) {
+        Ip6AccessList incomingFilter =
+            incomingInterface
+                .getIncomingFilter6();
+
+        if (incomingFilter != null
+            && incomingFilter
+                    .filter(flow)
+                    .getAction()
+                == LineAction.DENY) {
+          addTerminal(
+              traces,
+              hops,
+              node,
+              vrf,
+              Ipv6TraceDisposition.DENIED_IN);
+          return;
+        }
+      }
     }
 
     if (ownsAddress(
@@ -274,6 +338,7 @@ public final class TracerouteEngine6 {
                     node,
                     vrf,
                     destination,
+                    flow,
                     maxHops,
                     hops,
                     nextVisited,
@@ -286,6 +351,7 @@ public final class TracerouteEngine6 {
       String node,
       String vrf,
       Ip6 destination,
+      @Nullable Flow6 flow,
       int maxHops,
       List<Ipv6TraceHop> hops,
       Set<String> visited,
@@ -325,6 +391,26 @@ public final class TracerouteEngine6 {
       return;
     }
 
+    if (flow != null) {
+      Ip6AccessList outgoingFilter =
+          outgoingInterface
+              .getOutgoingFilter6();
+
+      if (outgoingFilter != null
+          && outgoingFilter
+                  .filter(flow)
+                  .getAction()
+              == LineAction.DENY) {
+        addTerminal(
+            traces,
+            hops,
+            node,
+            vrf,
+            Ipv6TraceDisposition.DENIED_OUT);
+        return;
+      }
+    }
+
     boolean hasExplicitNextHop =
         entry.getNextHopIp().isPresent();
 
@@ -345,6 +431,7 @@ public final class TracerouteEngine6 {
             vrf,
             outgoingInterfaceName,
             destination,
+            flow,
             maxHops,
             hops,
             visited,
@@ -403,6 +490,8 @@ public final class TracerouteEngine6 {
           owner._node,
           owner._vrf,
           destination,
+          flow,
+          owner._interfaceName,
           maxHops,
           forwarded,
           new HashSet<>(visited),
@@ -433,6 +522,7 @@ public final class TracerouteEngine6 {
       String vrf,
       String outgoingInterface,
       Ip6 destination,
+      @Nullable Flow6 flow,
       int maxHops,
       List<Ipv6TraceHop> hops,
       Set<String> visited,
@@ -510,6 +600,8 @@ public final class TracerouteEngine6 {
         peer.getHostname(),
         remoteInterface.getVrfName(),
         destination,
+        flow,
+        peer.getInterface(),
         maxHops,
         forwarded,
         new HashSet<>(visited),

@@ -1,0 +1,65 @@
+package org.batfish.vendor.aruba_aoscx.representation;
+
+import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.LineAction;
+
+/** One ACE in an Aruba AOS-CX IPv6 access list. */
+public final class AosCxIpv6AccessListEntry
+    implements Serializable {
+
+  public AosCxIpv6AccessListEntry(
+      long sequence,
+      LineAction action,
+      String protocol,
+      String source,
+      @Nullable AosCxPortSpec sourcePort,
+      String destination,
+      @Nullable AosCxPortSpec destinationPort) {
+    _sequence = sequence;
+    _action = action;
+    _protocol = protocol;
+    _source = source;
+    _sourcePort = sourcePort;
+    _destination = destination;
+    _destinationPort = destinationPort;
+  }
+
+  public @Nonnull LineAction getAction() {
+    return _action;
+  }
+
+  public @Nonnull String getDestination() {
+    return _destination;
+  }
+
+  public @Nullable AosCxPortSpec
+      getDestinationPort() {
+    return _destinationPort;
+  }
+
+  public @Nonnull String getProtocol() {
+    return _protocol;
+  }
+
+  public long getSequence() {
+    return _sequence;
+  }
+
+  public @Nonnull String getSource() {
+    return _source;
+  }
+
+  public @Nullable AosCxPortSpec getSourcePort() {
+    return _sourcePort;
+  }
+
+  private final @Nonnull LineAction _action;
+  private final @Nonnull String _destination;
+  private final @Nullable AosCxPortSpec _destinationPort;
+  private final @Nonnull String _protocol;
+  private final long _sequence;
+  private final @Nonnull String _source;
+  private final @Nullable AosCxPortSpec _sourcePort;
+}

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -27,10 +28,14 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.Ip6AccessListLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -78,6 +83,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private String _hostname;
   private final Map<String, AosCxInterface> _interfaces = new HashMap<>();
   private final Map<String, AosCxIpAccessList> _ipAccessLists = new HashMap<>();
+  private final Map<String, AosCxIpv6AccessList> _ipv6AccessLists =
+      new HashMap<>();
   private final Map<Integer, AosCxOspfProcess> _ospfProcesses = new HashMap<>();
   private final Map<Integer, AosCxOspfv3Process> _ospfv3Processes =
       new HashMap<>();
@@ -116,6 +123,18 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public AosCxIpAccessList getOrCreateIpAccessList(String name) {
     return _ipAccessLists.computeIfAbsent(name, AosCxIpAccessList::new);
+  }
+
+  public Map<String, AosCxIpv6AccessList>
+      getIpv6AccessLists() {
+    return _ipv6AccessLists;
+  }
+
+  public AosCxIpv6AccessList
+      getOrCreateIpv6AccessList(String name) {
+    return _ipv6AccessLists.computeIfAbsent(
+        name,
+        AosCxIpv6AccessList::new);
   }
 
   public AosCxBgpProcess getBgpProcess() {
@@ -339,6 +358,24 @@ public class AosCxConfiguration extends VendorConfiguration {
       }
     }
 
+    if (iface.getIncomingIpv6Acl() != null) {
+      Ip6AccessList acl =
+          _c.getIp6AccessLists().get(
+              iface.getIncomingIpv6Acl());
+      if (acl != null) {
+        newIface.setIncomingFilter6(acl);
+      }
+    }
+
+    if (iface.getOutgoingIpv6Acl() != null) {
+      Ip6AccessList acl =
+          _c.getIp6AccessLists().get(
+              iface.getOutgoingIpv6Acl());
+      if (acl != null) {
+        newIface.setOutgoingFilter6(acl);
+      }
+    }
+
     newIface.build();
   }
 
@@ -470,6 +507,163 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setOwner(_c)
               .setLines(lines)
               .build();
+        });
+  }
+
+  private static Prefix6 toAclIp6Prefix(
+      String text) {
+    if (text.equalsIgnoreCase("any")) {
+      return null;
+    }
+
+    if (text.contains("/")) {
+      return Prefix6.parse(text);
+    }
+
+    return Ip6.parse(text).toPrefix6();
+  }
+
+  private static boolean isIpv6AnyProtocol(
+      String protocol) {
+    return protocol.equalsIgnoreCase("any")
+        || protocol.equalsIgnoreCase("ipv6");
+  }
+
+  private static Optional<IpProtocol>
+      toIpv6AclProtocol(String protocol) {
+    try {
+      if (protocol.equalsIgnoreCase("icmpv6")) {
+        return Optional.of(
+            IpProtocol.IPV6_ICMP);
+      }
+
+      if (protocol.equalsIgnoreCase("ah")) {
+        return Optional.of(
+            IpProtocol.AHP);
+      }
+
+      return Optional.of(
+          IpProtocol.fromString(protocol));
+    } catch (RuntimeException e) {
+      return Optional.empty();
+    }
+  }
+
+  private static Optional<SubRange>
+      toIpv6AclPortRange(
+          AosCxPortSpec portSpec) {
+    int first = portSpec.getFirst();
+
+    return switch (portSpec.getOperator()) {
+      case EQ ->
+          first >= 0 && first <= 65535
+              ? Optional.of(
+                  SubRange.singleton(first))
+              : Optional.empty();
+
+      case GT ->
+          first >= 0 && first < 65535
+              ? Optional.of(
+                  new SubRange(
+                      first + 1, 65535))
+              : Optional.empty();
+
+      case LT ->
+          first > 0 && first <= 65535
+              ? Optional.of(
+                  new SubRange(
+                      0, first - 1))
+              : Optional.empty();
+
+      case RANGE -> {
+        Integer second =
+            portSpec.getSecond();
+
+        yield second != null
+                && first >= 0
+                && first <= second
+                && second <= 65535
+            ? Optional.of(
+                new SubRange(
+                    first, second))
+            : Optional.empty();
+      }
+    };
+  }
+
+  private void convertIpv6AccessLists() {
+    _ipv6AccessLists.values().forEach(
+        acl -> {
+          List<Ip6AccessListLine> lines =
+              new ArrayList<>();
+
+          acl.getEntries().values().forEach(
+              entry -> {
+                Ip6AccessListLine.Builder line =
+                    Ip6AccessListLine.builder()
+                        .setName(
+                            Long.toString(
+                                entry.getSequence()))
+                        .setAction(
+                            entry.getAction())
+                        .setSrcPrefix(
+                            toAclIp6Prefix(
+                                entry.getSource()))
+                        .setDstPrefix(
+                            toAclIp6Prefix(
+                                entry.getDestination()));
+
+                if (!isIpv6AnyProtocol(
+                    entry.getProtocol())) {
+                  Optional<IpProtocol> protocol =
+                      toIpv6AclProtocol(
+                          entry.getProtocol());
+
+                  if (protocol.isEmpty()) {
+                    return;
+                  }
+
+                  line.setProtocol(
+                      protocol.get());
+                }
+
+                if (entry.getSourcePort()
+                    != null) {
+                  Optional<SubRange> ports =
+                      toIpv6AclPortRange(
+                          entry.getSourcePort());
+
+                  if (ports.isEmpty()) {
+                    return;
+                  }
+
+                  line.setSrcPorts(
+                      ports.get());
+                }
+
+                if (entry.getDestinationPort()
+                    != null) {
+                  Optional<SubRange> ports =
+                      toIpv6AclPortRange(
+                          entry.getDestinationPort());
+
+                  if (ports.isEmpty()) {
+                    return;
+                  }
+
+                  line.setDstPorts(
+                      ports.get());
+                }
+
+                lines.add(line.build());
+              });
+
+          _c.getIp6AccessLists().put(
+              acl.getName(),
+              Ip6AccessList.builder()
+                  .setName(acl.getName())
+                  .setLines(lines)
+                  .build());
         });
   }
 
@@ -923,6 +1117,7 @@ public class AosCxConfiguration extends VendorConfiguration {
     Vrf defaultVrf = _c.getDefaultVrf();
 
     convertIpAccessLists();
+    convertIpv6AccessLists();
     convertPrefixLists();
     convertRouteMaps();
     convertOspfProcesses();
