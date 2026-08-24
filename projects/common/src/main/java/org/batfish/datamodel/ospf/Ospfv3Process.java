@@ -54,6 +54,8 @@ public final class Ospfv3Process
     private int _interAreaAdminCost;
     private int _externalAdminCost;
     private boolean _enabled;
+    private boolean
+        _activeBackboneStubDefaultRoute;
     private @Nullable PrefixList6
         _inboundDistributeList;
     private @Nullable PrefixList6
@@ -93,6 +95,8 @@ public final class Ospfv3Process
       _externalAdminCost =
           DEFAULT_ADMIN_COST;
       _enabled = true;
+      _activeBackboneStubDefaultRoute =
+          true;
       _maximumPaths =
           DEFAULT_MAXIMUM_PATHS;
       _externalSummaries =
@@ -165,6 +169,7 @@ public final class Ospfv3Process
               _interAreaAdminCost,
               _externalAdminCost,
               _enabled,
+              _activeBackboneStubDefaultRoute,
               _inboundDistributeList,
               _outboundDistributeList,
               _maximumPaths,
@@ -223,6 +228,15 @@ public final class Ospfv3Process
 
     public Builder setEnabled(boolean enabled) {
       _enabled = enabled;
+      return this;
+    }
+
+    public Builder setActiveBackboneStubDefaultRoute(
+        boolean activeBackboneStubDefaultRoute) {
+
+      _activeBackboneStubDefaultRoute =
+          activeBackboneStubDefaultRoute;
+
       return this;
     }
 
@@ -403,6 +417,9 @@ public final class Ospfv3Process
   private static final String PROP_ENABLED =
       "enabled";
   private static final String
+      PROP_ACTIVE_BACKBONE_STUB_DEFAULT_ROUTE =
+          "activeBackboneStubDefaultRoute";
+  private static final String
       PROP_INBOUND_DISTRIBUTE_LIST =
           "inboundDistributeList";
   private static final String
@@ -475,6 +492,9 @@ public final class Ospfv3Process
           @Nullable Integer externalAdminCost,
       @JsonProperty(PROP_ENABLED)
           @Nullable Boolean enabled,
+      @JsonProperty(
+              PROP_ACTIVE_BACKBONE_STUB_DEFAULT_ROUTE)
+          @Nullable Boolean activeBackboneStubDefaultRoute,
       @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
           @Nullable PrefixList6 inboundDistributeList,
       @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
@@ -549,6 +569,9 @@ public final class Ospfv3Process
         firstNonNull(
             enabled,
             true),
+        firstNonNull(
+            activeBackboneStubDefaultRoute,
+            true),
         inboundDistributeList,
         outboundDistributeList,
         firstNonNull(
@@ -600,6 +623,7 @@ public final class Ospfv3Process
       int interAreaAdminCost,
       int externalAdminCost,
       boolean enabled,
+      boolean activeBackboneStubDefaultRoute,
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
@@ -654,6 +678,8 @@ public final class Ospfv3Process
     _externalAdminCost =
         externalAdminCost;
     _enabled = enabled;
+    _activeBackboneStubDefaultRoute =
+        activeBackboneStubDefaultRoute;
     _inboundDistributeList =
         inboundDistributeList;
     _outboundDistributeList =
@@ -731,6 +757,14 @@ public final class Ospfv3Process
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;
+  }
+
+  @JsonProperty(
+      PROP_ACTIVE_BACKBONE_STUB_DEFAULT_ROUTE)
+  public boolean
+      getActiveBackboneStubDefaultRoute() {
+
+    return _activeBackboneStubDefaultRoute;
   }
 
   @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
@@ -863,6 +897,8 @@ public final class Ospfv3Process
   private final int _interAreaAdminCost;
   private final int _externalAdminCost;
   private final boolean _enabled;
+  private final boolean
+      _activeBackboneStubDefaultRoute;
   private final @Nullable PrefixList6
       _inboundDistributeList;
   private final @Nullable PrefixList6

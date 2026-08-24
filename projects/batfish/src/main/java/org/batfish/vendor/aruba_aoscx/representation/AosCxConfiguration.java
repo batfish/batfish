@@ -1404,6 +1404,9 @@ public class AosCxConfiguration extends VendorConfiguration {
                   process.getExternalDistance())
               .setEnabled(
                   process.getEnabled())
+              .setActiveBackboneStubDefaultRoute(
+                  process
+                      .getActiveBackboneStubDefaultRoute())
               .setInboundDistributeList(
                   toPrefixList6(
                       process.getDistributeListIn()))

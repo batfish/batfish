@@ -926,7 +926,9 @@ final class Ospfv3RoutingProcess {
                   localIface,
                   remoteIface,
                   localArea,
-                  remoteProcess);
+                  remoteProcess,
+                  allNodes,
+                  l3Adjacencies);
 
           changed |=
               importIntraAreaRoutesFromNeighbor(
@@ -1961,17 +1963,145 @@ final class Ospfv3RoutingProcess {
   }
 
   /**
+   * Return whether this ABR currently has an active backbone for purposes of
+   * originating the default summary into a restricted area.
+   *
+   * <p>AOS-CX always considers an operational area-0 neighbor or a configured
+   * passive area-0 interface sufficient. The active-backbone
+   * stub-default-route knob additionally allows an active area-0 loopback to
+   * qualify the backbone when neither of those conditions exists.
+   */
+  private boolean hasActiveBackboneForRestrictedDefault(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    if (!_process.getEnabled()) {
+      return false;
+    }
+
+    /*
+     * An operational virtual link is an area-0 adjacency.
+     */
+    if (_virtualBackboneOperational) {
+      return true;
+    }
+
+    if (hasPassiveBackboneInterface()) {
+      return true;
+    }
+
+    List<Ospfv3RoutingProcess> processes =
+        getAllOspfv3Processes(
+            allNodes);
+
+    for (Ospfv3RoutingProcess candidate :
+        processes) {
+
+      if (candidate == this) {
+        continue;
+      }
+
+      if (haveFullAdjacencyInArea(
+          this,
+          candidate,
+          0L,
+          allNodes,
+          l3Adjacencies)) {
+
+        return true;
+      }
+    }
+
+    return _process
+            .getActiveBackboneStubDefaultRoute()
+        && hasActiveBackboneLoopback();
+  }
+
+  /**
+   * Return whether this process has an active passive interface configured in
+   * area 0.
+   */
+  private boolean hasPassiveBackboneInterface() {
+
+    for (Interface iface :
+        _c.getAllInterfaces().values()) {
+
+      if (!iface.getActive()
+          || !_vrfName.equals(
+              iface.getVrfName())
+          || !isEnabledForThisProcess(
+              iface)) {
+
+        continue;
+      }
+
+      Ospfv3InterfaceSettings settings =
+          iface.getOspfv3Settings();
+
+      if (settings != null
+          && settings.getAreaName() != null
+          && settings.getAreaName() == 0L
+          && settings.getPassive()) {
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Return whether this process has an active OSPFv3 loopback in area 0.
+   */
+  private boolean hasActiveBackboneLoopback() {
+
+    for (Interface iface :
+        _c.getAllInterfaces().values()) {
+
+      if (!iface.getActive()
+          || iface.getInterfaceType()
+              != InterfaceType.LOOPBACK
+          || !_vrfName.equals(
+              iface.getVrfName())
+          || !isEnabledForThisProcess(
+              iface)) {
+
+        continue;
+      }
+
+      Ospfv3InterfaceSettings settings =
+          iface.getOspfv3Settings();
+
+      if (settings != null
+          && settings.getAreaName() != null
+          && settings.getAreaName() == 0L) {
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Install the default summary originated by an ABR toward a stub area.
    */
   private boolean importRestrictedAreaDefaultFromNeighbor(
       Interface localIface,
       Interface remoteIface,
       long area,
-      Ospfv3RoutingProcess remoteProcess) {
+      Ospfv3RoutingProcess remoteProcess,
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
 
     if (!isRestrictedArea(area)
         || !remoteProcess
-            .isAreaBorderRouterFor(area)) {
+            .isAreaBorderRouterFor(area)
+        || !remoteProcess
+            .hasActiveBackboneForRestrictedDefault(
+                allNodes,
+                l3Adjacencies)) {
+
       return false;
     }
 

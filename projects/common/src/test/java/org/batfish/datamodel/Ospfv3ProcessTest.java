@@ -39,6 +39,9 @@ public final class Ospfv3ProcessTest {
         process.getEnabled(),
         equalTo(true));
     assertThat(
+        process.getActiveBackboneStubDefaultRoute(),
+        equalTo(true));
+    assertThat(
         process.getReferenceBandwidth(),
         equalTo(
             Ospfv3Process.DEFAULT_REFERENCE_BANDWIDTH));
@@ -118,6 +121,8 @@ public final class Ospfv3ProcessTest {
             .setInterAreaAdminCost(112)
             .setExternalAdminCost(113)
             .setEnabled(false)
+            .setActiveBackboneStubDefaultRoute(
+                false)
             .setVirtualLinks(
                 ImmutableSet.of(
                     new Ospfv3VirtualLink(
@@ -212,6 +217,9 @@ public final class Ospfv3ProcessTest {
         equalTo(113));
     assertThat(
         clone.getEnabled(),
+        equalTo(false));
+    assertThat(
+        clone.getActiveBackboneStubDefaultRoute(),
         equalTo(false));
     assertThat(
         clone.getReferenceBandwidth(),

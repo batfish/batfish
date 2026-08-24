@@ -3754,4 +3754,109 @@ public final class AosCxGrammarTest {
         equalTo(600));
   }
 
+  @Test
+  public void testOspfv3ActiveBackboneExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-active-backbone");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(false));
+
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(true));
+
+    /*
+     * Feature defaults enabled on AOS-CX.
+     */
+    AosCxOspfv3Process process3 =
+        c.getOspfv3Processes().get(3);
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testOspfv3ActiveBackboneConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-active-backbone");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(false));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process3 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3
+            .getActiveBackboneStubDefaultRoute(),
+        equalTo(true));
+  }
+
 }

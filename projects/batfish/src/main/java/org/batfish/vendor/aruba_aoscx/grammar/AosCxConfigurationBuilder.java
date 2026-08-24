@@ -74,6 +74,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_active_backboneContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_rangeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
@@ -1452,6 +1453,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
      */
     _currentOspfv3Process
         .clearNssaArea(area);
+  }
+
+  @Override
+  public void exitS_ospfv3_active_backbone(
+      S_ospfv3_active_backboneContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring active-backbone outside OSPFv3 context");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setActiveBackboneStubDefaultRoute(
+            ctx.NO() == null);
   }
 
   @Override

@@ -47,6 +47,19 @@ public final class AosCxOspfv3Process
     return _processId;
   }
 
+  public boolean
+      getActiveBackboneStubDefaultRoute() {
+
+    return _activeBackboneStubDefaultRoute;
+  }
+
+  public void setActiveBackboneStubDefaultRoute(
+      boolean activeBackboneStubDefaultRoute) {
+
+    _activeBackboneStubDefaultRoute =
+        activeBackboneStubDefaultRoute;
+  }
+
   public int getMaximumPaths() {
     return _maximumPaths;
   }
@@ -644,6 +657,10 @@ public final class AosCxOspfv3Process
 
   private @Nullable String _distributeListIn;
   private @Nullable String _distributeListOut;
+
+  private boolean
+      _activeBackboneStubDefaultRoute =
+          true;
 
   private int _maximumPaths =
       DEFAULT_MAXIMUM_PATHS;
