@@ -9,6 +9,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3Process;
+import org.batfish.datamodel.ospf.Ospfv3VirtualLink;
 import org.junit.Test;
 
 /** Tests for {@link Ospfv3Process}. */
@@ -43,6 +44,9 @@ public final class Ospfv3ProcessTest {
             Ospfv3Process.DEFAULT_REFERENCE_BANDWIDTH));
     assertThat(
         process.getExternalSummaries(),
+        equalTo(ImmutableSet.of()));
+    assertThat(
+        process.getVirtualLinks(),
         equalTo(ImmutableSet.of()));
     assertThat(
         process.getRedistributeConnected(),
@@ -114,6 +118,12 @@ public final class Ospfv3ProcessTest {
             .setInterAreaAdminCost(112)
             .setExternalAdminCost(113)
             .setEnabled(false)
+            .setVirtualLinks(
+                ImmutableSet.of(
+                    new Ospfv3VirtualLink(
+                        1L,
+                        Ip.parse(
+                            "192.0.2.200"))))
             .setExternalSummaries(
                 ImmutableSet.of(
                     new Ospfv3ExternalSummary(
@@ -210,6 +220,10 @@ public final class Ospfv3ProcessTest {
         clone.getExternalSummaries(),
         equalTo(
             process.getExternalSummaries()));
+    assertThat(
+        clone.getVirtualLinks(),
+        equalTo(
+            process.getVirtualLinks()));
     assertThat(
         clone.getRedistributeConnected(),
         equalTo(true));

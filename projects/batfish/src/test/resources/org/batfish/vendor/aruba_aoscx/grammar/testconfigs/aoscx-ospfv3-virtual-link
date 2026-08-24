@@ -1,0 +1,8 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 1 virtual-link 192.0.2.2
+    area 2 virtual-link 192.0.2.3
+    no area 2 virtual-link 192.0.2.3

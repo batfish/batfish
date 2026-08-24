@@ -75,6 +75,7 @@ import org.batfish.datamodel.ospf.Ospfv3AreaRange;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
+import org.batfish.datamodel.ospf.Ospfv3VirtualLink;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
@@ -1358,6 +1359,22 @@ public class AosCxConfiguration extends VendorConfiguration {
                     areaBuilder.build());
               });
 
+          Set<Ospfv3VirtualLink>
+              virtualLinks =
+                  new HashSet<>();
+
+          process
+              .getVirtualLinks()
+              .forEach(
+                  (transitArea, peers) ->
+                      peers.forEach(
+                          peer ->
+                              virtualLinks.add(
+                                  new Ospfv3VirtualLink(
+                                      toOspfAreaNumber(
+                                          transitArea),
+                                      peer))));
+
           Set<Ospfv3ExternalSummary>
               externalSummaries =
                   new HashSet<>();
@@ -1397,6 +1414,8 @@ public class AosCxConfiguration extends VendorConfiguration {
                   process.getMaximumPaths())
               .setExternalSummaries(
                   externalSummaries)
+              .setVirtualLinks(
+                  virtualLinks)
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
               .setRedistributeConnected(

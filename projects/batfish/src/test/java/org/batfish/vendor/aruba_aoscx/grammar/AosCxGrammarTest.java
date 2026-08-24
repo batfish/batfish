@@ -47,6 +47,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
+import org.batfish.datamodel.ospf.Ospfv3VirtualLink;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -3572,6 +3573,75 @@ public final class AosCxGrammarTest {
     assertThat(
         result.getTag(),
         equalTo(707L));
+  }
+
+  @Test
+  public void testOspfv3VirtualLinkExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-virtual-link");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getVirtualLinks(),
+        hasKey("1"));
+
+    assertThat(
+        process
+            .getVirtualLinks()
+            .get("1"),
+        contains(
+            Ip.parse(
+                "192.0.2.2")));
+
+    assertThat(
+        process
+            .getVirtualLinks()
+            .containsKey("2"),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3VirtualLinkConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-virtual-link");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getVirtualLinks(),
+        contains(
+            new Ospfv3VirtualLink(
+                1L,
+                Ip.parse(
+                    "192.0.2.2"))));
+
+    assertThat(
+        process.getAreas(),
+        hasKey(1L));
   }
 
 }

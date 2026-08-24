@@ -378,6 +378,43 @@ public final class AosCxOspfv3Process
     }
   }
 
+  public @Nonnull Map<String, Set<Ip>>
+      getVirtualLinks() {
+
+    return _virtualLinks;
+  }
+
+  public void setVirtualLink(
+      String transitArea,
+      Ip peerRouterId) {
+
+    _areas.add(transitArea);
+
+    _virtualLinks
+        .computeIfAbsent(
+            transitArea,
+            ignored -> new HashSet<>())
+        .add(peerRouterId);
+  }
+
+  public void removeVirtualLink(
+      String transitArea,
+      Ip peerRouterId) {
+
+    Set<Ip> peers =
+        _virtualLinks.get(transitArea);
+
+    if (peers == null) {
+      return;
+    }
+
+    peers.remove(peerRouterId);
+
+    if (peers.isEmpty()) {
+      _virtualLinks.remove(transitArea);
+    }
+  }
+
   public @Nonnull Map<String, Long>
       getAreaDefaultMetrics() {
     return _areaDefaultMetrics;
@@ -618,6 +655,9 @@ public final class AosCxOspfv3Process
 
   private final @Nonnull Map<String, Long>
       _areaDefaultMetrics = new HashMap<>();
+
+  private final @Nonnull Map<String, Set<Ip>>
+      _virtualLinks = new HashMap<>();
 
   private final @Nonnull
       Map<String, Map<Prefix6, Boolean>>

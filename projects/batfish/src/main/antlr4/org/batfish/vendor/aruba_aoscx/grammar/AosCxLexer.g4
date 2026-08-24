@@ -101,6 +101,7 @@ SPEED: 'speed';
 STATIC: 'static';
 SUMMARY_ADDRESS: 'summary-address';
 STUB: 'stub';
+VIRTUAL_LINK: 'virtual-link';
 VLAN: 'vlan';
 VRF: 'vrf';
 

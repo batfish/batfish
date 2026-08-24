@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.ospf.Ospfv3AreaRange;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
+import org.batfish.datamodel.ospf.Ospfv3VirtualLink;
 import org.batfish.dataplane.rib.ConnectedRib6;
 import org.batfish.dataplane.rib.Ospfv3Rib6;
 
@@ -113,6 +115,42 @@ final class Ospfv3RoutingProcess {
     private final @Nonnull NodeInterfacePair _id;
     private final int _priority;
     private final @Nonnull Ip _routerId;
+  }
+
+  /** One directed physical OSPF adjacency used by a virtual-link transit path. */
+  private static final class PhysicalAdjacency {
+
+    private PhysicalAdjacency(
+        Interface localIface,
+        Interface remoteIface,
+        long cost) {
+
+      _localIface = localIface;
+      _remoteIface = remoteIface;
+      _cost = cost;
+    }
+
+    private final long _cost;
+    private final @Nonnull Interface _localIface;
+    private final @Nonnull Interface _remoteIface;
+  }
+
+  /** Resolved virtual-link transit path from this router toward its peer. */
+  private static final class VirtualLinkPath {
+
+    private VirtualLinkPath(
+        long cost,
+        String nextHopInterface,
+        @Nullable Ip6 nextHopIp) {
+
+      _cost = cost;
+      _nextHopInterface = nextHopInterface;
+      _nextHopIp = nextHopIp;
+    }
+
+    private final long _cost;
+    private final @Nonnull String _nextHopInterface;
+    private final @Nullable Ip6 _nextHopIp;
   }
 
   /**
@@ -193,6 +231,8 @@ final class Ospfv3RoutingProcess {
     _ospfv3Rib.clear();
     _translatedNssaExternalAdvertisements =
         ImmutableSet.of();
+    _virtualBackboneOperational =
+        false;
 
     if (!_process.getEnabled()) {
       return;
@@ -745,7 +785,17 @@ final class Ospfv3RoutingProcess {
       return false;
     }
 
-    boolean changed = false;
+    boolean newVirtualBackboneOperational =
+        hasOperationalVirtualLink(
+            allNodes,
+            l3Adjacencies);
+
+    boolean changed =
+        newVirtualBackboneOperational
+            != _virtualBackboneOperational;
+
+    _virtualBackboneOperational =
+        newVirtualBackboneOperational;
 
     for (Interface localIface :
         _c.getAllInterfaces().values()) {
@@ -901,6 +951,11 @@ final class Ospfv3RoutingProcess {
         }
       }
     }
+
+    changed |=
+        propagateRoutesAcrossVirtualLinks(
+            allNodes,
+            l3Adjacencies);
 
     changed |=
         refreshTranslatedNssaAdvertisements(
@@ -1141,11 +1196,404 @@ final class Ospfv3RoutingProcess {
         || isNssaArea(area);
   }
 
+  private boolean hasBackboneAttachment() {
+    return _process.getAreas().containsKey(0L)
+        || _virtualBackboneOperational;
+  }
+
   private boolean isAreaBorderRouterFor(
       long area) {
     return area != 0L
-        && _process.getAreas().containsKey(0L)
+        && hasBackboneAttachment()
         && _process.getAreas().containsKey(area);
+  }
+
+  private boolean hasOperationalVirtualLink(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    List<Ospfv3RoutingProcess> processes =
+        getAllOspfv3Processes(allNodes);
+
+    for (Ospfv3VirtualLink link :
+        _process.getVirtualLinks()) {
+
+      Ospfv3RoutingProcess peer =
+          findVirtualLinkPeer(
+              link,
+              processes);
+
+      if (peer == null) {
+        continue;
+      }
+
+      VirtualLinkPath path =
+          findVirtualLinkTransitPath(
+              this,
+              peer,
+              link.getTransitArea(),
+              processes,
+              allNodes,
+              l3Adjacencies);
+
+      if (path != null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private @Nullable Ospfv3RoutingProcess
+      findVirtualLinkPeer(
+          Ospfv3VirtualLink link,
+          List<Ospfv3RoutingProcess> processes) {
+
+    if (!isValidVirtualLinkTransitArea(
+        link.getTransitArea())) {
+      return null;
+    }
+
+    Ospfv3RoutingProcess match =
+        null;
+
+    for (Ospfv3RoutingProcess candidate :
+        processes) {
+
+      if (candidate == this
+          || !candidate
+              ._process
+              .getEnabled()
+          || !_vrfName.equals(
+              candidate._vrfName)
+          || !candidate
+              ._process
+              .getRouterId()
+              .equals(
+                  link.getPeerRouterId())
+          || !candidate
+              .isValidVirtualLinkTransitArea(
+                  link.getTransitArea())
+          || !candidate.hasConfiguredVirtualLink(
+              link.getTransitArea(),
+              _process.getRouterId())) {
+
+        continue;
+      }
+
+      /*
+       * Duplicate router IDs make the peer ambiguous. Refuse to form
+       * a virtual adjacency rather than choosing one arbitrarily.
+       */
+      if (match != null) {
+        return null;
+      }
+
+      match =
+          candidate;
+    }
+
+    return match;
+  }
+
+  private boolean hasConfiguredVirtualLink(
+      long transitArea,
+      Ip peerRouterId) {
+
+    return _process
+        .getVirtualLinks()
+        .stream()
+        .anyMatch(
+            link ->
+                link.getTransitArea()
+                        == transitArea
+                    && link
+                        .getPeerRouterId()
+                        .equals(peerRouterId));
+  }
+
+  private boolean isValidVirtualLinkTransitArea(
+      long transitArea) {
+
+    if (transitArea == 0L) {
+      return false;
+    }
+
+    Ospfv3Area area =
+        _process
+            .getAreas()
+            .get(transitArea);
+
+    return area != null
+        && !area.getStub()
+        && !area.getNssa();
+  }
+
+  /**
+   * Resolve the lowest-cost physical intra-area path used as the virtual-link
+   * transit path.
+   *
+   * <p>The OSPF cost is directional. The first physical adjacency on the path
+   * supplies the real forwarding next hop used by routes learned across the
+   * logical backbone adjacency.
+   */
+  private static @Nullable VirtualLinkPath
+      findVirtualLinkTransitPath(
+          Ospfv3RoutingProcess source,
+          Ospfv3RoutingProcess target,
+          long transitArea,
+          List<Ospfv3RoutingProcess> processes,
+          Map<String, Node> allNodes,
+          L3Adjacencies l3Adjacencies) {
+
+    if (source == target
+        || !source
+            .isValidVirtualLinkTransitArea(
+                transitArea)
+        || !target
+            .isValidVirtualLinkTransitArea(
+                transitArea)) {
+      return null;
+    }
+
+    Map<Ospfv3RoutingProcess, Long> distances =
+        new HashMap<>();
+
+    Map<Ospfv3RoutingProcess, PhysicalAdjacency>
+        firstAdjacencies =
+            new HashMap<>();
+
+    Set<Ospfv3RoutingProcess> visited =
+        new HashSet<>();
+
+    distances.put(
+        source,
+        0L);
+
+    while (true) {
+
+      Ospfv3RoutingProcess current =
+          null;
+
+      long currentDistance =
+          Long.MAX_VALUE;
+
+      for (Map.Entry<Ospfv3RoutingProcess, Long> entry :
+          distances.entrySet()) {
+
+        if (visited.contains(
+                entry.getKey())
+            || entry.getValue()
+                >= currentDistance) {
+          continue;
+        }
+
+        current =
+            entry.getKey();
+
+        currentDistance =
+            entry.getValue();
+      }
+
+      if (current == null) {
+        return null;
+      }
+
+      if (current == target) {
+
+        PhysicalAdjacency first =
+            firstAdjacencies.get(target);
+
+        if (first == null) {
+          return null;
+        }
+
+        return new VirtualLinkPath(
+            currentDistance,
+            first._localIface.getName(),
+            findPeerNextHopIp(
+                    first._localIface,
+                    first._remoteIface)
+                .orElse(null));
+      }
+
+      visited.add(current);
+
+      for (Ospfv3RoutingProcess next :
+          processes) {
+
+        if (next == current
+            || visited.contains(next)
+            || !current
+                ._vrfName
+                .equals(next._vrfName)) {
+          continue;
+        }
+
+        PhysicalAdjacency adjacency =
+            findBestPhysicalAdjacencyInArea(
+                current,
+                next,
+                transitArea,
+                allNodes,
+                l3Adjacencies);
+
+        if (adjacency == null
+            || adjacency._cost
+                >= LS_INFINITY
+            || currentDistance
+                >= LS_INFINITY
+                    - adjacency._cost) {
+          continue;
+        }
+
+        long newDistance =
+            currentDistance
+                + adjacency._cost;
+
+        Long oldDistance =
+            distances.get(next);
+
+        if (oldDistance != null
+            && oldDistance <= newDistance) {
+          continue;
+        }
+
+        distances.put(
+            next,
+            newDistance);
+
+        firstAdjacencies.put(
+            next,
+            current == source
+                ? adjacency
+                : firstAdjacencies.get(current));
+      }
+    }
+  }
+
+  private static @Nullable PhysicalAdjacency
+      findBestPhysicalAdjacencyInArea(
+          Ospfv3RoutingProcess lhs,
+          Ospfv3RoutingProcess rhs,
+          long area,
+          Map<String, Node> allNodes,
+          L3Adjacencies l3Adjacencies) {
+
+    if (lhs == rhs
+        || !lhs._process.getEnabled()
+        || !rhs._process.getEnabled()
+        || !lhs.isValidVirtualLinkTransitArea(area)
+        || !rhs.isValidVirtualLinkTransitArea(area)
+        || !lhs.areAreaTypesCompatible(
+            area,
+            rhs)) {
+      return null;
+    }
+
+    PhysicalAdjacency best =
+        null;
+
+    for (Interface lhsIface :
+        lhs._c
+            .getAllInterfaces()
+            .values()) {
+
+      if (!lhs.isAdjacencyInterface(
+          lhsIface)) {
+        continue;
+      }
+
+      Ospfv3InterfaceSettings lhsSettings =
+          lhsIface.getOspfv3Settings();
+
+      if (lhsSettings == null
+          || lhsSettings.getAreaName()
+              == null
+          || lhsSettings.getAreaName()
+              != area) {
+        continue;
+      }
+
+      NodeInterfacePair lhsId =
+          NodeInterfacePair.of(
+              lhs._c.getHostname(),
+              lhsIface.getName());
+
+      BroadcastElection election =
+          lhsSettings.getNetworkType()
+                  == OspfNetworkType.BROADCAST
+              ? lhs.electBroadcastDesignatedRouters(
+                  lhsIface,
+                  lhsId,
+                  allNodes,
+                  l3Adjacencies)
+              : BroadcastElection.empty();
+
+      for (Interface rhsIface :
+          rhs._c
+              .getAllInterfaces()
+              .values()) {
+
+        if (!rhs.isAdjacencyInterface(
+            rhsIface)) {
+          continue;
+        }
+
+        Ospfv3InterfaceSettings rhsSettings =
+            rhsIface.getOspfv3Settings();
+
+        if (rhsSettings == null
+            || rhsSettings.getAreaName()
+                == null
+            || rhsSettings.getAreaName()
+                != area
+            || !areInterfaceSettingsCompatible(
+                lhsSettings,
+                rhsSettings)) {
+          continue;
+        }
+
+        NodeInterfacePair rhsId =
+            NodeInterfacePair.of(
+                rhs._c.getHostname(),
+                rhsIface.getName());
+
+        if (!areTopologicallyAdjacent(
+            lhsId,
+            lhsIface,
+            rhsId,
+            rhsIface,
+            l3Adjacencies)) {
+          continue;
+        }
+
+        if (!shouldFormFullAdjacency(
+            lhsSettings,
+            rhsSettings,
+            lhsId,
+            rhsId,
+            election)) {
+          continue;
+        }
+
+        long cost =
+            lhs.computeInterfaceCost(
+                lhsIface);
+
+        if (best == null
+            || cost < best._cost) {
+
+          best =
+              new PhysicalAdjacency(
+                  lhsIface,
+                  rhsIface,
+                  cost);
+        }
+      }
+    }
+
+    return best;
   }
 
   /**
@@ -1728,6 +2176,364 @@ final class Ospfv3RoutingProcess {
   }
 
   /**
+   * Exchange the backbone LSDB with reciprocal virtual-link peers whose
+   * transit path is currently reachable.
+   */
+  private boolean propagateRoutesAcrossVirtualLinks(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    if (_process.getVirtualLinks().isEmpty()) {
+      return false;
+    }
+
+    boolean changed =
+        false;
+
+    List<Ospfv3RoutingProcess> processes =
+        getAllOspfv3Processes(
+            allNodes);
+
+    for (Ospfv3VirtualLink link :
+        _process.getVirtualLinks()) {
+
+      Ospfv3RoutingProcess peer =
+          findVirtualLinkPeer(
+              link,
+              processes);
+
+      if (peer == null) {
+        continue;
+      }
+
+      VirtualLinkPath path =
+          findVirtualLinkTransitPath(
+              this,
+              peer,
+              link.getTransitArea(),
+              processes,
+              allNodes,
+              l3Adjacencies);
+
+      if (path == null) {
+        continue;
+      }
+
+      Set<AbstractRoute6> remoteRoutes =
+          peer.getRoutes();
+
+      changed |=
+          importBackboneIntraAreaRoutesFromVirtualNeighbor(
+              path,
+              remoteRoutes);
+
+      changed |=
+          importInterAreaRoutesFromVirtualNeighbor(
+              path,
+              peer,
+              remoteRoutes);
+
+      changed |=
+          importExternalRoutesFromVirtualNeighbor(
+              path,
+              remoteRoutes);
+    }
+
+    return changed;
+  }
+
+  /**
+   * A virtual link is a logical point-to-point interface in area 0. Therefore
+   * area-0 intra-area routes remain intra-area when exchanged between the two
+   * endpoints.
+   */
+  private boolean importBackboneIntraAreaRoutesFromVirtualNeighbor(
+      VirtualLinkPath path,
+      Set<AbstractRoute6> remoteRoutes) {
+
+    boolean changed =
+        false;
+
+    for (AbstractRoute6 route :
+        remoteRoutes) {
+
+      if (!(route
+          instanceof Ospfv3IntraAreaRoute6)) {
+        continue;
+      }
+
+      Ospfv3IntraAreaRoute6 intra =
+          (Ospfv3IntraAreaRoute6) route;
+
+      if (intra.getArea() != 0L
+          || intra.getMetric()
+              >= LS_INFINITY
+          || path._cost
+              >= LS_INFINITY
+                  - intra.getMetric()) {
+        continue;
+      }
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3IntraAreaRoute6(
+                  intra.getNetwork(),
+                  path._nextHopInterface,
+                  path._nextHopIp,
+                  _process
+                      .getIntraAreaAdminCost(),
+                  intra.getMetric()
+                      + path._cost,
+                  0L,
+                  intra.getTag()));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Import summaries across the logical area-0 adjacency.
+   *
+   * <p>Routes native to a non-backbone area on the peer become inter-area
+   * routes in area 0. Existing area-0 summaries continue flooding through the
+   * virtual backbone.
+   */
+  private boolean importInterAreaRoutesFromVirtualNeighbor(
+      VirtualLinkPath path,
+      Ospfv3RoutingProcess remoteProcess,
+      Set<AbstractRoute6> remoteRoutes) {
+
+    boolean changed =
+        false;
+
+    for (AbstractRoute6 route :
+        remoteRoutes) {
+
+      long sourceArea;
+      long remoteMetric;
+      long tag;
+
+      Prefix6 advertisedNetwork =
+          route.getNetwork();
+
+      if (route
+          instanceof Ospfv3IntraAreaRoute6) {
+
+        Ospfv3IntraAreaRoute6 intra =
+            (Ospfv3IntraAreaRoute6) route;
+
+        sourceArea =
+            intra.getArea();
+
+        if (sourceArea == 0L) {
+          continue;
+        }
+
+        if (!remoteProcess
+            .canAdvertiseBetweenAreas(
+                sourceArea,
+                0L)) {
+          continue;
+        }
+
+        remoteMetric =
+            intra.getMetric();
+
+        tag =
+            intra.getTag();
+
+        @Nullable Ospfv3AreaRange range =
+            remoteProcess
+                .getMatchingAreaRange(
+                    sourceArea,
+                    intra.getNetwork(),
+                    Ospfv3AreaRange.Type
+                        .INTER_AREA);
+
+        if (range != null) {
+
+          if (!range.getAdvertise()) {
+            continue;
+          }
+
+          long summaryMetric =
+              computeInterAreaSummaryMetric(
+                  sourceArea,
+                  range,
+                  remoteRoutes);
+
+          if (summaryMetric < 0L) {
+            continue;
+          }
+
+          advertisedNetwork =
+              range.getPrefix();
+
+          remoteMetric =
+              summaryMetric;
+
+          tag =
+              Route.UNSET_ROUTE_TAG;
+        }
+
+      } else if (
+          route
+              instanceof Ospfv3InterAreaRoute6) {
+
+        Ospfv3InterAreaRoute6 inter =
+            (Ospfv3InterAreaRoute6) route;
+
+        sourceArea =
+            inter.getArea();
+
+        if (sourceArea != 0L
+            && !remoteProcess
+                .canAdvertiseBetweenAreas(
+                    sourceArea,
+                    0L)) {
+          continue;
+        }
+
+        remoteMetric =
+            inter.getMetric();
+
+        tag =
+            inter.getTag();
+
+      } else {
+        continue;
+      }
+
+      if (remoteMetric >= LS_INFINITY
+          || path._cost
+              >= LS_INFINITY
+                  - remoteMetric) {
+        continue;
+      }
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3InterAreaRoute6(
+                  advertisedNetwork,
+                  path._nextHopInterface,
+                  path._nextHopIp,
+                  _process
+                      .getInterAreaAdminCost(),
+                  remoteMetric
+                      + path._cost,
+                  0L,
+                  tag));
+    }
+
+    return changed;
+  }
+
+  /**
+   * Type-5 LSAs also flood across an operational virtual backbone link.
+   */
+  private boolean importExternalRoutesFromVirtualNeighbor(
+      VirtualLinkPath path,
+      Set<AbstractRoute6> remoteRoutes) {
+
+    boolean changed =
+        false;
+
+    for (AbstractRoute6 route :
+        remoteRoutes) {
+
+      if (route
+          instanceof Ospfv3ExternalType1Route6) {
+
+        Ospfv3ExternalType1Route6 external =
+            (Ospfv3ExternalType1Route6) route;
+
+        if (external
+                .getAdvertiser()
+                .equals(
+                    _process.getRouterId())
+            && external.getCostToAdvertiser()
+                != 0L) {
+          continue;
+        }
+
+        if (external.getMetric()
+                >= LS_INFINITY
+            || external.getCostToAdvertiser()
+                >= LS_INFINITY
+            || path._cost
+                >= LS_INFINITY
+                    - external.getMetric()
+            || path._cost
+                >= LS_INFINITY
+                    - external.getCostToAdvertiser()) {
+          continue;
+        }
+
+        changed |=
+            _ospfv3Rib.mergeRoute(
+                new Ospfv3ExternalType1Route6(
+                    external.getNetwork(),
+                    path._nextHopInterface,
+                    path._nextHopIp,
+                    _process
+                        .getExternalAdminCost(),
+                    external.getMetric()
+                        + path._cost,
+                    external.getLsaMetric(),
+                    0L,
+                    external.getCostToAdvertiser()
+                        + path._cost,
+                    external.getAdvertiser(),
+                    external.getTag()));
+
+        continue;
+      }
+
+      if (!(route
+          instanceof Ospfv3ExternalType2Route6)) {
+        continue;
+      }
+
+      Ospfv3ExternalType2Route6 external =
+          (Ospfv3ExternalType2Route6) route;
+
+      if (external
+              .getAdvertiser()
+              .equals(
+                  _process.getRouterId())
+          && external.getCostToAdvertiser()
+              != 0L) {
+        continue;
+      }
+
+      if (external.getCostToAdvertiser()
+              >= LS_INFINITY
+          || path._cost
+              >= LS_INFINITY
+                  - external.getCostToAdvertiser()) {
+        continue;
+      }
+
+      changed |=
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3ExternalType2Route6(
+                  external.getNetwork(),
+                  path._nextHopInterface,
+                  path._nextHopIp,
+                  _process
+                      .getExternalAdminCost(),
+                  external.getMetric(),
+                  0L,
+                  external.getCostToAdvertiser()
+                      + path._cost,
+                  external.getAdvertiser(),
+                  external.getTag()));
+    }
+
+    return changed;
+  }
+
+  /**
    * Import OSPFv3 inter-area routes.
    *
    * <p>Within an area, summary routes accumulate the local cost toward the
@@ -2033,10 +2839,28 @@ final class Ospfv3RoutingProcess {
       return false;
     }
 
-    return _process.getAreas().containsKey(0L)
-        && _process.getAreas().containsKey(sourceArea)
-        && _process.getAreas().containsKey(targetArea)
-        && (sourceArea == 0L || targetArea == 0L);
+    boolean backboneAttached =
+        hasBackboneAttachment();
+
+    boolean sourceAttached =
+        sourceArea == 0L
+            ? backboneAttached
+            : _process
+                .getAreas()
+                .containsKey(sourceArea);
+
+    boolean targetAttached =
+        targetArea == 0L
+            ? backboneAttached
+            : _process
+                .getAreas()
+                .containsKey(targetArea);
+
+    return backboneAttached
+        && sourceAttached
+        && targetAttached
+        && (sourceArea == 0L
+            || targetArea == 0L);
   }
 
   /**
@@ -2831,7 +3655,8 @@ final class Ospfv3RoutingProcess {
     return Objects.hash(
         _ospfv3Rib.getRoutes(),
         _localExternalAdvertisements,
-        _translatedNssaExternalAdvertisements);
+        _translatedNssaExternalAdvertisements,
+        _virtualBackboneOperational);
   }
 
   private final @Nonnull Configuration _c;
@@ -2841,5 +3666,6 @@ final class Ospfv3RoutingProcess {
       _translatedNssaExternalAdvertisements;
   private final @Nonnull Ospfv3Process _process;
   private final @Nonnull Ospfv3Rib6 _ospfv3Rib;
+  private boolean _virtualBackboneOperational;
   private final @Nonnull String _vrfName;
 }

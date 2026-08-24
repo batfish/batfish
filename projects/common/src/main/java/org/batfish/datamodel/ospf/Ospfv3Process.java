@@ -61,6 +61,8 @@ public final class Ospfv3Process
     private int _maximumPaths;
     private @Nonnull
         Set<Ospfv3ExternalSummary> _externalSummaries;
+    private @Nonnull
+        Set<Ospfv3VirtualLink> _virtualLinks;
     private @Nonnull Map<Long, Ospfv3Area> _areas;
     private boolean _defaultInformationOriginate;
     private boolean _defaultInformationOriginateAlways;
@@ -91,6 +93,8 @@ public final class Ospfv3Process
       _maximumPaths =
           DEFAULT_MAXIMUM_PATHS;
       _externalSummaries =
+          ImmutableSet.of();
+      _virtualLinks =
           ImmutableSet.of();
       _areas =
           ImmutableMap.of();
@@ -162,6 +166,7 @@ public final class Ospfv3Process
               _outboundDistributeList,
               _maximumPaths,
               _externalSummaries,
+              _virtualLinks,
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeLocalLoopback,
@@ -242,6 +247,15 @@ public final class Ospfv3Process
 
       _externalSummaries =
           externalSummaries;
+
+      return this;
+    }
+
+    public Builder setVirtualLinks(
+        Set<Ospfv3VirtualLink> virtualLinks) {
+
+      _virtualLinks =
+          virtualLinks;
 
       return this;
     }
@@ -374,6 +388,8 @@ public final class Ospfv3Process
       "maximumPaths";
   private static final String PROP_EXTERNAL_SUMMARIES =
       "externalSummaries";
+  private static final String PROP_VIRTUAL_LINKS =
+      "virtualLinks";
   private static final String PROP_AREAS =
       "areas";
   private static final String
@@ -438,6 +454,8 @@ public final class Ospfv3Process
           @Nullable Integer maximumPaths,
       @JsonProperty(PROP_EXTERNAL_SUMMARIES)
           @Nullable Set<Ospfv3ExternalSummary> externalSummaries,
+      @JsonProperty(PROP_VIRTUAL_LINKS)
+          @Nullable Set<Ospfv3VirtualLink> virtualLinks,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
@@ -506,6 +524,9 @@ public final class Ospfv3Process
             externalSummaries,
             ImmutableSet.of()),
         firstNonNull(
+            virtualLinks,
+            ImmutableSet.of()),
+        firstNonNull(
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
         firstNonNull(
@@ -545,6 +566,7 @@ public final class Ospfv3Process
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
       Set<Ospfv3ExternalSummary> externalSummaries,
+      Set<Ospfv3VirtualLink> virtualLinks,
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeLocalLoopback,
@@ -594,6 +616,9 @@ public final class Ospfv3Process
     _externalSummaries =
         ImmutableSet.copyOf(
             externalSummaries);
+    _virtualLinks =
+        ImmutableSet.copyOf(
+            virtualLinks);
     _referenceBandwidth =
         referenceBandwidth;
     _redistributeConnected =
@@ -679,6 +704,13 @@ public final class Ospfv3Process
       getExternalSummaries() {
 
     return _externalSummaries;
+  }
+
+  @JsonProperty(PROP_VIRTUAL_LINKS)
+  public @Nonnull Set<Ospfv3VirtualLink>
+      getVirtualLinks() {
+
+    return _virtualLinks;
   }
 
   @JsonProperty(PROP_PROCESS_ID)
@@ -767,6 +799,8 @@ public final class Ospfv3Process
   private final int _maximumPaths;
   private final @Nonnull
       Set<Ospfv3ExternalSummary> _externalSummaries;
+  private final @Nonnull
+      Set<Ospfv3VirtualLink> _virtualLinks;
   private final @Nonnull String _processId;
   private final @Nonnull Ip _routerId;
   private final @Nonnull SortedMap<Long, Ospfv3Area>

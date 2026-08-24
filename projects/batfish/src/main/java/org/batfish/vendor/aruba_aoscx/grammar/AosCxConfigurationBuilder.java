@@ -82,6 +82,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceConte
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
@@ -1897,6 +1898,50 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
             prefix,
             advertise,
             tag);
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link(
+      S_ospfv3_virtual_linkContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring virtual-link outside OSPFv3 context");
+
+      return;
+    }
+
+    String transitArea =
+        ctx.WORD(0).getText();
+
+    String peerText =
+        ctx.WORD(1).getText();
+
+    if (Ip.tryParse(peerText).isEmpty()) {
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link with invalid peer router ID");
+      return;
+    }
+
+    Ip peer =
+        Ip.parse(peerText);
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .removeVirtualLink(
+              transitArea,
+              peer);
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLink(
+            transitArea,
+            peer);
   }
 
   @Override
