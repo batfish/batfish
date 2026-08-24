@@ -4536,4 +4536,149 @@ public final class AosCxGrammarTest {
             null));
   }
 
+  @Test
+  public void testOspfv3BfdExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-bfd");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getBfdAllInterfaces(),
+        equalTo(true));
+
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes(
+                "blue")
+            .get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2.getBfdAllInterfaces(),
+        equalTo(false));
+
+    /*
+     * No explicit interface command: inherit process setting.
+     */
+    assertThat(
+        c.getInterfaces()
+            .get("1/1/1")
+            .getOspfv3Bfd(),
+        equalTo(null));
+
+    /*
+     * Explicit bfd disable overrides global enable.
+     */
+    assertThat(
+        c.getInterfaces()
+            .get("1/1/2")
+            .getOspfv3Bfd(),
+        equalTo(false));
+
+    /*
+     * no ipv6 ospfv3 bfd clears the override and restores inheritance.
+     */
+    assertThat(
+        c.getInterfaces()
+            .get("1/1/3")
+            .getOspfv3Bfd(),
+        equalTo(null));
+
+    /*
+     * Explicit bfd enables BFD despite the blue process global false.
+     */
+    assertThat(
+        c.getInterfaces()
+            .get("1/1/4")
+            .getOspfv3Bfd(),
+        equalTo(true));
+
+    /*
+     * No override on globally-disabled process.
+     */
+    assertThat(
+        c.getInterfaces()
+            .get("1/1/5")
+            .getOspfv3Bfd(),
+        equalTo(null));
+  }
+
+  @Test
+  public void testOspfv3BfdConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-bfd");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    /*
+     * Global process setting inherited.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/1")
+            .getOspfv3Settings()
+            .getBfdEnabled(),
+        equalTo(true));
+
+    /*
+     * Explicit interface disable wins over global enable.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/2")
+            .getOspfv3Settings()
+            .getBfdEnabled(),
+        equalTo(false));
+
+    /*
+     * no ipv6 ospfv3 bfd returned this interface to process inheritance.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/3")
+            .getOspfv3Settings()
+            .getBfdEnabled(),
+        equalTo(true));
+
+    /*
+     * Explicit interface enable wins over globally-disabled blue process.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/4")
+            .getOspfv3Settings()
+            .getBfdEnabled(),
+        equalTo(true));
+
+    /*
+     * No override inherits globally-disabled blue process state.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/5")
+            .getOspfv3Settings()
+            .getBfdEnabled(),
+        equalTo(false));
+  }
+
 }

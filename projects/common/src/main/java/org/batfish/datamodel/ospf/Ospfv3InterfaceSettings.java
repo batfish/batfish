@@ -39,6 +39,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     private @Nullable Long _areaName;
     private @Nullable Ospfv3Authentication
         _authentication;
+    private boolean _bfdEnabled;
     private @Nullable Integer _cost;
     private int _deadInterval;
     private boolean _enabled;
@@ -70,6 +71,15 @@ public final class Ospfv3InterfaceSettings implements Serializable {
 
       _authentication =
           authentication;
+
+      return this;
+    }
+
+    public Builder setBfdEnabled(
+        boolean bfdEnabled) {
+
+      _bfdEnabled =
+          bfdEnabled;
 
       return this;
     }
@@ -139,6 +149,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
       return new Ospfv3InterfaceSettings(
           _areaName,
           _authentication,
+          _bfdEnabled,
           _cost,
           _deadInterval,
           _enabled,
@@ -156,6 +167,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
       "area";
   private static final String PROP_AUTHENTICATION =
       "authentication";
+  private static final String PROP_BFD_ENABLED =
+      "bfdEnabled";
   private static final String PROP_COST =
       "cost";
   private static final String PROP_DEAD_INTERVAL =
@@ -183,6 +196,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
           @Nullable Long area,
       @JsonProperty(PROP_AUTHENTICATION)
           @Nullable Ospfv3Authentication authentication,
+      @JsonProperty(PROP_BFD_ENABLED)
+          @Nullable Boolean bfdEnabled,
       @JsonProperty(PROP_COST)
           @Nullable Integer cost,
       @JsonProperty(PROP_DEAD_INTERVAL)
@@ -223,6 +238,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     return new Ospfv3InterfaceSettings(
         area,
         authentication,
+        bfdEnabled != null
+            && bfdEnabled,
         cost,
         deadInterval,
         enabled,
@@ -244,6 +261,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   private Ospfv3InterfaceSettings(
       @Nullable Long areaName,
       @Nullable Ospfv3Authentication authentication,
+      boolean bfdEnabled,
       @Nullable Integer cost,
       int deadInterval,
       boolean enabled,
@@ -275,6 +293,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     _areaName = areaName;
     _authentication =
         authentication;
+    _bfdEnabled =
+        bfdEnabled;
     _cost = cost;
     _deadInterval = deadInterval;
     _enabled = enabled;
@@ -298,6 +318,11 @@ public final class Ospfv3InterfaceSettings implements Serializable {
       getAuthentication() {
 
     return _authentication;
+  }
+
+  @JsonProperty(PROP_BFD_ENABLED)
+  public boolean getBfdEnabled() {
+    return _bfdEnabled;
   }
 
   @JsonProperty(PROP_COST)
@@ -372,6 +397,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
         && Objects.equals(
             _authentication,
             other._authentication)
+        && _bfdEnabled
+            == other._bfdEnabled
         && Objects.equals(
             _cost,
             other._cost)
@@ -401,6 +428,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     return Objects.hash(
         _areaName,
         _authentication,
+        _bfdEnabled,
         _cost,
         _deadInterval,
         _enabled,
@@ -416,6 +444,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   private final @Nullable Long _areaName;
   private final @Nullable Ospfv3Authentication
       _authentication;
+  private final boolean _bfdEnabled;
   private final @Nullable Integer _cost;
   private final int _deadInterval;
   private final boolean _enabled;

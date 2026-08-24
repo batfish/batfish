@@ -33,6 +33,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_authenticationContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_bfdContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_hello_intervalContext;
@@ -79,6 +80,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContex
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_authenticationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_active_backboneContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_bfd_all_interfacesContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_rangeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_informationContext;
@@ -624,6 +626,40 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
+  public void exitS_ipv6_ospfv3_bfd(
+      S_ipv6_ospfv3_bfdContext ctx) {
+
+    if (_currentInterface == null) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 BFD outside interface context");
+
+      return;
+    }
+
+    /*
+     * The no form removes the interface override. Effective state then
+     * inherits from process-level bfd all-interfaces.
+     */
+    if (ctx.NO() != null) {
+
+      _currentInterface
+          .clearOspfv3Bfd();
+
+      return;
+    }
+
+    /*
+     * "ipv6 ospfv3 bfd disable" is an explicit false override.
+     * Plain "ipv6 ospfv3 bfd" is an explicit true override.
+     */
+    _currentInterface
+        .setOspfv3Bfd(
+            ctx.DISABLE() == null);
+  }
+
+  @Override
   public void exitS_ipv6_ospfv3_cost(
       S_ipv6_ospfv3_costContext ctx) {
     if (_currentInterface == null) {
@@ -921,6 +957,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentOspfv3Process
         .setPassiveInterfaceDefault(
+            ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ospfv3_bfd_all_interfaces(
+      S_ospfv3_bfd_all_interfacesContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring bfd all-interfaces outside OSPFv3 context");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setBfdAllInterfaces(
             ctx.NO() == null);
   }
 

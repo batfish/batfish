@@ -1,0 +1,43 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+vrf blue
+
+router ospfv3 1
+    router-id 192.0.2.1
+    bfd all-interfaces
+
+router ospfv3 2 vrf blue
+    router-id 192.0.2.2
+    no bfd all-interfaces
+
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:11::1/64
+    ipv6 ospfv3 1 area 0
+
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:12::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 bfd disable
+
+interface 1/1/3
+    no shutdown
+    ipv6 address 2001:db8:13::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 bfd disable
+    no ipv6 ospfv3 bfd
+
+interface 1/1/4
+    no shutdown
+    vrf attach blue
+    ipv6 address 2001:db8:14::1/64
+    ipv6 ospfv3 2 area 0
+    ipv6 ospfv3 bfd
+
+interface 1/1/5
+    no shutdown
+    vrf attach blue
+    ipv6 address 2001:db8:15::1/64
+    ipv6 ospfv3 2 area 0

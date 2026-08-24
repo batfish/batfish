@@ -159,6 +159,28 @@ public final class AosCxInterface implements Serializable {
         false;
   }
 
+  /**
+   * Explicit OSPFv3 BFD interface override.
+   *
+   * <p>Null means inherit the process-wide bfd all-interfaces setting.
+   * True means explicitly enabled. False means explicitly disabled.
+   */
+  public @Nullable Boolean getOspfv3Bfd() {
+    return _ospfv3Bfd;
+  }
+
+  public void setOspfv3Bfd(
+      boolean enabled) {
+
+    _ospfv3Bfd =
+        enabled;
+  }
+
+  public void clearOspfv3Bfd() {
+    _ospfv3Bfd =
+        null;
+  }
+
   public @Nullable Integer getOspfv3Cost() {
     return _ospfv3Cost;
   }
@@ -395,6 +417,7 @@ public final class AosCxInterface implements Serializable {
   private @Nullable AosCxOspfv3Authentication
       _ospfv3Authentication;
   private boolean _ospfv3AuthenticationNull;
+  private @Nullable Boolean _ospfv3Bfd;
   private @Nullable Integer _ospfv3Cost;
   private @Nullable Integer _ospfv3HelloInterval;
   private @Nullable Integer _ospfv3DeadInterval;

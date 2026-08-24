@@ -26,6 +26,10 @@ public final class Ospfv3InterfaceSettingsTest {
         equalTo(null));
 
     assertThat(
+        settings.getBfdEnabled(),
+        equalTo(false));
+
+    assertThat(
         settings.getPriority(),
         equalTo(
             Ospfv3InterfaceSettings
@@ -55,6 +59,7 @@ public final class Ospfv3InterfaceSettingsTest {
                     Ospfv3Authentication.AuthType.SHA1,
                     Ospfv3Authentication.KeyType.PLAINTEXT,
                     "test-secret"))
+            .setBfdEnabled(true)
             .setCost(25)
             .setDeadInterval(40)
             .setEnabled(true)
@@ -85,6 +90,10 @@ public final class Ospfv3InterfaceSettingsTest {
                 Ospfv3Authentication.AuthType.SHA1,
                 Ospfv3Authentication.KeyType.PLAINTEXT,
                 "test-secret")));
+
+    assertThat(
+        clone.getBfdEnabled(),
+        equalTo(true));
 
     assertThat(
         clone.getPriority(),

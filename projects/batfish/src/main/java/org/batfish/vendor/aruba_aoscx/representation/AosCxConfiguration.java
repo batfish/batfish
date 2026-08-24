@@ -1679,6 +1679,16 @@ public class AosCxConfiguration extends VendorConfiguration {
             }
           }
 
+          Boolean bfdOverride =
+              iface.getOspfv3Bfd();
+
+          boolean bfdEnabled =
+              bfdOverride != null
+                  ? bfdOverride
+                  : vendorProcess != null
+                      && vendorProcess
+                          .getBfdAllInterfaces();
+
           Boolean passiveOverride =
               iface.getOspfv3Passive();
 
@@ -1696,6 +1706,8 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setAuthentication(
                       toOspfv3Authentication(
                           effectiveAuthentication))
+                  .setBfdEnabled(
+                      bfdEnabled)
                   .setCost(ospfv3Cost)
                   .setProcess(
                       Integer.toString(iface.getOspfv3ProcessId()))

@@ -60,6 +60,17 @@ public final class AosCxOspfv3Process
         activeBackboneStubDefaultRoute;
   }
 
+  public boolean getBfdAllInterfaces() {
+    return _bfdAllInterfaces;
+  }
+
+  public void setBfdAllInterfaces(
+      boolean enabled) {
+
+    _bfdAllInterfaces =
+        enabled;
+  }
+
   public int getMaximumPaths() {
     return _maximumPaths;
   }
@@ -829,6 +840,8 @@ public final class AosCxOspfv3Process
       _redistributeStaticRouteMap;
   private long _redistributionMetric =
       DEFAULT_REDISTRIBUTION_METRIC;
+
+  private boolean _bfdAllInterfaces;
 
   private boolean _passiveInterfaceDefault;
 
