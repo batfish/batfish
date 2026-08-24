@@ -71,6 +71,7 @@ statement
   | s_route_map
   | s_match_ip_address_prefix_list
   | s_match_ipv6_address_prefix_list
+  | s_match_tag
   | s_set_local_preference
   | s_set_metric
   | s_set_metric_type
@@ -392,6 +393,11 @@ s_match_ip_address_prefix_list
 s_match_ipv6_address_prefix_list
 :
   MATCH IPV6 ADDRESS PREFIX_LIST WORD NEWLINE
+;
+
+s_match_tag
+:
+  NO? MATCH TAG WORD NEWLINE
 ;
 
 s_set_local_preference

@@ -1,0 +1,21 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+route-map TAG-FILTER deny seq 10
+    match tag 100
+
+route-map TAG-FILTER permit seq 20
+    match tag 200
+    set metric 44
+    set metric-type external type-1
+    set tag 999
+
+route-map TAG-FILTER permit seq 30
+
+route-map TAG-CLEAR permit seq 10
+    match tag 300
+    no match tag 300
+
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute static route-map TAG-FILTER

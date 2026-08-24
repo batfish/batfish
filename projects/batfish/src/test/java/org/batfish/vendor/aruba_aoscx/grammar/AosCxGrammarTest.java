@@ -3859,4 +3859,159 @@ public final class AosCxGrammarTest {
         equalTo(true));
   }
 
+  @Test
+  public void testRouteMapMatchTagExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-route-map-match-tag");
+
+    org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMap
+        routeMap =
+            c.getRouteMaps()
+                .get("TAG-FILTER");
+
+    assertThat(
+        routeMap,
+        notNullValue());
+
+    org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry
+        denyEntry =
+            routeMap
+                .getEntries()
+                .get(10L);
+
+    assertThat(
+        denyEntry,
+        notNullValue());
+
+    assertThat(
+        denyEntry.getMatchTag(),
+        equalTo(100L));
+
+    org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry
+        permitEntry =
+            routeMap
+                .getEntries()
+                .get(20L);
+
+    assertThat(
+        permitEntry,
+        notNullValue());
+
+    assertThat(
+        permitEntry.getMatchTag(),
+        equalTo(200L));
+
+    org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMap
+        clearedMap =
+            c.getRouteMaps()
+                .get("TAG-CLEAR");
+
+    assertThat(
+        clearedMap,
+        notNullValue());
+
+    assertThat(
+        clearedMap
+            .getEntries()
+            .get(10L)
+            .getMatchTag(),
+        equalTo(null));
+  }
+
+  @Test
+  public void testRouteMapMatchTagConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-route-map-match-tag");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    org.batfish.datamodel.RouteMap6 routeMap =
+        process
+            .getRedistributeStaticRouteMap();
+
+    assertThat(
+        routeMap,
+        notNullValue());
+
+    /*
+     * Tag 100 is denied by sequence 10.
+     */
+    assertThat(
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:100::/64"),
+                25L,
+                100L)
+            .isEmpty(),
+        equalTo(true));
+
+    /*
+     * Tag 200 matches sequence 20 and receives all configured set
+     * transformations.
+     */
+    org.batfish.datamodel.RouteMap6.Result matched =
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:200::/64"),
+                25L,
+                200L)
+            .orElseThrow();
+
+    assertThat(
+        matched.getMetric(),
+        equalTo(44L));
+
+    assertThat(
+        matched.getOspfMetricType(),
+        equalTo(
+            org.batfish.datamodel.ospf.OspfMetricType.E1));
+
+    assertThat(
+        matched.getTag(),
+        equalTo(999L));
+
+    /*
+     * Tag 300 reaches the unconditional permit sequence and retains its
+     * original metric and tag.
+     */
+    org.batfish.datamodel.RouteMap6.Result fallback =
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:300::/64"),
+                25L,
+                300L)
+            .orElseThrow();
+
+    assertThat(
+        fallback.getMetric(),
+        equalTo(25L));
+
+    assertThat(
+        fallback.getTag(),
+        equalTo(300L));
+  }
+
 }

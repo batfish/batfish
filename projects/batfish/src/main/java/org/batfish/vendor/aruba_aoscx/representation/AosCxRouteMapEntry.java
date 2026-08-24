@@ -43,6 +43,25 @@ public final class AosCxRouteMapEntry
         matchIpv6PrefixList;
   }
 
+  public @Nullable Long getMatchTag() {
+    return _matchTag;
+  }
+
+  public void setMatchTag(long tag) {
+    _matchTag =
+        tag;
+  }
+
+  public void clearMatchTag(long tag) {
+
+    if (_matchTag != null
+        && _matchTag.longValue() == tag) {
+
+      _matchTag =
+          null;
+    }
+  }
+
   public @Nullable Long getSetLocalPreference() {
     return _setLocalPreference;
   }
@@ -82,6 +101,7 @@ public final class AosCxRouteMapEntry
   private final LineAction _action;
   private @Nullable String _matchPrefixList;
   private @Nullable String _matchIpv6PrefixList;
+  private @Nullable Long _matchTag;
   private @Nullable Long _setLocalPreference;
   private @Nullable Long _setMetric;
   private @Nullable OspfMetricType _setOspfMetricType;

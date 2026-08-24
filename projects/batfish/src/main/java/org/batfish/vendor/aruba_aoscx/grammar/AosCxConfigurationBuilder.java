@@ -62,6 +62,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ip_address_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_prefix_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_tagContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
@@ -1147,6 +1148,57 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentRouteMapEntry
         .setMatchIpv6PrefixList(
             ctx.WORD().getText());
+  }
+
+  @Override
+  public void exitS_match_tag(
+      S_match_tagContext ctx) {
+
+    if (_currentRouteMapEntry == null) {
+
+      warn(
+          ctx,
+          "Ignoring route-map match tag outside route-map context");
+
+      return;
+    }
+
+    long tag;
+
+    try {
+      tag =
+          Long.parseLong(
+              ctx.WORD().getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid route-map match tag");
+
+      return;
+    }
+
+    if (tag < 0L
+        || tag > 0xFFFFFFFFL) {
+
+      warn(
+          ctx,
+          "Ignoring route-map match tag outside 0-4294967295");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentRouteMapEntry
+          .clearMatchTag(tag);
+
+      return;
+    }
+
+    _currentRouteMapEntry
+        .setMatchTag(tag);
   }
 
   @Override

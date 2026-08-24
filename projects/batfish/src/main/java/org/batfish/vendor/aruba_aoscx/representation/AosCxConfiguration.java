@@ -883,6 +883,7 @@ public class AosCxConfiguration extends VendorConfiguration {
                   new RouteMap6.Entry(
                       entry.getAction(),
                       matchPrefixList,
+                      entry.getMatchTag(),
                       entry.getSetMetric(),
                       entry.getSetOspfMetricType(),
                       entry.getSetTag()));
@@ -916,7 +917,17 @@ public class AosCxConfiguration extends VendorConfiguration {
               entry -> {
                 BooleanExpr guard;
 
-                if (entry.getMatchPrefixList() == null) {
+                if (entry.getMatchTag() != null) {
+
+                  /*
+                   * Tag matching is currently modeled by RouteMap6 for
+                   * IPv6 redistribution. Do not silently turn the same
+                   * clause into permit-all when converting a generic/BGP
+                   * routing policy.
+                   */
+                  guard = BooleanExprs.FALSE;
+
+                } else if (entry.getMatchPrefixList() == null) {
                   guard = BooleanExprs.TRUE;
                 } else if (_c.getRouteFilterLists().containsKey(entry.getMatchPrefixList())) {
                   guard =

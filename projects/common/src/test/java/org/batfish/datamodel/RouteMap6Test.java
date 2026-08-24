@@ -253,4 +253,134 @@ public final class RouteMap6Test {
         equalTo(OspfMetricType.E1));
   }
 
+  @Test
+  public void testMatchTagAndSerialization() {
+
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.DENY,
+                    null,
+                    100L,
+                    null,
+                    null,
+                    null),
+                20L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    200L,
+                    44L,
+                    OspfMetricType.E1,
+                    999L),
+                30L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null)));
+
+    RouteMap6 clone =
+        BatfishObjectMapper.clone(
+            routeMap,
+            RouteMap6.class);
+
+    assertThat(
+        clone,
+        equalTo(routeMap));
+
+    assertThat(
+        clone
+            .getEntries()
+            .get(20L)
+            .getMatchTag(),
+        equalTo(200L));
+
+    /*
+     * Sequence 10 matches tag 100 and denies.
+     */
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:100::/64"),
+                25L,
+                100L)
+            .isEmpty(),
+        equalTo(true));
+
+    /*
+     * Sequence 10 does not match tag 200.
+     * Sequence 20 matches and transforms the route.
+     */
+    RouteMap6.Result matched =
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:200::/64"),
+                25L,
+                200L)
+            .orElseThrow();
+
+    assertThat(
+        matched.getMetric(),
+        equalTo(44L));
+
+    assertThat(
+        matched.getOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+
+    assertThat(
+        matched.getTag(),
+        equalTo(999L));
+
+    /*
+     * Neither tagged clause matches tag 300.
+     * Sequence 30 has no match conditions and therefore permits while
+     * preserving the original route attributes.
+     */
+    RouteMap6.Result fallback =
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:300::/64"),
+                25L,
+                300L)
+            .orElseThrow();
+
+    assertThat(
+        fallback.getMetric(),
+        equalTo(25L));
+
+    assertThat(
+        fallback.getOspfMetricType(),
+        equalTo(OspfMetricType.E2));
+
+    assertThat(
+        fallback.getTag(),
+        equalTo(300L));
+
+    /*
+     * An untagged route also skips the tagged clauses and reaches the
+     * unconditional fallback.
+     */
+    RouteMap6.Result untagged =
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:400::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG)
+            .orElseThrow();
+
+    assertThat(
+        untagged.getTag(),
+        equalTo(
+            Route.UNSET_ROUTE_TAG));
+  }
+
 }

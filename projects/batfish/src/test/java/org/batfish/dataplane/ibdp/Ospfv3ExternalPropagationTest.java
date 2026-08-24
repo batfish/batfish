@@ -1405,4 +1405,254 @@ public final class Ospfv3ExternalPropagationTest {
         empty());
   }
 
+  @Test
+  public void testStaticRedistributionRouteMapMatchTag() {
+
+    Node n1 =
+        TestUtils.makeIosRouter(
+            "n1");
+
+    Node n2 =
+        TestUtils.makeIosRouter(
+            "n2");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    Prefix6 deniedPrefix =
+        Prefix6.parse(
+            "2001:db8:100::/64");
+
+    Prefix6 transformedPrefix =
+        Prefix6.parse(
+            "2001:db8:200::/64");
+
+    Prefix6 fallbackPrefix =
+        Prefix6.parse(
+            "2001:db8:300::/64");
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    deniedPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .setTag(100L)
+                .build());
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    transformedPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .setTag(200L)
+                .build());
+
+    n1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    fallbackPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .setTag(300L)
+                .build());
+
+    RouteMap6 staticRouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.DENY,
+                    null,
+                    100L,
+                    null,
+                    null,
+                    null),
+                20L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    200L,
+                    44L,
+                    OspfMetricType.E1,
+                    999L),
+                30L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null)));
+
+    addProcessWithRouteMaps(
+        n1,
+        "192.0.2.1",
+        RouteMap6.denyAll(),
+        staticRouteMap,
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder()
+            .build();
+
+    vr1.initForIgpComputation(
+        topology);
+
+    vr2.initForIgpComputation(
+        topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1",
+            "eth12"),
+        NodeInterfacePair.of(
+            "n2",
+            "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "n1",
+                n1,
+                "n2",
+                n2),
+            List.of(
+                vr1,
+                vr2),
+            adjacencies);
+
+    /*
+     * Tag 100 matches the first route-map sequence, which denies it.
+     */
+    assertThat(
+        findExternal(
+            vr2,
+            deniedPrefix),
+        nullValue());
+
+    assertThat(
+        findExternalType1(
+            vr2,
+            deniedPrefix),
+        nullValue());
+
+    /*
+     * Tag 200 matches the second sequence:
+     *
+     * source LSA metric = 44
+     * E1 receiving-interface cost at n2 = 20
+     * total = 64
+     */
+    Ospfv3ExternalType1Route6 transformed =
+        findExternalType1(
+            vr2,
+            transformedPrefix);
+
+    assertThat(
+        transformed,
+        notNullValue());
+
+    assertThat(
+        transformed.getLsaMetric(),
+        equalTo(44L));
+
+    assertThat(
+        transformed.getMetric(),
+        equalTo(64L));
+
+    assertThat(
+        transformed.getCostToAdvertiser(),
+        equalTo(20L));
+
+    assertThat(
+        transformed.getTag(),
+        equalTo(999L));
+
+    assertThat(
+        transformed.getAdvertiser(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.1")));
+
+    /*
+     * Tag 300 matches neither tagged clause and falls through to the
+     * unconditional permit sequence. It retains the default E2 metric and
+     * source static-route tag.
+     */
+    Ospfv3ExternalType2Route6 fallback =
+        findExternal(
+            vr2,
+            fallbackPrefix);
+
+    assertThat(
+        fallback,
+        notNullValue());
+
+    assertThat(
+        fallback.getMetric(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_REDISTRIBUTION_METRIC));
+
+    assertThat(
+        fallback.getTag(),
+        equalTo(300L));
+
+    assertThat(
+        fallback.getCostToAdvertiser(),
+        equalTo(20L));
+
+    /*
+     * Route-map processing changes only the OSPF advertisement. The source
+     * static route in the ASBR RIB retains its original tag.
+     */
+    assertThat(
+        vr1.getMainRib6()
+            .getRoutes(
+                transformedPrefix)
+            .stream()
+            .anyMatch(
+                route ->
+                    route instanceof StaticRoute6
+                        && route.getTag() == 200L),
+        equalTo(true));
+  }
+
 }

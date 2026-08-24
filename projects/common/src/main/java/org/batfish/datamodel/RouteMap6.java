@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,6 +36,8 @@ public final class RouteMap6 implements Serializable {
             @Nullable LineAction action,
         @JsonProperty("matchPrefixList")
             @Nullable PrefixList6 matchPrefixList,
+        @JsonProperty("matchTag")
+            @Nullable Long matchTag,
         @JsonProperty("setMetric")
             @Nullable Long setMetric,
         @JsonProperty("setOspfMetricType")
@@ -55,6 +58,16 @@ public final class RouteMap6 implements Serializable {
       _matchPrefixList =
           matchPrefixList;
 
+      checkArgument(
+          matchTag == null
+              || (matchTag >= 0L
+                  && matchTag <= 0xFFFFFFFFL),
+          "Invalid route-map match tag %s",
+          matchTag);
+
+      _matchTag =
+          matchTag;
+
       _setMetric =
           setMetric;
       _setOspfMetricType =
@@ -67,10 +80,28 @@ public final class RouteMap6 implements Serializable {
         LineAction action,
         @Nullable PrefixList6 matchPrefixList,
         @Nullable Long setMetric,
+        @Nullable OspfMetricType setOspfMetricType,
         @Nullable Long setTag) {
+
       this(
           action,
           matchPrefixList,
+          null,
+          setMetric,
+          setOspfMetricType,
+          setTag);
+    }
+
+    public Entry(
+        LineAction action,
+        @Nullable PrefixList6 matchPrefixList,
+        @Nullable Long setMetric,
+        @Nullable Long setTag) {
+
+      this(
+          action,
+          matchPrefixList,
+          null,
           setMetric,
           null,
           setTag);
@@ -85,6 +116,11 @@ public final class RouteMap6 implements Serializable {
     public @Nullable PrefixList6
         getMatchPrefixList() {
       return _matchPrefixList;
+    }
+
+    @JsonProperty("matchTag")
+    public @Nullable Long getMatchTag() {
+      return _matchTag;
     }
 
     @JsonProperty("setMetric")
@@ -104,9 +140,19 @@ public final class RouteMap6 implements Serializable {
     }
 
     private boolean matches(
-        Prefix6 prefix) {
-      return _matchPrefixList == null
-          || _matchPrefixList.permits(prefix);
+        Prefix6 prefix,
+        long tag) {
+
+      boolean prefixMatches =
+          _matchPrefixList == null
+              || _matchPrefixList.permits(prefix);
+
+      boolean tagMatches =
+          _matchTag == null
+              || _matchTag.longValue() == tag;
+
+      return prefixMatches
+          && tagMatches;
     }
 
     @Override
@@ -127,6 +173,9 @@ public final class RouteMap6 implements Serializable {
               _matchPrefixList,
               rhs._matchPrefixList)
           && Objects.equals(
+              _matchTag,
+              rhs._matchTag)
+          && Objects.equals(
               _setMetric,
               rhs._setMetric)
           && _setOspfMetricType
@@ -141,6 +190,7 @@ public final class RouteMap6 implements Serializable {
       return Objects.hash(
           _action,
           _matchPrefixList,
+          _matchTag,
           _setMetric,
           _setOspfMetricType,
           _setTag);
@@ -149,6 +199,7 @@ public final class RouteMap6 implements Serializable {
     private final @Nonnull LineAction _action;
     private final @Nullable PrefixList6
         _matchPrefixList;
+    private final @Nullable Long _matchTag;
     private final @Nullable Long _setMetric;
     private final @Nullable OspfMetricType
         _setOspfMetricType;
@@ -272,7 +323,10 @@ public final class RouteMap6 implements Serializable {
     for (Entry entry :
         _entries.values()) {
 
-      if (!entry.matches(prefix)) {
+      if (!entry.matches(
+          prefix,
+          initialTag)) {
+
         continue;
       }
 
