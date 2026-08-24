@@ -40,6 +40,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3AreaRange;
+import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.dataplane.rib.ConnectedRib6;
@@ -112,6 +113,60 @@ final class Ospfv3RoutingProcess {
     private final @Nonnull NodeInterfacePair _id;
     private final int _priority;
     private final @Nonnull Ip _routerId;
+  }
+
+  /**
+   * One locally originated external advertisement after redistribution
+   * policy but before ASBR summary-address processing.
+   */
+  private static final class ExternalAdvertisementSpec {
+
+    private ExternalAdvertisementSpec(
+        Prefix6 network,
+        long metric,
+        long tag,
+        OspfMetricType metricType) {
+
+      _network = network;
+      _metric = metric;
+      _tag = tag;
+      _metricType = metricType;
+    }
+
+    @Override
+    public boolean equals(
+        @Nullable Object o) {
+
+      if (this == o) {
+        return true;
+      }
+
+      if (!(o instanceof ExternalAdvertisementSpec)) {
+        return false;
+      }
+
+      ExternalAdvertisementSpec rhs =
+          (ExternalAdvertisementSpec) o;
+
+      return _metric == rhs._metric
+          && _tag == rhs._tag
+          && _metricType == rhs._metricType
+          && _network.equals(rhs._network);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          _network,
+          _metric,
+          _tag,
+          _metricType);
+    }
+
+    private final long _metric;
+    private final @Nonnull OspfMetricType _metricType;
+    private final @Nonnull Prefix6 _network;
+    private final long _tag;
   }
 
   Ospfv3RoutingProcess(
@@ -192,10 +247,9 @@ final class Ospfv3RoutingProcess {
   /**
    * Recompute locally originated OSPFv3 external advertisements.
    *
-   * <p>These advertisements are intentionally separate from the local
-   * OSPFv3 routing RIB. A router must advertise redistributed/static/default
-   * routes to neighbors without preferring its own OSPF copy over the source
-   * route that caused the advertisement.
+   * <p>Redistribution and route-map policy are evaluated first. ASBR
+   * summary-address processing is then applied to the resulting external
+   * advertisements before Type-5 or Type-7 LSAs are exposed to neighbors.
    *
    * @return true iff the local advertisement set changed
    */
@@ -204,20 +258,23 @@ final class Ospfv3RoutingProcess {
       Set<StaticRoute6> staticRoutes,
       boolean nonOspfv3DefaultRoutePresent) {
 
-    Set<AbstractRoute6> desired =
-        new HashSet<>();
-
     if (!_process.getEnabled()) {
+
       if (_localExternalAdvertisements.isEmpty()) {
         return false;
       }
 
       _localExternalAdvertisements =
           ImmutableSet.of();
+
       return true;
     }
 
+    Set<ExternalAdvertisementSpec> sources =
+        new HashSet<>();
+
     if (_process.getRedistributeConnected()) {
+
       for (ConnectedRoute6 connected :
           connectedRib.getRoutes()) {
 
@@ -246,17 +303,20 @@ final class Ospfv3RoutingProcess {
         RouteMap6.Result result =
             transformed.get();
 
-        addLocallyOriginatedExternalAdvertisements(
-            desired,
-            connected.getNetwork(),
-            result.getMetric(),
-            result.getTag(),
-            result.getOspfMetricType());
+        sources.add(
+            new ExternalAdvertisementSpec(
+                connected.getNetwork(),
+                result.getMetric(),
+                result.getTag(),
+                result.getOspfMetricType()));
       }
     }
 
     if (_process.getRedistributeStatic()) {
-      for (StaticRoute6 route : staticRoutes) {
+
+      for (StaticRoute6 route :
+          staticRoutes) {
+
         if (!permitsOutboundRedistribution(
             route.getNetwork())) {
           continue;
@@ -277,12 +337,12 @@ final class Ospfv3RoutingProcess {
         RouteMap6.Result result =
             transformed.get();
 
-        addLocallyOriginatedExternalAdvertisements(
-            desired,
-            route.getNetwork(),
-            result.getMetric(),
-            result.getTag(),
-            result.getOspfMetricType());
+        sources.add(
+            new ExternalAdvertisementSpec(
+                route.getNetwork(),
+                result.getMetric(),
+                result.getTag(),
+                result.getOspfMetricType()));
       }
     }
 
@@ -290,13 +350,21 @@ final class Ospfv3RoutingProcess {
         && (_process
                 .getDefaultInformationOriginateAlways()
             || nonOspfv3DefaultRoutePresent)) {
-      addLocallyOriginatedExternalAdvertisements(
-          desired,
-          Prefix6.ZERO,
-          _process.getDefaultInformationMetric(),
-          Route.UNSET_ROUTE_TAG,
-          OspfMetricType.E2);
+
+      sources.add(
+          new ExternalAdvertisementSpec(
+              Prefix6.ZERO,
+              _process.getDefaultInformationMetric(),
+              Route.UNSET_ROUTE_TAG,
+              OspfMetricType.E2));
     }
+
+    Set<AbstractRoute6> desired =
+        new HashSet<>();
+
+    addSummarizedExternalAdvertisements(
+        desired,
+        sources);
 
     Set<AbstractRoute6> immutableDesired =
         ImmutableSet.copyOf(desired);
@@ -310,6 +378,164 @@ final class Ospfv3RoutingProcess {
         immutableDesired;
 
     return true;
+  }
+
+  /**
+   * Apply configured ASBR summary-address rules and build the corresponding
+   * Type-5/Type-7 local advertisements.
+   *
+   * <p>The aggregate metric is the lowest metric among its contributing
+   * redistributed routes. If any contributor is external type-1, the
+   * aggregate is type-1; otherwise it is type-2. A configured aggregate tag
+   * replaces component tags. Without a configured aggregate tag, the
+   * aggregate has no route tag.
+   */
+  private void addSummarizedExternalAdvertisements(
+      Set<AbstractRoute6> advertisements,
+      Set<ExternalAdvertisementSpec> sources) {
+
+    if (_process
+        .getExternalSummaries()
+        .isEmpty()) {
+
+      for (ExternalAdvertisementSpec source :
+          sources) {
+
+        addLocallyOriginatedExternalAdvertisements(
+            advertisements,
+            source._network,
+            source._metric,
+            source._tag,
+            source._metricType);
+      }
+
+      return;
+    }
+
+    Set<ExternalAdvertisementSpec> summarized =
+        new HashSet<>();
+
+    for (Ospfv3ExternalSummary summary :
+        _process.getExternalSummaries()) {
+
+      List<ExternalAdvertisementSpec> contributors =
+          new ArrayList<>();
+
+      for (ExternalAdvertisementSpec source :
+          sources) {
+
+        Ospfv3ExternalSummary bestSummary =
+            getMatchingExternalSummary(
+                source._network);
+
+        if (summary.equals(bestSummary)) {
+          contributors.add(source);
+        }
+      }
+
+      if (contributors.isEmpty()) {
+        continue;
+      }
+
+      summarized.addAll(contributors);
+
+      /*
+       * no-advertise suppresses both the aggregate and all contributing
+       * specifics.
+       */
+      if (!summary.getAdvertise()) {
+        continue;
+      }
+
+      long metric =
+          contributors
+              .stream()
+              .mapToLong(
+                  contributor ->
+                      contributor._metric)
+              .min()
+              .orElseThrow();
+
+      boolean hasType1 =
+          contributors
+              .stream()
+              .anyMatch(
+                  contributor ->
+                      contributor._metricType
+                          == OspfMetricType.E1);
+
+      OspfMetricType metricType =
+          hasType1
+              ? OspfMetricType.E1
+              : OspfMetricType.E2;
+
+      long tag =
+          summary.getTag() == null
+              ? Route.UNSET_ROUTE_TAG
+              : summary.getTag();
+
+      addLocallyOriginatedExternalAdvertisements(
+          advertisements,
+          summary.getPrefix(),
+          metric,
+          tag,
+          metricType);
+    }
+
+    /*
+     * Routes not covered by a configured summary retain their specific
+     * external advertisements.
+     */
+    for (ExternalAdvertisementSpec source :
+        sources) {
+
+      if (summarized.contains(source)) {
+        continue;
+      }
+
+      addLocallyOriginatedExternalAdvertisements(
+          advertisements,
+          source._network,
+          source._metric,
+          source._tag,
+          source._metricType);
+    }
+  }
+
+  /**
+   * Return the most-specific configured external summary containing
+   * {@code network}.
+   */
+  private @Nullable Ospfv3ExternalSummary
+      getMatchingExternalSummary(
+          Prefix6 network) {
+
+    Ospfv3ExternalSummary best =
+        null;
+
+    for (Ospfv3ExternalSummary summary :
+        _process.getExternalSummaries()) {
+
+      if (!prefixContains(
+          summary.getPrefix(),
+          network)) {
+        continue;
+      }
+
+      if (best == null
+          || summary
+                  .getPrefix()
+                  .getPrefixLength()
+              > best
+                  .getPrefix()
+                  .getPrefixLength()) {
+
+        best =
+            summary;
+      }
+    }
+
+    return best;
   }
 
   /**

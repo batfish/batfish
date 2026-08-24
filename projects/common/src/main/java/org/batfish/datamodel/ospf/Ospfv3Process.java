@@ -7,9 +7,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,6 +59,8 @@ public final class Ospfv3Process
     private @Nullable PrefixList6
         _outboundDistributeList;
     private int _maximumPaths;
+    private @Nonnull
+        Set<Ospfv3ExternalSummary> _externalSummaries;
     private @Nonnull Map<Long, Ospfv3Area> _areas;
     private boolean _defaultInformationOriginate;
     private boolean _defaultInformationOriginateAlways;
@@ -83,6 +87,8 @@ public final class Ospfv3Process
       _enabled = true;
       _maximumPaths =
           DEFAULT_MAXIMUM_PATHS;
+      _externalSummaries =
+          ImmutableSet.of();
       _areas =
           ImmutableMap.of();
       _defaultInformationMetric =
@@ -152,6 +158,7 @@ public final class Ospfv3Process
               _inboundDistributeList,
               _outboundDistributeList,
               _maximumPaths,
+              _externalSummaries,
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeStatic,
@@ -222,6 +229,15 @@ public final class Ospfv3Process
         int maximumPaths) {
       _maximumPaths =
           maximumPaths;
+      return this;
+    }
+
+    public Builder setExternalSummaries(
+        Set<Ospfv3ExternalSummary> externalSummaries) {
+
+      _externalSummaries =
+          externalSummaries;
+
       return this;
     }
 
@@ -333,6 +349,8 @@ public final class Ospfv3Process
           "outboundDistributeList";
   private static final String PROP_MAXIMUM_PATHS =
       "maximumPaths";
+  private static final String PROP_EXTERNAL_SUMMARIES =
+      "externalSummaries";
   private static final String PROP_AREAS =
       "areas";
   private static final String
@@ -389,6 +407,8 @@ public final class Ospfv3Process
           @Nullable PrefixList6 outboundDistributeList,
       @JsonProperty(PROP_MAXIMUM_PATHS)
           @Nullable Integer maximumPaths,
+      @JsonProperty(PROP_EXTERNAL_SUMMARIES)
+          @Nullable Set<Ospfv3ExternalSummary> externalSummaries,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
@@ -450,6 +470,9 @@ public final class Ospfv3Process
             maximumPaths,
             DEFAULT_MAXIMUM_PATHS),
         firstNonNull(
+            externalSummaries,
+            ImmutableSet.of()),
+        firstNonNull(
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
         firstNonNull(
@@ -484,6 +507,7 @@ public final class Ospfv3Process
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
+      Set<Ospfv3ExternalSummary> externalSummaries,
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeStatic,
@@ -528,6 +552,9 @@ public final class Ospfv3Process
         outboundDistributeList;
     _maximumPaths =
         maximumPaths;
+    _externalSummaries =
+        ImmutableSet.copyOf(
+            externalSummaries);
     _referenceBandwidth =
         referenceBandwidth;
     _redistributeConnected =
@@ -604,6 +631,13 @@ public final class Ospfv3Process
     return _maximumPaths;
   }
 
+  @JsonProperty(PROP_EXTERNAL_SUMMARIES)
+  public @Nonnull Set<Ospfv3ExternalSummary>
+      getExternalSummaries() {
+
+    return _externalSummaries;
+  }
+
   @JsonProperty(PROP_PROCESS_ID)
   public @Nonnull String getProcessId() {
     return _processId;
@@ -676,6 +710,8 @@ public final class Ospfv3Process
   private final @Nullable PrefixList6
       _outboundDistributeList;
   private final int _maximumPaths;
+  private final @Nonnull
+      Set<Ospfv3ExternalSummary> _externalSummaries;
   private final @Nonnull String _processId;
   private final @Nonnull Ip _routerId;
   private final @Nonnull SortedMap<Long, Ospfv3Area>

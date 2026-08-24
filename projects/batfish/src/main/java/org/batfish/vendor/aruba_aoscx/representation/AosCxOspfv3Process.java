@@ -504,6 +504,32 @@ public final class AosCxOspfv3Process
     }
   }
 
+  public @Nonnull
+      Map<Prefix6, AosCxOspfv3ExternalSummary>
+      getExternalSummaries() {
+
+    return _externalSummaries;
+  }
+
+  public void setExternalSummary(
+      Prefix6 prefix,
+      boolean advertise,
+      @Nullable Long tag) {
+
+    _externalSummaries.put(
+        prefix,
+        new AosCxOspfv3ExternalSummary(
+            prefix,
+            advertise,
+            tag));
+  }
+
+  public void removeExternalSummary(
+      Prefix6 prefix) {
+
+    _externalSummaries.remove(prefix);
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -567,6 +593,11 @@ public final class AosCxOspfv3Process
   private final @Nonnull
       Map<String, Map<Prefix6, Boolean>>
           _nssaRanges =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<Prefix6, AosCxOspfv3ExternalSummary>
+          _externalSummaries =
               new HashMap<>();
 
   private @Nullable Ip _routerId;

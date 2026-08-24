@@ -1,0 +1,9 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname aoscx-router
+router ospfv3 1
+    router-id 192.0.2.1
+    summary-address 2001:db8:100::/48
+    summary-address 2001:db8:200::/48 tag 1234
+    summary-address 2001:db8:300::/48 no-advertise
+    summary-address 2001:db8:400::/48 tag 999
+    no summary-address 2001:db8:400::/48

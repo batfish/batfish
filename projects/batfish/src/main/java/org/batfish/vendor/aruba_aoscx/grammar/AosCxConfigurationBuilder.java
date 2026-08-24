@@ -81,6 +81,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metri
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
@@ -1811,6 +1812,90 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentOspfv3Process
         .setMaximumPaths(
             maximumPaths);
+  }
+
+  @Override
+  public void exitS_ospfv3_summary_address(
+      S_ospfv3_summary_addressContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring summary-address outside OSPFv3 context");
+
+      return;
+    }
+
+    String prefixText =
+        ctx.WORD().getText();
+
+    if (Prefix6.tryParse(prefixText).isEmpty()) {
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 summary-address IPv6 prefix");
+      return;
+    }
+
+    Prefix6 prefix =
+        Prefix6.parse(prefixText);
+
+    if (ctx.NO() != null) {
+      _currentOspfv3Process
+          .removeExternalSummary(prefix);
+      return;
+    }
+
+    boolean advertise =
+        true;
+
+    Long tag =
+        null;
+
+    AosCxParser.Ospfv3_summary_address_optionContext option =
+        ctx.ospfv3_summary_address_option();
+
+    if (option != null) {
+
+      if (option.NO_ADVERTISE() != null) {
+        advertise =
+            false;
+
+      } else {
+
+        long parsedTag;
+
+        try {
+          parsedTag =
+              Long.parseLong(
+                  option.WORD().getText());
+        } catch (NumberFormatException e) {
+          warn(
+              ctx,
+              "Ignoring invalid OSPFv3 summary-address tag");
+          return;
+        }
+
+        if (parsedTag < 0L
+            || parsedTag > 0xFFFFFFFFL) {
+
+          warn(
+              ctx,
+              "Ignoring OSPFv3 summary-address tag outside 0-4294967295");
+          return;
+        }
+
+        tag =
+            parsedTag;
+      }
+    }
+
+    _currentOspfv3Process
+        .setExternalSummary(
+            prefix,
+            advertise,
+            tag);
   }
 
   @Override

@@ -4,8 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ospf.Ospfv3Area;
+import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.junit.Test;
 
@@ -39,6 +41,9 @@ public final class Ospfv3ProcessTest {
         process.getReferenceBandwidth(),
         equalTo(
             Ospfv3Process.DEFAULT_REFERENCE_BANDWIDTH));
+    assertThat(
+        process.getExternalSummaries(),
+        equalTo(ImmutableSet.of()));
     assertThat(
         process.getRedistributeConnected(),
         equalTo(false));
@@ -103,6 +108,18 @@ public final class Ospfv3ProcessTest {
             .setInterAreaAdminCost(112)
             .setExternalAdminCost(113)
             .setEnabled(false)
+            .setExternalSummaries(
+                ImmutableSet.of(
+                    new Ospfv3ExternalSummary(
+                        Prefix6.parse(
+                            "2001:db8:100::/48"),
+                        true,
+                        1234L),
+                    new Ospfv3ExternalSummary(
+                        Prefix6.parse(
+                            "2001:db8:200::/48"),
+                        false,
+                        null)))
             .setReferenceBandwidth(40_000_000_000D)
             .setRedistributeConnected(true)
             .setRedistributeConnectedRouteMap(
@@ -180,6 +197,10 @@ public final class Ospfv3ProcessTest {
     assertThat(
         clone.getReferenceBandwidth(),
         equalTo(40_000_000_000D));
+    assertThat(
+        clone.getExternalSummaries(),
+        equalTo(
+            process.getExternalSummaries()));
     assertThat(
         clone.getRedistributeConnected(),
         equalTo(true));

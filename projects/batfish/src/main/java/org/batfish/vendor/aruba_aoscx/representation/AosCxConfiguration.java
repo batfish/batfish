@@ -72,6 +72,7 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3AreaRange;
+import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.batfish.datamodel.ospf.StubSettings;
@@ -1357,6 +1358,21 @@ public class AosCxConfiguration extends VendorConfiguration {
                     areaBuilder.build());
               });
 
+          Set<Ospfv3ExternalSummary>
+              externalSummaries =
+                  new HashSet<>();
+
+          process
+              .getExternalSummaries()
+              .values()
+              .forEach(
+                  summary ->
+                      externalSummaries.add(
+                          new Ospfv3ExternalSummary(
+                              summary.getPrefix(),
+                              summary.getAdvertise(),
+                              summary.getTag())));
+
           Ospfv3Process.builder()
               .setProcessId(
                   Integer.toString(
@@ -1379,6 +1395,8 @@ public class AosCxConfiguration extends VendorConfiguration {
                       process.getDistributeListOut()))
               .setMaximumPaths(
                   process.getMaximumPaths())
+              .setExternalSummaries(
+                  externalSummaries)
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
               .setRedistributeConnected(

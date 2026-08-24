@@ -98,6 +98,7 @@ SHUTDOWN: 'shutdown';
 UNICAST: 'unicast';
 SPEED: 'speed';
 STATIC: 'static';
+SUMMARY_ADDRESS: 'summary-address';
 STUB: 'stub';
 VLAN: 'vlan';
 VRF: 'vrf';

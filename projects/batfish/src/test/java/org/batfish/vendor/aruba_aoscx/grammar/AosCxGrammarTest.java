@@ -46,6 +46,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -55,6 +56,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxConfiguration;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3ExternalSummary;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixList;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
@@ -3350,6 +3352,130 @@ public final class AosCxGrammarTest {
     assertThat(
         suppressed.getAdvertise(),
         equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3SummaryAddressExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-summary-address");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getExternalSummaries().size(),
+        equalTo(3));
+
+    AosCxOspfv3ExternalSummary summary100 =
+        process
+            .getExternalSummaries()
+            .get(
+                Prefix6.parse(
+                    "2001:db8:100::/48"));
+
+    assertThat(
+        summary100,
+        notNullValue());
+
+    assertThat(
+        summary100.getAdvertise(),
+        equalTo(true));
+
+    assertThat(
+        summary100.getTag(),
+        nullValue());
+
+    AosCxOspfv3ExternalSummary summary200 =
+        process
+            .getExternalSummaries()
+            .get(
+                Prefix6.parse(
+                    "2001:db8:200::/48"));
+
+    assertThat(
+        summary200,
+        notNullValue());
+
+    assertThat(
+        summary200.getAdvertise(),
+        equalTo(true));
+
+    assertThat(
+        summary200.getTag(),
+        equalTo(1234L));
+
+    AosCxOspfv3ExternalSummary summary300 =
+        process
+            .getExternalSummaries()
+            .get(
+                Prefix6.parse(
+                    "2001:db8:300::/48"));
+
+    assertThat(
+        summary300,
+        notNullValue());
+
+    assertThat(
+        summary300.getAdvertise(),
+        equalTo(false));
+
+    assertThat(
+        process
+            .getExternalSummaries()
+            .containsKey(
+                Prefix6.parse(
+                    "2001:db8:400::/48")),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3SummaryAddressConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-summary-address");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getExternalSummaries(),
+        containsInAnyOrder(
+            new Ospfv3ExternalSummary(
+                Prefix6.parse(
+                    "2001:db8:100::/48"),
+                true,
+                null),
+            new Ospfv3ExternalSummary(
+                Prefix6.parse(
+                    "2001:db8:200::/48"),
+                true,
+                1234L),
+            new Ospfv3ExternalSummary(
+                Prefix6.parse(
+                    "2001:db8:300::/48"),
+                false,
+                null)));
   }
 
 }
