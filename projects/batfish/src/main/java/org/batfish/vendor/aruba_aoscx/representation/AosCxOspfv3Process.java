@@ -34,6 +34,11 @@ public final class AosCxOspfv3Process
   public static final int DEFAULT_MAXIMUM_PATHS =
       4;
 
+  /** Default duration for max-metric router-lsa on-startup. */
+  public static final int
+      DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS =
+          600;
+
   public AosCxOspfv3Process(int processId) {
     _processId = processId;
   }
@@ -54,6 +59,35 @@ public final class AosCxOspfv3Process
   public void resetMaximumPaths() {
     _maximumPaths =
         DEFAULT_MAXIMUM_PATHS;
+  }
+
+  public boolean getMaxMetricRouterLsa() {
+    return _maxMetricRouterLsa;
+  }
+
+  public void setMaxMetricRouterLsa(
+      boolean maxMetricRouterLsa) {
+
+    _maxMetricRouterLsa =
+        maxMetricRouterLsa;
+  }
+
+  public @Nullable Integer
+      getMaxMetricRouterLsaOnStartupSeconds() {
+
+    return _maxMetricRouterLsaOnStartupSeconds;
+  }
+
+  public void setMaxMetricRouterLsaOnStartupSeconds(
+      int seconds) {
+
+    _maxMetricRouterLsaOnStartupSeconds =
+        seconds;
+  }
+
+  public void clearMaxMetricRouterLsaOnStartup() {
+    _maxMetricRouterLsaOnStartupSeconds =
+        null;
   }
 
   public @Nullable String getDistributeListIn() {
@@ -613,6 +647,11 @@ public final class AosCxOspfv3Process
 
   private int _maximumPaths =
       DEFAULT_MAXIMUM_PATHS;
+
+  private boolean _maxMetricRouterLsa;
+
+  private @Nullable Integer
+      _maxMetricRouterLsaOnStartupSeconds;
 
   private boolean _enabled = true;
   private int _intraAreaDistance =

@@ -63,6 +63,14 @@ final class Ospfv3RoutingProcess {
   private static final long LS_INFINITY = 0xFFFFFFL;
 
   /**
+   * Maximum 16-bit Router-LSA link metric used by RFC stub-router
+   * behavior.
+   */
+  private static final long
+      MAX_ROUTER_LSA_LINK_METRIC =
+          0xFFFFL;
+
+  /**
    * Result of a deterministic OSPFv3 broadcast-network election.
    *
    * <p>The dataplane is computed from a configuration snapshot rather than
@@ -925,6 +933,7 @@ final class Ospfv3RoutingProcess {
                   localIface,
                   remoteIface,
                   localSettings.getAreaName(),
+                  remoteProcess,
                   remoteRoutes);
 
           changed |=
@@ -940,6 +949,7 @@ final class Ospfv3RoutingProcess {
                   localIface,
                   remoteIface,
                   localSettings.getAreaName(),
+                  remoteProcess,
                   remoteRoutes);
 
           changed |=
@@ -947,6 +957,7 @@ final class Ospfv3RoutingProcess {
                   localIface,
                   remoteIface,
                   localSettings.getAreaName(),
+                  remoteProcess,
                   remoteRoutes);
         }
       }
@@ -1578,8 +1589,11 @@ final class Ospfv3RoutingProcess {
         }
 
         long cost =
-            lhs.computeInterfaceCost(
-                lhsIface);
+            lhs._process
+                    .getMaxMetricRouterLsa()
+                ? MAX_ROUTER_LSA_LINK_METRIC
+                : lhs.computeInterfaceCost(
+                    lhsIface);
 
         if (best == null
             || cost < best._cost) {
@@ -2114,10 +2128,182 @@ final class Ospfv3RoutingProcess {
             != OspfNetworkType.BROADCAST;
   }
 
+  /**
+   * Return whether an intra-area route was originated directly by this
+   * process rather than learned through another OSPFv3 neighbor.
+   */
+  private boolean isLocallyOriginatedIntraAreaRoute(
+      Ospfv3IntraAreaRoute6 route) {
+
+    Interface iface =
+        _c.getAllInterfaces().get(
+            route.getNextHopInterface());
+
+    if (iface == null
+        || !isEnabledForThisProcess(
+            iface)) {
+      return false;
+    }
+
+    return iface
+        .getAllConcreteAddresses6()
+        .stream()
+        .anyMatch(
+            address ->
+                getAdvertisedNetwork(
+                        iface,
+                        address)
+                    .equals(
+                        route.getNetwork())
+                    && Objects.equals(
+                        address.getIp(),
+                        route.getNextHopIp()));
+  }
+
+  /**
+   * Return whether this route is locally originated for stub-router
+   * advertisement purposes.
+   *
+   * <p>Locally originated intra-area prefixes and local Type-5/Type-7
+   * externals remain reachable at their normal cost. Routes whose next hop
+   * is another OSPF router are transit routes and receive the maximized
+   * Router-LSA link metric.
+   */
+  private boolean isLocallyOriginatedForMaxMetric(
+      AbstractRoute6 route) {
+
+    if (route
+        instanceof Ospfv3IntraAreaRoute6) {
+
+      return isLocallyOriginatedIntraAreaRoute(
+          (Ospfv3IntraAreaRoute6) route);
+    }
+
+    if (route
+        instanceof Ospfv3ExternalType1Route6) {
+
+      Ospfv3ExternalType1Route6 external =
+          (Ospfv3ExternalType1Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(
+                  _process.getRouterId())
+          && external.getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route
+        instanceof Ospfv3ExternalType2Route6) {
+
+      Ospfv3ExternalType2Route6 external =
+          (Ospfv3ExternalType2Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(
+                  _process.getRouterId())
+          && external.getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route
+        instanceof Ospfv3NssaExternalType1Route6) {
+
+      Ospfv3NssaExternalType1Route6 external =
+          (Ospfv3NssaExternalType1Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(
+                  _process.getRouterId())
+          && external.getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route
+        instanceof Ospfv3NssaExternalType2Route6) {
+
+      Ospfv3NssaExternalType2Route6 external =
+          (Ospfv3NssaExternalType2Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(
+                  _process.getRouterId())
+          && external.getCostToAdvertiser()
+              == 0L;
+    }
+
+    return false;
+  }
+
+  /**
+   * Return the metric that a neighbor should observe when the advertising
+   * router has permanent max-metric router-lsa enabled.
+   *
+   * <p>The local RIB retains normal SPF metrics. Only advertisement through
+   * the stub router is transformed. When the route's outbound OSPF interface
+   * is known, its ordinary link cost is replaced by the maximum 16-bit
+   * Router-LSA cost instead of simply being added a second time.
+   */
+  private static long advertisedMetricForNeighbor(
+      Ospfv3RoutingProcess remoteProcess,
+      AbstractRoute6 route,
+      long metric) {
+
+    if (!remoteProcess
+            ._process
+            .getMaxMetricRouterLsa()
+        || remoteProcess
+            .isLocallyOriginatedForMaxMetric(
+                route)) {
+
+      return metric;
+    }
+
+    long baseMetric =
+        metric;
+
+    Interface outbound =
+        remoteProcess
+            ._c
+            .getAllInterfaces()
+            .get(
+                route.getNextHopInterface());
+
+    if (outbound != null
+        && remoteProcess
+            .isEnabledForThisProcess(
+                outbound)) {
+
+      long ordinaryCost =
+          remoteProcess
+              .computeInterfaceCost(
+                  outbound);
+
+      if (baseMetric >= ordinaryCost) {
+        baseMetric -=
+            ordinaryCost;
+      }
+    }
+
+    if (baseMetric
+        >= LS_INFINITY
+            - MAX_ROUTER_LSA_LINK_METRIC) {
+
+      return LS_INFINITY;
+    }
+
+    return baseMetric
+        + MAX_ROUTER_LSA_LINK_METRIC;
+  }
+
   private boolean importIntraAreaRoutesFromNeighbor(
       Interface localIface,
       Interface remoteIface,
       long area,
+      Ospfv3RoutingProcess remoteProcess,
       Set<AbstractRoute6> remoteRoutes) {
     boolean changed = false;
     long incrementalCost =
@@ -2151,14 +2337,22 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      if (intra.getMetric() >= LS_INFINITY
+      long advertisedMetric =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              intra,
+              intra.getMetric());
+
+      if (advertisedMetric >= LS_INFINITY
           || incrementalCost
-              >= LS_INFINITY - intra.getMetric()) {
+              >= LS_INFINITY
+                  - advertisedMetric) {
         continue;
       }
 
       long newMetric =
-          intra.getMetric() + incrementalCost;
+          advertisedMetric
+              + incrementalCost;
 
       changed |=
           _ospfv3Rib.mergeRoute(
@@ -2225,6 +2419,7 @@ final class Ospfv3RoutingProcess {
       changed |=
           importBackboneIntraAreaRoutesFromVirtualNeighbor(
               path,
+              peer,
               remoteRoutes);
 
       changed |=
@@ -2236,6 +2431,7 @@ final class Ospfv3RoutingProcess {
       changed |=
           importExternalRoutesFromVirtualNeighbor(
               path,
+              peer,
               remoteRoutes);
     }
 
@@ -2249,6 +2445,7 @@ final class Ospfv3RoutingProcess {
    */
   private boolean importBackboneIntraAreaRoutesFromVirtualNeighbor(
       VirtualLinkPath path,
+      Ospfv3RoutingProcess remoteProcess,
       Set<AbstractRoute6> remoteRoutes) {
 
     boolean changed =
@@ -2265,12 +2462,21 @@ final class Ospfv3RoutingProcess {
       Ospfv3IntraAreaRoute6 intra =
           (Ospfv3IntraAreaRoute6) route;
 
-      if (intra.getArea() != 0L
-          || intra.getMetric()
+      if (intra.getArea() != 0L) {
+        continue;
+      }
+
+      long remoteMetric =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              intra,
+              intra.getMetric());
+
+      if (remoteMetric
               >= LS_INFINITY
           || path._cost
               >= LS_INFINITY
-                  - intra.getMetric()) {
+                  - remoteMetric) {
         continue;
       }
 
@@ -2282,7 +2488,7 @@ final class Ospfv3RoutingProcess {
                   path._nextHopIp,
                   _process
                       .getIntraAreaAdminCost(),
-                  intra.getMetric()
+                  remoteMetric
                       + path._cost,
                   0L,
                   intra.getTag()));
@@ -2404,6 +2610,12 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
+      remoteMetric =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              route,
+              remoteMetric);
+
       if (remoteMetric >= LS_INFINITY
           || path._cost
               >= LS_INFINITY
@@ -2433,6 +2645,7 @@ final class Ospfv3RoutingProcess {
    */
   private boolean importExternalRoutesFromVirtualNeighbor(
       VirtualLinkPath path,
+      Ospfv3RoutingProcess remoteProcess,
       Set<AbstractRoute6> remoteRoutes) {
 
     boolean changed =
@@ -2456,16 +2669,28 @@ final class Ospfv3RoutingProcess {
           continue;
         }
 
-        if (external.getMetric()
+        long advertisedMetric =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getMetric());
+
+        long advertisedCostToAdvertiser =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getCostToAdvertiser());
+
+        if (advertisedMetric
                 >= LS_INFINITY
-            || external.getCostToAdvertiser()
+            || advertisedCostToAdvertiser
                 >= LS_INFINITY
             || path._cost
                 >= LS_INFINITY
-                    - external.getMetric()
+                    - advertisedMetric
             || path._cost
                 >= LS_INFINITY
-                    - external.getCostToAdvertiser()) {
+                    - advertisedCostToAdvertiser) {
           continue;
         }
 
@@ -2477,11 +2702,11 @@ final class Ospfv3RoutingProcess {
                     path._nextHopIp,
                     _process
                         .getExternalAdminCost(),
-                    external.getMetric()
+                    advertisedMetric
                         + path._cost,
                     external.getLsaMetric(),
                     0L,
-                    external.getCostToAdvertiser()
+                    advertisedCostToAdvertiser
                         + path._cost,
                     external.getAdvertiser(),
                     external.getTag()));
@@ -2506,11 +2731,17 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      if (external.getCostToAdvertiser()
+      long advertisedCostToAdvertiser =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              external,
+              external.getCostToAdvertiser());
+
+      if (advertisedCostToAdvertiser
               >= LS_INFINITY
           || path._cost
               >= LS_INFINITY
-                  - external.getCostToAdvertiser()) {
+                  - advertisedCostToAdvertiser) {
         continue;
       }
 
@@ -2524,7 +2755,7 @@ final class Ospfv3RoutingProcess {
                       .getExternalAdminCost(),
                   external.getMetric(),
                   0L,
-                  external.getCostToAdvertiser()
+                  advertisedCostToAdvertiser
                       + path._cost,
                   external.getAdvertiser(),
                   external.getTag()));
@@ -2689,6 +2920,12 @@ final class Ospfv3RoutingProcess {
       } else {
         continue;
       }
+
+      remoteMetric =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              route,
+              remoteMetric);
 
       if (shouldApplySplitHorizon(
           remoteIface,
@@ -2875,6 +3112,7 @@ final class Ospfv3RoutingProcess {
       Interface localIface,
       Interface remoteIface,
       long area,
+      Ospfv3RoutingProcess remoteProcess,
       Set<AbstractRoute6> remoteRoutes) {
 
     // Type-5 external LSAs are not flooded into stub or NSSA areas.
@@ -2916,25 +3154,37 @@ final class Ospfv3RoutingProcess {
           continue;
         }
 
-        if (external.getMetric()
+        long advertisedMetric =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getMetric());
+
+        long advertisedCostToAdvertiser =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getCostToAdvertiser());
+
+        if (advertisedMetric
                 >= LS_INFINITY
-            || external.getCostToAdvertiser()
+            || advertisedCostToAdvertiser
                 >= LS_INFINITY
             || incrementalCost
                 >= LS_INFINITY
-                    - external.getMetric()
+                    - advertisedMetric
             || incrementalCost
                 >= LS_INFINITY
-                    - external.getCostToAdvertiser()) {
+                    - advertisedCostToAdvertiser) {
           continue;
         }
 
         long newMetric =
-            external.getMetric()
+            advertisedMetric
                 + incrementalCost;
 
         long newCostToAdvertiser =
-            external.getCostToAdvertiser()
+            advertisedCostToAdvertiser
                 + incrementalCost;
 
         changed |=
@@ -2976,16 +3226,22 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      if (external.getCostToAdvertiser()
+      long advertisedCostToAdvertiser =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              external,
+              external.getCostToAdvertiser());
+
+      if (advertisedCostToAdvertiser
               >= LS_INFINITY
           || incrementalCost
               >= LS_INFINITY
-                  - external.getCostToAdvertiser()) {
+                  - advertisedCostToAdvertiser) {
         continue;
       }
 
       long newCostToAdvertiser =
-          external.getCostToAdvertiser()
+          advertisedCostToAdvertiser
               + incrementalCost;
 
       changed |=
@@ -3016,6 +3272,7 @@ final class Ospfv3RoutingProcess {
       Interface localIface,
       Interface remoteIface,
       long area,
+      Ospfv3RoutingProcess remoteProcess,
       Set<AbstractRoute6> remoteRoutes) {
 
     if (!isNssaArea(area)) {
@@ -3059,25 +3316,37 @@ final class Ospfv3RoutingProcess {
           continue;
         }
 
-        if (external.getMetric()
+        long advertisedMetric =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getMetric());
+
+        long advertisedCostToAdvertiser =
+            advertisedMetricForNeighbor(
+                remoteProcess,
+                external,
+                external.getCostToAdvertiser());
+
+        if (advertisedMetric
                 >= LS_INFINITY
-            || external.getCostToAdvertiser()
+            || advertisedCostToAdvertiser
                 >= LS_INFINITY
             || incrementalCost
                 >= LS_INFINITY
-                    - external.getMetric()
+                    - advertisedMetric
             || incrementalCost
                 >= LS_INFINITY
-                    - external.getCostToAdvertiser()) {
+                    - advertisedCostToAdvertiser) {
           continue;
         }
 
         long newMetric =
-            external.getMetric()
+            advertisedMetric
                 + incrementalCost;
 
         long newCostToAdvertiser =
-            external.getCostToAdvertiser()
+            advertisedCostToAdvertiser
                 + incrementalCost;
 
         changed |=
@@ -3122,16 +3391,22 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      if (external.getCostToAdvertiser()
+      long advertisedCostToAdvertiser =
+          advertisedMetricForNeighbor(
+              remoteProcess,
+              external,
+              external.getCostToAdvertiser());
+
+      if (advertisedCostToAdvertiser
               >= LS_INFINITY
           || incrementalCost
               >= LS_INFINITY
-                  - external.getCostToAdvertiser()) {
+                  - advertisedCostToAdvertiser) {
         continue;
       }
 
       long newCostToAdvertiser =
-          external.getCostToAdvertiser()
+          advertisedCostToAdvertiser
               + incrementalCost;
 
       changed |=

@@ -324,4 +324,50 @@ public final class Ospfv3ProcessTest {
         equalTo(12));
   }
 
+  @Test
+  public void testMaxMetricRouterLsaSerialization() {
+
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId("default")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .build();
+
+    assertThat(
+        defaults.getMaxMetricRouterLsa(),
+        equalTo(false));
+
+    assertThat(
+        defaults
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(null));
+
+    Ospfv3Process process =
+        Ospfv3Process.builder()
+            .setProcessId("configured")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.2"))
+            .setMaxMetricRouterLsa(true)
+            .setMaxMetricRouterLsaOnStartupSeconds(
+                3000)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            process,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getMaxMetricRouterLsa(),
+        equalTo(true));
+
+    assertThat(
+        clone
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(3000));
+  }
+
 }

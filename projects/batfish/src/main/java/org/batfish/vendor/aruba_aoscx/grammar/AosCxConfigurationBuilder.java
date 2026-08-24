@@ -80,6 +80,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_infor
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_max_metric_router_lsaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkContext;
@@ -1770,6 +1771,75 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
       _currentOspfv3Process
           .setDistributeListOut(prefixList);
     }
+  }
+
+  @Override
+  public void exitS_ospfv3_max_metric_router_lsa(
+      S_ospfv3_max_metric_router_lsaContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring max-metric router-lsa outside OSPFv3 context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      if (ctx.ON_STARTUP() != null) {
+        _currentOspfv3Process
+            .clearMaxMetricRouterLsaOnStartup();
+      } else {
+        _currentOspfv3Process
+            .setMaxMetricRouterLsa(false);
+      }
+
+      return;
+    }
+
+    if (ctx.ON_STARTUP() == null) {
+      _currentOspfv3Process
+          .setMaxMetricRouterLsa(true);
+      return;
+    }
+
+    int seconds =
+        AosCxOspfv3Process
+            .DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS;
+
+    if (ctx.WORD() != null) {
+
+      try {
+        seconds =
+            Integer.parseInt(
+                ctx.WORD().getText());
+
+      } catch (NumberFormatException e) {
+
+        warn(
+            ctx,
+            "Ignoring invalid OSPFv3 max-metric router-lsa on-startup interval");
+
+        return;
+      }
+
+      if (seconds < 5
+          || seconds > 86400) {
+
+        warn(
+            ctx,
+            "Ignoring OSPFv3 max-metric router-lsa on-startup interval outside 5-86400");
+
+        return;
+      }
+    }
+
+    _currentOspfv3Process
+        .setMaxMetricRouterLsaOnStartupSeconds(
+            seconds);
   }
 
   @Override

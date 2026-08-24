@@ -3644,4 +3644,114 @@ public final class AosCxGrammarTest {
         hasKey(1L));
   }
 
+  @Test
+  public void testOspfv3MaxMetricRouterLsaExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-max-metric-router-lsa");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getMaxMetricRouterLsa(),
+        equalTo(true));
+
+    assertThat(
+        process1
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(3000));
+
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2.getMaxMetricRouterLsa(),
+        equalTo(false));
+
+    assertThat(
+        process2
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(null));
+
+    AosCxOspfv3Process process3 =
+        c.getOspfv3Processes().get(3);
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getMaxMetricRouterLsa(),
+        equalTo(false));
+
+    assertThat(
+        process3
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS));
+  }
+
+  @Test
+  public void testOspfv3MaxMetricRouterLsaConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-max-metric-router-lsa");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getMaxMetricRouterLsa(),
+        equalTo(true));
+
+    assertThat(
+        process1
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(3000));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process3 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getMaxMetricRouterLsa(),
+        equalTo(false));
+
+    assertThat(
+        process3
+            .getMaxMetricRouterLsaOnStartupSeconds(),
+        equalTo(600));
+  }
+
 }

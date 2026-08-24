@@ -1,0 +1,18 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    max-metric router-lsa
+    max-metric router-lsa on-startup 3000
+
+router ospfv3 2
+    router-id 192.0.2.2
+    max-metric router-lsa
+    no max-metric router-lsa
+    max-metric router-lsa on-startup 1200
+    no max-metric router-lsa on-startup
+
+router ospfv3 3
+    router-id 192.0.2.3
+    max-metric router-lsa on-startup

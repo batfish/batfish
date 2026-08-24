@@ -59,6 +59,9 @@ public final class Ospfv3Process
     private @Nullable PrefixList6
         _outboundDistributeList;
     private int _maximumPaths;
+    private boolean _maxMetricRouterLsa;
+    private @Nullable Integer
+        _maxMetricRouterLsaOnStartupSeconds;
     private @Nonnull
         Set<Ospfv3ExternalSummary> _externalSummaries;
     private @Nonnull
@@ -165,6 +168,8 @@ public final class Ospfv3Process
               _inboundDistributeList,
               _outboundDistributeList,
               _maximumPaths,
+              _maxMetricRouterLsa,
+              _maxMetricRouterLsaOnStartupSeconds,
               _externalSummaries,
               _virtualLinks,
               _referenceBandwidth,
@@ -239,6 +244,25 @@ public final class Ospfv3Process
         int maximumPaths) {
       _maximumPaths =
           maximumPaths;
+      return this;
+    }
+
+    public Builder setMaxMetricRouterLsa(
+        boolean maxMetricRouterLsa) {
+
+      _maxMetricRouterLsa =
+          maxMetricRouterLsa;
+
+      return this;
+    }
+
+    public Builder
+        setMaxMetricRouterLsaOnStartupSeconds(
+            @Nullable Integer seconds) {
+
+      _maxMetricRouterLsaOnStartupSeconds =
+          seconds;
+
       return this;
     }
 
@@ -386,6 +410,11 @@ public final class Ospfv3Process
           "outboundDistributeList";
   private static final String PROP_MAXIMUM_PATHS =
       "maximumPaths";
+  private static final String PROP_MAX_METRIC_ROUTER_LSA =
+      "maxMetricRouterLsa";
+  private static final String
+      PROP_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS =
+          "maxMetricRouterLsaOnStartupSeconds";
   private static final String PROP_EXTERNAL_SUMMARIES =
       "externalSummaries";
   private static final String PROP_VIRTUAL_LINKS =
@@ -452,6 +481,11 @@ public final class Ospfv3Process
           @Nullable PrefixList6 outboundDistributeList,
       @JsonProperty(PROP_MAXIMUM_PATHS)
           @Nullable Integer maximumPaths,
+      @JsonProperty(PROP_MAX_METRIC_ROUTER_LSA)
+          @Nullable Boolean maxMetricRouterLsa,
+      @JsonProperty(
+              PROP_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS)
+          @Nullable Integer maxMetricRouterLsaOnStartupSeconds,
       @JsonProperty(PROP_EXTERNAL_SUMMARIES)
           @Nullable Set<Ospfv3ExternalSummary> externalSummaries,
       @JsonProperty(PROP_VIRTUAL_LINKS)
@@ -521,6 +555,10 @@ public final class Ospfv3Process
             maximumPaths,
             DEFAULT_MAXIMUM_PATHS),
         firstNonNull(
+            maxMetricRouterLsa,
+            false),
+        maxMetricRouterLsaOnStartupSeconds,
+        firstNonNull(
             externalSummaries,
             ImmutableSet.of()),
         firstNonNull(
@@ -565,6 +603,8 @@ public final class Ospfv3Process
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
+      boolean maxMetricRouterLsa,
+      @Nullable Integer maxMetricRouterLsaOnStartupSeconds,
       Set<Ospfv3ExternalSummary> externalSummaries,
       Set<Ospfv3VirtualLink> virtualLinks,
       double referenceBandwidth,
@@ -584,6 +624,13 @@ public final class Ospfv3Process
             && maximumPaths <= 32,
         "Invalid OSPFv3 maximum paths %s",
         maximumPaths);
+
+    checkArgument(
+        maxMetricRouterLsaOnStartupSeconds == null
+            || (maxMetricRouterLsaOnStartupSeconds >= 5
+                && maxMetricRouterLsaOnStartupSeconds <= 86400),
+        "Invalid max-metric router-lsa on-startup interval %s",
+        maxMetricRouterLsaOnStartupSeconds);
 
     checkArgument(
         redistributionMetric >= 0
@@ -613,6 +660,10 @@ public final class Ospfv3Process
         outboundDistributeList;
     _maximumPaths =
         maximumPaths;
+    _maxMetricRouterLsa =
+        maxMetricRouterLsa;
+    _maxMetricRouterLsaOnStartupSeconds =
+        maxMetricRouterLsaOnStartupSeconds;
     _externalSummaries =
         ImmutableSet.copyOf(
             externalSummaries);
@@ -697,6 +748,26 @@ public final class Ospfv3Process
   @JsonProperty(PROP_MAXIMUM_PATHS)
   public int getMaximumPaths() {
     return _maximumPaths;
+  }
+
+  @JsonProperty(PROP_MAX_METRIC_ROUTER_LSA)
+  public boolean getMaxMetricRouterLsa() {
+    return _maxMetricRouterLsa;
+  }
+
+  /**
+   * Startup-only max-metric configuration.
+   *
+   * <p>The VI dataplane represents a timeless converged snapshot, so this
+   * value is retained for configuration fidelity but does not by itself
+   * activate permanent stub-router behavior.
+   */
+  @JsonProperty(
+      PROP_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS)
+  public @Nullable Integer
+      getMaxMetricRouterLsaOnStartupSeconds() {
+
+    return _maxMetricRouterLsaOnStartupSeconds;
   }
 
   @JsonProperty(PROP_EXTERNAL_SUMMARIES)
@@ -797,6 +868,9 @@ public final class Ospfv3Process
   private final @Nullable PrefixList6
       _outboundDistributeList;
   private final int _maximumPaths;
+  private final boolean _maxMetricRouterLsa;
+  private final @Nullable Integer
+      _maxMetricRouterLsaOnStartupSeconds;
   private final @Nonnull
       Set<Ospfv3ExternalSummary> _externalSummaries;
   private final @Nonnull

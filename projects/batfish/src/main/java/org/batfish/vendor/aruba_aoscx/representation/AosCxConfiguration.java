@@ -1412,6 +1412,11 @@ public class AosCxConfiguration extends VendorConfiguration {
                       process.getDistributeListOut()))
               .setMaximumPaths(
                   process.getMaximumPaths())
+              .setMaxMetricRouterLsa(
+                  process.getMaxMetricRouterLsa())
+              .setMaxMetricRouterLsaOnStartupSeconds(
+                  process
+                      .getMaxMetricRouterLsaOnStartupSeconds())
               .setExternalSummaries(
                   externalSummaries)
               .setVirtualLinks(
