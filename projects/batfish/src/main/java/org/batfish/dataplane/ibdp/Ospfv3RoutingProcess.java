@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -626,7 +627,9 @@ final class Ospfv3RoutingProcess {
     }
 
     changed |=
-        refreshTranslatedNssaAdvertisements();
+        refreshTranslatedNssaAdvertisements(
+            allNodes,
+            l3Adjacencies);
 
     return changed;
   }
@@ -867,6 +870,327 @@ final class Ospfv3RoutingProcess {
     return area != 0L
         && _process.getAreas().containsKey(0L)
         && _process.getAreas().containsKey(area);
+  }
+
+  /**
+   * Return whether this process is the elected default-Candidate NSSA
+   * Type-7 translator for {@code area}.
+   *
+   * <p>RFC 3101 elects the highest router ID among NSSA border routers that
+   * are reachable both through the NSSA and through the AS transit topology.
+   * In this snapshot dataplane, area 0 is the modeled transit topology.
+   */
+  @VisibleForTesting
+  boolean isElectedNssaTranslator(
+      long area,
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    if (!isOperationalNssaBorderRouterFor(area)) {
+      return false;
+    }
+
+    List<Ospfv3RoutingProcess> processes =
+        getAllOspfv3Processes(allNodes);
+
+    Ospfv3RoutingProcess elected =
+        this;
+
+    for (Ospfv3RoutingProcess candidate :
+        processes) {
+
+      if (candidate == this
+          || !candidate
+              .isOperationalNssaBorderRouterFor(
+                  area)) {
+        continue;
+      }
+
+      /*
+       * A candidate must be reachable from us through both the NSSA and
+       * area 0. If the NSSA is partitioned, each partition can therefore
+       * elect its own translator.
+       */
+      if (!isReachableInArea(
+              this,
+              candidate,
+              area,
+              processes,
+              allNodes,
+              l3Adjacencies)
+          || !isReachableInArea(
+              this,
+              candidate,
+              0L,
+              processes,
+              allNodes,
+              l3Adjacencies)) {
+        continue;
+      }
+
+      if (compareTranslatorCandidates(
+              candidate,
+              elected)
+          > 0) {
+        elected =
+            candidate;
+      }
+    }
+
+    return elected == this;
+  }
+
+  private boolean isOperationalNssaBorderRouterFor(
+      long area) {
+
+    return _process.getEnabled()
+        && isNssaArea(area)
+        && isAreaBorderRouterFor(area)
+        && hasActiveAdjacencyInterfaceInArea(area)
+        && hasActiveAdjacencyInterfaceInArea(0L);
+  }
+
+  private boolean hasActiveAdjacencyInterfaceInArea(
+      long area) {
+
+    for (Interface iface :
+        _c.getAllInterfaces().values()) {
+
+      if (!isAdjacencyInterface(iface)) {
+        continue;
+      }
+
+      Ospfv3InterfaceSettings settings =
+          iface.getOspfv3Settings();
+
+      if (settings != null
+          && settings.getAreaName() != null
+          && settings.getAreaName() == area) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static List<Ospfv3RoutingProcess>
+      getAllOspfv3Processes(
+          Map<String, Node> allNodes) {
+
+    List<Ospfv3RoutingProcess> processes =
+        new ArrayList<>();
+
+    for (Node node :
+        allNodes.values()) {
+
+      for (VirtualRouter vr :
+          node.getVirtualRouters()) {
+
+        processes.addAll(
+            vr.getOspfv3Processes()
+                .values());
+      }
+    }
+
+    return processes;
+  }
+
+  private static boolean isReachableInArea(
+      Ospfv3RoutingProcess source,
+      Ospfv3RoutingProcess target,
+      long area,
+      List<Ospfv3RoutingProcess> processes,
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    if (source == target) {
+      return true;
+    }
+
+    Set<Ospfv3RoutingProcess> visited =
+        new HashSet<>();
+
+    ArrayDeque<Ospfv3RoutingProcess> queue =
+        new ArrayDeque<>();
+
+    visited.add(source);
+    queue.add(source);
+
+    while (!queue.isEmpty()) {
+
+      Ospfv3RoutingProcess current =
+          queue.removeFirst();
+
+      for (Ospfv3RoutingProcess next :
+          processes) {
+
+        if (visited.contains(next)
+            || !haveFullAdjacencyInArea(
+                current,
+                next,
+                area,
+                allNodes,
+                l3Adjacencies)) {
+          continue;
+        }
+
+        if (next == target) {
+          return true;
+        }
+
+        visited.add(next);
+        queue.addLast(next);
+      }
+    }
+
+    return false;
+  }
+
+  private static boolean haveFullAdjacencyInArea(
+      Ospfv3RoutingProcess lhs,
+      Ospfv3RoutingProcess rhs,
+      long area,
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
+
+    if (lhs == rhs
+        || !lhs._process.getEnabled()
+        || !rhs._process.getEnabled()
+        || !lhs.areAreaTypesCompatible(
+            area,
+            rhs)) {
+      return false;
+    }
+
+    for (Interface lhsIface :
+        lhs._c
+            .getAllInterfaces()
+            .values()) {
+
+      if (!lhs.isAdjacencyInterface(lhsIface)) {
+        continue;
+      }
+
+      Ospfv3InterfaceSettings lhsSettings =
+          lhsIface.getOspfv3Settings();
+
+      if (lhsSettings == null
+          || lhsSettings.getAreaName() == null
+          || lhsSettings.getAreaName() != area) {
+        continue;
+      }
+
+      NodeInterfacePair lhsId =
+          NodeInterfacePair.of(
+              lhs._c.getHostname(),
+              lhsIface.getName());
+
+      BroadcastElection election =
+          lhsSettings.getNetworkType()
+                  == OspfNetworkType.BROADCAST
+              ? lhs.electBroadcastDesignatedRouters(
+                  lhsIface,
+                  lhsId,
+                  allNodes,
+                  l3Adjacencies)
+              : BroadcastElection.empty();
+
+      for (Interface rhsIface :
+          rhs._c
+              .getAllInterfaces()
+              .values()) {
+
+        if (!rhs.isAdjacencyInterface(rhsIface)) {
+          continue;
+        }
+
+        Ospfv3InterfaceSettings rhsSettings =
+            rhsIface.getOspfv3Settings();
+
+        if (rhsSettings == null
+            || rhsSettings.getAreaName() == null
+            || rhsSettings.getAreaName() != area
+            || !areInterfaceSettingsCompatible(
+                lhsSettings,
+                rhsSettings)) {
+          continue;
+        }
+
+        NodeInterfacePair rhsId =
+            NodeInterfacePair.of(
+                rhs._c.getHostname(),
+                rhsIface.getName());
+
+        if (!areTopologicallyAdjacent(
+            lhsId,
+            lhsIface,
+            rhsId,
+            rhsIface,
+            l3Adjacencies)) {
+          continue;
+        }
+
+        if (!shouldFormFullAdjacency(
+            lhsSettings,
+            rhsSettings,
+            lhsId,
+            rhsId,
+            election)) {
+          continue;
+        }
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Compare default-Candidate translators.
+   *
+   * <p>Router ID is the RFC election key. Remaining fields only provide
+   * deterministic behavior for invalid snapshots containing duplicate
+   * router IDs.
+   */
+  private static int compareTranslatorCandidates(
+      Ospfv3RoutingProcess lhs,
+      Ospfv3RoutingProcess rhs) {
+
+    int routerIdComparison =
+        lhs._process
+            .getRouterId()
+            .compareTo(
+                rhs._process
+                    .getRouterId());
+
+    if (routerIdComparison != 0) {
+      return routerIdComparison;
+    }
+
+    int hostnameComparison =
+        lhs._c
+            .getHostname()
+            .compareTo(
+                rhs._c.getHostname());
+
+    if (hostnameComparison != 0) {
+      return hostnameComparison;
+    }
+
+    int vrfComparison =
+        lhs._vrfName.compareTo(
+            rhs._vrfName);
+
+    if (vrfComparison != 0) {
+      return vrfComparison;
+    }
+
+    return lhs._process
+        .getProcessId()
+        .compareTo(
+            rhs._process
+                .getProcessId());
   }
 
   private boolean suppressesInterAreaInto(
@@ -1736,7 +2060,9 @@ final class Ospfv3RoutingProcess {
    * metric highest-Type-2 + 1. Otherwise it is E1 with the highest Type-1
    * path cost.
    */
-  private boolean refreshTranslatedNssaAdvertisements() {
+  private boolean refreshTranslatedNssaAdvertisements(
+      Map<String, Node> allNodes,
+      L3Adjacencies l3Adjacencies) {
 
     Set<AbstractRoute6> type7Routes =
         new HashSet<>();
@@ -1772,7 +2098,10 @@ final class Ospfv3RoutingProcess {
       long area =
           getNssaExternalArea(external);
 
-      if (!isAreaBorderRouterFor(area)) {
+      if (!isElectedNssaTranslator(
+          area,
+          allNodes,
+          l3Adjacencies)) {
         continue;
       }
 
