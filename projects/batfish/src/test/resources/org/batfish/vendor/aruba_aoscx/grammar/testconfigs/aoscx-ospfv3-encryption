@@ -1,0 +1,38 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0 encryption ipsec spi 256 sha1 plaintext area-auth aes plaintext 0123456789abcdef
+    area 1 encryption ipsec spi 300 md5 plaintext temporary des plaintext 12345678
+    no area 1 encryption
+
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:11::1/64
+    ipv6 ospfv3 1 area 0
+
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:12::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 encryption null
+
+interface 1/1/3
+    no shutdown
+    ipv6 address 2001:db8:13::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 encryption ipsec spi 400 md5 plaintext interface-auth des plaintext 12345678
+
+interface 1/1/4
+    no shutdown
+    ipv6 address 2001:db8:14::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 encryption ipsec spi 450 sha1 plaintext temporary aes plaintext fedcba9876543210
+    no ipv6 ospfv3 encryption
+
+interface 1/1/5
+    no shutdown
+    ipv6 address 2001:db8:15::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 encryption ipsec spi 500 sha1 plaintext null-esp-auth null

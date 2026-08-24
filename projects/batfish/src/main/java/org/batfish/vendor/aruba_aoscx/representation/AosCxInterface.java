@@ -160,6 +160,56 @@ public final class AosCxInterface implements Serializable {
   }
 
   /**
+   * Explicit interface-level OSPFv3 IPsec ESP configuration.
+   *
+   * <p>Null means either inherit area ESP configuration or use the explicit
+   * encryption-null override; consult {@link #getOspfv3EncryptionNull()}.
+   */
+  public @Nullable AosCxOspfv3Encryption
+      getOspfv3Encryption() {
+
+    return _ospfv3Encryption;
+  }
+
+  public boolean getOspfv3EncryptionNull() {
+    return _ospfv3EncryptionNull;
+  }
+
+  public void setOspfv3Encryption(
+      AosCxOspfv3Encryption encryption) {
+
+    _ospfv3Encryption =
+        encryption;
+
+    _ospfv3EncryptionNull =
+        false;
+  }
+
+  /**
+   * Configure interface-level NULL ESP, which suppresses inherited ESP.
+   */
+  public void setOspfv3EncryptionNull() {
+
+    _ospfv3Encryption =
+        null;
+
+    _ospfv3EncryptionNull =
+        true;
+  }
+
+  /**
+   * Remove the interface ESP override and restore area inheritance.
+   */
+  public void clearOspfv3Encryption() {
+
+    _ospfv3Encryption =
+        null;
+
+    _ospfv3EncryptionNull =
+        false;
+  }
+
+  /**
    * Explicit OSPFv3 BFD interface override.
    *
    * <p>Null means inherit the process-wide bfd all-interfaces setting.
@@ -417,6 +467,9 @@ public final class AosCxInterface implements Serializable {
   private @Nullable AosCxOspfv3Authentication
       _ospfv3Authentication;
   private boolean _ospfv3AuthenticationNull;
+  private @Nullable AosCxOspfv3Encryption
+      _ospfv3Encryption;
+  private boolean _ospfv3EncryptionNull;
   private @Nullable Boolean _ospfv3Bfd;
   private @Nullable Integer _ospfv3Cost;
   private @Nullable Integer _ospfv3HelloInterval;

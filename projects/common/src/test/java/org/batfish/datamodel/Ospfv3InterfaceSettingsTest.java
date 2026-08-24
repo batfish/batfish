@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Authentication;
+import org.batfish.datamodel.ospf.Ospfv3Encryption;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.junit.Test;
 
@@ -23,6 +24,10 @@ public final class Ospfv3InterfaceSettingsTest {
 
     assertThat(
         settings.getAuthentication(),
+        equalTo(null));
+
+    assertThat(
+        settings.getEncryption(),
         equalTo(null));
 
     assertThat(
@@ -59,6 +64,15 @@ public final class Ospfv3InterfaceSettingsTest {
                     Ospfv3Authentication.AuthType.SHA1,
                     Ospfv3Authentication.KeyType.PLAINTEXT,
                     "test-secret"))
+            .setEncryption(
+                new Ospfv3Encryption(
+                    400L,
+                    Ospfv3Encryption.AuthType.SHA1,
+                    Ospfv3Encryption.KeyType.PLAINTEXT,
+                    "esp-auth",
+                    Ospfv3Encryption.EncryptionType.AES,
+                    Ospfv3Encryption.KeyType.PLAINTEXT,
+                    "0123456789abcdef"))
             .setBfdEnabled(true)
             .setCost(25)
             .setDeadInterval(40)
@@ -90,6 +104,18 @@ public final class Ospfv3InterfaceSettingsTest {
                 Ospfv3Authentication.AuthType.SHA1,
                 Ospfv3Authentication.KeyType.PLAINTEXT,
                 "test-secret")));
+
+    assertThat(
+        clone.getEncryption(),
+        equalTo(
+            new Ospfv3Encryption(
+                400L,
+                Ospfv3Encryption.AuthType.SHA1,
+                Ospfv3Encryption.KeyType.PLAINTEXT,
+                "esp-auth",
+                Ospfv3Encryption.EncryptionType.AES,
+                Ospfv3Encryption.KeyType.PLAINTEXT,
+                "0123456789abcdef")));
 
     assertThat(
         clone.getBfdEnabled(),

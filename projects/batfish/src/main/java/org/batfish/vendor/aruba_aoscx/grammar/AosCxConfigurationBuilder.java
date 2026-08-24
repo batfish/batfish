@@ -33,6 +33,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_authenticationContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_encryptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_bfdContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_intervalContext;
@@ -79,6 +80,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_m
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_authenticationContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_encryptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_active_backboneContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_bfd_all_interfacesContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_rangeContext;
@@ -119,6 +121,7 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Authentication;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Encryption;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute6;
@@ -582,6 +585,153 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         key);
   }
 
+  private @Nullable AosCxOspfv3Encryption
+      toOspfv3Encryption(
+          ParserRuleContext owner,
+          AosCxParser.Ospfv3_ipsec_encryptionContext ctx) {
+
+    long spi;
+
+    try {
+      spi =
+          Long.parseLong(
+              ctx.WORD(0).getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          owner,
+          "Ignoring OSPFv3 IPsec ESP with invalid SPI");
+
+      return null;
+    }
+
+    if (spi < 256L
+        || spi > 0xFFFFFFFFL) {
+
+      warn(
+          owner,
+          "Ignoring OSPFv3 IPsec ESP SPI outside 256-4294967295");
+
+      return null;
+    }
+
+    AosCxOspfv3Encryption.AuthType authType =
+        ctx.ospfv3_auth_type().MD5() != null
+            ? AosCxOspfv3Encryption.AuthType.MD5
+            : AosCxOspfv3Encryption.AuthType.SHA1;
+
+    AosCxOspfv3Encryption.KeyType authKeyType =
+        null;
+
+    String authKey =
+        null;
+
+    if (ctx.ospfv3_key_type() != null) {
+
+      if (ctx.ospfv3_key_type().PLAINTEXT() != null) {
+
+        authKeyType =
+            AosCxOspfv3Encryption.KeyType.PLAINTEXT;
+
+      } else if (
+          ctx.ospfv3_key_type().HEX_STRING() != null) {
+
+        authKeyType =
+            AosCxOspfv3Encryption.KeyType.HEX_STRING;
+
+      } else {
+
+        authKeyType =
+            AosCxOspfv3Encryption.KeyType.CIPHERTEXT;
+      }
+
+      authKey =
+          ctx.WORD(1).getText();
+    }
+
+    AosCxOspfv3Encryption.EncryptionType
+        encryptionType =
+            null;
+
+    AosCxOspfv3Encryption.KeyType
+        encryptionKeyType =
+            null;
+
+    String encryptionKey =
+        null;
+
+    AosCxParser.Ospfv3_encryption_specContext spec =
+        ctx.ospfv3_encryption_spec();
+
+    if (spec != null) {
+
+      if (spec.NULL() != null) {
+
+        encryptionType =
+            AosCxOspfv3Encryption.EncryptionType.NULL;
+
+      } else {
+
+        if (spec.ospfv3_encr_type().DES() != null) {
+
+          encryptionType =
+              AosCxOspfv3Encryption.EncryptionType.DES;
+
+        } else if (
+            spec.ospfv3_encr_type().THREE_DES()
+                != null) {
+
+          encryptionType =
+              AosCxOspfv3Encryption.EncryptionType.THREE_DES;
+
+        } else {
+
+          encryptionType =
+              AosCxOspfv3Encryption.EncryptionType.AES;
+        }
+
+        if (spec.ospfv3_key_type() != null) {
+
+          if (spec
+                  .ospfv3_key_type()
+                  .PLAINTEXT()
+              != null) {
+
+            encryptionKeyType =
+                AosCxOspfv3Encryption.KeyType.PLAINTEXT;
+
+          } else if (
+              spec
+                      .ospfv3_key_type()
+                      .HEX_STRING()
+                  != null) {
+
+            encryptionKeyType =
+                AosCxOspfv3Encryption.KeyType.HEX_STRING;
+
+          } else {
+
+            encryptionKeyType =
+                AosCxOspfv3Encryption.KeyType.CIPHERTEXT;
+          }
+
+          encryptionKey =
+              spec.WORD().getText();
+        }
+      }
+    }
+
+    return new AosCxOspfv3Encryption(
+        spi,
+        authType,
+        authKeyType,
+        authKey,
+        encryptionType,
+        encryptionKeyType,
+        encryptionKey);
+  }
+
   @Override
   public void exitS_ipv6_ospfv3_authentication(
       S_ipv6_ospfv3_authenticationContext ctx) {
@@ -623,6 +773,54 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentInterface
         .setOspfv3Authentication(
             authentication);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_encryption(
+      S_ipv6_ospfv3_encryptionContext ctx) {
+
+    if (_currentInterface == null) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 encryption outside interface context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentInterface
+          .clearOspfv3Encryption();
+
+      return;
+    }
+
+    /*
+     * This is "ipv6 ospfv3 encryption null", which disables ESP.
+     * It is distinct from "encryption ipsec ... null", which retains
+     * authenticated ESP with no payload encryption.
+     */
+    if (ctx.NULL() != null) {
+
+      _currentInterface
+          .setOspfv3EncryptionNull();
+
+      return;
+    }
+
+    AosCxOspfv3Encryption encryption =
+        toOspfv3Encryption(
+            ctx,
+            ctx.ospfv3_ipsec_encryption());
+
+    if (encryption == null) {
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3Encryption(
+            encryption);
   }
 
   @Override
@@ -1721,6 +1919,47 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         .setAreaAuthentication(
             area,
             authentication);
+  }
+
+  @Override
+  public void exitS_ospfv3_area_encryption(
+      S_ospfv3_area_encryptionContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area encryption outside OSPFv3 context");
+
+      return;
+    }
+
+    String area =
+        ctx.WORD().getText();
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .clearAreaEncryption(
+              area);
+
+      return;
+    }
+
+    AosCxOspfv3Encryption encryption =
+        toOspfv3Encryption(
+            ctx,
+            ctx.ospfv3_ipsec_encryption());
+
+    if (encryption == null) {
+      return;
+    }
+
+    _currentOspfv3Process
+        .setAreaEncryption(
+            area,
+            encryption);
   }
 
   @Override

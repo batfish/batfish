@@ -4681,4 +4681,255 @@ public final class AosCxGrammarTest {
         equalTo(false));
   }
 
+  @Test
+  public void testOspfv3EncryptionExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-encryption");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    org.batfish.vendor.aruba_aoscx.representation
+            .AosCxOspfv3Encryption
+        areaEncryption =
+            process
+                .getAreaEncryptions()
+                .get("0");
+
+    assertThat(
+        areaEncryption,
+        notNullValue());
+
+    assertThat(
+        areaEncryption.getSpi(),
+        equalTo(256L));
+
+    assertThat(
+        areaEncryption.getAuthType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.AuthType.SHA1));
+
+    assertThat(
+        areaEncryption.getAuthKey(),
+        equalTo(
+            "area-auth"));
+
+    assertThat(
+        areaEncryption.getEncryptionType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.EncryptionType.AES));
+
+    assertThat(
+        areaEncryption.getEncryptionKey(),
+        equalTo(
+            "0123456789abcdef"));
+
+    /*
+     * Area 1 ESP was configured then removed.
+     */
+    assertThat(
+        process
+            .getAreaEncryptions()
+            .containsKey("1"),
+        equalTo(false));
+
+    AosCxInterface inherited =
+        c.getInterfaces()
+            .get("1/1/1");
+
+    assertThat(
+        inherited.getOspfv3Encryption(),
+        equalTo(null));
+
+    assertThat(
+        inherited.getOspfv3EncryptionNull(),
+        equalTo(false));
+
+    /*
+     * "ipv6 ospfv3 encryption null" is an explicit suppress-inheritance
+     * state.
+     */
+    AosCxInterface disabled =
+        c.getInterfaces()
+            .get("1/1/2");
+
+    assertThat(
+        disabled.getOspfv3Encryption(),
+        equalTo(null));
+
+    assertThat(
+        disabled.getOspfv3EncryptionNull(),
+        equalTo(true));
+
+    AosCxInterface explicit =
+        c.getInterfaces()
+            .get("1/1/3");
+
+    assertThat(
+        explicit.getOspfv3Encryption(),
+        notNullValue());
+
+    assertThat(
+        explicit
+            .getOspfv3Encryption()
+            .getSpi(),
+        equalTo(400L));
+
+    assertThat(
+        explicit
+            .getOspfv3Encryption()
+            .getEncryptionType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.EncryptionType.DES));
+
+    /*
+     * no ipv6 ospfv3 encryption clears the interface override.
+     */
+    AosCxInterface cleared =
+        c.getInterfaces()
+            .get("1/1/4");
+
+    assertThat(
+        cleared.getOspfv3Encryption(),
+        equalTo(null));
+
+    assertThat(
+        cleared.getOspfv3EncryptionNull(),
+        equalTo(false));
+
+    /*
+     * ESP NULL remains an actual ESP SA; it is not equivalent to the
+     * interface-level "encryption null" command.
+     */
+    AosCxInterface nullEsp =
+        c.getInterfaces()
+            .get("1/1/5");
+
+    assertThat(
+        nullEsp.getOspfv3Encryption(),
+        notNullValue());
+
+    assertThat(
+        nullEsp
+            .getOspfv3Encryption()
+            .getEncryptionType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.EncryptionType.NULL));
+
+    assertThat(
+        nullEsp.getOspfv3EncryptionNull(),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3EncryptionConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-encryption");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        inherited =
+            c.getAllInterfaces()
+                .get("1/1/1")
+                .getOspfv3Settings()
+                .getEncryption();
+
+    assertThat(
+        inherited,
+        equalTo(
+            new org.batfish.datamodel.ospf.Ospfv3Encryption(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "area-auth",
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .EncryptionType.AES,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "0123456789abcdef")));
+
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/2")
+            .getOspfv3Settings()
+            .getEncryption(),
+        equalTo(null));
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        explicit =
+            c.getAllInterfaces()
+                .get("1/1/3")
+                .getOspfv3Settings()
+                .getEncryption();
+
+    assertThat(
+        explicit,
+        notNullValue());
+
+    assertThat(
+        explicit.getSpi(),
+        equalTo(400L));
+
+    assertThat(
+        explicit.getEncryptionType(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Encryption
+                .EncryptionType.DES));
+
+    /*
+     * Cleared override returns to inherited area ESP.
+     */
+    assertThat(
+        c.getAllInterfaces()
+            .get("1/1/4")
+            .getOspfv3Settings()
+            .getEncryption(),
+        equalTo(
+            inherited));
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        nullEsp =
+            c.getAllInterfaces()
+                .get("1/1/5")
+                .getOspfv3Settings()
+                .getEncryption();
+
+    assertThat(
+        nullEsp,
+        notNullValue());
+
+    assertThat(
+        nullEsp.getEncryptionType(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Encryption
+                .EncryptionType.NULL));
+
+    assertThat(
+        nullEsp.getEncryptionKey(),
+        equalTo(null));
+  }
+
 }

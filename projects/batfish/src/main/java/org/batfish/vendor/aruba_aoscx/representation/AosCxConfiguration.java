@@ -73,6 +73,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3AreaRange;
 import org.batfish.datamodel.ospf.Ospfv3Authentication;
+import org.batfish.datamodel.ospf.Ospfv3Encryption;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
@@ -1597,6 +1598,90 @@ public class AosCxConfiguration extends VendorConfiguration {
         authentication.getKey());
   }
 
+  private static @Nullable Ospfv3Encryption
+      toOspfv3Encryption(
+          @Nullable AosCxOspfv3Encryption encryption) {
+
+    if (encryption == null) {
+      return null;
+    }
+
+    Ospfv3Encryption.AuthType authType =
+        encryption.getAuthType()
+                == AosCxOspfv3Encryption.AuthType.MD5
+            ? Ospfv3Encryption.AuthType.MD5
+            : Ospfv3Encryption.AuthType.SHA1;
+
+    Ospfv3Encryption.KeyType authKeyType =
+        null;
+
+    if (encryption.getAuthKeyType() != null) {
+
+      authKeyType =
+          switch (encryption.getAuthKeyType()) {
+
+            case PLAINTEXT ->
+                Ospfv3Encryption.KeyType.PLAINTEXT;
+
+            case HEX_STRING ->
+                Ospfv3Encryption.KeyType.HEX_STRING;
+
+            case CIPHERTEXT ->
+                Ospfv3Encryption.KeyType.CIPHERTEXT;
+          };
+    }
+
+    Ospfv3Encryption.EncryptionType encryptionType =
+        null;
+
+    if (encryption.getEncryptionType() != null) {
+
+      encryptionType =
+          switch (encryption.getEncryptionType()) {
+
+            case DES ->
+                Ospfv3Encryption.EncryptionType.DES;
+
+            case THREE_DES ->
+                Ospfv3Encryption.EncryptionType.THREE_DES;
+
+            case AES ->
+                Ospfv3Encryption.EncryptionType.AES;
+
+            case NULL ->
+                Ospfv3Encryption.EncryptionType.NULL;
+          };
+    }
+
+    Ospfv3Encryption.KeyType encryptionKeyType =
+        null;
+
+    if (encryption.getEncryptionKeyType() != null) {
+
+      encryptionKeyType =
+          switch (encryption.getEncryptionKeyType()) {
+
+            case PLAINTEXT ->
+                Ospfv3Encryption.KeyType.PLAINTEXT;
+
+            case HEX_STRING ->
+                Ospfv3Encryption.KeyType.HEX_STRING;
+
+            case CIPHERTEXT ->
+                Ospfv3Encryption.KeyType.CIPHERTEXT;
+          };
+    }
+
+    return new Ospfv3Encryption(
+        encryption.getSpi(),
+        authType,
+        authKeyType,
+        encryption.getAuthKey(),
+        encryptionType,
+        encryptionKeyType,
+        encryption.getEncryptionKey());
+  }
+
   private static @Nullable AosCxOspfv3Authentication
       getAreaOspfv3Authentication(
           AosCxOspfv3Process process,
@@ -1607,6 +1692,29 @@ public class AosCxConfiguration extends VendorConfiguration {
             AosCxOspfv3Authentication> entry :
         process
             .getAreaAuthentications()
+            .entrySet()) {
+
+      if (toOspfAreaNumber(
+              entry.getKey())
+          == area) {
+
+        return entry.getValue();
+      }
+    }
+
+    return null;
+  }
+
+  private static @Nullable AosCxOspfv3Encryption
+      getAreaOspfv3Encryption(
+          AosCxOspfv3Process process,
+          long area) {
+
+    for (Map.Entry<
+            String,
+            AosCxOspfv3Encryption> entry :
+        process
+            .getAreaEncryptions()
             .entrySet()) {
 
       if (toOspfAreaNumber(
@@ -1679,6 +1787,27 @@ public class AosCxConfiguration extends VendorConfiguration {
             }
           }
 
+          AosCxOspfv3Encryption
+              effectiveEncryption =
+                  null;
+
+          if (!iface.getOspfv3EncryptionNull()) {
+
+            if (iface.getOspfv3Encryption()
+                != null) {
+
+              effectiveEncryption =
+                  iface.getOspfv3Encryption();
+
+            } else if (vendorProcess != null) {
+
+              effectiveEncryption =
+                  getAreaOspfv3Encryption(
+                      vendorProcess,
+                      ospfv3Area);
+            }
+          }
+
           Boolean bfdOverride =
               iface.getOspfv3Bfd();
 
@@ -1706,6 +1835,9 @@ public class AosCxConfiguration extends VendorConfiguration {
                   .setAuthentication(
                       toOspfv3Authentication(
                           effectiveAuthentication))
+                  .setEncryption(
+                      toOspfv3Encryption(
+                          effectiveEncryption))
                   .setBfdEnabled(
                       bfdEnabled)
                   .setCost(ospfv3Cost)

@@ -2323,7 +2323,10 @@ final class Ospfv3RoutingProcess {
             != remote.getDeadInterval()
         || !Objects.equals(
             local.getAuthentication(),
-            remote.getAuthentication())) {
+            remote.getAuthentication())
+        || !Objects.equals(
+            local.getEncryption(),
+            remote.getEncryption())) {
 
       return false;
     }
