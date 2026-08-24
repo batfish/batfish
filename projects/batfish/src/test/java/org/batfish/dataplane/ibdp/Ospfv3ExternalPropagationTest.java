@@ -22,6 +22,7 @@ import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixList6;
@@ -30,13 +31,14 @@ import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
 import org.junit.Test;
 
-/** Integration tests for OSPFv3 external type-2 propagation. */
+/** Integration tests for OSPFv3 external propagation. */
 public final class Ospfv3ExternalPropagationTest {
 
   private static final class TestL3Adjacencies
@@ -216,6 +218,32 @@ public final class Ospfv3ExternalPropagationTest {
             node.getConfiguration()
                 .getDefaultVrf())
         .build();
+  }
+
+  private static Ospfv3ExternalType1Route6
+      findExternalType1(
+          VirtualRouter vr,
+          Prefix6 prefix) {
+
+    AbstractRoute6 route =
+        vr.getOspfv3Processes()
+            .get("1")
+            .getRoutes()
+            .stream()
+            .filter(
+                r ->
+                    r instanceof
+                        Ospfv3ExternalType1Route6)
+            .filter(
+                r ->
+                    r.getNetwork()
+                        .equals(prefix))
+            .findFirst()
+            .orElse(null);
+
+    return route == null
+        ? null
+        : (Ospfv3ExternalType1Route6) route;
   }
 
   private static Ospfv3ExternalType2Route6 findExternal(
@@ -1084,6 +1112,297 @@ public final class Ospfv3ExternalPropagationTest {
                     r instanceof
                         Ospfv3ExternalType2Route6),
         equalTo(false));
+  }
+
+  @Test
+  public void testExternalType1PropagationAndWithdrawal() {
+    Node n1 =
+        TestUtils.makeIosRouter("n1");
+
+    Node n2 =
+        TestUtils.makeIosRouter("n2");
+
+    Node n3 =
+        TestUtils.makeIosRouter("n3");
+
+    addOspfInterface(
+        n1,
+        "eth12",
+        "2001:db8:12::1/64",
+        10);
+
+    addConnectedInterface(
+        n1,
+        "external-e1",
+        "2001:db8:510::1/128");
+
+    addOspfInterface(
+        n2,
+        "eth21",
+        "2001:db8:12::2/64",
+        20);
+
+    addOspfInterface(
+        n2,
+        "eth23",
+        "2001:db8:23::2/64",
+        30);
+
+    addOspfInterface(
+        n3,
+        "eth32",
+        "2001:db8:23::3/64",
+        40);
+
+    RouteMap6 e1RouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    new PrefixList6(
+                        List.of(
+                            new PrefixList6.Line(
+                                LineAction.PERMIT,
+                                Prefix6.parse(
+                                    "2001:db8:510::1/128"),
+                                new SubRange(
+                                    128,
+                                    128)))),
+                    25L,
+                    OspfMetricType.E1,
+                    501L)));
+
+    addProcessWithRouteMaps(
+        n1,
+        "192.0.2.1",
+        e1RouteMap,
+        RouteMap6.denyAll(),
+        "eth12");
+
+    addProcess(
+        n2,
+        "192.0.2.2",
+        false,
+        "eth21",
+        "eth23");
+
+    addProcess(
+        n3,
+        "192.0.2.3",
+        false,
+        "eth32");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr3 =
+        n3.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder()
+            .build();
+
+    vr1.initForIgpComputation(
+        topology);
+
+    vr2.initForIgpComputation(
+        topology);
+
+    vr3.initForIgpComputation(
+        topology);
+
+    Map<String, Node> nodes =
+        ImmutableMap.of(
+            "n1", n1,
+            "n2", n2,
+            "n3", n3);
+
+    List<VirtualRouter> vrs =
+        List.of(
+            vr1,
+            vr2,
+            vr3);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1",
+            "eth12"),
+        NodeInterfacePair.of(
+            "n2",
+            "eth21"));
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n2",
+            "eth23"),
+        NodeInterfacePair.of(
+            "n3",
+            "eth32"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    Prefix6 prefix =
+        Prefix6.parse(
+            "2001:db8:510::1/128");
+
+    Ospfv3ExternalType1Route6 local =
+        findExternalType1(
+            vr1,
+            prefix);
+
+    assertThat(
+        local,
+        notNullValue());
+
+    assertThat(
+        local.getMetric(),
+        equalTo(25L));
+
+    assertThat(
+        local.getLsaMetric(),
+        equalTo(25L));
+
+    assertThat(
+        local.getCostToAdvertiser(),
+        equalTo(0L));
+
+    assertThat(
+        local.getTag(),
+        equalTo(501L));
+
+    Ospfv3ExternalType1Route6 n2Route =
+        findExternalType1(
+            vr2,
+            prefix);
+
+    assertThat(
+        n2Route,
+        notNullValue());
+
+    /*
+     * 25 external + n2's receiving interface cost 20.
+     */
+    assertThat(
+        n2Route.getMetric(),
+        equalTo(45L));
+
+    assertThat(
+        n2Route.getLsaMetric(),
+        equalTo(25L));
+
+    assertThat(
+        n2Route.getCostToAdvertiser(),
+        equalTo(20L));
+
+    assertThat(
+        n2Route.getAdvertiser(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.1")));
+
+    assertThat(
+        n2Route.getNextHopInterface(),
+        equalTo("eth21"));
+
+    assertThat(
+        n2Route.getNextHopIp(),
+        equalTo(
+            Ip6.parse(
+                "2001:db8:12::1")));
+
+    Ospfv3ExternalType1Route6 n3Route =
+        findExternalType1(
+            vr3,
+            prefix);
+
+    assertThat(
+        n3Route,
+        notNullValue());
+
+    /*
+     * 25 external + 20 at n2 + 40 at n3 = 85.
+     */
+    assertThat(
+        n3Route.getMetric(),
+        equalTo(85L));
+
+    assertThat(
+        n3Route.getLsaMetric(),
+        equalTo(25L));
+
+    assertThat(
+        n3Route.getCostToAdvertiser(),
+        equalTo(60L));
+
+    assertThat(
+        n3Route.getNextHopInterface(),
+        equalTo("eth32"));
+
+    assertThat(
+        n3Route.getNextHopIp(),
+        equalTo(
+            Ip6.parse(
+                "2001:db8:23::2")));
+
+    assertThat(
+        vr3.getMainRib6()
+            .getRoutes(prefix),
+        hasItem(n3Route));
+
+    /*
+     * Withdraw the source connected route and reconverge.
+     */
+    n1.getConfiguration()
+        .getAllInterfaces()
+        .get("external-e1")
+        .deactivate(
+            InactiveReason.AUTOSTATE_FAILURE);
+
+    vr1
+        .updateConnectedAndLocalRoutesForAutostateChange();
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    assertThat(
+        findExternalType1(
+            vr1,
+            prefix),
+        nullValue());
+
+    assertThat(
+        findExternalType1(
+            vr2,
+            prefix),
+        nullValue());
+
+    assertThat(
+        findExternalType1(
+            vr3,
+            prefix),
+        nullValue());
+
+    assertThat(
+        vr3.getMainRib6()
+            .getRoutes(prefix),
+        empty());
   }
 
 }

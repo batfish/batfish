@@ -13,6 +13,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -64,6 +65,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_p
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metric_typeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_tagContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_router_idContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_address_family_ipv4Context;
@@ -1184,6 +1186,22 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentRouteMapEntry
         .setSetMetric(metric);
+  }
+
+  @Override
+  public void exitS_set_metric_type(
+      S_set_metric_typeContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      warn(
+          ctx,
+          "Ignoring route-map set metric-type outside route-map context");
+      return;
+    }
+
+    _currentRouteMapEntry.setSetOspfMetricType(
+        ctx.ospf_external_metric_type().TYPE_1() != null
+            ? OspfMetricType.E1
+            : OspfMetricType.E2);
   }
 
   @Override

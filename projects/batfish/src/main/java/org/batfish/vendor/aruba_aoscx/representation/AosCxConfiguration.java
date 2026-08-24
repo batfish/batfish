@@ -882,6 +882,7 @@ public class AosCxConfiguration extends VendorConfiguration {
                       entry.getAction(),
                       matchPrefixList,
                       entry.getSetMetric(),
+                      entry.getSetOspfMetricType(),
                       entry.getSetTag()));
             });
 

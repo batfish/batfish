@@ -23,6 +23,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
 import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3AreaRange;
@@ -246,7 +248,8 @@ final class Ospfv3RoutingProcess {
             desired,
             connected.getNetwork(),
             result.getMetric(),
-            result.getTag());
+            result.getTag(),
+            result.getOspfMetricType());
       }
     }
 
@@ -276,7 +279,8 @@ final class Ospfv3RoutingProcess {
             desired,
             route.getNetwork(),
             result.getMetric(),
-            result.getTag());
+            result.getTag(),
+            result.getOspfMetricType());
       }
     }
 
@@ -288,7 +292,8 @@ final class Ospfv3RoutingProcess {
           desired,
           Prefix6.ZERO,
           _process.getDefaultInformationMetric(),
-          Route.UNSET_ROUTE_TAG);
+          Route.UNSET_ROUTE_TAG,
+          OspfMetricType.E2);
     }
 
     Set<AbstractRoute6> immutableDesired =
@@ -315,7 +320,8 @@ final class Ospfv3RoutingProcess {
       Set<AbstractRoute6> advertisements,
       Prefix6 network,
       long metric,
-      long tag) {
+      long tag,
+      OspfMetricType metricType) {
 
     boolean hasNormalArea =
         _process
@@ -328,16 +334,31 @@ final class Ospfv3RoutingProcess {
                         && !area.getNssa());
 
     if (hasNormalArea) {
-      advertisements.add(
-          new Ospfv3ExternalType2Route6(
-              network,
-              Route.UNSET_NEXT_HOP_INTERFACE,
-              _process.getExternalAdminCost(),
-              metric,
-              _process.getRouterId(),
-              tag));
+      if (metricType == OspfMetricType.E1) {
+        advertisements.add(
+            new Ospfv3ExternalType1Route6(
+                network,
+                Route.UNSET_NEXT_HOP_INTERFACE,
+                _process.getExternalAdminCost(),
+                metric,
+                _process.getRouterId(),
+                tag));
+      } else {
+        advertisements.add(
+            new Ospfv3ExternalType2Route6(
+                network,
+                Route.UNSET_NEXT_HOP_INTERFACE,
+                _process.getExternalAdminCost(),
+                metric,
+                _process.getRouterId(),
+                tag));
+      }
     }
 
+    /*
+     * N1 support is intentionally separate from Type-5 E1 support.
+     * Preserve the existing NSSA N2 behavior until N1 is modeled.
+     */
     _process
         .getAreas()
         .values()
@@ -1409,11 +1430,12 @@ final class Ospfv3RoutingProcess {
   }
 
   /**
-   * Import OSPFv3 external type-2 routes from a neighbor.
+   * Import OSPFv3 Type-5 external routes from a neighbor.
    *
-   * <p>The external metric is not incremented for an E2 route. Instead we
-   * separately track the internal cost to the advertising ASBR and use it as
-   * the E2 tie breaker, matching the existing IPv4 OSPF model.
+   * <p>E1 routes add the receiving interface cost to both the total route
+   * metric and the separately tracked internal cost to the originating ASBR.
+   * E2 routes keep their external metric constant and accumulate only the
+   * cost-to-advertiser tie breaker.
    */
   private boolean importExternalRoutesFromNeighbor(
       Interface localIface,
@@ -1437,7 +1459,67 @@ final class Ospfv3RoutingProcess {
                 remoteIface)
             .orElse(null);
 
-    for (AbstractRoute6 route : remoteRoutes) {
+    for (AbstractRoute6 route :
+        remoteRoutes) {
+
+      if (route
+          instanceof Ospfv3ExternalType1Route6) {
+
+        Ospfv3ExternalType1Route6 external =
+            (Ospfv3ExternalType1Route6) route;
+
+        // Do not accept our own external advertisement back.
+        if (external
+                .getAdvertiser()
+                .equals(_process.getRouterId())
+            && external.getCostToAdvertiser() != 0L) {
+          continue;
+        }
+
+        if (shouldApplySplitHorizon(
+            remoteIface,
+            external)) {
+          continue;
+        }
+
+        if (external.getMetric()
+                >= LS_INFINITY
+            || external.getCostToAdvertiser()
+                >= LS_INFINITY
+            || incrementalCost
+                >= LS_INFINITY
+                    - external.getMetric()
+            || incrementalCost
+                >= LS_INFINITY
+                    - external.getCostToAdvertiser()) {
+          continue;
+        }
+
+        long newMetric =
+            external.getMetric()
+                + incrementalCost;
+
+        long newCostToAdvertiser =
+            external.getCostToAdvertiser()
+                + incrementalCost;
+
+        changed |=
+            _ospfv3Rib.mergeRoute(
+                new Ospfv3ExternalType1Route6(
+                    external.getNetwork(),
+                    localIface.getName(),
+                    peerIp,
+                    _process.getExternalAdminCost(),
+                    newMetric,
+                    external.getLsaMetric(),
+                    area,
+                    newCostToAdvertiser,
+                    external.getAdvertiser(),
+                    external.getTag()));
+
+        continue;
+      }
+
       if (!(route
           instanceof Ospfv3ExternalType2Route6)) {
         continue;
@@ -1446,7 +1528,7 @@ final class Ospfv3RoutingProcess {
       Ospfv3ExternalType2Route6 external =
           (Ospfv3ExternalType2Route6) route;
 
-      // Do not accept our own external advertisement back from the network.
+      // Do not accept our own external advertisement back.
       if (external
               .getAdvertiser()
               .equals(_process.getRouterId())
@@ -1454,9 +1536,6 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      // Do not immediately send a learned route back toward the neighbor from
-      // which it was learned. Resetting the OSPFv3 RIB before convergence
-      // handles longer-path withdrawal cleanly.
       if (shouldApplySplitHorizon(
           remoteIface,
           external)) {

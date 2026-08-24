@@ -8,6 +8,7 @@ ipv6 prefix-list STATIC_ALL seq 10 permit ::/0 le 128
 route-map RM-CONN permit seq 10
     match ipv6 address prefix-list CONN_OK
     set metric 31
+    set metric-type external type-1
     set tag 101
 
 route-map RM-STATIC deny seq 10
@@ -15,6 +16,7 @@ route-map RM-STATIC deny seq 10
 route-map RM-STATIC permit seq 20
     match ipv6 address prefix-list STATIC_ALL
     set metric 41
+    set metric-type external type-2
     set tag 202
 
 router ospfv3 1

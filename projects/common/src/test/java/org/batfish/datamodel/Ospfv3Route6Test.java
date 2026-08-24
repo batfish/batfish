@@ -31,6 +31,56 @@ public final class Ospfv3Route6Test {
   }
 
   @Test
+  public void testExternalType1Serialization() {
+    Ospfv3ExternalType1Route6 route =
+        new Ospfv3ExternalType1Route6(
+            Prefix6.parse(
+                "2001:db8:21::/64"),
+            "Ethernet21",
+            Ip6.parse(
+                "2001:db8:12::1"),
+            110,
+            55L,
+            25L,
+            0L,
+            30L,
+            Ip.parse(
+                "192.0.2.1"),
+            123L);
+
+    Ospfv3ExternalType1Route6 clone =
+        BatfishObjectMapper.clone(
+            route,
+            Ospfv3ExternalType1Route6.class);
+
+    assertThat(
+        clone,
+        equalTo(route));
+
+    assertThat(
+        clone.getMetric(),
+        equalTo(55L));
+
+    assertThat(
+        clone.getLsaMetric(),
+        equalTo(25L));
+
+    assertThat(
+        clone.getCostToAdvertiser(),
+        equalTo(30L));
+
+    assertThat(
+        clone.getAdvertiser(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.1")));
+
+    assertThat(
+        clone.getTag(),
+        equalTo(123L));
+  }
+
+  @Test
   public void testExternalSerialization() {
     Ospfv3ExternalType2Route6 route =
         new Ospfv3ExternalType2Route6(

@@ -3,6 +3,7 @@ package org.batfish.vendor.aruba_aoscx.representation;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.ospf.OspfMetricType;
 
 /** One sequence in an Aruba AOS-CX route map. */
 public final class AosCxRouteMapEntry
@@ -60,6 +61,15 @@ public final class AosCxRouteMapEntry
     _setMetric = metric;
   }
 
+  public @Nullable OspfMetricType getSetOspfMetricType() {
+    return _setOspfMetricType;
+  }
+
+  public void setSetOspfMetricType(
+      OspfMetricType ospfMetricType) {
+    _setOspfMetricType = ospfMetricType;
+  }
+
   public @Nullable Long getSetTag() {
     return _setTag;
   }
@@ -74,5 +84,6 @@ public final class AosCxRouteMapEntry
   private @Nullable String _matchIpv6PrefixList;
   private @Nullable Long _setLocalPreference;
   private @Nullable Long _setMetric;
+  private @Nullable OspfMetricType _setOspfMetricType;
   private @Nullable Long _setTag;
 }

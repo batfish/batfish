@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ospf.OspfMetricType;
 
 /**
  * Ordered IPv6 route-map representation.
@@ -36,6 +37,8 @@ public final class RouteMap6 implements Serializable {
             @Nullable PrefixList6 matchPrefixList,
         @JsonProperty("setMetric")
             @Nullable Long setMetric,
+        @JsonProperty("setOspfMetricType")
+            @Nullable OspfMetricType setOspfMetricType,
         @JsonProperty("setTag")
             @Nullable Long setTag) {
 
@@ -54,8 +57,23 @@ public final class RouteMap6 implements Serializable {
 
       _setMetric =
           setMetric;
+      _setOspfMetricType =
+          setOspfMetricType;
       _setTag =
           setTag;
+    }
+
+    public Entry(
+        LineAction action,
+        @Nullable PrefixList6 matchPrefixList,
+        @Nullable Long setMetric,
+        @Nullable Long setTag) {
+      this(
+          action,
+          matchPrefixList,
+          setMetric,
+          null,
+          setTag);
     }
 
     @JsonProperty("action")
@@ -72,6 +90,12 @@ public final class RouteMap6 implements Serializable {
     @JsonProperty("setMetric")
     public @Nullable Long getSetMetric() {
       return _setMetric;
+    }
+
+    @JsonProperty("setOspfMetricType")
+    public @Nullable OspfMetricType
+        getSetOspfMetricType() {
+      return _setOspfMetricType;
     }
 
     @JsonProperty("setTag")
@@ -105,6 +129,8 @@ public final class RouteMap6 implements Serializable {
           && Objects.equals(
               _setMetric,
               rhs._setMetric)
+          && _setOspfMetricType
+              == rhs._setOspfMetricType
           && Objects.equals(
               _setTag,
               rhs._setTag);
@@ -116,6 +142,7 @@ public final class RouteMap6 implements Serializable {
           _action,
           _matchPrefixList,
           _setMetric,
+          _setOspfMetricType,
           _setTag);
     }
 
@@ -123,6 +150,8 @@ public final class RouteMap6 implements Serializable {
     private final @Nullable PrefixList6
         _matchPrefixList;
     private final @Nullable Long _setMetric;
+    private final @Nullable OspfMetricType
+        _setOspfMetricType;
     private final @Nullable Long _setTag;
   }
 
@@ -132,8 +161,20 @@ public final class RouteMap6 implements Serializable {
     public Result(
         long metric,
         long tag) {
+      this(
+          metric,
+          tag,
+          OspfMetricType.E2);
+    }
+
+    public Result(
+        long metric,
+        long tag,
+        OspfMetricType ospfMetricType) {
       _metric = metric;
       _tag = tag;
+      _ospfMetricType =
+          requireNonNull(ospfMetricType);
     }
 
     public long getMetric() {
@@ -142,6 +183,11 @@ public final class RouteMap6 implements Serializable {
 
     public long getTag() {
       return _tag;
+    }
+
+    public @Nonnull OspfMetricType
+        getOspfMetricType() {
+      return _ospfMetricType;
     }
 
     @Override
@@ -158,18 +204,23 @@ public final class RouteMap6 implements Serializable {
           (Result) o;
 
       return _metric == rhs._metric
-          && _tag == rhs._tag;
+          && _tag == rhs._tag
+          && _ospfMetricType
+              == rhs._ospfMetricType;
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(
           _metric,
-          _tag);
+          _tag,
+          _ospfMetricType);
     }
 
     private final long _metric;
     private final long _tag;
+    private final @Nonnull OspfMetricType
+        _ospfMetricType;
   }
 
   @JsonCreator
@@ -205,6 +256,18 @@ public final class RouteMap6 implements Serializable {
       Prefix6 prefix,
       long initialMetric,
       long initialTag) {
+    return process(
+        prefix,
+        initialMetric,
+        initialTag,
+        OspfMetricType.E2);
+  }
+
+  public @Nonnull Optional<Result> process(
+      Prefix6 prefix,
+      long initialMetric,
+      long initialTag,
+      OspfMetricType initialOspfMetricType) {
 
     for (Entry entry :
         _entries.values()) {
@@ -225,7 +288,10 @@ public final class RouteMap6 implements Serializable {
                   : initialMetric,
               entry.getSetTag() != null
                   ? entry.getSetTag()
-                  : initialTag));
+                  : initialTag,
+              entry.getSetOspfMetricType() != null
+                  ? entry.getSetOspfMetricType()
+                  : initialOspfMetricType));
     }
 
     // Route-map implicit deny.

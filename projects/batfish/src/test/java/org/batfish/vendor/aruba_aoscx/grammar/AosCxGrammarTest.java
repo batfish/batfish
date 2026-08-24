@@ -44,6 +44,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -2266,6 +2267,9 @@ public final class AosCxGrammarTest {
         connEntry.getSetMetric(),
         equalTo(31L));
     assertThat(
+        connEntry.getSetOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+    assertThat(
         connEntry.getSetTag(),
         equalTo(101L));
 
@@ -2281,6 +2285,16 @@ public final class AosCxGrammarTest {
     assertThat(
         staticDeny.getMatchIpv6PrefixList(),
         equalTo("STATIC_BLOCK"));
+
+    AosCxRouteMapEntry staticPermit =
+        c.getRouteMaps()
+            .get("RM-STATIC")
+            .getEntries()
+            .get(20L);
+
+    assertThat(
+        staticPermit.getSetOspfMetricType(),
+        equalTo(OspfMetricType.E2));
 
     AosCxOspfv3Process process =
         c.getOspfv3Processes().get(1);
@@ -2340,6 +2354,9 @@ public final class AosCxGrammarTest {
         connectedAllowed.getMetric(),
         equalTo(31L));
     assertThat(
+        connectedAllowed.getOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+    assertThat(
         connectedAllowed.getTag(),
         equalTo(101L));
 
@@ -2382,6 +2399,9 @@ public final class AosCxGrammarTest {
     assertThat(
         staticAllowed.getMetric(),
         equalTo(41L));
+    assertThat(
+        staticAllowed.getOspfMetricType(),
+        equalTo(OspfMetricType.E2));
     assertThat(
         staticAllowed.getTag(),
         equalTo(202L));

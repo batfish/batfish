@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.junit.Test;
 
 /** Tests for {@link RouteMap6}. */
@@ -197,4 +198,59 @@ public final class RouteMap6Test {
             .isEmpty(),
         equalTo(true));
   }
+  @Test
+  public void testOspfMetricTypeTransformation() {
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    OspfMetricType.E1,
+                    null)));
+
+    RouteMap6.Result result =
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:500::/64"),
+                25L,
+                7L)
+            .orElseThrow();
+
+    assertThat(
+        result.getMetric(),
+        equalTo(25L));
+
+    assertThat(
+        result.getTag(),
+        equalTo(7L));
+
+    assertThat(
+        result.getOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+
+    RouteMap6 clone =
+        BatfishObjectMapper.clone(
+            routeMap,
+            RouteMap6.class);
+
+    assertThat(
+        clone,
+        equalTo(routeMap));
+
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:500::/64"),
+                25L,
+                7L)
+            .orElseThrow()
+            .getOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+  }
+
 }
