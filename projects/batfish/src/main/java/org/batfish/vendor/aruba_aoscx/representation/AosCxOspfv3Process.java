@@ -164,6 +164,37 @@ public final class AosCxOspfv3Process
     return _redistributeConnectedRouteMap;
   }
 
+  public boolean getRedistributeLocalLoopback() {
+    return _redistributeLocalLoopback;
+  }
+
+  public void setRedistributeLocalLoopback(
+      boolean redistributeLocalLoopback) {
+
+    setRedistributeLocalLoopback(
+        redistributeLocalLoopback,
+        null);
+  }
+
+  public void setRedistributeLocalLoopback(
+      boolean redistributeLocalLoopback,
+      @Nullable String routeMap) {
+
+    _redistributeLocalLoopback =
+        redistributeLocalLoopback;
+
+    _redistributeLocalLoopbackRouteMap =
+        redistributeLocalLoopback
+            ? routeMap
+            : null;
+  }
+
+  public @Nullable String
+      getRedistributeLocalLoopbackRouteMap() {
+
+    return _redistributeLocalLoopbackRouteMap;
+  }
+
   public boolean getRedistributeStatic() {
     return _redistributeStatic;
   }
@@ -562,6 +593,9 @@ public final class AosCxOspfv3Process
   private boolean _redistributeConnected;
   private @Nullable String
       _redistributeConnectedRouteMap;
+  private boolean _redistributeLocalLoopback;
+  private @Nullable String
+      _redistributeLocalLoopbackRouteMap;
   private boolean _redistributeStatic;
   private @Nullable String
       _redistributeStaticRouteMap;

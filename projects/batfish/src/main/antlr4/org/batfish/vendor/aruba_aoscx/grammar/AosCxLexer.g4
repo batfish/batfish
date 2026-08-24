@@ -51,6 +51,7 @@ IPV6: 'ipv6';
 LAG: 'lag';
 LOOPBACK: 'loopback';
 LOCAL_PREFERENCE: 'local-preference';
+LOCAL: 'local';
 LINK_LOCAL: 'link-local';
 NO: 'no';
 NO_ADVERTISE: 'no-advertise';

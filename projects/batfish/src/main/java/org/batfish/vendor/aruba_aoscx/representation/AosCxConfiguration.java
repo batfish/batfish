@@ -1405,6 +1405,12 @@ public class AosCxConfiguration extends VendorConfiguration {
                   toRouteMap6(
                       process
                           .getRedistributeConnectedRouteMap()))
+              .setRedistributeLocalLoopback(
+                  process.getRedistributeLocalLoopback())
+              .setRedistributeLocalLoopbackRouteMap(
+                  toRouteMap6(
+                      process
+                          .getRedistributeLocalLoopbackRouteMap()))
               .setRedistributeStatic(
                   process.getRedistributeStatic())
               .setRedistributeStaticRouteMap(

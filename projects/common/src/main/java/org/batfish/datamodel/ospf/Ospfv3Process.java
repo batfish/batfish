@@ -70,6 +70,9 @@ public final class Ospfv3Process
     private boolean _redistributeConnected;
     private @Nullable RouteMap6
         _redistributeConnectedRouteMap;
+    private boolean _redistributeLocalLoopback;
+    private @Nullable RouteMap6
+        _redistributeLocalLoopbackRouteMap;
     private boolean _redistributeStatic;
     private @Nullable RouteMap6
         _redistributeStaticRouteMap;
@@ -161,8 +164,10 @@ public final class Ospfv3Process
               _externalSummaries,
               _referenceBandwidth,
               _redistributeConnected,
+              _redistributeLocalLoopback,
               _redistributeStatic,
               _redistributeConnectedRouteMap,
+              _redistributeLocalLoopbackRouteMap,
               _redistributeStaticRouteMap,
               _redistributionMetric,
               _defaultInformationOriginate
@@ -273,6 +278,15 @@ public final class Ospfv3Process
       return this;
     }
 
+    public Builder setRedistributeLocalLoopback(
+        boolean redistributeLocalLoopback) {
+
+      _redistributeLocalLoopback =
+          redistributeLocalLoopback;
+
+      return this;
+    }
+
     public Builder setRedistributeStatic(
         boolean redistributeStatic) {
       _redistributeStatic =
@@ -284,6 +298,15 @@ public final class Ospfv3Process
         @Nullable RouteMap6 routeMap) {
       _redistributeConnectedRouteMap =
           routeMap;
+      return this;
+    }
+
+    public Builder setRedistributeLocalLoopbackRouteMap(
+        @Nullable RouteMap6 routeMap) {
+
+      _redistributeLocalLoopbackRouteMap =
+          routeMap;
+
       return this;
     }
 
@@ -371,6 +394,12 @@ public final class Ospfv3Process
   private static final String
       PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP =
           "redistributeConnectedRouteMap";
+  private static final String
+      PROP_REDISTRIBUTE_LOCAL_LOOPBACK =
+          "redistributeLocalLoopback";
+  private static final String
+      PROP_REDISTRIBUTE_LOCAL_LOOPBACK_ROUTE_MAP =
+          "redistributeLocalLoopbackRouteMap";
   private static final String PROP_REDISTRIBUTE_STATIC =
       "redistributeStatic";
   private static final String
@@ -413,10 +442,14 @@ public final class Ospfv3Process
           @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
           @Nullable Boolean redistributeConnected,
+      @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK)
+          @Nullable Boolean redistributeLocalLoopback,
       @JsonProperty(PROP_REDISTRIBUTE_STATIC)
           @Nullable Boolean redistributeStatic,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP)
           @Nullable RouteMap6 redistributeConnectedRouteMap,
+      @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK_ROUTE_MAP)
+          @Nullable RouteMap6 redistributeLocalLoopbackRouteMap,
       @JsonProperty(PROP_REDISTRIBUTE_STATIC_ROUTE_MAP)
           @Nullable RouteMap6 redistributeStaticRouteMap,
       @JsonProperty(PROP_REDISTRIBUTION_METRIC)
@@ -479,9 +512,13 @@ public final class Ospfv3Process
             redistributeConnected,
             false),
         firstNonNull(
+            redistributeLocalLoopback,
+            false),
+        firstNonNull(
             redistributeStatic,
             false),
         redistributeConnectedRouteMap,
+        redistributeLocalLoopbackRouteMap,
         redistributeStaticRouteMap,
         firstNonNull(
             redistributionMetric,
@@ -510,8 +547,10 @@ public final class Ospfv3Process
       Set<Ospfv3ExternalSummary> externalSummaries,
       double referenceBandwidth,
       boolean redistributeConnected,
+      boolean redistributeLocalLoopback,
       boolean redistributeStatic,
       @Nullable RouteMap6 redistributeConnectedRouteMap,
+      @Nullable RouteMap6 redistributeLocalLoopbackRouteMap,
       @Nullable RouteMap6 redistributeStaticRouteMap,
       long redistributionMetric,
       boolean defaultInformationOriginate,
@@ -561,6 +600,10 @@ public final class Ospfv3Process
         redistributeConnected;
     _redistributeConnectedRouteMap =
         redistributeConnectedRouteMap;
+    _redistributeLocalLoopback =
+        redistributeLocalLoopback;
+    _redistributeLocalLoopbackRouteMap =
+        redistributeLocalLoopbackRouteMap;
     _redistributeStatic =
         redistributeStatic;
     _redistributeStaticRouteMap =
@@ -664,6 +707,11 @@ public final class Ospfv3Process
     return _redistributeConnected;
   }
 
+  @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK)
+  public boolean getRedistributeLocalLoopback() {
+    return _redistributeLocalLoopback;
+  }
+
   @JsonProperty(PROP_REDISTRIBUTE_STATIC)
   public boolean getRedistributeStatic() {
     return _redistributeStatic;
@@ -673,6 +721,13 @@ public final class Ospfv3Process
   public @Nullable RouteMap6
       getRedistributeConnectedRouteMap() {
     return _redistributeConnectedRouteMap;
+  }
+
+  @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK_ROUTE_MAP)
+  public @Nullable RouteMap6
+      getRedistributeLocalLoopbackRouteMap() {
+
+    return _redistributeLocalLoopbackRouteMap;
   }
 
   @JsonProperty(PROP_REDISTRIBUTE_STATIC_ROUTE_MAP)
@@ -720,6 +775,9 @@ public final class Ospfv3Process
   private final boolean _redistributeConnected;
   private final @Nullable RouteMap6
       _redistributeConnectedRouteMap;
+  private final boolean _redistributeLocalLoopback;
+  private final @Nullable RouteMap6
+      _redistributeLocalLoopbackRouteMap;
   private final boolean _redistributeStatic;
   private final @Nullable RouteMap6
       _redistributeStaticRouteMap;

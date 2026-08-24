@@ -1,0 +1,19 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+ipv6 prefix-list LOCAL-HOSTS seq 10 permit 2001:db8:100::/48 ge 128
+
+route-map LOCAL-RM permit seq 10
+    match ipv6 address prefix-list LOCAL-HOSTS
+    set metric 17
+    set metric-type external type-1
+    set tag 707
+
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute local loopback route-map LOCAL-RM
+
+router ospfv3 2
+    router-id 192.0.2.2
+    redistribute local loopback route-map LOCAL-RM
+    no redistribute local loopback

@@ -48,6 +48,12 @@ public final class Ospfv3ProcessTest {
         process.getRedistributeConnected(),
         equalTo(false));
     assertThat(
+        process.getRedistributeLocalLoopback(),
+        equalTo(false));
+    assertThat(
+        process.getRedistributeLocalLoopbackRouteMap(),
+        equalTo(null));
+    assertThat(
         process.getRedistributeStatic(),
         equalTo(false));
     assertThat(
@@ -123,6 +129,9 @@ public final class Ospfv3ProcessTest {
             .setReferenceBandwidth(40_000_000_000D)
             .setRedistributeConnected(true)
             .setRedistributeConnectedRouteMap(
+                routeMap)
+            .setRedistributeLocalLoopback(true)
+            .setRedistributeLocalLoopbackRouteMap(
                 routeMap)
             .setRedistributeStatic(true)
             .setRedistributeStaticRouteMap(
@@ -209,6 +218,12 @@ public final class Ospfv3ProcessTest {
         equalTo(true));
     assertThat(
         clone.getRedistributeConnectedRouteMap(),
+        equalTo(routeMap));
+    assertThat(
+        clone.getRedistributeLocalLoopback(),
+        equalTo(true));
+    assertThat(
+        clone.getRedistributeLocalLoopbackRouteMap(),
         equalTo(routeMap));
     assertThat(
         clone.getRedistributeStaticRouteMap(),

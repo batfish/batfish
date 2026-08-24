@@ -84,6 +84,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_paths
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
@@ -2007,6 +2008,36 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     warn(
         ctx,
         "Ignoring redistribute connected outside OSPF context");
+  }
+
+  @Override
+  public void exitS_redistribute_local_loopback(
+      S_redistribute_local_loopbackContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring redistribute local loopback outside OSPFv3 context");
+
+      return;
+    }
+
+    boolean enabled =
+        ctx.NO() == null;
+
+    String routeMap =
+        ctx.redistribute_route_map() == null
+            ? null
+            : ctx.redistribute_route_map()
+                .WORD()
+                .getText();
+
+    _currentOspfv3Process
+        .setRedistributeLocalLoopback(
+            enabled,
+            routeMap);
   }
 
   @Override

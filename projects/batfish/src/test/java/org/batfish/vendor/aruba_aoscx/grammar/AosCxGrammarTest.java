@@ -3478,4 +3478,100 @@ public final class AosCxGrammarTest {
                 null)));
   }
 
+  @Test
+  public void testOspfv3RedistributeLocalLoopbackExtraction() {
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-redistribute-local-loopback");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes().get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getRedistributeLocalLoopback(),
+        equalTo(true));
+
+    assertThat(
+        process.getRedistributeLocalLoopbackRouteMap(),
+        equalTo("LOCAL-RM"));
+
+    AosCxOspfv3Process disabled =
+        c.getOspfv3Processes().get(2);
+
+    assertThat(
+        disabled,
+        notNullValue());
+
+    assertThat(
+        disabled.getRedistributeLocalLoopback(),
+        equalTo(false));
+
+    assertThat(
+        disabled.getRedistributeLocalLoopbackRouteMap(),
+        nullValue());
+  }
+
+  @Test
+  public void testOspfv3RedistributeLocalLoopbackConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-redistribute-local-loopback");
+
+    Configuration c =
+        configs.get("aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    assertThat(
+        process.getRedistributeLocalLoopback(),
+        equalTo(true));
+
+    assertThat(
+        process.getRedistributeConnected(),
+        equalTo(false));
+
+    assertThat(
+        process.getRedistributeLocalLoopbackRouteMap(),
+        notNullValue());
+
+    RouteMap6.Result result =
+        process
+            .getRedistributeLocalLoopbackRouteMap()
+            .process(
+                Prefix6.parse(
+                    "2001:db8:100::1/128"),
+                process.getRedistributionMetric(),
+                Route.UNSET_ROUTE_TAG)
+            .orElseThrow();
+
+    assertThat(
+        result.getMetric(),
+        equalTo(17L));
+
+    assertThat(
+        result.getOspfMetricType(),
+        equalTo(OspfMetricType.E1));
+
+    assertThat(
+        result.getTag(),
+        equalTo(707L));
+  }
+
 }

@@ -312,6 +312,56 @@ final class Ospfv3RoutingProcess {
       }
     }
 
+    if (_process.getRedistributeLocalLoopback()) {
+
+      for (Interface iface :
+          _c.getAllInterfaces().values()) {
+
+        if (!iface.getActive()
+            || !_vrfName.equals(
+                iface.getVrfName())
+            || iface.getInterfaceType()
+                != InterfaceType.LOOPBACK) {
+
+          continue;
+        }
+
+        for (ConcreteInterfaceAddress6 address :
+            iface.getAllConcreteAddresses6()) {
+
+          Prefix6 localPrefix =
+              address.getIp().toPrefix6();
+
+          if (!permitsOutboundRedistribution(
+              localPrefix)) {
+            continue;
+          }
+
+          Optional<RouteMap6.Result> transformed =
+              applyRedistributionRouteMap(
+                  _process
+                      .getRedistributeLocalLoopbackRouteMap(),
+                  localPrefix,
+                  _process.getRedistributionMetric(),
+                  Route.UNSET_ROUTE_TAG);
+
+          if (transformed.isEmpty()) {
+            continue;
+          }
+
+          RouteMap6.Result result =
+              transformed.get();
+
+          sources.add(
+              new ExternalAdvertisementSpec(
+                  localPrefix,
+                  result.getMetric(),
+                  result.getTag(),
+                  result.getOspfMetricType()));
+        }
+      }
+    }
+
     if (_process.getRedistributeStatic()) {
 
       for (StaticRoute6 route :
