@@ -26,6 +26,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
+import org.batfish.datamodel.Ospfv3NssaExternalType1Route6;
 import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 import org.batfish.datamodel.Prefix6;
@@ -355,17 +356,24 @@ final class Ospfv3RoutingProcess {
       }
     }
 
-    /*
-     * N1 support is intentionally separate from Type-5 E1 support.
-     * Preserve the existing NSSA N2 behavior until N1 is modeled.
-     */
     _process
         .getAreas()
         .values()
         .stream()
         .filter(Ospfv3Area::getNssa)
         .forEach(
-            area ->
+            area -> {
+              if (metricType == OspfMetricType.E1) {
+                advertisements.add(
+                    new Ospfv3NssaExternalType1Route6(
+                        network,
+                        Route.UNSET_NEXT_HOP_INTERFACE,
+                        _process.getExternalAdminCost(),
+                        metric,
+                        area.getAreaNumber(),
+                        _process.getRouterId(),
+                        tag));
+              } else {
                 advertisements.add(
                     new Ospfv3NssaExternalType2Route6(
                         network,
@@ -374,7 +382,9 @@ final class Ospfv3RoutingProcess {
                         metric,
                         area.getAreaNumber(),
                         _process.getRouterId(),
-                        tag)));
+                        tag));
+              }
+            });
   }
 
   private boolean permitsOutboundRedistribution(
@@ -1574,10 +1584,9 @@ final class Ospfv3RoutingProcess {
   /**
    * Import NSSA Type-7 external routes inside their originating NSSA.
    *
-   * <p>An ABR attached to area 0 translates a received Type-7 advertisement
-   * into a locally originated Type-5 advertisement for normal areas. The
-   * translated advertisement is control-plane state only and is not installed
-   * as an additional local forwarding candidate.
+   * <p>N1 routes accumulate the receiving-interface cost into both total
+   * route metric and cost-to-advertiser. N2 routes retain their external
+   * metric and accumulate cost-to-advertiser only.
    */
   private boolean importNssaExternalRoutesFromNeighbor(
       Interface localIface,
@@ -1600,7 +1609,70 @@ final class Ospfv3RoutingProcess {
                 remoteIface)
             .orElse(null);
 
-    for (AbstractRoute6 route : remoteRoutes) {
+    for (AbstractRoute6 route :
+        remoteRoutes) {
+
+      if (route
+          instanceof Ospfv3NssaExternalType1Route6) {
+
+        Ospfv3NssaExternalType1Route6 external =
+            (Ospfv3NssaExternalType1Route6) route;
+
+        if (external.getArea() != area) {
+          continue;
+        }
+
+        if (external
+                .getAdvertiser()
+                .equals(_process.getRouterId())
+            && external.getCostToAdvertiser() != 0L) {
+          continue;
+        }
+
+        if (shouldApplySplitHorizon(
+            remoteIface,
+            external)) {
+          continue;
+        }
+
+        if (external.getMetric()
+                >= LS_INFINITY
+            || external.getCostToAdvertiser()
+                >= LS_INFINITY
+            || incrementalCost
+                >= LS_INFINITY
+                    - external.getMetric()
+            || incrementalCost
+                >= LS_INFINITY
+                    - external.getCostToAdvertiser()) {
+          continue;
+        }
+
+        long newMetric =
+            external.getMetric()
+                + incrementalCost;
+
+        long newCostToAdvertiser =
+            external.getCostToAdvertiser()
+                + incrementalCost;
+
+        changed |=
+            _ospfv3Rib.mergeRoute(
+                new Ospfv3NssaExternalType1Route6(
+                    external.getNetwork(),
+                    localIface.getName(),
+                    peerIp,
+                    _process.getExternalAdminCost(),
+                    newMetric,
+                    external.getLsaMetric(),
+                    area,
+                    newCostToAdvertiser,
+                    external.getAdvertiser(),
+                    external.getTag()));
+
+        continue;
+      }
+
       if (!(route
           instanceof Ospfv3NssaExternalType2Route6)) {
         continue;
@@ -1638,21 +1710,18 @@ final class Ospfv3RoutingProcess {
           external.getCostToAdvertiser()
               + incrementalCost;
 
-      Ospfv3NssaExternalType2Route6 learned =
-          new Ospfv3NssaExternalType2Route6(
-              external.getNetwork(),
-              localIface.getName(),
-              peerIp,
-              _process.getExternalAdminCost(),
-              external.getMetric(),
-              area,
-              newCostToAdvertiser,
-              external.getAdvertiser(),
-              external.getTag());
-
       changed |=
-          _ospfv3Rib.mergeRoute(learned);
-
+          _ospfv3Rib.mergeRoute(
+              new Ospfv3NssaExternalType2Route6(
+                  external.getNetwork(),
+                  localIface.getName(),
+                  peerIp,
+                  _process.getExternalAdminCost(),
+                  external.getMetric(),
+                  area,
+                  newCostToAdvertiser,
+                  external.getAdvertiser(),
+                  external.getTag()));
     }
 
     return changed;
@@ -1661,22 +1730,22 @@ final class Ospfv3RoutingProcess {
   /**
    * Rebuild Type-7 to Type-5 translations from the ABR's complete
    * currently visible NSSA state.
+   *
+   * <p>RFC 3101 aggregation rules are modeled for both N1 and N2. If any
+   * Type-2 contributor best-matches a range, the translated range is E2 with
+   * metric highest-Type-2 + 1. Otherwise it is E1 with the highest Type-1
+   * path cost.
    */
   private boolean refreshTranslatedNssaAdvertisements() {
 
-    Set<Ospfv3NssaExternalType2Route6>
-        type7Routes =
-            new HashSet<>();
+    Set<AbstractRoute6> type7Routes =
+        new HashSet<>();
 
     for (AbstractRoute6 route :
         _ospfv3Rib.getRoutes()) {
 
-      if (route
-          instanceof Ospfv3NssaExternalType2Route6) {
-
-        type7Routes.add(
-            (Ospfv3NssaExternalType2Route6)
-                route);
+      if (isNssaExternalRoute(route)) {
+        type7Routes.add(route);
       }
     }
 
@@ -1686,26 +1755,22 @@ final class Ospfv3RoutingProcess {
     for (AbstractRoute6 route :
         _localExternalAdvertisements) {
 
-      if (route
-          instanceof Ospfv3NssaExternalType2Route6) {
-
-        type7Routes.add(
-            (Ospfv3NssaExternalType2Route6)
-                route);
+      if (isNssaExternalRoute(route)) {
+        type7Routes.add(route);
       }
     }
 
-    Set<Ospfv3ExternalType2Route6> desired =
+    Set<AbstractRoute6> desired =
         new HashSet<>();
 
     Set<String> emittedRanges =
         new HashSet<>();
 
-    for (Ospfv3NssaExternalType2Route6 external :
+    for (AbstractRoute6 external :
         type7Routes) {
 
       long area =
-          external.getArea();
+          getNssaExternalArea(external);
 
       if (!isAreaBorderRouterFor(area)) {
         continue;
@@ -1718,13 +1783,8 @@ final class Ospfv3RoutingProcess {
               Ospfv3AreaRange.Type.NSSA);
 
       if (range == null) {
-
         desired.add(
-            toTranslatedType5(
-                external.getNetwork(),
-                external.getMetric(),
-                external.getTag()));
-
+            toTranslatedType5(external));
         continue;
       }
 
@@ -1741,7 +1801,7 @@ final class Ospfv3RoutingProcess {
         continue;
       }
 
-      @Nullable Ospfv3ExternalType2Route6 aggregate =
+      @Nullable AbstractRoute6 aggregate =
           computeNssaRangeTranslation(
               area,
               range,
@@ -1752,9 +1812,8 @@ final class Ospfv3RoutingProcess {
       }
     }
 
-    Set<Ospfv3ExternalType2Route6>
-        immutableDesired =
-            ImmutableSet.copyOf(desired);
+    Set<AbstractRoute6> immutableDesired =
+        ImmutableSet.copyOf(desired);
 
     if (_translatedNssaExternalAdvertisements
         .equals(immutableDesired)) {
@@ -1767,27 +1826,62 @@ final class Ospfv3RoutingProcess {
     return true;
   }
 
-  private @Nullable Ospfv3ExternalType2Route6
+  private static boolean isNssaExternalRoute(
+      AbstractRoute6 route) {
+
+    return route
+            instanceof Ospfv3NssaExternalType1Route6
+        || route
+            instanceof Ospfv3NssaExternalType2Route6;
+  }
+
+  private static long getNssaExternalArea(
+      AbstractRoute6 route) {
+
+    if (route
+        instanceof Ospfv3NssaExternalType1Route6) {
+      return ((Ospfv3NssaExternalType1Route6) route)
+          .getArea();
+    }
+
+    if (route
+        instanceof Ospfv3NssaExternalType2Route6) {
+      return ((Ospfv3NssaExternalType2Route6) route)
+          .getArea();
+    }
+
+    throw new IllegalArgumentException(
+        "Not an OSPFv3 NSSA external route: "
+            + route.getClass().getName());
+  }
+
+  private @Nullable AbstractRoute6
       computeNssaRangeTranslation(
           long area,
           Ospfv3AreaRange range,
-          Set<Ospfv3NssaExternalType2Route6>
-              type7Routes) {
+          Set<AbstractRoute6> type7Routes) {
 
     int contributors =
         0;
 
-    long maximumMetric =
+    @Nullable AbstractRoute6 soleContributor =
+        null;
+
+    boolean hasType2 =
+        false;
+
+    long maximumType1Cost =
         -1L;
 
-    Ospfv3NssaExternalType2Route6
-        soleContributor =
-            null;
+    long maximumType2Metric =
+        -1L;
 
-    for (Ospfv3NssaExternalType2Route6 external :
+    for (AbstractRoute6 external :
         type7Routes) {
 
-      if (external.getArea() != area) {
+      if (!isNssaExternalRoute(external)
+          || getNssaExternalArea(external)
+              != area) {
         continue;
       }
 
@@ -1802,20 +1896,37 @@ final class Ospfv3RoutingProcess {
       }
 
       contributors++;
-
       soleContributor =
           external;
 
-      maximumMetric =
-          Math.max(
-              maximumMetric,
-              external.getMetric());
+      if (external
+          instanceof Ospfv3NssaExternalType2Route6) {
+
+        hasType2 =
+            true;
+
+        maximumType2Metric =
+            Math.max(
+                maximumType2Metric,
+                external.getMetric());
+
+      } else {
+
+        maximumType1Cost =
+            Math.max(
+                maximumType1Cost,
+                external.getMetric());
+      }
     }
 
     if (contributors == 0) {
       return null;
     }
 
+    /*
+     * A range that exactly matches a lone Type-7 route behaves as the
+     * specific translation rather than an aggregate.
+     */
     if (contributors == 1
         && soleContributor != null
         && soleContributor
@@ -1823,36 +1934,86 @@ final class Ospfv3RoutingProcess {
             .equals(range.getPrefix())) {
 
       return toTranslatedType5(
-          range.getPrefix(),
-          soleContributor.getMetric(),
-          soleContributor.getTag());
+          soleContributor);
     }
 
-    if (maximumMetric < 0L
-        || maximumMetric
-            >= Ospfv3Process.MAX_METRIC) {
+    if (hasType2) {
+
+      if (maximumType2Metric < 0L
+          || maximumType2Metric
+              >= Ospfv3Process.MAX_METRIC) {
+        return null;
+      }
+
+      return new Ospfv3ExternalType2Route6(
+          range.getPrefix(),
+          Route.UNSET_NEXT_HOP_INTERFACE,
+          _process.getExternalAdminCost(),
+          maximumType2Metric + 1L,
+          _process.getRouterId(),
+          Route.UNSET_ROUTE_TAG);
+    }
+
+    if (maximumType1Cost < 0L
+        || maximumType1Cost
+            > Ospfv3Process.MAX_METRIC) {
       return null;
     }
 
-    return toTranslatedType5(
+    /*
+     * An aggregated Type-7 range has no forwarding-address state in this
+     * VI model. Encode the complete highest N1 path cost as the E1
+     * aggregate metric at the translating ABR.
+     */
+    return new Ospfv3ExternalType1Route6(
         range.getPrefix(),
-        maximumMetric + 1L,
+        Route.UNSET_NEXT_HOP_INTERFACE,
+        _process.getExternalAdminCost(),
+        maximumType1Cost,
+        _process.getRouterId(),
         Route.UNSET_ROUTE_TAG);
   }
 
-  private Ospfv3ExternalType2Route6
-      toTranslatedType5(
-          Prefix6 network,
-          long metric,
-          long tag) {
+  /**
+   * Translate one specific Type-7 route to Type-5.
+   *
+   * <p>The model does not yet carry an explicit OSPF forwarding-address
+   * field. For N1, retain the already accumulated NSSA internal cost in the
+   * translated VI route so downstream E1 total cost remains correct while
+   * preserving the original external LSA metric separately.
+   */
+  private AbstractRoute6 toTranslatedType5(
+      AbstractRoute6 external) {
+
+    if (external
+        instanceof Ospfv3NssaExternalType1Route6) {
+
+      Ospfv3NssaExternalType1Route6 n1 =
+          (Ospfv3NssaExternalType1Route6) external;
+
+      return new Ospfv3ExternalType1Route6(
+          n1.getNetwork(),
+          Route.UNSET_NEXT_HOP_INTERFACE,
+          null,
+          _process.getExternalAdminCost(),
+          n1.getMetric(),
+          n1.getLsaMetric(),
+          0L,
+          n1.getCostToAdvertiser(),
+          _process.getRouterId(),
+          n1.getTag());
+    }
+
+    Ospfv3NssaExternalType2Route6 n2 =
+        (Ospfv3NssaExternalType2Route6) external;
 
     return new Ospfv3ExternalType2Route6(
-        network,
+        n2.getNetwork(),
         Route.UNSET_NEXT_HOP_INTERFACE,
         _process.getExternalAdminCost(),
-        metric,
+        n2.getMetric(),
         _process.getRouterId(),
-        tag);
+        n2.getTag());
   }
 
   /**
@@ -2071,7 +2232,7 @@ final class Ospfv3RoutingProcess {
   private final @Nonnull Configuration _c;
   private Set<AbstractRoute6>
       _localExternalAdvertisements;
-  private Set<Ospfv3ExternalType2Route6>
+  private Set<AbstractRoute6>
       _translatedNssaExternalAdvertisements;
   private final @Nonnull Ospfv3Process _process;
   private final @Nonnull Ospfv3Rib6 _ospfv3Rib;

@@ -5,6 +5,7 @@ import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Ospfv3InterAreaRoute6;
+import org.batfish.datamodel.Ospfv3NssaExternalType1Route6;
 import org.batfish.datamodel.Ospfv3NssaExternalType2Route6;
 import org.batfish.datamodel.Ospfv3IntraAreaRoute6;
 
@@ -26,7 +27,9 @@ public final class Ospfv3Rib6
     if (route instanceof Ospfv3InterAreaRoute6) {
       return 3;
     }
-    if (route instanceof Ospfv3ExternalType1Route6) {
+    if (route instanceof Ospfv3ExternalType1Route6
+        || route
+            instanceof Ospfv3NssaExternalType1Route6) {
       return 2;
     }
     if (route instanceof Ospfv3ExternalType2Route6

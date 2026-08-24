@@ -139,6 +139,64 @@ public final class Ospfv3Route6Test {
   }
 
   @Test
+  public void testNssaExternalType1Serialization() {
+    Ospfv3NssaExternalType1Route6 route =
+        new Ospfv3NssaExternalType1Route6(
+            Prefix6.parse(
+                "2001:db8:71::/64"),
+            "Ethernet71",
+            Ip6.parse(
+                "2001:db8:17::1"),
+            113,
+            55L,
+            25L,
+            7L,
+            30L,
+            Ip.parse(
+                "192.0.2.7"),
+            77L);
+
+    Ospfv3NssaExternalType1Route6 clone =
+        BatfishObjectMapper.clone(
+            route,
+            Ospfv3NssaExternalType1Route6.class);
+
+    assertThat(
+        clone,
+        equalTo(route));
+
+    assertThat(
+        clone.getProtocol(),
+        equalTo(RoutingProtocol.OSPF3));
+
+    assertThat(
+        clone.getArea(),
+        equalTo(7L));
+
+    assertThat(
+        clone.getMetric(),
+        equalTo(55L));
+
+    assertThat(
+        clone.getLsaMetric(),
+        equalTo(25L));
+
+    assertThat(
+        clone.getCostToAdvertiser(),
+        equalTo(30L));
+
+    assertThat(
+        clone.getAdvertiser(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.7")));
+
+    assertThat(
+        clone.getTag(),
+        equalTo(77L));
+  }
+
+  @Test
   public void testNssaExternalSerialization() {
     Ospfv3NssaExternalType2Route6 route =
         new Ospfv3NssaExternalType2Route6(
