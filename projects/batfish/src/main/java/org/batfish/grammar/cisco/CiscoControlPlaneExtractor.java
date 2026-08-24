@@ -735,7 +735,6 @@ import org.batfish.grammar.cisco.CiscoParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.L_transportContext;
 import org.batfish.grammar.cisco.CiscoParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_consoleContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_facilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_hostContext;
@@ -744,6 +743,7 @@ import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_trapContext;
+import org.batfish.grammar.cisco.CiscoParser.Loggingb_discriminatorContext;
 import org.batfish.grammar.cisco.CiscoParser.Loggingb_size_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
@@ -6817,46 +6817,42 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitLogging_buffered(Logging_bufferedContext ctx) {
+  public void exitLoggingb_discriminator(Loggingb_discriminatorContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getIosLogging().setBufferedDiscriminator(ctx.name.getText());
+  }
+
+  @Override
+  public void exitLoggingb_size_severity(Loggingb_size_severityContext ctx) {
     if (_no) {
       return;
     }
     Integer size = null;
     Integer severityNum = null;
     String severity = null;
-    String discriminator = null;
-
-    Loggingb_size_severityContext ss = null;
-    if (ctx.loggingb_discriminator() != null) {
-      discriminator = ctx.loggingb_discriminator().name.getText();
-      ss = ctx.loggingb_discriminator().loggingb_size_severity();
-    } else if (ctx.loggingb_size_severity() != null) {
-      ss = ctx.loggingb_size_severity();
+    if (ctx.size != null) {
+      // A number is a buffer size (4096-2147483647) when it exceeds the max severity level.
+      // otherwise it is a severity level (0-7) e.g. `logging buffered 5`, uint32 permits values
+      // beyond the signed-int range so range-check against a long is used to avoid overflow
+      long raw = Long.parseLong(ctx.size.getText());
+      if (raw <= Logging.MAX_LOGGING_SEVERITY) {
+        severityNum = (int) raw;
+        severity = toLoggingSeverity((int) raw);
+      } else if (raw <= Integer.MAX_VALUE && LOGGING_BUFFERED_SIZE_RANGE.contains((int) raw)) {
+        size = (int) raw;
+      } else {
+        warn(
+            ctx,
+            String.format(
+                "Expected logging buffered size in range %s, but got '%d'",
+                LOGGING_BUFFERED_SIZE_RANGE, raw));
+      }
     }
-
-    if (ss != null) {
-      if (ss.size != null) {
-        // A number is a buffer size (4096-2147483647) when it exceeds the max severity level.
-        // otherwise it is a severity level (0-7) e.g. `logging buffered 5`, uint32 permits values
-        // beyond the signed-int range so range-check against a long is used to avoid overflow
-        long raw = Long.parseLong(ss.size.getText());
-        if (raw <= Logging.MAX_LOGGING_SEVERITY) {
-          severityNum = (int) raw;
-          severity = toLoggingSeverity((int) raw);
-        } else if (raw <= Integer.MAX_VALUE && LOGGING_BUFFERED_SIZE_RANGE.contains((int) raw)) {
-          size = (int) raw;
-        } else {
-          warn(
-              ctx,
-              String.format(
-                  "Expected logging buffered size in range %s, but got '%d'",
-                  LOGGING_BUFFERED_SIZE_RANGE, raw));
-        }
-      }
-      if (ss.logging_severity() != null) {
-        severityNum = toLoggingSeverityNum(ss.logging_severity());
-        severity = toLoggingSeverity(ss.logging_severity());
-      }
+    if (ctx.logging_severity() != null) {
+      severityNum = toLoggingSeverityNum(ctx.logging_severity());
+      severity = toLoggingSeverity(ctx.logging_severity());
     }
 
     // Shared vendor_family model: capture buffer size and severity (behavior unchanged)
@@ -6870,12 +6866,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     buffered.setSeverityNum(severityNum);
     buffered.setSize(size);
 
-    // Vendor-specific IOS model: capture size, severity, and discriminator
+    // Vendor-specific IOS model: capture size and severity
     org.batfish.representation.cisco.Logging iosLogging = _configuration.getIosLogging();
     iosLogging.setBufferedSize(size);
     iosLogging.setBufferedSeverity(severity);
     iosLogging.setBufferedSeverityNum(severityNum);
-    iosLogging.setBufferedDiscriminator(discriminator);
   }
 
   @Override
