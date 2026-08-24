@@ -1,16 +1,12 @@
 package org.batfish.vendor.fastpath.grammar;
 
-import static org.batfish.vendor.fastpath.grammar.FastpathLexer.WORD;
-
 import com.google.common.collect.Range;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.IntegerSpace;
@@ -18,9 +14,9 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Double_quoted_stringContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Host_valueContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.HostnameContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Interface_nameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ip_addressContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipd_lookupContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ipd_nameContext;
@@ -46,10 +42,8 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_client_modeContex
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_modeContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_portContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ss_hostContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Word_contentContext;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
@@ -104,7 +98,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void exitIpd_name(Ipd_nameContext ctx) {
-    _c.getDns().setDomainName(toString(ctx.domain_name().word_content()));
+    _c.getDns().setDomainName(toString(ctx.domain_name().word()));
   }
 
   @Override
@@ -211,7 +205,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
     _c.getLogging().setSourceInterface(toInterfaceName(ctx.iface));
   }
 
-  private static @Nonnull String toInterfaceName(Source_interfaceContext ctx) {
+  private static @Nonnull String toInterfaceName(Interface_nameContext ctx) {
     // TODO: once FastPath models interfaces, track this as a reference to an interface structure
     // (for undefined-reference detection) and reconcile the name format across the branches below.
     if (ctx.LOOPBACK() != null) {
@@ -282,13 +276,10 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   private static @Nonnull String toString(Host_valueContext ctx) {
-    if (ctx.double_quoted_string() != null) {
-      return toString(ctx.double_quoted_string().text);
-    }
     if (ctx.ip_address() != null) {
       return toString(ctx.ip_address());
     }
-    return ctx.WORD().getText();
+    return toString(ctx.word());
   }
 
   private static @Nonnull String toString(Ip_addressContext ctx) {
@@ -300,23 +291,10 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   private static @Nonnull String toString(WordContext ctx) {
-    return toString(ctx.word_content());
-  }
-
-  private static @Nonnull String toString(Word_contentContext ctx) {
-    return ctx.children.stream()
-        .map(
-            child -> {
-              if (child instanceof Double_quoted_stringContext) {
-                return toString(((Double_quoted_stringContext) child).text);
-              } else {
-                assert child instanceof TerminalNode;
-                int type = ((TerminalNode) child).getSymbol().getType();
-                assert type == WORD;
-                return child.getText();
-              }
-            })
-        .collect(Collectors.joining(""));
+    if (ctx.double_quoted_string() != null) {
+      return toString(ctx.double_quoted_string().text);
+    }
+    return ctx.WORD().getText();
   }
 
   private static @Nonnull String toString(@Nullable Quoted_textContext text) {

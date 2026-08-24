@@ -14,17 +14,10 @@ double_quoted_string
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
 ;
 
-word_content
-:
-  (
-    double_quoted_string
-    | WORD
-  )+
-;
-
 word
 :
-  word_content
+  double_quoted_string
+  | WORD
 ;
 
 hostname
@@ -34,14 +27,18 @@ hostname
 
 host_value
 :
-  double_quoted_string
-  | ip_address
-  | WORD
+  ip_address
+  | word
 ;
 
 ip_address
 :
   IP_ADDRESS
+;
+
+uint8
+:
+  UINT8
 ;
 
 uint16
@@ -50,12 +47,19 @@ uint16
   | UINT16
 ;
 
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
 ;
 
-source_interface
+interface_name
 :
   LOOPBACK uint16
   | SERVICEPORT

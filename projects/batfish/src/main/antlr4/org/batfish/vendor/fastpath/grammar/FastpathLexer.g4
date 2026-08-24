@@ -193,6 +193,11 @@ UINT16
   F_Uint16
 ;
 
+UINT32
+:
+  F_Uint32
+;
+
 WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
@@ -213,6 +218,12 @@ F_PositiveDigit
 ;
 
 fragment
+F_FiveDigits
+:
+  F_Digit F_Digit F_Digit F_Digit F_Digit
+;
+
+fragment
 F_IpAddress
 :
   F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
@@ -221,6 +232,7 @@ F_IpAddress
 fragment
 F_Uint8
 :
+// 0-255
   F_Digit
   | F_PositiveDigit F_Digit
   | '1' F_Digit F_Digit
@@ -231,6 +243,7 @@ F_Uint8
 fragment
 F_Uint16
 :
+// 0-65535
   F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit?
   | [1-5] F_Digit F_Digit F_Digit F_Digit
@@ -238,6 +251,24 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '4' [0-1] F_Digit F_Digit F_Digit F_FiveDigits
+  | '42' [0-8] F_Digit F_Digit F_FiveDigits
+  | '429' [0-3] F_Digit F_FiveDigits
+  | '4294' [0-8] F_FiveDigits
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
@@ -305,12 +336,12 @@ mode M_Word;
 
 M_Word_DOUBLE_QUOTE
 :
-  '"' -> type ( DOUBLE_QUOTE ) , pushMode ( M_DoubleQuote )
+  '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
 ;
 
 M_Word_WORD
 :
-  F_Word -> type ( WORD )
+  F_Word -> type ( WORD ) , popMode
 ;
 
 M_Word_NEWLINE

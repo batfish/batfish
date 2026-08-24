@@ -106,12 +106,12 @@ ipn_server
 
 ipn_source_interface
 :
-  SOURCE_INTERFACE iface = source_interface NEWLINE
+  SOURCE_INTERFACE iface = interface_name NEWLINE
 ;
 
 domain_name
 :
-  word_content
+  word
 ;
 
 s_sntp
@@ -182,7 +182,7 @@ ss_status_null
 
 sntp_source_interface
 :
-  SOURCE_INTERFACE iface = source_interface NEWLINE
+  SOURCE_INTERFACE iface = interface_name NEWLINE
 ;
 
 s_logging
@@ -295,7 +295,7 @@ ls_port_null
 
 ls_source_interface
 :
-  SOURCE_INTERFACE iface = source_interface NEWLINE
+  SOURCE_INTERFACE iface = interface_name NEWLINE
 ;
 
 logging_traps_null
@@ -347,7 +347,7 @@ logging_addr_type
 logging_severity
 :
   logging_severity_keyword
-  | UINT8
+  | uint8
 ;
 
 logging_severity_keyword
