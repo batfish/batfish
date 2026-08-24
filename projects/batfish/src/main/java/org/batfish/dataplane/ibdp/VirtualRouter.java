@@ -618,6 +618,7 @@ public final class VirtualRouter {
           process.refreshLocalExternalAdvertisements(
               _connectedRib6,
               _installedStaticRoutes6,
+              _ospfv3Processes,
               defaultRoutePresent);
     }
 

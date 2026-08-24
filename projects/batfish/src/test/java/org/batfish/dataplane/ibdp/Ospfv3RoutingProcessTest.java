@@ -112,6 +112,7 @@ public final class Ospfv3RoutingProcessTest {
         routingProcess.refreshLocalExternalAdvertisements(
             connectedRib,
             Set.of(),
+            ImmutableMap.of(),
             false),
         equalTo(true));
 

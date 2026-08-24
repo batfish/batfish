@@ -225,6 +225,8 @@ final class Ospfv3RoutingProcess {
     _ospfv3Rib = new Ospfv3Rib6();
     _localExternalAdvertisements =
         ImmutableSet.of();
+    _crossProcessExternalPrefixes =
+        ImmutableSet.of();
     _translatedNssaExternalAdvertisements =
         ImmutableSet.of();
   }
@@ -304,22 +306,30 @@ final class Ospfv3RoutingProcess {
   boolean refreshLocalExternalAdvertisements(
       ConnectedRib6 connectedRib,
       Set<StaticRoute6> staticRoutes,
+      Map<String, Ospfv3RoutingProcess> ospfv3Processes,
       boolean nonOspfv3DefaultRoutePresent) {
 
     if (!_process.getEnabled()) {
 
-      if (_localExternalAdvertisements.isEmpty()) {
-        return false;
-      }
+      boolean changed =
+          !_localExternalAdvertisements.isEmpty()
+              || !_crossProcessExternalPrefixes.isEmpty();
 
       _localExternalAdvertisements =
           ImmutableSet.of();
 
-      return true;
+      _crossProcessExternalPrefixes =
+          ImmutableSet.of();
+
+      return changed;
     }
 
     Set<ExternalAdvertisementSpec> sources =
         new HashSet<>();
+
+    Set<ExternalAdvertisementSpec>
+        crossProcessSources =
+            new HashSet<>();
 
     if (_process.getRedistributeConnected()) {
 
@@ -444,6 +454,75 @@ final class Ospfv3RoutingProcess {
       }
     }
 
+    for (String sourceProcessId :
+        _process
+            .getRedistributeOspfProcesses()) {
+
+      /*
+       * Self-redistribution has no useful forwarding meaning and can create
+       * a local feedback loop in a snapshot computation.
+       */
+      if (_process
+          .getProcessId()
+          .equals(sourceProcessId)) {
+        continue;
+      }
+
+      Ospfv3RoutingProcess sourceProcess =
+          ospfv3Processes.get(
+              sourceProcessId);
+
+      if (sourceProcess == null
+          || !sourceProcess
+              ._process
+              .getEnabled()) {
+        continue;
+      }
+
+      RouteMap6 routeMap =
+          _process
+              .getRedistributeOspfRouteMaps()
+              .get(
+                  sourceProcessId);
+
+      for (AbstractRoute6 route :
+          sourceProcess
+              .getRoutesForProcessRedistribution()) {
+
+        if (!permitsOutboundRedistribution(
+            route.getNetwork())) {
+          continue;
+        }
+
+        Optional<RouteMap6.Result> transformed =
+            applyRedistributionRouteMap(
+                routeMap,
+                route.getNetwork(),
+                _process.getRedistributionMetric(),
+                route.getTag());
+
+        if (transformed.isEmpty()) {
+          continue;
+        }
+
+        RouteMap6.Result result =
+            transformed.get();
+
+        ExternalAdvertisementSpec source =
+            new ExternalAdvertisementSpec(
+                route.getNetwork(),
+                result.getMetric(),
+                result.getTag(),
+                result.getOspfMetricType());
+
+        sources.add(
+            source);
+
+        crossProcessSources.add(
+            source);
+      }
+    }
+
     if (_process.getDefaultInformationOriginate()
         && (_process
                 .getDefaultInformationOriginateAlways()
@@ -467,15 +546,65 @@ final class Ospfv3RoutingProcess {
     Set<AbstractRoute6> immutableDesired =
         ImmutableSet.copyOf(desired);
 
-    if (_localExternalAdvertisements.equals(
-        immutableDesired)) {
-      return false;
-    }
+    Set<Prefix6> immutableCrossProcessPrefixes =
+        ImmutableSet.copyOf(
+            computeCrossProcessExternalPrefixes(
+                crossProcessSources));
+
+    boolean changed =
+        !_localExternalAdvertisements.equals(
+            immutableDesired)
+            || !_crossProcessExternalPrefixes.equals(
+                immutableCrossProcessPrefixes);
 
     _localExternalAdvertisements =
         immutableDesired;
 
-    return true;
+    _crossProcessExternalPrefixes =
+        immutableCrossProcessPrefixes;
+
+    return changed;
+  }
+
+  /**
+   * Return the advertised prefixes whose local Type-5/Type-7 origination
+   * derives from local OSPFv3 process redistribution.
+   *
+   * <p>This tracks provenance independently of route attributes so reciprocal
+   * local process redistribution cannot recursively re-export a route that
+   * was itself created by local process redistribution. When summary-address
+   * combines cross-process and non-cross-process contributors, the aggregate
+   * is conservatively considered cross-process for loop-prevention purposes.
+   */
+  private Set<Prefix6> computeCrossProcessExternalPrefixes(
+      Set<ExternalAdvertisementSpec> crossProcessSources) {
+
+    Set<Prefix6> prefixes =
+        new HashSet<>();
+
+    for (ExternalAdvertisementSpec source :
+        crossProcessSources) {
+
+      Ospfv3ExternalSummary summary =
+          getMatchingExternalSummary(
+              source._network);
+
+      if (summary == null) {
+
+        prefixes.add(
+            source._network);
+
+        continue;
+      }
+
+      if (summary.getAdvertise()) {
+
+        prefixes.add(
+            summary.getPrefix());
+      }
+    }
+
+    return prefixes;
   }
 
   /**
@@ -3945,6 +4074,107 @@ final class Ospfv3RoutingProcess {
   }
 
   /**
+   * Return routes eligible to be redistributed into another OSPFv3 process
+   * on this router.
+   *
+   * <p>Locally originated external routes that were themselves created by
+   * cross-process redistribution are omitted. This preserves genuine routes
+   * from this process while preventing reciprocal redistribute-ospf
+   * configuration from endlessly re-originating the same prefix.
+   */
+  private Set<AbstractRoute6>
+      getRoutesForProcessRedistribution() {
+
+    ImmutableSet.Builder<AbstractRoute6> routes =
+        ImmutableSet.builder();
+
+    for (AbstractRoute6 route :
+        getRoutes()) {
+
+      if (isLocallyOriginatedCrossProcessExternal(
+          route)) {
+        continue;
+      }
+
+      routes.add(
+          route);
+    }
+
+    return routes.build();
+  }
+
+  private boolean isLocallyOriginatedCrossProcessExternal(
+      AbstractRoute6 route) {
+
+    if (!_crossProcessExternalPrefixes.contains(
+        route.getNetwork())) {
+
+      return false;
+    }
+
+    Ip localRouterId =
+        _process.getRouterId();
+
+    if (route instanceof
+        Ospfv3ExternalType1Route6) {
+
+      Ospfv3ExternalType1Route6 external =
+          (Ospfv3ExternalType1Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(localRouterId)
+          && external
+              .getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route instanceof
+        Ospfv3ExternalType2Route6) {
+
+      Ospfv3ExternalType2Route6 external =
+          (Ospfv3ExternalType2Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(localRouterId)
+          && external
+              .getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route instanceof
+        Ospfv3NssaExternalType1Route6) {
+
+      Ospfv3NssaExternalType1Route6 external =
+          (Ospfv3NssaExternalType1Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(localRouterId)
+          && external
+              .getCostToAdvertiser()
+              == 0L;
+    }
+
+    if (route instanceof
+        Ospfv3NssaExternalType2Route6) {
+
+      Ospfv3NssaExternalType2Route6 external =
+          (Ospfv3NssaExternalType2Route6) route;
+
+      return external
+              .getAdvertiser()
+              .equals(localRouterId)
+          && external
+              .getCostToAdvertiser()
+              == 0L;
+    }
+
+    return false;
+  }
+
+  /**
    * Routes visible to OSPFv3 neighbors.
    *
    * <p>This includes local external advertisements, which are control-plane
@@ -4060,6 +4290,7 @@ final class Ospfv3RoutingProcess {
     return Objects.hash(
         _ospfv3Rib.getRoutes(),
         _localExternalAdvertisements,
+        _crossProcessExternalPrefixes,
         _translatedNssaExternalAdvertisements,
         _virtualBackboneOperational);
   }
@@ -4067,6 +4298,8 @@ final class Ospfv3RoutingProcess {
   private final @Nonnull Configuration _c;
   private Set<AbstractRoute6>
       _localExternalAdvertisements;
+  private Set<Prefix6>
+      _crossProcessExternalPrefixes;
   private Set<AbstractRoute6>
       _translatedNssaExternalAdvertisements;
   private final @Nonnull Ospfv3Process _process;

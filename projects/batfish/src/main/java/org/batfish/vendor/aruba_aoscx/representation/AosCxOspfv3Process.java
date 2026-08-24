@@ -242,6 +242,45 @@ public final class AosCxOspfv3Process
     return _redistributeLocalLoopbackRouteMap;
   }
 
+  public @Nonnull Set<Integer>
+      getRedistributeOspfProcesses() {
+
+    return _redistributeOspfProcesses;
+  }
+
+  public @Nonnull Map<Integer, String>
+      getRedistributeOspfRouteMaps() {
+
+    return _redistributeOspfRouteMaps;
+  }
+
+  public void setRedistributeOspf(
+      int sourceProcessId,
+      @Nullable String routeMap) {
+
+    _redistributeOspfProcesses.add(
+        sourceProcessId);
+
+    if (routeMap == null) {
+      _redistributeOspfRouteMaps.remove(
+          sourceProcessId);
+    } else {
+      _redistributeOspfRouteMaps.put(
+          sourceProcessId,
+          routeMap);
+    }
+  }
+
+  public void removeRedistributeOspf(
+      int sourceProcessId) {
+
+    _redistributeOspfProcesses.remove(
+        sourceProcessId);
+
+    _redistributeOspfRouteMaps.remove(
+        sourceProcessId);
+  }
+
   public boolean getRedistributeStatic() {
     return _redistributeStatic;
   }
@@ -689,6 +728,15 @@ public final class AosCxOspfv3Process
   private boolean _redistributeLocalLoopback;
   private @Nullable String
       _redistributeLocalLoopbackRouteMap;
+
+  private final @Nonnull Set<Integer>
+      _redistributeOspfProcesses =
+          new HashSet<>();
+
+  private final @Nonnull Map<Integer, String>
+      _redistributeOspfRouteMaps =
+          new HashMap<>();
+
   private boolean _redistributeStatic;
   private @Nullable String
       _redistributeStaticRouteMap;

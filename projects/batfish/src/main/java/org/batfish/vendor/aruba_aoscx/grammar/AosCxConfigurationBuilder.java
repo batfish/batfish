@@ -89,6 +89,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkC
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_staticContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_ospfContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_shutdownContext;
@@ -2224,6 +2225,72 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentOspfv3Process
         .setRedistributeLocalLoopback(
             enabled,
+            routeMap);
+  }
+
+  @Override
+  public void exitS_redistribute_ospf(
+      S_redistribute_ospfContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring redistribute ospf outside OSPFv3 context");
+
+      return;
+    }
+
+    int sourceProcessId;
+
+    try {
+      sourceProcessId =
+          Integer.parseInt(
+              ctx.WORD().getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring redistribute ospf with invalid process ID");
+
+      return;
+    }
+
+    /*
+     * AOS-CX 10.13 supports OSPFv3 process IDs 1-63 for this
+     * redistribution source.
+     */
+    if (sourceProcessId < 1
+        || sourceProcessId > 63) {
+
+      warn(
+          ctx,
+          "Ignoring redistribute ospf process ID outside 1-63");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .removeRedistributeOspf(
+              sourceProcessId);
+
+      return;
+    }
+
+    String routeMap =
+        ctx.redistribute_route_map() == null
+            ? null
+            : ctx.redistribute_route_map()
+                .WORD()
+                .getText();
+
+    _currentOspfv3Process
+        .setRedistributeOspf(
+            sourceProcessId,
             routeMap);
   }
 

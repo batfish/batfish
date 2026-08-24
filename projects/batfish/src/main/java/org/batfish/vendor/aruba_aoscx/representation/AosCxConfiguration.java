@@ -1386,6 +1386,40 @@ public class AosCxConfiguration extends VendorConfiguration {
                                           transitArea),
                                       peer))));
 
+          Set<String>
+              redistributeOspfProcesses =
+                  new HashSet<>();
+
+          Map<String, RouteMap6>
+              redistributeOspfRouteMaps =
+                  new HashMap<>();
+
+          process
+              .getRedistributeOspfProcesses()
+              .forEach(
+                  sourceProcessId -> {
+
+                    String sourceId =
+                        Integer.toString(
+                            sourceProcessId);
+
+                    redistributeOspfProcesses.add(
+                        sourceId);
+
+                    String routeMapName =
+                        process
+                            .getRedistributeOspfRouteMaps()
+                            .get(
+                                sourceProcessId);
+
+                    if (routeMapName != null) {
+                      redistributeOspfRouteMaps.put(
+                          sourceId,
+                          toRouteMap6(
+                              routeMapName));
+                    }
+                  });
+
           Set<Ospfv3ExternalSummary>
               externalSummaries =
                   new HashSet<>();
@@ -1449,6 +1483,10 @@ public class AosCxConfiguration extends VendorConfiguration {
                   toRouteMap6(
                       process
                           .getRedistributeLocalLoopbackRouteMap()))
+              .setRedistributeOspfProcesses(
+                  redistributeOspfProcesses)
+              .setRedistributeOspfRouteMaps(
+                  redistributeOspfRouteMaps)
               .setRedistributeStatic(
                   process.getRedistributeStatic())
               .setRedistributeStaticRouteMap(

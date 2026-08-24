@@ -80,6 +80,10 @@ public final class Ospfv3Process
     private boolean _redistributeLocalLoopback;
     private @Nullable RouteMap6
         _redistributeLocalLoopbackRouteMap;
+    private @Nonnull Set<String>
+        _redistributeOspfProcesses;
+    private @Nonnull Map<String, RouteMap6>
+        _redistributeOspfRouteMaps;
     private boolean _redistributeStatic;
     private @Nullable RouteMap6
         _redistributeStaticRouteMap;
@@ -109,6 +113,10 @@ public final class Ospfv3Process
           DEFAULT_INFORMATION_METRIC;
       _referenceBandwidth =
           DEFAULT_REFERENCE_BANDWIDTH;
+      _redistributeOspfProcesses =
+          ImmutableSet.of();
+      _redistributeOspfRouteMaps =
+          ImmutableMap.of();
       _redistributionMetric =
           DEFAULT_REDISTRIBUTION_METRIC;
     }
@@ -180,6 +188,8 @@ public final class Ospfv3Process
               _referenceBandwidth,
               _redistributeConnected,
               _redistributeLocalLoopback,
+              _redistributeOspfProcesses,
+              _redistributeOspfRouteMaps,
               _redistributeStatic,
               _redistributeConnectedRouteMap,
               _redistributeLocalLoopbackRouteMap,
@@ -339,6 +349,24 @@ public final class Ospfv3Process
       return this;
     }
 
+    public Builder setRedistributeOspfProcesses(
+        Set<String> processIds) {
+
+      _redistributeOspfProcesses =
+          processIds;
+
+      return this;
+    }
+
+    public Builder setRedistributeOspfRouteMaps(
+        Map<String, RouteMap6> routeMaps) {
+
+      _redistributeOspfRouteMaps =
+          routeMaps;
+
+      return this;
+    }
+
     public Builder setRedistributeStatic(
         boolean redistributeStatic) {
       _redistributeStatic =
@@ -462,6 +490,12 @@ public final class Ospfv3Process
   private static final String
       PROP_REDISTRIBUTE_LOCAL_LOOPBACK_ROUTE_MAP =
           "redistributeLocalLoopbackRouteMap";
+  private static final String
+      PROP_REDISTRIBUTE_OSPF_PROCESSES =
+          "redistributeOspfProcesses";
+  private static final String
+      PROP_REDISTRIBUTE_OSPF_ROUTE_MAPS =
+          "redistributeOspfRouteMaps";
   private static final String PROP_REDISTRIBUTE_STATIC =
       "redistributeStatic";
   private static final String
@@ -516,6 +550,10 @@ public final class Ospfv3Process
           @Nullable Boolean redistributeConnected,
       @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK)
           @Nullable Boolean redistributeLocalLoopback,
+      @JsonProperty(PROP_REDISTRIBUTE_OSPF_PROCESSES)
+          @Nullable Set<String> redistributeOspfProcesses,
+      @JsonProperty(PROP_REDISTRIBUTE_OSPF_ROUTE_MAPS)
+          @Nullable Map<String, RouteMap6> redistributeOspfRouteMaps,
       @JsonProperty(PROP_REDISTRIBUTE_STATIC)
           @Nullable Boolean redistributeStatic,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED_ROUTE_MAP)
@@ -597,6 +635,12 @@ public final class Ospfv3Process
             redistributeLocalLoopback,
             false),
         firstNonNull(
+            redistributeOspfProcesses,
+            ImmutableSet.of()),
+        firstNonNull(
+            redistributeOspfRouteMaps,
+            ImmutableMap.of()),
+        firstNonNull(
             redistributeStatic,
             false),
         redistributeConnectedRouteMap,
@@ -634,6 +678,8 @@ public final class Ospfv3Process
       double referenceBandwidth,
       boolean redistributeConnected,
       boolean redistributeLocalLoopback,
+      Set<String> redistributeOspfProcesses,
+      Map<String, RouteMap6> redistributeOspfRouteMaps,
       boolean redistributeStatic,
       @Nullable RouteMap6 redistributeConnectedRouteMap,
       @Nullable RouteMap6 redistributeLocalLoopbackRouteMap,
@@ -655,6 +701,11 @@ public final class Ospfv3Process
                 && maxMetricRouterLsaOnStartupSeconds <= 86400),
         "Invalid max-metric router-lsa on-startup interval %s",
         maxMetricRouterLsaOnStartupSeconds);
+
+    checkArgument(
+        redistributeOspfProcesses.containsAll(
+            redistributeOspfRouteMaps.keySet()),
+        "OSPFv3 redistribution route-map configured for disabled source process");
 
     checkArgument(
         redistributionMetric >= 0
@@ -706,6 +757,12 @@ public final class Ospfv3Process
         redistributeLocalLoopback;
     _redistributeLocalLoopbackRouteMap =
         redistributeLocalLoopbackRouteMap;
+    _redistributeOspfProcesses =
+        ImmutableSet.copyOf(
+            redistributeOspfProcesses);
+    _redistributeOspfRouteMaps =
+        ImmutableMap.copyOf(
+            redistributeOspfRouteMaps);
     _redistributeStatic =
         redistributeStatic;
     _redistributeStaticRouteMap =
@@ -849,6 +906,20 @@ public final class Ospfv3Process
     return _redistributeLocalLoopback;
   }
 
+  @JsonProperty(PROP_REDISTRIBUTE_OSPF_PROCESSES)
+  public @Nonnull Set<String>
+      getRedistributeOspfProcesses() {
+
+    return _redistributeOspfProcesses;
+  }
+
+  @JsonProperty(PROP_REDISTRIBUTE_OSPF_ROUTE_MAPS)
+  public @Nonnull Map<String, RouteMap6>
+      getRedistributeOspfRouteMaps() {
+
+    return _redistributeOspfRouteMaps;
+  }
+
   @JsonProperty(PROP_REDISTRIBUTE_STATIC)
   public boolean getRedistributeStatic() {
     return _redistributeStatic;
@@ -922,6 +993,10 @@ public final class Ospfv3Process
   private final boolean _redistributeLocalLoopback;
   private final @Nullable RouteMap6
       _redistributeLocalLoopbackRouteMap;
+  private final @Nonnull Set<String>
+      _redistributeOspfProcesses;
+  private final @Nonnull Map<String, RouteMap6>
+      _redistributeOspfRouteMaps;
   private final boolean _redistributeStatic;
   private final @Nullable RouteMap6
       _redistributeStaticRouteMap;

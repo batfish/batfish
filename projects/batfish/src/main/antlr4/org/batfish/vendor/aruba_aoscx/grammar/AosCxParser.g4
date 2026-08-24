@@ -66,6 +66,7 @@ statement
   | s_ospfv3_process_state
   | s_redistribute_connected
   | s_redistribute_local_loopback
+  | s_redistribute_ospf
   | s_redistribute_static
   | s_router_bgp
   | s_route_map
@@ -601,6 +602,11 @@ s_redistribute_connected
 s_redistribute_local_loopback
 :
   NO? REDISTRIBUTE LOCAL LOOPBACK redistribute_route_map? NEWLINE
+;
+
+s_redistribute_ospf
+:
+  NO? REDISTRIBUTE OSPF WORD redistribute_route_map? NEWLINE
 ;
 
 s_redistribute_static

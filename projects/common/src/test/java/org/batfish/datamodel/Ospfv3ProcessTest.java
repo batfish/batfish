@@ -378,4 +378,75 @@ public final class Ospfv3ProcessTest {
         equalTo(3000));
   }
 
+  @Test
+  public void testOspfProcessRedistributionSerialization() {
+
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId("1")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .build();
+
+    assertThat(
+        defaults
+            .getRedistributeOspfProcesses(),
+        equalTo(
+            ImmutableSet.of()));
+
+    assertThat(
+        defaults
+            .getRedistributeOspfRouteMaps(),
+        equalTo(
+            ImmutableMap.of()));
+
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    44L,
+                    999L)));
+
+    Ospfv3Process process =
+        Ospfv3Process.builder()
+            .setProcessId("1")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .setRedistributeOspfProcesses(
+                ImmutableSet.of(
+                    "2",
+                    "3"))
+            .setRedistributeOspfRouteMaps(
+                ImmutableMap.of(
+                    "2",
+                    routeMap))
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            process,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone
+            .getRedistributeOspfProcesses(),
+        equalTo(
+            ImmutableSet.of(
+                "2",
+                "3")));
+
+    assertThat(
+        clone
+            .getRedistributeOspfRouteMaps(),
+        equalTo(
+            ImmutableMap.of(
+                "2",
+                routeMap)));
+  }
+
 }

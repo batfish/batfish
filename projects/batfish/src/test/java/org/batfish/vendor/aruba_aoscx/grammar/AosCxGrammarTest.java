@@ -4014,4 +4014,124 @@ public final class AosCxGrammarTest {
         equalTo(300L));
   }
 
+  @Test
+  public void testOspfv3RedistributeOspfExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-redistribute-ospf");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getRedistributeOspfProcesses()
+            .contains(2),
+        equalTo(true));
+
+    assertThat(
+        process1
+            .getRedistributeOspfProcesses()
+            .contains(3),
+        equalTo(false));
+
+    assertThat(
+        process1
+            .getRedistributeOspfRouteMaps()
+            .get(2),
+        equalTo(
+            "OSPF-X"));
+
+    assertThat(
+        process1
+            .getRedistributeOspfRouteMaps()
+            .containsKey(3),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3RedistributeOspfConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-redistribute-ospf");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getRedistributeOspfProcesses()
+            .contains("2"),
+        equalTo(true));
+
+    assertThat(
+        process1
+            .getRedistributeOspfProcesses()
+            .contains("3"),
+        equalTo(false));
+
+    org.batfish.datamodel.RouteMap6 routeMap =
+        process1
+            .getRedistributeOspfRouteMaps()
+            .get("2");
+
+    assertThat(
+        routeMap,
+        notNullValue());
+
+    org.batfish.datamodel.RouteMap6.Result result =
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:200::/64"),
+                25L,
+                222L)
+            .orElseThrow();
+
+    assertThat(
+        result.getMetric(),
+        equalTo(40L));
+
+    assertThat(
+        result.getOspfMetricType(),
+        equalTo(
+            org.batfish.datamodel.ospf.OspfMetricType.E1));
+
+    assertThat(
+        result.getTag(),
+        equalTo(999L));
+
+    assertThat(
+        routeMap
+            .process(
+                Prefix6.parse(
+                    "2001:db8:300::/64"),
+                25L,
+                333L)
+            .isEmpty(),
+        equalTo(true));
+  }
+
 }
