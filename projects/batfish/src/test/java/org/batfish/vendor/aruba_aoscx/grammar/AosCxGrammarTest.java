@@ -4134,4 +4134,256 @@ public final class AosCxGrammarTest {
         equalTo(true));
   }
 
+  @Test
+  public void testOspfv3AuthenticationExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-authentication");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    org.batfish.vendor.aruba_aoscx.representation
+            .AosCxOspfv3Authentication
+        areaAuth =
+            process
+                .getAreaAuthentications()
+                .get("0");
+
+    assertThat(
+        areaAuth,
+        notNullValue());
+
+    assertThat(
+        areaAuth.getSpi(),
+        equalTo(256L));
+
+    assertThat(
+        areaAuth.getAuthType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Authentication.AuthType.SHA1));
+
+    assertThat(
+        areaAuth.getKeyType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Authentication.KeyType.PLAINTEXT));
+
+    assertThat(
+        areaAuth.getKey(),
+        equalTo(
+            "area-secret"));
+
+    /*
+     * Area 1 authentication was configured and then removed.
+     */
+    assertThat(
+        process
+            .getAreaAuthentications()
+            .containsKey("1"),
+        equalTo(false));
+
+    AosCxInterface inherited =
+        c.getInterfaces()
+            .get("1/1/1");
+
+    assertThat(
+        inherited,
+        notNullValue());
+
+    assertThat(
+        inherited.getOspfv3Authentication(),
+        equalTo(null));
+
+    assertThat(
+        inherited.getOspfv3AuthenticationNull(),
+        equalTo(false));
+
+    AosCxInterface nullOverride =
+        c.getInterfaces()
+            .get("1/1/2");
+
+    assertThat(
+        nullOverride,
+        notNullValue());
+
+    assertThat(
+        nullOverride.getOspfv3Authentication(),
+        equalTo(null));
+
+    assertThat(
+        nullOverride.getOspfv3AuthenticationNull(),
+        equalTo(true));
+
+    AosCxInterface explicit =
+        c.getInterfaces()
+            .get("1/1/3");
+
+    assertThat(
+        explicit,
+        notNullValue());
+
+    assertThat(
+        explicit
+            .getOspfv3Authentication()
+            .getSpi(),
+        equalTo(400L));
+
+    assertThat(
+        explicit
+            .getOspfv3Authentication()
+            .getAuthType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Authentication.AuthType.MD5));
+
+    assertThat(
+        explicit
+            .getOspfv3Authentication()
+            .getKey(),
+        equalTo(
+            "interface-secret"));
+
+    /*
+     * no ipv6 ospfv3 authentication removes the explicit override, so the
+     * interface returns to area inheritance.
+     */
+    AosCxInterface cleared =
+        c.getInterfaces()
+            .get("1/1/4");
+
+    assertThat(
+        cleared,
+        notNullValue());
+
+    assertThat(
+        cleared.getOspfv3Authentication(),
+        equalTo(null));
+
+    assertThat(
+        cleared.getOspfv3AuthenticationNull(),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3AuthenticationConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-authentication");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.Interface inherited =
+        c.getAllInterfaces()
+            .get("1/1/1");
+
+    assertThat(
+        inherited,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        inheritedAuth =
+            inherited
+                .getOspfv3Settings()
+                .getAuthentication();
+
+    assertThat(
+        inheritedAuth,
+        notNullValue());
+
+    assertThat(
+        inheritedAuth.getSpi(),
+        equalTo(256L));
+
+    assertThat(
+        inheritedAuth.getAuthType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3Authentication.AuthType.SHA1));
+
+    assertThat(
+        inheritedAuth.getKeyType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3Authentication.KeyType.PLAINTEXT));
+
+    assertThat(
+        inheritedAuth.getKey(),
+        equalTo(
+            "area-secret"));
+
+    /*
+     * authentication null explicitly suppresses area inheritance.
+     */
+    org.batfish.datamodel.Interface nullOverride =
+        c.getAllInterfaces()
+            .get("1/1/2");
+
+    assertThat(
+        nullOverride
+            .getOspfv3Settings()
+            .getAuthentication(),
+        equalTo(null));
+
+    /*
+     * Explicit interface IPsec wins over the area.
+     */
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        explicitAuth =
+            c.getAllInterfaces()
+                .get("1/1/3")
+                .getOspfv3Settings()
+                .getAuthentication();
+
+    assertThat(
+        explicitAuth,
+        notNullValue());
+
+    assertThat(
+        explicitAuth.getSpi(),
+        equalTo(400L));
+
+    assertThat(
+        explicitAuth.getAuthType(),
+        equalTo(
+            org.batfish.datamodel.ospf
+                .Ospfv3Authentication.AuthType.MD5));
+
+    assertThat(
+        explicitAuth.getKey(),
+        equalTo(
+            "interface-secret"));
+
+    /*
+     * The no form clears the interface override and restores the area
+     * authentication.
+     */
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        clearedAuth =
+            c.getAllInterfaces()
+                .get("1/1/4")
+                .getOspfv3Settings()
+                .getAuthentication();
+
+    assertThat(
+        clearedAuth,
+        equalTo(
+            inheritedAuth));
+  }
+
 }

@@ -113,6 +113,52 @@ public final class AosCxInterface implements Serializable {
     _ospfv3Area = area;
   }
 
+  /**
+   * Explicit interface-level OSPFv3 IPsec authentication.
+   *
+   * <p>Null means either inherit area authentication or use the explicit
+   * authentication-null override; consult {@link #getOspfv3AuthenticationNull()}.
+   */
+  public @Nullable AosCxOspfv3Authentication
+      getOspfv3Authentication() {
+
+    return _ospfv3Authentication;
+  }
+
+  public boolean getOspfv3AuthenticationNull() {
+    return _ospfv3AuthenticationNull;
+  }
+
+  public void setOspfv3Authentication(
+      AosCxOspfv3Authentication authentication) {
+
+    _ospfv3Authentication =
+        authentication;
+
+    _ospfv3AuthenticationNull =
+        false;
+  }
+
+  public void setOspfv3AuthenticationNull() {
+    _ospfv3Authentication =
+        null;
+
+    _ospfv3AuthenticationNull =
+        true;
+  }
+
+  /**
+   * Remove the interface-level authentication override and restore area
+   * inheritance.
+   */
+  public void clearOspfv3Authentication() {
+    _ospfv3Authentication =
+        null;
+
+    _ospfv3AuthenticationNull =
+        false;
+  }
+
   public @Nullable Integer getOspfv3Cost() {
     return _ospfv3Cost;
   }
@@ -346,6 +392,9 @@ public final class AosCxInterface implements Serializable {
   private @Nullable OspfNetworkType _ospfNetworkType;
   private @Nullable Integer _ospfv3ProcessId;
   private @Nullable String _ospfv3Area;
+  private @Nullable AosCxOspfv3Authentication
+      _ospfv3Authentication;
+  private boolean _ospfv3AuthenticationNull;
   private @Nullable Integer _ospfv3Cost;
   private @Nullable Integer _ospfv3HelloInterval;
   private @Nullable Integer _ospfv3DeadInterval;

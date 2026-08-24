@@ -37,6 +37,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
 
   public static final class Builder {
     private @Nullable Long _areaName;
+    private @Nullable Ospfv3Authentication
+        _authentication;
     private @Nullable Integer _cost;
     private int _deadInterval;
     private boolean _enabled;
@@ -60,6 +62,15 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     public Builder setAreaName(
         @Nullable Long areaName) {
       _areaName = areaName;
+      return this;
+    }
+
+    public Builder setAuthentication(
+        @Nullable Ospfv3Authentication authentication) {
+
+      _authentication =
+          authentication;
+
       return this;
     }
 
@@ -127,6 +138,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
     public Ospfv3InterfaceSettings build() {
       return new Ospfv3InterfaceSettings(
           _areaName,
+          _authentication,
           _cost,
           _deadInterval,
           _enabled,
@@ -142,6 +154,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
 
   private static final String PROP_AREA =
       "area";
+  private static final String PROP_AUTHENTICATION =
+      "authentication";
   private static final String PROP_COST =
       "cost";
   private static final String PROP_DEAD_INTERVAL =
@@ -167,6 +181,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   private static Ospfv3InterfaceSettings create(
       @JsonProperty(PROP_AREA)
           @Nullable Long area,
+      @JsonProperty(PROP_AUTHENTICATION)
+          @Nullable Ospfv3Authentication authentication,
       @JsonProperty(PROP_COST)
           @Nullable Integer cost,
       @JsonProperty(PROP_DEAD_INTERVAL)
@@ -206,6 +222,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
 
     return new Ospfv3InterfaceSettings(
         area,
+        authentication,
         cost,
         deadInterval,
         enabled,
@@ -226,6 +243,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
 
   private Ospfv3InterfaceSettings(
       @Nullable Long areaName,
+      @Nullable Ospfv3Authentication authentication,
       @Nullable Integer cost,
       int deadInterval,
       boolean enabled,
@@ -255,6 +273,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
         transitDelay);
 
     _areaName = areaName;
+    _authentication =
+        authentication;
     _cost = cost;
     _deadInterval = deadInterval;
     _enabled = enabled;
@@ -271,6 +291,13 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   @JsonProperty(PROP_AREA)
   public @Nullable Long getAreaName() {
     return _areaName;
+  }
+
+  @JsonProperty(PROP_AUTHENTICATION)
+  public @Nullable Ospfv3Authentication
+      getAuthentication() {
+
+    return _authentication;
   }
 
   @JsonProperty(PROP_COST)
@@ -343,6 +370,9 @@ public final class Ospfv3InterfaceSettings implements Serializable {
             _areaName,
             other._areaName)
         && Objects.equals(
+            _authentication,
+            other._authentication)
+        && Objects.equals(
             _cost,
             other._cost)
         && _deadInterval
@@ -370,6 +400,7 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _areaName,
+        _authentication,
         _cost,
         _deadInterval,
         _enabled,
@@ -383,6 +414,8 @@ public final class Ospfv3InterfaceSettings implements Serializable {
   }
 
   private final @Nullable Long _areaName;
+  private final @Nullable Ospfv3Authentication
+      _authentication;
   private final @Nullable Integer _cost;
   private final int _deadInterval;
   private final boolean _enabled;

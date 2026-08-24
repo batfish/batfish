@@ -72,6 +72,7 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.Ospfv3Area;
 import org.batfish.datamodel.ospf.Ospfv3AreaRange;
+import org.batfish.datamodel.ospf.Ospfv3Authentication;
 import org.batfish.datamodel.ospf.Ospfv3ExternalSummary;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.batfish.datamodel.ospf.Ospfv3Process;
@@ -1551,6 +1552,69 @@ public class AosCxConfiguration extends VendorConfiguration {
         });
   }
 
+  private static @Nullable Ospfv3Authentication
+      toOspfv3Authentication(
+          @Nullable AosCxOspfv3Authentication authentication) {
+
+    if (authentication == null) {
+      return null;
+    }
+
+    Ospfv3Authentication.AuthType authType =
+        authentication.getAuthType()
+                == AosCxOspfv3Authentication.AuthType.MD5
+            ? Ospfv3Authentication.AuthType.MD5
+            : Ospfv3Authentication.AuthType.SHA1;
+
+    Ospfv3Authentication.KeyType keyType =
+        null;
+
+    if (authentication.getKeyType() != null) {
+
+      keyType =
+          switch (authentication.getKeyType()) {
+
+            case PLAINTEXT ->
+                Ospfv3Authentication.KeyType.PLAINTEXT;
+
+            case HEX_STRING ->
+                Ospfv3Authentication.KeyType.HEX_STRING;
+
+            case CIPHERTEXT ->
+                Ospfv3Authentication.KeyType.CIPHERTEXT;
+          };
+    }
+
+    return new Ospfv3Authentication(
+        authentication.getSpi(),
+        authType,
+        keyType,
+        authentication.getKey());
+  }
+
+  private static @Nullable AosCxOspfv3Authentication
+      getAreaOspfv3Authentication(
+          AosCxOspfv3Process process,
+          long area) {
+
+    for (Map.Entry<
+            String,
+            AosCxOspfv3Authentication> entry :
+        process
+            .getAreaAuthentications()
+            .entrySet()) {
+
+      if (toOspfAreaNumber(
+              entry.getKey())
+          == area) {
+
+        return entry.getValue();
+      }
+    }
+
+    return null;
+  }
+
   private void applyOspfv3InterfaceSettings() {
     _interfaces.values().forEach(
         iface -> {
@@ -1585,6 +1649,31 @@ public class AosCxConfiguration extends VendorConfiguration {
               getOspfv3Processes(vrfName)
                   .get(iface.getOspfv3ProcessId());
 
+          long ospfv3Area =
+              toOspfAreaNumber(
+                  iface.getOspfv3Area());
+
+          AosCxOspfv3Authentication
+              effectiveAuthentication =
+                  null;
+
+          if (!iface.getOspfv3AuthenticationNull()) {
+
+            if (iface.getOspfv3Authentication()
+                != null) {
+
+              effectiveAuthentication =
+                  iface.getOspfv3Authentication();
+
+            } else if (vendorProcess != null) {
+
+              effectiveAuthentication =
+                  getAreaOspfv3Authentication(
+                      vendorProcess,
+                      ospfv3Area);
+            }
+          }
+
           Boolean passiveOverride =
               iface.getOspfv3Passive();
 
@@ -1598,7 +1687,10 @@ public class AosCxConfiguration extends VendorConfiguration {
           viInterface.setOspfv3Settings(
               Ospfv3InterfaceSettings.builder()
                   .setAreaName(
-                      toOspfAreaNumber(iface.getOspfv3Area()))
+                      ospfv3Area)
+                  .setAuthentication(
+                      toOspfv3Authentication(
+                          effectiveAuthentication))
                   .setCost(ospfv3Cost)
                   .setProcess(
                       Integer.toString(iface.getOspfv3ProcessId()))

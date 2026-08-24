@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.Ospfv3Authentication;
 import org.batfish.datamodel.ospf.Ospfv3InterfaceSettings;
 import org.junit.Test;
 
@@ -19,6 +20,10 @@ public final class Ospfv3InterfaceSettingsTest {
             .setAreaName(0L)
             .setProcess("1")
             .build();
+
+    assertThat(
+        settings.getAuthentication(),
+        equalTo(null));
 
     assertThat(
         settings.getPriority(),
@@ -44,6 +49,12 @@ public final class Ospfv3InterfaceSettingsTest {
     Ospfv3InterfaceSettings settings =
         Ospfv3InterfaceSettings.builder()
             .setAreaName(7L)
+            .setAuthentication(
+                new Ospfv3Authentication(
+                    300L,
+                    Ospfv3Authentication.AuthType.SHA1,
+                    Ospfv3Authentication.KeyType.PLAINTEXT,
+                    "test-secret"))
             .setCost(25)
             .setDeadInterval(40)
             .setEnabled(true)
@@ -65,6 +76,15 @@ public final class Ospfv3InterfaceSettingsTest {
     assertThat(
         clone,
         equalTo(settings));
+
+    assertThat(
+        clone.getAuthentication(),
+        equalTo(
+            new Ospfv3Authentication(
+                300L,
+                Ospfv3Authentication.AuthType.SHA1,
+                Ospfv3Authentication.KeyType.PLAINTEXT,
+                "test-secret")));
 
     assertThat(
         clone.getPriority(),

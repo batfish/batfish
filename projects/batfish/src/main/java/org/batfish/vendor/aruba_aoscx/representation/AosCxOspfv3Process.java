@@ -501,6 +501,33 @@ public final class AosCxOspfv3Process
     }
   }
 
+  public @Nonnull
+      Map<String, AosCxOspfv3Authentication>
+      getAreaAuthentications() {
+
+    return _areaAuthentications;
+  }
+
+  public void setAreaAuthentication(
+      String area,
+      AosCxOspfv3Authentication authentication) {
+
+    _areas.add(area);
+
+    _areaAuthentications.put(
+        area,
+        authentication);
+  }
+
+  public void clearAreaAuthentication(
+      String area) {
+
+    _areas.add(area);
+
+    _areaAuthentications.remove(
+        area);
+  }
+
   public @Nonnull Map<String, Long>
       getAreaDefaultMetrics() {
     return _areaDefaultMetrics;
@@ -756,6 +783,11 @@ public final class AosCxOspfv3Process
 
   private final @Nonnull Map<String, Boolean>
       _nssaAreas = new HashMap<>();
+
+  private final @Nonnull
+      Map<String, AosCxOspfv3Authentication>
+          _areaAuthentications =
+              new HashMap<>();
 
   private final @Nonnull Map<String, Long>
       _areaDefaultMetrics = new HashMap<>();

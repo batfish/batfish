@@ -1,6 +1,7 @@
 package org.batfish.vendor.aruba_aoscx.grammar;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
@@ -31,6 +32,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_lag_memberContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ip_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_areaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_authenticationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_costContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_dead_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ipv6_ospfv3_hello_intervalContext;
@@ -75,6 +77,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_remote_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_bgp_neighbor_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_stubContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospf_area_nssaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_authenticationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_active_backboneContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_rangeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_area_default_metricContext;
@@ -112,6 +115,7 @@ import org.batfish.vendor.aruba_aoscx.representation.AosCxPrefixListEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxRouteMapEntry;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxInterface.OspfNetworkType;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfProcess;
+import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Authentication;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxOspfv3Process;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute;
 import org.batfish.vendor.aruba_aoscx.representation.AosCxStaticRoute6;
@@ -502,6 +506,120 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentInterface.setOspfv3ProcessId(
         Integer.parseInt(ctx.WORD(0).getText()));
     _currentInterface.setOspfv3Area(ctx.WORD(1).getText());
+  }
+
+  private @Nullable AosCxOspfv3Authentication
+      toOspfv3Authentication(
+          ParserRuleContext owner,
+          AosCxParser.Ospfv3_ipsec_authenticationContext ctx) {
+
+    long spi;
+
+    try {
+      spi =
+          Long.parseLong(
+              ctx.WORD(0).getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          owner,
+          "Ignoring OSPFv3 IPsec authentication with invalid SPI");
+
+      return null;
+    }
+
+    if (spi < 256L
+        || spi > 0xFFFFFFFFL) {
+
+      warn(
+          owner,
+          "Ignoring OSPFv3 IPsec authentication SPI outside 256-4294967295");
+
+      return null;
+    }
+
+    AosCxOspfv3Authentication.AuthType authType =
+        ctx.ospfv3_auth_type().MD5() != null
+            ? AosCxOspfv3Authentication.AuthType.MD5
+            : AosCxOspfv3Authentication.AuthType.SHA1;
+
+    AosCxOspfv3Authentication.KeyType keyType =
+        null;
+
+    String key =
+        null;
+
+    if (ctx.ospfv3_key_type() != null) {
+
+      if (ctx.ospfv3_key_type().PLAINTEXT() != null) {
+        keyType =
+            AosCxOspfv3Authentication.KeyType.PLAINTEXT;
+
+      } else if (
+          ctx.ospfv3_key_type().HEX_STRING() != null) {
+
+        keyType =
+            AosCxOspfv3Authentication.KeyType.HEX_STRING;
+
+      } else {
+
+        keyType =
+            AosCxOspfv3Authentication.KeyType.CIPHERTEXT;
+      }
+
+      key =
+          ctx.WORD(1).getText();
+    }
+
+    return new AosCxOspfv3Authentication(
+        spi,
+        authType,
+        keyType,
+        key);
+  }
+
+  @Override
+  public void exitS_ipv6_ospfv3_authentication(
+      S_ipv6_ospfv3_authenticationContext ctx) {
+
+    if (_currentInterface == null) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 authentication outside interface context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentInterface
+          .clearOspfv3Authentication();
+
+      return;
+    }
+
+    if (ctx.NULL() != null) {
+
+      _currentInterface
+          .setOspfv3AuthenticationNull();
+
+      return;
+    }
+
+    AosCxOspfv3Authentication authentication =
+        toOspfv3Authentication(
+            ctx,
+            ctx.ospfv3_ipsec_authentication());
+
+    if (authentication == null) {
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3Authentication(
+            authentication);
   }
 
   @Override
@@ -1506,6 +1624,47 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
      */
     _currentOspfv3Process
         .clearNssaArea(area);
+  }
+
+  @Override
+  public void exitS_ospfv3_area_authentication(
+      S_ospfv3_area_authenticationContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area authentication outside OSPFv3 context");
+
+      return;
+    }
+
+    String area =
+        ctx.WORD().getText();
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .clearAreaAuthentication(
+              area);
+
+      return;
+    }
+
+    AosCxOspfv3Authentication authentication =
+        toOspfv3Authentication(
+            ctx,
+            ctx.ospfv3_ipsec_authentication());
+
+    if (authentication == null) {
+      return;
+    }
+
+    _currentOspfv3Process
+        .setAreaAuthentication(
+            area,
+            authentication);
   }
 
   @Override

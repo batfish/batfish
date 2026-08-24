@@ -2304,7 +2304,11 @@ final class Ospfv3RoutingProcess {
         || local.getHelloInterval()
             != remote.getHelloInterval()
         || local.getDeadInterval()
-            != remote.getDeadInterval()) {
+            != remote.getDeadInterval()
+        || !Objects.equals(
+            local.getAuthentication(),
+            remote.getAuthentication())) {
+
       return false;
     }
 
