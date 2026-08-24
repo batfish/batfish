@@ -22,12 +22,32 @@ public final class Ospfv3VirtualLink
   private static final String PROP_PEER_ROUTER_ID =
       "peerRouterId";
 
+  private static final String PROP_AUTHENTICATION =
+      "authentication";
+
+  /**
+   * Construct an unauthenticated virtual link.
+   *
+   * <p>This overload preserves the API used by existing callers.
+   */
+  public Ospfv3VirtualLink(
+      long transitArea,
+      Ip peerRouterId) {
+
+    this(
+        transitArea,
+        peerRouterId,
+        null);
+  }
+
   @JsonCreator
   public Ospfv3VirtualLink(
       @JsonProperty(PROP_TRANSIT_AREA)
           @Nullable Long transitArea,
       @JsonProperty(PROP_PEER_ROUTER_ID)
-          @Nullable Ip peerRouterId) {
+          @Nullable Ip peerRouterId,
+      @JsonProperty(PROP_AUTHENTICATION)
+          @Nullable Ospfv3Authentication authentication) {
 
     checkArgument(
         transitArea != null,
@@ -52,6 +72,9 @@ public final class Ospfv3VirtualLink
 
     _peerRouterId =
         peerRouterId;
+
+    _authentication =
+        authentication;
   }
 
   @JsonProperty(PROP_TRANSIT_AREA)
@@ -62,6 +85,13 @@ public final class Ospfv3VirtualLink
   @JsonProperty(PROP_PEER_ROUTER_ID)
   public @Nonnull Ip getPeerRouterId() {
     return _peerRouterId;
+  }
+
+  @JsonProperty(PROP_AUTHENTICATION)
+  public @Nullable Ospfv3Authentication
+      getAuthentication() {
+
+    return _authentication;
   }
 
   @Override
@@ -81,16 +111,22 @@ public final class Ospfv3VirtualLink
 
     return _transitArea == rhs._transitArea
         && _peerRouterId.equals(
-            rhs._peerRouterId);
+            rhs._peerRouterId)
+        && Objects.equals(
+            _authentication,
+            rhs._authentication);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
         _transitArea,
-        _peerRouterId);
+        _peerRouterId,
+        _authentication);
   }
 
   private final long _transitArea;
   private final @Nonnull Ip _peerRouterId;
+  private final @Nullable Ospfv3Authentication
+      _authentication;
 }

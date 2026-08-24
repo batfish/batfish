@@ -89,6 +89,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_max_metric_ro
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_authenticationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
@@ -2209,6 +2210,13 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     if (_currentOspfv3Process == null
         || ctx.getStart().getCharPositionInLine() == 0) {
 
+      _currentOspfv3VirtualLinkProcess =
+          null;
+      _currentOspfv3VirtualLinkArea =
+          null;
+      _currentOspfv3VirtualLinkPeer =
+          null;
+
       warn(
           ctx,
           "Ignoring virtual-link outside OSPFv3 context");
@@ -2223,9 +2231,18 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         ctx.WORD(1).getText();
 
     if (Ip.tryParse(peerText).isEmpty()) {
+
+      _currentOspfv3VirtualLinkProcess =
+          null;
+      _currentOspfv3VirtualLinkArea =
+          null;
+      _currentOspfv3VirtualLinkPeer =
+          null;
+
       warn(
           ctx,
           "Ignoring OSPFv3 virtual-link with invalid peer router ID");
+
       return;
     }
 
@@ -2233,10 +2250,19 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         Ip.parse(peerText);
 
     if (ctx.NO() != null) {
+
       _currentOspfv3Process
           .removeVirtualLink(
               transitArea,
               peer);
+
+      _currentOspfv3VirtualLinkProcess =
+          null;
+      _currentOspfv3VirtualLinkArea =
+          null;
+      _currentOspfv3VirtualLinkPeer =
+          null;
+
       return;
     }
 
@@ -2244,6 +2270,59 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         .setVirtualLink(
             transitArea,
             peer);
+
+    _currentOspfv3VirtualLinkProcess =
+        _currentOspfv3Process;
+
+    _currentOspfv3VirtualLinkArea =
+        transitArea;
+
+    _currentOspfv3VirtualLinkPeer =
+        peer;
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link_authentication(
+      S_ospfv3_virtual_link_authenticationContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link authentication outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .clearVirtualLinkAuthentication(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    AosCxOspfv3Authentication authentication =
+        toOspfv3Authentication(
+            ctx,
+            ctx.ospfv3_ipsec_authentication());
+
+    if (authentication == null) {
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkAuthentication(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            authentication);
   }
 
   @Override
@@ -2684,6 +2763,18 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   private AosCxInterface _currentInterface;
   private AosCxOspfProcess _currentOspfProcess;
   private AosCxOspfv3Process _currentOspfv3Process;
+
+  /*
+   * The AOS-CX grammar is intentionally a flat statement stream. These
+   * fields preserve the selected config-router-vlink6 context so nested
+   * authentication commands can be associated with the immediately
+   * selected virtual link.
+   */
+  private AosCxOspfv3Process
+      _currentOspfv3VirtualLinkProcess;
+  private String _currentOspfv3VirtualLinkArea;
+  private Ip _currentOspfv3VirtualLinkPeer;
+
   private AosCxBgpProcess _currentBgpProcess;
   private Long _currentBgpLocalAs;
   private AosCxRouteMapEntry _currentRouteMapEntry;

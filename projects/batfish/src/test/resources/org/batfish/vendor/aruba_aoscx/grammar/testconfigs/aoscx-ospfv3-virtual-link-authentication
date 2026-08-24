@@ -1,0 +1,10 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 1 virtual-link 192.0.2.2
+        authentication ipsec spi 256 sha1 plaintext vlink-secret
+    area 2 virtual-link 192.0.2.3
+        authentication ipsec spi 300 md5 plaintext temporary-secret
+        no authentication

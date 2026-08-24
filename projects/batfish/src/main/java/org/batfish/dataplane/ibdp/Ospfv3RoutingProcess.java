@@ -1418,7 +1418,8 @@ final class Ospfv3RoutingProcess {
                   link.getTransitArea())
           || !candidate.hasConfiguredVirtualLink(
               link.getTransitArea(),
-              _process.getRouterId())) {
+              _process.getRouterId(),
+              link)) {
 
         continue;
       }
@@ -1440,7 +1441,8 @@ final class Ospfv3RoutingProcess {
 
   private boolean hasConfiguredVirtualLink(
       long transitArea,
-      Ip peerRouterId) {
+      Ip peerRouterId,
+      Ospfv3VirtualLink oppositeLink) {
 
     return _process
         .getVirtualLinks()
@@ -1451,7 +1453,21 @@ final class Ospfv3RoutingProcess {
                         == transitArea
                     && link
                         .getPeerRouterId()
-                        .equals(peerRouterId));
+                        .equals(peerRouterId)
+                    && areVirtualLinkAuthenticationsCompatible(
+                        link,
+                        oppositeLink));
+  }
+
+  @VisibleForTesting
+  static boolean
+      areVirtualLinkAuthenticationsCompatible(
+          Ospfv3VirtualLink lhs,
+          Ospfv3VirtualLink rhs) {
+
+    return Objects.equals(
+        lhs.getAuthentication(),
+        rhs.getAuthentication());
   }
 
   private boolean isValidVirtualLinkTransitArea(

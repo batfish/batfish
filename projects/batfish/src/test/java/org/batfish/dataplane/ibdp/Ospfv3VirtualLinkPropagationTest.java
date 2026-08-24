@@ -513,4 +513,90 @@ public final class Ospfv3VirtualLinkPropagationTest {
             area2Prefix),
         nullValue());
   }
+  @Test
+  public void testVirtualLinkAuthenticationCompatibility() {
+
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        shared =
+            new org.batfish.datamodel.ospf.Ospfv3Authentication(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .KeyType.PLAINTEXT,
+                "shared-secret");
+
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        wrongKey =
+            new org.batfish.datamodel.ospf.Ospfv3Authentication(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .KeyType.PLAINTEXT,
+                "wrong-secret");
+
+    Ospfv3VirtualLink lhs =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            shared);
+
+    Ospfv3VirtualLink rhsMatching =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"),
+            shared);
+
+    Ospfv3VirtualLink rhsWrongKey =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"),
+            wrongKey);
+
+    Ospfv3VirtualLink rhsNoAuth =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkAuthenticationsCompatible(
+                lhs,
+                rhsMatching),
+        equalTo(
+            true));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkAuthenticationsCompatible(
+                lhs,
+                rhsWrongKey),
+        equalTo(
+            false));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkAuthenticationsCompatible(
+                lhs,
+                rhsNoAuth),
+        equalTo(
+            false));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkAuthenticationsCompatible(
+                new Ospfv3VirtualLink(
+                    1L,
+                    Ip.parse(
+                        "192.0.2.2")),
+                rhsNoAuth),
+        equalTo(
+            true));
+  }
+
 }

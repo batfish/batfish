@@ -1385,7 +1385,12 @@ public class AosCxConfiguration extends VendorConfiguration {
                                   new Ospfv3VirtualLink(
                                       toOspfAreaNumber(
                                           transitArea),
-                                      peer))));
+                                      peer,
+                                      toOspfv3Authentication(
+                                          process
+                                              .getVirtualLinkAuthentication(
+                                                  transitArea,
+                                                  peer))))));
 
           Set<String>
               redistributeOspfProcesses =

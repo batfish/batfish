@@ -483,6 +483,62 @@ public final class AosCxOspfv3Process
         .add(peerRouterId);
   }
 
+  public @Nullable AosCxOspfv3Authentication
+      getVirtualLinkAuthentication(
+          String transitArea,
+          Ip peerRouterId) {
+
+    Map<Ip, AosCxOspfv3Authentication>
+        areaAuthentications =
+            _virtualLinkAuthentications.get(
+                transitArea);
+
+    return areaAuthentications == null
+        ? null
+        : areaAuthentications.get(
+            peerRouterId);
+  }
+
+  public void setVirtualLinkAuthentication(
+      String transitArea,
+      Ip peerRouterId,
+      AosCxOspfv3Authentication authentication) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    _virtualLinkAuthentications
+        .computeIfAbsent(
+            transitArea,
+            ignored -> new HashMap<>())
+        .put(
+            peerRouterId,
+            authentication);
+  }
+
+  public void clearVirtualLinkAuthentication(
+      String transitArea,
+      Ip peerRouterId) {
+
+    Map<Ip, AosCxOspfv3Authentication>
+        areaAuthentications =
+            _virtualLinkAuthentications.get(
+                transitArea);
+
+    if (areaAuthentications == null) {
+      return;
+    }
+
+    areaAuthentications.remove(
+        peerRouterId);
+
+    if (areaAuthentications.isEmpty()) {
+      _virtualLinkAuthentications.remove(
+          transitArea);
+    }
+  }
+
   public void removeVirtualLink(
       String transitArea,
       Ip peerRouterId) {
@@ -490,15 +546,19 @@ public final class AosCxOspfv3Process
     Set<Ip> peers =
         _virtualLinks.get(transitArea);
 
-    if (peers == null) {
-      return;
+    if (peers != null) {
+
+      peers.remove(peerRouterId);
+
+      if (peers.isEmpty()) {
+        _virtualLinks.remove(
+            transitArea);
+      }
     }
 
-    peers.remove(peerRouterId);
-
-    if (peers.isEmpty()) {
-      _virtualLinks.remove(transitArea);
-    }
+    clearVirtualLinkAuthentication(
+        transitArea,
+        peerRouterId);
   }
 
   public @Nonnull
@@ -794,6 +854,11 @@ public final class AosCxOspfv3Process
 
   private final @Nonnull Map<String, Set<Ip>>
       _virtualLinks = new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, AosCxOspfv3Authentication>>
+          _virtualLinkAuthentications =
+              new HashMap<>();
 
   private final @Nonnull
       Map<String, Map<Prefix6, Boolean>>

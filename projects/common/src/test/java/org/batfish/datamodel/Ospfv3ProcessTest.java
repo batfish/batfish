@@ -449,4 +449,52 @@ public final class Ospfv3ProcessTest {
                 routeMap)));
   }
 
+  @Test
+  public void testVirtualLinkAuthenticationSerialization() {
+
+    org.batfish.datamodel.ospf.Ospfv3Authentication
+        authentication =
+            new org.batfish.datamodel.ospf.Ospfv3Authentication(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .KeyType.PLAINTEXT,
+                "vlink-secret");
+
+    Ospfv3VirtualLink link =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            authentication);
+
+    Ospfv3VirtualLink clone =
+        BatfishObjectMapper.clone(
+            link,
+            Ospfv3VirtualLink.class);
+
+    assertThat(
+        clone,
+        equalTo(
+            link));
+
+    assertThat(
+        clone.getAuthentication(),
+        equalTo(
+            authentication));
+
+    /*
+     * Existing two-argument constructor remains unauthenticated.
+     */
+    assertThat(
+        new Ospfv3VirtualLink(
+                1L,
+                Ip.parse(
+                    "192.0.2.2"))
+            .getAuthentication(),
+        equalTo(
+            null));
+  }
+
 }

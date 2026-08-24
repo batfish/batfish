@@ -4386,4 +4386,154 @@ public final class AosCxGrammarTest {
             inheritedAuth));
   }
 
+  @Test
+  public void testOspfv3VirtualLinkAuthenticationExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-virtual-link-authentication");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    Ip authenticatedPeer =
+        Ip.parse(
+            "192.0.2.2");
+
+    org.batfish.vendor.aruba_aoscx.representation
+            .AosCxOspfv3Authentication
+        authentication =
+            process
+                .getVirtualLinkAuthentication(
+                    "1",
+                    authenticatedPeer);
+
+    assertThat(
+        authentication,
+        notNullValue());
+
+    assertThat(
+        authentication.getSpi(),
+        equalTo(
+            256L));
+
+    assertThat(
+        authentication.getAuthType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Authentication.AuthType.SHA1));
+
+    assertThat(
+        authentication.getKeyType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Authentication.KeyType.PLAINTEXT));
+
+    assertThat(
+        authentication.getKey(),
+        equalTo(
+            "vlink-secret"));
+
+    /*
+     * "no authentication" removes authentication but keeps the virtual link.
+     */
+    Ip clearedPeer =
+        Ip.parse(
+            "192.0.2.3");
+
+    assertThat(
+        process
+            .getVirtualLinks()
+            .get("2")
+            .contains(
+                clearedPeer),
+        equalTo(
+            true));
+
+    assertThat(
+        process
+            .getVirtualLinkAuthentication(
+                "2",
+                clearedPeer),
+        equalTo(
+            null));
+  }
+
+  @Test
+  public void testOspfv3VirtualLinkAuthenticationConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-virtual-link-authentication");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3VirtualLink
+        authenticatedLink =
+            process
+                .getVirtualLinks()
+                .stream()
+                .filter(
+                    link ->
+                        link.getTransitArea()
+                            == 1L)
+                .findFirst()
+                .orElseThrow();
+
+    assertThat(
+        authenticatedLink.getPeerRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.2")));
+
+    assertThat(
+        authenticatedLink.getAuthentication(),
+        equalTo(
+            new org.batfish.datamodel.ospf.Ospfv3Authentication(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Authentication
+                    .KeyType.PLAINTEXT,
+                "vlink-secret")));
+
+    org.batfish.datamodel.ospf.Ospfv3VirtualLink
+        clearedLink =
+            process
+                .getVirtualLinks()
+                .stream()
+                .filter(
+                    link ->
+                        link.getTransitArea()
+                            == 2L)
+                .findFirst()
+                .orElseThrow();
+
+    assertThat(
+        clearedLink.getAuthentication(),
+        equalTo(
+            null));
+  }
+
 }
