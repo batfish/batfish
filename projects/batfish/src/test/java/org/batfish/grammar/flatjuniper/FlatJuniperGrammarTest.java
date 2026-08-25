@@ -1326,8 +1326,9 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testSyslogFileArchiveExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-syslog-file-archive");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
     Map<String, JunosSyslogFile> files = c.getMasterLogicalSystem().getSyslogFiles();
-    assertThat(files, hasKeys("messages", "bytes-only", "count-only"));
+    assertThat(files, hasKeys("messages", "bytes-only", "count-only", "combined", "bare-archive"));
 
     // Archive size with unit (10m -> 10 * 1024 * 1024 bytes) and archive file count both set
     JunosSyslogFile messages = files.get("messages");
@@ -1343,6 +1344,16 @@ public final class FlatJuniperGrammarTest {
     JunosSyslogFile countOnly = files.get("count-only");
     assertThat(countOnly.getArchiveSizeBytes(), nullValue());
     assertThat(countOnly.getArchiveFileCount(), equalTo(3));
+
+    // Several archive options on one statement
+    JunosSyslogFile combined = files.get("combined");
+    assertThat(combined.getArchiveSizeBytes(), equalTo(1024L * 1024));
+    assertThat(combined.getArchiveFileCount(), equalTo(5));
+
+    // Archive with no options
+    JunosSyslogFile bareArchive = files.get("bare-archive");
+    assertThat(bareArchive.getArchiveSizeBytes(), nullValue());
+    assertThat(bareArchive.getArchiveFileCount(), nullValue());
   }
 
   @Test
@@ -8553,6 +8564,51 @@ public final class FlatJuniperGrammarTest {
                             .build())
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testCrpdEthInterfaces() throws IOException {
+    String hostname = "juniper-crpd-eth-interfaces";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration config =
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostname.toLowerCase());
+
+    assertThat(config.getAllInterfaces(), hasKeys("eth0", "eth0.0", "eth1", "eth1.0"));
+
+    // "from interface eth0.0" matches a connected route on that unit's prefix.
+    RoutingPolicy unit = config.getRoutingPolicies().get("UNIT");
+    assertTrue(
+        unit.call(
+                Environment.builder(config)
+                    .setOriginalRoute(new ConnectedRoute(Prefix.parse("1.1.1.1/24"), "eth0.0"))
+                    .build())
+            .getBooleanValue());
+    assertFalse(
+        unit.call(
+                Environment.builder(config)
+                    .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.3/24"), "eth0.0"))
+                    .build())
+            .getBooleanValue());
+
+    // "from interface eth1" names the parent, which carries no addresses, so it
+    // matches nothing -- not even a connected route on one of its units.
+    RoutingPolicy parent = config.getRoutingPolicies().get("PARENT");
+    assertFalse(
+        parent
+            .call(
+                Environment.builder(config)
+                    .setOriginalRoute(new ConnectedRoute(Prefix.parse("2.2.2.2/24"), "eth1.0"))
+                    .build())
+            .getBooleanValue());
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    // Each is referred to by its own "set interfaces" line and by "from interface".
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "eth0.0", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "eth1", 2));
+    // An interface that is only a device netdev is an undefined reference.
+    assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "eth9"));
   }
 
   @Test

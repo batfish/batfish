@@ -27,6 +27,7 @@ set interfaces ae-0/0/0 unit 0 family inet address 1.1.1.1/31
 set interfaces em0 unit 0 family inet address 1.1.1.1/31
 # TODO: 'es'
 set interfaces et-0/0/0 unit 0 family inet address 1.1.1.1/31
+set interfaces eth0 unit 0 family inet address 1.1.1.1/31
 # TODO: 'fab'
 set interfaces fe-0/0/0 unit 0 family inet address 1.1.1.1/31
 set interfaces fxp0 unit 0 family inet address 1.1.1.1/31

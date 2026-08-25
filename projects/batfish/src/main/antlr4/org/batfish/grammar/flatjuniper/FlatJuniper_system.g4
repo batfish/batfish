@@ -909,6 +909,8 @@ sys_file
    )
 ;
 
+// Junos allows any number of archive options on a single statement, e.g.
+// "archive size 1m files 5 binary-data".
 sysf_archive
 :
    ARCHIVE
@@ -921,7 +923,7 @@ sysf_archive
       | sysfa_start_time_null
       | sysfa_transfer_interval_null
       | sysfa_world_readable_null
-   )?
+   )*
 ;
 
 sysfa_file

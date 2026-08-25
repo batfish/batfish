@@ -1,3 +1,8 @@
 set system host-name juniper-security-misc
 #
 set security certificates local MY_CERT <SCRUBBED>
+#
+# Names whose original text was partly replaced by an anonymizer
+set security certificates local local-cert-%CENSORED% "%CENSORED%"
+set security certificates local local-cert-<SCRUBBED> <SCRUBBED>
+set security certificates local "quoted cert %CENSORED%" <SCRUBBED>

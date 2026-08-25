@@ -10,3 +10,9 @@ set system syslog file bytes-only archive size 65536
 #
 # File with only an archive file count
 set system syslog file count-only archive files 3
+#
+# Several archive options on one statement
+set system syslog file combined archive size 1m files 5 binary-data
+#
+# Archive with no options at all
+set system syslog file bare-archive archive
