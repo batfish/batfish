@@ -114,6 +114,21 @@ public final class AosCxInterface implements Serializable {
   }
 
   /**
+   * Remove this interface from its OSPFv3 process and area.
+   *
+   * <p>Interface-level OSPFv3 knobs remain configured so that they can
+   * become effective again if the interface is later attached to an area.
+   */
+  public void clearOspfv3Area() {
+
+    _ospfv3ProcessId =
+        null;
+
+    _ospfv3Area =
+        null;
+  }
+
+  /**
    * Explicit interface-level OSPFv3 IPsec authentication.
    *
    * <p>Null means either inherit area authentication or use the explicit

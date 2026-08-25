@@ -6327,4 +6327,174 @@ public final class AosCxGrammarTest {
                 "192.0.2.4")));
   }
 
+  @Test
+  public void testOspfv3InterfaceAreaRemovalExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-interface-area-removal");
+
+    /*
+     * The no form removes both process and area membership.
+     */
+    AosCxInterface removed =
+        c.getInterfaces()
+            .get("1/1/1");
+
+    assertThat(
+        removed,
+        notNullValue());
+
+    assertThat(
+        removed.getOspfv3ProcessId(),
+        nullValue());
+
+    assertThat(
+        removed.getOspfv3Area(),
+        nullValue());
+
+    /*
+     * Removing an area binding must not erase independent interface-level
+     * OSPFv3 configuration.
+     */
+    assertThat(
+        removed.getOspfv3Cost(),
+        equalTo(78));
+
+    assertThat(
+        removed.getOspfv3HelloInterval(),
+        equalTo(12));
+
+    assertThat(
+        removed.getOspfv3DeadInterval(),
+        equalTo(48));
+
+    /*
+     * Removal does not permanently disable the interface. A later area
+     * command reattaches it to a new process and area.
+     */
+    AosCxInterface reattached =
+        c.getInterfaces()
+            .get("1/1/2");
+
+    assertThat(
+        reattached,
+        notNullValue());
+
+    assertThat(
+        reattached.getOspfv3ProcessId(),
+        equalTo(2));
+
+    assertThat(
+        reattached.getOspfv3Area(),
+        equalTo("2"));
+
+    /*
+     * The cost configured before unassignment remains available after the
+     * new attachment.
+     */
+    assertThat(
+        reattached.getOspfv3Cost(),
+        equalTo(82));
+
+    AosCxInterface control =
+        c.getInterfaces()
+            .get("1/1/3");
+
+    assertThat(
+        control.getOspfv3ProcessId(),
+        equalTo(1));
+
+    assertThat(
+        control.getOspfv3Area(),
+        equalTo("0"));
+  }
+
+  @Test
+  public void testOspfv3InterfaceAreaRemovalConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-interface-area-removal");
+
+    Configuration c =
+        configs.get(
+            "aoscx-interface-area-removal");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    /*
+     * The removed interface still exists as an IPv6 routed interface, but
+     * it no longer participates in OSPFv3 at all.
+     */
+    org.batfish.datamodel.Interface removed =
+        c.getAllInterfaces()
+            .get("1/1/1");
+
+    assertThat(
+        removed,
+        notNullValue());
+
+    assertThat(
+        removed.getOspfv3Settings(),
+        nullValue());
+
+    /*
+     * Reattaching after the no form creates VI OSPFv3 settings for the new
+     * process/area and preserves the independently configured cost.
+     */
+    org.batfish.datamodel.Interface reattached =
+        c.getAllInterfaces()
+            .get("1/1/2");
+
+    assertThat(
+        reattached,
+        notNullValue());
+
+    assertThat(
+        reattached.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        reattached
+            .getOspfv3Settings()
+            .getProcess(),
+        equalTo("2"));
+
+    assertThat(
+        reattached
+            .getOspfv3Settings()
+            .getAreaName(),
+        equalTo(2L));
+
+    assertThat(
+        reattached
+            .getOspfv3Settings()
+            .getCost(),
+        equalTo(82));
+
+    org.batfish.datamodel.Interface control =
+        c.getAllInterfaces()
+            .get("1/1/3");
+
+    assertThat(
+        control.getOspfv3Settings(),
+        notNullValue());
+
+    assertThat(
+        control
+            .getOspfv3Settings()
+            .getProcess(),
+        equalTo("1"));
+
+    assertThat(
+        control
+            .getOspfv3Settings()
+            .getAreaName(),
+        equalTo(0L));
+  }
+
 }

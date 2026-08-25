@@ -242,7 +242,7 @@ s_ipv6_address
 
 s_ipv6_ospfv3_area
 :
-  IPV6 OSPFV3 WORD AREA WORD NEWLINE
+  NO? IPV6 OSPFV3 WORD AREA WORD NEWLINE
 ;
 
 ospfv3_auth_type

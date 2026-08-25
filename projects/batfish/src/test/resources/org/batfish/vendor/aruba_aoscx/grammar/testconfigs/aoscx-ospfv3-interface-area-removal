@@ -1,0 +1,33 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-INTERFACE-AREA-REMOVAL
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0
+    area 1
+
+router ospfv3 2
+    router-id 192.0.2.2
+    area 2
+
+interface 1/1/1
+    no shutdown
+    ipv6 address 2001:db8:78:1::1/64
+    ipv6 ospfv3 1 area 0
+    ipv6 ospfv3 cost 78
+    ipv6 ospfv3 hello-interval 12
+    ipv6 ospfv3 dead-interval 48
+    no ipv6 ospfv3 1 area 0
+
+interface 1/1/2
+    no shutdown
+    ipv6 address 2001:db8:78:2::1/64
+    ipv6 ospfv3 1 area 1
+    ipv6 ospfv3 cost 82
+    no ipv6 ospfv3 1 area 1
+    ipv6 ospfv3 2 area 2
+
+interface 1/1/3
+    no shutdown
+    ipv6 address 2001:db8:78:3::1/64
+    ipv6 ospfv3 1 area 0

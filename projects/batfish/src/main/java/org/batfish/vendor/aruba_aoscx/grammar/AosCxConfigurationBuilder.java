@@ -534,15 +534,34 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_ipv6_ospfv3_area(S_ipv6_ospfv3_areaContext ctx) {
+  public void exitS_ipv6_ospfv3_area(
+      S_ipv6_ospfv3_areaContext ctx) {
+
     if (_currentInterface == null) {
-      warn(ctx, "Ignoring OSPFv3 area command outside interface context");
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 area command outside interface context");
+
       return;
     }
 
-    _currentInterface.setOspfv3ProcessId(
-        Integer.parseInt(ctx.WORD(0).getText()));
-    _currentInterface.setOspfv3Area(ctx.WORD(1).getText());
+    if (ctx.NO() != null) {
+
+      _currentInterface
+          .clearOspfv3Area();
+
+      return;
+    }
+
+    _currentInterface
+        .setOspfv3ProcessId(
+            Integer.parseInt(
+                ctx.WORD(0).getText()));
+
+    _currentInterface
+        .setOspfv3Area(
+            ctx.WORD(1).getText());
   }
 
   private @Nullable AosCxOspfv3Authentication
