@@ -6157,4 +6157,174 @@ public final class AosCxGrammarTest {
                 .DEFAULT_TRANSIT_DELAY_SECONDS));
   }
 
+  @Test
+  public void testOspfv3ProcessRemovalExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-process-removal");
+
+    /*
+     * Default VRF process 1 was explicitly removed.
+     */
+    assertThat(
+        c.getOspfv3Processes()
+            .containsKey(1),
+        equalTo(false));
+
+    /*
+     * Process 2 was never removed.
+     */
+    assertThat(
+        c.getOspfv3Processes()
+            .containsKey(2),
+        equalTo(true));
+
+    assertThat(
+        c.getOspfv3Processes()
+            .get(2)
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.2")));
+
+    /*
+     * Named-VRF process 3 was removed while process 4 remains.
+     */
+    assertThat(
+        c.getOspfv3Processes("RED")
+            .containsKey(3),
+        equalTo(false));
+
+    assertThat(
+        c.getOspfv3Processes("RED")
+            .containsKey(4),
+        equalTo(true));
+
+    assertThat(
+        c.getOspfv3Processes("RED")
+            .get(4)
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.4")));
+
+    /*
+     * A process may be recreated after deletion. The newly created object
+     * must contain only the later configuration.
+     */
+    assertThat(
+        c.getOspfv3Processes()
+            .containsKey(5),
+        equalTo(true));
+
+    assertThat(
+        c.getOspfv3Processes()
+            .get(5)
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.55")));
+
+    assertThat(
+        c.getOspfv3Processes()
+            .get(5)
+            .getAreas()
+            .contains("55"),
+        equalTo(true));
+  }
+
+  @Test
+  public void testOspfv3ProcessRemovalConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-process-removal");
+
+    Configuration c =
+        configs.get(
+            "aoscx-process-delete");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    /*
+     * Removed default-VRF process must not reach the VI model/dataplane.
+     */
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .containsKey("1"),
+        equalTo(false));
+
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .containsKey("2"),
+        equalTo(true));
+
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2")
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.2")));
+
+    /*
+     * The process that was removed and then recreated is present with its
+     * replacement router ID.
+     */
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .containsKey("5"),
+        equalTo(true));
+
+    assertThat(
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("5")
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.55")));
+
+    assertThat(
+        c.getVrfs()
+            .containsKey("RED"),
+        equalTo(true));
+
+    /*
+     * Deleting an OSPFv3 process does not delete its VRF. Only process 4
+     * survives in RED.
+     */
+    assertThat(
+        c.getVrfs()
+            .get("RED")
+            .getOspfv3Processes()
+            .containsKey("3"),
+        equalTo(false));
+
+    assertThat(
+        c.getVrfs()
+            .get("RED")
+            .getOspfv3Processes()
+            .containsKey("4"),
+        equalTo(true));
+
+    assertThat(
+        c.getVrfs()
+            .get("RED")
+            .getOspfv3Processes()
+            .get("4")
+            .getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.4")));
+  }
+
 }

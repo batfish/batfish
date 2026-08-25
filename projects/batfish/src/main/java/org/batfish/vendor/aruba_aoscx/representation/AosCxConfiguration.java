@@ -279,6 +279,36 @@ public class AosCxConfiguration extends VendorConfiguration {
             AosCxOspfv3Process::new);
   }
 
+  public void removeOspfv3Process(
+      int processId,
+      String vrfName) {
+
+    if (vrfName == null
+        || vrfName.equals(DEFAULT_VRF_NAME)) {
+
+      _ospfv3Processes.remove(
+          processId);
+
+      return;
+    }
+
+    Map<Integer, AosCxOspfv3Process> processes =
+        _ospfv3ProcessesByVrf.get(
+            vrfName);
+
+    if (processes == null) {
+      return;
+    }
+
+    processes.remove(
+        processId);
+
+    if (processes.isEmpty()) {
+      _ospfv3ProcessesByVrf.remove(
+          vrfName);
+    }
+  }
+
   public Map<Integer, AosCxOspfProcess> getOspfProcesses(String vrfName) {
     if (vrfName == null || vrfName.equals(DEFAULT_VRF_NAME)) {
       return _ospfProcesses;

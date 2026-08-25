@@ -3540,6 +3540,7 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   @Override
   public void exitS_router_ospfv3(
       S_router_ospfv3Context ctx) {
+
     int processId =
         Integer.parseInt(
             ctx.WORD(0).getText());
@@ -3549,8 +3550,49 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
             ? null
             : ctx.WORD(1).getText();
 
+    /*
+     * "no router ospfv3" removes the process rather than entering router
+     * configuration context.
+     */
+    if (ctx.NO() != null) {
+
+      _configuration.removeOspfv3Process(
+          processId,
+          vrfName);
+
+      _currentOspfv3Process =
+          null;
+
+      _currentOspfv3VirtualLinkProcess =
+          null;
+
+      _currentOspfv3VirtualLinkArea =
+          null;
+
+      _currentOspfv3VirtualLinkPeer =
+          null;
+
+      _currentOspfProcess =
+          null;
+
+      _currentRouteMapEntry =
+          null;
+
+      _currentInterface =
+          null;
+
+      _currentIpAccessList =
+          null;
+
+      _currentIpv6AccessList =
+          null;
+
+      return;
+    }
+
     if (vrfName != null) {
-      _configuration.addVrf(vrfName);
+      _configuration.addVrf(
+          vrfName);
     }
 
     _currentOspfv3Process =
@@ -3558,11 +3600,33 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
             processId,
             vrfName);
 
-    _currentOspfProcess = null;
-    _currentRouteMapEntry = null;
-    _currentInterface = null;
-    _currentIpAccessList = null;
-    _currentIpv6AccessList = null;
+    /*
+     * Entering another process invalidates any previously selected
+     * virtual-link subcontext.
+     */
+    _currentOspfv3VirtualLinkProcess =
+        null;
+
+    _currentOspfv3VirtualLinkArea =
+        null;
+
+    _currentOspfv3VirtualLinkPeer =
+        null;
+
+    _currentOspfProcess =
+        null;
+
+    _currentRouteMapEntry =
+        null;
+
+    _currentInterface =
+        null;
+
+    _currentIpAccessList =
+        null;
+
+    _currentIpv6AccessList =
+        null;
   }
 
   @Override
