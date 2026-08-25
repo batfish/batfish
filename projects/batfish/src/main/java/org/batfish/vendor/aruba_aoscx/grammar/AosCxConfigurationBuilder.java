@@ -94,6 +94,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_paths
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_authenticationContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_encryptionContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
@@ -2617,6 +2618,50 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
             _currentOspfv3VirtualLinkArea,
             _currentOspfv3VirtualLinkPeer,
             authentication);
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link_encryption(
+      S_ospfv3_virtual_link_encryptionContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link encryption outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .clearVirtualLinkEncryption(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    AosCxOspfv3Encryption encryption =
+        toOspfv3Encryption(
+            ctx,
+            ctx.ospfv3_ipsec_encryption());
+
+    if (encryption == null) {
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkEncryption(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            encryption);
   }
 
   @Override

@@ -4932,4 +4932,206 @@ public final class AosCxGrammarTest {
         equalTo(null));
   }
 
+  @Test
+  public void testOspfv3VirtualLinkEncryptionExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-virtual-link-encryption");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    Ip encryptedPeer =
+        Ip.parse(
+            "192.0.2.2");
+
+    org.batfish.vendor.aruba_aoscx.representation
+            .AosCxOspfv3Encryption
+        encryption =
+            process
+                .getVirtualLinkEncryption(
+                    "1",
+                    encryptedPeer);
+
+    assertThat(
+        encryption,
+        notNullValue());
+
+    assertThat(
+        encryption.getSpi(),
+        equalTo(
+            256L));
+
+    assertThat(
+        encryption.getAuthType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.AuthType.SHA1));
+
+    assertThat(
+        encryption.getAuthKey(),
+        equalTo(
+            "vlink-auth"));
+
+    assertThat(
+        encryption.getEncryptionType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.EncryptionType.AES));
+
+    assertThat(
+        encryption.getEncryptionKey(),
+        equalTo(
+            "0123456789abcdef"));
+
+    /*
+     * no encryption removes ESP while retaining the virtual link.
+     */
+    Ip clearedPeer =
+        Ip.parse(
+            "192.0.2.3");
+
+    assertThat(
+        process
+            .getVirtualLinks()
+            .get("2")
+            .contains(
+                clearedPeer),
+        equalTo(
+            true));
+
+    assertThat(
+        process
+            .getVirtualLinkEncryption(
+                "2",
+                clearedPeer),
+        equalTo(
+            null));
+
+    /*
+     * NULL is an ESP encryption type, not equivalent to no encryption.
+     */
+    org.batfish.vendor.aruba_aoscx.representation
+            .AosCxOspfv3Encryption
+        nullEsp =
+            process
+                .getVirtualLinkEncryption(
+                    "3",
+                    Ip.parse(
+                        "192.0.2.4"));
+
+    assertThat(
+        nullEsp,
+        notNullValue());
+
+    assertThat(
+        nullEsp.getEncryptionType(),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Encryption.EncryptionType.NULL));
+
+    assertThat(
+        nullEsp.getEncryptionKey(),
+        equalTo(
+            null));
+  }
+
+  @Test
+  public void testOspfv3VirtualLinkEncryptionConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-virtual-link-encryption");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3VirtualLink encrypted =
+        process
+            .getVirtualLinks()
+            .stream()
+            .filter(
+                link ->
+                    link.getTransitArea()
+                        == 1L)
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        encrypted.getEncryption(),
+        equalTo(
+            new org.batfish.datamodel.ospf.Ospfv3Encryption(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "vlink-auth",
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .EncryptionType.AES,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "0123456789abcdef")));
+
+    org.batfish.datamodel.ospf.Ospfv3VirtualLink cleared =
+        process
+            .getVirtualLinks()
+            .stream()
+            .filter(
+                link ->
+                    link.getTransitArea()
+                        == 2L)
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        cleared.getEncryption(),
+        equalTo(
+            null));
+
+    org.batfish.datamodel.ospf.Ospfv3VirtualLink nullEsp =
+        process
+            .getVirtualLinks()
+            .stream()
+            .filter(
+                link ->
+                    link.getTransitArea()
+                        == 3L)
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        nullEsp.getEncryption(),
+        notNullValue());
+
+    assertThat(
+        nullEsp
+            .getEncryption()
+            .getEncryptionType(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Encryption
+                .EncryptionType.NULL));
+  }
+
 }

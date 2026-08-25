@@ -550,6 +550,62 @@ public final class AosCxOspfv3Process
     }
   }
 
+  public @Nullable AosCxOspfv3Encryption
+      getVirtualLinkEncryption(
+          String transitArea,
+          Ip peerRouterId) {
+
+    Map<Ip, AosCxOspfv3Encryption>
+        areaEncryptions =
+            _virtualLinkEncryptions.get(
+                transitArea);
+
+    return areaEncryptions == null
+        ? null
+        : areaEncryptions.get(
+            peerRouterId);
+  }
+
+  public void setVirtualLinkEncryption(
+      String transitArea,
+      Ip peerRouterId,
+      AosCxOspfv3Encryption encryption) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    _virtualLinkEncryptions
+        .computeIfAbsent(
+            transitArea,
+            ignored -> new HashMap<>())
+        .put(
+            peerRouterId,
+            encryption);
+  }
+
+  public void clearVirtualLinkEncryption(
+      String transitArea,
+      Ip peerRouterId) {
+
+    Map<Ip, AosCxOspfv3Encryption>
+        areaEncryptions =
+            _virtualLinkEncryptions.get(
+                transitArea);
+
+    if (areaEncryptions == null) {
+      return;
+    }
+
+    areaEncryptions.remove(
+        peerRouterId);
+
+    if (areaEncryptions.isEmpty()) {
+      _virtualLinkEncryptions.remove(
+          transitArea);
+    }
+  }
+
   public void removeVirtualLink(
       String transitArea,
       Ip peerRouterId) {
@@ -568,6 +624,10 @@ public final class AosCxOspfv3Process
     }
 
     clearVirtualLinkAuthentication(
+        transitArea,
+        peerRouterId);
+
+    clearVirtualLinkEncryption(
         transitArea,
         peerRouterId);
   }
@@ -903,6 +963,11 @@ public final class AosCxOspfv3Process
   private final @Nonnull
       Map<String, Map<Ip, AosCxOspfv3Authentication>>
           _virtualLinkAuthentications =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, AosCxOspfv3Encryption>>
+          _virtualLinkEncryptions =
               new HashMap<>();
 
   private final @Nonnull

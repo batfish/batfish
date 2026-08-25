@@ -70,6 +70,7 @@ statement
   | s_ospfv3_summary_address
   | s_ospfv3_virtual_link
   | s_ospfv3_virtual_link_authentication
+  | s_ospfv3_virtual_link_encryption
   | s_ospfv3_process_state
   | s_redistribute_connected
   | s_redistribute_local_loopback
@@ -666,6 +667,12 @@ s_ospfv3_virtual_link_authentication
 :
   AUTHENTICATION ospfv3_ipsec_authentication NEWLINE
   | NO AUTHENTICATION NEWLINE
+;
+
+s_ospfv3_virtual_link_encryption
+:
+  ENCRYPTION ospfv3_ipsec_encryption NEWLINE
+  | NO ENCRYPTION NEWLINE
 ;
 
 s_ospfv3_process_state

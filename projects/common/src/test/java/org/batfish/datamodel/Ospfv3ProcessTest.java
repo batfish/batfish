@@ -497,4 +497,74 @@ public final class Ospfv3ProcessTest {
             null));
   }
 
+  @Test
+  public void testVirtualLinkEncryptionSerialization() {
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        encryption =
+            new org.batfish.datamodel.ospf.Ospfv3Encryption(
+                400L,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "vlink-auth",
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .EncryptionType.AES,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "0123456789abcdef");
+
+    Ospfv3VirtualLink link =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            null,
+            encryption);
+
+    Ospfv3VirtualLink clone =
+        BatfishObjectMapper.clone(
+            link,
+            Ospfv3VirtualLink.class);
+
+    assertThat(
+        clone,
+        equalTo(
+            link));
+
+    assertThat(
+        clone.getAuthentication(),
+        equalTo(
+            null));
+
+    assertThat(
+        clone.getEncryption(),
+        equalTo(
+            encryption));
+
+    /*
+     * Existing two- and three-argument constructors continue to mean
+     * no ESP encryption unless explicitly configured.
+     */
+    assertThat(
+        new Ospfv3VirtualLink(
+                1L,
+                Ip.parse(
+                    "192.0.2.2"))
+            .getEncryption(),
+        equalTo(
+            null));
+
+    assertThat(
+        new Ospfv3VirtualLink(
+                1L,
+                Ip.parse(
+                    "192.0.2.2"),
+                null)
+            .getEncryption(),
+        equalTo(
+            null));
+  }
+
 }

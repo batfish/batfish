@@ -1391,6 +1391,11 @@ public class AosCxConfiguration extends VendorConfiguration {
                                           process
                                               .getVirtualLinkAuthentication(
                                                   transitArea,
+                                                  peer)),
+                                      toOspfv3Encryption(
+                                          process
+                                              .getVirtualLinkEncryption(
+                                                  transitArea,
                                                   peer))))));
 
           Set<String>

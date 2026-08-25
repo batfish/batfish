@@ -25,8 +25,11 @@ public final class Ospfv3VirtualLink
   private static final String PROP_AUTHENTICATION =
       "authentication";
 
+  private static final String PROP_ENCRYPTION =
+      "encryption";
+
   /**
-   * Construct an unauthenticated virtual link.
+   * Construct a virtual link without IPsec security.
    *
    * <p>This overload preserves the API used by existing callers.
    */
@@ -37,6 +40,25 @@ public final class Ospfv3VirtualLink
     this(
         transitArea,
         peerRouterId,
+        null,
+        null);
+  }
+
+  /**
+   * Construct a virtual link with optional AH authentication and no ESP.
+   *
+   * <p>This overload preserves the API introduced by OSPFv3 virtual-link
+   * authentication support.
+   */
+  public Ospfv3VirtualLink(
+      long transitArea,
+      Ip peerRouterId,
+      @Nullable Ospfv3Authentication authentication) {
+
+    this(
+        transitArea,
+        peerRouterId,
+        authentication,
         null);
   }
 
@@ -47,7 +69,9 @@ public final class Ospfv3VirtualLink
       @JsonProperty(PROP_PEER_ROUTER_ID)
           @Nullable Ip peerRouterId,
       @JsonProperty(PROP_AUTHENTICATION)
-          @Nullable Ospfv3Authentication authentication) {
+          @Nullable Ospfv3Authentication authentication,
+      @JsonProperty(PROP_ENCRYPTION)
+          @Nullable Ospfv3Encryption encryption) {
 
     checkArgument(
         transitArea != null,
@@ -75,6 +99,9 @@ public final class Ospfv3VirtualLink
 
     _authentication =
         authentication;
+
+    _encryption =
+        encryption;
   }
 
   @JsonProperty(PROP_TRANSIT_AREA)
@@ -92,6 +119,13 @@ public final class Ospfv3VirtualLink
       getAuthentication() {
 
     return _authentication;
+  }
+
+  @JsonProperty(PROP_ENCRYPTION)
+  public @Nullable Ospfv3Encryption
+      getEncryption() {
+
+    return _encryption;
   }
 
   @Override
@@ -114,7 +148,10 @@ public final class Ospfv3VirtualLink
             rhs._peerRouterId)
         && Objects.equals(
             _authentication,
-            rhs._authentication);
+            rhs._authentication)
+        && Objects.equals(
+            _encryption,
+            rhs._encryption);
   }
 
   @Override
@@ -122,11 +159,14 @@ public final class Ospfv3VirtualLink
     return Objects.hash(
         _transitArea,
         _peerRouterId,
-        _authentication);
+        _authentication,
+        _encryption);
   }
 
   private final long _transitArea;
   private final @Nonnull Ip _peerRouterId;
   private final @Nullable Ospfv3Authentication
       _authentication;
+  private final @Nullable Ospfv3Encryption
+      _encryption;
 }

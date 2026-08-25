@@ -599,4 +599,103 @@ public final class Ospfv3VirtualLinkPropagationTest {
             true));
   }
 
+  @Test
+  public void testVirtualLinkEncryptionCompatibility() {
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        shared =
+            new org.batfish.datamodel.ospf.Ospfv3Encryption(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "shared-auth",
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .EncryptionType.AES,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "0123456789abcdef");
+
+    org.batfish.datamodel.ospf.Ospfv3Encryption
+        wrongKey =
+            new org.batfish.datamodel.ospf.Ospfv3Encryption(
+                256L,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .AuthType.SHA1,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "shared-auth",
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .EncryptionType.AES,
+                org.batfish.datamodel.ospf.Ospfv3Encryption
+                    .KeyType.PLAINTEXT,
+                "fedcba9876543210");
+
+    Ospfv3VirtualLink lhs =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            null,
+            shared);
+
+    Ospfv3VirtualLink rhsMatching =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"),
+            null,
+            shared);
+
+    Ospfv3VirtualLink rhsWrongKey =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"),
+            null,
+            wrongKey);
+
+    Ospfv3VirtualLink rhsNoEncryption =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSecuritySettingsCompatible(
+                lhs,
+                rhsMatching),
+        equalTo(
+            true));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSecuritySettingsCompatible(
+                lhs,
+                rhsWrongKey),
+        equalTo(
+            false));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSecuritySettingsCompatible(
+                lhs,
+                rhsNoEncryption),
+        equalTo(
+            false));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSecuritySettingsCompatible(
+                new Ospfv3VirtualLink(
+                    1L,
+                    Ip.parse(
+                        "192.0.2.2")),
+                rhsNoEncryption),
+        equalTo(
+            true));
+  }
+
 }
