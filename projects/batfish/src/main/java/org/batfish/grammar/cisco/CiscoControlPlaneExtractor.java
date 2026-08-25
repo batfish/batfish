@@ -735,14 +735,16 @@ import org.batfish.grammar.cisco.CiscoParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.L_transportContext;
 import org.batfish.grammar.cisco.CiscoParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_consoleContext;
+import org.batfish.grammar.cisco.CiscoParser.Logging_facilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_onContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_trapContext;
+import org.batfish.grammar.cisco.CiscoParser.Loggingb_discriminatorContext;
+import org.batfish.grammar.cisco.CiscoParser.Loggingb_size_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_as_path_access_list_rm_stanzaContext;
@@ -1241,6 +1243,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
+import org.batfish.representation.cisco.SyslogTransportProtocol;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
@@ -6814,7 +6817,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitLogging_buffered(Logging_bufferedContext ctx) {
+  public void exitLoggingb_discriminator(Loggingb_discriminatorContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getIosLogging().setBufferedDiscriminator(ctx.name.getText());
+  }
+
+  @Override
+  public void exitLoggingb_size_severity(Loggingb_size_severityContext ctx) {
     if (_no) {
       return;
     }
@@ -6822,25 +6833,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Integer severityNum = null;
     String severity = null;
     if (ctx.size != null) {
-      // something was parsed as buffer size but it could be logging severity
-      // as well
-      // it is buffer size if the value is greater than min buffer size
-      // otherwise, it is logging severity
-      int sizeRawNum = toInteger(ctx.size);
-      if (sizeRawNum > Logging.MAX_LOGGING_SEVERITY) {
-        size = sizeRawNum;
+      // A number is a buffer size (4096-2147483647) when it exceeds the max severity level.
+      // otherwise it is a severity level (0-7) e.g. `logging buffered 5`, uint32 permits values
+      // beyond the signed-int range so range-check against a long is used to avoid overflow
+      long raw = Long.parseLong(ctx.size.getText());
+      if (raw <= Logging.MAX_LOGGING_SEVERITY) {
+        severityNum = (int) raw;
+        severity = toLoggingSeverity((int) raw);
+      } else if (raw <= Integer.MAX_VALUE && LOGGING_BUFFERED_SIZE_RANGE.contains((int) raw)) {
+        size = (int) raw;
       } else {
-        if (ctx.logging_severity() != null) {
-          // if we have explicity severity as well; we've messed up
-          throw new BatfishException("Ambiguous parsing of logging buffered");
-        }
-        severityNum = sizeRawNum;
-        severity = toLoggingSeverity(severityNum);
+        warn(
+            ctx,
+            String.format(
+                "Expected logging buffered size in range %s, but got '%d'",
+                LOGGING_BUFFERED_SIZE_RANGE, raw));
       }
-    } else if (ctx.logging_severity() != null) {
+    }
+    if (ctx.logging_severity() != null) {
       severityNum = toLoggingSeverityNum(ctx.logging_severity());
       severity = toLoggingSeverity(ctx.logging_severity());
     }
+
+    // Shared vendor_family model: capture buffer size and severity (behavior unchanged)
     Logging logging = _configuration.getCf().getLogging();
     Buffered buffered = logging.getBuffered();
     if (buffered == null) {
@@ -6850,6 +6865,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     buffered.setSeverity(severity);
     buffered.setSeverityNum(severityNum);
     buffered.setSize(size);
+
+    // Vendor-specific IOS model: capture size and severity
+    org.batfish.representation.cisco.Logging iosLogging = _configuration.getIosLogging();
+    iosLogging.setBufferedSize(size);
+    iosLogging.setBufferedSeverity(severity);
+    iosLogging.setBufferedSeverityNum(severityNum);
   }
 
   @Override
@@ -6878,10 +6899,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_no) {
       return;
     }
-    Logging logging = _configuration.getCf().getLogging();
     String hostname = ctx.hostname.getText();
-    LoggingHost host = new LoggingHost(hostname);
-    logging.getHosts().put(hostname, host);
+    // Preserve shared-model behavior (used for the VI loggingServers set).
+    Logging logging = _configuration.getCf().getLogging();
+    logging.getHosts().put(hostname, new LoggingHost(hostname));
+
+    // Vendor-specific IOS model: capture transport and port. When no transport is configured the
+    // model derives the default (UDP) and the port defaults to the effective transport's port.
+    org.batfish.representation.cisco.LoggingHost syslogHost =
+        new org.batfish.representation.cisco.LoggingHost(hostname);
+    if (ctx.TCP() != null) {
+      syslogHost.setTransport(SyslogTransportProtocol.TCP);
+    } else if (ctx.UDP() != null) {
+      syslogHost.setTransport(SyslogTransportProtocol.UDP);
+    }
+    if (ctx.dec() != null) {
+      toIntegerInSpace(ctx, ctx.dec(), LOGGING_HOST_PORT_RANGE, "logging host port")
+          .ifPresent(syslogHost::setPort);
+    }
+    _configuration.getIosLogging().getHosts().put(hostname, syslogHost);
   }
 
   @Override
@@ -6930,6 +6966,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     trap.setSeverity(severity);
     trap.setSeverityNum(severityNum);
+
+    // Vendor-specific IOS model: record the global trap severity by name and level.
+    _configuration.getIosLogging().setTrapSeverity(severity);
+    _configuration.getIosLogging().setTrapSeverityNum(severityNum);
+  }
+
+  @Override
+  public void exitLogging_facility(Logging_facilityContext ctx) {
+    if (_no) {
+      return;
+    }
+    _configuration.getIosLogging().setFacility(ctx.facility.getText());
   }
 
   @Override
@@ -11046,4 +11094,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IntegerSpace.of(Range.closed(0, 4095));
 
   private static final IntegerSpace NTP_KEY_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+
+  // Syslog logging host port range.
+  private static final IntegerSpace LOGGING_HOST_PORT_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
+
+  // `logging buffered` internal buffer size range (bytes).
+  private static final IntegerSpace LOGGING_BUFFERED_SIZE_RANGE =
+      IntegerSpace.of(Range.closed(4096, Integer.MAX_VALUE));
 }
