@@ -1,0 +1,19 @@
+#
+set system host-name juniper-crpd-eth-interfaces
+#
+# cRPD runs on Linux netdevs, so interface names look like eth0, not ge-0/0/0.
+set interfaces eth0 unit 0 family inet address 1.1.1.1/24
+set interfaces eth1 unit 0 family inet address 2.2.2.2/24
+#
+# A logical unit, which carries the addresses.
+set policy-options policy-statement UNIT term TERM1 from interface eth0.0
+set policy-options policy-statement UNIT term TERM1 then accept
+#
+# The bare parent interface. Addresses live on the unit, so the parent has none.
+set policy-options policy-statement PARENT term TERM1 from interface eth1
+set policy-options policy-statement PARENT term TERM1 then accept
+#
+# cRPD configs often have no interfaces stanza at all, leaving the interface a
+# device netdev that Batfish never sees.
+set policy-options policy-statement UNDEFINED term TERM1 from interface eth9
+set policy-options policy-statement UNDEFINED term TERM1 then accept

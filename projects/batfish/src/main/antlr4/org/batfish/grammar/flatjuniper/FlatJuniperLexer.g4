@@ -3774,6 +3774,7 @@ F_InterfaceMediaType
    'em' |
    'es' |
    'et' |
+   'eth' | // Linux netdev name, used by cRPD
    'fab' |
    'fe' |
    'fti' |
@@ -3955,6 +3956,9 @@ F_NameChar
   | ':'
   // Junos allows '>' in names, e.g. LSP name "WASH->ATLA".
   | '>'
+  // An anonymizer that redacted part of a name leaves its marker inside the
+  // name, e.g. certificate name "local-cert-%CENSORED%".
+  | F_Scrubbed
 ;
 
 // Any number of newlines, allowing whitespace in between
