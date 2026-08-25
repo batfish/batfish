@@ -10,6 +10,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecProtocol;
 
 /** Represents a crypto profile for Palo Alto */
 public final class CryptoProfile implements Serializable {
@@ -34,6 +35,9 @@ public final class CryptoProfile implements Serializable {
   private final @Nonnull String _name;
 
   private final @Nonnull Type _type;
+
+  /** ESP or AH; only meaningful for {@link Type#IPSEC}. Defaults to ESP. */
+  private @Nonnull IpsecProtocol _protocol = IpsecProtocol.ESP;
 
   public CryptoProfile(String name, Type cpType) {
     this(name, cpType, null, null, null, null, null);
@@ -69,6 +73,14 @@ public final class CryptoProfile implements Serializable {
         && Objects.equals(_encryptionAlgorithms, rhs._encryptionAlgorithms)
         && Objects.equals(_hashAlgorithm, rhs._hashAlgorithm)
         && Objects.equals(_lifetimeSeconds, rhs._lifetimeSeconds);
+  }
+
+  public @Nonnull IpsecProtocol getProtocol() {
+    return _protocol;
+  }
+
+  public void setProtocol(@Nonnull IpsecProtocol protocol) {
+    _protocol = protocol;
   }
 
   public @Nullable IpsecAuthenticationAlgorithm getAuthAlgorithm() {

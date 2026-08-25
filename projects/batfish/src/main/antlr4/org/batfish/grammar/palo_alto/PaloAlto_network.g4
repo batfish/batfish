@@ -140,21 +140,37 @@ snikeg_authentication
 
 snikega_certificate
 :
-    CERTIFICATE null_rest_of_line
+    CERTIFICATE credential = null_rest_of_line
 ;
 
 snikega_pre_shared_key
 :
-    PRE_SHARED_KEY null_rest_of_line
+    PRE_SHARED_KEY
+    (
+        snikegapsk_key
+        | null_rest_of_line
+    )
+;
+
+snikegapsk_key
+:
+    KEY key = null_rest_of_line
 ;
 
 snikeg_local_address
 :
     LOCAL_ADDRESS
     (
-        snikeg_la_interface
+        snikeg_la_floating_ip
+        | snikeg_la_interface
         | snikeg_la_ip
+        | null_rest_of_line
     )
+;
+
+snikeg_la_floating_ip
+:
+    FLOATING_IP addr = interface_address_or_reference
 ;
 
 snikeg_la_interface
@@ -169,28 +185,72 @@ snikeg_la_ip
 
 snikeg_peer_address
 :
-    PEER_ADDRESS IP addr = interface_address_or_reference
+    PEER_ADDRESS
+    (
+        snikegpa_dynamic
+        | snikegpa_fqdn
+        | snikegpa_ip
+        | null_rest_of_line
+    )
+;
+
+snikegpa_dynamic
+:
+    DYNAMIC
+;
+
+snikegpa_fqdn
+:
+    FQDN name = variable
+;
+
+snikegpa_ip
+:
+    IP addr = interface_address_or_reference
 ;
 
 snikeg_protocol
 :
     PROTOCOL
     (
-        (
-            IKEV1
-            | IKEV2
-        )
-        (
-            snikegp_ike_crypto_profile
-            | null_rest_of_line
-        )
+        snikegp_ikev1
+        | snikegp_ikev2
+        | snikegp_version
         | null_rest_of_line
     )
 ;
 
-snikegp_ike_crypto_profile
+snikegp_ikev1
+:
+    IKEV1
+    (
+        snikegpv1_ike_crypto_profile
+        | null_rest_of_line
+    )
+;
+
+snikegpv1_ike_crypto_profile
 :
     IKE_CRYPTO_PROFILE name = variable
+;
+
+snikegp_ikev2
+:
+    IKEV2
+    (
+        snikegpv2_ike_crypto_profile
+        | null_rest_of_line
+    )
+;
+
+snikegpv2_ike_crypto_profile
+:
+    IKE_CRYPTO_PROFILE name = variable
+;
+
+snikegp_version
+:
+    VERSION version = variable
 ;
 
 sn_tunnel
@@ -210,6 +270,7 @@ sntun_ipsec
         (
             sntuni_auto_key
             | sntuni_disabled
+            | sntuni_ipsec_mode
             | sntuni_tunnel_interface
             | null_rest_of_line
         )
@@ -239,6 +300,15 @@ sntunia_ipsec_crypto_profile
 sntuni_disabled
 :
     DISABLED yn = yes_or_no
+;
+
+sntuni_ipsec_mode
+:
+    IPSEC_MODE
+    (
+        TRANSPORT
+        | TUNNEL
+    )
 ;
 
 sntuni_tunnel_interface
@@ -339,14 +409,24 @@ snicp_ipsec_crypto_profiles
 :
     IPSEC_CRYPTO_PROFILES name = variable
     (
-        (
-            ESP
-            (
-                cp_authentication
-                | cp_encryption
-            )
-        )
+        snicpi_esp
+        | snicpi_ah
         | cp_dh_group
         | cp_lifetime
     )
+;
+
+snicpi_esp
+:
+    ESP
+    (
+        cp_authentication
+        | cp_encryption
+        | null_rest_of_line
+    )
+;
+
+snicpi_ah
+:
+    AH cp_authentication
 ;

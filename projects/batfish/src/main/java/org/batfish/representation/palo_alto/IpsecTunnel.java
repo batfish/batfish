@@ -3,6 +3,7 @@ package org.batfish.representation.palo_alto;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.IpsecEncapsulationMode;
 
 /** Represents a Palo Alto IPsec tunnel, configured under {@code network tunnel ipsec}. */
 public final class IpsecTunnel implements Serializable {
@@ -14,6 +15,9 @@ public final class IpsecTunnel implements Serializable {
   private @Nullable String _ikeGateway;
 
   private @Nullable String _ipsecCryptoProfile;
+
+  /** {@code ipsec-mode}; PAN-OS defaults to tunnel mode. */
+  private @Nonnull IpsecEncapsulationMode _ipsecMode = IpsecEncapsulationMode.TUNNEL;
 
   private @Nullable String _tunnelInterface;
 
@@ -40,6 +44,14 @@ public final class IpsecTunnel implements Serializable {
 
   public void setIkeGateway(@Nullable String ikeGateway) {
     _ikeGateway = ikeGateway;
+  }
+
+  public @Nonnull IpsecEncapsulationMode getIpsecMode() {
+    return _ipsecMode;
+  }
+
+  public void setIpsecMode(@Nonnull IpsecEncapsulationMode ipsecMode) {
+    _ipsecMode = ipsecMode;
   }
 
   public @Nullable String getIpsecCryptoProfile() {

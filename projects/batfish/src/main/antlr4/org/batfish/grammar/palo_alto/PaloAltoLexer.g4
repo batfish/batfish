@@ -63,6 +63,8 @@ AGGREGATE_GROUP: 'aggregate-group';
 
 AGGREGATE_MED: 'aggregate-med';
 
+AH: 'ah';
+
 ALGORITHM: 'algorithm';
 
 ALL: 'all';
@@ -95,11 +97,11 @@ AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_PROFILE: 'authentication-profile';
 
-AUTO_KEY: 'auto-key';
-
 AUTHENTICATION_TYPE: 'authentication-type';
 
 AUTO: 'auto';
+
+AUTO_KEY: 'auto-key';
 
 BEFORE: 'before';
 
@@ -265,6 +267,8 @@ FILE_BLOCKING: 'file-blocking';
 
 FILTER: 'filter';
 
+FLOATING_IP: 'floating-ip';
+
 FORMAT: 'format';
 
 FQDN: 'fqdn';
@@ -348,13 +352,13 @@ IKE: 'ike';
 
 IKE_CRYPTO_PROFILE: 'ike-crypto-profile';
 
+IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
+
 IKE_GATEWAY: 'ike-gateway';
 
 IKEV1: 'ikev1';
 
 IKEV2: 'ikev2';
-
-IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
 
 IMPORT: 'import';
 
@@ -380,17 +384,21 @@ IP_NETMASK: 'ip-netmask';
 
 IP_RANGE_LITERAL: 'ip-range';
 
-IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
-
 IPSEC: 'ipsec';
 
 IPSEC_CRYPTO_PROFILE: 'ipsec-crypto-profile';
+
+IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
+
+IPSEC_MODE: 'ipsec-mode';
 
 IPV4: 'ipv4';
 
 IPV6: 'ipv6';
 
 KEEP_ALIVE_INTERVAL: 'keep-alive-interval';
+
+KEY: 'key';
 
 LAYER2: 'layer2';
 
@@ -777,6 +785,8 @@ USED_BY_MALWARE: 'used-by-malware';
 USERID: 'userid';
 
 USERNAME: 'username';
+
+VERSION: 'version';
 
 VIRTUAL_ROUTER: 'virtual-router';
 
