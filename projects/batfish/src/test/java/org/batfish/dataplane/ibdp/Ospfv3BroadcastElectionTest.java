@@ -563,4 +563,151 @@ public final class Ospfv3BroadcastElectionTest {
                 "2001:db8:101::1/128")),
         equalTo(null));
   }
+  @Test
+  public void testDuplicateRouterIdExcludedFromElection() {
+
+    Node r1 =
+        TestUtils.makeIosRouter(
+            "duplicate-dr1");
+
+    Node r2 =
+        TestUtils.makeIosRouter(
+            "duplicate-dr2");
+
+    addLan(
+        r1,
+        "duplicate-dr1-lan",
+        "2001:db8:82:20::1/64",
+        10,
+        10);
+
+    addLan(
+        r2,
+        "duplicate-dr2-lan",
+        "2001:db8:82:20::2/64",
+        20,
+        200);
+
+    addLoopback(
+        r1,
+        "duplicate-dr1-loop",
+        "2001:db8:82:101::1/128");
+
+    addLoopback(
+        r2,
+        "duplicate-dr2-loop",
+        "2001:db8:82:102::2/128");
+
+    /*
+     * r2 would win the election by priority if it were a valid neighbor,
+     * but its router ID duplicates r1's router ID.
+     */
+    addProcess(
+        r1,
+        "192.0.2.182",
+        "duplicate-dr1-lan",
+        "duplicate-dr1-loop");
+
+    addProcess(
+        r2,
+        "192.0.2.182",
+        "duplicate-dr2-lan",
+        "duplicate-dr2-loop");
+
+    VirtualRouter vr1 =
+        r1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        r2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder()
+            .build();
+
+    vr1.initForIgpComputation(
+        topology);
+
+    vr2.initForIgpComputation(
+        topology);
+
+    NodeInterfacePair r1Lan =
+        NodeInterfacePair.of(
+            "duplicate-dr1",
+            "duplicate-dr1-lan");
+
+    NodeInterfacePair r2Lan =
+        NodeInterfacePair.of(
+            "duplicate-dr2",
+            "duplicate-dr2-lan");
+
+    BroadcastL3Adjacencies adjacencies =
+        new BroadcastL3Adjacencies(
+            Set.of(
+                r1Lan,
+                r2Lan));
+
+    Map<String, Node> nodes =
+        ImmutableMap.of(
+            "duplicate-dr1",
+            r1,
+            "duplicate-dr2",
+            r2);
+
+    Ospfv3RoutingProcess.BroadcastElection election =
+        vr1.getOspfv3Processes()
+            .get("1")
+            .electBroadcastDesignatedRouters(
+                r1.getConfiguration()
+                    .getAllInterfaces()
+                    .get(
+                        "duplicate-dr1-lan"),
+                r1Lan,
+                nodes,
+                adjacencies);
+
+    /*
+     * r2 is not a valid OSPF neighbor candidate because its router ID
+     * duplicates ours. r1 is therefore the only eligible candidate.
+     */
+    assertThat(
+        election.getDr(),
+        equalTo(
+            r1Lan));
+
+    assertThat(
+        election.getBdr(),
+        equalTo(
+            null));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            List.of(
+                vr1,
+                vr2),
+            adjacencies);
+
+    /*
+     * The duplicate-ID pair must not exchange routes on the broadcast
+     * network either.
+     */
+    assertThat(
+        findIntraAreaRoute(
+            vr1,
+            Prefix6.parse(
+                "2001:db8:82:102::2/128")),
+        equalTo(
+            null));
+
+    assertThat(
+        findIntraAreaRoute(
+            vr2,
+            Prefix6.parse(
+                "2001:db8:82:101::1/128")),
+        equalTo(
+            null));
+  }
+
 }

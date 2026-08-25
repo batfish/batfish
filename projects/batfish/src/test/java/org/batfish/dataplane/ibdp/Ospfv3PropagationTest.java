@@ -1015,4 +1015,116 @@ public final class Ospfv3PropagationTest {
         notNullValue());
   }
 
+  @Test
+  public void testDuplicateRouterIdPreventsAdjacency() {
+
+    Node n1 =
+        TestUtils.makeIosRouter(
+            "duplicate1");
+
+    Node n2 =
+        TestUtils.makeIosRouter(
+            "duplicate2");
+
+    addInterface(
+        n1,
+        "eth12",
+        "2001:db8:82:12::1/64",
+        InterfaceType.PHYSICAL,
+        10,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addInterface(
+        n2,
+        "eth21",
+        "2001:db8:82:12::2/64",
+        InterfaceType.PHYSICAL,
+        20,
+        OspfNetworkType.POINT_TO_POINT);
+
+    addInterface(
+        n1,
+        "loopback82",
+        "2001:db8:82::1/128",
+        InterfaceType.LOOPBACK,
+        1,
+        OspfNetworkType.BROADCAST);
+
+    /*
+     * The configurations are otherwise compatible, but both processes use
+     * the same router ID.
+     */
+    addProcess(
+        n1,
+        "192.0.2.82",
+        "eth12",
+        "loopback82");
+
+    addProcess(
+        n2,
+        "192.0.2.82",
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext topology =
+        TopologyContext.builder()
+            .build();
+
+    vr1.initForIgpComputation(
+        topology);
+
+    vr2.initForIgpComputation(
+        topology);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "duplicate1",
+            "eth12"),
+        NodeInterfacePair.of(
+            "duplicate2",
+            "eth21"));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "duplicate1",
+                n1,
+                "duplicate2",
+                n2),
+            List.of(
+                vr1,
+                vr2),
+            adjacencies);
+
+    Prefix6 loopbackPrefix =
+        Prefix6.parse(
+            "2001:db8:82::1/128");
+
+    /*
+     * The physical link is present, but duplicate router IDs prevent the
+     * OSPFv3 adjacency and therefore prevent route propagation.
+     */
+    assertThat(
+        findIntraRoute(
+            vr2,
+            loopbackPrefix),
+        nullValue());
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(
+                loopbackPrefix),
+        empty());
+  }
+
 }

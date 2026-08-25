@@ -1148,7 +1148,9 @@ final class Ospfv3RoutingProcess {
                   .getOspfv3Processes()
                   .get(remoteSettings.getProcess());
 
-          if (remoteProcess == null) {
+          if (remoteProcess == null
+              || hasDuplicateRouterId(
+                  remoteProcess)) {
             continue;
           }
 
@@ -1343,6 +1345,8 @@ final class Ospfv3RoutingProcess {
             || !remoteProcess
                 ._process
                 .getEnabled()
+            || hasDuplicateRouterId(
+                remoteProcess)
             || !areAreaTypesCompatible(
                 localArea,
                 remoteProcess)) {
@@ -1423,6 +1427,23 @@ final class Ospfv3RoutingProcess {
 
     return election.isDrOrBdr(localId)
         || election.isDrOrBdr(remoteId);
+  }
+
+  /**
+   * Return whether the remote process uses the same OSPF router ID.
+   *
+   * <p>AOS-CX rejects adjacency formation between routers that have
+   * duplicate OSPF router IDs.
+   */
+  private boolean hasDuplicateRouterId(
+      Ospfv3RoutingProcess remoteProcess) {
+
+    return _process
+        .getRouterId()
+        .equals(
+            remoteProcess
+                ._process
+                .getRouterId());
   }
 
   private boolean areAreaTypesCompatible(
@@ -1531,6 +1552,8 @@ final class Ospfv3RoutingProcess {
         processes) {
 
       if (candidate == this
+          || hasDuplicateRouterId(
+              candidate)
           || !candidate
               ._process
               .getEnabled()
@@ -1807,6 +1830,8 @@ final class Ospfv3RoutingProcess {
           L3Adjacencies l3Adjacencies) {
 
     if (lhs == rhs
+        || lhs.hasDuplicateRouterId(
+            rhs)
         || !lhs._process.getEnabled()
         || !rhs._process.getEnabled()
         || !lhs.isValidVirtualLinkTransitArea(area)
@@ -2107,6 +2132,8 @@ final class Ospfv3RoutingProcess {
       L3Adjacencies l3Adjacencies) {
 
     if (lhs == rhs
+        || lhs.hasDuplicateRouterId(
+            rhs)
         || !lhs._process.getEnabled()
         || !rhs._process.getEnabled()
         || !lhs.areAreaTypesCompatible(
