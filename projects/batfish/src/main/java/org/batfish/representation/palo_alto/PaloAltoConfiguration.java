@@ -109,6 +109,11 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -119,6 +124,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
@@ -207,6 +218,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private List<CryptoProfile> _cryptoProfiles;
 
+  private final Map<String, IkeGateway> _ikeGateways;
+
+  private final Map<String, IpsecTunnel> _ipsecTunnels;
+
   /** Device groups owned by this configuration. */
   private final Map<String, DeviceGroup> _deviceGroups;
 
@@ -272,6 +287,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _deviceGroups = new TreeMap<>();
+    _ikeGateways = new TreeMap<>();
+    _ipsecTunnels = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _hostnameMap = new HashMap<>();
     _sharedGateways = new TreeMap<>();
@@ -336,6 +353,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public List<CryptoProfile> getCryptoProfiles() {
     return _cryptoProfiles;
+  }
+
+  public @Nonnull Map<String, IkeGateway> getIkeGateways() {
+    return _ikeGateways;
+  }
+
+  public @Nonnull Map<String, IpsecTunnel> getIpsecTunnels() {
+    return _ipsecTunnels;
   }
 
   /** Gets the crypto profile by the provided name and type; creates anew if one does not exist */
@@ -3277,6 +3302,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       _sharedGateways.putAll(template.getSharedGateways());
       _virtualRouters.putAll(template.getVirtualRouters());
       _cryptoProfiles.addAll(template.getCryptoProfiles());
+      _ikeGateways.putAll(template.getIkeGateways());
+      _ipsecTunnels.putAll(template.getIpsecTunnels());
 
       // Vsys entities
       for (Entry<String, Vsys> entry : template.getVirtualSystems().entrySet()) {
@@ -3410,6 +3437,223 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return outputConfigurations.build();
   }
 
+  /**
+   * Converts {@code network ike} and {@code network tunnel ipsec} configuration into the VI IPsec
+   * model: phase 1/2 proposals and policies plus a static peer config per IPsec tunnel.
+   */
+  private void convertIpsec() {
+    if (_ipsecTunnels.isEmpty()) {
+      return;
+    }
+    Vsys vsys = getDefaultVsys();
+
+    Map<String, CryptoProfile> ikeProfiles = new HashMap<>();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecP2Proposals =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecP2Policies =
+        ImmutableSortedMap.naturalOrder();
+    for (CryptoProfile cp : _cryptoProfiles) {
+      switch (cp.getType()) {
+        case IKE -> ikeProfiles.put(cp.getName(), cp);
+        case IPSEC -> {
+          ipsecP2Proposals.put(cp.getName(), toIpsecPhase2Proposal(cp));
+          ipsecP2Policies.put(cp.getName(), toIpsecPhase2Policy(cp));
+        }
+        default -> {}
+      }
+    }
+    _c.setIpsecPhase2Proposals(ipsecP2Proposals.build());
+    _c.setIpsecPhase2Policies(ipsecP2Policies.build());
+
+    // A PAN-OS ike-crypto-profile carries no authentication method - that lives on the gateway -
+    // so phase 1 proposals are emitted per gateway rather than per profile.
+    ImmutableSortedMap.Builder<String, IkePhase1Proposal> ikeP1Proposals =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Policy> ikeP1Policies =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikeP1Keys = ImmutableSortedMap.naturalOrder();
+    for (IkeGateway gateway : _ikeGateways.values()) {
+      IkePhase1Policy policy = new IkePhase1Policy(gateway.getName());
+      IkePhase1Key key = toIkePhase1Key(gateway);
+      policy.setIkePhase1Key(key);
+      ikeP1Keys.put(String.format("~IKE_PHASE1_KEY_%s~", gateway.getName()), key);
+
+      CryptoProfile cp = ikeProfiles.get(gateway.getIkeCryptoProfile());
+      if (cp != null) {
+        String proposalName = String.format("~IKE_PHASE1_PROPOSAL_%s~", gateway.getName());
+        ikeP1Proposals.put(proposalName, toIkePhase1Proposal(proposalName, cp, gateway));
+        policy.setIkePhase1Proposals(ImmutableList.of(proposalName));
+      }
+      Optional.ofNullable(gateway.getLocalInterface()).ifPresent(policy::setLocalInterface);
+      ikeP1Policies.put(gateway.getName(), policy);
+    }
+    _c.setIkePhase1Proposals(ikeP1Proposals.build());
+    _c.setIkePhase1Policies(ikeP1Policies.build());
+    _c.setIkePhase1Keys(ikeP1Keys.build());
+
+    Map<Ip, String> ipToInterfaceName = buildIpToInterfaceName(vsys);
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> peers = ImmutableSortedMap.naturalOrder();
+    for (IpsecTunnel tunnel : _ipsecTunnels.values()) {
+      IpsecPeerConfig peer = toIpsecPeerConfig(tunnel, vsys, ipToInterfaceName);
+      if (peer != null) {
+        peers.put(tunnel.getName(), peer);
+      }
+    }
+    _c.setIpsecPeerConfigs(peers.build());
+  }
+
+  /**
+   * PAN-OS exports pre-shared keys encrypted, so the value can never be compared against a peer's.
+   * Batfish models that with {@link IkeKeyType#PRE_SHARED_KEY_ENCRYPTED}, which negotiates to an
+   * empty key rather than failing. Certificate-authenticated gateways use RSA instead.
+   */
+  private @Nonnull IkePhase1Key toIkePhase1Key(IkeGateway gateway) {
+    IkePhase1Key key = new IkePhase1Key();
+    key.setKeyType(
+        gateway.getAuthenticationType() == IkeGateway.AuthenticationType.CERTIFICATE
+            ? IkeKeyType.RSA_PUB_KEY
+            : IkeKeyType.PRE_SHARED_KEY_ENCRYPTED);
+    return key;
+  }
+
+  private @Nonnull IkePhase1Proposal toIkePhase1Proposal(
+      String name, CryptoProfile cp, IkeGateway gateway) {
+    IkePhase1Proposal proposal = new IkePhase1Proposal(name);
+    proposal.setAuthenticationMethod(
+        gateway.getAuthenticationType() == IkeGateway.AuthenticationType.CERTIFICATE
+            ? IkeAuthenticationMethod.RSA_SIGNATURES
+            : IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    proposal.setDiffieHellmanGroup(cp.getDhGroup());
+    proposal.setHashingAlgorithm(cp.getHashAlgorithm());
+    Optional.ofNullable(cp.getEncryptionAlgorithms())
+        .filter(algos -> !algos.isEmpty())
+        .ifPresent(algos -> proposal.setEncryptionAlgorithm(algos.get(0)));
+    Optional.ofNullable(cp.getLifetimeSeconds()).ifPresent(proposal::setLifetimeSeconds);
+    return proposal;
+  }
+
+  private @Nonnull IpsecPhase2Proposal toIpsecPhase2Proposal(CryptoProfile cp) {
+    IpsecPhase2Proposal proposal = new IpsecPhase2Proposal();
+    proposal.setAuthenticationAlgorithm(cp.getAuthAlgorithm());
+    Optional.ofNullable(cp.getEncryptionAlgorithms())
+        .filter(algos -> !algos.isEmpty())
+        .ifPresent(algos -> proposal.setEncryptionAlgorithm(algos.get(0)));
+    proposal.setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP));
+    proposal.setIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL);
+    return proposal;
+  }
+
+  private @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(CryptoProfile cp) {
+    IpsecPhase2Policy policy = new IpsecPhase2Policy();
+    policy.setProposals(ImmutableList.of(cp.getName()));
+    Optional.ofNullable(cp.getDhGroup())
+        .ifPresent(group -> policy.setPfsKeyGroups(ImmutableSortedSet.of(group)));
+    return policy;
+  }
+
+  /**
+   * Indexes every interface and unit address by IP, so a gateway that gives only {@code
+   * local-address ip} can still be attributed to the interface that owns it. Built once per
+   * conversion: resolution is not free, and probing per tunnel would also surface unrelated
+   * address-resolution warnings.
+   */
+  private @Nonnull Map<Ip, String> buildIpToInterfaceName(Vsys vsys) {
+    Map<Ip, String> index = new HashMap<>();
+    Warnings suppressed = new Warnings();
+    for (Interface iface : _interfaces.values()) {
+      indexInterfaceAddresses(iface, vsys, suppressed, index);
+      for (Interface unit : iface.getUnits().values()) {
+        indexInterfaceAddresses(unit, vsys, suppressed, index);
+      }
+    }
+    return index;
+  }
+
+  private void indexInterfaceAddresses(
+      Interface iface, Vsys vsys, Warnings suppressed, Map<Ip, String> index) {
+    for (InterfaceAddress address : iface.getAllAddresses()) {
+      ConcreteInterfaceAddress concrete =
+          interfaceAddressToConcreteInterfaceAddress(address, vsys, suppressed);
+      if (concrete != null) {
+        index.putIfAbsent(concrete.getIp(), iface.getName());
+      }
+    }
+  }
+
+  private @Nullable IpsecPeerConfig toIpsecPeerConfig(
+      IpsecTunnel tunnel, Vsys vsys, Map<Ip, String> ipToInterfaceName) {
+    if (tunnel.getDisabled()) {
+      return null;
+    }
+    String tunnelInterface = tunnel.getTunnelInterface();
+    if (tunnelInterface == null) {
+      _w.redFlagf("No tunnel-interface configured for ipsec tunnel %s", tunnel.getName());
+      return null;
+    }
+    String gatewayName = tunnel.getIkeGateway();
+    if (gatewayName == null) {
+      _w.redFlagf("No ike-gateway configured for ipsec tunnel %s", tunnel.getName());
+      return null;
+    }
+    IkeGateway gateway = _ikeGateways.get(gatewayName);
+    if (gateway == null) {
+      _w.redFlagf("Cannot find ike-gateway %s for ipsec tunnel %s", gatewayName, tunnel.getName());
+      return null;
+    }
+
+    // network-level config is device-wide, so address-object references resolve against the
+    // shared namespace, falling back to the default vsys.
+    Ip peerIp =
+        gateway.getPeerAddress() == null
+            ? null
+            : interfaceAddressToIp(gateway.getPeerAddress(), vsys);
+    if (peerIp == null) {
+      _w.redFlagf("No peer-address resolved for ike-gateway %s", gatewayName);
+      return null;
+    }
+
+    // PAN-OS permits local-address with only an interface and no explicit ip, in which case the
+    // local IP is that interface's address.
+    Ip localIp = null;
+    if (gateway.getLocalAddress() != null) {
+      localIp = interfaceAddressToIp(gateway.getLocalAddress(), vsys);
+    } else if (gateway.getLocalInterface() != null) {
+      localIp =
+          Optional.ofNullable(findInterfaceByName(gateway.getLocalInterface()))
+              .map(Interface::getAddress)
+              .map(a -> interfaceAddressToIp(a, vsys))
+              .orElse(null);
+    }
+    if (localIp == null) {
+      _w.redFlagf(
+          "Cannot resolve a local address for ike-gateway %s (local-address interface %s)",
+          gatewayName, gateway.getLocalInterface());
+      return null;
+    }
+
+    IpsecStaticPeerConfig.Builder builder =
+        IpsecStaticPeerConfig.builder()
+            .setTunnelInterface(tunnelInterface)
+            .setDestinationAddress(peerIp)
+            .setLocalAddress(localIp)
+            .setIkePhase1Policy(gatewayName);
+    // IpsecUtil.retainReachableIpsecEdges drops any peer whose source interface does not resolve
+    // to an active interface, so fall back to whichever interface owns the local IP.
+    String sourceInterface =
+        gateway.getLocalInterface() != null
+            ? gateway.getLocalInterface()
+            : ipToInterfaceName.get(localIp);
+    if (sourceInterface == null) {
+      _w.redFlagf(
+          "No interface owns local-address %s for ike-gateway %s; tunnel %s will be unreachable",
+          localIp, gatewayName, tunnel.getName());
+    } else {
+      builder.setSourceInterface(sourceInterface);
+    }
+    Optional.ofNullable(tunnel.getIpsecCryptoProfile()).ifPresent(builder::setIpsecPolicy);
+    return builder.build();
+  }
+
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
     _c.setHumanName(_rawHostname);
@@ -3433,6 +3677,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     convertVirtualSystems();
 
     convertSharedGateways();
+
+    convertIpsec();
 
     // A map from aggregate ethernet name (like ae1) to the set of interfaces it aggregates
     Multimap<String, String> aggregates = HashMultimap.create();
@@ -3533,7 +3779,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Count and mark simple structure usages and identify undefined references
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IKE_GATEWAY);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IPSEC_TUNNEL);
     markConcreteStructure(PaloAltoStructureType.INTERFACE);
     markConcreteStructure(PaloAltoStructureType.REDIST_PROFILE);
     markConcreteStructure(PaloAltoStructureType.APPLICATION_OVERRIDE_RULE);
