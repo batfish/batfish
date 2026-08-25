@@ -517,4 +517,131 @@ public final class RouteMap6Test {
             true));
   }
 
+  @Test
+  public void testMatchOspfExternalRouteTypeAndSerialization() {
+
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.OSPF3,
+                    OspfMetricType.E1,
+                    40L,
+                    OspfMetricType.E1,
+                    101L)));
+
+    RouteMap6 clone =
+        BatfishObjectMapper.clone(
+            routeMap,
+            RouteMap6.class);
+
+    assertThat(
+        clone,
+        equalTo(
+            routeMap));
+
+    assertThat(
+        clone
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            RoutingProtocol.OSPF3));
+
+    assertThat(
+        clone
+            .getEntries()
+            .get(10L)
+            .getMatchOspfMetricType(),
+        equalTo(
+            OspfMetricType.E1));
+
+    /*
+     * Actual OSPF external type-1 source matches.
+     */
+    RouteMap6.Result e1 =
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:720::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.OSPF3,
+                OspfMetricType.E1)
+            .orElseThrow();
+
+    assertThat(
+        e1.getMetric(),
+        equalTo(
+            40L));
+
+    assertThat(
+        e1.getOspfMetricType(),
+        equalTo(
+            OspfMetricType.E1));
+
+    assertThat(
+        e1.getTag(),
+        equalTo(
+            101L));
+
+    /*
+     * OSPF external type-2 does not match external type-1.
+     */
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:721::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.OSPF3,
+                OspfMetricType.E2)
+            .isEmpty(),
+        equalTo(
+            true));
+
+    /*
+     * An OSPF intra/inter-area source has no external metric type.
+     */
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:722::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.OSPF3,
+                null)
+            .isEmpty(),
+        equalTo(
+            true));
+
+    /*
+     * Critically: a STATIC route that would be originated as E1 does not
+     * become an OSPF external type-1 SOURCE merely because the output
+     * redistribution metric type is E1.
+     */
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:723::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E1,
+                RoutingProtocol.STATIC,
+                null)
+            .isEmpty(),
+        equalTo(
+            true));
+  }
+
 }

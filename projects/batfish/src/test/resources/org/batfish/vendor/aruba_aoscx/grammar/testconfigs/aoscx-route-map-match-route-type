@@ -1,0 +1,22 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+route-map TYPE1-OSPF permit seq 10
+    match source-protocol ospf
+    match route-type external type-1
+    set metric 40
+
+route-map TYPE2-OSPF permit seq 10
+    match source-protocol ospf
+    match route-type external type-2
+
+route-map CLEARED permit seq 10
+    match route-type external type-2
+    no match route-type external
+
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute ospf 2 route-map TYPE1-OSPF
+
+router ospfv3 2
+    router-id 192.0.2.2

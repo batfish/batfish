@@ -22,9 +22,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.RouteMap6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute6;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -615,4 +617,293 @@ public final class Ospfv3ProcessRedistributionTest {
             redistributedPrefix),
         nullValue());
   }
+  @Test
+  public void testRedistributeOspfMatchExternalRouteType() {
+
+    Node r1 =
+        TestUtils.makeIosRouter(
+            "r1");
+
+    addOspfInterface(
+        r1,
+        "process1-loopback",
+        "2001:db8:1::1/128",
+        "1",
+        true,
+        InterfaceType.LOOPBACK,
+        1);
+
+    addOspfInterface(
+        r1,
+        "process2-loopback",
+        "2001:db8:2::1/128",
+        "2",
+        true,
+        InterfaceType.LOOPBACK,
+        1);
+
+    Prefix6 e1Prefix =
+        Prefix6.parse(
+            "2001:db8:721::/64");
+
+    Prefix6 e2Prefix =
+        Prefix6.parse(
+            "2001:db8:722::/64");
+
+    StaticRoute6 e1Static =
+        StaticRoute6.builder()
+            .setNetwork(
+                e1Prefix)
+            .setNextHopInterface(
+                Interface.NULL_INTERFACE_NAME)
+            .build();
+
+    StaticRoute6 e2Static =
+        StaticRoute6.builder()
+            .setNetwork(
+                e2Prefix)
+            .setNextHopInterface(
+                Interface.NULL_INTERFACE_NAME)
+            .build();
+
+    r1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            e1Static);
+
+    r1.getConfiguration()
+        .getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            e2Static);
+
+    /*
+     * Process 2 uses prefix matching only to CREATE one genuine E1 and one
+     * genuine E2 source route.
+     */
+    PrefixList6 e1PrefixList =
+        new PrefixList6(
+            List.of(
+                new PrefixList6.Line(
+                    LineAction.PERMIT,
+                    e1Prefix,
+                    new SubRange(
+                        64,
+                        64))));
+
+    RouteMap6 process2StaticRouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    e1PrefixList,
+                    null,
+                    RoutingProtocol.STATIC,
+                    null,
+                    null,
+                    OspfMetricType.E1,
+                    null),
+                20L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.STATIC,
+                    null,
+                    null,
+                    null,
+                    null)));
+
+    /*
+     * Process 1 accepts only genuine OSPFv3 external type-1 sources.
+     *
+     * It also explicitly matches source-protocol OSPF, proving that both
+     * match dimensions are ANDed.
+     */
+    RouteMap6 process1RouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.OSPF3,
+                    OspfMetricType.E1,
+                    40L,
+                    OspfMetricType.E1,
+                    999L)));
+
+    addProcess(
+        r1,
+        "1",
+        "192.0.2.1",
+        "process1-loopback",
+        false,
+        null,
+        Set.of(
+            "2"),
+        Map.of(
+            "2",
+            process1RouteMap));
+
+    addProcess(
+        r1,
+        "2",
+        "192.0.2.2",
+        "process2-loopback",
+        true,
+        process2StaticRouteMap,
+        Set.of(),
+        Map.of());
+
+    VirtualRouter r1Vr =
+        r1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    r1Vr.initForIgpComputation(
+        TopologyContext.builder()
+            .build());
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "r1",
+                r1),
+            List.of(
+                r1Vr),
+            new TestL3Adjacencies());
+
+    Ospfv3RoutingProcess process1 =
+        r1Vr
+            .getOspfv3Processes()
+            .get("1");
+
+    Ospfv3RoutingProcess process2 =
+        r1Vr
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    /*
+     * Verify the source process genuinely contains different external
+     * metric types before testing the destination policy.
+     */
+    assertThat(
+        findType1(
+            process2,
+            e1Prefix),
+        notNullValue());
+
+    assertThat(
+        findType2(
+            process2,
+            e2Prefix),
+        notNullValue());
+
+    assertThat(
+        findType2(
+            process2,
+            e1Prefix),
+        nullValue());
+
+    assertThat(
+        findType1(
+            process2,
+            e2Prefix),
+        nullValue());
+
+    /*
+     * E1 satisfies:
+     *
+     *   source-protocol = OSPF3
+     *   source external route-type = E1
+     */
+    Ospfv3ExternalType1Route6 accepted =
+        findType1(
+            process1,
+            e1Prefix);
+
+    assertThat(
+        accepted,
+        notNullValue());
+
+    assertThat(
+        accepted.getMetric(),
+        equalTo(
+            40L));
+
+    assertThat(
+        accepted.getTag(),
+        equalTo(
+            999L));
+
+    /*
+     * The genuine E2 source must not satisfy external type-1.
+     */
+    assertThat(
+        findType1(
+            process1,
+            e2Prefix),
+        nullValue());
+
+    assertThat(
+        findType2(
+            process1,
+            e2Prefix),
+        nullValue());
+
+    /*
+     * Withdrawal remains deterministic.
+     */
+    assertThat(
+        r1.getConfiguration()
+            .getDefaultVrf()
+            .getStaticRoutes6()
+            .remove(
+                e1Static),
+        equalTo(
+            true));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            ImmutableMap.of(
+                "r1",
+                r1),
+            List.of(
+                r1Vr),
+            new TestL3Adjacencies());
+
+    assertThat(
+        findType1(
+            process1,
+            e1Prefix),
+        nullValue());
+
+    /*
+     * The source E2 remains present in process 2 and remains rejected by
+     * process 1.
+     */
+    assertThat(
+        findType2(
+            process2,
+            e2Prefix),
+        notNullValue());
+
+    assertThat(
+        findType2(
+            process1,
+            e2Prefix),
+        nullValue());
+  }
+
 }

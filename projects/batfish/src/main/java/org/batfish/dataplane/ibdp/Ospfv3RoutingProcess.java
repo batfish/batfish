@@ -504,7 +504,9 @@ final class Ospfv3RoutingProcess {
                 route.getNetwork(),
                 _process.getRedistributionMetric(),
                 route.getTag(),
-                route.getProtocol());
+                route.getProtocol(),
+                getSourceOspfMetricType(
+                    route));
 
         if (transformed.isEmpty()) {
           continue;
@@ -855,6 +857,27 @@ final class Ospfv3RoutingProcess {
         || distributeList.permits(prefix);
   }
 
+  private static @Nullable OspfMetricType
+      getSourceOspfMetricType(
+          AbstractRoute6 route) {
+
+    if (route instanceof Ospfv3ExternalType1Route6
+        || route
+            instanceof Ospfv3NssaExternalType1Route6) {
+
+      return OspfMetricType.E1;
+    }
+
+    if (route instanceof Ospfv3ExternalType2Route6
+        || route
+            instanceof Ospfv3NssaExternalType2Route6) {
+
+      return OspfMetricType.E2;
+    }
+
+    return null;
+  }
+
   private static Optional<RouteMap6.Result>
       applyRedistributionRouteMap(
           @Nullable RouteMap6 routeMap,
@@ -862,6 +885,24 @@ final class Ospfv3RoutingProcess {
           long initialMetric,
           long initialTag,
           RoutingProtocol sourceProtocol) {
+
+    return applyRedistributionRouteMap(
+        routeMap,
+        prefix,
+        initialMetric,
+        initialTag,
+        sourceProtocol,
+        null);
+  }
+
+  private static Optional<RouteMap6.Result>
+      applyRedistributionRouteMap(
+          @Nullable RouteMap6 routeMap,
+          Prefix6 prefix,
+          long initialMetric,
+          long initialTag,
+          RoutingProtocol sourceProtocol,
+          @Nullable OspfMetricType sourceOspfMetricType) {
 
     Optional<RouteMap6.Result> result =
         routeMap == null
@@ -874,7 +915,8 @@ final class Ospfv3RoutingProcess {
                 initialMetric,
                 initialTag,
                 OspfMetricType.E2,
-                sourceProtocol);
+                sourceProtocol,
+                sourceOspfMetricType);
 
     if (result.isEmpty()) {
       return Optional.empty();

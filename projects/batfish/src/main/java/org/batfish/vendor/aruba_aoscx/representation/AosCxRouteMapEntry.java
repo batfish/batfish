@@ -88,6 +88,25 @@ public final class AosCxRouteMapEntry
         null;
   }
 
+  public @Nullable OspfMetricType
+      getMatchOspfMetricType() {
+
+    return _matchOspfMetricType;
+  }
+
+  public void setMatchOspfMetricType(
+      OspfMetricType ospfMetricType) {
+
+    _matchOspfMetricType =
+        ospfMetricType;
+  }
+
+  public void clearMatchOspfMetricType() {
+
+    _matchOspfMetricType =
+        null;
+  }
+
   public @Nullable Long getSetLocalPreference() {
     return _setLocalPreference;
   }
@@ -130,6 +149,8 @@ public final class AosCxRouteMapEntry
   private @Nullable Long _matchTag;
   private @Nullable SourceProtocol
       _matchSourceProtocol;
+  private @Nullable OspfMetricType
+      _matchOspfMetricType;
   private @Nullable Long _setLocalPreference;
   private @Nullable Long _setMetric;
   private @Nullable OspfMetricType _setOspfMetricType;

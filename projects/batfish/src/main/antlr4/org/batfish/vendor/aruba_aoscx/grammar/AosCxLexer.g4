@@ -86,6 +86,7 @@ SET: 'set';
 REMOTE_AS: 'remote-as';
 ROUTE: 'route';
 ROUTE_MAP: 'route-map';
+ROUTE_TYPE: 'route-type';
 ROUTED_IN: 'routed-in';
 ROUTED_OUT: 'routed-out';
 ROUTER: 'router';

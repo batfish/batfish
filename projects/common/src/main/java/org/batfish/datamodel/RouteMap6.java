@@ -40,6 +40,8 @@ public final class RouteMap6 implements Serializable {
             @Nullable Long matchTag,
         @JsonProperty("matchSourceProtocol")
             @Nullable RoutingProtocol matchSourceProtocol,
+        @JsonProperty("matchOspfMetricType")
+            @Nullable OspfMetricType matchOspfMetricType,
         @JsonProperty("setMetric")
             @Nullable Long setMetric,
         @JsonProperty("setOspfMetricType")
@@ -73,12 +75,35 @@ public final class RouteMap6 implements Serializable {
       _matchSourceProtocol =
           matchSourceProtocol;
 
+      _matchOspfMetricType =
+          matchOspfMetricType;
+
       _setMetric =
           setMetric;
       _setOspfMetricType =
           setOspfMetricType;
       _setTag =
           setTag;
+    }
+
+    public Entry(
+        LineAction action,
+        @Nullable PrefixList6 matchPrefixList,
+        @Nullable Long matchTag,
+        @Nullable RoutingProtocol matchSourceProtocol,
+        @Nullable Long setMetric,
+        @Nullable OspfMetricType setOspfMetricType,
+        @Nullable Long setTag) {
+
+      this(
+          action,
+          matchPrefixList,
+          matchTag,
+          matchSourceProtocol,
+          null,
+          setMetric,
+          setOspfMetricType,
+          setTag);
     }
 
     public Entry(
@@ -153,6 +178,13 @@ public final class RouteMap6 implements Serializable {
       return _matchSourceProtocol;
     }
 
+    @JsonProperty("matchOspfMetricType")
+    public @Nullable OspfMetricType
+        getMatchOspfMetricType() {
+
+      return _matchOspfMetricType;
+    }
+
     @JsonProperty("setMetric")
     public @Nullable Long getSetMetric() {
       return _setMetric;
@@ -172,7 +204,8 @@ public final class RouteMap6 implements Serializable {
     private boolean matches(
         Prefix6 prefix,
         long tag,
-        @Nullable RoutingProtocol sourceProtocol) {
+        @Nullable RoutingProtocol sourceProtocol,
+        @Nullable OspfMetricType sourceOspfMetricType) {
 
       boolean prefixMatches =
           _matchPrefixList == null
@@ -187,9 +220,15 @@ public final class RouteMap6 implements Serializable {
               || _matchSourceProtocol
                   == sourceProtocol;
 
+      boolean ospfMetricTypeMatches =
+          _matchOspfMetricType == null
+              || _matchOspfMetricType
+                  == sourceOspfMetricType;
+
       return prefixMatches
           && tagMatches
-          && sourceProtocolMatches;
+          && sourceProtocolMatches
+          && ospfMetricTypeMatches;
     }
 
     @Override
@@ -214,6 +253,8 @@ public final class RouteMap6 implements Serializable {
               rhs._matchTag)
           && _matchSourceProtocol
               == rhs._matchSourceProtocol
+          && _matchOspfMetricType
+              == rhs._matchOspfMetricType
           && Objects.equals(
               _setMetric,
               rhs._setMetric)
@@ -231,6 +272,7 @@ public final class RouteMap6 implements Serializable {
           _matchPrefixList,
           _matchTag,
           _matchSourceProtocol,
+          _matchOspfMetricType,
           _setMetric,
           _setOspfMetricType,
           _setTag);
@@ -242,6 +284,8 @@ public final class RouteMap6 implements Serializable {
     private final @Nullable Long _matchTag;
     private final @Nullable RoutingProtocol
         _matchSourceProtocol;
+    private final @Nullable OspfMetricType
+        _matchOspfMetricType;
     private final @Nullable Long _setMetric;
     private final @Nullable OspfMetricType
         _setOspfMetricType;
@@ -377,13 +421,31 @@ public final class RouteMap6 implements Serializable {
       OspfMetricType initialOspfMetricType,
       @Nullable RoutingProtocol sourceProtocol) {
 
+    return process(
+        prefix,
+        initialMetric,
+        initialTag,
+        initialOspfMetricType,
+        sourceProtocol,
+        null);
+  }
+
+  public @Nonnull Optional<Result> process(
+      Prefix6 prefix,
+      long initialMetric,
+      long initialTag,
+      OspfMetricType initialOspfMetricType,
+      @Nullable RoutingProtocol sourceProtocol,
+      @Nullable OspfMetricType sourceOspfMetricType) {
+
     for (Entry entry :
         _entries.values()) {
 
       if (!entry.matches(
           prefix,
           initialTag,
-          sourceProtocol)) {
+          sourceProtocol,
+          sourceOspfMetricType)) {
 
         continue;
       }

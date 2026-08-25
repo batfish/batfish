@@ -68,6 +68,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ip_address_pre
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_tagContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_source_protocolContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_route_typeContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
@@ -1627,6 +1628,41 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentRouteMapEntry
         .setMatchSourceProtocol(
             sourceProtocol);
+  }
+
+  @Override
+  public void exitS_match_route_type(
+      S_match_route_typeContext ctx) {
+
+    if (_currentRouteMapEntry == null) {
+
+      warn(
+          ctx,
+          "Ignoring route-map match route-type outside route-map context");
+
+      return;
+    }
+
+    /*
+     * Aruba's no form restores the default of not matching external
+     * metric type. The optional type following "no" does not create a
+     * different stored state.
+     */
+    if (ctx.NO() != null) {
+
+      _currentRouteMapEntry
+          .clearMatchOspfMetricType();
+
+      return;
+    }
+
+    _currentRouteMapEntry
+        .setMatchOspfMetricType(
+            ctx.ospf_external_metric_type()
+                    .TYPE_1()
+                != null
+                ? OspfMetricType.E1
+                : OspfMetricType.E2);
   }
 
   @Override

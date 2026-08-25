@@ -918,6 +918,7 @@ public class AosCxConfiguration extends VendorConfiguration {
                       entry.getMatchTag(),
                       toRouteMap6SourceProtocol(
                           entry.getMatchSourceProtocol()),
+                      entry.getMatchOspfMetricType(),
                       entry.getSetMetric(),
                       entry.getSetOspfMetricType(),
                       entry.getSetTag()));
@@ -953,13 +954,16 @@ public class AosCxConfiguration extends VendorConfiguration {
 
                 if (entry.getMatchTag() != null
                     || entry.getMatchSourceProtocol()
+                        != null
+                    || entry.getMatchOspfMetricType()
                         != null) {
 
                   /*
-                   * Tag and source-protocol matching are modeled by
-                   * RouteMap6 for IPv6 redistribution. Do not silently turn
-                   * either clause into permit-all when converting a generic
-                   * / BGP routing policy.
+                   * Tag, source-protocol, and OSPF external route-type
+                   * matching are modeled by RouteMap6 for IPv6
+                   * redistribution. Do not silently turn any of these
+                   * clauses into permit-all when converting a generic/BGP
+                   * routing policy.
                    */
                   guard = BooleanExprs.FALSE;
 

@@ -82,6 +82,7 @@ statement
   | s_match_ipv6_address_prefix_list
   | s_match_tag
   | s_match_source_protocol
+  | s_match_route_type
   | s_set_local_preference
   | s_set_metric
   | s_set_metric_type
@@ -486,6 +487,12 @@ s_match_source_protocol
 :
   MATCH SOURCE_PROTOCOL route_map_source_protocol NEWLINE
   | NO MATCH SOURCE_PROTOCOL route_map_source_protocol? NEWLINE
+;
+
+s_match_route_type
+:
+  MATCH ROUTE_TYPE EXTERNAL ospf_external_metric_type NEWLINE
+  | NO MATCH ROUTE_TYPE EXTERNAL ospf_external_metric_type? NEWLINE
 ;
 
 s_set_local_preference

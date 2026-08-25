@@ -5285,4 +5285,155 @@ public final class AosCxGrammarTest {
             true));
   }
 
+  @Test
+  public void testRouteMapMatchRouteTypeExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-route-map-match-route-type");
+
+    AosCxRouteMapEntry type1 =
+        c.getRouteMaps()
+            .get("TYPE1-OSPF")
+            .getEntries()
+            .get(10L);
+
+    assertThat(
+        type1.getMatchSourceProtocol(),
+        equalTo(
+            AosCxRouteMapEntry.SourceProtocol.OSPF));
+
+    assertThat(
+        type1.getMatchOspfMetricType(),
+        equalTo(
+            OspfMetricType.E1));
+
+    AosCxRouteMapEntry type2 =
+        c.getRouteMaps()
+            .get("TYPE2-OSPF")
+            .getEntries()
+            .get(10L);
+
+    assertThat(
+        type2.getMatchOspfMetricType(),
+        equalTo(
+            OspfMetricType.E2));
+
+    /*
+     * "no match route-type external" restores the default of having no
+     * route-type criterion.
+     */
+    assertThat(
+        c.getRouteMaps()
+            .get("CLEARED")
+            .getEntries()
+            .get(10L)
+            .getMatchOspfMetricType(),
+        equalTo(
+            null));
+  }
+
+  @Test
+  public void testRouteMapMatchRouteTypeConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-route-map-match-route-type");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    RouteMap6 routeMap =
+        process
+            .getRedistributeOspfRouteMaps()
+            .get("2");
+
+    assertThat(
+        routeMap,
+        notNullValue());
+
+    RouteMap6.Entry entry =
+        routeMap
+            .getEntries()
+            .get(10L);
+
+    assertThat(
+        entry.getMatchSourceProtocol(),
+        equalTo(
+            org.batfish.datamodel.RoutingProtocol.OSPF3));
+
+    assertThat(
+        entry.getMatchOspfMetricType(),
+        equalTo(
+            OspfMetricType.E1));
+
+    Prefix6 prefix =
+        Prefix6.parse(
+            "2001:db8:720::/64");
+
+    /*
+     * OSPFv3 E1 passes both source-protocol and route-type.
+     */
+    assertThat(
+        routeMap
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.OSPF3,
+                OspfMetricType.E1)
+            .isPresent(),
+        equalTo(
+            true));
+
+    /*
+     * OSPFv3 E2 fails the external type-1 criterion.
+     */
+    assertThat(
+        routeMap
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.OSPF3,
+                OspfMetricType.E2)
+            .isEmpty(),
+        equalTo(
+            true));
+
+    /*
+     * Even with E1 source-type metadata, STATIC fails the independent
+     * source-protocol ospf criterion.
+     */
+    assertThat(
+        routeMap
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.STATIC,
+                OspfMetricType.E1)
+            .isEmpty(),
+        equalTo(
+            true));
+  }
+
 }
