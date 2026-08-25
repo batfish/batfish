@@ -252,7 +252,9 @@ public class IpsecUtil {
 
   /**
    * Negotiates key for IKE phase 1 and sets it in the provided ipsecSessionBuilder. Negotiated IKE
-   * P1 key in the ipsecSessionBuilder will be null if no valid key was detected or negotiated
+   * P1 key in the ipsecSessionBuilder will be null if no valid key was detected or negotiated. If
+   * the two key types differ but both are pre-shared keys, one side's value is unreadable, so an
+   * empty key is set rather than none.
    */
   @VisibleForTesting
   static void negotiateIkePhase1Key(
@@ -260,6 +262,14 @@ public class IpsecUtil {
       IkePhase1Key responderKey,
       IpsecSession.Builder ipsecSessionBuilder) {
     if (responderKey.getKeyType() != initiatorKey.getKeyType()) {
+      // Key types differ, so the values cannot be compared. If both are pre-shared keys then one
+      // side is unreadable and the configs do not prove the keys differ, so continue with an
+      // empty key, as for two encrypted pre-shared keys below.
+      if (isPreSharedKey(initiatorKey.getKeyType()) && isPreSharedKey(responderKey.getKeyType())) {
+        IkePhase1Key unverifiableKey = new IkePhase1Key();
+        unverifiableKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED);
+        ipsecSessionBuilder.setNegotiatedIkeP1Key(unverifiableKey);
+      }
       return;
     }
     IkePhase1Key negotiatedIkePhase1Key = new IkePhase1Key();
@@ -274,6 +284,11 @@ public class IpsecUtil {
       negotiatedIkePhase1Key.setKeyHash(initiatorKey.getKeyHash());
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
     }
+  }
+
+  private static boolean isPreSharedKey(IkeKeyType keyType) {
+    return keyType == IkeKeyType.PRE_SHARED_KEY_ENCRYPTED
+        || keyType == IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
   }
 
   /**
