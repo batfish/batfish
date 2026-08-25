@@ -1,0 +1,21 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    graceful-restart restart-interval 40
+    graceful-restart helper strict-lsa-check
+    graceful-restart ignore-lost-interface
+
+router ospfv3 2
+    router-id 192.0.2.2
+    graceful-restart restart-interval 88
+    no graceful-restart restart-interval
+    graceful-restart helper strict-lsa-check
+    no graceful-restart helper
+    graceful-restart ignore-lost-interface
+    no graceful-restart ignore-lost-interface
+
+router ospfv3 3
+    router-id 192.0.2.3
+    graceful-restart helper

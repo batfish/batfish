@@ -49,6 +49,11 @@ public final class Ospfv3Process
   public static final int DEFAULT_MAXIMUM_PATHS =
       4;
 
+  /** AOS-CX default graceful-restart restart interval in seconds. */
+  public static final int
+      DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS =
+          120;
+
   public static final class Builder {
     private int _adminCost;
     private int _interAreaAdminCost;
@@ -56,6 +61,14 @@ public final class Ospfv3Process
     private boolean _enabled;
     private boolean
         _activeBackboneStubDefaultRoute;
+    private int
+        _gracefulRestartIntervalSeconds;
+    private boolean
+        _gracefulRestartHelper;
+    private boolean
+        _gracefulRestartHelperStrictLsaCheck;
+    private boolean
+        _gracefulRestartIgnoreLostInterface;
     private @Nullable PrefixList6
         _inboundDistributeList;
     private @Nullable PrefixList6
@@ -101,6 +114,8 @@ public final class Ospfv3Process
       _enabled = true;
       _activeBackboneStubDefaultRoute =
           true;
+      _gracefulRestartIntervalSeconds =
+          DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS;
       _maximumPaths =
           DEFAULT_MAXIMUM_PATHS;
       _externalSummaries =
@@ -157,6 +172,17 @@ public final class Ospfv3Process
           _maximumPaths);
 
       checkArgument(
+          _gracefulRestartIntervalSeconds >= 5
+              && _gracefulRestartIntervalSeconds <= 1800,
+          "Invalid OSPFv3 graceful-restart interval %s",
+          _gracefulRestartIntervalSeconds);
+
+      checkArgument(
+          !_gracefulRestartHelperStrictLsaCheck
+              || _gracefulRestartHelper,
+          "OSPFv3 strict-lsa-check requires graceful-restart helper mode");
+
+      checkArgument(
           _redistributionMetric >= 0
               && _redistributionMetric <= MAX_METRIC,
           "Invalid redistribution metric %s",
@@ -178,6 +204,10 @@ public final class Ospfv3Process
               _externalAdminCost,
               _enabled,
               _activeBackboneStubDefaultRoute,
+              _gracefulRestartIntervalSeconds,
+              _gracefulRestartHelper,
+              _gracefulRestartHelperStrictLsaCheck,
+              _gracefulRestartIgnoreLostInterface,
               _inboundDistributeList,
               _outboundDistributeList,
               _maximumPaths,
@@ -246,6 +276,49 @@ public final class Ospfv3Process
 
       _activeBackboneStubDefaultRoute =
           activeBackboneStubDefaultRoute;
+
+      return this;
+    }
+
+    public Builder setGracefulRestartIntervalSeconds(
+        int seconds) {
+
+      _gracefulRestartIntervalSeconds =
+          seconds;
+
+      return this;
+    }
+
+    public Builder setGracefulRestartHelper(
+        boolean helper) {
+
+      _gracefulRestartHelper =
+          helper;
+
+      if (!helper) {
+        _gracefulRestartHelperStrictLsaCheck =
+            false;
+      }
+
+      return this;
+    }
+
+    public Builder
+        setGracefulRestartHelperStrictLsaCheck(
+            boolean strictLsaCheck) {
+
+      _gracefulRestartHelperStrictLsaCheck =
+          strictLsaCheck;
+
+      return this;
+    }
+
+    public Builder
+        setGracefulRestartIgnoreLostInterface(
+            boolean ignoreLostInterface) {
+
+      _gracefulRestartIgnoreLostInterface =
+          ignoreLostInterface;
 
       return this;
     }
@@ -448,6 +521,18 @@ public final class Ospfv3Process
       PROP_ACTIVE_BACKBONE_STUB_DEFAULT_ROUTE =
           "activeBackboneStubDefaultRoute";
   private static final String
+      PROP_GRACEFUL_RESTART_INTERVAL_SECONDS =
+          "gracefulRestartIntervalSeconds";
+  private static final String
+      PROP_GRACEFUL_RESTART_HELPER =
+          "gracefulRestartHelper";
+  private static final String
+      PROP_GRACEFUL_RESTART_HELPER_STRICT_LSA_CHECK =
+          "gracefulRestartHelperStrictLsaCheck";
+  private static final String
+      PROP_GRACEFUL_RESTART_IGNORE_LOST_INTERFACE =
+          "gracefulRestartIgnoreLostInterface";
+  private static final String
       PROP_INBOUND_DISTRIBUTE_LIST =
           "inboundDistributeList";
   private static final String
@@ -529,6 +614,17 @@ public final class Ospfv3Process
       @JsonProperty(
               PROP_ACTIVE_BACKBONE_STUB_DEFAULT_ROUTE)
           @Nullable Boolean activeBackboneStubDefaultRoute,
+      @JsonProperty(
+              PROP_GRACEFUL_RESTART_INTERVAL_SECONDS)
+          @Nullable Integer gracefulRestartIntervalSeconds,
+      @JsonProperty(PROP_GRACEFUL_RESTART_HELPER)
+          @Nullable Boolean gracefulRestartHelper,
+      @JsonProperty(
+              PROP_GRACEFUL_RESTART_HELPER_STRICT_LSA_CHECK)
+          @Nullable Boolean gracefulRestartHelperStrictLsaCheck,
+      @JsonProperty(
+              PROP_GRACEFUL_RESTART_IGNORE_LOST_INTERFACE)
+          @Nullable Boolean gracefulRestartIgnoreLostInterface,
       @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
           @Nullable PrefixList6 inboundDistributeList,
       @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
@@ -610,6 +706,18 @@ public final class Ospfv3Process
         firstNonNull(
             activeBackboneStubDefaultRoute,
             true),
+        firstNonNull(
+            gracefulRestartIntervalSeconds,
+            DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS),
+        firstNonNull(
+            gracefulRestartHelper,
+            false),
+        firstNonNull(
+            gracefulRestartHelperStrictLsaCheck,
+            false),
+        firstNonNull(
+            gracefulRestartIgnoreLostInterface,
+            false),
         inboundDistributeList,
         outboundDistributeList,
         firstNonNull(
@@ -668,6 +776,10 @@ public final class Ospfv3Process
       int externalAdminCost,
       boolean enabled,
       boolean activeBackboneStubDefaultRoute,
+      int gracefulRestartIntervalSeconds,
+      boolean gracefulRestartHelper,
+      boolean gracefulRestartHelperStrictLsaCheck,
+      boolean gracefulRestartIgnoreLostInterface,
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
@@ -694,6 +806,17 @@ public final class Ospfv3Process
             && maximumPaths <= 32,
         "Invalid OSPFv3 maximum paths %s",
         maximumPaths);
+
+    checkArgument(
+        gracefulRestartIntervalSeconds >= 5
+            && gracefulRestartIntervalSeconds <= 1800,
+        "Invalid OSPFv3 graceful-restart interval %s",
+        gracefulRestartIntervalSeconds);
+
+    checkArgument(
+        !gracefulRestartHelperStrictLsaCheck
+            || gracefulRestartHelper,
+        "OSPFv3 strict-lsa-check requires graceful-restart helper mode");
 
     checkArgument(
         maxMetricRouterLsaOnStartupSeconds == null
@@ -731,6 +854,14 @@ public final class Ospfv3Process
     _enabled = enabled;
     _activeBackboneStubDefaultRoute =
         activeBackboneStubDefaultRoute;
+    _gracefulRestartIntervalSeconds =
+        gracefulRestartIntervalSeconds;
+    _gracefulRestartHelper =
+        gracefulRestartHelper;
+    _gracefulRestartHelperStrictLsaCheck =
+        gracefulRestartHelperStrictLsaCheck;
+    _gracefulRestartIgnoreLostInterface =
+        gracefulRestartIgnoreLostInterface;
     _inboundDistributeList =
         inboundDistributeList;
     _outboundDistributeList =
@@ -822,6 +953,42 @@ public final class Ospfv3Process
       getActiveBackboneStubDefaultRoute() {
 
     return _activeBackboneStubDefaultRoute;
+  }
+
+  /**
+   * Graceful-restart configuration is retained for configuration fidelity.
+   *
+   * <p>The converged Batfish snapshot does not simulate a live control-plane
+   * restart event or helper timer.
+   */
+  @JsonProperty(
+      PROP_GRACEFUL_RESTART_INTERVAL_SECONDS)
+  public int
+      getGracefulRestartIntervalSeconds() {
+
+    return _gracefulRestartIntervalSeconds;
+  }
+
+  @JsonProperty(PROP_GRACEFUL_RESTART_HELPER)
+  public boolean getGracefulRestartHelper() {
+
+    return _gracefulRestartHelper;
+  }
+
+  @JsonProperty(
+      PROP_GRACEFUL_RESTART_HELPER_STRICT_LSA_CHECK)
+  public boolean
+      getGracefulRestartHelperStrictLsaCheck() {
+
+    return _gracefulRestartHelperStrictLsaCheck;
+  }
+
+  @JsonProperty(
+      PROP_GRACEFUL_RESTART_IGNORE_LOST_INTERFACE)
+  public boolean
+      getGracefulRestartIgnoreLostInterface() {
+
+    return _gracefulRestartIgnoreLostInterface;
   }
 
   @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
@@ -970,6 +1137,14 @@ public final class Ospfv3Process
   private final boolean _enabled;
   private final boolean
       _activeBackboneStubDefaultRoute;
+  private final int
+      _gracefulRestartIntervalSeconds;
+  private final boolean
+      _gracefulRestartHelper;
+  private final boolean
+      _gracefulRestartHelperStrictLsaCheck;
+  private final boolean
+      _gracefulRestartIgnoreLostInterface;
   private final @Nullable PrefixList6
       _inboundDistributeList;
   private final @Nullable PrefixList6

@@ -91,6 +91,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_infor
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metricContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_graceful_restartContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_max_metric_router_lsaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
@@ -1177,6 +1178,92 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentOspfv3Process
         .setBfdAllInterfaces(
+            ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ospfv3_graceful_restart(
+      S_ospfv3_graceful_restartContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring graceful-restart outside OSPFv3 context");
+
+      return;
+    }
+
+    /*
+     * restart-interval
+     */
+    if (ctx.RESTART_INTERVAL() != null) {
+
+      if (ctx.NO() != null) {
+
+        _currentOspfv3Process
+            .resetGracefulRestartInterval();
+
+        return;
+      }
+
+      int seconds;
+
+      try {
+        seconds =
+            Integer.parseInt(
+                ctx.WORD().getText());
+
+      } catch (NumberFormatException e) {
+
+        warn(
+            ctx,
+            "Ignoring invalid OSPFv3 graceful-restart interval");
+
+        return;
+      }
+
+      if (seconds < 5
+          || seconds > 1800) {
+
+        warn(
+            ctx,
+            "Ignoring OSPFv3 graceful-restart interval outside 5-1800");
+
+        return;
+      }
+
+      _currentOspfv3Process
+          .setGracefulRestartIntervalSeconds(
+              seconds);
+
+      return;
+    }
+
+    /*
+     * helper [strict-lsa-check]
+     *
+     * Disabling helper also clears strict-lsa-check because strict checking
+     * has no meaning when this router is not acting as a GR helper.
+     */
+    if (ctx.HELPER() != null) {
+
+      _currentOspfv3Process
+          .setGracefulRestartHelper(
+              ctx.NO() == null,
+              ctx.NO() == null
+                  && ctx.STRICT_LSA_CHECK()
+                      != null);
+
+      return;
+    }
+
+    /*
+     * ignore-lost-interface
+     */
+    _currentOspfv3Process
+        .setGracefulRestartIgnoreLostInterface(
             ctx.NO() == null);
   }
 

@@ -5436,4 +5436,203 @@ public final class AosCxGrammarTest {
             true));
   }
 
+  @Test
+  public void testOspfv3GracefulRestartExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-graceful-restart");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getGracefulRestartIntervalSeconds(),
+        equalTo(
+            40));
+
+    assertThat(
+        process1.getGracefulRestartHelper(),
+        equalTo(
+            true));
+
+    assertThat(
+        process1
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            true));
+
+    assertThat(
+        process1
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            true));
+
+    /*
+     * Process 2 exercises the no forms. Every setting should return to
+     * its default state.
+     */
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes()
+            .get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2
+            .getGracefulRestartIntervalSeconds(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS));
+
+    assertThat(
+        process2.getGracefulRestartHelper(),
+        equalTo(
+            false));
+
+    assertThat(
+        process2
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            false));
+
+    assertThat(
+        process2
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            false));
+
+    /*
+     * Helper without strict-lsa-check remains helper=true, strict=false.
+     */
+    AosCxOspfv3Process process3 =
+        c.getOspfv3Processes()
+            .get(3);
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getGracefulRestartHelper(),
+        equalTo(
+            true));
+
+    assertThat(
+        process3
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            false));
+  }
+
+  @Test
+  public void testOspfv3GracefulRestartConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-graceful-restart");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1
+            .getGracefulRestartIntervalSeconds(),
+        equalTo(
+            40));
+
+    assertThat(
+        process1.getGracefulRestartHelper(),
+        equalTo(
+            true));
+
+    assertThat(
+        process1
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            true));
+
+    assertThat(
+        process1
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            true));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2
+            .getGracefulRestartIntervalSeconds(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS));
+
+    assertThat(
+        process2.getGracefulRestartHelper(),
+        equalTo(
+            false));
+
+    assertThat(
+        process2
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            false));
+
+    assertThat(
+        process2
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            false));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process3 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getGracefulRestartHelper(),
+        equalTo(
+            true));
+
+    assertThat(
+        process3
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            false));
+  }
+
 }

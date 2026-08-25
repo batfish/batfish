@@ -1502,6 +1502,18 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setActiveBackboneStubDefaultRoute(
                   process
                       .getActiveBackboneStubDefaultRoute())
+              .setGracefulRestartIntervalSeconds(
+                  process
+                      .getGracefulRestartIntervalSeconds())
+              .setGracefulRestartHelper(
+                  process
+                      .getGracefulRestartHelper())
+              .setGracefulRestartHelperStrictLsaCheck(
+                  process
+                      .getGracefulRestartHelperStrictLsaCheck())
+              .setGracefulRestartIgnoreLostInterface(
+                  process
+                      .getGracefulRestartIgnoreLostInterface())
               .setInboundDistributeList(
                   toPrefixList6(
                       process.getDistributeListIn()))

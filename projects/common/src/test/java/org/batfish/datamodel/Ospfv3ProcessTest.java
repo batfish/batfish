@@ -567,4 +567,85 @@ public final class Ospfv3ProcessTest {
             null));
   }
 
+  @Test
+  public void testGracefulRestartDefaultsAndSerialization() {
+
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "1")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .build();
+
+    assertThat(
+        defaults
+            .getGracefulRestartIntervalSeconds(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS));
+
+    assertThat(
+        defaults.getGracefulRestartHelper(),
+        equalTo(
+            false));
+
+    assertThat(
+        defaults
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            false));
+
+    assertThat(
+        defaults
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            false));
+
+    Ospfv3Process configured =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "2")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.2"))
+            .setGracefulRestartIntervalSeconds(
+                40)
+            .setGracefulRestartHelper(
+                true)
+            .setGracefulRestartHelperStrictLsaCheck(
+                true)
+            .setGracefulRestartIgnoreLostInterface(
+                true)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            configured,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getGracefulRestartIntervalSeconds(),
+        equalTo(
+            40));
+
+    assertThat(
+        clone.getGracefulRestartHelper(),
+        equalTo(
+            true));
+
+    assertThat(
+        clone
+            .getGracefulRestartHelperStrictLsaCheck(),
+        equalTo(
+            true));
+
+    assertThat(
+        clone
+            .getGracefulRestartIgnoreLostInterface(),
+        equalTo(
+            true));
+  }
+
 }

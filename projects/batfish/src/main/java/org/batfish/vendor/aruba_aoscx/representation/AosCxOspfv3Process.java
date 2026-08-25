@@ -34,6 +34,11 @@ public final class AosCxOspfv3Process
   public static final int DEFAULT_MAXIMUM_PATHS =
       4;
 
+  /** AOS-CX default graceful-restart restart interval in seconds. */
+  public static final int
+      DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS =
+          120;
+
   /** Default duration for max-metric router-lsa on-startup. */
   public static final int
       DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS =
@@ -69,6 +74,60 @@ public final class AosCxOspfv3Process
 
     _bfdAllInterfaces =
         enabled;
+  }
+
+  public int getGracefulRestartIntervalSeconds() {
+    return _gracefulRestartIntervalSeconds;
+  }
+
+  public void setGracefulRestartIntervalSeconds(
+      int seconds) {
+
+    _gracefulRestartIntervalSeconds =
+        seconds;
+  }
+
+  public void resetGracefulRestartInterval() {
+
+    _gracefulRestartIntervalSeconds =
+        DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS;
+  }
+
+  public boolean getGracefulRestartHelper() {
+
+    return _gracefulRestartHelper;
+  }
+
+  public boolean
+      getGracefulRestartHelperStrictLsaCheck() {
+
+    return _gracefulRestartHelperStrictLsaCheck;
+  }
+
+  public void setGracefulRestartHelper(
+      boolean helper,
+      boolean strictLsaCheck) {
+
+    _gracefulRestartHelper =
+        helper;
+
+    _gracefulRestartHelperStrictLsaCheck =
+        helper
+            && strictLsaCheck;
+  }
+
+  public boolean
+      getGracefulRestartIgnoreLostInterface() {
+
+    return _gracefulRestartIgnoreLostInterface;
+  }
+
+  public void
+      setGracefulRestartIgnoreLostInterface(
+          boolean ignoreLostInterface) {
+
+    _gracefulRestartIgnoreLostInterface =
+        ignoreLostInterface;
   }
 
   public int getMaximumPaths() {
@@ -885,6 +944,17 @@ public final class AosCxOspfv3Process
   private boolean
       _activeBackboneStubDefaultRoute =
           true;
+
+  private int _gracefulRestartIntervalSeconds =
+      DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS;
+
+  private boolean _gracefulRestartHelper;
+
+  private boolean
+      _gracefulRestartHelperStrictLsaCheck;
+
+  private boolean
+      _gracefulRestartIgnoreLostInterface;
 
   private int _maximumPaths =
       DEFAULT_MAXIMUM_PATHS;
