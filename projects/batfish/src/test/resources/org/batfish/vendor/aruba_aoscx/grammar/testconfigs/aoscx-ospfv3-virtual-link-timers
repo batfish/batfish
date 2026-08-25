@@ -1,0 +1,19 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 1 virtual-link 192.0.2.2
+        hello-interval 15
+        dead-interval 60
+        retransmit-interval 7
+        transit-delay 3
+    area 2 virtual-link 192.0.2.3
+        hello-interval 20
+        no hello-interval
+        dead-interval 80
+        no dead-interval
+        retransmit-interval 9
+        no retransmit-interval
+        transit-delay 4
+        no transit-delay

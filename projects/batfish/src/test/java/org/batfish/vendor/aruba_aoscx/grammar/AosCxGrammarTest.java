@@ -5977,4 +5977,184 @@ public final class AosCxGrammarTest {
             false));
   }
 
+  @Test
+  public void testOspfv3VirtualLinkTimersExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-virtual-link-timers");
+
+    org.batfish.vendor.aruba_aoscx.representation
+        .AosCxOspfv3Process process =
+            c.getOspfv3Processes()
+                .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    Ip peer1 =
+        Ip.parse(
+            "192.0.2.2");
+
+    assertThat(
+        process.getVirtualLinkHelloIntervalSeconds(
+            "1",
+            peer1),
+        equalTo(15));
+
+    assertThat(
+        process.getVirtualLinkDeadIntervalSeconds(
+            "1",
+            peer1),
+        equalTo(60));
+
+    assertThat(
+        process.getVirtualLinkRetransmitIntervalSeconds(
+            "1",
+            peer1),
+        equalTo(7));
+
+    assertThat(
+        process.getVirtualLinkTransitDelaySeconds(
+            "1",
+            peer1),
+        equalTo(3));
+
+    /*
+     * The no forms restore AOS-CX virtual-link defaults.
+     */
+    Ip peer2 =
+        Ip.parse(
+            "192.0.2.3");
+
+    assertThat(
+        process.getVirtualLinkHelloIntervalSeconds(
+            "2",
+            peer2),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_HELLO_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkDeadIntervalSeconds(
+            "2",
+            peer2),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_DEAD_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkRetransmitIntervalSeconds(
+            "2",
+            peer2),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_RETRANSMIT_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkTransitDelaySeconds(
+            "2",
+            peer2),
+        equalTo(
+            org.batfish.vendor.aruba_aoscx.representation
+                .AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_TRANSIT_DELAY_SECONDS));
+  }
+
+  @Test
+  public void testOspfv3VirtualLinkTimersConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-virtual-link-timers");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    Ospfv3VirtualLink link1 =
+        process.getVirtualLinks()
+            .stream()
+            .filter(
+                link ->
+                    link.getTransitArea() == 1L
+                        && link.getPeerRouterId()
+                            .equals(
+                                Ip.parse(
+                                    "192.0.2.2")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        link1.getHelloIntervalSeconds(),
+        equalTo(15));
+
+    assertThat(
+        link1.getDeadIntervalSeconds(),
+        equalTo(60));
+
+    assertThat(
+        link1.getRetransmitIntervalSeconds(),
+        equalTo(7));
+
+    assertThat(
+        link1.getTransitDelaySeconds(),
+        equalTo(3));
+
+    Ospfv3VirtualLink link2 =
+        process.getVirtualLinks()
+            .stream()
+            .filter(
+                link ->
+                    link.getTransitArea() == 2L
+                        && link.getPeerRouterId()
+                            .equals(
+                                Ip.parse(
+                                    "192.0.2.3")))
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(
+        link2.getHelloIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_HELLO_INTERVAL_SECONDS));
+
+    assertThat(
+        link2.getDeadIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_DEAD_INTERVAL_SECONDS));
+
+    assertThat(
+        link2.getRetransmitIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_RETRANSMIT_INTERVAL_SECONDS));
+
+    assertThat(
+        link2.getTransitDelaySeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_TRANSIT_DELAY_SECONDS));
+  }
+
 }

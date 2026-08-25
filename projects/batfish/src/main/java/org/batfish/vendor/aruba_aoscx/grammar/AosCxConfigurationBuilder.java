@@ -102,6 +102,10 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addre
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_linkContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_authenticationContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_encryptionContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_hello_intervalContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_dead_intervalContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_retransmit_intervalContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_transit_delayContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
@@ -3056,6 +3060,247 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
             _currentOspfv3VirtualLinkArea,
             _currentOspfv3VirtualLinkPeer,
             encryption);
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link_hello_interval(
+      S_ospfv3_virtual_link_hello_intervalContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link hello-interval outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetVirtualLinkHelloInterval(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    int interval;
+
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 virtual-link hello-interval");
+
+      return;
+    }
+
+    if (interval < 1
+        || interval > 65535) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link hello-interval outside 1-65535 seconds");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkHelloIntervalSeconds(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            interval);
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link_dead_interval(
+      S_ospfv3_virtual_link_dead_intervalContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link dead-interval outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetVirtualLinkDeadInterval(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    int interval;
+
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 virtual-link dead-interval");
+
+      return;
+    }
+
+    if (interval < 1
+        || interval > 65535) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link dead-interval outside 1-65535 seconds");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkDeadIntervalSeconds(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            interval);
+  }
+
+  @Override
+  public void
+      exitS_ospfv3_virtual_link_retransmit_interval(
+          S_ospfv3_virtual_link_retransmit_intervalContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link retransmit-interval outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetVirtualLinkRetransmitInterval(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    int interval;
+
+    try {
+      interval =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 virtual-link retransmit-interval");
+
+      return;
+    }
+
+    if (interval < 1
+        || interval > 3600) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link retransmit-interval outside 1-3600 seconds");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkRetransmitIntervalSeconds(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            interval);
+  }
+
+  @Override
+  public void exitS_ospfv3_virtual_link_transit_delay(
+      S_ospfv3_virtual_link_transit_delayContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || _currentOspfv3VirtualLinkProcess
+            != _currentOspfv3Process
+        || _currentOspfv3VirtualLinkArea == null
+        || _currentOspfv3VirtualLinkPeer == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link transit-delay outside virtual-link context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetVirtualLinkTransitDelay(
+              _currentOspfv3VirtualLinkArea,
+              _currentOspfv3VirtualLinkPeer);
+
+      return;
+    }
+
+    int delay;
+
+    try {
+      delay =
+          Integer.parseInt(
+              ctx.WORD().getText());
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 virtual-link transit-delay");
+
+      return;
+    }
+
+    if (delay < 1
+        || delay > 3600) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 virtual-link transit-delay outside 1-3600 seconds");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setVirtualLinkTransitDelaySeconds(
+            _currentOspfv3VirtualLinkArea,
+            _currentOspfv3VirtualLinkPeer,
+            delay);
   }
 
   @Override

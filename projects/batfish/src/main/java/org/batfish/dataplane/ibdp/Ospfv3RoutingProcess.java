@@ -1582,7 +1582,7 @@ final class Ospfv3RoutingProcess {
                     && link
                         .getPeerRouterId()
                         .equals(peerRouterId)
-                    && areVirtualLinkSecuritySettingsCompatible(
+                    && areVirtualLinkSettingsCompatible(
                         link,
                         oppositeLink));
   }
@@ -1610,6 +1610,32 @@ final class Ospfv3RoutingProcess {
         && Objects.equals(
             lhs.getEncryption(),
             rhs.getEncryption());
+  }
+
+  @VisibleForTesting
+  static boolean
+      areVirtualLinkTimersCompatible(
+          Ospfv3VirtualLink lhs,
+          Ospfv3VirtualLink rhs) {
+
+    return lhs.getHelloIntervalSeconds()
+            == rhs.getHelloIntervalSeconds()
+        && lhs.getDeadIntervalSeconds()
+            == rhs.getDeadIntervalSeconds();
+  }
+
+  @VisibleForTesting
+  static boolean
+      areVirtualLinkSettingsCompatible(
+          Ospfv3VirtualLink lhs,
+          Ospfv3VirtualLink rhs) {
+
+    return areVirtualLinkSecuritySettingsCompatible(
+            lhs,
+            rhs)
+        && areVirtualLinkTimersCompatible(
+            lhs,
+            rhs);
   }
 
   private boolean isValidVirtualLinkTransitArea(

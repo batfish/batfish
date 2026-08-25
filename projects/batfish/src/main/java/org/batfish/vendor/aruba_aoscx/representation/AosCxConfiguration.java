@@ -1450,7 +1450,23 @@ public class AosCxConfiguration extends VendorConfiguration {
                                           process
                                               .getVirtualLinkEncryption(
                                                   transitArea,
-                                                  peer))))));
+                                                  peer)),
+                                      process
+                                          .getVirtualLinkHelloIntervalSeconds(
+                                              transitArea,
+                                              peer),
+                                      process
+                                          .getVirtualLinkDeadIntervalSeconds(
+                                              transitArea,
+                                              peer),
+                                      process
+                                          .getVirtualLinkRetransmitIntervalSeconds(
+                                              transitArea,
+                                              peer),
+                                      process
+                                          .getVirtualLinkTransitDelaySeconds(
+                                              transitArea,
+                                              peer)))));
 
           Set<String>
               redistributeOspfProcesses =

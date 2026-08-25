@@ -797,4 +797,76 @@ public final class Ospfv3ProcessTest {
             true));
   }
 
+  @Test
+  public void testVirtualLinkTimerDefaultsAndSerialization() {
+
+    Ospfv3VirtualLink defaults =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"));
+
+    assertThat(
+        defaults.getHelloIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_HELLO_INTERVAL_SECONDS));
+
+    assertThat(
+        defaults.getDeadIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_DEAD_INTERVAL_SECONDS));
+
+    assertThat(
+        defaults.getRetransmitIntervalSeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_RETRANSMIT_INTERVAL_SECONDS));
+
+    assertThat(
+        defaults.getTransitDelaySeconds(),
+        equalTo(
+            Ospfv3VirtualLink
+                .DEFAULT_TRANSIT_DELAY_SECONDS));
+
+    Ospfv3VirtualLink configured =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.3"),
+            null,
+            null,
+            15,
+            60,
+            7,
+            3);
+
+    Ospfv3VirtualLink clone =
+        BatfishObjectMapper.clone(
+            configured,
+            Ospfv3VirtualLink.class);
+
+    assertThat(
+        clone,
+        equalTo(
+            configured));
+
+    assertThat(
+        clone.getHelloIntervalSeconds(),
+        equalTo(15));
+
+    assertThat(
+        clone.getDeadIntervalSeconds(),
+        equalTo(60));
+
+    assertThat(
+        clone.getRetransmitIntervalSeconds(),
+        equalTo(7));
+
+    assertThat(
+        clone.getTransitDelaySeconds(),
+        equalTo(3));
+  }
+
 }

@@ -698,4 +698,102 @@ public final class Ospfv3VirtualLinkPropagationTest {
             true));
   }
 
+  @Test
+  public void testVirtualLinkTimerCompatibility() {
+
+    Ospfv3VirtualLink defaults1 =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.1"));
+
+    Ospfv3VirtualLink defaults2 =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkTimersCompatible(
+                defaults1,
+                defaults2),
+        equalTo(true));
+
+    Ospfv3VirtualLink helloMismatch =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            null,
+            null,
+            15,
+            40,
+            5,
+            1);
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkTimersCompatible(
+                defaults1,
+                helloMismatch),
+        equalTo(false));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSettingsCompatible(
+                defaults1,
+                helloMismatch),
+        equalTo(false));
+
+    Ospfv3VirtualLink deadMismatch =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            null,
+            null,
+            10,
+            60,
+            5,
+            1);
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkTimersCompatible(
+                defaults1,
+                deadMismatch),
+        equalTo(false));
+
+    /*
+     * Retransmit interval and transit delay affect LSA timing, not neighbor
+     * compatibility. They may differ while hello/dead remain compatible.
+     */
+    Ospfv3VirtualLink nonAdjacencyTimerDifference =
+        new Ospfv3VirtualLink(
+            1L,
+            Ip.parse(
+                "192.0.2.2"),
+            null,
+            null,
+            10,
+            40,
+            30,
+            20);
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkTimersCompatible(
+                defaults1,
+                nonAdjacencyTimerDifference),
+        equalTo(true));
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areVirtualLinkSettingsCompatible(
+                defaults1,
+                nonAdjacencyTimerDifference),
+        equalTo(true));
+  }
+
 }

@@ -75,6 +75,10 @@ statement
   | s_ospfv3_virtual_link
   | s_ospfv3_virtual_link_authentication
   | s_ospfv3_virtual_link_encryption
+  | s_ospfv3_virtual_link_hello_interval
+  | s_ospfv3_virtual_link_dead_interval
+  | s_ospfv3_virtual_link_retransmit_interval
+  | s_ospfv3_virtual_link_transit_delay
   | s_ospfv3_process_state
   | s_redistribute_connected
   | s_redistribute_local_loopback
@@ -741,6 +745,30 @@ s_ospfv3_virtual_link_encryption
 :
   ENCRYPTION ospfv3_ipsec_encryption NEWLINE
   | NO ENCRYPTION NEWLINE
+;
+
+s_ospfv3_virtual_link_hello_interval
+:
+  HELLO_INTERVAL WORD NEWLINE
+  | NO HELLO_INTERVAL NEWLINE
+;
+
+s_ospfv3_virtual_link_dead_interval
+:
+  DEAD_INTERVAL WORD NEWLINE
+  | NO DEAD_INTERVAL NEWLINE
+;
+
+s_ospfv3_virtual_link_retransmit_interval
+:
+  RETRANSMIT_INTERVAL WORD NEWLINE
+  | NO RETRANSMIT_INTERVAL NEWLINE
+;
+
+s_ospfv3_virtual_link_transit_delay
+:
+  TRANSIT_DELAY WORD NEWLINE
+  | NO TRANSIT_DELAY NEWLINE
 ;
 
 s_ospfv3_process_state

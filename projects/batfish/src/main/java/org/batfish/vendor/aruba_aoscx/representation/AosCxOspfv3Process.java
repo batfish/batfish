@@ -74,6 +74,26 @@ public final class AosCxOspfv3Process
       DEFAULT_LSA_ARRIVAL_TIME_MS =
           1000;
 
+  /** AOS-CX default OSPFv3 virtual-link hello interval. */
+  public static final int
+      DEFAULT_VIRTUAL_LINK_HELLO_INTERVAL_SECONDS =
+          10;
+
+  /** AOS-CX default OSPFv3 virtual-link dead interval. */
+  public static final int
+      DEFAULT_VIRTUAL_LINK_DEAD_INTERVAL_SECONDS =
+          40;
+
+  /** AOS-CX default OSPFv3 virtual-link retransmit interval. */
+  public static final int
+      DEFAULT_VIRTUAL_LINK_RETRANSMIT_INTERVAL_SECONDS =
+          5;
+
+  /** AOS-CX default OSPFv3 virtual-link transit delay. */
+  public static final int
+      DEFAULT_VIRTUAL_LINK_TRANSIT_DELAY_SECONDS =
+          1;
+
   /** Default duration for max-metric router-lsa on-startup. */
   public static final int
       DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS =
@@ -794,6 +814,208 @@ public final class AosCxOspfv3Process
     }
   }
 
+  private static int getVirtualLinkTimer(
+      Map<String, Map<Ip, Integer>> timers,
+      String transitArea,
+      Ip peerRouterId,
+      int defaultValue) {
+
+    Map<Ip, Integer> areaTimers =
+        timers.get(
+            transitArea);
+
+    return areaTimers == null
+        ? defaultValue
+        : areaTimers.getOrDefault(
+            peerRouterId,
+            defaultValue);
+  }
+
+  private static void setVirtualLinkTimer(
+      Map<String, Map<Ip, Integer>> timers,
+      String transitArea,
+      Ip peerRouterId,
+      int value) {
+
+    timers
+        .computeIfAbsent(
+            transitArea,
+            ignored -> new HashMap<>())
+        .put(
+            peerRouterId,
+            value);
+  }
+
+  private static void clearVirtualLinkTimer(
+      Map<String, Map<Ip, Integer>> timers,
+      String transitArea,
+      Ip peerRouterId) {
+
+    Map<Ip, Integer> areaTimers =
+        timers.get(
+            transitArea);
+
+    if (areaTimers == null) {
+      return;
+    }
+
+    areaTimers.remove(
+        peerRouterId);
+
+    if (areaTimers.isEmpty()) {
+      timers.remove(
+          transitArea);
+    }
+  }
+
+  public int getVirtualLinkHelloIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId) {
+
+    return getVirtualLinkTimer(
+        _virtualLinkHelloIntervals,
+        transitArea,
+        peerRouterId,
+        DEFAULT_VIRTUAL_LINK_HELLO_INTERVAL_SECONDS);
+  }
+
+  public void setVirtualLinkHelloIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId,
+      int interval) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    setVirtualLinkTimer(
+        _virtualLinkHelloIntervals,
+        transitArea,
+        peerRouterId,
+        interval);
+  }
+
+  public void resetVirtualLinkHelloInterval(
+      String transitArea,
+      Ip peerRouterId) {
+
+    clearVirtualLinkTimer(
+        _virtualLinkHelloIntervals,
+        transitArea,
+        peerRouterId);
+  }
+
+  public int getVirtualLinkDeadIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId) {
+
+    return getVirtualLinkTimer(
+        _virtualLinkDeadIntervals,
+        transitArea,
+        peerRouterId,
+        DEFAULT_VIRTUAL_LINK_DEAD_INTERVAL_SECONDS);
+  }
+
+  public void setVirtualLinkDeadIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId,
+      int interval) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    setVirtualLinkTimer(
+        _virtualLinkDeadIntervals,
+        transitArea,
+        peerRouterId,
+        interval);
+  }
+
+  public void resetVirtualLinkDeadInterval(
+      String transitArea,
+      Ip peerRouterId) {
+
+    clearVirtualLinkTimer(
+        _virtualLinkDeadIntervals,
+        transitArea,
+        peerRouterId);
+  }
+
+  public int getVirtualLinkRetransmitIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId) {
+
+    return getVirtualLinkTimer(
+        _virtualLinkRetransmitIntervals,
+        transitArea,
+        peerRouterId,
+        DEFAULT_VIRTUAL_LINK_RETRANSMIT_INTERVAL_SECONDS);
+  }
+
+  public void setVirtualLinkRetransmitIntervalSeconds(
+      String transitArea,
+      Ip peerRouterId,
+      int interval) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    setVirtualLinkTimer(
+        _virtualLinkRetransmitIntervals,
+        transitArea,
+        peerRouterId,
+        interval);
+  }
+
+  public void resetVirtualLinkRetransmitInterval(
+      String transitArea,
+      Ip peerRouterId) {
+
+    clearVirtualLinkTimer(
+        _virtualLinkRetransmitIntervals,
+        transitArea,
+        peerRouterId);
+  }
+
+  public int getVirtualLinkTransitDelaySeconds(
+      String transitArea,
+      Ip peerRouterId) {
+
+    return getVirtualLinkTimer(
+        _virtualLinkTransitDelays,
+        transitArea,
+        peerRouterId,
+        DEFAULT_VIRTUAL_LINK_TRANSIT_DELAY_SECONDS);
+  }
+
+  public void setVirtualLinkTransitDelaySeconds(
+      String transitArea,
+      Ip peerRouterId,
+      int delay) {
+
+    setVirtualLink(
+        transitArea,
+        peerRouterId);
+
+    setVirtualLinkTimer(
+        _virtualLinkTransitDelays,
+        transitArea,
+        peerRouterId,
+        delay);
+  }
+
+  public void resetVirtualLinkTransitDelay(
+      String transitArea,
+      Ip peerRouterId) {
+
+    clearVirtualLinkTimer(
+        _virtualLinkTransitDelays,
+        transitArea,
+        peerRouterId);
+  }
+
   public void removeVirtualLink(
       String transitArea,
       Ip peerRouterId) {
@@ -816,6 +1038,22 @@ public final class AosCxOspfv3Process
         peerRouterId);
 
     clearVirtualLinkEncryption(
+        transitArea,
+        peerRouterId);
+
+    resetVirtualLinkHelloInterval(
+        transitArea,
+        peerRouterId);
+
+    resetVirtualLinkDeadInterval(
+        transitArea,
+        peerRouterId);
+
+    resetVirtualLinkRetransmitInterval(
+        transitArea,
+        peerRouterId);
+
+    resetVirtualLinkTransitDelay(
         transitArea,
         peerRouterId);
   }
@@ -1188,6 +1426,26 @@ public final class AosCxOspfv3Process
   private final @Nonnull
       Map<String, Map<Ip, AosCxOspfv3Encryption>>
           _virtualLinkEncryptions =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, Integer>>
+          _virtualLinkHelloIntervals =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, Integer>>
+          _virtualLinkDeadIntervals =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, Integer>>
+          _virtualLinkRetransmitIntervals =
+              new HashMap<>();
+
+  private final @Nonnull
+      Map<String, Map<Ip, Integer>>
+          _virtualLinkTransitDelays =
               new HashMap<>();
 
   private final @Nonnull
