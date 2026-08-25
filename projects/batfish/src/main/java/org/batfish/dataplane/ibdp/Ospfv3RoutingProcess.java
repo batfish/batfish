@@ -2509,12 +2509,40 @@ final class Ospfv3RoutingProcess {
         || localType == remoteType;
   }
 
+  /**
+   * Return whether two physical interfaces can complete OSPFv3 database
+   * exchange with respect to interface MTU.
+   *
+   * <p>OSPFv3 Database Description packets carry the sender's interface MTU.
+   * A conflicting MTU prevents the physical adjacency from reaching FULL.
+   */
+  @VisibleForTesting
+  static boolean areInterfaceMtusCompatible(
+      Interface localIface,
+      Interface remoteIface) {
+
+    return localIface.getMtu()
+        == remoteIface.getMtu();
+  }
+
   private static boolean areTopologicallyAdjacent(
       NodeInterfacePair localId,
       Interface localIface,
       NodeInterfacePair remoteId,
       Interface remoteIface,
       L3Adjacencies l3Adjacencies) {
+
+    /*
+     * MTU compatibility must be checked before the point-to-point topology
+     * fast path below. Physical pairing proves connectivity, not successful
+     * OSPFv3 database exchange.
+     */
+    if (!areInterfaceMtusCompatible(
+        localIface,
+        remoteIface)) {
+
+      return false;
+    }
 
     // When L1/L2 information proves a physical point-to-point pairing, no
     // global IPv6 address is required. This is important for OSPFv3 links

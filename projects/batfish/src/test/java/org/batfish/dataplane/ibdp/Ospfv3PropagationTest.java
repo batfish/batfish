@@ -824,4 +824,195 @@ public final class Ospfv3PropagationTest {
         empty());
   }
 
+  @Test
+  public void testMtuMismatchPreventsAdjacencyAndPropagation() {
+
+    Node n1 =
+        TestUtils.makeIosRouter(
+            "n1");
+
+    Node n2 =
+        TestUtils.makeIosRouter(
+            "n2");
+
+    /*
+     * The physical OSPFv3 link begins with matching jumbo MTUs.
+     */
+    Interface n1Link =
+        addInterface(
+            n1,
+            "eth12",
+            "2001:db8:81:12::1/64",
+            InterfaceType.PHYSICAL,
+            10,
+            OspfNetworkType.POINT_TO_POINT);
+
+    n1Link.setMtu(
+        9000);
+
+    Interface n2Link =
+        addInterface(
+            n2,
+            "eth21",
+            "2001:db8:81:12::2/64",
+            InterfaceType.PHYSICAL,
+            20,
+            OspfNetworkType.POINT_TO_POINT);
+
+    n2Link.setMtu(
+        9000);
+
+    /*
+     * This loopback is the route whose propagation proves whether the
+     * physical adjacency reached FULL.
+     */
+    addInterface(
+        n1,
+        "loopback81",
+        "2001:db8:81::1/128",
+        InterfaceType.LOOPBACK,
+        1,
+        OspfNetworkType.BROADCAST);
+
+    addProcess(
+        n1,
+        "192.0.2.81",
+        "eth12",
+        "loopback81");
+
+    addProcess(
+        n2,
+        "192.0.2.82",
+        "eth21");
+
+    VirtualRouter vr1 =
+        n1.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    VirtualRouter vr2 =
+        n2.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    TopologyContext emptyTopology =
+        TopologyContext.builder()
+            .build();
+
+    vr1.initForIgpComputation(
+        emptyTopology);
+
+    vr2.initForIgpComputation(
+        emptyTopology);
+
+    Map<String, Node> nodes =
+        ImmutableMap.of(
+            "n1",
+            n1,
+            "n2",
+            n2);
+
+    List<VirtualRouter> vrs =
+        List.of(
+            vr1,
+            vr2);
+
+    TestL3Adjacencies adjacencies =
+        new TestL3Adjacencies();
+
+    adjacencies.addPair(
+        NodeInterfacePair.of(
+            "n1",
+            "eth12"),
+        NodeInterfacePair.of(
+            "n2",
+            "eth21"));
+
+    Prefix6 loopbackPrefix =
+        Prefix6.parse(
+            "2001:db8:81::1/128");
+
+    /*
+     * Matching MTUs are compatible.
+     */
+    assertThat(
+        Ospfv3RoutingProcess
+            .areInterfaceMtusCompatible(
+                n1Link,
+                n2Link),
+        equalTo(true));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    assertThat(
+        findIntraRoute(
+            vr2,
+            loopbackPrefix),
+        notNullValue());
+
+    /*
+     * Create an MTU mismatch without changing topology or any OSPFv3
+     * interface setting.
+     */
+    n2Link.setMtu(
+        1500);
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areInterfaceMtusCompatible(
+                n1Link,
+                n2Link),
+        equalTo(false));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    /*
+     * The OSPFv3 adjacency must no longer become operational, so the route
+     * learned from n1 is withdrawn from n2.
+     */
+    assertThat(
+        findIntraRoute(
+            vr2,
+            loopbackPrefix),
+        nullValue());
+
+    assertThat(
+        vr2.getMainRib6()
+            .getRoutes(
+                loopbackPrefix),
+        empty());
+
+    /*
+     * Restoring the matching MTU should allow the adjacency and route to
+     * recover on the next convergence pass.
+     */
+    n2Link.setMtu(
+        9000);
+
+    assertThat(
+        Ospfv3RoutingProcess
+            .areInterfaceMtusCompatible(
+                n1Link,
+                n2Link),
+        equalTo(true));
+
+    IncrementalBdpEngine
+        .initOspfv3InternalRoutes(
+            nodes,
+            vrs,
+            adjacencies);
+
+    assertThat(
+        findIntraRoute(
+            vr2,
+            loopbackPrefix),
+        notNullValue());
+  }
+
 }
