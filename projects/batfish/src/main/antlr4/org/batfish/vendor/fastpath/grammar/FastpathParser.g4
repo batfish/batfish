@@ -21,6 +21,7 @@ statement
   | s_no
   | s_set
   | s_sntp
+  | s_tacacs_server
 ;
 
 s_hostname
@@ -360,4 +361,77 @@ logging_severity_keyword
   | INFO
   | NOTICE
   | WARNING
+;
+
+s_tacacs_server
+:
+  TACACS_SERVER
+  (
+    ts_host
+    | ts_key
+    | ts_keystring_null
+    | ts_source_interface
+    | ts_timeout
+  )
+;
+
+ts_host
+:
+  HOST host_value NEWLINE tsh_block
+;
+
+tsh_block
+:
+  (
+    tsh_key
+    | tsh_keystring_null
+    | tsh_port
+    | tsh_priority
+    | tsh_timeout
+  )* EXIT NEWLINE
+;
+
+tsh_key
+:
+  KEY ENCRYPTED? WORD NEWLINE
+;
+
+tsh_keystring_null
+:
+  KEYSTRING null_rest_of_line
+;
+
+tsh_port
+:
+  PORT port = uint16 NEWLINE
+;
+
+tsh_priority
+:
+  PRIORITY priority = uint16 NEWLINE
+;
+
+tsh_timeout
+:
+  TIMEOUT timeout = uint8 NEWLINE
+;
+
+ts_source_interface
+:
+  SOURCE_INTERFACE iface = interface_name NEWLINE
+;
+
+ts_key
+:
+  KEY ENCRYPTED? WORD NEWLINE
+;
+
+ts_keystring_null
+:
+  KEYSTRING null_rest_of_line
+;
+
+ts_timeout
+:
+  TIMEOUT timeout = uint8 NEWLINE
 ;

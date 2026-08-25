@@ -37,15 +37,17 @@ EMAIL
 
 EMERGENCY: 'emergency';
 
+ENCRYPTED: 'encrypted';
+
 ERROR: 'error';
+
+EXIT: 'exit';
 
 HOST
 :
   'host'
   {
-    // `logging host <host>`: the host (quoted, IP, or bare word) follows in M_HostValue.
-    // `ip host ...` is consumed as a null rest-of-line in DEFAULT mode.
-    if (lastTokenType() == LOGGING) {
+    if (lastTokenType() == LOGGING || lastTokenType() == TACACS_SERVER) {
       pushMode(M_HostValue);
     }
   }
@@ -63,6 +65,13 @@ IP: 'ip';
 IPV4: 'ipv4';
 
 IPV6: 'ipv6';
+
+KEY
+:
+  'key' -> pushMode ( M_Key )
+;
+
+KEYSTRING: 'keystring';
 
 LIST: 'list';
 
@@ -97,6 +106,8 @@ POLL_INTERVAL: 'poll-interval';
 POLL_RETRY: 'poll-retry';
 
 PORT: 'port';
+
+PRIORITY: 'priority';
 
 PROMPT
 :
@@ -135,6 +146,8 @@ STATUS
 ;
 
 SYSLOG: 'syslog';
+
+TACACS_SERVER: 'tacacs-server';
 
 TIMEOUT: 'timeout';
 
@@ -410,6 +423,28 @@ M_HostValue_WS
 ;
 
 M_HostValue_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+mode M_Key;
+
+M_Key_ENCRYPTED
+:
+  'encrypted' -> type ( ENCRYPTED )
+;
+
+M_Key_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Key_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Key_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;

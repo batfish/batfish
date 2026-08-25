@@ -25,6 +25,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private final Dns _dns;
   private final Sntp _sntp;
   private final Logging _logging;
+  private final Tacacs _tacacs;
 
   private transient Configuration _c;
 
@@ -32,6 +33,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _dns = new Dns();
     _sntp = new Sntp();
     _logging = new Logging();
+    _tacacs = new Tacacs();
   }
 
   @Override
@@ -63,6 +65,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
     return _logging;
   }
 
+  public @Nonnull Tacacs getTacacs() {
+    return _tacacs;
+  }
+
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.FASTPATH);
     _c.setHumanName(_rawHostname);
@@ -81,6 +87,8 @@ public final class FastpathConfiguration extends VendorConfiguration {
     convertNtpSourceInterface();
     convertLoggingServers();
     convertLoggingSourceInterface();
+    convertTacacsServers();
+    convertTacacsSourceInterface();
 
     return _c;
   }
@@ -118,6 +126,16 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private void convertLoggingSourceInterface() {
     if (_logging.getSourceInterface() != null) {
       _c.setLoggingSourceInterface(_logging.getSourceInterface());
+    }
+  }
+
+  private void convertTacacsServers() {
+    _c.setTacacsServers(ImmutableSet.copyOf(_tacacs.getServers().keySet()));
+  }
+
+  private void convertTacacsSourceInterface() {
+    if (_tacacs.getSourceInterface() != null) {
+      _c.setTacacsSourceInterface(_tacacs.getSourceInterface());
     }
   }
 

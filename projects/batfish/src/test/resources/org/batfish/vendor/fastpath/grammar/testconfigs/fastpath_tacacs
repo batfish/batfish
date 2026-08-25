@@ -1,0 +1,28 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_tacacs"
+!
+tacacs-server source-interface serviceport
+tacacs-server timeout 10
+tacacs-server key encrypted %CENSORED%
+tacacs-server keystring
+!
+tacacs-server host "1.1.1.1"
+key %CENSORED%
+exit
+!
+tacacs-server host 2.2.2.2
+keystring
+exit
+!
+tacacs-server host "tacacs.example.com"
+exit
+!
+tacacs-server host "3.3.3.3"
+timeout 10
+port 49
+priority 1
+key encrypted %CENSORED%
+exit

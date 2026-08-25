@@ -43,11 +43,20 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_source_interfaceC
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_modeContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ss_hostContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_hostContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_keyContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_source_interfaceContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_timeoutContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_keyContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_portContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_priorityContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_timeoutContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
 import org.batfish.vendor.fastpath.representation.Sntp;
+import org.batfish.vendor.fastpath.representation.TacacsServer;
 
 /** Populates a {@link FastpathConfiguration} by walking a FastPath parse tree. */
 public final class FastpathConfigurationBuilder extends FastpathParserBaseListener
@@ -63,6 +72,8 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   private static final IntegerSpace SNTP_CLIENT_PORT_RANGE =
       IntegerSpace.of(Range.closed(1, 65535));
 
+  private static final IntegerSpace TACACS_TIMEOUT_RANGE = IntegerSpace.of(Range.closed(1, 30));
+
   public FastpathConfigurationBuilder(
       FastpathCombinedParser parser,
       String text,
@@ -75,6 +86,14 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
     _c = configuration;
     _silentSyntax = silentSyntax;
   }
+
+  private final @Nonnull FastpathConfiguration _c;
+  private final @Nonnull FastpathCombinedParser _parser;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull String _text;
+  private final @Nonnull Warnings _w;
+
+  private @Nullable TacacsServer _currentTacacsServer;
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
@@ -114,6 +133,54 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   @Override
   public void exitSs_host(Ss_hostContext ctx) {
     _c.getSntp().addServer(toString(ctx.host_value()));
+  }
+
+  @Override
+  public void enterTs_host(Ts_hostContext ctx) {
+    _currentTacacsServer =
+        _c.getTacacs().getServers().computeIfAbsent(toString(ctx.host_value()), TacacsServer::new);
+  }
+
+  @Override
+  public void exitTs_host(Ts_hostContext ctx) {
+    _currentTacacsServer = null;
+  }
+
+  @Override
+  public void exitTsh_port(Tsh_portContext ctx) {
+    _currentTacacsServer.setPort(Integer.parseInt(ctx.port.getText()));
+  }
+
+  @Override
+  public void exitTsh_priority(Tsh_priorityContext ctx) {
+    _currentTacacsServer.setPriority(Integer.parseInt(ctx.priority.getText()));
+  }
+
+  @Override
+  public void exitTsh_timeout(Tsh_timeoutContext ctx) {
+    toIntegerInSpace(ctx, ctx.timeout, TACACS_TIMEOUT_RANGE, "tacacs-server host timeout")
+        .ifPresent(_currentTacacsServer::setTimeout);
+  }
+
+  @Override
+  public void exitTsh_key(Tsh_keyContext ctx) {
+    _currentTacacsServer.setKeyEncrypted(ctx.ENCRYPTED() != null);
+  }
+
+  @Override
+  public void exitTs_key(Ts_keyContext ctx) {
+    _c.getTacacs().setKeyEncrypted(ctx.ENCRYPTED() != null);
+  }
+
+  @Override
+  public void exitTs_timeout(Ts_timeoutContext ctx) {
+    toIntegerInSpace(ctx, ctx.timeout, TACACS_TIMEOUT_RANGE, "tacacs-server timeout")
+        .ifPresent(_c.getTacacs()::setTimeout);
+  }
+
+  @Override
+  public void exitTs_source_interface(Ts_source_interfaceContext ctx) {
+    _c.getTacacs().setSourceInterface(toInterfaceName(ctx.iface));
   }
 
   @Override
@@ -349,14 +416,4 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   public @Nonnull Warnings getWarnings() {
     return _w;
   }
-
-  private final @Nonnull FastpathConfiguration _c;
-
-  private final @Nonnull FastpathCombinedParser _parser;
-
-  private final @Nonnull SilentSyntaxCollection _silentSyntax;
-
-  private final @Nonnull String _text;
-
-  private final @Nonnull Warnings _w;
 }
