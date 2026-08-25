@@ -6729,4 +6729,138 @@ public final class AosCxGrammarTest {
         equalTo(true));
   }
 
+  @Test
+  public void testOspfv3RouterIdResetExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-router-id-reset");
+
+    /*
+     * no router-id clears the explicit vendor value.
+     */
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getRouterId(),
+        nullValue());
+
+    /*
+     * An untouched explicit router ID remains configured.
+     */
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes()
+            .get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2.getRouterId(),
+        equalTo(
+            Ip.parse(
+                "203.0.113.2")));
+
+    /*
+     * Named-VRF OSPFv3 process gets the same reset semantics.
+     */
+    AosCxOspfv3Process process3 =
+        c.getOspfv3Processes("RED")
+            .get(3);
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getRouterId(),
+        nullValue());
+  }
+
+  @Test
+  public void testOspfv3RouterIdResetConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-router-id-reset");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router-id-reset");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    /*
+     * Existing AOS-CX dynamic election prefers the highest active
+     * loopback address before considering active physical interfaces.
+     */
+    assertThat(
+        process1.getRouterId(),
+        equalTo(
+            Ip.parse(
+                "192.0.2.200")));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    /*
+     * Explicit configuration still overrides automatic selection.
+     */
+    assertThat(
+        process2.getRouterId(),
+        equalTo(
+            Ip.parse(
+                "203.0.113.2")));
+
+    assertThat(
+        c.getVrfs()
+            .containsKey("RED"),
+        equalTo(true));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process3 =
+        c.getVrfs()
+            .get("RED")
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    /*
+     * RED has no IPv4 loopback, so automatic election falls back to the
+     * highest active IPv4 interface address in that VRF.
+     */
+    assertThat(
+        process3.getRouterId(),
+        equalTo(
+            Ip.parse(
+                "10.0.2.200")));
+  }
+
 }

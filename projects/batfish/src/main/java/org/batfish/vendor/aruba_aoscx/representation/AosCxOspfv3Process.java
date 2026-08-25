@@ -1357,6 +1357,16 @@ public final class AosCxOspfv3Process
     _routerId = routerId;
   }
 
+  /**
+   * Remove the explicitly configured OSPFv3 router ID.
+   *
+   * <p>A null value causes conversion to use AOS-CX dynamic router-ID
+   * selection.
+   */
+  public void clearRouterId() {
+    _routerId = null;
+  }
+
   private final int _processId;
 
   private @Nullable String _distributeListIn;

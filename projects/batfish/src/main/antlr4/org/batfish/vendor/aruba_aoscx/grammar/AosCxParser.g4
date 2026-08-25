@@ -816,6 +816,7 @@ s_redistribute_static
 s_router_id
 :
   ROUTER_ID WORD NEWLINE
+  | NO ROUTER_ID NEWLINE
 ;
 
 

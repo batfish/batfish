@@ -3699,20 +3699,65 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_router_id(S_router_idContext ctx) {
-    Ip routerId = Ip.parse(ctx.WORD().getText());
+  public void exitS_router_id(
+      S_router_idContext ctx) {
+
+    if (ctx.NO() != null) {
+
+      if (_currentOspfv3Process != null) {
+
+        _currentOspfv3Process
+            .clearRouterId();
+
+        return;
+      }
+
+      if (_currentOspfProcess != null) {
+
+        /*
+         * OSPFv2 conversion still requires an explicitly configured
+         * router ID. Preserve the existing value until dynamic OSPFv2
+         * router-ID selection is modeled.
+         */
+        warn(
+            ctx,
+            "Ignoring OSPFv2 no router-id because dynamic OSPFv2 router-ID selection is not modeled");
+
+        return;
+      }
+
+      warn(
+          ctx,
+          "Ignoring no router-id outside OSPF context");
+
+      return;
+    }
+
+    Ip routerId =
+        Ip.parse(
+            ctx.WORD().getText());
 
     if (_currentOspfProcess != null) {
-      _currentOspfProcess.setRouterId(routerId);
+
+      _currentOspfProcess
+          .setRouterId(
+              routerId);
+
       return;
     }
 
     if (_currentOspfv3Process != null) {
-      _currentOspfv3Process.setRouterId(routerId);
+
+      _currentOspfv3Process
+          .setRouterId(
+              routerId);
+
       return;
     }
 
-    warn(ctx, "Ignoring router-id outside OSPF context");
+    warn(
+        ctx,
+        "Ignoring router-id outside OSPF context");
   }
 
   @Override

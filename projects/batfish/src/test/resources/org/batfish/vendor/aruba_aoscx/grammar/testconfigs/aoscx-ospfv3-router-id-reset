@@ -1,0 +1,38 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER-ID-RESET
+
+vrf RED
+
+interface loopback 0
+    ip address 192.0.2.200/32
+
+interface loopback 1
+    ip address 192.0.2.150/32
+
+interface 1/1/1
+    no shutdown
+    ip address 198.51.100.250/24
+
+interface 1/1/2
+    no shutdown
+    vrf attach RED
+    ip address 10.0.1.10/24
+
+interface 1/1/3
+    no shutdown
+    vrf attach RED
+    ip address 10.0.2.200/24
+
+router ospfv3 1
+    router-id 203.0.113.1
+    no router-id
+    area 0
+
+router ospfv3 2
+    router-id 203.0.113.2
+    area 0
+
+router ospfv3 3 vrf RED
+    router-id 203.0.113.3
+    no router-id
+    area 0
