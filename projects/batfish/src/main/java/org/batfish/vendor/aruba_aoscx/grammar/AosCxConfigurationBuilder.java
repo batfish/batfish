@@ -92,6 +92,9 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_default_metri
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distanceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_distribute_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_graceful_restartContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_timers_throttle_spfContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_timers_throttle_lsaContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_timers_lsa_arrivalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_max_metric_router_lsaContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_maximum_pathsContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_summary_addressContext;
@@ -1265,6 +1268,200 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
     _currentOspfv3Process
         .setGracefulRestartIgnoreLostInterface(
             ctx.NO() == null);
+  }
+
+  @Override
+  public void exitS_ospfv3_timers_throttle_spf(
+      S_ospfv3_timers_throttle_spfContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring timers throttle spf outside OSPFv3 context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetSpfThrottleTimers();
+
+      return;
+    }
+
+    int startTime;
+    int holdTime;
+    int maxWaitTime;
+
+    try {
+
+      startTime =
+          Integer.parseInt(
+              ctx.WORD(0).getText());
+
+      holdTime =
+          Integer.parseInt(
+              ctx.WORD(1).getText());
+
+      maxWaitTime =
+          Integer.parseInt(
+              ctx.WORD(2).getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 SPF throttle timers");
+
+      return;
+    }
+
+    if (startTime < 1
+        || startTime > 600000
+        || holdTime < 1
+        || holdTime > 600000
+        || maxWaitTime < 1
+        || maxWaitTime > 600000) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 SPF throttle timers outside 1-600000 ms");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setSpfThrottleTimers(
+            startTime,
+            holdTime,
+            maxWaitTime);
+  }
+
+  @Override
+  public void exitS_ospfv3_timers_throttle_lsa(
+      S_ospfv3_timers_throttle_lsaContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring timers throttle lsa outside OSPFv3 context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetLsaThrottleTimers();
+
+      return;
+    }
+
+    int startTime;
+    int holdTime;
+    int maxWaitTime;
+
+    try {
+
+      startTime =
+          Integer.parseInt(
+              ctx.WORD(0).getText());
+
+      holdTime =
+          Integer.parseInt(
+              ctx.WORD(1).getText());
+
+      maxWaitTime =
+          Integer.parseInt(
+              ctx.WORD(2).getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 LSA throttle timers");
+
+      return;
+    }
+
+    if (startTime < 0
+        || startTime > 600000
+        || holdTime < 0
+        || holdTime > 600000
+        || maxWaitTime < 0
+        || maxWaitTime > 600000) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 LSA throttle timers outside 0-600000 ms");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setLsaThrottleTimers(
+            startTime,
+            holdTime,
+            maxWaitTime);
+  }
+
+  @Override
+  public void exitS_ospfv3_timers_lsa_arrival(
+      S_ospfv3_timers_lsa_arrivalContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring timers lsa-arrival outside OSPFv3 context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .resetLsaArrivalTime();
+
+      return;
+    }
+
+    int delay;
+
+    try {
+
+      delay =
+          Integer.parseInt(
+              ctx.WORD().getText());
+
+    } catch (NumberFormatException e) {
+
+      warn(
+          ctx,
+          "Ignoring invalid OSPFv3 LSA arrival timer");
+
+      return;
+    }
+
+    if (delay < 0
+        || delay > 600000) {
+
+      warn(
+          ctx,
+          "Ignoring OSPFv3 LSA arrival timer outside 0-600000 ms");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setLsaArrivalTimeMs(
+            delay);
   }
 
   @Override

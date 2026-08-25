@@ -54,6 +54,41 @@ public final class Ospfv3Process
       DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS =
           120;
 
+  /** Default initial SPF throttle delay in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_START_TIME_MS =
+          200;
+
+  /** Default SPF throttle hold time in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_HOLD_TIME_MS =
+          1000;
+
+  /** Default SPF throttle maximum wait in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS =
+          5000;
+
+  /** Default initial LSA generation delay in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_START_TIME_MS =
+          5000;
+
+  /** Default LSA regeneration hold time in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_HOLD_TIME_MS =
+          0;
+
+  /** Default LSA regeneration maximum wait in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS =
+          0;
+
+  /** Default minimum arrival delay for the same LSA in milliseconds. */
+  public static final int
+      DEFAULT_LSA_ARRIVAL_TIME_MS =
+          1000;
+
   public static final class Builder {
     private int _adminCost;
     private int _interAreaAdminCost;
@@ -69,6 +104,20 @@ public final class Ospfv3Process
         _gracefulRestartHelperStrictLsaCheck;
     private boolean
         _gracefulRestartIgnoreLostInterface;
+    private int
+        _spfThrottleStartTimeMs;
+    private int
+        _spfThrottleHoldTimeMs;
+    private int
+        _spfThrottleMaxWaitTimeMs;
+    private int
+        _lsaThrottleStartTimeMs;
+    private int
+        _lsaThrottleHoldTimeMs;
+    private int
+        _lsaThrottleMaxWaitTimeMs;
+    private int
+        _lsaArrivalTimeMs;
     private @Nullable PrefixList6
         _inboundDistributeList;
     private @Nullable PrefixList6
@@ -116,6 +165,20 @@ public final class Ospfv3Process
           true;
       _gracefulRestartIntervalSeconds =
           DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS;
+      _spfThrottleStartTimeMs =
+          DEFAULT_SPF_THROTTLE_START_TIME_MS;
+      _spfThrottleHoldTimeMs =
+          DEFAULT_SPF_THROTTLE_HOLD_TIME_MS;
+      _spfThrottleMaxWaitTimeMs =
+          DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS;
+      _lsaThrottleStartTimeMs =
+          DEFAULT_LSA_THROTTLE_START_TIME_MS;
+      _lsaThrottleHoldTimeMs =
+          DEFAULT_LSA_THROTTLE_HOLD_TIME_MS;
+      _lsaThrottleMaxWaitTimeMs =
+          DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS;
+      _lsaArrivalTimeMs =
+          DEFAULT_LSA_ARRIVAL_TIME_MS;
       _maximumPaths =
           DEFAULT_MAXIMUM_PATHS;
       _externalSummaries =
@@ -183,6 +246,36 @@ public final class Ospfv3Process
           "OSPFv3 strict-lsa-check requires graceful-restart helper mode");
 
       checkArgument(
+          _spfThrottleStartTimeMs >= 1
+              && _spfThrottleStartTimeMs <= 600000
+              && _spfThrottleHoldTimeMs >= 1
+              && _spfThrottleHoldTimeMs <= 600000
+              && _spfThrottleMaxWaitTimeMs >= 1
+              && _spfThrottleMaxWaitTimeMs <= 600000,
+          "Invalid OSPFv3 SPF throttle timers %s/%s/%s",
+          _spfThrottleStartTimeMs,
+          _spfThrottleHoldTimeMs,
+          _spfThrottleMaxWaitTimeMs);
+
+      checkArgument(
+          _lsaThrottleStartTimeMs >= 0
+              && _lsaThrottleStartTimeMs <= 600000
+              && _lsaThrottleHoldTimeMs >= 0
+              && _lsaThrottleHoldTimeMs <= 600000
+              && _lsaThrottleMaxWaitTimeMs >= 0
+              && _lsaThrottleMaxWaitTimeMs <= 600000,
+          "Invalid OSPFv3 LSA throttle timers %s/%s/%s",
+          _lsaThrottleStartTimeMs,
+          _lsaThrottleHoldTimeMs,
+          _lsaThrottleMaxWaitTimeMs);
+
+      checkArgument(
+          _lsaArrivalTimeMs >= 0
+              && _lsaArrivalTimeMs <= 600000,
+          "Invalid OSPFv3 LSA arrival timer %s",
+          _lsaArrivalTimeMs);
+
+      checkArgument(
           _redistributionMetric >= 0
               && _redistributionMetric <= MAX_METRIC,
           "Invalid redistribution metric %s",
@@ -208,6 +301,13 @@ public final class Ospfv3Process
               _gracefulRestartHelper,
               _gracefulRestartHelperStrictLsaCheck,
               _gracefulRestartIgnoreLostInterface,
+              _spfThrottleStartTimeMs,
+              _spfThrottleHoldTimeMs,
+              _spfThrottleMaxWaitTimeMs,
+              _lsaThrottleStartTimeMs,
+              _lsaThrottleHoldTimeMs,
+              _lsaThrottleMaxWaitTimeMs,
+              _lsaArrivalTimeMs,
               _inboundDistributeList,
               _outboundDistributeList,
               _maximumPaths,
@@ -319,6 +419,49 @@ public final class Ospfv3Process
 
       _gracefulRestartIgnoreLostInterface =
           ignoreLostInterface;
+
+      return this;
+    }
+
+    public Builder setSpfThrottleTimers(
+        int startTimeMs,
+        int holdTimeMs,
+        int maxWaitTimeMs) {
+
+      _spfThrottleStartTimeMs =
+          startTimeMs;
+
+      _spfThrottleHoldTimeMs =
+          holdTimeMs;
+
+      _spfThrottleMaxWaitTimeMs =
+          maxWaitTimeMs;
+
+      return this;
+    }
+
+    public Builder setLsaThrottleTimers(
+        int startTimeMs,
+        int holdTimeMs,
+        int maxWaitTimeMs) {
+
+      _lsaThrottleStartTimeMs =
+          startTimeMs;
+
+      _lsaThrottleHoldTimeMs =
+          holdTimeMs;
+
+      _lsaThrottleMaxWaitTimeMs =
+          maxWaitTimeMs;
+
+      return this;
+    }
+
+    public Builder setLsaArrivalTimeMs(
+        int delayMs) {
+
+      _lsaArrivalTimeMs =
+          delayMs;
 
       return this;
     }
@@ -533,6 +676,27 @@ public final class Ospfv3Process
       PROP_GRACEFUL_RESTART_IGNORE_LOST_INTERFACE =
           "gracefulRestartIgnoreLostInterface";
   private static final String
+      PROP_SPF_THROTTLE_START_TIME_MS =
+          "spfThrottleStartTimeMs";
+  private static final String
+      PROP_SPF_THROTTLE_HOLD_TIME_MS =
+          "spfThrottleHoldTimeMs";
+  private static final String
+      PROP_SPF_THROTTLE_MAX_WAIT_TIME_MS =
+          "spfThrottleMaxWaitTimeMs";
+  private static final String
+      PROP_LSA_THROTTLE_START_TIME_MS =
+          "lsaThrottleStartTimeMs";
+  private static final String
+      PROP_LSA_THROTTLE_HOLD_TIME_MS =
+          "lsaThrottleHoldTimeMs";
+  private static final String
+      PROP_LSA_THROTTLE_MAX_WAIT_TIME_MS =
+          "lsaThrottleMaxWaitTimeMs";
+  private static final String
+      PROP_LSA_ARRIVAL_TIME_MS =
+          "lsaArrivalTimeMs";
+  private static final String
       PROP_INBOUND_DISTRIBUTE_LIST =
           "inboundDistributeList";
   private static final String
@@ -625,6 +789,20 @@ public final class Ospfv3Process
       @JsonProperty(
               PROP_GRACEFUL_RESTART_IGNORE_LOST_INTERFACE)
           @Nullable Boolean gracefulRestartIgnoreLostInterface,
+      @JsonProperty(PROP_SPF_THROTTLE_START_TIME_MS)
+          @Nullable Integer spfThrottleStartTimeMs,
+      @JsonProperty(PROP_SPF_THROTTLE_HOLD_TIME_MS)
+          @Nullable Integer spfThrottleHoldTimeMs,
+      @JsonProperty(PROP_SPF_THROTTLE_MAX_WAIT_TIME_MS)
+          @Nullable Integer spfThrottleMaxWaitTimeMs,
+      @JsonProperty(PROP_LSA_THROTTLE_START_TIME_MS)
+          @Nullable Integer lsaThrottleStartTimeMs,
+      @JsonProperty(PROP_LSA_THROTTLE_HOLD_TIME_MS)
+          @Nullable Integer lsaThrottleHoldTimeMs,
+      @JsonProperty(PROP_LSA_THROTTLE_MAX_WAIT_TIME_MS)
+          @Nullable Integer lsaThrottleMaxWaitTimeMs,
+      @JsonProperty(PROP_LSA_ARRIVAL_TIME_MS)
+          @Nullable Integer lsaArrivalTimeMs,
       @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
           @Nullable PrefixList6 inboundDistributeList,
       @JsonProperty(PROP_OUTBOUND_DISTRIBUTE_LIST)
@@ -718,6 +896,27 @@ public final class Ospfv3Process
         firstNonNull(
             gracefulRestartIgnoreLostInterface,
             false),
+        firstNonNull(
+            spfThrottleStartTimeMs,
+            DEFAULT_SPF_THROTTLE_START_TIME_MS),
+        firstNonNull(
+            spfThrottleHoldTimeMs,
+            DEFAULT_SPF_THROTTLE_HOLD_TIME_MS),
+        firstNonNull(
+            spfThrottleMaxWaitTimeMs,
+            DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS),
+        firstNonNull(
+            lsaThrottleStartTimeMs,
+            DEFAULT_LSA_THROTTLE_START_TIME_MS),
+        firstNonNull(
+            lsaThrottleHoldTimeMs,
+            DEFAULT_LSA_THROTTLE_HOLD_TIME_MS),
+        firstNonNull(
+            lsaThrottleMaxWaitTimeMs,
+            DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS),
+        firstNonNull(
+            lsaArrivalTimeMs,
+            DEFAULT_LSA_ARRIVAL_TIME_MS),
         inboundDistributeList,
         outboundDistributeList,
         firstNonNull(
@@ -780,6 +979,13 @@ public final class Ospfv3Process
       boolean gracefulRestartHelper,
       boolean gracefulRestartHelperStrictLsaCheck,
       boolean gracefulRestartIgnoreLostInterface,
+      int spfThrottleStartTimeMs,
+      int spfThrottleHoldTimeMs,
+      int spfThrottleMaxWaitTimeMs,
+      int lsaThrottleStartTimeMs,
+      int lsaThrottleHoldTimeMs,
+      int lsaThrottleMaxWaitTimeMs,
+      int lsaArrivalTimeMs,
       @Nullable PrefixList6 inboundDistributeList,
       @Nullable PrefixList6 outboundDistributeList,
       int maximumPaths,
@@ -817,6 +1023,36 @@ public final class Ospfv3Process
         !gracefulRestartHelperStrictLsaCheck
             || gracefulRestartHelper,
         "OSPFv3 strict-lsa-check requires graceful-restart helper mode");
+
+    checkArgument(
+        spfThrottleStartTimeMs >= 1
+            && spfThrottleStartTimeMs <= 600000
+            && spfThrottleHoldTimeMs >= 1
+            && spfThrottleHoldTimeMs <= 600000
+            && spfThrottleMaxWaitTimeMs >= 1
+            && spfThrottleMaxWaitTimeMs <= 600000,
+        "Invalid OSPFv3 SPF throttle timers %s/%s/%s",
+        spfThrottleStartTimeMs,
+        spfThrottleHoldTimeMs,
+        spfThrottleMaxWaitTimeMs);
+
+    checkArgument(
+        lsaThrottleStartTimeMs >= 0
+            && lsaThrottleStartTimeMs <= 600000
+            && lsaThrottleHoldTimeMs >= 0
+            && lsaThrottleHoldTimeMs <= 600000
+            && lsaThrottleMaxWaitTimeMs >= 0
+            && lsaThrottleMaxWaitTimeMs <= 600000,
+        "Invalid OSPFv3 LSA throttle timers %s/%s/%s",
+        lsaThrottleStartTimeMs,
+        lsaThrottleHoldTimeMs,
+        lsaThrottleMaxWaitTimeMs);
+
+    checkArgument(
+        lsaArrivalTimeMs >= 0
+            && lsaArrivalTimeMs <= 600000,
+        "Invalid OSPFv3 LSA arrival timer %s",
+        lsaArrivalTimeMs);
 
     checkArgument(
         maxMetricRouterLsaOnStartupSeconds == null
@@ -862,6 +1098,20 @@ public final class Ospfv3Process
         gracefulRestartHelperStrictLsaCheck;
     _gracefulRestartIgnoreLostInterface =
         gracefulRestartIgnoreLostInterface;
+    _spfThrottleStartTimeMs =
+        spfThrottleStartTimeMs;
+    _spfThrottleHoldTimeMs =
+        spfThrottleHoldTimeMs;
+    _spfThrottleMaxWaitTimeMs =
+        spfThrottleMaxWaitTimeMs;
+    _lsaThrottleStartTimeMs =
+        lsaThrottleStartTimeMs;
+    _lsaThrottleHoldTimeMs =
+        lsaThrottleHoldTimeMs;
+    _lsaThrottleMaxWaitTimeMs =
+        lsaThrottleMaxWaitTimeMs;
+    _lsaArrivalTimeMs =
+        lsaArrivalTimeMs;
     _inboundDistributeList =
         inboundDistributeList;
     _outboundDistributeList =
@@ -989,6 +1239,54 @@ public final class Ospfv3Process
       getGracefulRestartIgnoreLostInterface() {
 
     return _gracefulRestartIgnoreLostInterface;
+  }
+
+  /**
+   * OSPFv3 convergence timers are retained for configuration fidelity.
+   *
+   * <p>The converged dataplane does not simulate wall-clock SPF or LSA
+   * scheduling.
+   */
+  @JsonProperty(PROP_SPF_THROTTLE_START_TIME_MS)
+  public int getSpfThrottleStartTimeMs() {
+
+    return _spfThrottleStartTimeMs;
+  }
+
+  @JsonProperty(PROP_SPF_THROTTLE_HOLD_TIME_MS)
+  public int getSpfThrottleHoldTimeMs() {
+
+    return _spfThrottleHoldTimeMs;
+  }
+
+  @JsonProperty(PROP_SPF_THROTTLE_MAX_WAIT_TIME_MS)
+  public int getSpfThrottleMaxWaitTimeMs() {
+
+    return _spfThrottleMaxWaitTimeMs;
+  }
+
+  @JsonProperty(PROP_LSA_THROTTLE_START_TIME_MS)
+  public int getLsaThrottleStartTimeMs() {
+
+    return _lsaThrottleStartTimeMs;
+  }
+
+  @JsonProperty(PROP_LSA_THROTTLE_HOLD_TIME_MS)
+  public int getLsaThrottleHoldTimeMs() {
+
+    return _lsaThrottleHoldTimeMs;
+  }
+
+  @JsonProperty(PROP_LSA_THROTTLE_MAX_WAIT_TIME_MS)
+  public int getLsaThrottleMaxWaitTimeMs() {
+
+    return _lsaThrottleMaxWaitTimeMs;
+  }
+
+  @JsonProperty(PROP_LSA_ARRIVAL_TIME_MS)
+  public int getLsaArrivalTimeMs() {
+
+    return _lsaArrivalTimeMs;
   }
 
   @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST)
@@ -1145,6 +1443,20 @@ public final class Ospfv3Process
       _gracefulRestartHelperStrictLsaCheck;
   private final boolean
       _gracefulRestartIgnoreLostInterface;
+  private final int
+      _spfThrottleStartTimeMs;
+  private final int
+      _spfThrottleHoldTimeMs;
+  private final int
+      _spfThrottleMaxWaitTimeMs;
+  private final int
+      _lsaThrottleStartTimeMs;
+  private final int
+      _lsaThrottleHoldTimeMs;
+  private final int
+      _lsaThrottleMaxWaitTimeMs;
+  private final int
+      _lsaArrivalTimeMs;
   private final @Nullable PrefixList6
       _inboundDistributeList;
   private final @Nullable PrefixList6

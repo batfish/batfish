@@ -39,6 +39,41 @@ public final class AosCxOspfv3Process
       DEFAULT_GRACEFUL_RESTART_INTERVAL_SECONDS =
           120;
 
+  /** Default initial SPF throttle delay in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_START_TIME_MS =
+          200;
+
+  /** Default SPF throttle hold time in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_HOLD_TIME_MS =
+          1000;
+
+  /** Default SPF throttle maximum wait in milliseconds. */
+  public static final int
+      DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS =
+          5000;
+
+  /** Default initial LSA generation delay in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_START_TIME_MS =
+          5000;
+
+  /** Default LSA regeneration hold time in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_HOLD_TIME_MS =
+          0;
+
+  /** Default LSA regeneration maximum wait in milliseconds. */
+  public static final int
+      DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS =
+          0;
+
+  /** Default minimum arrival delay for the same LSA in milliseconds. */
+  public static final int
+      DEFAULT_LSA_ARRIVAL_TIME_MS =
+          1000;
+
   /** Default duration for max-metric router-lsa on-startup. */
   public static final int
       DEFAULT_MAX_METRIC_ROUTER_LSA_ON_STARTUP_SECONDS =
@@ -128,6 +163,100 @@ public final class AosCxOspfv3Process
 
     _gracefulRestartIgnoreLostInterface =
         ignoreLostInterface;
+  }
+
+  public int getSpfThrottleStartTimeMs() {
+
+    return _spfThrottleStartTimeMs;
+  }
+
+  public int getSpfThrottleHoldTimeMs() {
+
+    return _spfThrottleHoldTimeMs;
+  }
+
+  public int getSpfThrottleMaxWaitTimeMs() {
+
+    return _spfThrottleMaxWaitTimeMs;
+  }
+
+  public void setSpfThrottleTimers(
+      int startTimeMs,
+      int holdTimeMs,
+      int maxWaitTimeMs) {
+
+    _spfThrottleStartTimeMs =
+        startTimeMs;
+
+    _spfThrottleHoldTimeMs =
+        holdTimeMs;
+
+    _spfThrottleMaxWaitTimeMs =
+        maxWaitTimeMs;
+  }
+
+  public void resetSpfThrottleTimers() {
+
+    setSpfThrottleTimers(
+        DEFAULT_SPF_THROTTLE_START_TIME_MS,
+        DEFAULT_SPF_THROTTLE_HOLD_TIME_MS,
+        DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS);
+  }
+
+  public int getLsaThrottleStartTimeMs() {
+
+    return _lsaThrottleStartTimeMs;
+  }
+
+  public int getLsaThrottleHoldTimeMs() {
+
+    return _lsaThrottleHoldTimeMs;
+  }
+
+  public int getLsaThrottleMaxWaitTimeMs() {
+
+    return _lsaThrottleMaxWaitTimeMs;
+  }
+
+  public void setLsaThrottleTimers(
+      int startTimeMs,
+      int holdTimeMs,
+      int maxWaitTimeMs) {
+
+    _lsaThrottleStartTimeMs =
+        startTimeMs;
+
+    _lsaThrottleHoldTimeMs =
+        holdTimeMs;
+
+    _lsaThrottleMaxWaitTimeMs =
+        maxWaitTimeMs;
+  }
+
+  public void resetLsaThrottleTimers() {
+
+    setLsaThrottleTimers(
+        DEFAULT_LSA_THROTTLE_START_TIME_MS,
+        DEFAULT_LSA_THROTTLE_HOLD_TIME_MS,
+        DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS);
+  }
+
+  public int getLsaArrivalTimeMs() {
+
+    return _lsaArrivalTimeMs;
+  }
+
+  public void setLsaArrivalTimeMs(
+      int delayMs) {
+
+    _lsaArrivalTimeMs =
+        delayMs;
+  }
+
+  public void resetLsaArrivalTime() {
+
+    _lsaArrivalTimeMs =
+        DEFAULT_LSA_ARRIVAL_TIME_MS;
   }
 
   public int getMaximumPaths() {
@@ -955,6 +1084,27 @@ public final class AosCxOspfv3Process
 
   private boolean
       _gracefulRestartIgnoreLostInterface;
+
+  private int _spfThrottleStartTimeMs =
+      DEFAULT_SPF_THROTTLE_START_TIME_MS;
+
+  private int _spfThrottleHoldTimeMs =
+      DEFAULT_SPF_THROTTLE_HOLD_TIME_MS;
+
+  private int _spfThrottleMaxWaitTimeMs =
+      DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS;
+
+  private int _lsaThrottleStartTimeMs =
+      DEFAULT_LSA_THROTTLE_START_TIME_MS;
+
+  private int _lsaThrottleHoldTimeMs =
+      DEFAULT_LSA_THROTTLE_HOLD_TIME_MS;
+
+  private int _lsaThrottleMaxWaitTimeMs =
+      DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS;
+
+  private int _lsaArrivalTimeMs =
+      DEFAULT_LSA_ARRIVAL_TIME_MS;
 
   private int _maximumPaths =
       DEFAULT_MAXIMUM_PATHS;

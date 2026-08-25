@@ -5635,4 +5635,258 @@ public final class AosCxGrammarTest {
             false));
   }
 
+  @Test
+  public void testOspfv3ConvergenceTimersExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-convergence-timers");
+
+    AosCxOspfv3Process process1 =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getSpfThrottleStartTimeMs(),
+        equalTo(10));
+
+    assertThat(
+        process1.getSpfThrottleHoldTimeMs(),
+        equalTo(20));
+
+    assertThat(
+        process1.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(30));
+
+    assertThat(
+        process1.getLsaThrottleStartTimeMs(),
+        equalTo(100));
+
+    assertThat(
+        process1.getLsaThrottleHoldTimeMs(),
+        equalTo(200));
+
+    assertThat(
+        process1.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(300));
+
+    assertThat(
+        process1.getLsaArrivalTimeMs(),
+        equalTo(400));
+
+    /*
+     * Process 2 exercises all no forms.
+     */
+    AosCxOspfv3Process process2 =
+        c.getOspfv3Processes()
+            .get(2);
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2.getSpfThrottleStartTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_SPF_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        process2.getSpfThrottleHoldTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_SPF_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        process2.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleStartTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_LSA_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleHoldTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_LSA_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        process2.getLsaArrivalTimeMs(),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_LSA_ARRIVAL_TIME_MS));
+
+    /*
+     * Zero is valid for all LSA-generation timers and lsa-arrival.
+     */
+    AosCxOspfv3Process process3 =
+        c.getOspfv3Processes()
+            .get(3);
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getLsaThrottleStartTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaThrottleHoldTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaArrivalTimeMs(),
+        equalTo(0));
+  }
+
+  @Test
+  public void testOspfv3ConvergenceTimersConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-convergence-timers");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process1 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process1,
+        notNullValue());
+
+    assertThat(
+        process1.getSpfThrottleStartTimeMs(),
+        equalTo(10));
+
+    assertThat(
+        process1.getSpfThrottleHoldTimeMs(),
+        equalTo(20));
+
+    assertThat(
+        process1.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(30));
+
+    assertThat(
+        process1.getLsaThrottleStartTimeMs(),
+        equalTo(100));
+
+    assertThat(
+        process1.getLsaThrottleHoldTimeMs(),
+        equalTo(200));
+
+    assertThat(
+        process1.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(300));
+
+    assertThat(
+        process1.getLsaArrivalTimeMs(),
+        equalTo(400));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process2 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("2");
+
+    assertThat(
+        process2,
+        notNullValue());
+
+    assertThat(
+        process2.getSpfThrottleStartTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        process2.getSpfThrottleHoldTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        process2.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleStartTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleHoldTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        process2.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        process2.getLsaArrivalTimeMs(),
+        equalTo(
+            org.batfish.datamodel.ospf.Ospfv3Process
+                .DEFAULT_LSA_ARRIVAL_TIME_MS));
+
+    org.batfish.datamodel.ospf.Ospfv3Process process3 =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("3");
+
+    assertThat(
+        process3,
+        notNullValue());
+
+    assertThat(
+        process3.getLsaThrottleStartTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaThrottleHoldTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(0));
+
+    assertThat(
+        process3.getLsaArrivalTimeMs(),
+        equalTo(0));
+  }
+
 }

@@ -1,0 +1,22 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+router ospfv3 1
+    router-id 192.0.2.1
+    timers throttle spf start-time 10 hold-time 20 max-wait-time 30
+    timers throttle lsa start-time 100 hold-time 200 max-wait-time 300
+    timers lsa-arrival 400
+
+router ospfv3 2
+    router-id 192.0.2.2
+    timers throttle spf start-time 11 hold-time 22 max-wait-time 33
+    no timers throttle spf
+    timers throttle lsa start-time 111 hold-time 222 max-wait-time 333
+    no timers throttle lsa
+    timers lsa-arrival 444
+    no timers lsa-arrival
+
+router ospfv3 3
+    router-id 192.0.2.3
+    timers throttle lsa start-time 0 hold-time 0 max-wait-time 0
+    timers lsa-arrival 0

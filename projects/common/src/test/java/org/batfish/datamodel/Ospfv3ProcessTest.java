@@ -648,4 +648,111 @@ public final class Ospfv3ProcessTest {
             true));
   }
 
+  @Test
+  public void testConvergenceTimerDefaultsAndSerialization() {
+
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "1")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .build();
+
+    assertThat(
+        defaults.getSpfThrottleStartTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        defaults.getSpfThrottleHoldTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        defaults.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_SPF_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        defaults.getLsaThrottleStartTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_START_TIME_MS));
+
+    assertThat(
+        defaults.getLsaThrottleHoldTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_HOLD_TIME_MS));
+
+    assertThat(
+        defaults.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_LSA_THROTTLE_MAX_WAIT_TIME_MS));
+
+    assertThat(
+        defaults.getLsaArrivalTimeMs(),
+        equalTo(
+            Ospfv3Process
+                .DEFAULT_LSA_ARRIVAL_TIME_MS));
+
+    Ospfv3Process configured =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "2")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.2"))
+            .setSpfThrottleTimers(
+                10,
+                20,
+                30)
+            .setLsaThrottleTimers(
+                100,
+                200,
+                300)
+            .setLsaArrivalTimeMs(
+                400)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            configured,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getSpfThrottleStartTimeMs(),
+        equalTo(10));
+
+    assertThat(
+        clone.getSpfThrottleHoldTimeMs(),
+        equalTo(20));
+
+    assertThat(
+        clone.getSpfThrottleMaxWaitTimeMs(),
+        equalTo(30));
+
+    assertThat(
+        clone.getLsaThrottleStartTimeMs(),
+        equalTo(100));
+
+    assertThat(
+        clone.getLsaThrottleHoldTimeMs(),
+        equalTo(200));
+
+    assertThat(
+        clone.getLsaThrottleMaxWaitTimeMs(),
+        equalTo(300));
+
+    assertThat(
+        clone.getLsaArrivalTimeMs(),
+        equalTo(400));
+  }
+
 }

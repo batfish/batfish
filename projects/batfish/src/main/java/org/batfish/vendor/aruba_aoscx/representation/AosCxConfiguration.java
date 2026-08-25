@@ -1514,6 +1514,16 @@ public class AosCxConfiguration extends VendorConfiguration {
               .setGracefulRestartIgnoreLostInterface(
                   process
                       .getGracefulRestartIgnoreLostInterface())
+              .setSpfThrottleTimers(
+                  process.getSpfThrottleStartTimeMs(),
+                  process.getSpfThrottleHoldTimeMs(),
+                  process.getSpfThrottleMaxWaitTimeMs())
+              .setLsaThrottleTimers(
+                  process.getLsaThrottleStartTimeMs(),
+                  process.getLsaThrottleHoldTimeMs(),
+                  process.getLsaThrottleMaxWaitTimeMs())
+              .setLsaArrivalTimeMs(
+                  process.getLsaArrivalTimeMs())
               .setInboundDistributeList(
                   toPrefixList6(
                       process.getDistributeListIn()))
