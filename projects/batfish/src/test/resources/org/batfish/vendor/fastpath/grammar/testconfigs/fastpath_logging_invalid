@@ -1,0 +1,7 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_logging_invalid"
+logging console 9
+logging host "10.0.0.9" ipv4 0 debug

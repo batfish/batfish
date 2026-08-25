@@ -1,0 +1,13 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_dns"
+no ip domain lookup
+ip name server 1.1.1.1 1.1.1.2
+ip domain name "example.com"
+ip domain list "example.net"
+ip domain retry 3
+ip domain timeout 5
+ip host "testhost" 9.9.9.9
+ip name source-interface serviceport

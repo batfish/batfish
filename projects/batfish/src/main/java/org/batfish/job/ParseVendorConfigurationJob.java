@@ -77,6 +77,8 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedP
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
+import org.batfish.vendor.fastpath.grammar.FastpathCombinedParser;
+import org.batfish.vendor.fastpath.grammar.FastpathControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.SonicFileType;
 import org.batfish.vendor.sros.grammar.SrosCombinedParser;
@@ -384,6 +386,24 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   _settings.getPrintParseTreeLineNums(),
                   _fileResults.get(filename).getSilentSyntax());
           parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case FASTPATH:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          FastpathCombinedParser fastpathParser = new FastpathCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new FastpathControlPlaneExtractor(
+                  fileText,
+                  fastpathParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, fastpathParser, extractor);
           vc = extractor.getVendorConfiguration();
           vc.setFilename(filename);
           break;

@@ -20,6 +20,14 @@ public class ParseWarningMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the parse warning's comment is matched by the provided
+   * {@code subMatcher}.
+   */
+  public static Matcher<ParseWarning> hasComment(Matcher<? super String> subMatcher) {
+    return new HasComment(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the parse warning's text is matched by the provided {@code
    * subMatcher}.
    */

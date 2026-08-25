@@ -81,6 +81,18 @@ public final class AnnotateTest {
   }
 
   /**
+   * FastPath is not flattened and uses {@code !} comments, so annotation inserts {@code !}-prefixed
+   * comments in-place above unrecognized source lines. This also guards the {@code printParseTree}
+   * path: the extractor and its listener are separate classes, so {@link
+   * org.batfish.vendor.fastpath.grammar.FastpathControlPlaneExtractor} must override {@code
+   * implementedRuleNames}, otherwise annotate fails the parse.
+   */
+  @Test
+  public void testFastpath() throws IOException {
+    assertValidPair("annotate-fastpath-before", "annotate-fastpath-after");
+  }
+
+  /**
    * Assert that running annotate on {@code before} as a direct file input (not a snapshot
    * directory) produces the content of {@code after}.
    */

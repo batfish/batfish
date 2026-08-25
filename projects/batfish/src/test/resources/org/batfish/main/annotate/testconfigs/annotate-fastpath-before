@@ -1,0 +1,8 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "sw1"
+ip domain name "example.com"
+vlan database
+exit
