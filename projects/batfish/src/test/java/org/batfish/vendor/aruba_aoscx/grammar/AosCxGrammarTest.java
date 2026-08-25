@@ -5134,4 +5134,155 @@ public final class AosCxGrammarTest {
                 .EncryptionType.NULL));
   }
 
+  @Test
+  public void testRouteMapMatchSourceProtocolExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-route-map-match-source-protocol");
+
+    assertThat(
+        c.getRouteMaps()
+            .get("OSPF-ONLY")
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            AosCxRouteMapEntry.SourceProtocol.OSPF));
+
+    assertThat(
+        c.getRouteMaps()
+            .get("STATIC-ONLY")
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            AosCxRouteMapEntry.SourceProtocol.STATIC));
+
+    assertThat(
+        c.getRouteMaps()
+            .get("CONNECTED-ONLY")
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            AosCxRouteMapEntry.SourceProtocol.CONNECTED));
+
+    /*
+     * The no form without an argument restores the default of having no
+     * source-protocol match criterion.
+     */
+    assertThat(
+        c.getRouteMaps()
+            .get("CLEARED")
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            null));
+  }
+
+  @Test
+  public void testRouteMapMatchSourceProtocolConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-route-map-match-source-protocol");
+
+    Configuration c =
+        configs.get(
+            "aoscx-router");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    RouteMap6 ospfOnly =
+        process
+            .getRedistributeOspfRouteMaps()
+            .get("2");
+
+    RouteMap6 staticOnly =
+        process
+            .getRedistributeStaticRouteMap();
+
+    RouteMap6 connectedOnly =
+        process
+            .getRedistributeConnectedRouteMap();
+
+    assertThat(
+        ospfOnly,
+        notNullValue());
+
+    assertThat(
+        staticOnly,
+        notNullValue());
+
+    assertThat(
+        connectedOnly,
+        notNullValue());
+
+    Prefix6 prefix =
+        Prefix6.parse(
+            "2001:db8:710::/64");
+
+    assertThat(
+        ospfOnly
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.OSPF3)
+            .isPresent(),
+        equalTo(
+            true));
+
+    assertThat(
+        ospfOnly
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.STATIC)
+            .isEmpty(),
+        equalTo(
+            true));
+
+    assertThat(
+        staticOnly
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.STATIC)
+            .isPresent(),
+        equalTo(
+            true));
+
+    assertThat(
+        connectedOnly
+            .process(
+                prefix,
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                org.batfish.datamodel.RoutingProtocol.CONNECTED)
+            .isPresent(),
+        equalTo(
+            true));
+  }
+
 }

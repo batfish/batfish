@@ -9,6 +9,13 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 public final class AosCxRouteMapEntry
     implements Serializable {
 
+  public enum SourceProtocol {
+    BGP,
+    CONNECTED,
+    OSPF,
+    STATIC
+  }
+
   public AosCxRouteMapEntry(
       long sequence,
       LineAction action) {
@@ -62,6 +69,25 @@ public final class AosCxRouteMapEntry
     }
   }
 
+  public @Nullable SourceProtocol
+      getMatchSourceProtocol() {
+
+    return _matchSourceProtocol;
+  }
+
+  public void setMatchSourceProtocol(
+      SourceProtocol sourceProtocol) {
+
+    _matchSourceProtocol =
+        sourceProtocol;
+  }
+
+  public void clearMatchSourceProtocol() {
+
+    _matchSourceProtocol =
+        null;
+  }
+
   public @Nullable Long getSetLocalPreference() {
     return _setLocalPreference;
   }
@@ -102,6 +128,8 @@ public final class AosCxRouteMapEntry
   private @Nullable String _matchPrefixList;
   private @Nullable String _matchIpv6PrefixList;
   private @Nullable Long _matchTag;
+  private @Nullable SourceProtocol
+      _matchSourceProtocol;
   private @Nullable Long _setLocalPreference;
   private @Nullable Long _setMetric;
   private @Nullable OspfMetricType _setOspfMetricType;

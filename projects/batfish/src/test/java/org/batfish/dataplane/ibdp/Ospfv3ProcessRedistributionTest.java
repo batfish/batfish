@@ -23,6 +23,7 @@ import org.batfish.datamodel.Ospfv3ExternalType1Route6;
 import org.batfish.datamodel.Ospfv3ExternalType2Route6;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteMap6;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -141,6 +142,7 @@ public final class Ospfv3ProcessRedistributionTest {
       String routerId,
       String interfaceName,
       boolean redistributeStatic,
+      RouteMap6 redistributeStaticRouteMap,
       Set<String> redistributeOspfProcesses,
       Map<String, RouteMap6>
           redistributeOspfRouteMaps) {
@@ -158,6 +160,8 @@ public final class Ospfv3ProcessRedistributionTest {
                     interfaceName)))
         .setRedistributeStatic(
             redistributeStatic)
+        .setRedistributeStaticRouteMap(
+            redistributeStaticRouteMap)
         .setRedistributeOspfProcesses(
             redistributeOspfProcesses)
         .setRedistributeOspfRouteMaps(
@@ -297,6 +301,19 @@ public final class Ospfv3ProcessRedistributionTest {
      * Process 1 redistributes process 2, but only tag 222 is accepted.
      * It changes that route to E1 metric 40/tag 999.
      */
+    RouteMap6 process2StaticRouteMap =
+        new RouteMap6(
+            Map.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.STATIC,
+                    null,
+                    null,
+                    null)));
+
     RouteMap6 process1RouteMap =
         new RouteMap6(
             Map.of(
@@ -305,6 +322,7 @@ public final class Ospfv3ProcessRedistributionTest {
                     LineAction.PERMIT,
                     null,
                     222L,
+                    RoutingProtocol.OSPF3,
                     40L,
                     OspfMetricType.E1,
                     999L)));
@@ -315,6 +333,7 @@ public final class Ospfv3ProcessRedistributionTest {
         "192.0.2.1",
         "r1-r2",
         false,
+        null,
         Set.of(
             "2"),
         Map.of(
@@ -333,6 +352,7 @@ public final class Ospfv3ProcessRedistributionTest {
         "192.0.2.2",
         "process2-loopback",
         true,
+        process2StaticRouteMap,
         Set.of(
             "1"),
         Map.of());
@@ -343,6 +363,7 @@ public final class Ospfv3ProcessRedistributionTest {
         "192.0.2.3",
         "r2-r1",
         false,
+        null,
         Set.of(),
         Map.of());
 

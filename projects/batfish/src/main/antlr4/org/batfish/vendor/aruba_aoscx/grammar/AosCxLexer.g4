@@ -117,6 +117,7 @@ SHA1: 'sha1';
 SPI: 'spi';
 UNICAST: 'unicast';
 SPEED: 'speed';
+SOURCE_PROTOCOL: 'source-protocol';
 STATIC: 'static';
 SUMMARY_ADDRESS: 'summary-address';
 STUB: 'stub';

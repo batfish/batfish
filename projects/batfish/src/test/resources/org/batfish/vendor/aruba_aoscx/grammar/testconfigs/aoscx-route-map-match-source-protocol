@@ -1,0 +1,25 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ROUTER
+
+route-map OSPF-ONLY permit seq 10
+    match source-protocol ospf
+    set metric 40
+
+route-map STATIC-ONLY permit seq 10
+    match source-protocol static
+
+route-map CONNECTED-ONLY permit seq 10
+    match source-protocol connected
+
+route-map CLEARED permit seq 10
+    match source-protocol bgp
+    no match source-protocol
+
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute ospf 2 route-map OSPF-ONLY
+    redistribute static route-map STATIC-ONLY
+    redistribute connected route-map CONNECTED-ONLY
+
+router ospfv3 2
+    router-id 192.0.2.2

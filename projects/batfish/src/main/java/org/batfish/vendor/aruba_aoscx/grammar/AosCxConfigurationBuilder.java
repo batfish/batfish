@@ -67,6 +67,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_router_bgpContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ip_address_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_prefix_listContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_tagContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_source_protocolContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
@@ -1573,6 +1574,59 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
 
     _currentRouteMapEntry
         .setMatchTag(tag);
+  }
+
+  @Override
+  public void exitS_match_source_protocol(
+      S_match_source_protocolContext ctx) {
+
+    if (_currentRouteMapEntry == null) {
+
+      warn(
+          ctx,
+          "Ignoring route-map match source-protocol outside route-map context");
+
+      return;
+    }
+
+    if (ctx.NO() != null) {
+
+      _currentRouteMapEntry
+          .clearMatchSourceProtocol();
+
+      return;
+    }
+
+    AosCxRouteMapEntry.SourceProtocol sourceProtocol;
+
+    if (ctx.route_map_source_protocol().BGP() != null) {
+
+      sourceProtocol =
+          AosCxRouteMapEntry.SourceProtocol.BGP;
+
+    } else if (
+        ctx.route_map_source_protocol().CONNECTED()
+            != null) {
+
+      sourceProtocol =
+          AosCxRouteMapEntry.SourceProtocol.CONNECTED;
+
+    } else if (
+        ctx.route_map_source_protocol().OSPF()
+            != null) {
+
+      sourceProtocol =
+          AosCxRouteMapEntry.SourceProtocol.OSPF;
+
+    } else {
+
+      sourceProtocol =
+          AosCxRouteMapEntry.SourceProtocol.STATIC;
+    }
+
+    _currentRouteMapEntry
+        .setMatchSourceProtocol(
+            sourceProtocol);
   }
 
   @Override

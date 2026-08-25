@@ -383,4 +383,138 @@ public final class RouteMap6Test {
             Route.UNSET_ROUTE_TAG));
   }
 
+  @Test
+  public void testMatchSourceProtocolAndSerialization() {
+
+    RouteMap6 routeMap =
+        new RouteMap6(
+            ImmutableMap.of(
+                10L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.OSPF3,
+                    40L,
+                    OspfMetricType.E1,
+                    101L),
+                20L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.STATIC,
+                    50L,
+                    null,
+                    202L),
+                30L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.CONNECTED,
+                    60L,
+                    null,
+                    303L),
+                40L,
+                new RouteMap6.Entry(
+                    LineAction.PERMIT,
+                    null,
+                    null,
+                    RoutingProtocol.BGP,
+                    70L,
+                    null,
+                    404L)));
+
+    RouteMap6 clone =
+        BatfishObjectMapper.clone(
+            routeMap,
+            RouteMap6.class);
+
+    assertThat(
+        clone,
+        equalTo(routeMap));
+
+    assertThat(
+        clone
+            .getEntries()
+            .get(10L)
+            .getMatchSourceProtocol(),
+        equalTo(
+            RoutingProtocol.OSPF3));
+
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:710::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.OSPF3)
+            .orElseThrow()
+            .getMetric(),
+        equalTo(
+            40L));
+
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:711::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.STATIC)
+            .orElseThrow()
+            .getTag(),
+        equalTo(
+            202L));
+
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:712::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.CONNECTED)
+            .orElseThrow()
+            .getMetric(),
+        equalTo(
+            60L));
+
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:713::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2,
+                RoutingProtocol.BGP)
+            .orElseThrow()
+            .getMetric(),
+        equalTo(
+            70L));
+
+    /*
+     * Existing process overloads do not invent a source protocol.
+     * Therefore a route-map containing only source-protocol clauses has
+     * no matching sequence when the caller supplies no provenance.
+     */
+    assertThat(
+        clone
+            .process(
+                Prefix6.parse(
+                    "2001:db8:714::/64"),
+                25L,
+                Route.UNSET_ROUTE_TAG,
+                OspfMetricType.E2)
+            .isEmpty(),
+        equalTo(
+            true));
+  }
+
 }

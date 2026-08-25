@@ -38,6 +38,8 @@ public final class RouteMap6 implements Serializable {
             @Nullable PrefixList6 matchPrefixList,
         @JsonProperty("matchTag")
             @Nullable Long matchTag,
+        @JsonProperty("matchSourceProtocol")
+            @Nullable RoutingProtocol matchSourceProtocol,
         @JsonProperty("setMetric")
             @Nullable Long setMetric,
         @JsonProperty("setOspfMetricType")
@@ -68,12 +70,33 @@ public final class RouteMap6 implements Serializable {
       _matchTag =
           matchTag;
 
+      _matchSourceProtocol =
+          matchSourceProtocol;
+
       _setMetric =
           setMetric;
       _setOspfMetricType =
           setOspfMetricType;
       _setTag =
           setTag;
+    }
+
+    public Entry(
+        LineAction action,
+        @Nullable PrefixList6 matchPrefixList,
+        @Nullable Long matchTag,
+        @Nullable Long setMetric,
+        @Nullable OspfMetricType setOspfMetricType,
+        @Nullable Long setTag) {
+
+      this(
+          action,
+          matchPrefixList,
+          matchTag,
+          null,
+          setMetric,
+          setOspfMetricType,
+          setTag);
     }
 
     public Entry(
@@ -123,6 +146,13 @@ public final class RouteMap6 implements Serializable {
       return _matchTag;
     }
 
+    @JsonProperty("matchSourceProtocol")
+    public @Nullable RoutingProtocol
+        getMatchSourceProtocol() {
+
+      return _matchSourceProtocol;
+    }
+
     @JsonProperty("setMetric")
     public @Nullable Long getSetMetric() {
       return _setMetric;
@@ -141,7 +171,8 @@ public final class RouteMap6 implements Serializable {
 
     private boolean matches(
         Prefix6 prefix,
-        long tag) {
+        long tag,
+        @Nullable RoutingProtocol sourceProtocol) {
 
       boolean prefixMatches =
           _matchPrefixList == null
@@ -151,8 +182,14 @@ public final class RouteMap6 implements Serializable {
           _matchTag == null
               || _matchTag.longValue() == tag;
 
+      boolean sourceProtocolMatches =
+          _matchSourceProtocol == null
+              || _matchSourceProtocol
+                  == sourceProtocol;
+
       return prefixMatches
-          && tagMatches;
+          && tagMatches
+          && sourceProtocolMatches;
     }
 
     @Override
@@ -175,6 +212,8 @@ public final class RouteMap6 implements Serializable {
           && Objects.equals(
               _matchTag,
               rhs._matchTag)
+          && _matchSourceProtocol
+              == rhs._matchSourceProtocol
           && Objects.equals(
               _setMetric,
               rhs._setMetric)
@@ -191,6 +230,7 @@ public final class RouteMap6 implements Serializable {
           _action,
           _matchPrefixList,
           _matchTag,
+          _matchSourceProtocol,
           _setMetric,
           _setOspfMetricType,
           _setTag);
@@ -200,6 +240,8 @@ public final class RouteMap6 implements Serializable {
     private final @Nullable PrefixList6
         _matchPrefixList;
     private final @Nullable Long _matchTag;
+    private final @Nullable RoutingProtocol
+        _matchSourceProtocol;
     private final @Nullable Long _setMetric;
     private final @Nullable OspfMetricType
         _setOspfMetricType;
@@ -320,12 +362,28 @@ public final class RouteMap6 implements Serializable {
       long initialTag,
       OspfMetricType initialOspfMetricType) {
 
+    return process(
+        prefix,
+        initialMetric,
+        initialTag,
+        initialOspfMetricType,
+        null);
+  }
+
+  public @Nonnull Optional<Result> process(
+      Prefix6 prefix,
+      long initialMetric,
+      long initialTag,
+      OspfMetricType initialOspfMetricType,
+      @Nullable RoutingProtocol sourceProtocol) {
+
     for (Entry entry :
         _entries.values()) {
 
       if (!entry.matches(
           prefix,
-          initialTag)) {
+          initialTag,
+          sourceProtocol)) {
 
         continue;
       }

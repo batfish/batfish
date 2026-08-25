@@ -35,6 +35,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixList6;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteMap6;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute6;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -352,7 +353,8 @@ final class Ospfv3RoutingProcess {
                     .getRedistributeConnectedRouteMap(),
                 connected.getNetwork(),
                 _process.getRedistributionMetric(),
-                Route.UNSET_ROUTE_TAG);
+                Route.UNSET_ROUTE_TAG,
+                RoutingProtocol.CONNECTED);
 
         if (transformed.isEmpty()) {
           continue;
@@ -401,7 +403,8 @@ final class Ospfv3RoutingProcess {
                       .getRedistributeLocalLoopbackRouteMap(),
                   localPrefix,
                   _process.getRedistributionMetric(),
-                  Route.UNSET_ROUTE_TAG);
+                  Route.UNSET_ROUTE_TAG,
+                  RoutingProtocol.CONNECTED);
 
           if (transformed.isEmpty()) {
             continue;
@@ -436,7 +439,8 @@ final class Ospfv3RoutingProcess {
                     .getRedistributeStaticRouteMap(),
                 route.getNetwork(),
                 _process.getRedistributionMetric(),
-                route.getTag());
+                route.getTag(),
+                RoutingProtocol.STATIC);
 
         if (transformed.isEmpty()) {
           continue;
@@ -499,7 +503,8 @@ final class Ospfv3RoutingProcess {
                 routeMap,
                 route.getNetwork(),
                 _process.getRedistributionMetric(),
-                route.getTag());
+                route.getTag(),
+                route.getProtocol());
 
         if (transformed.isEmpty()) {
           continue;
@@ -855,7 +860,8 @@ final class Ospfv3RoutingProcess {
           @Nullable RouteMap6 routeMap,
           Prefix6 prefix,
           long initialMetric,
-          long initialTag) {
+          long initialTag,
+          RoutingProtocol sourceProtocol) {
 
     Optional<RouteMap6.Result> result =
         routeMap == null
@@ -866,7 +872,9 @@ final class Ospfv3RoutingProcess {
             : routeMap.process(
                 prefix,
                 initialMetric,
-                initialTag);
+                initialTag,
+                OspfMetricType.E2,
+                sourceProtocol);
 
     if (result.isEmpty()) {
       return Optional.empty();

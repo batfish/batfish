@@ -825,6 +825,36 @@ public class AosCxConfiguration extends VendorConfiguration {
         lines.build());
   }
 
+  private static @Nullable RoutingProtocol
+      toRouteMap6SourceProtocol(
+          @Nullable AosCxRouteMapEntry.SourceProtocol
+              sourceProtocol) {
+
+    if (sourceProtocol == null) {
+      return null;
+    }
+
+    return switch (sourceProtocol) {
+
+      case BGP ->
+          RoutingProtocol.BGP;
+
+      case CONNECTED ->
+          RoutingProtocol.CONNECTED;
+
+      /*
+       * RouteMap6 is the IPv6 policy representation. AOS-CX spells this
+       * source-protocol simply "ospf"; for an IPv6 OSPFv3 source route the
+       * corresponding VI protocol is OSPF3.
+       */
+      case OSPF ->
+          RoutingProtocol.OSPF3;
+
+      case STATIC ->
+          RoutingProtocol.STATIC;
+    };
+  }
+
   private RouteMap6 toRouteMap6(
       String routeMapName) {
     if (routeMapName == null) {
@@ -886,6 +916,8 @@ public class AosCxConfiguration extends VendorConfiguration {
                       entry.getAction(),
                       matchPrefixList,
                       entry.getMatchTag(),
+                      toRouteMap6SourceProtocol(
+                          entry.getMatchSourceProtocol()),
                       entry.getSetMetric(),
                       entry.getSetOspfMetricType(),
                       entry.getSetTag()));
@@ -919,13 +951,15 @@ public class AosCxConfiguration extends VendorConfiguration {
               entry -> {
                 BooleanExpr guard;
 
-                if (entry.getMatchTag() != null) {
+                if (entry.getMatchTag() != null
+                    || entry.getMatchSourceProtocol()
+                        != null) {
 
                   /*
-                   * Tag matching is currently modeled by RouteMap6 for
-                   * IPv6 redistribution. Do not silently turn the same
-                   * clause into permit-all when converting a generic/BGP
-                   * routing policy.
+                   * Tag and source-protocol matching are modeled by
+                   * RouteMap6 for IPv6 redistribution. Do not silently turn
+                   * either clause into permit-all when converting a generic
+                   * / BGP routing policy.
                    */
                   guard = BooleanExprs.FALSE;
 
