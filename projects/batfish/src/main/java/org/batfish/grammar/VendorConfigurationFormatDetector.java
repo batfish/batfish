@@ -54,14 +54,13 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
 
-  private static final Pattern FASTPATH_SW_VERSION_PATTERN =
-      Pattern.compile("(?m)^!System Software Version");
-  private static final Pattern FASTPATH_SNTP_TIME_PATTERN =
-      Pattern.compile("(?m)^!Current SNTP Synchronized Time:");
-  private static final Pattern FASTPATH_OSPF_1583_PATTERN =
-      Pattern.compile("(?m)^no 1583compatibility");
-  private static final Pattern FASTPATH_VLAN_OR_SERVICEPORT_PATTERN =
-      Pattern.compile("(?m)^(vlan participation|serviceport) ");
+  private static final Pattern FASTPATH_PATTERN =
+      Pattern.compile(
+          "(?m)^(?:!System Software Version"
+              + "|!Current SNTP Synchronized Time:"
+              + "|no 1583compatibility"
+              + "|vlan participation "
+              + "|serviceport )");
 
   // checkSros patterns (Nokia SR-OS / SR-SIM, MD-CLI). SR-OS configs are emitted by
   // `admin show configuration` (brace/hierarchical, rooted at `configure {`) and can also
@@ -192,10 +191,7 @@ public final class VendorConfigurationFormatDetector {
   }
 
   private @Nullable ConfigurationFormat checkFastPath() {
-    if (fileTextMatches(FASTPATH_SW_VERSION_PATTERN)
-        || fileTextMatches(FASTPATH_SNTP_TIME_PATTERN)
-        || fileTextMatches(FASTPATH_OSPF_1583_PATTERN)
-        || fileTextMatches(FASTPATH_VLAN_OR_SERVICEPORT_PATTERN)) {
+    if (fileTextMatches(FASTPATH_PATTERN)) {
       return ConfigurationFormat.FASTPATH;
     }
     return null;
