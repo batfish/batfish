@@ -136,6 +136,8 @@ public final class Ospfv3Process
     private long _defaultInformationMetric;
     private @Nullable String _processId;
     private double _referenceBandwidth;
+    private boolean
+        _redistributeActiveRoutesOnly;
     private boolean _redistributeConnected;
     private @Nullable RouteMap6
         _redistributeConnectedRouteMap;
@@ -316,6 +318,7 @@ public final class Ospfv3Process
               _externalSummaries,
               _virtualLinks,
               _referenceBandwidth,
+              _redistributeActiveRoutesOnly,
               _redistributeConnected,
               _redistributeLocalLoopback,
               _redistributeOspfProcesses,
@@ -549,6 +552,15 @@ public final class Ospfv3Process
       return this;
     }
 
+    public Builder setRedistributeActiveRoutesOnly(
+        boolean redistributeActiveRoutesOnly) {
+
+      _redistributeActiveRoutesOnly =
+          redistributeActiveRoutesOnly;
+
+      return this;
+    }
+
     public Builder setRedistributeConnected(
         boolean redistributeConnected) {
       _redistributeConnected =
@@ -728,6 +740,9 @@ public final class Ospfv3Process
       "processId";
   private static final String PROP_REFERENCE_BANDWIDTH =
       "referenceBandwidth";
+  private static final String
+      PROP_REDISTRIBUTE_ACTIVE_ROUTES_ONLY =
+          "redistributeActiveRoutesOnly";
   private static final String PROP_REDISTRIBUTE_CONNECTED =
       "redistributeConnected";
   private static final String
@@ -820,6 +835,8 @@ public final class Ospfv3Process
           @Nullable Set<Ospfv3VirtualLink> virtualLinks,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH)
           @Nullable Double referenceBandwidth,
+      @JsonProperty(PROP_REDISTRIBUTE_ACTIVE_ROUTES_ONLY)
+          @Nullable Boolean redistributeActiveRoutesOnly,
       @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
           @Nullable Boolean redistributeConnected,
       @JsonProperty(PROP_REDISTRIBUTE_LOCAL_LOOPBACK)
@@ -936,6 +953,9 @@ public final class Ospfv3Process
             referenceBandwidth,
             DEFAULT_REFERENCE_BANDWIDTH),
         firstNonNull(
+            redistributeActiveRoutesOnly,
+            false),
+        firstNonNull(
             redistributeConnected,
             false),
         firstNonNull(
@@ -994,6 +1014,7 @@ public final class Ospfv3Process
       Set<Ospfv3ExternalSummary> externalSummaries,
       Set<Ospfv3VirtualLink> virtualLinks,
       double referenceBandwidth,
+      boolean redistributeActiveRoutesOnly,
       boolean redistributeConnected,
       boolean redistributeLocalLoopback,
       Set<String> redistributeOspfProcesses,
@@ -1130,6 +1151,8 @@ public final class Ospfv3Process
             virtualLinks);
     _referenceBandwidth =
         referenceBandwidth;
+    _redistributeActiveRoutesOnly =
+        redistributeActiveRoutesOnly;
     _redistributeConnected =
         redistributeConnected;
     _redistributeConnectedRouteMap =
@@ -1361,6 +1384,18 @@ public final class Ospfv3Process
     return _referenceBandwidth;
   }
 
+  /**
+   * When true, redistribution considers only routes that are currently
+   * selected in the IPv6 forwarding/main RIB.
+   */
+  @JsonProperty(
+      PROP_REDISTRIBUTE_ACTIVE_ROUTES_ONLY)
+  public boolean
+      getRedistributeActiveRoutesOnly() {
+
+    return _redistributeActiveRoutesOnly;
+  }
+
   @JsonProperty(PROP_REDISTRIBUTE_CONNECTED)
   public boolean getRedistributeConnected() {
     return _redistributeConnected;
@@ -1474,6 +1509,8 @@ public final class Ospfv3Process
   private final @Nonnull SortedMap<Long, Ospfv3Area>
       _areas;
   private final double _referenceBandwidth;
+  private final boolean
+      _redistributeActiveRoutesOnly;
   private final boolean _redistributeConnected;
   private final @Nullable RouteMap6
       _redistributeConnectedRouteMap;

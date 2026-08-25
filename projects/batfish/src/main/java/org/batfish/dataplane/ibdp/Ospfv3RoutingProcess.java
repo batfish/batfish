@@ -295,6 +295,41 @@ final class Ospfv3RoutingProcess {
     }
   }
 
+  private boolean
+      isEligibleByActiveRouteSelection(
+          AbstractRoute6 route,
+          Set<AbstractRoute6> activeMainRoutes) {
+
+    return !_process
+            .getRedistributeActiveRoutesOnly()
+        || activeMainRoutes.contains(
+            route);
+  }
+
+  private boolean
+      hasActiveConnectedPrefix(
+          Prefix6 prefix,
+          Set<AbstractRoute6> activeMainRoutes) {
+
+    if (!_process
+        .getRedistributeActiveRoutesOnly()) {
+
+      return true;
+    }
+
+    return activeMainRoutes
+        .stream()
+        .anyMatch(
+            route ->
+                route
+                        .getProtocol()
+                    == RoutingProtocol.CONNECTED
+                    && route
+                        .getNetwork()
+                        .equals(
+                            prefix));
+  }
+
   /**
    * Recompute locally originated OSPFv3 external advertisements.
    *
@@ -308,6 +343,21 @@ final class Ospfv3RoutingProcess {
       ConnectedRib6 connectedRib,
       Set<StaticRoute6> staticRoutes,
       Map<String, Ospfv3RoutingProcess> ospfv3Processes,
+      boolean nonOspfv3DefaultRoutePresent) {
+
+    return refreshLocalExternalAdvertisements(
+        connectedRib,
+        staticRoutes,
+        ospfv3Processes,
+        ImmutableSet.of(),
+        nonOspfv3DefaultRoutePresent);
+  }
+
+  boolean refreshLocalExternalAdvertisements(
+      ConnectedRib6 connectedRib,
+      Set<StaticRoute6> staticRoutes,
+      Map<String, Ospfv3RoutingProcess> ospfv3Processes,
+      Set<AbstractRoute6> activeMainRoutes,
       boolean nonOspfv3DefaultRoutePresent) {
 
     if (!_process.getEnabled()) {
@@ -339,6 +389,13 @@ final class Ospfv3RoutingProcess {
 
         if (isInternallyOriginatedConnectedRoute(
             connected)) {
+          continue;
+        }
+
+        if (!isEligibleByActiveRouteSelection(
+            connected,
+            activeMainRoutes)) {
+
           continue;
         }
 
@@ -392,6 +449,13 @@ final class Ospfv3RoutingProcess {
           Prefix6 localPrefix =
               address.getIp().toPrefix6();
 
+          if (!hasActiveConnectedPrefix(
+              localPrefix,
+              activeMainRoutes)) {
+
+            continue;
+          }
+
           if (!permitsOutboundRedistribution(
               localPrefix)) {
             continue;
@@ -427,6 +491,13 @@ final class Ospfv3RoutingProcess {
 
       for (StaticRoute6 route :
           staticRoutes) {
+
+        if (!isEligibleByActiveRouteSelection(
+            route,
+            activeMainRoutes)) {
+
+          continue;
+        }
 
         if (!permitsOutboundRedistribution(
             route.getNetwork())) {
@@ -492,6 +563,13 @@ final class Ospfv3RoutingProcess {
       for (AbstractRoute6 route :
           sourceProcess
               .getRoutesForProcessRedistribution()) {
+
+        if (!isEligibleByActiveRouteSelection(
+            route,
+            activeMainRoutes)) {
+
+          continue;
+        }
 
         if (!permitsOutboundRedistribution(
             route.getNetwork())) {

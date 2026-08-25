@@ -69,6 +69,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_ipv6_address_p
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_tagContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_source_protocolContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_match_route_typeContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_redistribute_active_routes_onlyContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_route_mapContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_local_preferenceContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_set_metricContext;
@@ -345,6 +346,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     _configuration.setHostname(ctx.WORD().getText());
+  }
+
+  @Override
+  public void
+      exitS_route_redistribute_active_routes_only(
+          S_route_redistribute_active_routes_onlyContext ctx) {
+
+    if (ctx.getStart().getCharPositionInLine() != 0) {
+
+      warn(
+          ctx,
+          "Ignoring route-redistribute active-routes-only outside global context");
+
+      return;
+    }
+
+    _configuration
+        .setRouteRedistributeActiveRoutesOnly(
+            ctx.NO() == null);
   }
 
   @Override

@@ -5889,4 +5889,92 @@ public final class AosCxGrammarTest {
         equalTo(0));
   }
 
+  @Test
+  public void testRouteRedistributeActiveRoutesOnlyExtraction() {
+
+    AosCxConfiguration enabled =
+        parseVendorConfig(
+            "aoscx-route-redistribute-active-routes-only");
+
+    assertThat(
+        enabled.getRouteRedistributeActiveRoutesOnly(),
+        equalTo(
+            true));
+
+    AosCxConfiguration disabled =
+        parseVendorConfig(
+            "aoscx-route-redistribute-active-routes-only-disabled");
+
+    /*
+     * Explicit no form returns the global setting to its default.
+     */
+    assertThat(
+        disabled.getRouteRedistributeActiveRoutesOnly(),
+        equalTo(
+            false));
+  }
+
+  @Test
+  public void testRouteRedistributeActiveRoutesOnlyConversion()
+      throws IOException {
+
+    Map<String, Configuration> enabledConfigs =
+        parseTextConfigs(
+            "aoscx-route-redistribute-active-routes-only");
+
+    Configuration enabled =
+        enabledConfigs.get(
+            "aoscx-active-routes");
+
+    assertThat(
+        enabled,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        enabledProcess =
+            enabled
+                .getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(
+        enabledProcess,
+        notNullValue());
+
+    assertThat(
+        enabledProcess
+            .getRedistributeActiveRoutesOnly(),
+        equalTo(
+            true));
+
+    Map<String, Configuration> disabledConfigs =
+        parseTextConfigs(
+            "aoscx-route-redistribute-active-routes-only-disabled");
+
+    Configuration disabled =
+        disabledConfigs.get(
+            "aoscx-all-routes");
+
+    assertThat(
+        disabled,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process
+        disabledProcess =
+            disabled
+                .getDefaultVrf()
+                .getOspfv3Processes()
+                .get("1");
+
+    assertThat(
+        disabledProcess,
+        notNullValue());
+
+    assertThat(
+        disabledProcess
+            .getRedistributeActiveRoutesOnly(),
+        equalTo(
+            false));
+  }
+
 }

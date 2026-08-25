@@ -619,6 +619,7 @@ public final class VirtualRouter {
               _connectedRib6,
               _installedStaticRoutes6,
               _ospfv3Processes,
+              _mainRib6.getRoutes(),
               defaultRoutePresent);
     }
 

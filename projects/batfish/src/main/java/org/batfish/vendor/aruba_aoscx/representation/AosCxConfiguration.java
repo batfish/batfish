@@ -114,6 +114,8 @@ public class AosCxConfiguration extends VendorConfiguration {
   private final List<AosCxStaticRoute> _staticRoutes = new ArrayList<>();
   private final List<AosCxStaticRoute6> _staticRoutes6 = new ArrayList<>();
   private ConfigurationFormat _vendor;
+  private boolean
+      _routeRedistributeActiveRoutesOnly;
 
   @Override
   public String getHostname() {
@@ -122,6 +124,20 @@ public class AosCxConfiguration extends VendorConfiguration {
 
   public ConfigurationFormat getVendor() {
     return _vendor;
+  }
+
+  public boolean
+      getRouteRedistributeActiveRoutesOnly() {
+
+    return _routeRedistributeActiveRoutesOnly;
+  }
+
+  public void
+      setRouteRedistributeActiveRoutesOnly(
+          boolean activeRoutesOnly) {
+
+    _routeRedistributeActiveRoutesOnly =
+        activeRoutesOnly;
   }
 
   public Map<String, AosCxInterface> getInterfaces() {
@@ -1543,6 +1559,8 @@ public class AosCxConfiguration extends VendorConfiguration {
                   virtualLinks)
               .setReferenceBandwidth(
                   process.getReferenceBandwidth())
+              .setRedistributeActiveRoutesOnly(
+                  _routeRedistributeActiveRoutesOnly)
               .setRedistributeConnected(
                   process.getRedistributeConnected())
               .setRedistributeConnectedRouteMap(

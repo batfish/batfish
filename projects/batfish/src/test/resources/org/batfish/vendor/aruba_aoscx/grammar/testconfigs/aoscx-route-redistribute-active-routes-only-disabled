@@ -1,0 +1,9 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-ALL-ROUTES
+
+route-redistribute active-routes-only
+no route-redistribute active-routes-only
+
+router ospfv3 1
+    router-id 192.0.2.1
+    redistribute static

@@ -755,4 +755,46 @@ public final class Ospfv3ProcessTest {
         equalTo(400));
   }
 
+  @Test
+  public void testRedistributeActiveRoutesOnlySerialization() {
+
+    Ospfv3Process defaults =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "1")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.1"))
+            .build();
+
+    /*
+     * AOS-CX disables active-routes-only by default.
+     */
+    assertThat(
+        defaults.getRedistributeActiveRoutesOnly(),
+        equalTo(
+            false));
+
+    Ospfv3Process configured =
+        Ospfv3Process.builder()
+            .setProcessId(
+                "2")
+            .setRouterId(
+                Ip.parse(
+                    "192.0.2.2"))
+            .setRedistributeActiveRoutesOnly(
+                true)
+            .build();
+
+    Ospfv3Process clone =
+        BatfishObjectMapper.clone(
+            configured,
+            Ospfv3Process.class);
+
+    assertThat(
+        clone.getRedistributeActiveRoutesOnly(),
+        equalTo(
+            true));
+  }
+
 }

@@ -906,4 +906,141 @@ public final class Ospfv3ProcessRedistributionTest {
         nullValue());
   }
 
+  private static Ospfv3RoutingProcess
+      initializeStaticCompetitionProcess(
+          boolean activeRoutesOnly) {
+
+    Node node =
+        TestUtils.makeIosRouter(
+            activeRoutesOnly
+                ? "active-only"
+                : "all-routes");
+
+    Configuration c =
+        node.getConfiguration();
+
+    /*
+     * Give the OSPFv3 process a local interface that is unrelated to the
+     * competing prefix.
+     */
+    addOspfInterface(
+        node,
+        "ospfv3-loopback",
+        "2001:db8:1::1/128",
+        "1",
+        true,
+        InterfaceType.LOOPBACK,
+        1);
+
+    /*
+     * This connected /64 is the forwarding winner.
+     */
+    Interface.builder()
+        .setName(
+            "connected-winner")
+        .setOwner(c)
+        .setVrf(
+            c.getDefaultVrf())
+        .setType(
+            InterfaceType.PHYSICAL)
+        .setAdminUp(true)
+        .setAddress(
+            ConcreteInterfaceAddress6.parse(
+                "2001:db8:750::1/64"))
+        .build();
+
+    Prefix6 competingPrefix =
+        Prefix6.parse(
+            "2001:db8:750::/64");
+
+    /*
+     * The null-route static is fully resolved and therefore is a valid
+     * configured/static candidate, but connected admin distance wins the
+     * exact prefix in main RIB6.
+     */
+    c.getDefaultVrf()
+        .getStaticRoutes6()
+        .add(
+            StaticRoute6.builder()
+                .setNetwork(
+                    competingPrefix)
+                .setNextHopInterface(
+                    Interface.NULL_INTERFACE_NAME)
+                .build());
+
+    Ospfv3Process.builder()
+        .setProcessId(
+            "1")
+        .setRouterId(
+            Ip.parse(
+                "192.0.2.1"))
+        .setAreas(
+            ImmutableMap.of(
+                0L,
+                area(
+                    "ospfv3-loopback")))
+        .setRedistributeStatic(
+            true)
+        .setRedistributeActiveRoutesOnly(
+            activeRoutesOnly)
+        .setVrf(
+            c.getDefaultVrf())
+        .build();
+
+    VirtualRouter vr =
+        node.getVirtualRouterOrThrow(
+            Configuration.DEFAULT_VRF_NAME);
+
+    vr.initForIgpComputation(
+        TopologyContext.builder()
+            .build());
+
+    Ospfv3RoutingProcess process =
+        vr.getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    return process;
+  }
+
+  @Test
+  public void testActiveRoutesOnlySuppressesInactiveStatic() {
+
+    Prefix6 competingPrefix =
+        Prefix6.parse(
+            "2001:db8:750::/64");
+
+    Ospfv3RoutingProcess defaultBehavior =
+        initializeStaticCompetitionProcess(
+            false);
+
+    Ospfv3RoutingProcess activeOnly =
+        initializeStaticCompetitionProcess(
+            true);
+
+    /*
+     * Default AOS-CX behavior considers the resolved static source, even
+     * though the connected route is preferred for forwarding.
+     */
+    assertThat(
+        findType2(
+            defaultBehavior,
+            competingPrefix),
+        notNullValue());
+
+    /*
+     * With route-redistribute active-routes-only, only the connected route
+     * is active for the prefix. The losing static therefore cannot be
+     * originated into OSPFv3.
+     */
+    assertThat(
+        findType2(
+            activeOnly,
+            competingPrefix),
+        nullValue());
+  }
+
 }
