@@ -22,7 +22,11 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_OVERRIDE_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_TUNNEL;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.NAT_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SECURITY_RULE;
@@ -45,7 +49,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PE
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IKE_GATEWAY_IKE_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IKE_GATEWAY_LOCAL_ADDRESS_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IKE_GATEWAY_LOCAL_ADDRESS_IP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IKE_GATEWAY_PEER_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IPSEC_TUNNEL_IKE_GATEWAY;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IPSEC_TUNNEL_TUNNEL_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
@@ -270,6 +281,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_template_stackConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_ike_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_aggregate_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
@@ -286,6 +298,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_la_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_peer_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikega_certificateContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikega_pre_shared_keyContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegp_ike_crypto_profileContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_ipContext;
@@ -296,6 +314,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sntun_ipsecContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sntuni_disabledContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sntuni_tunnel_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sntunia_ike_gatewayContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sntunia_ipsec_crypto_profileContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_descriptionContext;
@@ -420,9 +443,11 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.HighAvailability;
+import org.batfish.representation.palo_alto.IkeGateway;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
 import org.batfish.representation.palo_alto.IpPrefix;
+import org.batfish.representation.palo_alto.IpsecTunnel;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
 import org.batfish.representation.palo_alto.OspfAreaNormal;
@@ -504,6 +529,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private BgpVr _currentBgpVr;
   private PaloAltoConfiguration _currentConfiguration;
   private CryptoProfile _currentCrytoProfile;
+
+  private IkeGateway _currentIkeGateway;
+
+  private IpsecTunnel _currentIpsecTunnel;
   private CustomUrlCategory _currentCustomUrlCategory;
   private DeviceGroup _currentDeviceGroup;
   private String _currentDeviceGroupVsys;
@@ -2127,6 +2156,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void enterSnicp_ike_crypto_profiles(Snicp_ike_crypto_profilesContext ctx) {
     String name = getText(ctx.name);
     _currentCrytoProfile = _currentConfiguration.getCryptoProfileOrCreate(name, Type.IKE);
+    defineFlattenedStructure(IKE_CRYPTO_PROFILE, name, ctx);
   }
 
   @Override
@@ -2137,12 +2167,141 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
     String name = getText(ctx.name);
+    defineFlattenedStructure(IPSEC_CRYPTO_PROFILE, name, ctx);
     _currentCrytoProfile = _currentConfiguration.getCryptoProfileOrCreate(name, Type.IPSEC);
   }
 
   @Override
   public void exitSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
     _currentCrytoProfile = null;
+  }
+
+  @Override
+  public void enterSn_ike_gateway(Sn_ike_gatewayContext ctx) {
+    if (ctx.name == null) {
+      // bare `network ike gateway` with no name
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIkeGateway =
+        _currentConfiguration.getIkeGateways().computeIfAbsent(name, IkeGateway::new);
+    defineFlattenedStructure(IKE_GATEWAY, name, ctx);
+  }
+
+  @Override
+  public void exitSn_ike_gateway(Sn_ike_gatewayContext ctx) {
+    _currentIkeGateway = null;
+  }
+
+  @Override
+  public void exitSnikega_certificate(Snikega_certificateContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    _currentIkeGateway.setAuthenticationType(IkeGateway.AuthenticationType.CERTIFICATE);
+  }
+
+  @Override
+  public void exitSnikega_pre_shared_key(Snikega_pre_shared_keyContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    _currentIkeGateway.setAuthenticationType(IkeGateway.AuthenticationType.PRE_SHARED_KEY);
+  }
+
+  @Override
+  public void exitSnikeg_la_interface(Snikeg_la_interfaceContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIkeGateway.setLocalInterface(name);
+    referenceStructure(INTERFACE, name, IKE_GATEWAY_LOCAL_ADDRESS_INTERFACE, getLine(ctx.start));
+  }
+
+  @Override
+  public void exitSnikeg_la_ip(Snikeg_la_ipContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    _currentIkeGateway.setLocalAddress(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, IKE_GATEWAY_LOCAL_ADDRESS_IP);
+  }
+
+  @Override
+  public void exitSnikeg_peer_address(Snikeg_peer_addressContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    _currentIkeGateway.setPeerAddress(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, IKE_GATEWAY_PEER_ADDRESS);
+  }
+
+  @Override
+  public void exitSnikegp_ike_crypto_profile(Snikegp_ike_crypto_profileContext ctx) {
+    if (_currentIkeGateway == null) {
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIkeGateway.setIkeCryptoProfile(name);
+    referenceStructure(
+        IKE_CRYPTO_PROFILE, name, IKE_GATEWAY_IKE_CRYPTO_PROFILE, getLine(ctx.start));
+  }
+
+  @Override
+  public void enterSntun_ipsec(Sntun_ipsecContext ctx) {
+    if (ctx.name == null) {
+      // bare `network tunnel ipsec` with no name
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIpsecTunnel =
+        _currentConfiguration.getIpsecTunnels().computeIfAbsent(name, IpsecTunnel::new);
+    defineFlattenedStructure(IPSEC_TUNNEL, name, ctx);
+  }
+
+  @Override
+  public void exitSntun_ipsec(Sntun_ipsecContext ctx) {
+    _currentIpsecTunnel = null;
+  }
+
+  @Override
+  public void exitSntunia_ike_gateway(Sntunia_ike_gatewayContext ctx) {
+    if (_currentIpsecTunnel == null) {
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIpsecTunnel.setIkeGateway(name);
+    referenceStructure(IKE_GATEWAY, name, IPSEC_TUNNEL_IKE_GATEWAY, getLine(ctx.start));
+  }
+
+  @Override
+  public void exitSntunia_ipsec_crypto_profile(Sntunia_ipsec_crypto_profileContext ctx) {
+    if (_currentIpsecTunnel == null) {
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIpsecTunnel.setIpsecCryptoProfile(name);
+    referenceStructure(
+        IPSEC_CRYPTO_PROFILE, name, IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE, getLine(ctx.start));
+  }
+
+  @Override
+  public void exitSntuni_disabled(Sntuni_disabledContext ctx) {
+    if (_currentIpsecTunnel == null) {
+      return;
+    }
+    _currentIpsecTunnel.setDisabled(ctx.yn.NO() == null);
+  }
+
+  @Override
+  public void exitSntuni_tunnel_interface(Sntuni_tunnel_interfaceContext ctx) {
+    if (_currentIpsecTunnel == null) {
+      return;
+    }
+    String name = getText(ctx.name);
+    _currentIpsecTunnel.setTunnelInterface(name);
+    referenceStructure(INTERFACE, name, IPSEC_TUNNEL_TUNNEL_INTERFACE, getLine(ctx.start));
   }
 
   @Override

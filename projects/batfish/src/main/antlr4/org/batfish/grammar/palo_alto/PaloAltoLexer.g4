@@ -95,6 +95,8 @@ AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_PROFILE: 'authentication-profile';
 
+AUTO_KEY: 'auto-key';
+
 AUTHENTICATION_TYPE: 'authentication-type';
 
 AUTO: 'auto';
@@ -344,6 +346,14 @@ IGP: 'igp';
 
 IKE: 'ike';
 
+IKE_CRYPTO_PROFILE: 'ike-crypto-profile';
+
+IKE_GATEWAY: 'ike-gateway';
+
+IKEV1: 'ikev1';
+
+IKEV2: 'ikev2';
+
 IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
 
 IMPORT: 'import';
@@ -371,6 +381,10 @@ IP_NETMASK: 'ip-netmask';
 IP_RANGE_LITERAL: 'ip-range';
 
 IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
+
+IPSEC: 'ipsec';
+
+IPSEC_CRYPTO_PROFILE: 'ipsec-crypto-profile';
 
 IPV4: 'ipv4';
 
@@ -540,6 +554,8 @@ PORT: 'port';
 POST_RULEBASE: 'post-rulebase';
 
 PRE_RULEBASE: 'pre-rulebase';
+
+PRE_SHARED_KEY: 'pre-shared-key';
 
 PRIMARY: 'primary';
 
@@ -720,6 +736,8 @@ TRANSLATED_PORT: 'translated-port';
 TRANSPORT: 'transport';
 
 TUNNEL: 'tunnel';
+
+TUNNEL_INTERFACE: 'tunnel-interface';
 
 TUNNELS_OTHER_APPS: 'tunnels-other-apps';
 
