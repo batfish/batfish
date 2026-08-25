@@ -610,6 +610,60 @@ public final class AosCxOspfv3Process
   }
 
   /**
+   * Delete an OSPFv3 area and all process-level configuration owned by it.
+   *
+   * <p>Interface-to-area bindings are represented independently on
+   * {@link AosCxInterface} and are intentionally not mutated here.
+   */
+  public void removeArea(String area) {
+
+    _areas.remove(
+        area);
+
+    _stubAreas.remove(
+        area);
+
+    _nssaAreas.remove(
+        area);
+
+    _areaAuthentications.remove(
+        area);
+
+    _areaEncryptions.remove(
+        area);
+
+    _areaDefaultMetrics.remove(
+        area);
+
+    _virtualLinks.remove(
+        area);
+
+    _virtualLinkAuthentications.remove(
+        area);
+
+    _virtualLinkEncryptions.remove(
+        area);
+
+    _virtualLinkHelloIntervals.remove(
+        area);
+
+    _virtualLinkDeadIntervals.remove(
+        area);
+
+    _virtualLinkRetransmitIntervals.remove(
+        area);
+
+    _virtualLinkTransitDelays.remove(
+        area);
+
+    _interAreaRanges.remove(
+        area);
+
+    _nssaRanges.remove(
+        area);
+  }
+
+  /**
    * Return stub areas keyed by configured area ID.
    *
    * <p>The Boolean value is true for {@code no-summary}.

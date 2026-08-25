@@ -2195,13 +2195,45 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
   }
 
   @Override
-  public void exitS_ospf_area(S_ospf_areaContext ctx) {
-    if (_currentOspfv3Process != null
-        && ctx.getStart().getCharPositionInLine() > 0) {
-      _currentOspfv3Process
-          .setNormalArea(
-              ctx.WORD().getText());
+  public void exitS_ospf_area(
+      S_ospf_areaContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      return;
     }
+
+    String area =
+        ctx.WORD().getText();
+
+    if (ctx.NO() != null) {
+
+      _currentOspfv3Process
+          .removeArea(
+              area);
+
+      if (_currentOspfv3VirtualLinkProcess
+              == _currentOspfv3Process
+          && area.equals(
+              _currentOspfv3VirtualLinkArea)) {
+
+        _currentOspfv3VirtualLinkProcess =
+            null;
+
+        _currentOspfv3VirtualLinkArea =
+            null;
+
+        _currentOspfv3VirtualLinkPeer =
+            null;
+      }
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setNormalArea(
+            area);
   }
 
   @Override

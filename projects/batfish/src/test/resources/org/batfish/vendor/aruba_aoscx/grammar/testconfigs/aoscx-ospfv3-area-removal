@@ -1,0 +1,35 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-AREA-REMOVAL
+
+router ospfv3 1
+    router-id 192.0.2.1
+
+    area 10
+    area 10 authentication ipsec spi 256 md5 plaintext AreaAuth10
+    area 10 encryption ipsec spi 257 md5 plaintext AreaEsp10 null
+    area 10 range 2001:db8:10::/48 type inter-area no-advertise
+    area 10 virtual-link 192.0.2.10
+        authentication ipsec spi 258 sha1 plaintext VlinkAuth10
+        encryption ipsec spi 259 sha1 plaintext VlinkEsp10 null
+        hello-interval 11
+        dead-interval 44
+        retransmit-interval 8
+        transit-delay 3
+    no area 10
+
+    area 20 nssa no-summary
+    area 20 default-metric 20
+    area 20 range 2001:db8:20::/48 type nssa no-advertise
+    no area 20
+
+    area 30 stub no-summary
+    area 30 default-metric 30
+    no area 30
+
+    area 40
+
+    area 50 nssa no-summary
+    area 50 default-metric 50
+    area 50 range 2001:db8:50::/48 type nssa no-advertise
+    no area 50
+    area 50

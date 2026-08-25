@@ -580,7 +580,7 @@ s_router_ospfv3
 
 s_ospf_area
 :
-  AREA WORD NEWLINE
+  NO? AREA WORD NEWLINE
 ;
 
 s_ospf_area_stub

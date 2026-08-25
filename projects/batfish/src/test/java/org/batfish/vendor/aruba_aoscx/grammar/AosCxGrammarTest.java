@@ -6497,4 +6497,236 @@ public final class AosCxGrammarTest {
         equalTo(0L));
   }
 
+  @Test
+  public void testOspfv3AreaRemovalExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-area-removal");
+
+    AosCxOspfv3Process process =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        process,
+        notNullValue());
+
+    /*
+     * Areas 10, 20 and 30 were completely deleted.
+     */
+    assertThat(
+        process.getAreas()
+            .contains("10"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreas()
+            .contains("20"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreas()
+            .contains("30"),
+        equalTo(false));
+
+    assertThat(
+        process.getStubAreas()
+            .containsKey("30"),
+        equalTo(false));
+
+    assertThat(
+        process.getNssaAreas()
+            .containsKey("20"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaAuthentications()
+            .containsKey("10"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaEncryptions()
+            .containsKey("10"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .containsKey("20"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .containsKey("30"),
+        equalTo(false));
+
+    assertThat(
+        process.getInterAreaRanges()
+            .containsKey("10"),
+        equalTo(false));
+
+    assertThat(
+        process.getNssaRanges()
+            .containsKey("20"),
+        equalTo(false));
+
+    /*
+     * Deleting the transit area must delete the virtual link itself and
+     * every piece of virtual-link-owned security/timer state.
+     */
+    Ip removedPeer =
+        Ip.parse(
+            "192.0.2.10");
+
+    assertThat(
+        process.getVirtualLinks()
+            .containsKey("10"),
+        equalTo(false));
+
+    assertThat(
+        process.getVirtualLinkAuthentication(
+            "10",
+            removedPeer),
+        nullValue());
+
+    assertThat(
+        process.getVirtualLinkEncryption(
+            "10",
+            removedPeer),
+        nullValue());
+
+    assertThat(
+        process.getVirtualLinkHelloIntervalSeconds(
+            "10",
+            removedPeer),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_HELLO_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkDeadIntervalSeconds(
+            "10",
+            removedPeer),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_DEAD_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkRetransmitIntervalSeconds(
+            "10",
+            removedPeer),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_RETRANSMIT_INTERVAL_SECONDS));
+
+    assertThat(
+        process.getVirtualLinkTransitDelaySeconds(
+            "10",
+            removedPeer),
+        equalTo(
+            AosCxOspfv3Process
+                .DEFAULT_VIRTUAL_LINK_TRANSIT_DELAY_SECONDS));
+
+    /*
+     * Area 40 was never removed.
+     */
+    assertThat(
+        process.getAreas()
+            .contains("40"),
+        equalTo(true));
+
+    /*
+     * Area 50 was removed and recreated. Only the new normal-area
+     * declaration survives. Old NSSA/default-metric/range state must not.
+     */
+    assertThat(
+        process.getAreas()
+            .contains("50"),
+        equalTo(true));
+
+    assertThat(
+        process.getNssaAreas()
+            .containsKey("50"),
+        equalTo(false));
+
+    assertThat(
+        process.getStubAreas()
+            .containsKey("50"),
+        equalTo(false));
+
+    assertThat(
+        process.getAreaDefaultMetrics()
+            .containsKey("50"),
+        equalTo(false));
+
+    assertThat(
+        process.getNssaRanges()
+            .containsKey("50"),
+        equalTo(false));
+  }
+
+  @Test
+  public void testOspfv3AreaRemovalConversion()
+      throws IOException {
+
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            "aoscx-ospfv3-area-removal");
+
+    Configuration c =
+        configs.get(
+            "aoscx-area-removal");
+
+    assertThat(
+        c,
+        notNullValue());
+
+    org.batfish.datamodel.ospf.Ospfv3Process process =
+        c.getDefaultVrf()
+            .getOspfv3Processes()
+            .get("1");
+
+    assertThat(
+        process,
+        notNullValue());
+
+    /*
+     * Deleted process-level areas do not reach the VI model.
+     */
+    assertThat(
+        process.getAreas()
+            .containsKey(10L),
+        equalTo(false));
+
+    assertThat(
+        process.getAreas()
+            .containsKey(20L),
+        equalTo(false));
+
+    assertThat(
+        process.getAreas()
+            .containsKey(30L),
+        equalTo(false));
+
+    /*
+     * Only the untouched control area and the cleanly recreated area
+     * survive conversion.
+     */
+    assertThat(
+        process.getAreas()
+            .keySet(),
+        containsInAnyOrder(
+            40L,
+            50L));
+
+    /*
+     * Area 10 owned the only configured virtual link. Deleting that area
+     * must prevent the virtual link from reaching the VI process.
+     */
+    assertThat(
+        process.getVirtualLinks()
+            .isEmpty(),
+        equalTo(true));
+  }
+
 }
