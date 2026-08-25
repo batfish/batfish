@@ -106,6 +106,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
@@ -3493,16 +3494,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         }
         // One proposal per encryption algorithm: PAN-OS profiles list several, while an
         // IkePhase1Proposal holds one, and getMatchingIkeP1Proposal picks a common entry.
+        // An IkePhase1Proposal holds one encryption algorithm and one DH group, while PAN-OS
+        // lists several of each, so emit the cross product and let negotiation pick a match.
         for (EncryptionAlgorithm algorithm : encryptionAlgorithms(cp)) {
-          String proposalName = ikeProposalName(gateway.getName(), profileName, algorithm);
-          if (ikeP1Proposals.put(
-                  proposalName, toIkePhase1Proposal(proposalName, cp, gateway, algorithm))
-              != null) {
-            _w.redFlagf(
-                "Generated ike proposal name %s collides; keeping the last definition",
-                proposalName);
+          for (DiffieHellmanGroup dhGroup : dhGroups(cp)) {
+            String proposalName =
+                ikeProposalName(gateway.getName(), profileName, algorithm, dhGroup);
+            if (ikeP1Proposals.put(
+                    proposalName,
+                    toIkePhase1Proposal(proposalName, cp, gateway, algorithm, dhGroup))
+                != null) {
+              _w.redFlagf(
+                  "Generated ike proposal name %s collides; keeping the last definition",
+                  proposalName);
+            }
+            proposalNames.add(proposalName);
           }
-          proposalNames.add(proposalName);
         }
       }
       List<String> proposals = proposalNames.build();
@@ -3549,7 +3556,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           proposalNames.add(proposalName);
         }
-        ipsecP2Policies.put(policyName, toIpsecPhase2Policy(cp, proposalNames.build()));
+        ipsecP2Policies.put(policyName, toIpsecPhase2Policy(cp, tunnel, proposalNames.build()));
       } else if (profileName != null) {
         _w.redFlagf(
             "Cannot find ipsec-crypto-profile %s for ipsec tunnel %s",
@@ -3586,10 +3593,24 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull String ikeProposalName(
-      String gateway, String profile, @Nullable EncryptionAlgorithm algorithm) {
-    return algorithm == null
-        ? String.format("~IKE_PHASE1_PROPOSAL_%s_%s~", gateway, profile)
-        : String.format("~IKE_PHASE1_PROPOSAL_%s_%s_%s~", gateway, profile, algorithm);
+      String gateway,
+      String profile,
+      @Nullable EncryptionAlgorithm algorithm,
+      @Nullable DiffieHellmanGroup dhGroup) {
+    StringBuilder name =
+        new StringBuilder("~IKE_PHASE1_PROPOSAL_").append(gateway).append('_').append(profile);
+    if (algorithm != null) {
+      name.append('_').append(algorithm);
+    }
+    if (dhGroup != null) {
+      name.append('_').append(dhGroup);
+    }
+    return name.append('~').toString();
+  }
+
+  /** DH groups of a crypto profile, or a single null entry when none are configured. */
+  private static @Nonnull List<DiffieHellmanGroup> dhGroups(CryptoProfile cp) {
+    return cp.getDhGroups().isEmpty() ? Collections.singletonList(null) : cp.getDhGroups();
   }
 
   private static @Nonnull String ipsecProposalName(
@@ -3611,13 +3632,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull IkePhase1Proposal toIkePhase1Proposal(
-      String name, CryptoProfile cp, IkeGateway gateway, @Nullable EncryptionAlgorithm algorithm) {
+      String name,
+      CryptoProfile cp,
+      IkeGateway gateway,
+      @Nullable EncryptionAlgorithm algorithm,
+      @Nullable DiffieHellmanGroup dhGroup) {
     IkePhase1Proposal proposal = new IkePhase1Proposal(name);
     proposal.setAuthenticationMethod(
         gateway.getAuthenticationType() == IkeGateway.AuthenticationType.CERTIFICATE
             ? IkeAuthenticationMethod.RSA_SIGNATURES
             : IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    proposal.setDiffieHellmanGroup(cp.getDhGroup());
+    proposal.setDiffieHellmanGroup(dhGroup);
     proposal.setHashingAlgorithm(cp.getHashAlgorithm());
     proposal.setEncryptionAlgorithm(algorithm);
     Optional.ofNullable(cp.getLifetimeSeconds()).ifPresent(proposal::setLifetimeSeconds);
@@ -3634,11 +3659,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return proposal;
   }
 
-  private @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(CryptoProfile cp, List<String> proposals) {
+  private @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
+      CryptoProfile cp, IpsecTunnel tunnel, List<String> proposals) {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
     policy.setProposals(proposals);
-    Optional.ofNullable(cp.getDhGroup())
-        .ifPresent(group -> policy.setPfsKeyGroups(ImmutableSortedSet.of(group)));
+    if (cp.getNoPfs()) {
+      // negotiateIpsecP2 requires a non-empty intersection of PFS groups, so a profile with
+      // perfect forward secrecy disabled cannot negotiate in the model even though the device
+      // would bring the tunnel up.
+      _w.redFlagf(
+          "ipsec-crypto-profile %s for ipsec tunnel %s disables perfect forward secrecy, which is"
+              + " not modeled; the tunnel will not negotiate",
+          cp.getName(), tunnel.getName());
+    }
+    if (!cp.getDhGroups().isEmpty()) {
+      policy.setPfsKeyGroups(ImmutableSortedSet.copyOf(cp.getDhGroups()));
+    }
     return policy;
   }
 

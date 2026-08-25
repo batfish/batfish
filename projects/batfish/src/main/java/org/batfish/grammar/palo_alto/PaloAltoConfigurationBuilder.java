@@ -184,6 +184,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_route_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_set_originContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_group_valueContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
@@ -712,7 +713,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     }
   }
 
-  private DiffieHellmanGroup toDiffieHellmanGroup(Cp_dh_groupContext ctx) {
+  private DiffieHellmanGroup toDiffieHellmanGroup(Cp_dh_group_valueContext ctx) {
     if (ctx.GROUP1() != null) {
       return DiffieHellmanGroup.GROUP1;
     } else if (ctx.GROUP2() != null) {
@@ -721,10 +722,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return DiffieHellmanGroup.GROUP5;
     } else if (ctx.GROUP14() != null) {
       return DiffieHellmanGroup.GROUP14;
+    } else if (ctx.GROUP15() != null) {
+      return DiffieHellmanGroup.GROUP15;
+    } else if (ctx.GROUP16() != null) {
+      return DiffieHellmanGroup.GROUP16;
     } else if (ctx.GROUP19() != null) {
       return DiffieHellmanGroup.GROUP19;
     } else if (ctx.GROUP20() != null) {
       return DiffieHellmanGroup.GROUP20;
+    } else if (ctx.GROUP21() != null) {
+      return DiffieHellmanGroup.GROUP21;
     } else {
       return convProblem(DiffieHellmanGroup.class, ctx, null);
     }
@@ -1267,10 +1274,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       warn(ctx, "'dh-group' is illegal for global-proptect-app-crypto-profile");
       return;
     }
-    DiffieHellmanGroup dhGroup = toDiffieHellmanGroup(ctx);
-    if (dhGroup != null) {
-      _currentCrytoProfile.setDhGroup(dhGroup);
+    if (ctx.NO_PFS() != null) {
+      // Perfect forward secrecy disabled: there is no DH group to negotiate.
+      _currentCrytoProfile.setNoPfs(true);
+      _currentCrytoProfile.setDhGroups(ImmutableList.of());
+      return;
     }
+    ImmutableList.Builder<DiffieHellmanGroup> groups = ImmutableList.builder();
+    for (Cp_dh_group_valueContext valueCtx : ctx.group) {
+      DiffieHellmanGroup group = toDiffieHellmanGroup(valueCtx);
+      if (group != null) {
+        groups.add(group);
+      }
+    }
+    _currentCrytoProfile.setNoPfs(false);
+    _currentCrytoProfile.setDhGroups(
+        groups.build().stream().distinct().collect(ImmutableList.toImmutableList()));
   }
 
   @Override

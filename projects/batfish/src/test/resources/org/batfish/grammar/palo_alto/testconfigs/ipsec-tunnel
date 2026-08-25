@@ -179,3 +179,28 @@ set network ike gateway GW-LOCALOBJ protocol ikev2 ike-crypto-profile IKE-PROF
 set network ike gateway GW-LOCALOBJ local-address ip LOCAL-OBJ-UNDEFINED
 set network ike gateway GW-LOCALOBJ peer-address ip 192.0.2.31
 set network ike gateway GW-LOCALOBJ authentication pre-shared-key key -AQ==encrypted/blob+15=
+set network interface tunnel units tunnel.18 ip 169.254.10.70/30
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS esp authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS dh-group no-pfs
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 dh-group group21
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 hash sha256
+set network tunnel ipsec TUN-NOPFS auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-NOPFS auto-key ipsec-crypto-profile IPSEC-NOPFS
+set network tunnel ipsec TUN-NOPFS tunnel-interface tunnel.18
+set network interface tunnel units tunnel.19 ip 169.254.10.74/30
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST dh-group [ group14 group20 ]
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST hash sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST esp authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST dh-group group14
+set network ike gateway GW-DHLIST protocol ikev2 ike-crypto-profile IKE-DHLIST
+set network ike gateway GW-DHLIST protocol version ikev2
+set network ike gateway GW-DHLIST local-address interface ethernet1/1
+set network ike gateway GW-DHLIST peer-address ip 192.0.2.40
+set network ike gateway GW-DHLIST authentication pre-shared-key key -AQ==encrypted/blob+16=
+set network tunnel ipsec TUN-DHLIST auto-key ike-gateway GW-DHLIST
+set network tunnel ipsec TUN-DHLIST auto-key ipsec-crypto-profile IPSEC-DHLIST
+set network tunnel ipsec TUN-DHLIST tunnel-interface tunnel.19

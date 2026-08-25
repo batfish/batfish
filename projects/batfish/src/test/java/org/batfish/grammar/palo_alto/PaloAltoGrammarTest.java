@@ -493,7 +493,8 @@ public final class PaloAltoGrammarTest {
 
     // one phase 1 proposal per gateway/profile/encryption algorithm
     IkePhase1Proposal p1 =
-        c.getIkePhase1Proposals().get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC~");
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~");
     assertThat(p1.getDiffieHellmanGroup(), equalTo(DiffieHellmanGroup.GROUP14));
     assertThat(p1.getEncryptionAlgorithm(), equalTo(EncryptionAlgorithm.AES_256_CBC));
     assertThat(p1.getHashingAlgorithm(), equalTo(IkeHashingAlgorithm.SHA_256));
@@ -502,20 +503,20 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c.getIkePhase1Policies().get("GW-MULTI").getIkePhase1Proposals(),
         containsInAnyOrder(
-            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_256_GCM~",
-            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_128_CBC~"));
+            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_256_GCM_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_128_CBC_GROUP14~"));
 
     // `protocol version ikev1` selects the ikev1 profile, not the ikev2 one
     assertThat(
         c.getIkePhase1Policies().get("GW-V1").getIkePhase1Proposals(),
-        contains("~IKE_PHASE1_PROPOSAL_GW-V1_IKE-PROF-V1_THREEDES_CBC~"));
+        contains("~IKE_PHASE1_PROPOSAL_GW-V1_IKE-PROF-V1_THREEDES_CBC_GROUP2~"));
 
     // with no version and both profiles set, IKEv2 is offered first and IKEv1 kept as fallback
     assertThat(
         c.getIkePhase1Policies().get("GW-AMBIGUOUS").getIkePhase1Proposals(),
         contains(
-            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF_AES_256_CBC~",
-            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF-V1_THREEDES_CBC~"));
+            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF_AES_256_CBC_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF-V1_THREEDES_CBC_GROUP2~"));
 
     // phase 2 is per tunnel, because ipsec-mode is a tunnel property
     IpsecPhase2Proposal tunnelMode =
@@ -548,12 +549,38 @@ public final class PaloAltoGrammarTest {
             "TUN-SAMEPROF",
             "TUN-HA",
             "TUN-NOPROF",
-            "TUN-OBJDEF"));
+            "TUN-OBJDEF",
+            "TUN-NOPFS",
+            "TUN-DHLIST"));
+
+    // an ike-crypto-profile takes a list of dh groups, and IkePhase1Proposal holds one, so the
+    // proposals are the cross product of encryption algorithm and dh group
+    assertThat(
+        c.getIkePhase1Policies().get("GW-DHLIST").getIkePhase1Proposals(),
+        containsInAnyOrder(
+            "~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP20~"));
+    assertThat(
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP20~")
+            .getDiffieHellmanGroup(),
+        equalTo(DiffieHellmanGroup.GROUP20));
+
+    // phase 2 pfsKeyGroups is a set, so all configured groups apply to one policy
+    assertThat(
+        c.getIpsecPhase2Policies().get("~IPSEC_PHASE2_POLICY_TUN-DHLIST~").getPfsKeyGroups(),
+        contains(DiffieHellmanGroup.GROUP14));
+
+    // `dh-group no-pfs` is a documented value; it yields no PFS groups, which Batfish's phase 2
+    // negotiation cannot satisfy, so the tunnel converts but is reported as unable to negotiate
+    assertThat(
+        c.getIpsecPhase2Policies().get("~IPSEC_PHASE2_POLICY_TUN-NOPFS~").getPfsKeyGroups(),
+        empty());
 
     // a repeated encryption algorithm in one profile yields a single proposal
     assertThat(
         c.getIkePhase1Policies().get("GW-OBJ").getIkePhase1Proposals(),
-        contains("~IKE_PHASE1_PROPOSAL_GW-OBJ_IKE-DUP_AES_256_CBC~"));
+        contains("~IKE_PHASE1_PROPOSAL_GW-OBJ_IKE-DUP_AES_256_CBC_GROUP14~"));
 
     // peer-address may name an address object, which resolves to that object's host address
     IpsecStaticPeerConfig objDef =
@@ -563,7 +590,7 @@ public final class PaloAltoGrammarTest {
     // the same profile configured on both IKE versions must yield exactly one proposal
     assertThat(
         c.getIkePhase1Policies().get("GW-SAMEPROF").getIkePhase1Proposals(),
-        contains("~IKE_PHASE1_PROPOSAL_GW-SAMEPROF_IKE-PROF_AES_256_CBC~"));
+        contains("~IKE_PHASE1_PROPOSAL_GW-SAMEPROF_IKE-PROF_AES_256_CBC_GROUP14~"));
 
     IpsecStaticPeerConfig basic = (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-BASIC");
     assertThat(basic.getTunnelInterface(), equalTo("tunnel.1"));
@@ -599,7 +626,7 @@ public final class PaloAltoGrammarTest {
     assertThat(psk.getKeyHash(), equalTo("-AQ==encrypted/blob+1="));
     assertThat(
         c.getIkePhase1Proposals()
-            .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC~")
+            .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~")
             .getAuthenticationMethod(),
         equalTo(IkeAuthenticationMethod.PRE_SHARED_KEYS));
 
@@ -608,7 +635,7 @@ public final class PaloAltoGrammarTest {
     assertThat(cert.getKeyHash(), notNullValue());
     assertThat(
         c.getIkePhase1Proposals()
-            .get("~IKE_PHASE1_PROPOSAL_GW-CERT_IKE-PROF_AES_256_CBC~")
+            .get("~IKE_PHASE1_PROPOSAL_GW-CERT_IKE-PROF_AES_256_CBC_GROUP14~")
             .getAuthenticationMethod(),
         equalTo(IkeAuthenticationMethod.RSA_SIGNATURES));
   }
@@ -634,7 +661,8 @@ public final class PaloAltoGrammarTest {
     peer.setIkePhase1Proposals(
         ImmutableSortedMap.of(
             "peer-ike-proposal",
-            pa.getIkePhase1Proposals().get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC~")));
+            pa.getIkePhase1Proposals()
+                .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~")));
     peer.setIkePhase1Policies(ImmutableSortedMap.of("peer-ike-policy", peerIkePolicy));
     peer.setIpsecPhase2Proposals(
         ImmutableSortedMap.of(
@@ -761,8 +789,14 @@ public final class PaloAltoGrammarTest {
         warnings,
         hasItem(
             containsString(
-                "Generated ike proposal name ~IKE_PHASE1_PROPOSAL_GW-COL_COL_AES_256_CBC~"
+                "Generated ike proposal name ~IKE_PHASE1_PROPOSAL_GW-COL_COL_AES_256_CBC_GROUP14~"
                     + " collides")));
+    assertThat(
+        warnings,
+        hasItem(
+            containsString(
+                "ipsec-crypto-profile IPSEC-NOPFS for ipsec tunnel TUN-NOPFS disables perfect"
+                    + " forward secrecy")));
   }
 
   @Test

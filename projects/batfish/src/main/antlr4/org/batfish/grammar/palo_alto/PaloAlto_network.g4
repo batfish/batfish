@@ -23,13 +23,29 @@ cp_dh_group
 :
     DH_GROUP
     (
-        GROUP1
-        | GROUP2
-        | GROUP5
-        | GROUP14
-        | GROUP19
-        | GROUP20
+        NO_PFS
+        |
+        (
+            OPEN_BRACKET?
+            (
+                group += cp_dh_group_value
+            )+
+            CLOSE_BRACKET?
+        )
     )
+;
+
+cp_dh_group_value
+:
+    GROUP1
+    | GROUP2
+    | GROUP5
+    | GROUP14
+    | GROUP15
+    | GROUP16
+    | GROUP19
+    | GROUP20
+    | GROUP21
 ;
 
 cp_encryption

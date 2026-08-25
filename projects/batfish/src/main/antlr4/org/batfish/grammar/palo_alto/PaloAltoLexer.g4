@@ -299,9 +299,15 @@ GROUP5: 'group5';
 
 GROUP14: 'group14';
 
+GROUP15: 'group15';
+
+GROUP16: 'group16';
+
 GROUP19: 'group19';
 
 GROUP20: 'group20';
+
+GROUP21: 'group21';
 
 GROUP_ID: 'group-id';
 
@@ -492,6 +498,8 @@ NEXT_VR: 'next-vr';
 NEXTHOP: 'nexthop';
 
 NO: 'no';
+
+NO_PFS: 'no-pfs';
 
 NO_REDIST: 'no-redist';
 
