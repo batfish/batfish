@@ -79,7 +79,11 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_TUNNEL;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
@@ -89,6 +93,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IPSEC_TUNNEL_IKE_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
@@ -153,6 +158,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -176,6 +182,7 @@ import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -198,7 +205,12 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -209,6 +221,11 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -222,6 +239,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -265,8 +283,10 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.IbgpPeerGroupType;
+import org.batfish.representation.palo_alto.IkeGateway;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
+import org.batfish.representation.palo_alto.IpsecTunnel;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
 import org.batfish.representation.palo_alto.OspfAreaNormal;
@@ -413,6 +433,371 @@ public final class PaloAltoGrammarTest {
 
   private void assertIpSpacesEqual(IpSpace left, IpSpace right) {
     assertThat(_dst.visit(left), equalTo(_dst.visit(right)));
+  }
+
+  @Test
+  public void testIpsecTunnelExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("ipsec-tunnel");
+
+    IkeGateway basic = c.getIkeGateways().get("GW-BASIC");
+    assertThat(basic.getIkeV2CryptoProfile(), equalTo("IKE-PROF"));
+    assertThat(basic.getLocalInterface(), equalTo("ethernet1/1"));
+    assertThat(basic.getPeerAddress().getValue(), equalTo("192.0.2.1"));
+    assertThat(basic.getPeerAddressType(), equalTo(IkeGateway.PeerAddressType.IP));
+    // PAN-OS exports the key encrypted; the ciphertext is kept as the hash
+    assertThat(basic.getKeyHash(), equalTo("-AQ==encrypted/blob+1="));
+
+    assertThat(basic.getVersion(), equalTo(IkeGateway.Version.IKEV2));
+
+    // a gateway may configure a different crypto profile per IKE version; `version` selects one
+    IkeGateway v1 = c.getIkeGateways().get("GW-V1");
+    assertThat(v1.getIkeV1CryptoProfile(), equalTo("IKE-PROF-V1"));
+    assertThat(v1.getIkeV2CryptoProfile(), equalTo("IKE-PROF"));
+    assertThat(v1.getVersion(), equalTo(IkeGateway.Version.IKEV1));
+    assertThat(v1.getEffectiveIkeCryptoProfiles(), contains("IKE-PROF-V1"));
+    assertThat(basic.getEffectiveIkeCryptoProfiles(), contains("IKE-PROF"));
+    assertFalse(v1.hasAmbiguousIkeVersion());
+
+    // with no `protocol version` and both profiles configured, the choice is an assumption
+    IkeGateway ambiguous = c.getIkeGateways().get("GW-AMBIGUOUS");
+    assertThat(ambiguous.getVersion(), nullValue());
+    assertTrue(ambiguous.hasAmbiguousIkeVersion());
+    assertThat(ambiguous.getEffectiveIkeCryptoProfiles(), contains("IKE-PROF", "IKE-PROF-V1"));
+
+    assertThat(c.getIkeGateways().get("GW-FLOATING").getLocalFloatingIp(), notNullValue());
+    assertThat(
+        c.getIpsecTunnels().get("TUN-MULTI").getIpsecMode(),
+        equalTo(IpsecEncapsulationMode.TRANSPORT));
+    assertThat(
+        c.getIpsecTunnels().get("TUN-BASIC").getIpsecMode(),
+        equalTo(IpsecEncapsulationMode.TUNNEL));
+
+    assertThat(
+        c.getIkeGateways().get("GW-DYNAMIC").getPeerAddressType(),
+        equalTo(IkeGateway.PeerAddressType.DYNAMIC));
+    assertThat(
+        c.getIkeGateways().get("GW-FQDN").getPeerAddressType(),
+        equalTo(IkeGateway.PeerAddressType.FQDN));
+
+    IpsecTunnel tunnel = c.getIpsecTunnels().get("TUN-BASIC");
+    assertThat(tunnel.getIkeGateway(), equalTo("GW-BASIC"));
+    assertThat(tunnel.getIpsecCryptoProfile(), equalTo("IPSEC-PROF"));
+    assertThat(tunnel.getTunnelInterface(), equalTo("tunnel.1"));
+    assertFalse(tunnel.getDisabled());
+    assertTrue(c.getIpsecTunnels().get("TUN-DISABLED").getDisabled());
+  }
+
+  @Test
+  public void testIpsecTunnelConversion() {
+    Configuration c = parseConfig("ipsec-tunnel");
+
+    // one phase 1 proposal per gateway/profile/encryption algorithm
+    IkePhase1Proposal p1 =
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~");
+    assertThat(p1.getDiffieHellmanGroup(), equalTo(DiffieHellmanGroup.GROUP14));
+    assertThat(p1.getEncryptionAlgorithm(), equalTo(EncryptionAlgorithm.AES_256_CBC));
+    assertThat(p1.getHashingAlgorithm(), equalTo(IkeHashingAlgorithm.SHA_256));
+
+    // a profile listing several algorithms yields one proposal each, all offered by the policy
+    assertThat(
+        c.getIkePhase1Policies().get("GW-MULTI").getIkePhase1Proposals(),
+        containsInAnyOrder(
+            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_256_GCM_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-MULTI_IKE-MULTI_AES_128_CBC_GROUP14~"));
+
+    // `protocol version ikev1` selects the ikev1 profile, not the ikev2 one
+    assertThat(
+        c.getIkePhase1Policies().get("GW-V1").getIkePhase1Proposals(),
+        contains("~IKE_PHASE1_PROPOSAL_GW-V1_IKE-PROF-V1_THREEDES_CBC_GROUP2~"));
+
+    // with no version and both profiles set, IKEv2 is offered first and IKEv1 kept as fallback
+    assertThat(
+        c.getIkePhase1Policies().get("GW-AMBIGUOUS").getIkePhase1Proposals(),
+        contains(
+            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF_AES_256_CBC_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-AMBIGUOUS_IKE-PROF-V1_THREEDES_CBC_GROUP2~"));
+
+    // phase 2 is per tunnel, because ipsec-mode is a tunnel property
+    IpsecPhase2Proposal tunnelMode =
+        c.getIpsecPhase2Proposals().get("~IPSEC_PHASE2_PROPOSAL_TUN-BASIC_AES_256_CBC~");
+    assertThat(tunnelMode.getIpsecEncapsulationMode(), equalTo(IpsecEncapsulationMode.TUNNEL));
+    assertThat(tunnelMode.getProtocols(), contains(IpsecProtocol.ESP));
+
+    IpsecPhase2Proposal transportMode =
+        c.getIpsecPhase2Proposals().get("~IPSEC_PHASE2_PROPOSAL_TUN-MULTI_AES_256_CBC~");
+    assertThat(
+        transportMode.getIpsecEncapsulationMode(), equalTo(IpsecEncapsulationMode.TRANSPORT));
+
+    // an ah profile is modeled as AH, not ESP
+    IpsecPhase2Proposal ah = c.getIpsecPhase2Proposals().get("~IPSEC_PHASE2_PROPOSAL_TUN-AH~");
+    assertThat(ah.getProtocols(), contains(IpsecProtocol.AH));
+
+    // Not converted: disabled tunnels, tunnels whose gateway is missing or dangling, and
+    // gateways with no usable peer address. A tunnel with no ipsec-crypto-profile IS converted,
+    // with a null ipsec policy, and warns.
+    assertThat(
+        c.getIpsecPeerConfigs().keySet(),
+        containsInAnyOrder(
+            "TUN-BASIC",
+            "TUN-SUBIF",
+            "TUN-CERT",
+            "TUN-V1",
+            "TUN-AMBIGUOUS",
+            "TUN-MULTI",
+            "TUN-AH",
+            "TUN-SAMEPROF",
+            "TUN-HA",
+            "TUN-NOPROF",
+            "TUN-OBJDEF",
+            "TUN-NOPFS",
+            "TUN-DHLIST",
+            "TUN-NULLS"));
+
+    // an ike-crypto-profile takes a list of dh groups, and IkePhase1Proposal holds one, so the
+    // proposals are the cross product of encryption algorithm and dh group
+    assertThat(
+        c.getIkePhase1Policies().get("GW-DHLIST").getIkePhase1Proposals(),
+        containsInAnyOrder(
+            "~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP14~",
+            "~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP20~"));
+    assertThat(
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-DHLIST_IKE-DHLIST_AES_256_CBC_GROUP20~")
+            .getDiffieHellmanGroup(),
+        equalTo(DiffieHellmanGroup.GROUP20));
+
+    // phase 2 pfsKeyGroups is a set, so all configured groups apply to one policy
+    assertThat(
+        c.getIpsecPhase2Policies().get("~IPSEC_PHASE2_POLICY_TUN-DHLIST~").getPfsKeyGroups(),
+        contains(DiffieHellmanGroup.GROUP14));
+
+    // `dh-group no-pfs` is a documented value; it yields no PFS groups, which Batfish's phase 2
+    // negotiation cannot satisfy, so the tunnel converts but is reported as unable to negotiate
+    assertThat(
+        c.getIpsecPhase2Policies().get("~IPSEC_PHASE2_POLICY_TUN-NOPFS~").getPfsKeyGroups(),
+        empty());
+
+    // a repeated encryption algorithm in one profile yields a single proposal
+    assertThat(
+        c.getIkePhase1Policies().get("GW-OBJ").getIkePhase1Proposals(),
+        contains("~IKE_PHASE1_PROPOSAL_GW-OBJ_IKE-DUP_AES_256_CBC_GROUP14~"));
+
+    // peer-address may name an address object, which resolves to that object's host address
+    IpsecStaticPeerConfig objDef =
+        (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-OBJDEF");
+    assertThat(objDef.getDestinationAddress(), equalTo(Ip.parse("192.0.2.20")));
+
+    // the same profile configured on both IKE versions must yield exactly one proposal
+    assertThat(
+        c.getIkePhase1Policies().get("GW-SAMEPROF").getIkePhase1Proposals(),
+        contains("~IKE_PHASE1_PROPOSAL_GW-SAMEPROF_IKE-PROF_AES_256_CBC_GROUP14~"));
+
+    IpsecStaticPeerConfig basic = (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-BASIC");
+    assertThat(basic.getTunnelInterface(), equalTo("tunnel.1"));
+    assertThat(basic.getLocalAddress(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(basic.getDestinationAddress(), equalTo(Ip.parse("192.0.2.1")));
+    assertThat(basic.getSourceInterface(), equalTo("ethernet1/1"));
+    assertThat(basic.getIkePhase1Policy(), equalTo("GW-BASIC"));
+    assertThat(basic.getIpsecPolicy(), equalTo("~IPSEC_PHASE2_POLICY_TUN-BASIC~"));
+
+    // a floating-ip gateway still uses its interface address as the modeled source
+    IpsecStaticPeerConfig ha = (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-HA");
+    assertThat(ha.getLocalAddress(), equalTo(Ip.parse("10.0.0.1")));
+
+    // a tunnel with no ipsec-crypto-profile converts but can never negotiate
+    IpsecStaticPeerConfig noProf =
+        (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-NOPROF");
+    assertThat(noProf.getIpsecPolicy(), nullValue());
+
+    // local-address may name a subinterface
+    IpsecStaticPeerConfig subif = (IpsecStaticPeerConfig) c.getIpsecPeerConfigs().get("TUN-SUBIF");
+    assertThat(subif.getLocalAddress(), equalTo(Ip.parse("10.0.100.1")));
+    assertThat(subif.getSourceInterface(), equalTo("ethernet1/2.100"));
+  }
+
+  @Test
+  public void testIpsecTunnelAuthenticationType() {
+    Configuration c = parseConfig("ipsec-tunnel");
+
+    // PAN-OS never exports a plaintext key, so the ciphertext is carried as the hash;
+    // negotiateIkePhase1Key treats a key with no value as nothing configured at all
+    IkePhase1Key psk = c.getIkePhase1Policies().get("GW-BASIC").getIkePhase1Key();
+    assertThat(psk.getKeyType(), equalTo(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED));
+    assertThat(psk.getKeyHash(), equalTo("-AQ==encrypted/blob+1="));
+    assertThat(
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~")
+            .getAuthenticationMethod(),
+        equalTo(IkeAuthenticationMethod.PRE_SHARED_KEYS));
+
+    IkePhase1Key cert = c.getIkePhase1Policies().get("GW-CERT").getIkePhase1Key();
+    assertThat(cert.getKeyType(), equalTo(IkeKeyType.RSA_PUB_KEY));
+    assertThat(cert.getKeyHash(), notNullValue());
+    assertThat(
+        c.getIkePhase1Proposals()
+            .get("~IKE_PHASE1_PROPOSAL_GW-CERT_IKE-PROF_AES_256_CBC_GROUP14~")
+            .getAuthenticationMethod(),
+        equalTo(IkeAuthenticationMethod.RSA_SIGNATURES));
+  }
+
+  @Test
+  public void testIpsecTunnelTopology() {
+    // The point of the feature: a peer opposite a PAN-OS device must actually form a tunnel edge.
+    // This is what would have caught a phase 1 key with no value.
+    Configuration pa = parseConfig("ipsec-tunnel");
+
+    IkePhase1Key peerKey = new IkePhase1Key();
+    peerKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
+    peerKey.setKeyHash("plaintext");
+    IkePhase1Policy peerIkePolicy = new IkePhase1Policy("peer-ike-policy");
+    peerIkePolicy.setIkePhase1Key(peerKey);
+    peerIkePolicy.setIkePhase1Proposals(ImmutableList.of("peer-ike-proposal"));
+
+    Configuration peer =
+        Configuration.builder()
+            .setHostname("peer")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    peer.setIkePhase1Proposals(
+        ImmutableSortedMap.of(
+            "peer-ike-proposal",
+            pa.getIkePhase1Proposals()
+                .get("~IKE_PHASE1_PROPOSAL_GW-BASIC_IKE-PROF_AES_256_CBC_GROUP14~")));
+    peer.setIkePhase1Policies(ImmutableSortedMap.of("peer-ike-policy", peerIkePolicy));
+    peer.setIpsecPhase2Proposals(
+        ImmutableSortedMap.of(
+            "peer-ipsec-proposal",
+            pa.getIpsecPhase2Proposals().get("~IPSEC_PHASE2_PROPOSAL_TUN-BASIC_AES_256_CBC~")));
+    // the peer's policy must reference the peer's own proposal name, not the PA's
+    IpsecPhase2Policy peerIpsecPolicy = new IpsecPhase2Policy();
+    peerIpsecPolicy.setProposals(ImmutableList.of("peer-ipsec-proposal"));
+    peerIpsecPolicy.setPfsKeyGroups(
+        pa.getIpsecPhase2Policies().get("~IPSEC_PHASE2_POLICY_TUN-BASIC~").getPfsKeyGroups());
+    peer.setIpsecPhase2Policies(ImmutableSortedMap.of("peer-ipsec-policy", peerIpsecPolicy));
+    peer.setIpsecPeerConfigs(
+        ImmutableSortedMap.of(
+            "peer-tunnel",
+            IpsecStaticPeerConfig.builder()
+                .setSourceInterface("peer-iface")
+                .setTunnelInterface("peer-tunnel")
+                .setLocalAddress(Ip.parse("192.0.2.1"))
+                .setDestinationAddress(Ip.parse("10.0.0.1"))
+                .setIkePhase1Policy("peer-ike-policy")
+                .setIpsecPolicy("peer-ipsec-policy")
+                .build()));
+
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(pa.getHostname(), pa, peer.getHostname(), peer);
+    IpsecTopology topology =
+        IpsecUtil.retainCompatibleTunnelEdges(
+            IpsecUtil.initIpsecTopology(configurations), configurations);
+
+    assertThat(topology.getGraph().edges(), not(empty()));
+  }
+
+  @Test
+  public void testIpsecTunnelReferences() throws IOException {
+    String hostname = "ipsec-tunnel";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, IKE_GATEWAY, "GW-BASIC"));
+    assertThat(ccae, hasDefinedStructure(filename, IPSEC_TUNNEL, "TUN-BASIC"));
+    assertThat(ccae, hasNumReferrers(filename, IKE_GATEWAY, "GW-SUBIF", 1));
+
+    // crypto profiles must be defined, not just referenced, or every config reports them undefined
+    assertThat(ccae, hasDefinedStructure(filename, IKE_CRYPTO_PROFILE, "IKE-PROF"));
+    assertThat(ccae, hasDefinedStructure(filename, IPSEC_CRYPTO_PROFILE, "IPSEC-PROF"));
+
+    assertThat(
+        ccae, hasUndefinedReference(filename, IKE_GATEWAY, "GW-MISSING", IPSEC_TUNNEL_IKE_GATEWAY));
+
+    // an address object named on peer-address must be reported when it does not exist
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            "PEER-OBJ-UNDEFINED",
+            PaloAltoStructureUsage.IKE_GATEWAY_PEER_ADDRESS));
+
+    // an address object on local-address ip must be reported too
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            "LOCAL-OBJ-UNDEFINED",
+            PaloAltoStructureUsage.IKE_GATEWAY_LOCAL_ADDRESS_IP));
+
+    // an address object used ONLY by an ike gateway must count as used, not orphaned
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "PEER-OBJ"),
+            1));
+  }
+
+  @Test
+  public void testIpsecTunnelWarnings() throws IOException {
+    String hostname = "ipsec-tunnel";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    // conversion warnings are keyed by hostname, not by filename
+    List<String> warnings =
+        ccae.getWarnings().get(hostname).getRedFlagWarnings().stream()
+            .map(Warning::getText)
+            .collect(ImmutableList.toImmutableList());
+
+    assertThat(warnings, hasItem(containsString("No ike-gateway configured for ipsec tunnel")));
+    assertThat(warnings, hasItem(containsString("Cannot find ike-gateway GW-MISSING")));
+    // valid config that Batfish cannot model must say so accurately
+    assertThat(
+        warnings, hasItem(containsString("ike-gateway GW-DYNAMIC uses a dynamic peer address")));
+    assertThat(warnings, hasItem(containsString("ike-gateway GW-FQDN uses a FQDN peer address")));
+    assertThat(
+        warnings,
+        hasItem(containsString("No ike-crypto-profile configured for ike-gateway GW-NOPROF")));
+    // a profile exists, just not for the selected version
+    assertThat(
+        warnings,
+        hasItem(
+            containsString(
+                "No ike-crypto-profile configured for ike-gateway GW-WRONGVER at protocol version"
+                    + " ikev1")));
+    assertThat(
+        warnings,
+        hasItem(containsString("ike-gateway GW-AMBIGUOUS configures both IKEv1 and IKEv2")));
+    assertThat(
+        warnings,
+        hasItem(containsString("ike-gateway GW-FLOATING uses a floating-ip local address")));
+    // floating-ip alongside an interface still means the modeled source address is wrong
+    assertThat(
+        warnings, hasItem(containsString("ike-gateway GW-HA uses a floating-ip local address")));
+    assertThat(
+        warnings,
+        hasItem(containsString("No ipsec-crypto-profile configured for ipsec tunnel TUN-NOPROF")));
+    // two distinct proposals can generate the same name; the last wins, but it must not be silent
+    assertThat(
+        warnings,
+        hasItem(
+            containsString(
+                "Generated ike proposal name ~IKE_PHASE1_PROPOSAL_GW-COL_COL_AES_256_CBC_GROUP14~"
+                    + " collides")));
+    assertThat(
+        warnings,
+        hasItem(
+            containsString(
+                "ipsec-crypto-profile IPSEC-NOPFS for ipsec tunnel TUN-NOPFS disables perfect"
+                    + " forward secrecy")));
   }
 
   @Test

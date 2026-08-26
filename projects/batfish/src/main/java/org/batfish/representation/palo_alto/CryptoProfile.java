@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecProtocol;
 
 /** Represents a crypto profile for Palo Alto */
 public final class CryptoProfile implements Serializable {
@@ -23,7 +25,7 @@ public final class CryptoProfile implements Serializable {
   /** null implies no authentiation */
   private @Nullable IpsecAuthenticationAlgorithm _authAlgorithm;
 
-  private DiffieHellmanGroup _dhGroup;
+  private @Nonnull List<DiffieHellmanGroup> _dhGroups = ImmutableList.of();
 
   private List<EncryptionAlgorithm> _encryptionAlgorithms;
 
@@ -34,6 +36,15 @@ public final class CryptoProfile implements Serializable {
   private final @Nonnull String _name;
 
   private final @Nonnull Type _type;
+
+  /**
+   * ESP or AH; only meaningful for {@link Type#IPSEC}. Null when not explicitly configured; the ESP
+   * default is applied at conversion.
+   */
+  private @Nullable IpsecProtocol _protocol;
+
+  /** True when {@code dh-group no-pfs} is configured, i.e. perfect forward secrecy is disabled. */
+  private boolean _noPfs;
 
   public CryptoProfile(String name, Type cpType) {
     this(name, cpType, null, null, null, null, null);
@@ -51,7 +62,7 @@ public final class CryptoProfile implements Serializable {
     _type = cpType;
     _authAlgorithm = authAlgorithm;
     _encryptionAlgorithms = encryptionAlgorithms;
-    _dhGroup = dhGroup;
+    _dhGroups = dhGroup == null ? ImmutableList.of() : ImmutableList.of(dhGroup);
     _hashAlgorithm = hashAlgorithm;
     _lifetimeSeconds = lifetimeSeconds;
   }
@@ -65,18 +76,42 @@ public final class CryptoProfile implements Serializable {
     return Objects.equals(_name, rhs._name)
         && Objects.equals(_type, rhs._type)
         && Objects.equals(_authAlgorithm, rhs._authAlgorithm)
-        && Objects.equals(_dhGroup, rhs._dhGroup)
+        && Objects.equals(_dhGroups, rhs._dhGroups)
         && Objects.equals(_encryptionAlgorithms, rhs._encryptionAlgorithms)
         && Objects.equals(_hashAlgorithm, rhs._hashAlgorithm)
         && Objects.equals(_lifetimeSeconds, rhs._lifetimeSeconds);
+  }
+
+  public boolean getNoPfs() {
+    return _noPfs;
+  }
+
+  public void setNoPfs(boolean noPfs) {
+    _noPfs = noPfs;
+  }
+
+  public @Nullable IpsecProtocol getProtocol() {
+    return _protocol;
+  }
+
+  public void setProtocol(@Nonnull IpsecProtocol protocol) {
+    _protocol = protocol;
   }
 
   public @Nullable IpsecAuthenticationAlgorithm getAuthAlgorithm() {
     return _authAlgorithm;
   }
 
-  public DiffieHellmanGroup getDhGroup() {
-    return _dhGroup;
+  /**
+   * DH groups, in configured order. PAN-OS accepts a list on an ike-crypto-profile and a single
+   * value on an ipsec-crypto-profile; empty when none are configured or when {@code no-pfs} is set.
+   */
+  public @Nonnull List<DiffieHellmanGroup> getDhGroups() {
+    return _dhGroups;
+  }
+
+  public void setDhGroups(@Nonnull List<DiffieHellmanGroup> dhGroups) {
+    _dhGroups = ImmutableList.copyOf(dhGroups);
   }
 
   public List<EncryptionAlgorithm> getEncryptionAlgorithms() {
@@ -105,7 +140,7 @@ public final class CryptoProfile implements Serializable {
         _name,
         _type,
         _authAlgorithm,
-        _dhGroup,
+        _dhGroups,
         _encryptionAlgorithms,
         _hashAlgorithm,
         _lifetimeSeconds);
@@ -113,10 +148,6 @@ public final class CryptoProfile implements Serializable {
 
   public void setAuthAlgorithm(@Nullable IpsecAuthenticationAlgorithm authAlgorithm) {
     _authAlgorithm = authAlgorithm;
-  }
-
-  public void setDhGroup(DiffieHellmanGroup dhGroup) {
-    _dhGroup = dhGroup;
   }
 
   public void setEncryptionAlgorithms(List<EncryptionAlgorithm> encryptionAlgorithms) {
@@ -138,7 +169,7 @@ public final class CryptoProfile implements Serializable {
         .add("name", _name)
         .add("type", _type)
         .add("auth-alog", _authAlgorithm)
-        .add("dh-group", _dhGroup)
+        .add("dh-groups", _dhGroups)
         .add("encrypt-algos", _encryptionAlgorithms)
         .add("hash-algo", _hashAlgorithm)
         .add("life", _lifetimeSeconds)

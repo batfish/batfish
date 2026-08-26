@@ -1,0 +1,242 @@
+set deviceconfig system hostname ipsec-tunnel
+set network interface ethernet ethernet1/1 layer3 ip 10.0.0.1/24
+set network interface ethernet ethernet1/2 layer3 units ethernet1/2.100 ip 10.0.100.1/24
+set network interface tunnel units tunnel.1 ip 169.254.10.2/30
+set network interface tunnel units tunnel.2 ip 169.254.10.6/30
+set network interface tunnel units tunnel.3 ip 169.254.10.10/30
+set network interface tunnel units tunnel.4 ip 169.254.10.14/30
+set network interface tunnel units tunnel.5 ip 169.254.10.18/30
+set network interface tunnel units tunnel.6 ip 169.254.10.22/30
+set network interface tunnel units tunnel.7 ip 169.254.10.26/30
+set network interface tunnel units tunnel.8 ip 169.254.10.30/30
+set network interface tunnel units tunnel.9 ip 169.254.10.34/30
+set network interface tunnel units tunnel.10 ip 169.254.10.38/30
+set network interface tunnel units tunnel.11 ip 169.254.10.42/30
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF dh-group group14
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF hash sha256
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF lifetime seconds 28800
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF-V1 dh-group group2
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF-V1 encryption 3des
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF-V1 hash sha1
+set network ike crypto-profiles ike-crypto-profiles IKE-MULTI dh-group group14
+set network ike crypto-profiles ike-crypto-profiles IKE-MULTI encryption [ aes-256-gcm aes-128-cbc ]
+set network ike crypto-profiles ike-crypto-profiles IKE-MULTI hash sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-AH ah authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-PROF esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-PROF esp authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-PROF dh-group group14
+set network ike gateway GW-BASIC protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-BASIC protocol version ikev2
+set network ike gateway GW-BASIC local-address interface ethernet1/1
+set network ike gateway GW-BASIC peer-address ip 192.0.2.1
+set network ike gateway GW-BASIC authentication pre-shared-key key -AQ==encrypted/blob+1=
+set network ike gateway GW-SUBIF protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-SUBIF local-address interface ethernet1/2.100
+set network ike gateway GW-SUBIF local-address ip 10.0.100.1/24
+set network ike gateway GW-SUBIF peer-address ip 192.0.2.3
+set network ike gateway GW-SUBIF authentication pre-shared-key key -AQ==encrypted/blob+2=
+set network ike gateway GW-CERT protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-CERT local-address interface ethernet1/1
+set network ike gateway GW-CERT peer-address ip 192.0.2.4
+set network ike gateway GW-CERT authentication certificate certificate-profile PROF
+set network ike gateway GW-CERT protocol-common nat-traversal enable yes
+set network ike gateway GW-CERT comment "gateway with a comment"
+set network ike gateway GW-V1 protocol ikev1 ike-crypto-profile IKE-PROF-V1
+set network ike gateway GW-V1 protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-V1 protocol version ikev1
+set network ike gateway GW-V1 local-address interface ethernet1/1
+set network ike gateway GW-V1 peer-address ip 192.0.2.5
+set network ike gateway GW-V1 authentication pre-shared-key key -AQ==encrypted/blob+3=
+set network ike gateway GW-DYNAMIC protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-DYNAMIC local-address interface ethernet1/1
+set network ike gateway GW-DYNAMIC peer-address dynamic
+set network ike gateway GW-DYNAMIC authentication pre-shared-key key -AQ==encrypted/blob+4=
+set network ike gateway GW-FQDN protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-FQDN local-address interface ethernet1/1
+set network ike gateway GW-FQDN peer-address fqdn vpn.example.com
+set network ike gateway GW-FQDN authentication pre-shared-key key -AQ==encrypted/blob+5=
+set network ike gateway GW-FLOATING protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-FLOATING local-address floating-ip 10.0.0.9
+set network ike gateway GW-FLOATING peer-address ip 192.0.2.10
+set network ike gateway GW-FLOATING authentication pre-shared-key key -AQ==encrypted/blob+9=
+set network ike gateway GW-NOPROF local-address interface ethernet1/1
+set network ike gateway GW-NOPROF peer-address ip 192.0.2.6
+set network ike gateway
+set network tunnel ipsec
+set network tunnel ipsec TUN-BASIC auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-BASIC auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-BASIC tunnel-interface tunnel.1
+set network tunnel ipsec TUN-BASIC tunnel-monitor enable yes
+set network tunnel ipsec TUN-BASIC tunnel-monitor destination-ip 169.254.10.1
+set network tunnel ipsec TUN-BASIC disabled no
+set network tunnel ipsec TUN-SUBIF auto-key ike-gateway GW-SUBIF
+set network tunnel ipsec TUN-SUBIF auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-SUBIF tunnel-interface tunnel.2
+set network tunnel ipsec TUN-CERT auto-key ike-gateway GW-CERT
+set network tunnel ipsec TUN-CERT auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-CERT tunnel-interface tunnel.3
+set network tunnel ipsec TUN-CERT comment "tunnel with a comment"
+set network tunnel ipsec TUN-V1 auto-key ike-gateway GW-V1
+set network tunnel ipsec TUN-V1 auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-V1 tunnel-interface tunnel.4
+set network tunnel ipsec TUN-DYNAMIC auto-key ike-gateway GW-DYNAMIC
+set network tunnel ipsec TUN-DYNAMIC auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-DYNAMIC tunnel-interface tunnel.5
+set network tunnel ipsec TUN-FQDN auto-key ike-gateway GW-FQDN
+set network tunnel ipsec TUN-FQDN auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-FQDN tunnel-interface tunnel.6
+set network tunnel ipsec TUN-DISABLED auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-DISABLED auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-DISABLED tunnel-interface tunnel.1
+set network tunnel ipsec TUN-DISABLED disabled yes
+set network tunnel ipsec TUN-NO-GW auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-NO-GW tunnel-interface tunnel.7
+set network tunnel ipsec TUN-DANGLING auto-key ike-gateway GW-MISSING
+set network tunnel ipsec TUN-DANGLING auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-DANGLING tunnel-interface tunnel.8
+set network ike gateway GW-AMBIGUOUS protocol ikev1 ike-crypto-profile IKE-PROF-V1
+set network ike gateway GW-AMBIGUOUS protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-AMBIGUOUS local-address interface ethernet1/1
+set network ike gateway GW-AMBIGUOUS peer-address ip 192.0.2.7
+set network ike gateway GW-AMBIGUOUS authentication pre-shared-key key -AQ==encrypted/blob+6=
+set network ike gateway GW-MULTI protocol ikev2 ike-crypto-profile IKE-MULTI
+set network ike gateway GW-MULTI protocol version ikev2
+set network ike gateway GW-MULTI local-address interface ethernet1/1
+set network ike gateway GW-MULTI peer-address ip 192.0.2.8
+set network ike gateway GW-MULTI authentication pre-shared-key key -AQ==encrypted/blob+7=
+set network ike gateway GW-WRONGVER protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-WRONGVER protocol version ikev1
+set network ike gateway GW-WRONGVER local-address interface ethernet1/1
+set network ike gateway GW-WRONGVER peer-address ip 192.0.2.9
+set network ike gateway GW-WRONGVER authentication pre-shared-key key -AQ==encrypted/blob+8=
+set network tunnel ipsec TUN-AMBIGUOUS auto-key ike-gateway GW-AMBIGUOUS
+set network tunnel ipsec TUN-AMBIGUOUS auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-AMBIGUOUS tunnel-interface tunnel.9
+set network tunnel ipsec TUN-MULTI auto-key ike-gateway GW-MULTI
+set network tunnel ipsec TUN-MULTI auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-MULTI tunnel-interface tunnel.10
+set network tunnel ipsec TUN-MULTI ipsec-mode transport
+set network tunnel ipsec TUN-AH auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-AH auto-key ipsec-crypto-profile IPSEC-AH
+set network tunnel ipsec TUN-AH tunnel-interface tunnel.11
+set network interface tunnel units tunnel.12 ip 169.254.10.46/30
+set network tunnel ipsec TUN-FLOATING auto-key ike-gateway GW-FLOATING
+set network tunnel ipsec TUN-FLOATING auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-FLOATING tunnel-interface tunnel.12
+set network interface tunnel units tunnel.13 ip 169.254.10.50/30
+set network interface tunnel units tunnel.14 ip 169.254.10.54/30
+set network ike gateway GW-SAMEPROF protocol ikev1 ike-crypto-profile IKE-PROF
+set network ike gateway GW-SAMEPROF protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-SAMEPROF local-address interface ethernet1/1
+set network ike gateway GW-SAMEPROF peer-address ip 192.0.2.11
+set network ike gateway GW-SAMEPROF authentication pre-shared-key key -AQ==encrypted/blob+10=
+set network ike gateway GW-HA protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-HA local-address interface ethernet1/1
+set network ike gateway GW-HA local-address floating-ip 10.0.0.9
+set network ike gateway GW-HA peer-address ip 192.0.2.12
+set network ike gateway GW-HA authentication pre-shared-key key -AQ==encrypted/blob+11=
+set network tunnel ipsec TUN-SAMEPROF auto-key ike-gateway GW-SAMEPROF
+set network tunnel ipsec TUN-SAMEPROF auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-SAMEPROF tunnel-interface tunnel.13
+set network tunnel ipsec TUN-HA auto-key ike-gateway GW-HA
+set network tunnel ipsec TUN-HA auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-HA tunnel-interface tunnel.14
+set network tunnel ipsec TUN-NOPROF auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-NOPROF tunnel-interface tunnel.15
+set network interface tunnel units tunnel.15 ip 169.254.10.58/30
+set network interface tunnel units tunnel.16 ip 169.254.10.62/30
+set network ike crypto-profiles ike-crypto-profiles IKE-DUP dh-group group14
+set network ike crypto-profiles ike-crypto-profiles IKE-DUP encryption [ aes-256-cbc aes-256-cbc ]
+set network ike crypto-profiles ike-crypto-profiles IKE-DUP hash sha256
+set network ike gateway GW-OBJ protocol ikev2 ike-crypto-profile IKE-DUP
+set network ike gateway GW-OBJ local-address interface ethernet1/1
+set network ike gateway GW-OBJ peer-address ip PEER-OBJ-UNDEFINED
+set network ike gateway GW-OBJ authentication pre-shared-key key -AQ==encrypted/blob+12=
+set network tunnel ipsec TUN-OBJ auto-key ike-gateway GW-OBJ
+set network tunnel ipsec TUN-OBJ auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-OBJ tunnel-interface tunnel.16
+set address PEER-OBJ ip-netmask 192.0.2.20/32
+set network interface tunnel units tunnel.17 ip 169.254.10.66/30
+set network ike gateway GW-OBJDEF protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-OBJDEF local-address interface ethernet1/1
+set network ike gateway GW-OBJDEF peer-address ip PEER-OBJ
+set network ike gateway GW-OBJDEF authentication pre-shared-key key -AQ==encrypted/blob+13=
+set network tunnel ipsec TUN-OBJDEF auto-key ike-gateway GW-OBJDEF
+set network tunnel ipsec TUN-OBJDEF auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-OBJDEF tunnel-interface tunnel.17
+set network ike crypto-profiles ike-crypto-profiles COL dh-group group14
+set network ike crypto-profiles ike-crypto-profiles COL encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles COL hash sha256
+set network ike crypto-profiles ike-crypto-profiles COL_AES_256_CBC dh-group group14
+set network ike crypto-profiles ike-crypto-profiles COL_AES_256_CBC hash sha256
+set network ike gateway GW-COL protocol ikev1 ike-crypto-profile COL
+set network ike gateway GW-COL protocol ikev2 ike-crypto-profile COL_AES_256_CBC
+set network ike gateway GW-COL local-address interface ethernet1/1
+set network ike gateway GW-COL peer-address ip 192.0.2.30
+set network ike gateway GW-COL authentication pre-shared-key key -AQ==encrypted/blob+14=
+set network ike gateway GW-LOCALOBJ protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-LOCALOBJ local-address ip LOCAL-OBJ-UNDEFINED
+set network ike gateway GW-LOCALOBJ peer-address ip 192.0.2.31
+set network ike gateway GW-LOCALOBJ authentication pre-shared-key key -AQ==encrypted/blob+15=
+set network interface tunnel units tunnel.18 ip 169.254.10.70/30
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS esp authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-NOPFS dh-group no-pfs
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 dh-group group21
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles IKE-G21 hash sha256
+set network tunnel ipsec TUN-NOPFS auto-key ike-gateway GW-BASIC
+set network tunnel ipsec TUN-NOPFS auto-key ipsec-crypto-profile IPSEC-NOPFS
+set network tunnel ipsec TUN-NOPFS tunnel-interface tunnel.18
+set network interface tunnel units tunnel.19 ip 169.254.10.74/30
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST dh-group [ group14 group20 ]
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles IKE-DHLIST hash sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST esp authentication sha256
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-DHLIST dh-group group14
+set network ike gateway GW-DHLIST protocol ikev2 ike-crypto-profile IKE-DHLIST
+set network ike gateway GW-DHLIST protocol version ikev2
+set network ike gateway GW-DHLIST local-address interface ethernet1/1
+set network ike gateway GW-DHLIST peer-address ip 192.0.2.40
+set network ike gateway GW-DHLIST authentication pre-shared-key key -AQ==encrypted/blob+16=
+set network tunnel ipsec TUN-DHLIST auto-key ike-gateway GW-DHLIST
+set network tunnel ipsec TUN-DHLIST auto-key ipsec-crypto-profile IPSEC-DHLIST
+set network tunnel ipsec TUN-DHLIST tunnel-interface tunnel.19
+set network interface tunnel units tunnel.20 ip 169.254.10.78/30
+set network ike gateway GW-NULLS protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-NULLS protocol version ikev2-preferred
+set network ike gateway GW-NULLS local-address interface ethernet1/1
+set network ike gateway GW-NULLS peer-address ip 192.0.2.41
+set network ike gateway GW-NULLS authentication pre-shared-key key -AQ==encrypted/blob+17=
+set network ike gateway GW-NULLS comment a comment
+set network ike gateway GW-NULLS disabled no
+set network ike gateway GW-NULLS ipv6 no
+set network ike gateway GW-NULLS local-id id 1.2.3.4
+set network ike gateway GW-NULLS peer-id id 5.6.7.8
+set network ike gateway GW-NULLS protocol-common nat-traversal enable yes
+set network ike gateway GW-NULLS protocol ikev1 exchange-mode main
+set network ike gateway GW-NULLS protocol ikev1 dpd enable yes
+set network ike gateway GW-NULLS protocol ikev2 require-cookie no
+set network ike gateway GW-NULLS protocol ikev2 dpd enable yes
+set network ike gateway GW-NULLS protocol ikev2 pq-ppk activation-state disabled
+set network tunnel ipsec TUN-NULLS auto-key ike-gateway GW-NULLS
+set network tunnel ipsec TUN-NULLS auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-NULLS auto-key proxy-id PID protocol any
+set network tunnel ipsec TUN-NULLS auto-key proxy-id-v6 PID6 protocol any
+set network tunnel ipsec TUN-NULLS tunnel-interface tunnel.20
+set network tunnel ipsec TUN-NULLS anti-replay yes
+set network tunnel ipsec TUN-NULLS anti-replay-window 1024
+set network tunnel ipsec TUN-NULLS comment a tunnel comment
+set network tunnel ipsec TUN-NULLS copy-flow-label no
+set network tunnel ipsec TUN-NULLS copy-tos no
+set network tunnel ipsec TUN-NULLS enable-gre-encapsulation no
+set network tunnel ipsec TUN-NULLS ipv6 no
+set network tunnel ipsec TUN-NULLS tunnel-monitor enable yes
+set network tunnel ipsec TUN-NULLS tunnel-monitor destination-ip 192.0.2.99
+set network tunnel gre GRE-TUN interface ethernet1/1
+set network tunnel global-protect-gateway GP-GW tunnel-interface tunnel.20
+set network tunnel global-protect-site-to-site GP-S2S portal-address 192.0.2.50
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF authentication-multiple 0
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-PROF lifesize gb 20

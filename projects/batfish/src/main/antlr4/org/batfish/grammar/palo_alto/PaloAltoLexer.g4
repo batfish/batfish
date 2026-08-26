@@ -13,6 +13,52 @@ tokens {
 
 // Keywords
 
+ANTI_REPLAY: 'anti-replay';
+
+ANTI_REPLAY_WINDOW: 'anti-replay-window';
+
+AUTHENTICATION_MULTIPLE: 'authentication-multiple';
+
+COPY_FLOW_LABEL: 'copy-flow-label';
+
+COPY_TOS: 'copy-tos';
+
+DPD: 'dpd';
+
+ENABLE_GRE_ENCAPSULATION: 'enable-gre-encapsulation';
+
+EXCHANGE_MODE: 'exchange-mode';
+
+GLOBAL_PROTECT_GATEWAY: 'global-protect-gateway';
+
+GLOBAL_PROTECT_SATELLITE: 'global-protect-satellite';
+
+GLOBAL_PROTECT_SITE_TO_SITE: 'global-protect-site-to-site';
+
+GRE: 'gre';
+
+IKEV2_PREFERRED: 'ikev2-preferred';
+
+LIFESIZE: 'lifesize';
+
+LOCAL_ID: 'local-id';
+
+MANUAL_KEY: 'manual-key';
+
+PEER_ID: 'peer-id';
+
+PQ_PPK: 'pq-ppk';
+
+PROTOCOL_COMMON: 'protocol-common';
+
+PROXY_ID: 'proxy-id';
+
+PROXY_ID_V6: 'proxy-id-v6';
+
+REQUIRE_COOKIE: 'require-cookie';
+
+TUNNEL_MONITOR: 'tunnel-monitor';
+
 TWO_BYTE: '2-byte';
 
 FOUR_BYTE: '4-byte';
@@ -63,6 +109,8 @@ AGGREGATE_GROUP: 'aggregate-group';
 
 AGGREGATE_MED: 'aggregate-med';
 
+AH: 'ah';
+
 ALGORITHM: 'algorithm';
 
 ALL: 'all';
@@ -98,6 +146,8 @@ AUTHENTICATION_PROFILE: 'authentication-profile';
 AUTHENTICATION_TYPE: 'authentication-type';
 
 AUTO: 'auto';
+
+AUTO_KEY: 'auto-key';
 
 BEFORE: 'before';
 
@@ -263,6 +313,8 @@ FILE_BLOCKING: 'file-blocking';
 
 FILTER: 'filter';
 
+FLOATING_IP: 'floating-ip';
+
 FORMAT: 'format';
 
 FQDN: 'fqdn';
@@ -293,9 +345,15 @@ GROUP5: 'group5';
 
 GROUP14: 'group14';
 
+GROUP15: 'group15';
+
+GROUP16: 'group16';
+
 GROUP19: 'group19';
 
 GROUP20: 'group20';
+
+GROUP21: 'group21';
 
 GROUP_ID: 'group-id';
 
@@ -344,7 +402,15 @@ IGP: 'igp';
 
 IKE: 'ike';
 
+IKE_CRYPTO_PROFILE: 'ike-crypto-profile';
+
 IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
+
+IKE_GATEWAY: 'ike-gateway';
+
+IKEV1: 'ikev1';
+
+IKEV2: 'ikev2';
 
 IMPORT: 'import';
 
@@ -370,13 +436,21 @@ IP_NETMASK: 'ip-netmask';
 
 IP_RANGE_LITERAL: 'ip-range';
 
+IPSEC: 'ipsec';
+
+IPSEC_CRYPTO_PROFILE: 'ipsec-crypto-profile';
+
 IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
+
+IPSEC_MODE: 'ipsec-mode';
 
 IPV4: 'ipv4';
 
 IPV6: 'ipv6';
 
 KEEP_ALIVE_INTERVAL: 'keep-alive-interval';
+
+KEY: 'key';
 
 LAYER2: 'layer2';
 
@@ -471,6 +545,8 @@ NEXTHOP: 'nexthop';
 
 NO: 'no';
 
+NO_PFS: 'no-pfs';
+
 NO_REDIST: 'no-redist';
 
 NON_CLIENT: 'non-client';
@@ -540,6 +616,8 @@ PORT: 'port';
 POST_RULEBASE: 'post-rulebase';
 
 PRE_RULEBASE: 'pre-rulebase';
+
+PRE_SHARED_KEY: 'pre-shared-key';
 
 PRIMARY: 'primary';
 
@@ -721,6 +799,8 @@ TRANSPORT: 'transport';
 
 TUNNEL: 'tunnel';
 
+TUNNEL_INTERFACE: 'tunnel-interface';
+
 TUNNELS_OTHER_APPS: 'tunnels-other-apps';
 
 TYPE: 'type';
@@ -759,6 +839,8 @@ USED_BY_MALWARE: 'used-by-malware';
 USERID: 'userid';
 
 USERNAME: 'username';
+
+VERSION: 'version';
 
 VIRTUAL_ROUTER: 'virtual-router';
 
