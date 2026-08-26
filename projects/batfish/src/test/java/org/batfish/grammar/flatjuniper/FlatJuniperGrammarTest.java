@@ -184,6 +184,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.LOGIN_CLAS
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SOURCE_CLASS;
@@ -382,6 +383,10 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
@@ -2774,6 +2779,46 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae.getWarnings().get(hostname).getRedFlagWarnings(),
         everyItem(WarningMatchers.hasText(containsString("missing action in firewall filter"))));
+  }
+
+  @Test
+  public void testFirewallFilterThenRoutingInstanceReferences() throws IOException {
+    String hostname = "firewall-filter-then-routing-instance";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // 'default' is a reserved word for the master routing instance, so it is not a reference to any
+    // configured structure.
+    assertThat(ccae, not(hasUndefinedReference(filename, ROUTING_INSTANCE, "default")));
+
+    // Other names are still tracked: 2 self-referencing definition lines plus the filter term.
+    assertThat(ccae, hasNumReferrers(filename, ROUTING_INSTANCE, "RI_DEFINED", 3));
+    assertThat(ccae, hasUndefinedReference(filename, ROUTING_INSTANCE, "RI_UNDEFINED"));
+  }
+
+  @Test
+  public void testFirewallFilterThenRoutingInstanceConversion() {
+    Configuration c = parseConfig("firewall-filter-then-routing-instance");
+
+    PacketPolicy policy = c.getPacketPolicies().get("FBF");
+    assertThat(policy, notNullValue());
+
+    // One statement per term, in term order. 'default' forwards into the master instance, i.e. the
+    // VI default VRF.
+    assertThat(fibLookupVrfs(policy), contains(DEFAULT_VRF_NAME, "RI_DEFINED", "RI_UNDEFINED"));
+  }
+
+  /** Extract the VRF each term of {@code policy} does its FIB lookup in, in term order. */
+  private static List<String> fibLookupVrfs(PacketPolicy policy) {
+    return policy.getStatements().stream()
+        .flatMap(s -> ((org.batfish.datamodel.packet_policy.If) s).getTrueStatements().stream())
+        .filter(s -> s instanceof Return && ((Return) s).getAction() instanceof FibLookup)
+        .map(s -> (FibLookup) ((Return) s).getAction())
+        .map(fibLookup -> ((LiteralVrfName) fibLookup.getVrfExpr()).getVrfName())
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Test

@@ -240,6 +240,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Juniper's default routing instance is called "master". */
   public static final @Nonnull String DEFAULT_ROUTING_INSTANCE_NAME = "master";
 
+  /**
+   * Junos reserves the word "default" to mean the default routing instance where a routing instance
+   * is referenced, e.g. {@code firewall filter ... then routing-instance default}. It cannot be the
+   * name of a configured routing instance.
+   */
+  public static final @Nonnull String DEFAULT_ROUTING_INSTANCE_ALIAS = "default";
+
   /** Normalize to VI VRF name. */
   public static @Nonnull String toVrfName(String routingInstanceName) {
     if (routingInstanceName.equals(DEFAULT_ROUTING_INSTANCE_NAME)) {
