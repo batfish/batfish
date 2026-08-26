@@ -37,15 +37,19 @@ EMAIL
 
 EMERGENCY: 'emergency';
 
+ENCRYPTED: 'encrypted';
+
 ERROR: 'error';
+
+EXIT: 'exit';
 
 HOST
 :
   'host'
   {
-    // `logging host <host>`: the host (quoted, IP, or bare word) follows in M_HostValue.
-    // `ip host ...` is consumed as a null rest-of-line in DEFAULT mode.
-    if (lastTokenType() == LOGGING) {
+    // `logging host <host>` / `tacacs-server host <host>`: the host (quoted, IP, or bare word)
+    // follows in M_HostValue. `ip host ...` is consumed as a null rest-of-line in DEFAULT mode.
+    if (lastTokenType() == LOGGING || lastTokenType() == TACACS_SERVER) {
       pushMode(M_HostValue);
     }
   }
@@ -63,6 +67,13 @@ IP: 'ip';
 IPV4: 'ipv4';
 
 IPV6: 'ipv6';
+
+KEY
+:
+  'key' -> pushMode ( M_Key )
+;
+
+KEYSTRING: 'keystring';
 
 LIST: 'list';
 
@@ -97,6 +108,8 @@ POLL_INTERVAL: 'poll-interval';
 POLL_RETRY: 'poll-retry';
 
 PORT: 'port';
+
+PRIORITY: 'priority';
 
 PROMPT
 :
@@ -135,6 +148,8 @@ STATUS
 ;
 
 SYSLOG: 'syslog';
+
+TACACS_SERVER: 'tacacs-server';
 
 TIMEOUT: 'timeout';
 
@@ -366,12 +381,12 @@ M_Remainder_NEWLINE
   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
-// Host value for `sntp server` / `logging host`: a quoted string, a bare IP, or a bare word
-// (hostname). The keyword alternatives that can appear in this position instead of a host are
-// recognized explicitly so they route to their own parser rules: `status` (sntp operational
-// leakage) and `reconfigure`/`remove` (logging host maintenance). Emits exactly one token then
-// returns to DEFAULT so any trailing tokens (priority/version/port, address-type, severity) lex
-// normally.
+// Host value for `sntp server` / `logging host` / `tacacs-server host`: a quoted string, a bare IP,
+// or a bare word (hostname). The keyword alternatives that can appear in this position instead of
+// a host are recognized explicitly so they route to their own parser rules: `status` (sntp
+// operational leakage) and `reconfigure`/`remove` (logging host maintenance). Emits exactly one
+// token then returns to DEFAULT so any trailing tokens (priority/version/port, address-type,
+// severity) lex normally.
 mode M_HostValue;
 
 M_HostValue_STATUS
@@ -410,6 +425,33 @@ M_HostValue_WS
 ;
 
 M_HostValue_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+mode M_Key;
+
+M_Key_ENCRYPTED
+:
+  'encrypted' -> type ( ENCRYPTED )
+;
+
+M_Key_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
+;
+
+M_Key_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Key_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Key_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;
