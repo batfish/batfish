@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.CommunityMemberParseResult.parseCommunityMember;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ROUTING_INSTANCE_ALIAS;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
@@ -1451,6 +1452,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (BUILT_IN_STRUCTURES.containsEntry(type, name)) {
       _configuration.defineSingleLineStructure(type, name, 0);
     }
+  }
+
+  /**
+   * Reference the routing instance {@code name}, unless it is the reserved word {@link
+   * JuniperConfiguration#DEFAULT_ROUTING_INSTANCE_ALIAS default}, which names no configured
+   * structure.
+   */
+  private void referenceRoutingInstance(String name, JuniperStructureUsage usage, int line) {
+    if (DEFAULT_ROUTING_INSTANCE_ALIAS.equals(name)) {
+      return;
+    }
+    _configuration.referenceStructure(ROUTING_INSTANCE, name, usage, line);
   }
 
   public static @Nonnull NamedPort getNamedPort(Named_portContext ctx) {
@@ -4742,8 +4755,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterSnmpcls_routing_instance(Snmpcls_routing_instanceContext ctx) {
     String name = toString(ctx.name);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, SNMP_COMMUNITY_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
+    referenceRoutingInstance(name, SNMP_COMMUNITY_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
     RoutingInstance ri = _currentLogicalSystem.getRoutingInstances().get(name);
     if (ri != null) {
       // dummy, deliberately not hooked up.
@@ -4866,16 +4878,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSyns_routing_instance(Syns_routing_instanceContext ctx) {
     String name = toString(ctx.name);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, NTP_SERVER_ROUTING_INSTANCE, getLine(ctx.getStart()));
+    referenceRoutingInstance(name, NTP_SERVER_ROUTING_INSTANCE, getLine(ctx.getStart()));
   }
 
   @Override
   public void exitSyn_source_address(Syn_source_addressContext ctx) {
     if (ctx.ri != null) {
       String name = toString(ctx.ri);
-      _configuration.referenceStructure(
-          ROUTING_INSTANCE, name, NTP_SOURCE_ADDRESS_ROUTING_INSTANCE, getLine(ctx.getStart()));
+      referenceRoutingInstance(name, NTP_SOURCE_ADDRESS_ROUTING_INSTANCE, getLine(ctx.getStart()));
     }
   }
 
@@ -5885,8 +5895,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
     _currentFilter.setUsedForFBF(true);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, getLine(ctx.getStart()));
+    referenceRoutingInstance(name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, getLine(ctx.getStart()));
   }
 
   @Override
@@ -6797,11 +6806,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsf_instance(Popsf_instanceContext ctx) {
     String instanceName = toString(ctx.name);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE,
-        instanceName,
-        POLICY_STATEMENT_FROM_INSTANCE,
-        getLine(ctx.name.getStart()));
+    referenceRoutingInstance(
+        instanceName, POLICY_STATEMENT_FROM_INSTANCE, getLine(ctx.name.getStart()));
     _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
   }
 
@@ -7946,8 +7952,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           ctx.FROM() != null
               ? NAT_RULE_SET_FROM_ROUTING_INSTANCE
               : NAT_RULE_SET_TO_ROUTING_INSTANCE;
-      _configuration.referenceStructure(
-          ROUTING_INSTANCE, ri, usage, getLine(ctx.rs_routing_instance().name.start));
+      referenceRoutingInstance(ri, usage, getLine(ctx.rs_routing_instance().name.start));
     } else if (ctx.rs_zone() != null) {
       packetLocation.setZone(toString(ctx.rs_zone().name));
     }
@@ -9506,8 +9511,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSysh_routing_instance(Sysh_routing_instanceContext ctx) {
     String name = toString(ctx.ri);
     _currentSyslogHost.setRoutingInstance(name);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, SYSLOG_HOST_ROUTING_INSTANCE, getLine(ctx.ri.getStart()));
+    referenceRoutingInstance(name, SYSLOG_HOST_ROUTING_INSTANCE, getLine(ctx.ri.getStart()));
   }
 
   private static @Nonnull JunosSyslogFacility toJunosSyslogFacility(Syslog_facilityContext ctx) {
@@ -9600,8 +9604,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSyt_routing_instance(Syt_routing_instanceContext ctx) {
     String name = toString(ctx.name);
     _currentJuniperTacplusServer.setRoutingInstance(name);
-    _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, TACPLUS_SERVER_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
+    referenceRoutingInstance(name, TACPLUS_SERVER_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
   }
 
   @Override

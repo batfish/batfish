@@ -1,0 +1,13 @@
+set system host-name firewall-filter-then-routing-instance
+# 'default' is a reserved word for the master routing instance in reference position, not the name
+# of a configured instance: Junos rejects 'set routing-instances default'.
+set firewall family inet filter FBF term T_DEFAULT then routing-instance default
+set firewall family inet filter FBF term T_DEFINED then routing-instance RI_DEFINED
+set firewall family inet filter FBF term T_UNDEFINED then routing-instance RI_UNDEFINED
+#
+# Apply the filter on an interface owned by a virtual-router instance, i.e. filter-based forwarding
+# from that instance back into the master instance.
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+set interfaces ge-0/0/0 unit 0 family inet filter input FBF
+set routing-instances RI_DEFINED instance-type virtual-router
+set routing-instances RI_DEFINED interface ge-0/0/0.0
