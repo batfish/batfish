@@ -6863,4 +6863,64 @@ public final class AosCxGrammarTest {
                 "10.0.2.200")));
   }
 
+  @Test
+  public void testOspfv3TrapEnableExtraction() {
+
+    AosCxConfiguration c =
+        parseVendorConfig(
+            "aoscx-ospfv3-trap-enable");
+
+    /*
+     * Positive form enables OSPFv3 event traps.
+     */
+    AosCxOspfv3Process defaultProcess =
+        c.getOspfv3Processes()
+            .get(1);
+
+    assertThat(
+        defaultProcess,
+        notNullValue());
+
+    assertThat(
+        defaultProcess.getTrapEnabled(),
+        equalTo(true));
+
+    /*
+     * no trap-enable disables a previously enabled process.
+     */
+    AosCxOspfv3Process redProcess =
+        c.getOspfv3Processes("RED")
+            .get(2);
+
+    assertThat(
+        redProcess,
+        notNullValue());
+
+    assertThat(
+        redProcess.getTrapEnabled(),
+        equalTo(false));
+
+    /*
+     * Explicit no form is also represented as disabled.
+     */
+    AosCxOspfv3Process blueProcess =
+        c.getOspfv3Processes("BLUE")
+            .get(3);
+
+    assertThat(
+        blueProcess,
+        notNullValue());
+
+    assertThat(
+        blueProcess.getTrapEnabled(),
+        equalTo(false));
+
+    /*
+     * Trap configuration is process-local and must not leak between VRFs.
+     */
+    assertThat(
+        defaultProcess.getTrapEnabled(),
+        equalTo(true));
+  }
+
 }

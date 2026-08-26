@@ -80,6 +80,7 @@ statement
   | s_ospfv3_virtual_link_retransmit_interval
   | s_ospfv3_virtual_link_transit_delay
   | s_ospfv3_process_state
+  | s_ospfv3_trap_enable
   | s_redistribute_connected
   | s_redistribute_local_loopback
   | s_redistribute_ospf
@@ -775,6 +776,11 @@ s_ospfv3_process_state
 :
   ENABLE NEWLINE
   | DISABLE NEWLINE
+;
+
+s_ospfv3_trap_enable
+:
+  NO? TRAP_ENABLE NEWLINE
 ;
 
 ospfv3_metric_option

@@ -11,6 +11,7 @@ THREE_DES: '3des';
 THROTTLE: 'throttle';
 TIMERS: 'timers';
 TRANSIT_DELAY: 'transit-delay';
+TRAP_ENABLE: 'trap-enable';
 TYPE: 'type';
 TYPE_1: 'type-1';
 TYPE_2: 'type-2';

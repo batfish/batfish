@@ -107,6 +107,7 @@ import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_retransmit_intervalContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_virtual_link_transit_delayContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_process_stateContext;
+import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_ospfv3_trap_enableContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_connectedContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_local_loopbackContext;
 import org.batfish.vendor.aruba_aoscx.grammar.AosCxParser.S_redistribute_ospfContext;
@@ -3417,6 +3418,25 @@ public final class AosCxConfigurationBuilder extends AosCxParserBaseListener
         .setDefaultInformationOriginate(
             ctx.ALWAYS() != null,
             metric);
+  }
+
+  @Override
+  public void exitS_ospfv3_trap_enable(
+      S_ospfv3_trap_enableContext ctx) {
+
+    if (_currentOspfv3Process == null
+        || ctx.getStart().getCharPositionInLine() == 0) {
+
+      warn(
+          ctx,
+          "Ignoring trap-enable outside OSPFv3 context");
+
+      return;
+    }
+
+    _currentOspfv3Process
+        .setTrapEnabled(
+            ctx.NO() == null);
   }
 
   @Override

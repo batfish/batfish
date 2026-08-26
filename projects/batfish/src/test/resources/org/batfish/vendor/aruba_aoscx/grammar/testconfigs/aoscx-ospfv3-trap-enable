@@ -1,0 +1,22 @@
+!Version ArubaOS-CX FL.10.13.1040
+hostname AOSCX-OSPFV3-TRAPS
+
+vrf RED
+
+vrf BLUE
+
+router ospfv3 1
+    router-id 192.0.2.1
+    area 0
+    trap-enable
+
+router ospfv3 2 vrf RED
+    router-id 192.0.2.2
+    area 0
+    trap-enable
+    no trap-enable
+
+router ospfv3 3 vrf BLUE
+    router-id 192.0.2.3
+    area 0
+    no trap-enable

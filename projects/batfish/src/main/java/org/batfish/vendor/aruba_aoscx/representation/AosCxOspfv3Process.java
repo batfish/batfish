@@ -131,6 +131,17 @@ public final class AosCxOspfv3Process
         enabled;
   }
 
+  public boolean getTrapEnabled() {
+    return _trapEnabled;
+  }
+
+  public void setTrapEnabled(
+      boolean trapEnabled) {
+
+    _trapEnabled =
+        trapEnabled;
+  }
+
   public int getGracefulRestartIntervalSeconds() {
     return _gracefulRestartIntervalSeconds;
   }
@@ -1451,6 +1462,8 @@ public final class AosCxOspfv3Process
       DEFAULT_REDISTRIBUTION_METRIC;
 
   private boolean _bfdAllInterfaces;
+
+  private boolean _trapEnabled;
 
   private boolean _passiveInterfaceDefault;
 
