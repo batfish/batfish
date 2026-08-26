@@ -26,6 +26,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private final Sntp _sntp;
   private final Logging _logging;
   private final Tacacs _tacacs;
+  private final Aaa _aaa;
 
   private transient Configuration _c;
 
@@ -34,6 +35,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _sntp = new Sntp();
     _logging = new Logging();
     _tacacs = new Tacacs();
+    _aaa = new Aaa();
   }
 
   @Override
@@ -67,6 +69,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
 
   public @Nonnull Tacacs getTacacs() {
     return _tacacs;
+  }
+
+  public @Nonnull Aaa getAaa() {
+    return _aaa;
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {

@@ -1,6 +1,8 @@
 package org.batfish.vendor.fastpath.grammar;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,6 +16,19 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_commandsContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_dot1xContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_execContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_methodContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_recordContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_enableContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_loginContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_methodContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_commandsContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_execContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_methodContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_dot1x_accounting_recordContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_list_nameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Host_valueContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.HostnameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Interface_nameContext;
@@ -52,6 +67,11 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_priorityContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_timeoutContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
+import org.batfish.vendor.fastpath.representation.AaaMethod;
+import org.batfish.vendor.fastpath.representation.Accounting;
+import org.batfish.vendor.fastpath.representation.AccountingType;
+import org.batfish.vendor.fastpath.representation.AuthenticationType;
+import org.batfish.vendor.fastpath.representation.AuthorizationType;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
@@ -73,6 +93,12 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
       IntegerSpace.of(Range.closed(1, 65535));
 
   private static final IntegerSpace TACACS_TIMEOUT_RANGE = IntegerSpace.of(Range.closed(1, 30));
+
+  /**
+   * Name recorded for an AAA method list declared with the {@code default} keyword rather than a
+   * user-specified name.
+   */
+  private static final String DEFAULT_LIST_NAME = "default";
 
   public FastpathConfigurationBuilder(
       FastpathCombinedParser parser,
@@ -183,6 +209,152 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   @Override
   public void exitTs_source_interface(Ts_source_interfaceContext ctx) {
     _c.getTacacs().setSourceInterface(toInterfaceName(ctx.iface));
+  }
+
+  @Override
+  public void exitAaa_authentication_login(Aaa_authentication_loginContext ctx) {
+    _c.getAaa()
+        .defineAuthentication(
+            AuthenticationType.LOGIN,
+            toString(ctx.name),
+            toMethods(ctx.aaa_authentication_method()));
+  }
+
+  @Override
+  public void exitAaa_authentication_enable(Aaa_authentication_enableContext ctx) {
+    _c.getAaa()
+        .defineAuthentication(
+            AuthenticationType.ENABLE,
+            toString(ctx.name),
+            toMethods(ctx.aaa_authentication_method()));
+  }
+
+  @Override
+  public void exitAaa_authorization_commands(Aaa_authorization_commandsContext ctx) {
+    _c.getAaa()
+        .defineAuthorization(
+            AuthorizationType.COMMANDS,
+            toString(ctx.name),
+            toAuthorizationMethods(ctx.aaa_authorization_method()));
+  }
+
+  @Override
+  public void exitAaa_authorization_exec(Aaa_authorization_execContext ctx) {
+    _c.getAaa()
+        .defineAuthorization(
+            AuthorizationType.EXEC,
+            toString(ctx.name),
+            toAuthorizationMethods(ctx.aaa_authorization_method()));
+  }
+
+  @Override
+  public void exitAaa_accounting_exec(Aaa_accounting_execContext ctx) {
+    _c.getAaa()
+        .defineAccounting(
+            AccountingType.EXEC,
+            toString(ctx.name),
+            toAccountingRecordType(ctx.record),
+            toAccountingMethods(ctx.aaa_accounting_method()));
+  }
+
+  @Override
+  public void exitAaa_accounting_commands(Aaa_accounting_commandsContext ctx) {
+    _c.getAaa()
+        .defineAccounting(
+            AccountingType.COMMANDS,
+            toString(ctx.name),
+            toAccountingRecordType(ctx.record),
+            toAccountingMethods(ctx.aaa_accounting_method()));
+  }
+
+  @Override
+  public void exitAaa_accounting_dot1x(Aaa_accounting_dot1xContext ctx) {
+    // The grammar hardcodes the `default` list, the only one dot1x accounting supports, and radius
+    // is the only method it accepts.
+    _c.getAaa()
+        .defineAccounting(
+            AccountingType.DOT1X,
+            DEFAULT_LIST_NAME,
+            toAccountingRecordType(ctx.record),
+            ctx.RADIUS() != null ? ImmutableList.of(AaaMethod.RADIUS) : ImmutableList.of());
+  }
+
+  private static @Nonnull List<AaaMethod> toMethods(List<Aaa_authentication_methodContext> ctxs) {
+    return ctxs.stream()
+        .map(FastpathConfigurationBuilder::toMethod)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static @Nonnull List<AaaMethod> toAuthorizationMethods(
+      List<Aaa_authorization_methodContext> ctxs) {
+    return ctxs.stream()
+        .map(FastpathConfigurationBuilder::toMethod)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static @Nonnull List<AaaMethod> toAccountingMethods(
+      List<Aaa_accounting_methodContext> ctxs) {
+    return ctxs.stream()
+        .map(FastpathConfigurationBuilder::toMethod)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static @Nonnull AaaMethod toMethod(Aaa_authentication_methodContext ctx) {
+    if (ctx.DENY() != null) {
+      return AaaMethod.DENY;
+    } else if (ctx.ENABLE() != null) {
+      return AaaMethod.ENABLE;
+    } else if (ctx.LINE() != null) {
+      return AaaMethod.LINE;
+    } else if (ctx.LOCAL() != null) {
+      return AaaMethod.LOCAL;
+    } else if (ctx.NONE() != null) {
+      return AaaMethod.NONE;
+    } else if (ctx.RADIUS() != null) {
+      return AaaMethod.RADIUS;
+    }
+    assert ctx.TACACS() != null;
+    return AaaMethod.TACACS;
+  }
+
+  private static @Nonnull AaaMethod toMethod(Aaa_authorization_methodContext ctx) {
+    if (ctx.LOCAL() != null) {
+      return AaaMethod.LOCAL;
+    } else if (ctx.NONE() != null) {
+      return AaaMethod.NONE;
+    } else if (ctx.RADIUS() != null) {
+      return AaaMethod.RADIUS;
+    }
+    assert ctx.TACACS() != null;
+    return AaaMethod.TACACS;
+  }
+
+  private static @Nonnull AaaMethod toMethod(Aaa_accounting_methodContext ctx) {
+    if (ctx.RADIUS() != null) {
+      return AaaMethod.RADIUS;
+    }
+    assert ctx.TACACS() != null;
+    return AaaMethod.TACACS;
+  }
+
+  private static @Nonnull Accounting.RecordType toAccountingRecordType(
+      Aaa_accounting_recordContext ctx) {
+    if (ctx.START_STOP() != null) {
+      return Accounting.RecordType.START_STOP;
+    } else if (ctx.STOP_ONLY() != null) {
+      return Accounting.RecordType.STOP_ONLY;
+    }
+    assert ctx.NONE() != null;
+    return Accounting.RecordType.NONE;
+  }
+
+  private static @Nonnull Accounting.RecordType toAccountingRecordType(
+      Aaa_dot1x_accounting_recordContext ctx) {
+    if (ctx.START_STOP() != null) {
+      return Accounting.RecordType.START_STOP;
+    }
+    assert ctx.NONE() != null;
+    return Accounting.RecordType.NONE;
   }
 
   @Override
@@ -356,6 +528,17 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   private static @Nonnull String toString(HostnameContext ctx) {
+    return toString(ctx.word());
+  }
+
+  /**
+   * Returns the name of an AAA method list. The {@code default} keyword is recorded as the literal
+   * name {@link #DEFAULT_LIST_NAME}; see {@code aaa_list_name} in the parser grammar.
+   */
+  private static @Nonnull String toString(Aaa_list_nameContext ctx) {
+    if (ctx.DEFAULT() != null) {
+      return DEFAULT_LIST_NAME;
+    }
     return toString(ctx.word());
   }
 

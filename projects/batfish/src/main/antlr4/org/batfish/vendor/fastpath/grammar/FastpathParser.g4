@@ -15,7 +15,8 @@ fastpath_configuration
 
 statement
 :
-  s_hostname
+  s_aaa
+  | s_hostname
   | s_ip
   | s_logging
   | s_no
@@ -440,4 +441,147 @@ ts_keystring_null
 ts_timeout
 :
   TIMEOUT timeout = uint8 NEWLINE
+;
+
+s_aaa
+:
+  AAA
+  (
+    aaa_accounting
+    | aaa_authentication
+    | aaa_authorization
+    | aaa_ias_user
+    | aaa_session_id_null
+  )
+;
+
+aaa_authentication
+:
+  AUTHENTICATION
+  (
+    aaa_authentication_enable
+    | aaa_authentication_login
+  )
+;
+
+aaa_authentication_login
+:
+  LOGIN name = aaa_list_name aaa_authentication_method+ NEWLINE
+;
+
+aaa_authentication_enable
+:
+  ENABLE name = aaa_list_name aaa_authentication_method+ NEWLINE
+;
+
+aaa_authentication_method
+:
+  DENY
+  | ENABLE
+  | LINE
+  | LOCAL
+  | NONE
+  | RADIUS
+  | TACACS
+;
+
+aaa_authorization
+:
+  AUTHORIZATION
+  (
+    aaa_authorization_commands
+    | aaa_authorization_exec
+  )
+;
+
+aaa_authorization_commands
+:
+  COMMANDS name = aaa_list_name aaa_authorization_method+ NEWLINE
+;
+
+aaa_authorization_exec
+:
+  EXEC name = aaa_list_name aaa_authorization_method+ NEWLINE
+;
+
+// Both authorization types share one documented method set, so `local` is accepted here even though
+// the device rejects it for `commands` authorization specifically
+aaa_authorization_method
+:
+  LOCAL
+  | NONE
+  | RADIUS
+  | TACACS
+;
+
+aaa_accounting
+:
+  ACCOUNTING
+  (
+    aaa_accounting_commands
+    | aaa_accounting_dot1x
+    | aaa_accounting_exec
+  )
+;
+
+aaa_accounting_exec
+:
+  EXEC name = aaa_list_name record = aaa_accounting_record aaa_accounting_method* NEWLINE
+;
+
+aaa_accounting_commands
+:
+  COMMANDS name = aaa_list_name record = aaa_accounting_record aaa_accounting_method* NEWLINE
+;
+
+aaa_accounting_dot1x
+:
+  DOT1X DEFAULT record = aaa_dot1x_accounting_record RADIUS? NEWLINE
+;
+
+aaa_list_name
+:
+  DEFAULT
+  | word
+;
+
+aaa_accounting_record
+:
+  NONE
+  | START_STOP
+  | STOP_ONLY
+;
+
+aaa_dot1x_accounting_record
+:
+  NONE
+  | START_STOP
+;
+
+aaa_accounting_method
+:
+  RADIUS
+  | TACACS
+;
+
+// `aaa ias-user username <user>` enters AAA IAS User Config mode, whose body is optional
+// `password` statements then `exit`
+aaa_ias_user
+:
+  IAS_USER USERNAME user = word NEWLINE aaaiu_block
+;
+
+aaaiu_block
+:
+  aaaiu_password_null* EXIT NEWLINE
+;
+
+aaaiu_password_null
+:
+  PASSWORD null_rest_of_line
+;
+
+aaa_session_id_null
+:
+  SESSION_ID null_rest_of_line
 ;

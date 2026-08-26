@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
@@ -37,6 +38,14 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.fastpath.representation.Aaa;
+import org.batfish.vendor.fastpath.representation.AaaMethod;
+import org.batfish.vendor.fastpath.representation.Accounting;
+import org.batfish.vendor.fastpath.representation.AccountingType;
+import org.batfish.vendor.fastpath.representation.Authentication;
+import org.batfish.vendor.fastpath.representation.AuthenticationType;
+import org.batfish.vendor.fastpath.representation.Authorization;
+import org.batfish.vendor.fastpath.representation.AuthorizationType;
 import org.batfish.vendor.fastpath.representation.Dns;
 import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.Logging;
@@ -176,6 +185,152 @@ public final class FastpathGrammarTest {
 
   private @Nonnull String tacacsSourceInterface(String tacacsLine) {
     return parseVendorConfigText(tacacsLine, "source_interface").getTacacs().getSourceInterface();
+  }
+
+  @Test
+  public void testAaaParsesWithoutWarnings() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_aaa");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testAaaExtraction() {
+    Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
+
+    Authentication login = aaa.getAuthentication().get(AuthenticationType.LOGIN).get("user-authen");
+    assertThat(login.getType(), equalTo(AuthenticationType.LOGIN));
+    assertThat(login.getMethods(), equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.LOCAL)));
+    Authentication enable =
+        aaa.getAuthentication().get(AuthenticationType.ENABLE).get("user-enable");
+    assertThat(enable.getType(), equalTo(AuthenticationType.ENABLE));
+    assertThat(
+        enable.getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.ENABLE, AaaMethod.RADIUS)));
+
+    Authorization authorizationCommands =
+        aaa.getAuthorization().get(AuthorizationType.COMMANDS).get("user-auth");
+    assertThat(authorizationCommands.getType(), equalTo(AuthorizationType.COMMANDS));
+    assertThat(
+        authorizationCommands.getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.NONE)));
+    Authorization authorizationExec =
+        aaa.getAuthorization().get(AuthorizationType.EXEC).get("user-auth");
+    assertThat(authorizationExec.getType(), equalTo(AuthorizationType.EXEC));
+    assertThat(
+        authorizationExec.getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.NONE)));
+    Authorization authorizationExecLocal =
+        aaa.getAuthorization().get(AuthorizationType.EXEC).get("execLocal");
+    assertThat(
+        authorizationExecLocal.getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.LOCAL, AaaMethod.NONE)));
+
+    Accounting exec = aaa.getAccounting().get(AccountingType.EXEC).get("user-acct");
+    assertThat(exec.getType(), equalTo(AccountingType.EXEC));
+    assertThat(exec.getRecordType(), equalTo(Accounting.RecordType.START_STOP));
+    assertThat(exec.getMethods(), equalTo(ImmutableList.of(AaaMethod.TACACS)));
+    Accounting commands = aaa.getAccounting().get(AccountingType.COMMANDS).get("user-acct");
+    assertThat(commands.getType(), equalTo(AccountingType.COMMANDS));
+    assertThat(commands.getRecordType(), equalTo(Accounting.RecordType.STOP_ONLY));
+    assertThat(commands.getMethods(), equalTo(ImmutableList.of(AaaMethod.TACACS)));
+  }
+
+  @Test
+  public void testAaaListNameFormsExtraction() {
+    // The list name may be the `default` keyword, a quoted string, or a bare word. `default` is
+    // recorded as the literal name "default".
+    Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
+
+    Authentication loginDefault =
+        aaa.getAuthentication().get(AuthenticationType.LOGIN).get("default");
+    assertThat(
+        loginDefault.getMethods(), equalTo(ImmutableList.of(AaaMethod.LINE, AaaMethod.NONE)));
+    // A bare name that starts with `default` is a name, not the keyword.
+    Authentication defaultList =
+        aaa.getAuthentication().get(AuthenticationType.LOGIN).get("defaultList");
+    assertThat(defaultList.getMethods(), equalTo(ImmutableList.of(AaaMethod.LOCAL)));
+    Authentication enableNetList =
+        aaa.getAuthentication().get(AuthenticationType.ENABLE).get("enableNetList");
+    assertThat(
+        enableNetList.getMethods(), equalTo(ImmutableList.of(AaaMethod.ENABLE, AaaMethod.DENY)));
+
+    Accounting execList = aaa.getAccounting().get(AccountingType.EXEC).get("ExecList");
+    assertThat(execList.getRecordType(), equalTo(Accounting.RecordType.START_STOP));
+    assertThat(
+        execList.getMethods(), equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.RADIUS)));
+
+    // `none` disables accounting for the list and carries no method.
+    Accounting dot1x = aaa.getAccounting().get(AccountingType.DOT1X).get("default");
+    assertThat(dot1x.getType(), equalTo(AccountingType.DOT1X));
+    assertThat(dot1x.getRecordType(), equalTo(Accounting.RecordType.NONE));
+    assertThat(dot1x.getMethods(), empty());
+
+    // radius is the only method dot1x accounting accepts.
+    Accounting dot1xRadius =
+        parseVendorConfigText("aaa accounting dot1x default start-stop radius\n", "aaa_dot1x")
+            .getAaa()
+            .getAccounting()
+            .get(AccountingType.DOT1X)
+            .get("default");
+    assertThat(dot1xRadius.getRecordType(), equalTo(Accounting.RecordType.START_STOP));
+    assertThat(dot1xRadius.getMethods(), equalTo(ImmutableList.of(AaaMethod.RADIUS)));
+  }
+
+  @Test
+  public void testAaaListRedefinitionReplaces() {
+    // Re-issuing the command for the same type and list name replaces the record type and the
+    // method list; it does not append to it.
+    Aaa aaa =
+        parseVendorConfigText(
+                """
+                aaa accounting exec ExecList stop-only tacacs
+                aaa accounting exec ExecList start-stop tacacs radius
+                aaa authentication login "user-authen" tacacs
+                aaa authentication login "user-authen" local none
+                """,
+                "aaa_redefinition")
+            .getAaa();
+
+    Accounting exec = aaa.getAccounting().get(AccountingType.EXEC).get("ExecList");
+    assertThat(exec.getRecordType(), equalTo(Accounting.RecordType.START_STOP));
+    assertThat(exec.getMethods(), equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.RADIUS)));
+
+    Authentication login = aaa.getAuthentication().get(AuthenticationType.LOGIN).get("user-authen");
+    assertThat(login.getMethods(), equalTo(ImmutableList.of(AaaMethod.LOCAL, AaaMethod.NONE)));
+  }
+
+  @Test
+  public void testAaaIasUserBlockIsSilent() {
+    FastpathConfiguration c =
+        parseVendorConfigText(
+            """
+            aaa ias-user username client-1
+            password a45c74fdf50a558a2b5cf05573cd633bac2c6c598d54497ad4c46104918f2c encrypted
+            exit
+            hostname "after-block"
+            """,
+            "aaa_ias_user");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
+    // The block terminates, so a following global command is still parsed.
+    assertThat(c.getHostname(), equalTo("after-block"));
+  }
+
+  @Test
+  public void testCompleteConfigAaaExtraction() throws IOException {
+    // AAA has no vendor-independent representation yet, so pin the two method lists in
+    // fastpath_complete_config on the vendor model.
+    String hostname = "fastpath_complete_config";
+    Batfish batfish = getBatfishAllowUnrecognized(hostname);
+    FastpathConfiguration vc =
+        (FastpathConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    Aaa aaa = vc.getAaa();
+    assertThat(
+        aaa.getAuthentication().get(AuthenticationType.LOGIN).get("net-authen").getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.LOCAL)));
+    assertThat(
+        aaa.getAuthentication().get(AuthenticationType.ENABLE).get("net-enable").getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.ENABLE)));
   }
 
   @Test

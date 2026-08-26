@@ -5,12 +5,21 @@ options {
 }
 
 tokens {
+  DEFAULT,
   QUOTED_TEXT,
   REMAINDER,
   WORD
 }
 
+AAA: 'aaa';
+
+ACCOUNTING: 'accounting';
+
 ALERT: 'alert';
+
+AUTHENTICATION: 'authentication';
+
+AUTHORIZATION: 'authorization';
 
 BROADCAST: 'broadcast';
 
@@ -20,15 +29,37 @@ CLI_COMMAND: 'cli-command';
 
 CLIENT: 'client';
 
+COMMANDS
+:
+  'commands'
+  {
+    if (lastTokenType() == AUTHORIZATION || lastTokenType() == ACCOUNTING) {
+      pushMode(M_AaaListName);
+    }
+  }
+;
+
 CONSOLE: 'console';
 
 CRITICAL: 'critical';
 
 DEBUG: 'debug';
 
+DENY: 'deny';
+
 DNS: 'dns';
 
 DOMAIN: 'domain';
+
+DOT1X
+:
+  'dot1x'
+  {
+    if (lastTokenType() == ACCOUNTING) {
+      pushMode(M_AaaListName);
+    }
+  }
+;
 
 EMAIL
 :
@@ -37,9 +68,29 @@ EMAIL
 
 EMERGENCY: 'emergency';
 
+ENABLE
+:
+  'enable'
+  {
+    if (lastTokenType() == AUTHENTICATION) {
+      pushMode(M_AaaListName);
+    }
+  }
+;
+
 ENCRYPTED: 'encrypted';
 
 ERROR: 'error';
+
+EXEC
+:
+  'exec'
+  {
+    if (lastTokenType() == AUTHORIZATION || lastTokenType() == ACCOUNTING) {
+      pushMode(M_AaaListName);
+    }
+  }
+;
 
 EXIT: 'exit';
 
@@ -60,6 +111,8 @@ HOSTNAME
   'hostname' -> pushMode ( M_Word )
 ;
 
+IAS_USER: 'ias-user';
+
 INFO: 'info';
 
 IP: 'ip';
@@ -75,9 +128,23 @@ KEY
 
 KEYSTRING: 'keystring';
 
+LINE: 'line';
+
 LIST: 'list';
 
+LOCAL: 'local';
+
 LOGGING: 'logging';
+
+LOGIN
+:
+  'login'
+  {
+    if (lastTokenType() == AUTHENTICATION) {
+      pushMode(M_AaaListName);
+    }
+  }
+;
 
 LOOKUP: 'lookup';
 
@@ -99,7 +166,14 @@ NAME
 
 NO: 'no';
 
+NONE: 'none';
+
 NOTICE: 'notice';
+
+PASSWORD
+:
+  'password' -> pushMode ( M_Remainder )
+;
 
 PERSISTENT: 'persistent';
 
@@ -115,6 +189,8 @@ PROMPT
 :
   'prompt' -> pushMode ( M_Word )
 ;
+
+RADIUS: 'radius';
 
 RECONFIGURE: 'reconfigure';
 
@@ -136,18 +212,29 @@ SERVER
 
 SERVICEPORT: 'serviceport';
 
+SESSION_ID
+:
+  'session-id' -> pushMode ( M_Remainder )
+;
+
 SET: 'set';
 
 SNTP: 'sntp';
 
 SOURCE_INTERFACE: 'source-interface';
 
+START_STOP: 'start-stop';
+
 STATUS
 :
   'status' -> pushMode ( M_Remainder )
 ;
 
+STOP_ONLY: 'stop-only';
+
 SYSLOG: 'syslog';
+
+TACACS: 'tacacs';
 
 TACACS_SERVER: 'tacacs-server';
 
@@ -158,6 +245,11 @@ TRAPS: 'traps';
 TUNNEL: 'tunnel';
 
 UNICAST: 'unicast';
+
+USERNAME
+:
+  'username' -> pushMode ( M_Word )
+;
 
 VLAN: 'vlan';
 
@@ -425,6 +517,33 @@ M_HostValue_WS
 ;
 
 M_HostValue_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+mode M_AaaListName;
+
+M_AaaListName_DEFAULT
+:
+  'default' -> type ( DEFAULT ) , popMode
+;
+
+M_AaaListName_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
+;
+
+M_AaaListName_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_AaaListName_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_AaaListName_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;

@@ -1,0 +1,27 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_aaa"
+!
+aaa authentication login "user-authen" tacacs local
+aaa authentication enable "user-enable" tacacs enable radius
+aaa authentication login default line none
+aaa authentication login defaultList local
+aaa authentication enable enableNetList enable deny
+!
+aaa authorization commands "user-auth" tacacs none
+aaa authorization exec "user-auth" tacacs none
+aaa authorization exec execLocal local none
+!
+aaa accounting exec "user-acct" start-stop tacacs
+aaa accounting commands "user-acct" stop-only tacacs
+aaa accounting exec ExecList start-stop tacacs radius
+aaa accounting dot1x default none
+!
+aaa session-id common
+aaa ias-user username client-1
+password a45c74fdf50a558a2b5cf05573cd633bac2c6c598d54497ad4c46104918f2c encrypted
+exit
+aaa ias-user username client-2
+exit
