@@ -138,7 +138,8 @@ is in the stack trace, so re-run without the marker filter:
 ```
 
 `>>>` marks the offending source line in the error context block. This is the
-expected result when probing a removed rule — record the message as the finding.
+expected result when probing a removed rule — the one-line `no viable
+alternative` message is the citation, not the whole context block.
 
 For the VI-level probe, a parse error surfaces as
 `BatfishException: Exiting due to parser errors`, since `parseConfig` builds a
