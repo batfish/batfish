@@ -552,7 +552,8 @@ public final class PaloAltoGrammarTest {
             "TUN-OBJDEF",
             "TUN-NOPFS",
             "TUN-DHLIST",
-            "TUN-NULLS"));
+            "TUN-NULLS",
+            "TUN-BUILTIN"));
 
     // an ike-crypto-profile takes a list of dh groups, and IkePhase1Proposal holds one, so the
     // proposals are the cross product of encryption algorithm and dh group
@@ -742,6 +743,25 @@ public final class PaloAltoGrammarTest {
             PaloAltoStructureType.ADDRESS_OBJECT,
             computeObjectName(DEFAULT_VSYS_NAME, "PEER-OBJ"),
             1));
+
+    // PAN-OS ships these profiles predefined, so a config may reference one without defining it;
+    // that must not be reported as undefined
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename,
+                IKE_CRYPTO_PROFILE,
+                "Suite-B-GCM-128",
+                PaloAltoStructureUsage.IKE_GATEWAY_IKE_CRYPTO_PROFILE)));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename,
+                IPSEC_CRYPTO_PROFILE,
+                "default",
+                PaloAltoStructureUsage.IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE)));
   }
 
   @Test
@@ -798,6 +818,14 @@ public final class PaloAltoGrammarTest {
             containsString(
                 "ipsec-crypto-profile IPSEC-NOPFS for ipsec tunnel TUN-NOPFS disables perfect"
                     + " forward secrecy")));
+    // an absent dh-group leaves nothing to negotiate, exactly as no-pfs does, so it must warn too
+    assertThat(
+        warnings,
+        hasItem(
+            containsString(
+                "ipsec-crypto-profile IPSEC-AH for ipsec tunnel TUN-AH configures no dh-group")));
+    // naming the same profile on both IKE versions leaves nothing to assume, so it must not warn
+    assertThat(warnings, not(hasItem(containsString("ike-gateway GW-SAMEPROF"))));
   }
 
   @Test
@@ -1784,25 +1812,29 @@ public final class PaloAltoGrammarTest {
   public void testIpsecCryptoProfiles() {
     PaloAltoConfiguration c = parsePaloAltoConfig("ipsec-crypto-profiles");
 
-    assertThat(
-        c.getCryptoProfiles(),
-        containsInAnyOrder(
-            new CryptoProfile(
-                "default",
-                Type.IPSEC,
-                IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
-                DiffieHellmanGroup.GROUP2,
-                ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.DES_CBC),
-                null,
-                60),
-            new CryptoProfile(
-                "profile1",
-                Type.IPSEC,
-                null,
-                DiffieHellmanGroup.GROUP14,
-                ImmutableList.of(EncryptionAlgorithm.AES_128_GCM),
-                null,
-                24 * 3600)));
+    // both profiles configure `esp`, so both record the protocol explicitly
+    CryptoProfile defaultProfile =
+        new CryptoProfile(
+            "default",
+            Type.IPSEC,
+            IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
+            DiffieHellmanGroup.GROUP2,
+            ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.DES_CBC),
+            null,
+            60);
+    defaultProfile.setProtocol(IpsecProtocol.ESP);
+    CryptoProfile profile1 =
+        new CryptoProfile(
+            "profile1",
+            Type.IPSEC,
+            null,
+            DiffieHellmanGroup.GROUP14,
+            ImmutableList.of(EncryptionAlgorithm.AES_128_GCM),
+            null,
+            24 * 3600);
+    profile1.setProtocol(IpsecProtocol.ESP);
+
+    assertThat(c.getCryptoProfiles(), containsInAnyOrder(defaultProfile, profile1));
   }
 
   @Test

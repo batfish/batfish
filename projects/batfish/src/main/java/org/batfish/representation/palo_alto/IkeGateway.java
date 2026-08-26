@@ -136,10 +136,14 @@ public final class IkeGateway implements Serializable {
 
   /**
    * True when the config does not say which IKE version applies and the gateway configures a
-   * profile for both, so the choice of preference order is an assumption rather than the config.
+   * different profile for each, so the choice of preference order is an assumption rather than the
+   * config. Naming the same profile on both versions is common and leaves nothing to assume.
    */
   public boolean hasAmbiguousIkeVersion() {
-    return _version == null && _ikeV1CryptoProfile != null && _ikeV2CryptoProfile != null;
+    return _version == null
+        && _ikeV1CryptoProfile != null
+        && _ikeV2CryptoProfile != null
+        && !_ikeV1CryptoProfile.equals(_ikeV2CryptoProfile);
   }
 
   /**
