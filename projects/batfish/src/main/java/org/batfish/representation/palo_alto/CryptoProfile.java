@@ -79,7 +79,9 @@ public final class CryptoProfile implements Serializable {
         && Objects.equals(_dhGroups, rhs._dhGroups)
         && Objects.equals(_encryptionAlgorithms, rhs._encryptionAlgorithms)
         && Objects.equals(_hashAlgorithm, rhs._hashAlgorithm)
-        && Objects.equals(_lifetimeSeconds, rhs._lifetimeSeconds);
+        && Objects.equals(_lifetimeSeconds, rhs._lifetimeSeconds)
+        && Objects.equals(_protocol, rhs._protocol)
+        && _noPfs == rhs._noPfs;
   }
 
   public boolean getNoPfs() {
@@ -143,7 +145,9 @@ public final class CryptoProfile implements Serializable {
         _dhGroups,
         _encryptionAlgorithms,
         _hashAlgorithm,
-        _lifetimeSeconds);
+        _lifetimeSeconds,
+        _protocol,
+        _noPfs);
   }
 
   public void setAuthAlgorithm(@Nullable IpsecAuthenticationAlgorithm authAlgorithm) {
@@ -173,6 +177,8 @@ public final class CryptoProfile implements Serializable {
         .add("encrypt-algos", _encryptionAlgorithms)
         .add("hash-algo", _hashAlgorithm)
         .add("life", _lifetimeSeconds)
+        .add("protocol", _protocol)
+        .add("no-pfs", _noPfs)
         .toString();
   }
 }

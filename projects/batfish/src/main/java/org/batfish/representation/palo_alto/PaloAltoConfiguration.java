@@ -3664,16 +3664,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       CryptoProfile cp, IpsecTunnel tunnel, List<String> proposals) {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
     policy.setProposals(proposals);
-    if (cp.getNoPfs()) {
-      // negotiateIpsecP2 requires a non-empty intersection of PFS groups, so a profile with
-      // perfect forward secrecy disabled cannot negotiate in the model even though the device
-      // would bring the tunnel up.
+    if (cp.getDhGroups().isEmpty()) {
+      // negotiateIpsecP2 requires a non-empty intersection of PFS groups, so a profile with no
+      // group to offer cannot negotiate in the model even though the device would bring the
+      // tunnel up. That is true whether the group is explicitly disabled or simply absent, and
+      // PAN-OS documents no default to fall back on.
       _w.redFlagf(
-          "ipsec-crypto-profile %s for ipsec tunnel %s disables perfect forward secrecy, which is"
-              + " not modeled; the tunnel will not negotiate",
-          cp.getName(), tunnel.getName());
-    }
-    if (!cp.getDhGroups().isEmpty()) {
+          "ipsec-crypto-profile %s for ipsec tunnel %s %s, which is not modeled; the tunnel will"
+              + " not negotiate",
+          cp.getName(),
+          tunnel.getName(),
+          cp.getNoPfs() ? "disables perfect forward secrecy" : "configures no dh-group");
+    } else {
       policy.setPfsKeyGroups(ImmutableSortedSet.copyOf(cp.getDhGroups()));
     }
     return policy;
