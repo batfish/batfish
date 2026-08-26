@@ -47,6 +47,8 @@ HOST
 :
   'host'
   {
+    // `logging host <host>` / `tacacs-server host <host>`: the host (quoted, IP, or bare word)
+    // follows in M_HostValue. `ip host ...` is consumed as a null rest-of-line in DEFAULT mode.
     if (lastTokenType() == LOGGING || lastTokenType() == TACACS_SERVER) {
       pushMode(M_HostValue);
     }
@@ -379,12 +381,12 @@ M_Remainder_NEWLINE
   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
-// Host value for `sntp server` / `logging host`: a quoted string, a bare IP, or a bare word
-// (hostname). The keyword alternatives that can appear in this position instead of a host are
-// recognized explicitly so they route to their own parser rules: `status` (sntp operational
-// leakage) and `reconfigure`/`remove` (logging host maintenance). Emits exactly one token then
-// returns to DEFAULT so any trailing tokens (priority/version/port, address-type, severity) lex
-// normally.
+// Host value for `sntp server` / `logging host` / `tacacs-server host`: a quoted string, a bare IP,
+// or a bare word (hostname). The keyword alternatives that can appear in this position instead of
+// a host are recognized explicitly so they route to their own parser rules: `status` (sntp
+// operational leakage) and `reconfigure`/`remove` (logging host maintenance). Emits exactly one
+// token then returns to DEFAULT so any trailing tokens (priority/version/port, address-type,
+// severity) lex normally.
 mode M_HostValue;
 
 M_HostValue_STATUS
@@ -432,6 +434,11 @@ mode M_Key;
 M_Key_ENCRYPTED
 :
   'encrypted' -> type ( ENCRYPTED )
+;
+
+M_Key_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
 ;
 
 M_Key_WORD

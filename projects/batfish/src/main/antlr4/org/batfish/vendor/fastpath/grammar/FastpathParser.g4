@@ -393,7 +393,10 @@ tsh_block
 
 tsh_key
 :
-  KEY ENCRYPTED? WORD NEWLINE
+  KEY
+  (
+    ENCRYPTED? word
+  )? NEWLINE
 ;
 
 tsh_keystring_null
@@ -423,7 +426,10 @@ ts_source_interface
 
 ts_key
 :
-  KEY ENCRYPTED? WORD NEWLINE
+  KEY
+  (
+    ENCRYPTED? word
+  )? NEWLINE
 ;
 
 ts_keystring_null

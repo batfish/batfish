@@ -114,7 +114,7 @@ public final class FastpathGrammarTest {
     Configuration c = parseConfig("fastpath_tacacs");
     assertThat(
         c.getTacacsServers(),
-        equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "tacacs.example.com", "3.3.3.3")));
+        equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "tacacs.example.com", "3.3.3.3", "4.4.4.4")));
     assertThat(c.getTacacsSourceInterface(), equalTo("serviceport"));
   }
 
@@ -123,7 +123,7 @@ public final class FastpathGrammarTest {
     Tacacs tacacs = parseVendorConfig("fastpath_tacacs").getTacacs();
     assertThat(
         tacacs.getServers().keySet(),
-        equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "tacacs.example.com", "3.3.3.3")));
+        equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "tacacs.example.com", "3.3.3.3", "4.4.4.4")));
     assertThat(tacacs.getSourceInterface(), equalTo("serviceport"));
     assertThat(tacacs.getTimeout(), equalTo(10));
     assertThat(tacacs.getKeyEncrypted(), equalTo(true));
@@ -144,13 +144,38 @@ public final class FastpathGrammarTest {
     assertThat(server3.getPort(), nullValue());
     assertThat(server3.getPriority(), nullValue());
     assertThat(server3.getTimeout(), nullValue());
-    assertThat(server3.getKeyEncrypted(), equalTo(false));
+    assertThat(server3.getKeyEncrypted(), nullValue());
 
     TacacsServer server4 = tacacs.getServers().get("3.3.3.3");
     assertThat(server4.getPort(), equalTo(49));
     assertThat(server4.getPriority(), equalTo(1));
     assertThat(server4.getTimeout(), equalTo(10));
     assertThat(server4.getKeyEncrypted(), equalTo(true));
+
+    TacacsServer server5 = tacacs.getServers().get("4.4.4.4");
+    assertThat(server5.getPort(), nullValue());
+    assertThat(server5.getPriority(), nullValue());
+    assertThat(server5.getTimeout(), nullValue());
+    assertThat(server5.getKeyEncrypted(), equalTo(false));
+  }
+
+  @Test
+  public void testTacacsSourceInterfaceForms() {
+    // Covers the source-interface forms in toInterfaceName that aren't covered by tacacs testconfig
+    // The source-interface is single-valued, so each form is parsed as its own snippet
+    assertThat(
+        tacacsSourceInterface("tacacs-server source-interface loopback 0\n"),
+        equalTo("loopback 0"));
+    assertThat(tacacsSourceInterface("tacacs-server source-interface 0/1\n"), equalTo("0/1"));
+    assertThat(tacacsSourceInterface("tacacs-server source-interface 1/0/1\n"), equalTo("1/0/1"));
+    assertThat(
+        tacacsSourceInterface("tacacs-server source-interface tunnel 5\n"), equalTo("tunnel 5"));
+    assertThat(
+        tacacsSourceInterface("tacacs-server source-interface vlan 10\n"), equalTo("vlan 10"));
+  }
+
+  private @Nonnull String tacacsSourceInterface(String tacacsLine) {
+    return parseVendorConfigText(tacacsLine, "source_interface").getTacacs().getSourceInterface();
   }
 
   @Test
@@ -422,6 +447,8 @@ public final class FastpathGrammarTest {
     // Syslog
     assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("3.3.3.1", "3.3.3.2")));
     assertThat(c.getLoggingSourceInterface(), equalTo("serviceport"));
+    // TACACS
+    assertThat(c.getTacacsServers(), equalTo(ImmutableSet.of("9.9.9.9")));
   }
 
   @Test

@@ -15,6 +15,7 @@ exit
 !
 tacacs-server host 2.2.2.2
 keystring
+key "%CENSORED% with spaces"
 exit
 !
 tacacs-server host "tacacs.example.com"
@@ -25,4 +26,8 @@ timeout 10
 port 49
 priority 1
 key encrypted %CENSORED%
+exit
+!
+tacacs-server host 4.4.4.4
+key
 exit

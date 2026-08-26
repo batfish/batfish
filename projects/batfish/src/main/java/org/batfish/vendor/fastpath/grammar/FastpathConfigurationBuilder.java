@@ -148,11 +148,13 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void exitTsh_port(Tsh_portContext ctx) {
+    // grammar enforces range (0-65535), so no toIntegerInSpace range check needed
     _currentTacacsServer.setPort(Integer.parseInt(ctx.port.getText()));
   }
 
   @Override
   public void exitTsh_priority(Tsh_priorityContext ctx) {
+    // grammar enforces range (0-65535), so no toIntegerInSpace range check needed
     _currentTacacsServer.setPriority(Integer.parseInt(ctx.priority.getText()));
   }
 

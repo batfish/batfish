@@ -14,7 +14,7 @@ public final class TacacsServer implements Serializable {
   private @Nullable Integer _port;
   private @Nullable Integer _priority;
   private @Nullable Integer _timeout;
-  private boolean _keyEncrypted;
+  private @Nullable Boolean _keyEncrypted;
 
   public TacacsServer(String host) {
     _host = host;
@@ -49,11 +49,12 @@ public final class TacacsServer implements Serializable {
     _timeout = timeout;
   }
 
-  public boolean getKeyEncrypted() {
+  /** Whether this server's {@code key} is encrypted, or {@code null} if no {@code key} was set. */
+  public @Nullable Boolean getKeyEncrypted() {
     return _keyEncrypted;
   }
 
-  public void setKeyEncrypted(boolean keyEncrypted) {
+  public void setKeyEncrypted(@Nullable Boolean keyEncrypted) {
     _keyEncrypted = keyEncrypted;
   }
 }

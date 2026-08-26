@@ -12,7 +12,7 @@ public final class Tacacs implements Serializable {
   private final @Nonnull Map<String, TacacsServer> _servers;
   private @Nullable String _sourceInterface;
   private @Nullable Integer _timeout;
-  private boolean _keyEncrypted;
+  private @Nullable Boolean _keyEncrypted;
 
   public Tacacs() {
     _servers = new LinkedHashMap<>();
@@ -38,11 +38,12 @@ public final class Tacacs implements Serializable {
     _timeout = timeout;
   }
 
-  public boolean getKeyEncrypted() {
+  /** Whether the global {@code key} is encrypted, or {@code null} if no {@code key} was set. */
+  public @Nullable Boolean getKeyEncrypted() {
     return _keyEncrypted;
   }
 
-  public void setKeyEncrypted(boolean keyEncrypted) {
+  public void setKeyEncrypted(@Nullable Boolean keyEncrypted) {
     _keyEncrypted = keyEncrypted;
   }
 }
