@@ -23,9 +23,11 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_CRYPTO_PROFILE_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_TUNNEL;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.NAT_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.REDIST_PROFILE;
@@ -104,6 +106,7 @@ import com.google.common.collect.Range;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -304,12 +307,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_la_floating_ipContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_la_interfaceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snikeg_la_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikega_certificateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikega_pre_shared_keyContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegapsk_keyContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegla_floating_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegla_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegla_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegp_versionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegpa_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snikegpa_fqdnContext;
@@ -711,6 +714,41 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     } else {
       referenceStructure(SERVICE_OR_SERVICE_GROUP, uniqueName, usage, start);
     }
+  }
+
+  /**
+   * Names of the crypto profiles PAN-OS ships predefined. A device normally exports these in its
+   * running config, in which case the reference resolves like any other, but they can be referenced
+   * without appearing in the config, so reference them as possibly-undefined to avoid false
+   * positives. Observed across PAN-OS 11.1 devices; older releases ship only {@code default}.
+   */
+  private static final Set<String> BUILT_IN_CRYPTO_PROFILES =
+      ImmutableSet.of("default", "Suite-B-GCM-128", "Suite-B-GCM-256");
+
+  /**
+   * Helper to add the correct ike-crypto-profile reference type, so references to predefined
+   * profiles do not become false positive undefined references.
+   */
+  private void referenceIkeCryptoProfile(String name, PaloAltoStructureUsage usage, int line) {
+    referenceStructure(
+        BUILT_IN_CRYPTO_PROFILES.contains(name) ? IKE_CRYPTO_PROFILE_OR_NONE : IKE_CRYPTO_PROFILE,
+        name,
+        usage,
+        line);
+  }
+
+  /**
+   * Helper to add the correct ipsec-crypto-profile reference type, so references to predefined
+   * profiles do not become false positive undefined references.
+   */
+  private void referenceIpsecCryptoProfile(String name, PaloAltoStructureUsage usage, int line) {
+    referenceStructure(
+        BUILT_IN_CRYPTO_PROFILES.contains(name)
+            ? IPSEC_CRYPTO_PROFILE_OR_NONE
+            : IPSEC_CRYPTO_PROFILE,
+        name,
+        usage,
+        line);
   }
 
   private DiffieHellmanGroup toDiffieHellmanGroup(Cp_dh_group_valueContext ctx) {
@@ -2261,7 +2299,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
-  public void exitSnikeg_la_floating_ip(Snikeg_la_floating_ipContext ctx) {
+  public void exitSnikegla_floating_ip(Snikegla_floating_ipContext ctx) {
     _currentIkeGateway.setLocalFloatingIp(toInterfaceAddress(ctx.addr));
     // ip and floating-ip are mutually exclusive, so drop any address set earlier.
     _currentIkeGateway.setLocalAddress(null);
@@ -2269,14 +2307,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
-  public void exitSnikeg_la_interface(Snikeg_la_interfaceContext ctx) {
+  public void exitSnikegla_interface(Snikegla_interfaceContext ctx) {
     String name = getText(ctx.name);
     _currentIkeGateway.setLocalInterface(name);
     referenceStructure(INTERFACE, name, IKE_GATEWAY_LOCAL_ADDRESS_INTERFACE, getLine(ctx.start));
   }
 
   @Override
-  public void exitSnikeg_la_ip(Snikeg_la_ipContext ctx) {
+  public void exitSnikegla_ip(Snikegla_ipContext ctx) {
     _currentIkeGateway.setLocalAddress(toInterfaceAddress(ctx.addr));
     _currentIkeGateway.setLocalFloatingIp(null);
     referenceInterfaceAddress(ctx.addr, IKE_GATEWAY_LOCAL_ADDRESS_IP);
@@ -2306,26 +2344,25 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSnikegpv1_ike_crypto_profile(Snikegpv1_ike_crypto_profileContext ctx) {
     String name = getText(ctx.name);
     _currentIkeGateway.setIkeV1CryptoProfile(name);
-    referenceStructure(
-        IKE_CRYPTO_PROFILE, name, IKE_GATEWAY_IKE_CRYPTO_PROFILE, getLine(ctx.start));
+    referenceIkeCryptoProfile(name, IKE_GATEWAY_IKE_CRYPTO_PROFILE, getLine(ctx.start));
   }
 
   @Override
   public void exitSnikegpv2_ike_crypto_profile(Snikegpv2_ike_crypto_profileContext ctx) {
     String name = getText(ctx.name);
     _currentIkeGateway.setIkeV2CryptoProfile(name);
-    referenceStructure(
-        IKE_CRYPTO_PROFILE, name, IKE_GATEWAY_IKE_CRYPTO_PROFILE, getLine(ctx.start));
+    referenceIkeCryptoProfile(name, IKE_GATEWAY_IKE_CRYPTO_PROFILE, getLine(ctx.start));
   }
 
   @Override
   public void exitSnikegp_version(Snikegp_versionContext ctx) {
-    String version = getText(ctx.version);
-    switch (version) {
-      case "ikev1" -> _currentIkeGateway.setVersion(IkeGateway.Version.IKEV1);
-      case "ikev2" -> _currentIkeGateway.setVersion(IkeGateway.Version.IKEV2);
-      case "ikev2-preferred" -> _currentIkeGateway.setVersion(IkeGateway.Version.IKEV2_PREFERRED);
-      default -> warn(ctx, String.format("Unrecognized IKE version %s", version));
+    if (ctx.IKEV1() != null) {
+      _currentIkeGateway.setVersion(IkeGateway.Version.IKEV1);
+    } else if (ctx.IKEV2() != null) {
+      _currentIkeGateway.setVersion(IkeGateway.Version.IKEV2);
+    } else {
+      assert ctx.IKEV2_PREFERRED() != null;
+      _currentIkeGateway.setVersion(IkeGateway.Version.IKEV2_PREFERRED);
     }
   }
 
@@ -2357,8 +2394,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSntunia_ipsec_crypto_profile(Sntunia_ipsec_crypto_profileContext ctx) {
     String name = getText(ctx.name);
     _currentIpsecTunnel.setIpsecCryptoProfile(name);
-    referenceStructure(
-        IPSEC_CRYPTO_PROFILE, name, IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE, getLine(ctx.start));
+    referenceIpsecCryptoProfile(name, IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE, getLine(ctx.start));
   }
 
   @Override

@@ -204,3 +204,39 @@ set network ike gateway GW-DHLIST authentication pre-shared-key key -AQ==encrypt
 set network tunnel ipsec TUN-DHLIST auto-key ike-gateway GW-DHLIST
 set network tunnel ipsec TUN-DHLIST auto-key ipsec-crypto-profile IPSEC-DHLIST
 set network tunnel ipsec TUN-DHLIST tunnel-interface tunnel.19
+set network interface tunnel units tunnel.20 ip 169.254.10.78/30
+set network ike gateway GW-NULLS protocol ikev2 ike-crypto-profile IKE-PROF
+set network ike gateway GW-NULLS protocol version ikev2-preferred
+set network ike gateway GW-NULLS local-address interface ethernet1/1
+set network ike gateway GW-NULLS peer-address ip 192.0.2.41
+set network ike gateway GW-NULLS authentication pre-shared-key key -AQ==encrypted/blob+17=
+set network ike gateway GW-NULLS comment a comment
+set network ike gateway GW-NULLS disabled no
+set network ike gateway GW-NULLS ipv6 no
+set network ike gateway GW-NULLS local-id id 1.2.3.4
+set network ike gateway GW-NULLS peer-id id 5.6.7.8
+set network ike gateway GW-NULLS protocol-common nat-traversal enable yes
+set network ike gateway GW-NULLS protocol ikev1 exchange-mode main
+set network ike gateway GW-NULLS protocol ikev1 dpd enable yes
+set network ike gateway GW-NULLS protocol ikev2 require-cookie no
+set network ike gateway GW-NULLS protocol ikev2 dpd enable yes
+set network ike gateway GW-NULLS protocol ikev2 pq-ppk activation-state disabled
+set network tunnel ipsec TUN-NULLS auto-key ike-gateway GW-NULLS
+set network tunnel ipsec TUN-NULLS auto-key ipsec-crypto-profile IPSEC-PROF
+set network tunnel ipsec TUN-NULLS auto-key proxy-id PID protocol any
+set network tunnel ipsec TUN-NULLS auto-key proxy-id-v6 PID6 protocol any
+set network tunnel ipsec TUN-NULLS tunnel-interface tunnel.20
+set network tunnel ipsec TUN-NULLS anti-replay yes
+set network tunnel ipsec TUN-NULLS anti-replay-window 1024
+set network tunnel ipsec TUN-NULLS comment a tunnel comment
+set network tunnel ipsec TUN-NULLS copy-flow-label no
+set network tunnel ipsec TUN-NULLS copy-tos no
+set network tunnel ipsec TUN-NULLS enable-gre-encapsulation no
+set network tunnel ipsec TUN-NULLS ipv6 no
+set network tunnel ipsec TUN-NULLS tunnel-monitor enable yes
+set network tunnel ipsec TUN-NULLS tunnel-monitor destination-ip 192.0.2.99
+set network tunnel gre GRE-TUN interface ethernet1/1
+set network tunnel global-protect-gateway GP-GW tunnel-interface tunnel.20
+set network tunnel global-protect-site-to-site GP-S2S portal-address 192.0.2.50
+set network ike crypto-profiles ike-crypto-profiles IKE-PROF authentication-multiple 0
+set network ike crypto-profiles ipsec-crypto-profiles IPSEC-PROF lifesize gb 20

@@ -551,7 +551,8 @@ public final class PaloAltoGrammarTest {
             "TUN-NOPROF",
             "TUN-OBJDEF",
             "TUN-NOPFS",
-            "TUN-DHLIST"));
+            "TUN-DHLIST",
+            "TUN-NULLS"));
 
     // an ike-crypto-profile takes a list of dh groups, and IkePhase1Proposal holds one, so the
     // proposals are the cross product of encryption algorithm and dh group

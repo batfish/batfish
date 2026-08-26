@@ -37,8 +37,11 @@ public final class CryptoProfile implements Serializable {
 
   private final @Nonnull Type _type;
 
-  /** ESP or AH; only meaningful for {@link Type#IPSEC}. Defaults to ESP. */
-  private @Nonnull IpsecProtocol _protocol = IpsecProtocol.ESP;
+  /**
+   * ESP or AH; only meaningful for {@link Type#IPSEC}. Null when not explicitly configured; the ESP
+   * default is applied at conversion.
+   */
+  private @Nullable IpsecProtocol _protocol;
 
   /** True when {@code dh-group no-pfs} is configured, i.e. perfect forward secrecy is disabled. */
   private boolean _noPfs;
@@ -87,7 +90,7 @@ public final class CryptoProfile implements Serializable {
     _noPfs = noPfs;
   }
 
-  public @Nonnull IpsecProtocol getProtocol() {
+  public @Nullable IpsecProtocol getProtocol() {
     return _protocol;
   }
 

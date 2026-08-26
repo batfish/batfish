@@ -13,6 +13,52 @@ tokens {
 
 // Keywords
 
+ANTI_REPLAY: 'anti-replay';
+
+ANTI_REPLAY_WINDOW: 'anti-replay-window';
+
+AUTHENTICATION_MULTIPLE: 'authentication-multiple';
+
+COPY_FLOW_LABEL: 'copy-flow-label';
+
+COPY_TOS: 'copy-tos';
+
+DPD: 'dpd';
+
+ENABLE_GRE_ENCAPSULATION: 'enable-gre-encapsulation';
+
+EXCHANGE_MODE: 'exchange-mode';
+
+GLOBAL_PROTECT_GATEWAY: 'global-protect-gateway';
+
+GLOBAL_PROTECT_SATELLITE: 'global-protect-satellite';
+
+GLOBAL_PROTECT_SITE_TO_SITE: 'global-protect-site-to-site';
+
+GRE: 'gre';
+
+IKEV2_PREFERRED: 'ikev2-preferred';
+
+LIFESIZE: 'lifesize';
+
+LOCAL_ID: 'local-id';
+
+MANUAL_KEY: 'manual-key';
+
+PEER_ID: 'peer-id';
+
+PQ_PPK: 'pq-ppk';
+
+PROTOCOL_COMMON: 'protocol-common';
+
+PROXY_ID: 'proxy-id';
+
+PROXY_ID_V6: 'proxy-id-v6';
+
+REQUIRE_COOKIE: 'require-cookie';
+
+TUNNEL_MONITOR: 'tunnel-monitor';
+
 TWO_BYTE: '2-byte';
 
 FOUR_BYTE: '4-byte';

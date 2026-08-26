@@ -82,6 +82,16 @@ cp_hash
     )
 ;
 
+cp_authentication_multiple_null
+:
+    AUTHENTICATION_MULTIPLE null_rest_of_line
+;
+
+cp_lifesize_null
+:
+    LIFESIZE null_rest_of_line
+;
+
 cp_lifetime
 :
     LIFETIME
@@ -139,7 +149,12 @@ sn_ike_gateway
             | snikeg_local_address
             | snikeg_peer_address
             | snikeg_protocol
-            | null_rest_of_line
+            | snikeg_comment_null
+            | snikeg_disabled_null
+            | snikeg_ipv6_null
+            | snikeg_local_id_null
+            | snikeg_peer_id_null
+            | snikeg_protocol_common_null
         )
     )?
 ;
@@ -150,7 +165,6 @@ snikeg_authentication
     (
         snikega_certificate
         | snikega_pre_shared_key
-        | null_rest_of_line
     )
 ;
 
@@ -164,7 +178,6 @@ snikega_pre_shared_key
     PRE_SHARED_KEY
     (
         snikegapsk_key
-        | null_rest_of_line
     )
 ;
 
@@ -173,28 +186,57 @@ snikegapsk_key
     KEY key = null_rest_of_line
 ;
 
+snikeg_comment_null
+:
+    COMMENT null_rest_of_line
+;
+
+snikeg_disabled_null
+:
+    DISABLED null_rest_of_line
+;
+
+snikeg_ipv6_null
+:
+    IPV6 null_rest_of_line
+;
+
+snikeg_local_id_null
+:
+    LOCAL_ID null_rest_of_line
+;
+
+snikeg_peer_id_null
+:
+    PEER_ID null_rest_of_line
+;
+
+snikeg_protocol_common_null
+:
+    PROTOCOL_COMMON null_rest_of_line
+;
+
 snikeg_local_address
 :
     LOCAL_ADDRESS
     (
-        snikeg_la_floating_ip
-        | snikeg_la_interface
-        | snikeg_la_ip
-        | null_rest_of_line
+        snikegla_floating_ip
+        | snikegla_interface
+        | snikegla_ip
     )
 ;
 
-snikeg_la_floating_ip
+snikegla_floating_ip
 :
     FLOATING_IP addr = interface_address_or_reference
 ;
 
-snikeg_la_interface
+snikegla_interface
 :
     INTERFACE name = variable
 ;
 
-snikeg_la_ip
+snikegla_ip
 :
     IP addr = interface_address_or_reference
 ;
@@ -206,7 +248,6 @@ snikeg_peer_address
         snikegpa_dynamic
         | snikegpa_fqdn
         | snikegpa_ip
-        | null_rest_of_line
     )
 ;
 
@@ -232,7 +273,6 @@ snikeg_protocol
         snikegp_ikev1
         | snikegp_ikev2
         | snikegp_version
-        | null_rest_of_line
     )
 ;
 
@@ -241,7 +281,8 @@ snikegp_ikev1
     IKEV1
     (
         snikegpv1_ike_crypto_profile
-        | null_rest_of_line
+        | snikegpv1_dpd_null
+        | snikegpv1_exchange_mode_null
     )
 ;
 
@@ -250,12 +291,24 @@ snikegpv1_ike_crypto_profile
     IKE_CRYPTO_PROFILE name = variable
 ;
 
+snikegpv1_dpd_null
+:
+    DPD null_rest_of_line
+;
+
+snikegpv1_exchange_mode_null
+:
+    EXCHANGE_MODE null_rest_of_line
+;
+
 snikegp_ikev2
 :
     IKEV2
     (
         snikegpv2_ike_crypto_profile
-        | null_rest_of_line
+        | snikegpv2_dpd_null
+        | snikegpv2_pq_ppk_null
+        | snikegpv2_require_cookie_null
     )
 ;
 
@@ -264,9 +317,29 @@ snikegpv2_ike_crypto_profile
     IKE_CRYPTO_PROFILE name = variable
 ;
 
+snikegpv2_dpd_null
+:
+    DPD null_rest_of_line
+;
+
+snikegpv2_pq_ppk_null
+:
+    PQ_PPK null_rest_of_line
+;
+
+snikegpv2_require_cookie_null
+:
+    REQUIRE_COOKIE null_rest_of_line
+;
+
 snikegp_version
 :
-    VERSION version = variable
+    VERSION
+    (
+        IKEV1
+        | IKEV2
+        | IKEV2_PREFERRED
+    )
 ;
 
 sn_tunnel
@@ -274,8 +347,25 @@ sn_tunnel
     TUNNEL
     (
         sntun_ipsec
-        | null_rest_of_line
+        | sntun_global_protect_gateway_null
+        | sntun_global_protect_site_to_site_null
+        | sntun_gre_null
     )
+;
+
+sntun_global_protect_gateway_null
+:
+    GLOBAL_PROTECT_GATEWAY null_rest_of_line
+;
+
+sntun_global_protect_site_to_site_null
+:
+    GLOBAL_PROTECT_SITE_TO_SITE null_rest_of_line
+;
+
+sntun_gre_null
+:
+    GRE null_rest_of_line
 ;
 
 sntun_ipsec
@@ -288,9 +378,68 @@ sntun_ipsec
             | sntuni_disabled
             | sntuni_ipsec_mode
             | sntuni_tunnel_interface
-            | null_rest_of_line
+            | sntuni_anti_replay_null
+            | sntuni_anti_replay_window_null
+            | sntuni_comment_null
+            | sntuni_copy_flow_label_null
+            | sntuni_copy_tos_null
+            | sntuni_enable_gre_encapsulation_null
+            | sntuni_global_protect_satellite_null
+            | sntuni_ipv6_null
+            | sntuni_manual_key_null
+            | sntuni_tunnel_monitor_null
         )
     )?
+;
+
+sntuni_anti_replay_null
+:
+    ANTI_REPLAY null_rest_of_line
+;
+
+sntuni_anti_replay_window_null
+:
+    ANTI_REPLAY_WINDOW null_rest_of_line
+;
+
+sntuni_comment_null
+:
+    COMMENT null_rest_of_line
+;
+
+sntuni_copy_flow_label_null
+:
+    COPY_FLOW_LABEL null_rest_of_line
+;
+
+sntuni_copy_tos_null
+:
+    COPY_TOS null_rest_of_line
+;
+
+sntuni_enable_gre_encapsulation_null
+:
+    ENABLE_GRE_ENCAPSULATION null_rest_of_line
+;
+
+sntuni_global_protect_satellite_null
+:
+    GLOBAL_PROTECT_SATELLITE null_rest_of_line
+;
+
+sntuni_ipv6_null
+:
+    IPV6 null_rest_of_line
+;
+
+sntuni_manual_key_null
+:
+    MANUAL_KEY null_rest_of_line
+;
+
+sntuni_tunnel_monitor_null
+:
+    TUNNEL_MONITOR null_rest_of_line
 ;
 
 sntuni_auto_key
@@ -299,8 +448,19 @@ sntuni_auto_key
     (
         sntunia_ike_gateway
         | sntunia_ipsec_crypto_profile
-        | null_rest_of_line
+        | sntunia_proxy_id_null
+        | sntunia_proxy_id_v6_null
     )
+;
+
+sntunia_proxy_id_null
+:
+    PROXY_ID null_rest_of_line
+;
+
+sntunia_proxy_id_v6_null
+:
+    PROXY_ID_V6 null_rest_of_line
 ;
 
 sntunia_ike_gateway
@@ -414,7 +574,8 @@ snicp_ike_crypto_profiles
 :
     IKE_CRYPTO_PROFILES name = variable
     (
-        cp_dh_group
+        cp_authentication_multiple_null
+        | cp_dh_group
         | cp_encryption
         | cp_hash
         | cp_lifetime
@@ -428,6 +589,7 @@ snicp_ipsec_crypto_profiles
         snicpi_esp
         | snicpi_ah
         | cp_dh_group
+        | cp_lifesize_null
         | cp_lifetime
     )
 ;
@@ -438,7 +600,6 @@ snicpi_esp
     (
         cp_authentication
         | cp_encryption
-        | null_rest_of_line
     )
 ;
 

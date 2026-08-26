@@ -131,6 +131,7 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -3654,7 +3655,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     IpsecPhase2Proposal proposal = new IpsecPhase2Proposal();
     proposal.setAuthenticationAlgorithm(cp.getAuthAlgorithm());
     proposal.setEncryptionAlgorithm(algorithm);
-    proposal.setProtocols(ImmutableSortedSet.of(cp.getProtocol()));
+    proposal.setProtocols(ImmutableSortedSet.of(firstNonNull(cp.getProtocol(), IpsecProtocol.ESP)));
     proposal.setIpsecEncapsulationMode(tunnel.getIpsecMode());
     return proposal;
   }
@@ -3920,6 +3921,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(PaloAltoStructureType.APPLICATION),
         true,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION);
+
+    // Handle crypto profiles that may reference PAN-OS predefined profiles
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.IKE_CRYPTO_PROFILE_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.IKE_CRYPTO_PROFILE),
+        true,
+        PaloAltoStructureUsage.IKE_GATEWAY_IKE_CRYPTO_PROFILE);
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.IPSEC_CRYPTO_PROFILE_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE),
+        true,
+        PaloAltoStructureUsage.IPSEC_TUNNEL_IPSEC_CRYPTO_PROFILE);
 
     // Handle service objects/groups that may overlap with built-in names
     markAbstractStructureFromUnknownNamespace(
