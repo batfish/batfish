@@ -54,6 +54,23 @@ SHOW_CONFIG_LINE
   F_NonNewlineChar* 'show' F_WhitespaceChar+ 'config' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
 ;
 
+// An HTTP log-forwarding profile stores its webhook body as a quoted string, and PAN-OS
+// emits that string with its inner double quotes unescaped. F_QuotedString stops at the
+// first of those, after which the body's own braces lex as OPEN_BRACE/CLOSE_BRACE and
+// desynchronise config nesting for the remainder of the device -- typically leaving it with
+// no interfaces at all, and no warning saying why.
+//
+// The body is not modeled: s_log_settings offers no http alternative, and no HTTP token
+// exists in the PAN-OS grammar. So consume the whole statement, terminator included, and
+// drop it. This must happen here rather than in PaloAltoNestedFlattener or the main
+// grammar, both of which run after the tree has already been mis-nested.
+LOG_PROFILE_PAYLOAD
+:
+   'payload'
+   {lastTokenType() == -1 || lastTokenType() == NEWLINE || lastTokenType() == SHOW_CONFIG_LINE}?
+   F_WhitespaceChar+ '"' .*? '";' -> skip
+;
+
 WORD
 :
    F_QuotedString

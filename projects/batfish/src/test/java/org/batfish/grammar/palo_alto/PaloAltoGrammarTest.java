@@ -436,6 +436,20 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testLogProfilePayloadDoesNotBreakNesting() {
+    // PAN-OS emits an HTTP log-forwarding payload as a quoted string whose inner double
+    // quotes are unescaped. If the lexer stops at the first of those, the body's braces
+    // become structural and every later statement is mis-nested. The payload sits before
+    // the interface in this config, so the address proves nesting survived it.
+    Configuration c = parseConfig("log-profile-payload");
+
+    assertThat(c.getAllInterfaces(), hasKey("ethernet1/1"));
+    assertThat(
+        c.getAllInterfaces().get("ethernet1/1").getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+  }
+
+  @Test
   public void testInterfaceSdwanAddress() {
     // On an SD-WAN interface the gateway is nested under the address, so flattening emits
     // one line carrying both and the address never appears on its own. ethernet1/1 is the
