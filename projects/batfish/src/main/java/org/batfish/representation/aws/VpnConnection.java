@@ -838,7 +838,11 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         @JsonProperty(JSON_KEY_PRESHARED_KEY) @Nullable String presharedKey,
         @JsonProperty(JSON_KEY_PHASE2_LIFETIME_SECONDS) @Nullable Integer phase2LifetimeSeconds) {
       checkArgument(outsideIpAddress != null, "OutsideIpAddress cannot be null");
-      checkArgument(presharedKey != null, "PreSharedKey cannot be null");
+      // PreSharedKey is absent whenever the tunnel stores its key in Secrets Manager rather
+      // than in the Site-to-Site VPN service, in which case DescribeVpnConnections returns a
+      // PreSharedKeyArn instead. Nothing reads this field -- the key used for phase 1 comes
+      // from the customer gateway configuration -- so rejecting the tunnel would discard
+      // every VPN in the file over a value that is legitimately absent and never consumed.
       return new TunnelOptions(
           ikeVersions,
           firstNonNull(

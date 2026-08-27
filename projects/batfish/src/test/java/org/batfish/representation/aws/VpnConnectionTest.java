@@ -14,6 +14,7 @@ import static org.batfish.representation.aws.VpnConnection.EXPORT_CONNECTED_STAT
 import static org.batfish.representation.aws.VpnConnection.VPN_TO_BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnConnection.VPN_UNDERLAY_VRF_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
@@ -272,6 +273,22 @@ public class VpnConnectionTest {
                         new VgwTelemetry(5, Ip.parse("52.27.166.152"), "UP", "5 BGP ROUTES"),
                         new VgwTelemetry(5, Ip.parse("52.39.121.126"), "UP", "5 BGP ROUTES")),
                     false))));
+  }
+
+  /**
+   * A tunnel that stores its pre-shared key in Secrets Manager has no PreSharedKey in
+   * DescribeVpnConnections output -- AWS returns a PreSharedKeyArn instead. Rejecting the tunnel
+   * would discard every VPN connection in the file.
+   */
+  @Test
+  public void testDeserializationSecretsManagerPreSharedKey() throws IOException {
+    String text =
+        readResource("org/batfish/representation/aws/VpnConnectionSecretsManagerPsk.json", UTF_8);
+
+    Region region = new Region("r1");
+    region.addConfigElement(BatfishObjectMapper.mapper().readTree(text), null, null);
+
+    assertThat(region.getVpnConnections().keySet(), contains("vpn-secretsmanager"));
   }
 
   @Test
