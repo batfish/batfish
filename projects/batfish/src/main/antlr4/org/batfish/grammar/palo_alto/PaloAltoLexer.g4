@@ -57,6 +57,8 @@ PROXY_ID_V6: 'proxy-id-v6';
 
 REQUIRE_COOKIE: 'require-cookie';
 
+SDWAN_GATEWAY: 'sdwan-gateway';
+
 TUNNEL_MONITOR: 'tunnel-monitor';
 
 TWO_BYTE: '2-byte';
