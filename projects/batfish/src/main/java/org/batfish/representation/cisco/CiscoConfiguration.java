@@ -399,6 +399,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, AaaServerGroup> _aaaServerGroups;
 
+  private @Nullable CiscoAaa _aaa;
+
+  private final Map<String, CiscoUser> _users;
+
+  private @Nullable String _enableSecret;
+
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
   private final CiscoFamily _cf;
@@ -570,6 +576,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _aaaServerGroups = new TreeMap<>();
+    _users = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _tracks = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -872,6 +879,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, AaaServerGroup> getAaaServerGroups() {
     return _aaaServerGroups;
+  }
+
+  public @Nullable CiscoAaa getAaa() {
+    return _aaa;
+  }
+
+  public void setAaa(@Nullable CiscoAaa aaa) {
+    _aaa = aaa;
+  }
+
+  public @Nonnull Map<String, CiscoUser> getUsers() {
+    return _users;
+  }
+
+  public @Nullable String getEnableSecret() {
+    return _enableSecret;
+  }
+
+  public void setEnableSecret(@Nullable String enableSecret) {
+    _enableSecret = enableSecret;
   }
 
   public NavigableSet<String> getTacacsServers() {

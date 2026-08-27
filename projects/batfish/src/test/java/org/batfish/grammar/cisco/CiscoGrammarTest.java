@@ -527,6 +527,49 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAaaVendorSpecificModel() throws IOException {
+    CiscoConfiguration vc = parseCiscoConfig("iosAaaVsModel", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(vc.getAaa(), notNullValue());
+    assertTrue(vc.getAaa().getNewModel());
+
+    assertThat(vc.getAaa().getAuthentication(), notNullValue());
+    assertThat(vc.getAaa().getAuthentication().getLogin(), notNullValue());
+    assertThat(
+        vc.getAaa().getAuthentication().getLogin().getLists(),
+        allOf(hasKey("default"), hasKey("MYLIST")));
+    assertTrue(vc.getAaa().getAuthentication().getLogin().getPrivilegeMode());
+    assertThat(
+        vc.getAaa().getAuthentication().getLogin().getLists().get("default").getMethods(),
+        equalTo(
+            vc.getCf()
+                .getAaa()
+                .getAuthentication()
+                .getLogin()
+                .getLists()
+                .get("default")
+                .getMethods()));
+
+    assertThat(vc.getAaa().getAccounting(), notNullValue());
+    assertThat(vc.getAaa().getAccounting().getDefault(), notNullValue());
+    assertThat(
+        vc.getAaa().getAccounting().getDefault().getGroups(), contains("myGroup1", "myGroup2"));
+    assertThat(vc.getAaa().getAccounting().getDefault().getLocal(), equalTo(true));
+    assertThat(vc.getAaa().getAccounting().getCommands(), hasKey("15"));
+
+    assertThat(vc.getEnableSecret(), notNullValue());
+    assertThat(vc.getEnableSecret(), equalTo(vc.getCf().getEnableSecret()));
+
+    assertThat(vc.getUsers(), allOf(hasKey("admin"), hasKey("operator")));
+    assertThat(vc.getUsers().get("admin").getPassword(), notNullValue());
+    assertThat(vc.getUsers().get("admin").getRole(), nullValue());
+    assertThat(vc.getUsers().get("operator").getRole(), equalTo("network-operator"));
+    assertThat(
+        vc.getUsers().get("admin").getPassword(),
+        equalTo(vc.getCf().getUsers().get("admin").getPassword()));
+  }
+
+  @Test
   public void testEncoding() throws IOException {
     // Don't crash with lexer error
     parseConfig("encoding_test");
