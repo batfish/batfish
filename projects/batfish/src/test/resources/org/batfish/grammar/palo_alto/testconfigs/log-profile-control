@@ -1,0 +1,29 @@
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname log-profile-control;
+        }
+      }
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                ip {
+                  10.0.1.1/24;
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          default {
+            interface [ ethernet1/1 ];
+          }
+        }
+      }
+    }
+  }
+}
