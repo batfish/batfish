@@ -4,6 +4,7 @@ package org.batfish.vendor.fastpath.representation;
 public enum AaaMethod {
   DENY,
   ENABLE,
+  IAS,
   LINE,
   LOCAL,
   NONE,

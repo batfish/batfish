@@ -300,6 +300,25 @@ public final class FastpathGrammarTest {
   }
 
   @Test
+  public void testAaaAuthenticationDot1xExtraction() {
+    Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
+    Authentication dot1x = aaa.getAuthentication().get(AuthenticationType.DOT1X).get("default");
+    assertThat(dot1x.getType(), equalTo(AuthenticationType.DOT1X));
+    assertThat(
+        dot1x.getMethods(),
+        equalTo(
+            ImmutableList.of(AaaMethod.IAS, AaaMethod.LOCAL, AaaMethod.RADIUS, AaaMethod.NONE)));
+    assertThat(
+        parseVendorConfigText("aaa authentication dot1x default ias none\n", "aaa_authen_dot1x")
+            .getAaa()
+            .getAuthentication()
+            .get(AuthenticationType.DOT1X)
+            .get("default")
+            .getMethods(),
+        equalTo(ImmutableList.of(AaaMethod.IAS, AaaMethod.NONE)));
+  }
+
+  @Test
   public void testAaaIasUserBlockIsSilent() {
     FastpathConfiguration c =
         parseVendorConfigText(

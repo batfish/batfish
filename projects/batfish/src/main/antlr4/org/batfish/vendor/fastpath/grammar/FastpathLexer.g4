@@ -55,7 +55,7 @@ DOT1X
 :
   'dot1x'
   {
-    if (lastTokenType() == ACCOUNTING) {
+    if (lastTokenType() == ACCOUNTING || lastTokenType() == AUTHENTICATION) {
       pushMode(M_AaaListName);
     }
   }
@@ -110,6 +110,8 @@ HOSTNAME
 :
   'hostname' -> pushMode ( M_Word )
 ;
+
+IAS: 'ias';
 
 IAS_USER: 'ias-user';
 

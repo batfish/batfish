@@ -21,9 +21,12 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_dot1xCo
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_execContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_methodContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_accounting_recordContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_dot1xContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_dot1x_methodContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_enableContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_enable_methodContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_loginContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_methodContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authentication_login_methodContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_commandsContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_execContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Aaa_authorization_methodContext;
@@ -217,7 +220,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
         .defineAuthentication(
             AuthenticationType.LOGIN,
             toString(ctx.name),
-            toMethods(ctx.aaa_authentication_method()));
+            toLoginMethods(ctx.aaa_authentication_login_method()));
   }
 
   @Override
@@ -226,7 +229,16 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
         .defineAuthentication(
             AuthenticationType.ENABLE,
             toString(ctx.name),
-            toMethods(ctx.aaa_authentication_method()));
+            toEnableMethods(ctx.aaa_authentication_enable_method()));
+  }
+
+  @Override
+  public void exitAaa_authentication_dot1x(Aaa_authentication_dot1xContext ctx) {
+    _c.getAaa()
+        .defineAuthentication(
+            AuthenticationType.DOT1X,
+            DEFAULT_LIST_NAME,
+            toDot1xMethods(ctx.aaa_authentication_dot1x_method()));
   }
 
   @Override
@@ -279,7 +291,22 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
             ctx.RADIUS() != null ? ImmutableList.of(AaaMethod.RADIUS) : ImmutableList.of());
   }
 
-  private static @Nonnull List<AaaMethod> toMethods(List<Aaa_authentication_methodContext> ctxs) {
+  private static @Nonnull List<AaaMethod> toLoginMethods(
+      List<Aaa_authentication_login_methodContext> ctxs) {
+    return ctxs.stream()
+        .map(FastpathConfigurationBuilder::toMethod)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static @Nonnull List<AaaMethod> toEnableMethods(
+      List<Aaa_authentication_enable_methodContext> ctxs) {
+    return ctxs.stream()
+        .map(FastpathConfigurationBuilder::toMethod)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static @Nonnull List<AaaMethod> toDot1xMethods(
+      List<Aaa_authentication_dot1x_methodContext> ctxs) {
     return ctxs.stream()
         .map(FastpathConfigurationBuilder::toMethod)
         .collect(ImmutableList.toImmutableList());
@@ -299,10 +326,8 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static @Nonnull AaaMethod toMethod(Aaa_authentication_methodContext ctx) {
-    if (ctx.DENY() != null) {
-      return AaaMethod.DENY;
-    } else if (ctx.ENABLE() != null) {
+  private static @Nonnull AaaMethod toMethod(Aaa_authentication_login_methodContext ctx) {
+    if (ctx.ENABLE() != null) {
       return AaaMethod.ENABLE;
     } else if (ctx.LINE() != null) {
       return AaaMethod.LINE;
@@ -315,6 +340,34 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
     }
     assert ctx.TACACS() != null;
     return AaaMethod.TACACS;
+  }
+
+  private static @Nonnull AaaMethod toMethod(Aaa_authentication_enable_methodContext ctx) {
+    if (ctx.DENY() != null) {
+      return AaaMethod.DENY;
+    } else if (ctx.ENABLE() != null) {
+      return AaaMethod.ENABLE;
+    } else if (ctx.LINE() != null) {
+      return AaaMethod.LINE;
+    } else if (ctx.NONE() != null) {
+      return AaaMethod.NONE;
+    } else if (ctx.RADIUS() != null) {
+      return AaaMethod.RADIUS;
+    }
+    assert ctx.TACACS() != null;
+    return AaaMethod.TACACS;
+  }
+
+  private static @Nonnull AaaMethod toMethod(Aaa_authentication_dot1x_methodContext ctx) {
+    if (ctx.IAS() != null) {
+      return AaaMethod.IAS;
+    } else if (ctx.LOCAL() != null) {
+      return AaaMethod.LOCAL;
+    } else if (ctx.NONE() != null) {
+      return AaaMethod.NONE;
+    }
+    assert ctx.RADIUS() != null;
+    return AaaMethod.RADIUS;
   }
 
   private static @Nonnull AaaMethod toMethod(Aaa_authorization_methodContext ctx) {

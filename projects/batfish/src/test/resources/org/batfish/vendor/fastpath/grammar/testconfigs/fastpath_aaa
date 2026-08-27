@@ -9,6 +9,7 @@ aaa authentication enable "user-enable" tacacs enable radius
 aaa authentication login default line none
 aaa authentication login defaultList local
 aaa authentication enable enableNetList enable deny
+aaa authentication dot1x default ias local radius none
 !
 aaa authorization commands "user-auth" tacacs none
 aaa authorization exec "user-auth" tacacs none

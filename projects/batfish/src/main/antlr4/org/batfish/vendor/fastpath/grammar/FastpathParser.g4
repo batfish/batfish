@@ -459,30 +459,53 @@ aaa_authentication
 :
   AUTHENTICATION
   (
-    aaa_authentication_enable
+    aaa_authentication_dot1x
+    | aaa_authentication_enable
     | aaa_authentication_login
   )
 ;
 
 aaa_authentication_login
 :
-  LOGIN name = aaa_list_name aaa_authentication_method+ NEWLINE
+  LOGIN name = aaa_list_name aaa_authentication_login_method+ NEWLINE
 ;
 
 aaa_authentication_enable
 :
-  ENABLE name = aaa_list_name aaa_authentication_method+ NEWLINE
+  ENABLE name = aaa_list_name aaa_authentication_enable_method+ NEWLINE
 ;
 
-aaa_authentication_method
+aaa_authentication_dot1x
 :
-  DENY
-  | ENABLE
+  DOT1X DEFAULT aaa_authentication_dot1x_method+ NEWLINE
+;
+
+aaa_authentication_login_method
+:
+  ENABLE
   | LINE
   | LOCAL
   | NONE
   | RADIUS
   | TACACS
+;
+
+aaa_authentication_enable_method
+:
+  DENY
+  | ENABLE
+  | LINE
+  | NONE
+  | RADIUS
+  | TACACS
+;
+
+aaa_authentication_dot1x_method
+:
+  IAS
+  | LOCAL
+  | NONE
+  | RADIUS
 ;
 
 aaa_authorization
