@@ -197,6 +197,18 @@ sniel3_common
 sniel3_ip
 :
     IP address = interface_address_or_reference
+    (
+        sniel3_ip_sdwan_gateway_null
+    )?
+;
+
+// On an SD-WAN interface the gateway is nested under the address, so the address is a
+// block with a child rather than a leaf. Flattening yields a single line carrying both,
+// and the address is never emitted on its own -- without this the whole line fails to
+// match and the interface ends up with no address at all.
+sniel3_ip_sdwan_gateway_null
+:
+    SDWAN_GATEWAY null_rest_of_line
 ;
 
 sniel3_mtu

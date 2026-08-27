@@ -436,6 +436,22 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testInterfaceSdwanAddress() {
+    // On an SD-WAN interface the gateway is nested under the address, so flattening emits
+    // one line carrying both and the address never appears on its own. ethernet1/1 is the
+    // ordinary form; ethernet1/2 must resolve to the same kind of address despite the
+    // trailing sdwan-gateway.
+    Configuration c = parseConfig("interface-sdwan-address");
+
+    assertThat(
+        c.getAllInterfaces().get("ethernet1/1").getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+    assertThat(
+        c.getAllInterfaces().get("ethernet1/2").getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("198.51.100.6/29")));
+  }
+
+  @Test
   public void testIpsecTunnelExtraction() {
     PaloAltoConfiguration c = parsePaloAltoConfig("ipsec-tunnel");
 
