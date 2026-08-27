@@ -1,0 +1,33 @@
+!Current Configuration:
+!
+!System Software Version "3.4.3.10"
+!
+hostname "fastpath_users_tasks"
+!
+taskgroup "builder"
+task read write execute debug aaa
+task read write execute debug ospf
+task read write execute debug bgp
+exit
+!
+taskgroup "admin"
+task read write execute debug aaa
+exit
+!
+usergroup "builder"
+taskgroup "builder"
+exit
+!
+usergroup "admin"
+taskgroup "admin"
+exit
+!
+username "admin" password abc123 level 15 encrypted
+username "operator" password xyz789 level 1
+username "seagull" password %CENSORED% level 15 encrypted
+username "seagull" usergroup builder
+username "operator" unlock
+username "monitor" nopassword level 1
+username "policy" password abc123 level 5 encrypted override-complexity-check
+username "admin" level 15 password
+no username guest

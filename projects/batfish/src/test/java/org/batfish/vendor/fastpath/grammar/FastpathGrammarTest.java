@@ -19,11 +19,13 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -54,6 +56,11 @@ import org.batfish.vendor.fastpath.representation.LoggingServer;
 import org.batfish.vendor.fastpath.representation.Sntp;
 import org.batfish.vendor.fastpath.representation.Tacacs;
 import org.batfish.vendor.fastpath.representation.TacacsServer;
+import org.batfish.vendor.fastpath.representation.TaskComponent;
+import org.batfish.vendor.fastpath.representation.TaskPermission;
+import org.batfish.vendor.fastpath.representation.Taskgroup;
+import org.batfish.vendor.fastpath.representation.UserAccount;
+import org.batfish.vendor.fastpath.representation.Usergroup;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -350,6 +357,87 @@ public final class FastpathGrammarTest {
     assertThat(
         aaa.getAuthentication().get(AuthenticationType.ENABLE).get("net-enable").getMethods(),
         equalTo(ImmutableList.of(AaaMethod.TACACS, AaaMethod.ENABLE)));
+  }
+
+  @Test
+  public void testUsersTasksParseWithoutWarnings() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
+    assertThat(c.getWarnings().getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testUsernameExtraction() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
+    Map<String, UserAccount> users = c.getUsers();
+    assertThat(
+        users.keySet(),
+        equalTo(ImmutableSet.of("admin", "operator", "seagull", "monitor", "policy")));
+
+    UserAccount admin = users.get("admin");
+    assertThat(admin.getHasPassword(), equalTo(true));
+    assertThat(admin.getEncrypted(), equalTo(true));
+    assertThat(admin.getLevel(), equalTo(15));
+    assertThat(admin.getUserGroup(), nullValue());
+
+    UserAccount operator = users.get("operator");
+    assertThat(operator.getHasPassword(), equalTo(true));
+    assertThat(operator.getEncrypted(), equalTo(false));
+    assertThat(operator.getLevel(), equalTo(1));
+    assertThat(operator.getUserGroup(), nullValue());
+
+    UserAccount seagull = users.get("seagull");
+    assertThat(seagull.getHasPassword(), equalTo(true));
+    assertThat(seagull.getEncrypted(), equalTo(true));
+    assertThat(seagull.getLevel(), equalTo(15));
+    assertThat(seagull.getUserGroup(), equalTo("builder"));
+
+    // `username "monitor" nopassword level 1` is parsed but not extracted, so the account exists
+    // with no password and no recorded level.
+    UserAccount monitor = users.get("monitor");
+    assertThat(monitor.getHasPassword(), equalTo(false));
+    assertThat(monitor.getEncrypted(), equalTo(false));
+    assertThat(monitor.getLevel(), nullValue());
+    assertThat(monitor.getUserGroup(), nullValue());
+
+    // `override-complexity-check` is parsed but ignored; the rest of the password form still
+    // extracts.
+    UserAccount policy = users.get("policy");
+    assertThat(policy.getHasPassword(), equalTo(true));
+    assertThat(policy.getEncrypted(), equalTo(true));
+    assertThat(policy.getLevel(), equalTo(5));
+    assertThat(policy.getUserGroup(), nullValue());
+  }
+
+  @Test
+  public void testTaskgroupExtraction() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
+    Map<String, Taskgroup> taskgroups = c.getTaskgroups();
+    assertThat(taskgroups.keySet(), equalTo(ImmutableSet.of("builder", "admin")));
+    Set<TaskPermission> allPermissions =
+        ImmutableSet.of(
+            TaskPermission.READ,
+            TaskPermission.WRITE,
+            TaskPermission.EXECUTE,
+            TaskPermission.DEBUG);
+    assertThat(
+        taskgroups.get("builder").getTasks(),
+        equalTo(
+            ImmutableMap.of(
+                TaskComponent.AAA, allPermissions,
+                TaskComponent.OSPF, allPermissions,
+                TaskComponent.BGP, allPermissions)));
+    assertThat(
+        taskgroups.get("admin").getTasks(),
+        equalTo(ImmutableMap.of(TaskComponent.AAA, allPermissions)));
+  }
+
+  @Test
+  public void testUsergroupExtraction() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
+    Map<String, Usergroup> usergroups = c.getUsergroups();
+    assertThat(usergroups.keySet(), equalTo(ImmutableSet.of("builder", "admin")));
+    assertThat(usergroups.get("builder").getTaskgroups(), equalTo(ImmutableList.of("builder")));
+    assertThat(usergroups.get("admin").getTaskgroups(), equalTo(ImmutableList.of("admin")));
   }
 
   @Test

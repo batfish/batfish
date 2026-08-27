@@ -8,6 +8,7 @@ tokens {
   DEFAULT,
   QUOTED_TEXT,
   REMAINDER,
+  SECRET,
   WORD
 }
 
@@ -20,6 +21,8 @@ ALERT: 'alert';
 AUTHENTICATION: 'authentication';
 
 AUTHORIZATION: 'authorization';
+
+BGP: 'bgp';
 
 BROADCAST: 'broadcast';
 
@@ -92,6 +95,8 @@ EXEC
   }
 ;
 
+EXECUTE: 'execute';
+
 EXIT: 'exit';
 
 HOST
@@ -129,6 +134,8 @@ KEY
 ;
 
 KEYSTRING: 'keystring';
+
+LEVEL: 'level';
 
 LINE: 'line';
 
@@ -170,11 +177,24 @@ NO: 'no';
 
 NONE: 'none';
 
+NOPASSWORD: 'nopassword';
+
 NOTICE: 'notice';
+
+OSPF: 'ospf';
+
+OVERRIDE_COMPLEXITY_CHECK: 'override-complexity-check';
 
 PASSWORD
 :
-  'password' -> pushMode ( M_Remainder )
+  'password'
+  {
+    if (lastTokenType() == NEWLINE) {
+      pushMode(M_Remainder);
+    } else {
+      pushMode(M_Secret);
+    }
+  }
 ;
 
 PERSISTENT: 'persistent';
@@ -193,6 +213,8 @@ PROMPT
 ;
 
 RADIUS: 'radius';
+
+READ: 'read';
 
 RECONFIGURE: 'reconfigure';
 
@@ -240,6 +262,10 @@ TACACS: 'tacacs';
 
 TACACS_SERVER: 'tacacs-server';
 
+TASK: 'task';
+
+TASKGROUP: 'taskgroup';
+
 TIMEOUT: 'timeout';
 
 TRAPS: 'traps';
@@ -247,6 +273,13 @@ TRAPS: 'traps';
 TUNNEL: 'tunnel';
 
 UNICAST: 'unicast';
+
+UNLOCK: 'unlock';
+
+USERGROUP
+:
+  'usergroup' -> pushMode ( M_Word )
+;
 
 USERNAME
 :
@@ -258,6 +291,8 @@ VLAN: 'vlan';
 WARNING: 'warning';
 
 WRAP: 'wrap';
+
+WRITE: 'write';
 
 // Other Tokens
 
@@ -397,6 +432,12 @@ fragment
 F_NonNewlineChar
 :
   ~[\r\n]
+;
+
+fragment
+F_NonWhitespaceChar
+:
+  ~[ \t\u000C\r\n]
 ;
 
 fragment
@@ -573,6 +614,23 @@ M_Key_WS
 ;
 
 M_Key_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+mode M_Secret;
+
+M_Secret_SECRET
+:
+  F_NonWhitespaceChar+ -> type ( SECRET ) , popMode
+;
+
+M_Secret_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Secret_NEWLINE
 :
   F_Newline -> type ( NEWLINE ) , popMode
 ;

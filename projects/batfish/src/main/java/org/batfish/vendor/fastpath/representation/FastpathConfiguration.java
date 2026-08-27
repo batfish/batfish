@@ -6,7 +6,9 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -27,6 +29,9 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private final Logging _logging;
   private final Tacacs _tacacs;
   private final Aaa _aaa;
+  private final Map<String, UserAccount> _users;
+  private final Map<String, Taskgroup> _taskgroups;
+  private final Map<String, Usergroup> _usergroups;
 
   private transient Configuration _c;
 
@@ -36,6 +41,9 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _logging = new Logging();
     _tacacs = new Tacacs();
     _aaa = new Aaa();
+    _users = new LinkedHashMap<>();
+    _taskgroups = new LinkedHashMap<>();
+    _usergroups = new LinkedHashMap<>();
   }
 
   @Override
@@ -73,6 +81,18 @@ public final class FastpathConfiguration extends VendorConfiguration {
 
   public @Nonnull Aaa getAaa() {
     return _aaa;
+  }
+
+  public @Nonnull Map<String, UserAccount> getUsers() {
+    return _users;
+  }
+
+  public @Nonnull Map<String, Taskgroup> getTaskgroups() {
+    return _taskgroups;
+  }
+
+  public @Nonnull Map<String, Usergroup> getUsergroups() {
+    return _usergroups;
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
