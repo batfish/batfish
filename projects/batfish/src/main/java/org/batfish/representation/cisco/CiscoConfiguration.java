@@ -197,9 +197,13 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccountingDefault;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -2554,6 +2558,58 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .build();
   }
 
+  /**
+   * Populates the {@code vendor_family/cisco} AAA model ({@link CiscoFamily}) from the
+   * vendor-specific model for backwards compatibility.
+   */
+  private void convertAaaToVendorFamily() {
+    _cf.setEnableSecret(_enableSecret);
+
+    for (CiscoUser vsUser : _users.values()) {
+      User viUser = new User(vsUser.getName());
+      viUser.setPassword(vsUser.getPassword());
+      viUser.setRole(vsUser.getRole());
+      _cf.getUsers().put(vsUser.getName(), viUser);
+    }
+
+    if (_aaa == null) {
+      return;
+    }
+    Aaa viAaa = new Aaa();
+    viAaa.setNewModel(_aaa.getNewModel());
+
+    CiscoAaaAuthentication vsAuthentication = _aaa.getAuthentication();
+    if (vsAuthentication != null) {
+      AaaAuthentication viAuthentication = new AaaAuthentication();
+      CiscoAaaAuthenticationLogin vsLogin = vsAuthentication.getLogin();
+      if (vsLogin != null) {
+        AaaAuthenticationLogin viLogin = new AaaAuthenticationLogin();
+        viLogin.setPrivilegeMode(vsLogin.getPrivilegeMode());
+        viLogin.getLists().putAll(vsLogin.getLists());
+        viAuthentication.setLogin(viLogin);
+      }
+      viAaa.setAuthentication(viAuthentication);
+    }
+
+    CiscoAaaAccounting vsAccounting = _aaa.getAccounting();
+    if (vsAccounting != null) {
+      AaaAccounting viAccounting = new AaaAccounting();
+      for (String level : vsAccounting.getCommands().keySet()) {
+        viAccounting.getCommands().put(level, new AaaAccountingCommands());
+      }
+      CiscoAaaAccountingDefault vsDefault = vsAccounting.getDefault();
+      if (vsDefault != null) {
+        AaaAccountingDefault viDefault = new AaaAccountingDefault();
+        viDefault.setGroups(vsDefault.getGroups());
+        viDefault.setLocal(vsDefault.getLocal());
+        viAccounting.setDefault(viDefault);
+      }
+      viAaa.setAccounting(viAccounting);
+    }
+
+    _cf.setAaa(viAaa);
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
@@ -2562,6 +2618,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_vendor == ConfigurationFormat.CISCO_IOS) {
       c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     }
+    convertAaaToVendorFamily();
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);

@@ -541,14 +541,7 @@ public final class CiscoGrammarTest {
     assertTrue(vc.getAaa().getAuthentication().getLogin().getPrivilegeMode());
     assertThat(
         vc.getAaa().getAuthentication().getLogin().getLists().get("default").getMethods(),
-        equalTo(
-            vc.getCf()
-                .getAaa()
-                .getAuthentication()
-                .getLogin()
-                .getLists()
-                .get("default")
-                .getMethods()));
+        contains(GROUP_USER_DEFINED, LOCAL));
 
     assertThat(vc.getAaa().getAccounting(), notNullValue());
     assertThat(vc.getAaa().getAccounting().getDefault(), notNullValue());
@@ -558,15 +551,33 @@ public final class CiscoGrammarTest {
     assertThat(vc.getAaa().getAccounting().getCommands(), hasKey("15"));
 
     assertThat(vc.getEnableSecret(), notNullValue());
-    assertThat(vc.getEnableSecret(), equalTo(vc.getCf().getEnableSecret()));
 
     assertThat(vc.getUsers(), allOf(hasKey("admin"), hasKey("operator")));
     assertThat(vc.getUsers().get("admin").getPassword(), notNullValue());
     assertThat(vc.getUsers().get("admin").getRole(), nullValue());
     assertThat(vc.getUsers().get("operator").getRole(), equalTo("network-operator"));
+
+    // After conversion, the vendor_family model is reconstructed from the vendor-specific model.
+    org.batfish.datamodel.vendor_family.cisco.CiscoFamily viCisco =
+        parseConfig("iosAaaVsModel").getVendorFamily().getCisco();
+    assertTrue(viCisco.getAaa().getNewModel());
+    assertThat(viCisco.getAaa().getAuthentication(), notNullValue());
+    assertThat(viCisco.getAaa().getAuthentication().getLogin(), notNullValue());
     assertThat(
-        vc.getUsers().get("admin").getPassword(),
-        equalTo(vc.getCf().getUsers().get("admin").getPassword()));
+        viCisco.getAaa().getAuthentication().getLogin().getLists(),
+        allOf(hasKey("default"), hasKey("MYLIST")));
+    assertTrue(viCisco.getAaa().getAuthentication().getLogin().getPrivilegeMode());
+    assertThat(
+        viCisco.getAaa().getAuthentication().getLogin().getLists().get("defalut").getMethods,
+        contains(GROUP_USER_DEFINED, LOCAL));
+    assertThat(
+        viCisco.getAaa().getAccounting().getDefault().getGroups(),
+        contains("myGroup1", "myGroup2"));
+    assertThat(viCisco.getAaa().getAccounting().getDefault().getLocal(), equalTo(true));
+    assertThat(viCisco.getAaa().getAccounting().getCommands(), hasKey("15"));
+    assertThat(viCisco.getUsers(), allOf(hasKey("admin"), hasKey("operator")));
+    assertThat(viCisco.getUsers().get("operator").getRole(), equalTo("network-operator"));
+    assertThat(viCisco.getEnableSecret(), notNullValue());
   }
 
   @Test

@@ -418,12 +418,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.vendor_family.cisco.Aaa;
-import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
-import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
-import org.batfish.datamodel.vendor_family.cisco.AaaAccountingDefault;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
-import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.Buffered;
 import org.batfish.datamodel.vendor_family.cisco.Cable;
 import org.batfish.datamodel.vendor_family.cisco.DepiClass;
@@ -441,7 +435,6 @@ import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
-import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -1536,8 +1529,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
-  private User _currentUser;
-
   private CiscoUser _currentCiscoUser;
 
   private String _currentVrf;
@@ -1674,11 +1665,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_accounting(Aaa_accountingContext ctx) {
-    // VI extraction
-    if (_configuration.getCf().getAaa().getAccounting() == null) {
-      _configuration.getCf().getAaa().setAccounting(new AaaAccounting());
-    }
-    // VS extraction
     if (_configuration.getAaa().getAccounting() == null) {
       _configuration.getAaa().setAccounting(new CiscoAaaAccounting());
     }
@@ -1686,8 +1672,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
-    Map<String, AaaAccountingCommands> commands =
-        _configuration.getCf().getAaa().getAccounting().getCommands();
     Set<String> levels = new TreeSet<>();
     if (ctx.levels != null) {
       List<SubRange> range = toRange(ctx.levels);
@@ -1698,43 +1682,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         }
       }
     } else {
-      levels.add(AaaAccounting.DEFAULT_COMMANDS);
+      levels.add(CiscoAaaAccounting.DEFAULT_COMMANDS);
     }
-    List<AaaAccountingCommands> currentAaaAccountingCommands = new ArrayList<>();
-    // VI extraction
-    for (String level : levels) {
-      AaaAccountingCommands c = commands.computeIfAbsent(level, k -> new AaaAccountingCommands());
-      currentAaaAccountingCommands.add(c);
-    }
-    // VS extraction
-    SortedMap<String, CiscoAaaAccountingCommands> vsCommands =
+    SortedMap<String, CiscoAaaAccountingCommands> commands =
         _configuration.getAaa().getAccounting().getCommands();
     for (String level : levels) {
-      vsCommands.computeIfAbsent(level, k -> new CiscoAaaAccountingCommands());
+      commands.computeIfAbsent(level, k -> new CiscoAaaAccountingCommands());
     }
   }
 
   @Override
   public void enterAaa_accounting_default(Aaa_accounting_defaultContext ctx) {
-    // VI extraction
-    AaaAccounting accounting = _configuration.getCf().getAaa().getAccounting();
+    CiscoAaaAccounting accounting = _configuration.getAaa().getAccounting();
     if (accounting.getDefault() == null) {
-      accounting.setDefault(new AaaAccountingDefault());
-    }
-    // VS extraction
-    CiscoAaaAccounting vsAccounting = _configuration.getAaa().getAccounting();
-    if (vsAccounting.getDefault() == null) {
-      vsAccounting.setDefault(new CiscoAaaAccountingDefault());
+      accounting.setDefault(new CiscoAaaAccountingDefault());
     }
   }
 
   @Override
   public void enterAaa_authentication(Aaa_authenticationContext ctx) {
-    // VI extraction
-    if (_configuration.getCf().getAaa().getAuthentication() == null) {
-      _configuration.getCf().getAaa().setAuthentication(new AaaAuthentication());
-    }
-    // VS extraction
     if (_configuration.getAaa().getAuthentication() == null) {
       _configuration.getAaa().setAuthentication(new CiscoAaaAuthentication());
     }
@@ -1742,11 +1708,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_authentication_login(Aaa_authentication_loginContext ctx) {
-    // VI extraction
-    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
-      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-    // VS extraction
     if (_configuration.getAaa().getAuthentication().getLogin() == null) {
       _configuration.getAaa().getAuthentication().setLogin(new CiscoAaaAuthenticationLogin());
     }
@@ -1754,10 +1715,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_authentication_login_list(Aaa_authentication_login_listContext ctx) {
-    AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+    CiscoAaaAuthenticationLogin login = _configuration.getAaa().getAuthentication().getLogin();
     String name;
     if (ctx.DEFAULT() != null) {
-      name = AaaAuthenticationLogin.DEFAULT_LIST_NAME;
+      name = CiscoAaaAuthenticationLogin.DEFAULT_LIST_NAME;
     } else if (ctx.variable() != null) {
       name = ctx.variable().getText();
     } else {
@@ -1770,22 +1731,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
     }
 
-    // VI extraction
     _currentAaaAuthenticationLoginList =
         login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
-
-    // VS extraction (reuse the same list instance as the VI model)
-    _configuration
-        .getAaa()
-        .getAuthentication()
-        .getLogin()
-        .getLists()
-        .putIfAbsent(name, _currentAaaAuthenticationLoginList);
 
     // apply the list to each line
     SortedMap<String, Line> lines = _configuration.getCf().getLines();
     for (Line line : lines.values()) {
-      if (name.equals(AaaAuthenticationLogin.DEFAULT_LIST_NAME)) {
+      if (name.equals(CiscoAaaAuthenticationLogin.DEFAULT_LIST_NAME)) {
         // only apply default list if no other list applied
         if (line.getAaaAuthenticationLoginList() == null) {
           line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
@@ -3334,11 +3286,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_aaa(S_aaaContext ctx) {
     _no = ctx.NO() != null;
-    // VI extraction
-    if (_configuration.getCf().getAaa() == null) {
-      _configuration.getCf().setAaa(new Aaa());
-    }
-    // VS extraction
     if (_configuration.getAaa() == null) {
       _configuration.setAaa(new CiscoAaa());
     }
@@ -3487,11 +3434,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
     // default list is undefined
     AaaAuthenticationLoginList defaultList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
-            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+        Optional.ofNullable(_configuration.getAaa())
+            .map(CiscoAaa::getAuthentication)
+            .map(CiscoAaaAuthentication::getLogin)
+            .map(CiscoAaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(CiscoAaaAuthenticationLogin.DEFAULT_LIST_NAME))
             .orElse(null);
 
     for (String name : names) {
@@ -3500,15 +3447,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         if (defaultList != null) {
           // if default list defined, apply it to all lines
           line.setAaaAuthenticationLoginList(defaultList);
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        } else if (_configuration.getCf().getAaa() != null
-            && _configuration.getCf().getAaa().getNewModel()
+          line.setLoginAuthentication(CiscoAaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        } else if (_configuration.getAaa() != null
+            && _configuration.getAaa().getNewModel()
             && line.getLineType() != LineType.CON) {
           // if default list not defined but aaa new-model, apply to all lines except con0
           line.setAaaAuthenticationLoginList(
               new AaaAuthenticationLoginList(
                   Collections.singletonList(AuthenticationMethod.LOCAL)));
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+          line.setLoginAuthentication(CiscoAaaAuthenticationLogin.DEFAULT_LIST_NAME);
         }
         _configuration.getCf().getLines().put(name, line);
       }
@@ -3900,9 +3847,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       username = unquote(ctx.quoted_user.getText());
     }
-    // VI extraction
-    _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, User::new);
-    // VS extraction
     _currentCiscoUser = _configuration.getUsers().computeIfAbsent(username, CiscoUser::new);
   }
 
@@ -4048,9 +3992,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitAaa_accounting_default_group(Aaa_accounting_default_groupContext ctx) {
     List<String> groups =
         ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
-    // VI extraction
-    _configuration.getCf().getAaa().getAccounting().getDefault().setGroups(groups);
-    // VS extraction
     _configuration.getAaa().getAccounting().getDefault().setGroups(groups);
     for (String group : groups) {
       _configuration.referenceStructure(
@@ -4060,9 +4001,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAaa_accounting_default_local(Aaa_accounting_default_localContext ctx) {
-    // VI extraction
-    _configuration.getCf().getAaa().getAccounting().getDefault().setLocal(true);
-    // VS extraction
     _configuration.getAaa().getAccounting().getDefault().setLocal(true);
   }
 
@@ -4117,9 +4055,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAaa_authentication_login_privilege_mode(
       Aaa_authentication_login_privilege_modeContext ctx) {
-    // VI extraction
-    _configuration.getCf().getAaa().getAuthentication().getLogin().setPrivilegeMode(true);
-    // VS extraction
     _configuration.getAaa().getAuthentication().getLogin().setPrivilegeMode(true);
   }
 
@@ -4139,9 +4074,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAaa_new_model(Aaa_new_modelContext ctx) {
-    // VI extraction
-    _configuration.getCf().getAaa().setNewModel(!_no);
-    // VS extraction
     _configuration.getAaa().setNewModel(!_no);
   }
 
@@ -4960,9 +4892,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       password = ctx.pass.getText() + CommonUtil.salt();
     }
     String passwordRehash = CommonUtil.sha256Digest(password);
-    // VI extraction
-    _configuration.getCf().setEnableSecret(passwordRehash);
-    // VS extraction
     _configuration.setEnableSecret(passwordRehash);
   }
 
@@ -6841,10 +6770,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // get the authentication list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is
     // null or the list is not defined
     AaaAuthenticationLoginList authList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
+        Optional.ofNullable(_configuration.getAaa())
+            .map(CiscoAaa::getAuthentication)
+            .map(CiscoAaaAuthentication::getLogin)
+            .map(CiscoAaaAuthenticationLogin::getLists)
             .map(lists -> lists.get(list))
             .orElse(null);
 
@@ -9206,7 +9135,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_username(S_usernameContext ctx) {
-    _currentUser = null;
     _currentCiscoUser = null;
   }
 
@@ -9891,18 +9819,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Missing username password handling");
     }
     String passwordRehash = CommonUtil.sha256Digest(passwordString + CommonUtil.salt());
-    // VI extraction
-    _currentUser.setPassword(passwordRehash);
-    // VS extraction
     _currentCiscoUser.setPassword(passwordRehash);
   }
 
   @Override
   public void exitU_role(U_roleContext ctx) {
     String role = ctx.role.getText();
-    // VI extraction
-    _currentUser.setRole(role);
-    // VS extraction
     _currentCiscoUser.setRole(role);
   }
 
