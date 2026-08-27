@@ -568,7 +568,7 @@ public final class CiscoGrammarTest {
         allOf(hasKey("default"), hasKey("MYLIST")));
     assertTrue(viCisco.getAaa().getAuthentication().getLogin().getPrivilegeMode());
     assertThat(
-        viCisco.getAaa().getAuthentication().getLogin().getLists().get("defalut").getMethods,
+        viCisco.getAaa().getAuthentication().getLogin().getLists().get("default").getMethods(),
         contains(GROUP_USER_DEFINED, LOCAL));
     assertThat(
         viCisco.getAaa().getAccounting().getDefault().getGroups(),
