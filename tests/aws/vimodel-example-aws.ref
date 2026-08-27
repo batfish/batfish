@@ -79530,21 +79530,15 @@
             ],
             "proposals" : [
               "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
               "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
+              "ipsec_proposal_AES_128_GCM",
+              "ipsec_proposal_AES_256_GCM"
             ]
           },
           "vpn-ba2e34a8-2" : {
@@ -79565,36 +79559,36 @@
             ],
             "proposals" : [
               "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
               "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
               "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
+              "ipsec_proposal_AES_128_GCM",
+              "ipsec_proposal_AES_256_GCM"
             ]
           }
         },
         "ipsecPhase2Proposals" : {
-          "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC" : {
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_CBC",
+          "ipsec_proposal_AES_128_GCM" : {
+            "encryptionAlgorithm" : "AES_128_GCM",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"
             ]
           },
-          "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM" : {
+          "ipsec_proposal_AES_256_GCM" : {
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_GCM",
+            "encryptionAlgorithm" : "AES_128_CBC",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"
@@ -79608,25 +79602,9 @@
               "ESP"
             ]
           },
-          "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_256_GCM",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
           "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA_256_128",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_256_128",
-            "encryptionAlgorithm" : "AES_128_GCM",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"
@@ -79640,25 +79618,9 @@
               "ESP"
             ]
           },
-          "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_256_128",
-            "encryptionAlgorithm" : "AES_256_GCM",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
           "ipsec_proposal_HMAC_SHA_384_AES_128_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA_384",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "ipsec_proposal_HMAC_SHA_384_AES_128_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_384",
-            "encryptionAlgorithm" : "AES_128_GCM",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"
@@ -79672,14 +79634,6 @@
               "ESP"
             ]
           },
-          "ipsec_proposal_HMAC_SHA_384_AES_256_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_384",
-            "encryptionAlgorithm" : "AES_256_GCM",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
           "ipsec_proposal_HMAC_SHA_512_AES_128_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_128_CBC",
@@ -79688,25 +79642,9 @@
               "ESP"
             ]
           },
-          "ipsec_proposal_HMAC_SHA_512_AES_128_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_512",
-            "encryptionAlgorithm" : "AES_128_GCM",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
           "ipsec_proposal_HMAC_SHA_512_AES_256_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "ipsec_proposal_HMAC_SHA_512_AES_256_GCM" : {
-            "authenticationAlgorithm" : "HMAC_SHA_512",
-            "encryptionAlgorithm" : "AES_256_GCM",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"

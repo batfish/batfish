@@ -400,8 +400,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
     List<IkePhase1Proposal> proposals = new ArrayList<>();
     for (Value ikePfs : ipsecTunnel.getIkePerfectForwardSecrecy()) {
-      for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
-        for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
+      for (Value authAlgorithm : ipsecTunnel.getIkeAuthProtocol()) {
+        for (Value encryptionAlgorithm : ipsecTunnel.getIkeEncryptionProtocol()) {
           IkePhase1Proposal ikePhase1Proposal =
               new IkePhase1Proposal(
                   "ike_proposal_"
@@ -447,22 +447,53 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Key;
   }
 
+  /**
+   * True for ciphers that authenticate internally. AWS omits the integrity algorithms for these,
+   * and a peer configured for such a cipher offers no separate integrity algorithm to match.
+   */
+  private static boolean isAead(EncryptionAlgorithm encryptionAlgorithm) {
+    switch (encryptionAlgorithm) {
+      case AES_128_GCM:
+      case AES_192_GCM:
+      case AES_256_GCM:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private static @Nonnull IpsecPhase2Proposal toIpsecPhase2Proposal(
+      @Nullable IpsecAuthenticationAlgorithm authenticationAlgorithm,
+      EncryptionAlgorithm encryptionAlgorithm,
+      IpsecTunnel ipsecTunnel,
+      Warnings warnings) {
+    IpsecPhase2Proposal proposal = new IpsecPhase2Proposal();
+    proposal.setAuthenticationAlgorithm(authenticationAlgorithm);
+    proposal.setEncryptionAlgorithm(encryptionAlgorithm);
+    proposal.setProtocols(ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
+    proposal.setIpsecEncapsulationMode(
+        toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
+    return proposal;
+  }
+
   private static @Nonnull List<IpsecPhase2Proposal> toIpsecPhase2Proposals(
       IpsecTunnel ipsecTunnel, Warnings warnings) {
     List<IpsecPhase2Proposal> proposals = new ArrayList<>();
 
-    for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
-      for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
-        IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
-        ipsecPhase2Proposal.setAuthenticationAlgorithm(
-            toIpsecAuthenticationAlgorithm(authAlgorithm.getValue()));
-        ipsecPhase2Proposal.setEncryptionAlgorithm(
-            toEncryptionAlgorithm(encryptionAlgorithm.getValue()));
-        ipsecPhase2Proposal.setProtocols(
-            ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
-        ipsecPhase2Proposal.setIpsecEncapsulationMode(
-            toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
-        proposals.add(ipsecPhase2Proposal);
+    for (Value encryptionValue : ipsecTunnel.getIpsecEncryptionProtocol()) {
+      EncryptionAlgorithm encryptionAlgorithm = toEncryptionAlgorithm(encryptionValue.getValue());
+      if (isAead(encryptionAlgorithm)) {
+        // Pairing an integrity algorithm with an AEAD cipher would match no peer.
+        proposals.add(toIpsecPhase2Proposal(null, encryptionAlgorithm, ipsecTunnel, warnings));
+        continue;
+      }
+      for (Value authValue : ipsecTunnel.getIpsecAuthProtocol()) {
+        proposals.add(
+            toIpsecPhase2Proposal(
+                toIpsecAuthenticationAlgorithm(authValue.getValue()),
+                encryptionAlgorithm,
+                ipsecTunnel,
+                warnings));
       }
     }
     return proposals;
@@ -585,10 +616,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       List<String> ipsecProposalNames = Lists.newArrayList();
       for (IpsecPhase2Proposal ipsecPhase2Proposal : ipsecProposals) {
         String name =
-            "ipsec_proposal_"
-                + ipsecPhase2Proposal.getAuthenticationAlgorithm()
-                + "_"
-                + ipsecPhase2Proposal.getEncryptionAlgorithm();
+            ipsecPhase2Proposal.getAuthenticationAlgorithm() == null
+                ? "ipsec_proposal_" + ipsecPhase2Proposal.getEncryptionAlgorithm()
+                : "ipsec_proposal_"
+                    + ipsecPhase2Proposal.getAuthenticationAlgorithm()
+                    + "_"
+                    + ipsecPhase2Proposal.getEncryptionAlgorithm();
         if (!seenIpsecPhase2Proposals.contains(name)) {
           ipsecPhase2ProposalMapBuilder.put(name, ipsecPhase2Proposal);
           seenIpsecPhase2Proposals.add(name);

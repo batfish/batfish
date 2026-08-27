@@ -347,23 +347,19 @@ public class AwsIpsecTest {
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(
                     equalTo(
+                        // the GCM ciphers authenticate internally, so they yield one
+                        // proposal each rather than one per integrity algorithm
                         ImmutableList.of(
                             "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-                            "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-                            "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-                            "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
                             "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-                            "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-                            "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-                            "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
                             "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-                            "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-                            "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-                            "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
                             "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
+                            "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
+                            "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
+                            "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
                             "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-                            "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-                            "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"))),
+                            "ipsec_proposal_AES_128_GCM",
+                            "ipsec_proposal_AES_256_GCM"))),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroups(
                     hasItems(DiffieHellmanGroup.GROUP2, DiffieHellmanGroup.GROUP5)))));
 
