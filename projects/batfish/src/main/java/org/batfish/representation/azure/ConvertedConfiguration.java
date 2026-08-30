@@ -1,6 +1,5 @@
 package org.batfish.representation.azure;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,7 +10,11 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 
-public class ConvertedConfiguration implements Serializable {
+/**
+ * Not serializable: this is conversion output, and {@link AzureConfiguration} is serialized before
+ * conversion runs.
+ */
+public class ConvertedConfiguration {
 
   /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
   private final @Nonnull Map<String, Configuration> _configurationNodes;

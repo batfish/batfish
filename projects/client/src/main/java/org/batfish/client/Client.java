@@ -1718,6 +1718,9 @@ public class Client extends AbstractClient implements IClient {
     return allPass;
   }
 
+  /** Returns the commands in {@code startupFilePath}, exiting the process if it cannot be read. */
+  @SuppressWarnings(
+      "PMD.ReturnEmptyCollectionRatherThanNull") // null is unreachable past System.exit
   private List<String> readCommands(Path startupFilePath) {
     List<String> commands = null;
     try {

@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,9 +15,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 
-/** Represents vendor independent configuration data after conversion of native AWS data. */
+/**
+ * Represents vendor independent configuration data after conversion of native AWS data.
+ *
+ * <p>Not serializable: this is conversion output, and {@link AwsConfiguration} is serialized before
+ * conversion runs.
+ */
 @ParametersAreNonnullByDefault
-class ConvertedConfiguration implements Serializable {
+class ConvertedConfiguration {
 
   /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
   private final @Nonnull Map<String, Configuration> _configurationNodes;
