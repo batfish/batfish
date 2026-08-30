@@ -25,6 +25,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   /** default packet length */
   public static final int DEFAULT_PACKET_LENGTH = 512;
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // null omits the JSON property
   private static <C extends Collection<?>> C nullIfEmpty(C collection) {
     return collection == null ? null : collection.isEmpty() ? null : collection;
   }

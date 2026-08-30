@@ -98,7 +98,9 @@ public class AwsConfiguration extends VendorConfiguration {
   /** ASN to use for nodes that faces the backbone (e.g., IGW, services gateway) */
   static final long BACKBONE_PEERING_ASN = 65534L;
 
-  private @Nullable ConvertedConfiguration _convertedConfiguration;
+  /** Conversion output; always null when this object is serialized. */
+  private transient @Nullable ConvertedConfiguration _convertedConfiguration;
+
   private final @Nonnull Map<String, Account> _accounts;
 
   /**

@@ -1718,6 +1718,7 @@ public class Client extends AbstractClient implements IClient {
     return allPass;
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // unreachable past System.exit
   private List<String> readCommands(Path startupFilePath) {
     List<String> commands = null;
     try {

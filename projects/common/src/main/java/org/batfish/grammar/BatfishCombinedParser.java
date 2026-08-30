@@ -1,12 +1,12 @@
 package org.batfish.grammar;
 
+import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -219,7 +219,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     return _parser.getRuleNames()[ctx.getRuleIndex()];
   }
 
-  public @Nullable Map<Integer, Set<Integer>> getExtraLines() {
-    return _lineMap != null ? _lineMap.getExtraLines() : null;
+  public @Nonnull Map<Integer, Set<Integer>> getExtraLines() {
+    return _lineMap != null ? _lineMap.getExtraLines() : ImmutableMap.of();
   }
 }
