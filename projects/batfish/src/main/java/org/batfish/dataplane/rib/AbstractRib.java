@@ -1,8 +1,6 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -40,11 +38,11 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * Keep a (insert ordered) set of alternative routes. Used to update the RIB if best routes are
    * withdrawn.
    */
-  protected final @Nullable LinkedHashMultimap<Prefix, R> _backupRoutes;
+  protected final @Nullable BackupRoutes<R> _backupRoutes;
 
   protected AbstractRib(boolean withBackupRoutes) {
     _allRoutes = ImmutableSet.of();
-    _backupRoutes = withBackupRoutes ? LinkedHashMultimap.create() : null;
+    _backupRoutes = withBackupRoutes ? new BackupRoutes<>() : null;
     _tree = new RibTree<>(this);
   }
 
@@ -171,7 +169,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Override
   public @Nonnull Set<R> getBackupRoutes() {
     return Optional.ofNullable(_backupRoutes)
-        .map(Multimap::values)
+        .map(BackupRoutes::values)
         .map(ImmutableSet::copyOf)
         .orElse(ImmutableSet.of());
   }
@@ -183,10 +181,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   private void removeBackupRoute(R route) {
     if (_backupRoutes != null) {
-      Set<R> routes = _backupRoutes.get(route.getNetwork());
-      if (routes != null) {
-        routes.remove(route);
-      }
+      _backupRoutes.remove(route.getNetwork(), route);
     }
   }
 
