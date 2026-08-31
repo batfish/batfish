@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
 
@@ -100,9 +101,21 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return _ribs;
   }
 
+  /**
+   * The main RIBs as they were at the end of routing simulation, with route annotations intact.
+   *
+   * <p>Only available when {@link IncrementalDataPlanePlugin#DEBUG_FLAG_RETAIN_ANNOTATED_RIBS} is
+   * set, since retaining them keeps every VRF's pre-finalization RIB -- prefix trie, annotations
+   * and backup routes -- alive for as long as the dataplane is, on top of the {@link FinalMainRib}s
+   * that supersede them. Use {@link #getRibs()} unless the annotations are the thing under test.
+   */
   @VisibleForTesting
   public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       getRibsForTesting() {
+    checkState(
+        _annotatedRibs != null,
+        "Annotated RIBs were not retained; set the %s debug flag",
+        IncrementalDataPlanePlugin.DEBUG_FLAG_RETAIN_ANNOTATED_RIBS);
     return _annotatedRibs;
   }
 
@@ -114,6 +127,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private @Nullable Map<String, Node> _nodes;
     private @Nullable PartialDataplane _partialDataplane;
+    private boolean _retainAnnotatedRibs;
 
     public Builder setNodes(@Nonnull Map<String, Node> nodes) {
       _nodes = ImmutableMap.copyOf(nodes);
@@ -122,6 +136,12 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     public Builder setPartialDataplane(PartialDataplane partialDataplane) {
       _partialDataplane = partialDataplane;
+      return this;
+    }
+
+    /** See {@link IncrementalDataPlane#getRibsForTesting}. */
+    public Builder setRetainAnnotatedRibs(boolean retainAnnotatedRibs) {
+      _retainAnnotatedRibs = retainAnnotatedRibs;
       return this;
     }
 
@@ -148,7 +168,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final @Nonnull Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
   private final @Nonnull Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
-  private final @Nonnull SortedMap<
+  /** Null unless retention was requested; see {@link #getRibsForTesting}. */
+  private final @Nullable SortedMap<
           String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _annotatedRibs;
 
@@ -183,8 +204,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
 
-    // For testing only
-    _annotatedRibs = computeAnnotatedRibs(nodes);
+    _annotatedRibs = builder._retainAnnotatedRibs ? computeAnnotatedRibs(nodes) : null;
   }
 
   private static @Nonnull SortedMap<

@@ -432,6 +432,16 @@ final class IncrementalBdpEngine {
       TopologyContext initialTopologyContext,
       Set<BgpAdvertisement> externalAdverts,
       IpOwners initialIpOwners) {
+    return computeDataPlane(
+        configurations, initialTopologyContext, externalAdverts, initialIpOwners, false);
+  }
+
+  ComputeDataPlaneResult computeDataPlane(
+      Map<String, Configuration> configurations,
+      TopologyContext initialTopologyContext,
+      Set<BgpAdvertisement> externalAdverts,
+      IpOwners initialIpOwners,
+      boolean retainAnnotatedRibs) {
     LOGGER.info("Computing Data Plane using iBDP");
 
     Map<Ip, Map<String, Set<String>>> initialIpVrfOwners = initialIpOwners.getIpVrfOwners();
@@ -606,6 +616,7 @@ final class IncrementalBdpEngine {
         IncrementalDataPlane.builder()
             .setNodes(nodes)
             .setPartialDataplane(currentDataplane)
+            .setRetainAnnotatedRibs(retainAnnotatedRibs)
             .build();
     return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
   }
@@ -1139,15 +1150,15 @@ final class IncrementalBdpEngine {
   @VisibleForTesting
   static SortedMap<String, SortedMap<String, Set<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
-    // Scan through all Nodes and their virtual routers, retrieve main rib routes
+    // Scan through all Nodes and their VRFs, retrieve main rib routes
     return toImmutableSortedMap(
-        dp.getRibsForTesting(),
+        dp.getRibs().rowMap(),
         Entry::getKey,
         nodeEntry ->
             toImmutableSortedMap(
                 nodeEntry.getValue(),
                 Entry::getKey,
-                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getUnannotatedRoutes())));
+                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getRoutes())));
   }
 
   private static final int MAX_OSPF_INTERNAL_ITERATIONS = 100000;

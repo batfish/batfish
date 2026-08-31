@@ -550,11 +550,9 @@ public final class IncrementalBdpEngineTest {
 
     // r1 should have the kernel route, but r2 should not.
     assertThat(
-        dp.getRibsForTesting().get("r1").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
-        contains(new AnnotatedRoute<>(kernelRoute, DEFAULT_VRF_NAME)));
-    assertThat(
-        dp.getRibsForTesting().get("r2").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
-        empty());
+        dp.getRibs().get("r1", DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
+        contains(kernelRoute));
+    assertThat(dp.getRibs().get("r2", DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix), empty());
   }
 
   // ---- updateVxlanAutostate tests ----
