@@ -8,8 +8,12 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -27,7 +31,13 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
  * for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
+public final class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (56 bytes data, would be 56 MiB total ignoring overhead).
+  private static final LoadingCache<StaticRoute, StaticRoute> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
   private static final String PROP_NEXT_VRF = "nextVrf";
@@ -50,18 +60,19 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_TRACK) @Nullable String track) {
-    return new StaticRoute(
-        requireNonNull(network),
-        nextVrf != null
-            ? NextHopVrf.of(nextVrf)
-            : NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        administrativeCost,
-        metric,
-        tag,
-        false,
-        false,
-        true,
-        track);
+    return CACHE.get(
+        new StaticRoute(
+            requireNonNull(network),
+            nextVrf != null
+                ? NextHopVrf.of(nextVrf)
+                : NextHop.legacyConverter(nextHopInterface, nextHopIp),
+            administrativeCost,
+            metric,
+            tag,
+            false,
+            false,
+            true,
+            track));
   }
 
   private StaticRoute(
@@ -145,16 +156,17 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           "Static route cannot have unset %s",
           PROP_ADMINISTRATIVE_COST);
       checkArgument(_nextHop != null, "Static route missing a next hop");
-      return new StaticRoute(
-          getNetwork(),
-          _nextHop,
-          getAdmin(),
-          getMetric(),
-          getTag(),
-          getNonForwarding(),
-          getNonRouting(),
-          _recursive,
-          _track);
+      return CACHE.get(
+          new StaticRoute(
+              getNetwork(),
+              _nextHop,
+              getAdmin(),
+              getMetric(),
+              getTag(),
+              getNonForwarding(),
+              getNonRouting(),
+              _recursive,
+              _track));
     }
 
     @Override
@@ -205,6 +217,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .setNonForwarding(getNonForwarding())
         .setRecursive(getRecursive())
         .setTrack(_track);
+  }
+
+  /** Re-intern after deserialization. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(this);
   }
 
   @Override

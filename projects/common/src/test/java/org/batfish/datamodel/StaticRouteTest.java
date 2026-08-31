@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -118,6 +119,17 @@ public final class StaticRouteTest {
   }
 
   @Test
+  public void testInterning() {
+    StaticRoute.Builder b =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("10.0.0.0/24"))
+            .setNextHop(NextHopIp.of(Ip.parse("10.1.1.1")))
+            .setAdministrativeCost(1);
+
+    assertThat(b.build(), sameInstance(b.build()));
+  }
+
+  @Test
   public void checkJsonSerialization() {
     StaticRoute sr =
         StaticRoute.testBuilder()
@@ -130,7 +142,7 @@ public final class StaticRouteTest {
             .setMetric(123)
             .build();
 
-    assertThat(BatfishObjectMapper.clone(sr, StaticRoute.class), equalTo(sr));
+    assertThat(BatfishObjectMapper.clone(sr, StaticRoute.class), sameInstance(sr));
   }
 
   @Test
@@ -146,6 +158,6 @@ public final class StaticRouteTest {
             .setMetric(123)
             .build();
 
-    assertThat(SerializationUtils.clone(sr), equalTo(sr));
+    assertThat(SerializationUtils.clone(sr), sameInstance(sr));
   }
 }
