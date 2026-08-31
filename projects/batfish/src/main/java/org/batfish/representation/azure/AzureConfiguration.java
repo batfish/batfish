@@ -44,7 +44,8 @@ public class AzureConfiguration extends VendorConfiguration {
 
   public static final @Nonnull long AZURE_LOCAL_ASN = 65536;
 
-  private ConvertedConfiguration _convertedConfiguration = null;
+  /** Conversion output; always null when this object is serialized. */
+  private transient ConvertedConfiguration _convertedConfiguration = null;
 
   public AzureConfiguration() {}
 
