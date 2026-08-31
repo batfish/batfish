@@ -122,7 +122,6 @@ import org.batfish.dataplane.rib.RipInternalRib;
 import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.batfish.dataplane.rib.StaticRib;
 
 public final class VirtualRouter {
 
@@ -190,8 +189,15 @@ public final class VirtualRouter {
   RipInternalRib _ripInternalRib;
   RipInternalRib _ripInternalStagingRib;
   RipRib _ripRib;
-  StaticRib _staticUnconditionalRib;
-  StaticRib _staticConditionalRib;
+
+  /**
+   * Static routes needing no activation, in {@link Vrf#getStaticRoutes} order. Merged into {@link
+   * #_independentRib} once, at init.
+   */
+  List<StaticRoute> _unconditionalStatics;
+
+  /** Static routes needing activation each iteration, in {@link Vrf#getStaticRoutes} order. */
+  List<StaticRoute> _conditionalStatics;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -305,7 +311,9 @@ public final class VirtualRouter {
     // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
-    importRib(_independentRib, _staticUnconditionalRib, _name);
+    for (StaticRoute sr : _unconditionalStatics) {
+      _independentRib.mergeRoute(annotateRoute(sr));
+    }
     importRib(_mainRib, _independentRib);
     importRib(_mainRib, _connectedRib);
 
@@ -593,7 +601,7 @@ public final class VirtualRouter {
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes(TrackMethodEvaluator trackMethodEvaluator) {
-    for (StaticRoute sr : _staticConditionalRib.getRoutes()) {
+    for (StaticRoute sr : _conditionalStatics) {
       if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
@@ -1137,8 +1145,8 @@ public final class VirtualRouter {
     _ripRib = new RipRib();
 
     // Static
-    _staticConditionalRib = new StaticRib();
-    _staticUnconditionalRib = new StaticRib();
+    _conditionalStatics = ImmutableList.of();
+    _unconditionalStatics = ImmutableList.of();
   }
 
   private boolean isL1Only() {
@@ -1152,13 +1160,17 @@ public final class VirtualRouter {
   /** Initialize the static route RIBs from the VRF config. */
   @VisibleForTesting
   void initStaticRibs() {
+    ImmutableList.Builder<StaticRoute> conditional = ImmutableList.builder();
+    ImmutableList.Builder<StaticRoute> unconditional = ImmutableList.builder();
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
       if (isConditionalStaticRoute(sr)) {
-        _staticConditionalRib.mergeRouteGetDelta(sr);
+        conditional.add(sr);
       } else {
-        _staticUnconditionalRib.mergeRouteGetDelta(sr);
+        unconditional.add(sr);
       }
     }
+    _conditionalStatics = conditional.build();
+    _unconditionalStatics = unconditional.build();
   }
 
   @Nullable
