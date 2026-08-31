@@ -22,6 +22,12 @@ public final class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   public static final String PLUGIN_NAME = "ibdp";
 
+  /**
+   * Debug flag requesting that the main RIBs be kept with their route annotations, for tests that
+   * assert on annotations. See {@link IncrementalDataPlane#getRibsForTesting}.
+   */
+  public static final String DEBUG_FLAG_RETAIN_ANNOTATED_RIBS = "retainAnnotatedRibs";
+
   private IncrementalBdpEngine _engine;
 
   public IncrementalDataPlanePlugin() {}
@@ -52,7 +58,8 @@ public final class IncrementalDataPlanePlugin extends DataPlanePlugin {
             configurations,
             topologyContext,
             externalAdverts,
-            topologyProvider.getInitialIpOwners(snapshot));
+            topologyProvider.getInitialIpOwners(snapshot),
+            _batfish.debugFlagEnabled(DEBUG_FLAG_RETAIN_ANNOTATED_RIBS));
     _logger.infof(
         "Generated data-plane for snapshot:%s; iterations:%s",
         snapshot.getSnapshot(),

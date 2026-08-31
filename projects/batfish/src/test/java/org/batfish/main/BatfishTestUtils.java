@@ -11,6 +11,7 @@ import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -94,6 +95,7 @@ public class BatfishTestUtils {
       SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
+    retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
@@ -125,6 +127,7 @@ public class BatfishTestUtils {
       @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
+    retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
@@ -161,8 +164,22 @@ public class BatfishTestUtils {
     ibdpPlugin.initialize(batfish);
   }
 
+  /**
+   * Retain the annotated main RIBs, which production does not: a handful of tests assert on route
+   * annotations, and {@code IncrementalDataPlane#getRibsForTesting} is only populated when this is
+   * set.
+   */
+  private static void retainAnnotatedRibs(Settings settings) {
+    settings.setDebugFlags(
+        ImmutableList.<String>builder()
+            .addAll(settings.getDebugFlags())
+            .add(IncrementalDataPlanePlugin.DEBUG_FLAG_RETAIN_ANNOTATED_RIBS)
+            .build());
+  }
+
   /** Configure common Batfish settings for tests (e.g. disable recovery, debug level logging) */
   public static void configureBatfishTestSettings(Settings settings) {
+    retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     settings.setDisableUnrecognized(true);
     settings.setHaltOnConvertError(true);
@@ -210,6 +227,7 @@ public class BatfishTestUtils {
     ConversionContext conversionContext = testrigText.getConversionContext();
 
     Settings settings = new Settings(new String[] {});
+    retainAnnotatedRibs(settings);
     configureBatfishTestSettings(settings);
     settings.setStorageBase(tempFolder);
     setNextTestNetworkSnapshot(settings);
@@ -316,6 +334,7 @@ public class BatfishTestUtils {
   public static Batfish getBatfish(
       @Nonnull StorageProvider storageProvider, @Nonnull IdResolver idResolver) {
     Settings settings = new Settings(new String[] {});
+    retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     setNextTestNetworkSnapshot(settings);
     Batfish batfish =
