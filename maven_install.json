@@ -68,7 +68,7 @@
     "org.mockito:mockito-core": 1330163800,
     "org.mockito:mockito-inline": 724093597,
     "org.skyscreamer:jsonassert": -898776828,
-    "org.yaml:snakeyaml": 359292282,
+    "org.yaml:snakeyaml": -1448162181,
     "repositories": -1949687017,
     "tools.profiler:async-profiler": 180920570
   },
@@ -83,7 +83,7 @@
     "com.fasterxml.jackson.core:jackson-core:jar:sources": -616277826,
     "com.fasterxml.jackson.core:jackson-databind": 1075068690,
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": 779577142,
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1100236561,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1625206432,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 597390101,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": -1887968465,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -321409313,
@@ -311,8 +311,8 @@
     "org.xmlresolver:xmlresolver": -2072175398,
     "org.xmlresolver:xmlresolver:jar:data": 792867476,
     "org.xmlresolver:xmlresolver:jar:sources": 294380453,
-    "org.yaml:snakeyaml": 1068613154,
-    "org.yaml:snakeyaml:jar:sources": -665563845,
+    "org.yaml:snakeyaml": -1766780312,
+    "org.yaml:snakeyaml:jar:sources": -533718006,
     "tools.profiler:async-profiler": 369181935,
     "tools.profiler:async-profiler:jar:linux-arm64": 767902809,
     "tools.profiler:async-profiler:jar:linux-x64": 1724197418,
@@ -1170,10 +1170,10 @@
     },
     "org.yaml:snakeyaml": {
       "shasums": {
-        "jar": "c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85",
-        "sources": "cd719ff3e52eec48ef7c541ba4f178c2eff0f6719fd0abe4f4e44bde41138ca2"
+        "jar": "2e194eba45a67dee19a4e272f4a04b18de8054e9f598b094382f6dae0b0e4b5e",
+        "sources": "f7b972dfc3d51ad08af2f6a6e828b4ed449c718ab6b57673238e6d0460a1a626"
       },
-      "version": "2.6"
+      "version": "2.7"
     },
     "tools.profiler:async-profiler": {
       "shasums": {
@@ -3081,7 +3081,6 @@
       "org.yaml.snakeyaml.env",
       "org.yaml.snakeyaml.error",
       "org.yaml.snakeyaml.events",
-      "org.yaml.snakeyaml.extensions.compactnotation",
       "org.yaml.snakeyaml.external.com.google.gdata.util.common.base",
       "org.yaml.snakeyaml.inspector",
       "org.yaml.snakeyaml.internal",
