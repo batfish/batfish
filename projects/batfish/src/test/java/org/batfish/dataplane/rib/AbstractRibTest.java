@@ -41,11 +41,17 @@ import org.junit.rules.ExpectedException;
 
 /** Tests of {@link AbstractRib} */
 public class AbstractRibTest {
-  /*
-   * Test the AbstractRib tree logic. To avoid worrying about route preference comparisons, testing
-   * with StaticRoutes and StaticRib. All static routes will be stored in the RIB, without eviction
-   * based on preference.
+  /**
+   * A RIB that considers every route equally preferable, so nothing is ever evicted and the tests
+   * below exercise {@link AbstractRib}'s storage rather than preference comparison.
    */
+  private static final class TestRib extends AbstractRib<StaticRoute> {
+    @Override
+    public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
+      return 0;
+    }
+  }
+
   private AbstractRib<StaticRoute> _rib;
   private static final StaticRoute _mostGeneralRoute =
       StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setMetric(0L).setTag(0L).build();
@@ -53,7 +59,7 @@ public class AbstractRibTest {
 
   @Before
   public void setupEmptyRib() {
-    _rib = new StaticRib();
+    _rib = new TestRib();
   }
 
   @Test
@@ -204,7 +210,7 @@ public class AbstractRibTest {
   @Test
   public void testHasSameRoutes() {
     // And create a new different RIB
-    AbstractRib<StaticRoute> rib2 = new StaticRib();
+    AbstractRib<StaticRoute> rib2 = new TestRib();
     assertThat(rib2, equalTo(_rib));
 
     List<StaticRoute> routes = setupOverlappingRoutes();
