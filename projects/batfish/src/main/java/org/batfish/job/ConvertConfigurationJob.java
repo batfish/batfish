@@ -648,11 +648,16 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             });
   }
 
-  /** Remove and warn on undefined track references. */
+  /**
+   * Remove and warn on undefined track references.
+   *
+   * <p>Static route tracks are not handled here: {@link #removeInvalidStaticRoutes} clears them in
+   * the same pass that removes routes with an invalid next hop, so a VRF's static routes are
+   * rebuilt once rather than twice.
+   */
   private static void removeUndefinedTrackReferences(Configuration c, Warnings w) {
     removeUndefinedVrrpTrackReferences(c, w);
     removeUndefinedHsrpTrackReferences(c, w);
-    removeUndefinedStaticRouteTrackReferences(c, w);
     removeUndefinedBgpProcessTrackReferences(c, w);
   }
 
@@ -682,29 +687,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               }
               proc.setTracks(definedTracks.build());
             });
-  }
-
-  private static void removeUndefinedStaticRouteTrackReferences(Configuration c, Warnings w) {
-    for (Vrf v : c.getVrfs().values()) {
-      boolean modified = false;
-      ImmutableSortedSet.Builder<StaticRoute> routes = ImmutableSortedSet.naturalOrder();
-      for (StaticRoute sr : v.getStaticRoutes()) {
-        String track = sr.getTrack();
-        if (track != null && !c.getTrackingGroups().containsKey(track)) {
-          modified = true;
-          w.redFlagf(
-              "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
-                  + " '%s'",
-              track, sr.getNetwork(), v.getName());
-          routes.add(sr.toBuilder().setTrack(null).build());
-        } else {
-          routes.add(sr);
-        }
-      }
-      if (modified) {
-        v.setStaticRoutes(routes.build());
-      }
-    }
   }
 
   private static void removeUndefinedHsrpTrackReferences(Configuration c, Warnings w) {
@@ -777,26 +759,46 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  /**
+   * Remove static routes whose next hop is undefined, and clear references to undefined tracks on
+   * the routes that remain.
+   */
   private static void removeInvalidStaticRoutes(Configuration c, Warnings w) {
-    StaticRouteNextHopChecker checker = new StaticRouteNextHopChecker(c, w);
-    for (Vrf v : c.getVrfs().values()) {
-      boolean modified = false;
-      ImmutableSortedSet.Builder<StaticRoute> builder = ImmutableSortedSet.naturalOrder();
-      for (StaticRoute sr : v.getStaticRoutes()) {
-        if (!checker.visit(sr.getNextHop())) {
-          modified = true;
-        } else {
-          builder.add(sr);
-        }
-      }
-      if (modified) {
-        v.setStaticRoutes(builder.build());
-      }
-    }
+    InvalidStaticRouteRemover remover = new InvalidStaticRouteRemover(c, w);
+    c.getVrfs().values().forEach(remover::rewriteStaticRoutes);
   }
 
-  private static final class StaticRouteNextHopChecker implements NextHopVisitor<Boolean> {
-    private StaticRouteNextHopChecker(Configuration c, Warnings w) {
+  /**
+   * Rewrites a VRF's static routes, dropping those with an undefined next hop and clearing
+   * references to undefined tracks. {@link #visit} answers whether a next hop is defined.
+   */
+  private static final class InvalidStaticRouteRemover implements NextHopVisitor<Boolean> {
+
+    /**
+     * The rebuilt set is assigned even when nothing changed: it holds the same routes, but in a
+     * sorted array rather than the TreeSet the vendor extractors accumulate into.
+     */
+    void rewriteStaticRoutes(Vrf v) {
+      ImmutableSortedSet.Builder<StaticRoute> routes = ImmutableSortedSet.naturalOrder();
+      for (StaticRoute sr : v.getStaticRoutes()) {
+        if (!visit(sr.getNextHop())) {
+          continue;
+        }
+        String track = sr.getTrack();
+        if (track != null && !_c.getTrackingGroups().containsKey(track)) {
+          _w.redFlagf(
+              "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
+                  + " '%s'",
+              track, sr.getNetwork(), v.getName());
+          routes.add(sr.toBuilder().setTrack(null).build());
+        } else {
+          routes.add(sr);
+        }
+      }
+      v.setStaticRoutes(routes.build());
+    }
+
+    private InvalidStaticRouteRemover(Configuration c, Warnings w) {
       _c = c;
       _w = w;
     }
