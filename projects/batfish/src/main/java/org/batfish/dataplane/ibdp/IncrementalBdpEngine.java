@@ -979,7 +979,6 @@ final class IncrementalBdpEngine {
     vrs.parallelStream()
         .forEach(
             vr -> {
-              importRib(vr.getMainRib(), vr._independentRib);
               // Use static evaluator since we don't have dataplane yet
               vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
             });
@@ -1241,7 +1240,7 @@ final class IncrementalBdpEngine {
           .forEach(
               vr -> {
                 importRib(vr._ripRib, vr._ripInternalRib);
-                importRib(vr._independentRib, vr._ripRib, vr.getName());
+                importRib(vr.getMainRib(), vr._ripRib, vr.getName());
               });
     }
   }

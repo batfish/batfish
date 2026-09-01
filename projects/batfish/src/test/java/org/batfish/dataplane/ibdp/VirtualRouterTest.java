@@ -51,6 +51,7 @@ import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -309,11 +310,10 @@ public class VirtualRouterTest {
     vr.initKernelRoutes();
 
     // Assert that all kernel routes have been processed
-    // The kernel routes not requiring owned IPs should be present in the independent RIB.
+    // The kernel routes not requiring owned IPs should be present in the main RIB.
     // All others should be present in _kernelConditionalRoutes.
     assertThat(
-        vr._independentRib.getRoutes(),
-        containsInAnyOrder(vr.annotateRoute(noRequiredOwnedIpRoute)));
+        vr.getMainRib().getRoutes(), containsInAnyOrder(vr.annotateRoute(noRequiredOwnedIpRoute)));
     assertThat(
         vr._kernelConditionalRoutes,
         containsInAnyOrder(missingRequiredOwnedIpRoute, presentRequiredOwnedIpRoute));
@@ -433,7 +433,7 @@ public class VirtualRouterTest {
     assertThat(vr.getConnectedRib().getUnannotatedRoutes(), empty());
     assertThat(vr._conditionalStatics, empty());
     assertThat(vr._unconditionalStatics, empty());
-    assertThat(vr._independentRib.getUnannotatedRoutes(), empty());
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), empty());
 
     // RIP RIBs
     assertThat(vr._ripInternalRib.getUnannotatedRoutes(), empty());
@@ -1014,5 +1014,28 @@ public class VirtualRouterTest {
           PreDataPlaneTrackMethodEvaluator::new,
           false);
     }
+  }
+
+  /**
+   * Connected and local routes withdrawn because autostate took their interface down must stay out
+   * of the main RIB for the rest of the computation.
+   */
+  @Test
+  public void testAutostateChangeDoesNotResurrectConnectedRoutes() {
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    Configuration c = vr.getConfiguration();
+    addInterfaces(c, ImmutableMap.of("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.1/16")));
+    vr.initRibs();
+    vr.initForIgpComputation(TopologyContext.builder().build());
+    ConnectedRoute connected = new ConnectedRoute(Prefix.parse("10.1.0.0/16"), "Ethernet1");
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), hasItem(connected));
+
+    // Autostate takes the interface down during a topology iteration.
+    c.getAllInterfaces().get("Ethernet1").deactivate(InactiveReason.AUTOSTATE_FAILURE);
+    vr.updateConnectedAndLocalRoutesForAutostateChange();
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), not(hasItem(connected)));
+
+    vr.reinitForNewIteration();
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), not(hasItem(connected)));
   }
 }
