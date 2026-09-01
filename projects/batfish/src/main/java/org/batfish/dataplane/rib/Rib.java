@@ -42,18 +42,28 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private final @Nonnull SetMultimap<Ip, AnnotatedRoute<AbstractRoute>> _routesByNextHopIp;
     private final @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
         _resolutionRestriction;
-    private final @Nonnull Map<AnnotatedRoute<AbstractRoute>, Boolean> _resolutionRestrictionCache;
+
+    /** Null when the restriction is constant, in which case there is nothing to memoize. */
+    private final @Nullable Map<AnnotatedRoute<AbstractRoute>, Boolean> _resolutionRestrictionCache;
 
     private ResolvabilityEnforcer(
         ResolutionRestriction<AnnotatedRoute<AbstractRoute>> resolutionRestriction) {
       _routesByNextHopIp = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
       _ribResolutionTrie = new RibResolutionTrie();
       _resolutionGraph = new DirectedAcyclicGraph<>(DefaultEdge.class);
-      _resolutionRestrictionCache = new HashMap<>();
-      _resolutionRestriction =
-          route ->
-              _resolutionRestrictionCache.computeIfAbsent(
-                  route, computeResolutionRestriction(resolutionRestriction)::test);
+      // Hoisted out of the lambda below, which rebuilt it on every evaluation.
+      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction =
+          computeResolutionRestriction(resolutionRestriction);
+      if (restriction == ResolutionRestriction.<AnnotatedRoute<AbstractRoute>>alwaysTrue()) {
+        // Memoizing a constant would cost a map entry per route in the RIB to remember a value
+        // that cannot vary. VRFs with no resolution policy take this path.
+        _resolutionRestrictionCache = null;
+        _resolutionRestriction = restriction;
+      } else {
+        Map<AnnotatedRoute<AbstractRoute>, Boolean> cache = new HashMap<>();
+        _resolutionRestrictionCache = cache;
+        _resolutionRestriction = route -> cache.computeIfAbsent(route, restriction::test);
+      }
     }
 
     /** Wrap resolution restriction with some allow-listing if needed. */
@@ -87,7 +97,9 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      _resolutionRestrictionCache.remove(route);
+      if (_resolutionRestrictionCache != null) {
+        _resolutionRestrictionCache.remove(route);
+      }
       if (isRecursiveNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         if (_routesByNextHopIp.remove(nextHopIp, route)
