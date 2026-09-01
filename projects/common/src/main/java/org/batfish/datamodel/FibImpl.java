@@ -93,6 +93,12 @@ public final class FibImpl implements Fib {
 
   private transient Supplier<Set<FibEntry>> _entries;
 
+  /**
+   * Matching IPs for the forwarding prefixes that have a more specific forwarding prefix beneath
+   * them. See {@link #matchingIps}.
+   */
+  private transient Supplier<Map<Prefix, IpSpace>> _nonTrivialMatchingIps;
+
   public <R extends AbstractRouteDecorator> FibImpl(
       GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     this(rib, restriction, r -> true);
@@ -117,6 +123,7 @@ public final class FibImpl implements Fib {
 
   private void initSuppliers() {
     _entries = Suppliers.memoize(this::computeEntries);
+    _nonTrivialMatchingIps = Suppliers.memoize(this::computeNonTrivialMatchingIps);
   }
 
   private Set<FibEntry> computeEntries() {
@@ -311,7 +318,15 @@ public final class FibImpl implements Fib {
   }
 
   @Override
-  public @Nonnull Map<Prefix, IpSpace> getMatchingIps() {
+  public @Nonnull IpSpace matchingIps(Prefix prefix) {
+    assert !_root.get(prefix).isEmpty() : prefix + " is not a forwarding prefix in this FIB";
+    IpSpace nonTrivial = _nonTrivialMatchingIps.get().get(prefix);
+    // With nothing more specific beneath it, a prefix is the longest match for exactly the IPs it
+    // contains, so the answer is recoverable from the key and is not stored.
+    return nonTrivial != null ? nonTrivial : prefix.toIpSpace();
+  }
+
+  private @Nonnull Map<Prefix, IpSpace> computeNonTrivialMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
@@ -351,10 +366,10 @@ public final class FibImpl implements Fib {
 
             IpWildcard wc = IpWildcard.create(prefix);
 
-            if (subTriePrefixes.isEmpty()) {
-              builder.put(prefix, prefix.toIpSpace());
-            } else {
-              // Ips matching prefix are those in prefix and not in any subtrie prefixes.
+            if (!subTriePrefixes.isEmpty()) {
+              // Ips matching prefix are those in prefix and not in any subtrie prefixes. With no
+              // subtrie prefix they are just the IPs in prefix, which matchingIps recovers from the
+              // prefix rather than storing.
               builder.put(
                   prefix, IpWildcardSetIpSpace.create(subTriePrefixes, ImmutableSet.of(wc)));
             }

@@ -45,6 +45,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.PrimedBDDInteger;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
@@ -406,7 +407,7 @@ public final class PacketPolicyToBddTest {
       assertTrue(toBdd.visit(expr).isZero());
     }
 
-    // single fib entry with missing matching Ips
+    // single fib entry whose matching Ips are empty
     {
       Fib fib =
           MockFib.builder()
@@ -415,6 +416,7 @@ public final class PacketPolicyToBddTest {
                       Ip.ZERO,
                       ImmutableSet.of(
                           new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+              .setMatchingIps(ImmutableMap.of(prefix1, EmptyIpSpace.INSTANCE))
               .build();
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
       BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);

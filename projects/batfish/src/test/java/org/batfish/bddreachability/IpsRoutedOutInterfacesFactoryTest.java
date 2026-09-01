@@ -72,7 +72,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
           ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
     }
 
-    // single fib entry with missing matching Ips
+    // single fib entry whose matching Ips are empty
     {
       Fib fib =
           MockFib.builder()
@@ -81,6 +81,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
                       Ip.ZERO,
                       ImmutableSet.of(
                           new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+              .setMatchingIps(ImmutableMap.of(prefix1, EmptyIpSpace.INSTANCE))
               .build();
       Map<String, IpSpace> map =
           IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
