@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -18,9 +17,11 @@ public interface Fib extends Serializable {
   Set<FibEntry> allEntries();
 
   /**
-   * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that
-   * prefix is the longest match in the RIB (among prefixes of forwarding routes).
+   * Returns the IPs for which {@code prefix} is the longest match in the RIB, among prefixes of
+   * forwarding routes.
+   *
+   * <p>{@code prefix} must be the network of a forwarding route in this FIB.
    */
   @Nonnull
-  Map<Prefix, IpSpace> getMatchingIps();
+  IpSpace matchingIps(Prefix prefix);
 }

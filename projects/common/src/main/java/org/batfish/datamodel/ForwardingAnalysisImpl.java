@@ -93,9 +93,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     Set<Ip> unownedArpIps = computeUnownedArpIps(fibs, ipSpaceToBDD, unownedIpsBDD);
 
     LOGGER.info("Aggregating information about routing entries");
-    // IpSpaces matched by each prefix
-    // -- only will have entries for active interfaces if FIB is correct
-    Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs, allVrfs);
     // Set of routes that forward out each interface
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
         computeRoutesWithNextHop(fibs, allVrfs);
@@ -110,7 +107,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // interface. Should only include active interfaces.
       LOGGER.info("Computing IPs routed out interfaces");
       Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces =
-          computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop, allVrfs);
+          computeIpsRoutedOutInterfaces(fibs, routesWithNextHop, allVrfs);
       LOGGER.info("Computing ARP replies");
       _arpReplies =
           computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
@@ -150,7 +147,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                               ipOwners,
                               fibs.get(node).get(vrf),
                               unownedArpIps,
-                              matchingIps.get(node).get(vrf),
                               ownedIps,
                               interfacesWithMissingDevices,
                               internalIps,
@@ -184,7 +180,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       IpOwners ipOwners,
       Fib fib,
       Set<Ip> unownedArpIps,
-      Map<Prefix, IpSpace> matchingIps,
       IpSpace ownedIps,
       Multimap<String, String> interfacesWithMissingDevices,
       IpSpace internalIps,
@@ -225,7 +220,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeDestIp =
-        computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
+        computeArpTrueEdgeDestIp(fib, routesWithDestIpEdge, _arpReplies);
 
     /* edge -> routes for which an arp true response will be received when they are the lpm of
      * the dest IP
@@ -244,7 +239,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeNextHopIp =
-        computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
+        computeArpTrueEdgeNextHopIp(fib, routesWithNextHopIpArpTrue);
 
     Map<Edge, IpSpace> arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
@@ -275,13 +270,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                * for the dst ip itself with no reply
                */
               IpSpace arpFalseDestIp =
-                  computeArpFalseDestIp(
-                      matchingIps, routesWhereDstIpCanBeArpIp.get(iface), someoneReplies);
+                  computeArpFalseDestIp(fib, routesWhereDstIpCanBeArpIp.get(iface), someoneReplies);
 
               /* dst ips for which this vrf forwards out that interface,
                * ARPing for a next-hop IP and receiving no reply
                */
-              IpSpace arpFalseNextHopIp = computeArpFalseNextHopIp(matchingIps, arpFalseNhipRoutes);
+              IpSpace arpFalseNextHopIp = computeArpFalseNextHopIp(fib, arpFalseNhipRoutes);
 
               IpSpace arpFalse = AclIpSpace.union(arpFalseDestIp, arpFalseNextHopIp);
 
@@ -301,13 +295,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                * for some unowned next-hop IP with no reply
                */
               IpSpace dstIpsWithUnownedNextHopIpArpFalse =
-                  computeRouteMatchConditions(arpFalseNhipRoutesWithUnownedArpIp, matchingIps);
+                  computeRouteMatchConditions(arpFalseNhipRoutesWithUnownedArpIp, fib);
 
               /* dst IPs for which that VRF forwards out that interface, ARPing
                * for some owned next-hop IP with no reply.
                */
               IpSpace dstIpsWithOwnedNextHopIpArpFalse =
-                  computeRouteMatchConditions(arpFalseNhipRoutesWithOwnedArpIp, matchingIps);
+                  computeRouteMatchConditions(arpFalseNhipRoutesWithOwnedArpIp, fib);
 
               IpSpace deliveredToSubnet =
                   computeDeliveredToSubnet(arpFalseDestIp, externalArpIps, ownedIps);
@@ -349,10 +343,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             });
 
     // destination IPs that will be null routes
-    IpSpace nullRoutedIps = computeNullRoutedIps(matchingIps, fib);
+    IpSpace nullRoutedIps = computeNullRoutedIps(fib);
 
     // nextVrf -> dest IPs that vrf delegates to nextVrf
-    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(matchingIps, fib);
+    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(fib);
 
     return VrfForwardingBehavior.builder()
         .setArpTrueEdge(arpTrueEdge)
@@ -537,7 +531,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
-      Map<Prefix, IpSpace> matchingIps,
+      Fib fib,
       Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge,
       Map<String, Map<String, IpSpace>> arpReplies) {
     return toImmutableMap(
@@ -546,7 +540,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         edgeEntry -> {
           Edge edge = edgeEntry.getKey();
           Set<AbstractRoute> routes = edgeEntry.getValue();
-          IpSpace dstIpMatchesSomeRoutePrefix = computeRouteMatchConditions(routes, matchingIps);
+          IpSpace dstIpMatchesSomeRoutePrefix = computeRouteMatchConditions(routes, fib);
           String recvNode = edge.getNode2();
           String recvInterface = edge.getInt2();
           IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
@@ -558,11 +552,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
-      Map<Prefix, IpSpace> matchingIps, Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue) {
+      Fib fib, Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue) {
     return toImmutableMap(
         routesWithNextHopIpArpTrue,
         Entry::getKey, // edge
-        edgeEntry -> computeRouteMatchConditions(edgeEntry.getValue(), matchingIps));
+        edgeEntry -> computeRouteMatchConditions(edgeEntry.getValue(), fib));
   }
 
   @VisibleForTesting
@@ -641,7 +635,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeIpsRoutedOutInterfaces(
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<String, Map<String, Fib>> fibs,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
       List<Map.Entry<String, String>> allVrfs) {
     return allVrfs.parallelStream()
@@ -652,7 +646,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                 e -> {
                   String hostname = e.getKey();
                   String vrf = e.getValue();
-                  Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(hostname).get(vrf);
+                  Fib vrfFib = fibs.get(hostname).get(vrf);
                   return (Map<String, IpSpace>)
                       routesWithNextHop.get(hostname).get(vrf).entrySet().stream()
                           /*
@@ -667,7 +661,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 String iface = ifaceEntry.getKey();
                                 Set<AbstractRoute> routes = ifaceEntry.getValue();
                                 return Maps.immutableEntry(
-                                    iface, computeRouteMatchConditions(routes, vrfMatchingIps));
+                                    iface, computeRouteMatchConditions(routes, vrfFib));
                               })
                           .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
                 }))
@@ -676,36 +670,28 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static IpSpace computeArpFalseDestIp(
-      Map<Prefix, IpSpace> matchingIps,
-      Set<AbstractRoute> routesWhereDstIpCanBeArpIp,
-      IpSpace someoneReplies) {
-    IpSpace ipsRoutedOutInterface =
-        computeRouteMatchConditions(routesWhereDstIpCanBeArpIp, matchingIps);
+      Fib fib, Set<AbstractRoute> routesWhereDstIpCanBeArpIp, IpSpace someoneReplies) {
+    IpSpace ipsRoutedOutInterface = computeRouteMatchConditions(routesWhereDstIpCanBeArpIp, fib);
     return AclIpSpace.rejecting(someoneReplies).thenPermitting(ipsRoutedOutInterface).build();
   }
 
   @VisibleForTesting
-  static IpSpace computeArpFalseNextHopIp(
-      Map<Prefix, IpSpace> matchingIps, Set<AbstractRoute> routesWithNextHopIpArpFalse) {
-    return computeRouteMatchConditions(routesWithNextHopIpArpFalse, matchingIps);
+  static IpSpace computeArpFalseNextHopIp(Fib fib, Set<AbstractRoute> routesWithNextHopIpArpFalse) {
+    return computeRouteMatchConditions(routesWithNextHopIpArpFalse, fib);
   }
 
   @VisibleForTesting
-  static IpSpace computeNullRoutedIps(Map<Prefix, IpSpace> matchingIps, Fib fib) {
+  static IpSpace computeNullRoutedIps(Fib fib) {
     Set<AbstractRoute> nullRoutes =
         fib.allEntries().stream()
             .filter(fibEntry -> fibEntry.getAction() instanceof FibNullRoute)
             .map(FibEntry::getTopLevelRoute)
             .collect(ImmutableSet.toImmutableSet());
-    return computeRouteMatchConditions(nullRoutes, matchingIps);
+    return computeRouteMatchConditions(nullRoutes, fib);
   }
 
   @VisibleForTesting
-  static Map<String, IpSpace> computeNextVrfIps(Map<Prefix, IpSpace> matchingIps, Fib fib) {
-    return computeNextVrfIps(fib, matchingIps);
-  }
-
-  private static Map<String, IpSpace> computeNextVrfIps(Fib fib, Map<Prefix, IpSpace> matchingIps) {
+  static Map<String, IpSpace> computeNextVrfIps(Fib fib) {
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibNextVrf)
         .collect(
@@ -719,7 +705,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                 Entry::getKey /* nextVrf */,
                 routesByNextVrfEntry ->
                     computeRouteMatchConditions(
-                        routesByNextVrfEntry.getValue() /* routes */, matchingIps)));
+                        routesByNextVrfEntry.getValue() /* routes */, fib)));
   }
 
   @VisibleForTesting
@@ -771,20 +757,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         .rowMap();
   }
 
-  static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
-      Map<String, Map<String, Fib>> fibs, List<Entry<String, String>> allVrfs) {
-    return allVrfs.parallelStream()
-        .collect(
-            ImmutableTable.toImmutableTable(
-                Entry::getKey,
-                Entry::getValue,
-                e -> fibs.get(e.getKey()).get(e.getValue()).getMatchingIps()))
-        .rowMap();
-  }
-
   @VisibleForTesting
-  static IpSpace computeRouteMatchConditions(
-      Collection<AbstractRoute> routes, Map<Prefix, IpSpace> matchingIps) {
+  static IpSpace computeRouteMatchConditions(Collection<AbstractRoute> routes, Fib fib) {
     // get the union of IpSpace that match one of the routes
     // get the union of IpSpace that match one of the routes
     return firstNonNull(
@@ -792,7 +766,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             routes.stream()
                 .map(AbstractRoute::getNetwork)
                 .distinct()
-                .map(matchingIps::get)
+                .map(fib::matchingIps)
                 .toArray(IpSpace[]::new)),
         EmptyIpSpace.INSTANCE);
   }

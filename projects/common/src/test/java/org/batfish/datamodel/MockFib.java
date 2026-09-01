@@ -61,7 +61,10 @@ public class MockFib implements Fib {
   }
 
   @Override
-  public @Nonnull Map<Prefix, IpSpace> getMatchingIps() {
-    return _matchingIps;
+  public @Nonnull IpSpace matchingIps(Prefix prefix) {
+    // Mirror FibImpl: a prefix with nothing more specific beneath it matches exactly its own IPs,
+    // so tests only need to set the prefixes whose matching IPs are not the prefix itself.
+    IpSpace matchingIps = _matchingIps.get(prefix);
+    return matchingIps != null ? matchingIps : prefix.toIpSpace();
   }
 }
