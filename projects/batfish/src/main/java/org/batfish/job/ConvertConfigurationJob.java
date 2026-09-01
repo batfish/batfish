@@ -686,12 +686,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
   private static void removeUndefinedStaticRouteTrackReferences(Configuration c, Warnings w) {
     for (Vrf v : c.getVrfs().values()) {
-      boolean modified = false;
       ImmutableSortedSet.Builder<StaticRoute> routes = ImmutableSortedSet.naturalOrder();
       for (StaticRoute sr : v.getStaticRoutes()) {
         String track = sr.getTrack();
         if (track != null && !c.getTrackingGroups().containsKey(track)) {
-          modified = true;
           w.redFlagf(
               "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
                   + " '%s'",
@@ -701,9 +699,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           routes.add(sr);
         }
       }
-      if (modified) {
-        v.setStaticRoutes(routes.build());
-      }
+      v.setStaticRoutes(routes.build());
     }
   }
 
@@ -780,18 +776,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void removeInvalidStaticRoutes(Configuration c, Warnings w) {
     StaticRouteNextHopChecker checker = new StaticRouteNextHopChecker(c, w);
     for (Vrf v : c.getVrfs().values()) {
-      boolean modified = false;
       ImmutableSortedSet.Builder<StaticRoute> builder = ImmutableSortedSet.naturalOrder();
       for (StaticRoute sr : v.getStaticRoutes()) {
-        if (!checker.visit(sr.getNextHop())) {
-          modified = true;
-        } else {
+        if (checker.visit(sr.getNextHop())) {
           builder.add(sr);
         }
       }
-      if (modified) {
-        v.setStaticRoutes(builder.build());
-      }
+      v.setStaticRoutes(builder.build());
     }
   }
 
