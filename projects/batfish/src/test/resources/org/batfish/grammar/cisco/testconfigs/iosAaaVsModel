@@ -1,0 +1,18 @@
+!
+hostname iosAaaVsModel
+!
+aaa new-model
+!
+aaa authentication login default group myGroup local
+aaa authentication login MYLIST group myGroup enable
+aaa authentication login privilege-mode
+!
+aaa accounting commands 15 default start-stop group myGroup
+aaa accounting default group myGroup1 myGroup2
+aaa accounting default local
+!
+enable secret 5 $1$enab$leSecretHashValue0
+!
+username admin privilege 15 secret 5 $1$admn$adminSecretHashValue
+username operator role network-operator nopassword
+!
