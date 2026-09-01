@@ -371,7 +371,7 @@ public final class FastpathGrammarTest {
     Map<String, UserAccount> users = c.getUsers();
     assertThat(
         users.keySet(),
-        equalTo(ImmutableSet.of("admin", "operator", "seagull", "monitor", "policy")));
+        equalTo(ImmutableSet.of("admin", "operator", "seagull", "monitor", "policy", "bob")));
 
     UserAccount admin = users.get("admin");
     assertThat(admin.getHasPassword(), equalTo(true));
@@ -406,13 +406,19 @@ public final class FastpathGrammarTest {
     assertThat(policy.getEncrypted(), equalTo(true));
     assertThat(policy.getLevel(), equalTo(5));
     assertThat(policy.getUserGroup(), nullValue());
+
+    UserAccount bob = users.get("bob");
+    assertThat(bob.getHasPassword(), equalTo(true));
+    assertThat(bob.getEncrypted(), equalTo(false));
+    assertThat(bob.getLevel(), equalTo(15));
+    assertThat(bob.getUserGroup(), nullValue());
   }
 
   @Test
   public void testTaskgroupExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     Map<String, Taskgroup> taskgroups = c.getTaskgroups();
-    assertThat(taskgroups.keySet(), equalTo(ImmutableSet.of("builder", "admin")));
+    assertThat(taskgroups.keySet(), equalTo(ImmutableSet.of("builder", "admin", "ops")));
     Set<TaskPermission> allPermissions =
         ImmutableSet.of(
             TaskPermission.READ,
@@ -429,15 +435,21 @@ public final class FastpathGrammarTest {
     assertThat(
         taskgroups.get("admin").getTasks(),
         equalTo(ImmutableMap.of(TaskComponent.AAA, allPermissions)));
+    assertThat(
+        taskgroups.get("ops").getTasks(),
+        equalTo(
+            ImmutableMap.of(
+                TaskComponent.OSPF, ImmutableSet.of(TaskPermission.READ, TaskPermission.EXECUTE))));
   }
 
   @Test
   public void testUsergroupExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     Map<String, Usergroup> usergroups = c.getUsergroups();
-    assertThat(usergroups.keySet(), equalTo(ImmutableSet.of("builder", "admin")));
+    assertThat(usergroups.keySet(), equalTo(ImmutableSet.of("builder", "admin", "ops")));
     assertThat(usergroups.get("builder").getTaskgroups(), equalTo(ImmutableList.of("builder")));
     assertThat(usergroups.get("admin").getTaskgroups(), equalTo(ImmutableList.of("admin")));
+    assertThat(usergroups.get("ops").getTaskgroups(), equalTo(ImmutableList.of("ops")));
   }
 
   @Test

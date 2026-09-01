@@ -615,7 +615,7 @@ aaa_session_id_null
 
 s_username
 :
-  USERNAME name = double_quoted_string
+  USERNAME name = word
   (
     u_password
     | u_nopassword_null
@@ -662,19 +662,19 @@ u_usergroup
 
 s_usergroup
 :
-  USERGROUP name = double_quoted_string NEWLINE
+  USERGROUP name = word NEWLINE
   usergroup_taskgroup*
   EXIT NEWLINE
 ;
 
 usergroup_taskgroup
 :
-  TASKGROUP name = double_quoted_string NEWLINE
+  TASKGROUP name = word NEWLINE
 ;
 
 s_taskgroup
 :
-  TASKGROUP name = double_quoted_string NEWLINE
+  TASKGROUP name = word NEWLINE
   taskgroup_task*
   EXIT NEWLINE
 ;

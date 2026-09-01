@@ -264,7 +264,10 @@ TACACS_SERVER: 'tacacs-server';
 
 TASK: 'task';
 
-TASKGROUP: 'taskgroup';
+TASKGROUP
+:
+  'taskgroup' -> pushMode ( M_Word )
+;
 
 TIMEOUT: 'timeout';
 

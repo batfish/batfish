@@ -433,7 +433,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void enterS_username(S_usernameContext ctx) {
-    String name = toString(ctx.name.text);
+    String name = toString(ctx.name);
     _currentUser = _c.getUsers().computeIfAbsent(name, UserAccount::new);
   }
 
@@ -459,7 +459,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void enterS_taskgroup(S_taskgroupContext ctx) {
-    _currentTaskgroup = _c.getTaskgroups().computeIfAbsent(toString(ctx.name.text), Taskgroup::new);
+    _currentTaskgroup = _c.getTaskgroups().computeIfAbsent(toString(ctx.name), Taskgroup::new);
   }
 
   @Override
@@ -501,7 +501,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void enterS_usergroup(S_usergroupContext ctx) {
-    _currentUsergroup = _c.getUsergroups().computeIfAbsent(toString(ctx.name.text), Usergroup::new);
+    _currentUsergroup = _c.getUsergroups().computeIfAbsent(toString(ctx.name), Usergroup::new);
   }
 
   @Override
@@ -511,7 +511,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void exitUsergroup_taskgroup(Usergroup_taskgroupContext ctx) {
-    _currentUsergroup.getTaskgroups().add(toString(ctx.name.text));
+    _currentUsergroup.getTaskgroups().add(toString(ctx.name));
   }
 
   @Override

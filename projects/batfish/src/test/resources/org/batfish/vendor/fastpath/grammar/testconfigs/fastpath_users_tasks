@@ -14,12 +14,20 @@ taskgroup "admin"
 task read write execute debug aaa
 exit
 !
+taskgroup ops
+task read execute ospf
+exit
+!
 usergroup "builder"
 taskgroup "builder"
 exit
 !
 usergroup "admin"
 taskgroup "admin"
+exit
+!
+usergroup ops
+taskgroup ops
 exit
 !
 username "admin" password abc123 level 15 encrypted
@@ -30,4 +38,5 @@ username "operator" unlock
 username "monitor" nopassword level 1
 username "policy" password abc123 level 5 encrypted override-complexity-check
 username "admin" level 15 password
+username bob password xxxyyymmmm level 15
 no username guest
