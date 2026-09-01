@@ -141,12 +141,6 @@ public final class VirtualRouter {
   private SortedMap<CrossVrfEdgeId, Queue<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>>>
       _crossVrfIncomingRoutes;
 
-  /**
-   * The independent RIB contains connected and static routes, which are unaffected by BDP
-   * iterations (hence, independent).
-   */
-  Rib _independentRib;
-
   /** Incoming messages into this router from each IS-IS circuit */
   SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
@@ -192,7 +186,7 @@ public final class VirtualRouter {
 
   /**
    * Static routes needing no activation, in {@link Vrf#getStaticRoutes} order. Merged into {@link
-   * #_independentRib} once, at init.
+   * #_mainRib} once, at init.
    */
   List<StaticRoute> _unconditionalStatics;
 
@@ -309,13 +303,11 @@ public final class VirtualRouter {
     initLocalRib();
     initStaticRibs();
     // Always import local and connected routes into your own rib
-    importRib(_independentRib, _connectedRib);
-    importRib(_independentRib, _localRib);
-    for (StaticRoute sr : _unconditionalStatics) {
-      _independentRib.mergeRoute(annotateRoute(sr));
-    }
-    importRib(_mainRib, _independentRib);
     importRib(_mainRib, _connectedRib);
+    importRib(_mainRib, _localRib);
+    for (StaticRoute sr : _unconditionalStatics) {
+      _mainRib.mergeRoute(annotateRoute(sr));
+    }
 
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
@@ -861,7 +853,7 @@ public final class VirtualRouter {
    * redistribution.
    *
    * <ul>
-   *   <li>Kernel routes with no dependencies are added to {@code _independentRib}.
+   *   <li>Kernel routes with no dependencies are added to {@code _mainRib}.
    *   <li>Kernel routes with dependencies are stored in {@code _kernelConditionalRoutes}, to be
    *       processed each data plane iteration.
    * </ul>
@@ -873,7 +865,7 @@ public final class VirtualRouter {
       if (kernelRoute.getRequiredOwnedIp() != null) {
         kernelConditionalRoutesBuilder.add(kernelRoute);
       } else {
-        _independentRib.mergeRoute(annotateRoute(kernelRoute));
+        _mainRib.mergeRoute(annotateRoute(kernelRoute));
       }
     }
     _kernelConditionalRoutes = kernelConditionalRoutesBuilder.build();
@@ -1130,7 +1122,6 @@ public final class VirtualRouter {
     _connectedRib = new ConnectedRib();
     _localRib = new LocalRib();
     _generatedRib = new Rib();
-    _independentRib = new Rib();
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
@@ -1427,11 +1418,6 @@ public final class VirtualRouter {
      * RIBs not read from can just be re-initialized
      */
     _ripRib = new RipRib();
-
-    /*
-     * Add routes that cannot change (does not affect below computation)
-     */
-    _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _independentRib));
 
     /*
      * Re-add independent RIP routes to ripRib for tie-breaking
