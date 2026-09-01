@@ -18,7 +18,6 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
@@ -82,14 +81,13 @@ public final class IpsRoutedOutInterfacesFactory {
 
   @VisibleForTesting
   static Map<String, IpSpace> computeIpsRoutedOutInterfacesMap(Fib fib) {
-    Map<Prefix, IpSpace> matchingIps = fib.getMatchingIps();
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction().accept(ResolvedInterface.INSTANCE).isPresent())
         .collect(
             groupingBy(
                 fibEntry -> fibEntry.getAction().accept(ResolvedInterface.INSTANCE).get(),
                 mapping(
-                    fibEntry -> matchingIps.get(fibEntry.getTopLevelRoute().getNetwork()),
+                    fibEntry -> fib.matchingIps(fibEntry.getTopLevelRoute().getNetwork()),
                     collectingAndThen(
                         Collectors.toList(),
                         ipSpaces ->
