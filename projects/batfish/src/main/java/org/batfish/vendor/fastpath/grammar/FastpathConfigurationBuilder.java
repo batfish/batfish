@@ -2,8 +2,10 @@ package org.batfish.vendor.fastpath.grammar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -55,12 +57,18 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Noipd_lookupContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Nol_consoleContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Quoted_textContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_hostnameContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.S_taskgroupContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.S_usergroupContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.S_usernameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Set_promptContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_client_modeContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntp_source_interfaceContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_modeContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Sntpc_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ss_hostContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Task_componentContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Task_permissionContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Taskgroup_taskContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_hostContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_keyContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ts_source_interfaceContext;
@@ -69,6 +77,9 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_keyContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_portContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_priorityContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Tsh_timeoutContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.U_passwordContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.U_usergroupContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Usergroup_taskgroupContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.WordContext;
 import org.batfish.vendor.fastpath.representation.AaaMethod;
 import org.batfish.vendor.fastpath.representation.Accounting;
@@ -80,6 +91,11 @@ import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
 import org.batfish.vendor.fastpath.representation.Sntp;
 import org.batfish.vendor.fastpath.representation.TacacsServer;
+import org.batfish.vendor.fastpath.representation.TaskComponent;
+import org.batfish.vendor.fastpath.representation.TaskPermission;
+import org.batfish.vendor.fastpath.representation.Taskgroup;
+import org.batfish.vendor.fastpath.representation.UserAccount;
+import org.batfish.vendor.fastpath.representation.Usergroup;
 
 /** Populates a {@link FastpathConfiguration} by walking a FastPath parse tree. */
 public final class FastpathConfigurationBuilder extends FastpathParserBaseListener
@@ -103,6 +119,8 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
    */
   private static final String DEFAULT_LIST_NAME = "default";
 
+  private static final IntegerSpace USER_LEVEL_RANGE = IntegerSpace.of(Range.closed(0, 15));
+
   public FastpathConfigurationBuilder(
       FastpathCombinedParser parser,
       String text,
@@ -123,6 +141,9 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   private final @Nonnull Warnings _w;
 
   private @Nullable TacacsServer _currentTacacsServer;
+  private @Nullable Taskgroup _currentTaskgroup;
+  private @Nullable UserAccount _currentUser;
+  private @Nullable Usergroup _currentUsergroup;
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
@@ -408,6 +429,89 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
     }
     assert ctx.NONE() != null;
     return Accounting.RecordType.NONE;
+  }
+
+  @Override
+  public void enterS_username(S_usernameContext ctx) {
+    String name = toString(ctx.name);
+    _currentUser = _c.getUsers().computeIfAbsent(name, UserAccount::new);
+  }
+
+  @Override
+  public void exitS_username(S_usernameContext ctx) {
+    _currentUser = null;
+  }
+
+  @Override
+  public void exitU_password(U_passwordContext ctx) {
+    _currentUser.setHasPassword(true);
+    _currentUser.setEncrypted(ctx.ENCRYPTED() != null);
+    if (ctx.level != null) {
+      toIntegerInSpace(ctx, ctx.level, USER_LEVEL_RANGE, "username level")
+          .ifPresent(_currentUser::setLevel);
+    }
+  }
+
+  @Override
+  public void exitU_usergroup(U_usergroupContext ctx) {
+    _currentUser.setUserGroup(toString(ctx.group));
+  }
+
+  @Override
+  public void enterS_taskgroup(S_taskgroupContext ctx) {
+    _currentTaskgroup = _c.getTaskgroups().computeIfAbsent(toString(ctx.name), Taskgroup::new);
+  }
+
+  @Override
+  public void exitS_taskgroup(S_taskgroupContext ctx) {
+    _currentTaskgroup = null;
+  }
+
+  @Override
+  public void exitTaskgroup_task(Taskgroup_taskContext ctx) {
+    TaskComponent component = toTaskComponent(ctx.task_component());
+    Set<TaskPermission> permissions =
+        _currentTaskgroup
+            .getTasks()
+            .computeIfAbsent(component, c -> EnumSet.noneOf(TaskPermission.class));
+    ctx.task_permission().forEach(p -> permissions.add(toTaskPermission(p)));
+  }
+
+  private static @Nonnull TaskPermission toTaskPermission(Task_permissionContext ctx) {
+    if (ctx.READ() != null) {
+      return TaskPermission.READ;
+    } else if (ctx.WRITE() != null) {
+      return TaskPermission.WRITE;
+    } else if (ctx.EXECUTE() != null) {
+      return TaskPermission.EXECUTE;
+    }
+    assert ctx.DEBUG() != null;
+    return TaskPermission.DEBUG;
+  }
+
+  private static @Nonnull TaskComponent toTaskComponent(Task_componentContext ctx) {
+    if (ctx.AAA() != null) {
+      return TaskComponent.AAA;
+    } else if (ctx.OSPF() != null) {
+      return TaskComponent.OSPF;
+    }
+    assert ctx.BGP() != null;
+    return TaskComponent.BGP;
+  }
+
+  @Override
+  public void enterS_usergroup(S_usergroupContext ctx) {
+    _currentUsergroup = _c.getUsergroups().computeIfAbsent(toString(ctx.name), Usergroup::new);
+  }
+
+  @Override
+  public void exitS_usergroup(S_usergroupContext ctx) {
+    _currentUsergroup = null;
+  }
+
+  @Override
+  public void exitUsergroup_taskgroup(Usergroup_taskgroupContext ctx) {
+    _currentUsergroup.getTaskgroups().add(toString(ctx.name));
   }
 
   @Override

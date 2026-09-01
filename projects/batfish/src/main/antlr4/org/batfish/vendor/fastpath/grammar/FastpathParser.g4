@@ -23,6 +23,9 @@ statement
   | s_set
   | s_sntp
   | s_tacacs_server
+  | s_taskgroup
+  | s_usergroup
+  | s_username
 ;
 
 s_hostname
@@ -311,6 +314,7 @@ s_no
   (
     no_ip
     | no_logging
+    | no_username_null
   )
 ;
 
@@ -608,3 +612,95 @@ aaa_session_id_null
 :
   SESSION_ID null_rest_of_line
 ;
+
+s_username
+:
+  USERNAME name = word
+  (
+    u_password
+    | u_nopassword_null
+    | u_usergroup
+    | u_unlock_null
+    | u_level_null
+  )
+;
+
+u_password
+:
+  PASSWORD SECRET
+  (
+    ENCRYPTED OVERRIDE_COMPLEXITY_CHECK?
+    | LEVEL level = uint16
+      (
+        ENCRYPTED OVERRIDE_COMPLEXITY_CHECK?
+      )?
+    | OVERRIDE_COMPLEXITY_CHECK
+  )? NEWLINE
+;
+
+// `username <name> level <n> [override-complexity-check] password` prompts for the password
+// interactively
+u_level_null
+:
+  LEVEL uint16 OVERRIDE_COMPLEXITY_CHECK? PASSWORD NEWLINE
+;
+
+u_nopassword_null
+:
+  NOPASSWORD null_rest_of_line
+;
+
+u_unlock_null
+:
+  UNLOCK null_rest_of_line
+;
+
+u_usergroup
+:
+  USERGROUP group = word NEWLINE
+;
+
+s_usergroup
+:
+  USERGROUP name = word NEWLINE
+  usergroup_taskgroup*
+  EXIT NEWLINE
+;
+
+usergroup_taskgroup
+:
+  TASKGROUP name = word NEWLINE
+;
+
+s_taskgroup
+:
+  TASKGROUP name = word NEWLINE
+  taskgroup_task*
+  EXIT NEWLINE
+;
+
+taskgroup_task
+:
+  TASK task_permission+ task_component NEWLINE
+;
+
+task_permission
+:
+  READ
+  | WRITE
+  | EXECUTE
+  | DEBUG
+;
+
+task_component
+:
+  AAA
+  | OSPF
+  | BGP
+;
+
+no_username_null
+:
+  USERNAME null_rest_of_line
+;
+
