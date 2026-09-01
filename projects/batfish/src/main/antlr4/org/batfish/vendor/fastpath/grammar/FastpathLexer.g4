@@ -16,6 +16,8 @@ AAA: 'aaa';
 
 ACCOUNTING: 'accounting';
 
+AGING: 'aging';
+
 ALERT: 'alert';
 
 AUTHENTICATION: 'authentication';
@@ -27,6 +29,8 @@ BGP: 'bgp';
 BROADCAST: 'broadcast';
 
 BUFFERED: 'buffered';
+
+CHARACTER_CLASSES: 'character-classes';
 
 CLI_COMMAND: 'cli-command';
 
@@ -41,6 +45,8 @@ COMMANDS
     }
   }
 ;
+
+CONSECUTIVE_CHARACTERS: 'consecutive-characters';
 
 CONSOLE: 'console';
 
@@ -85,6 +91,8 @@ ENCRYPTED: 'encrypted';
 
 ERROR: 'error';
 
+EXCLUDE_KEYWORD: 'exclude-keyword' -> pushMode ( M_Word );
+
 EXEC
 :
   'exec'
@@ -98,6 +106,8 @@ EXEC
 EXECUTE: 'execute';
 
 EXIT: 'exit';
+
+HISTORY: 'history';
 
 HOST
 :
@@ -143,6 +153,8 @@ LIST: 'list';
 
 LOCAL: 'local';
 
+LOCK_OUT: 'lock-out';
+
 LOGGING: 'logging';
 
 LOGIN
@@ -158,6 +170,14 @@ LOGIN
 LOOKUP: 'lookup';
 
 LOOPBACK: 'loopback';
+
+LOWERCASE_LETTERS: 'lowercase-letters';
+
+MAXIMUM: 'maximum';
+
+MIN_LENGTH: 'min-length';
+
+MINIMUM: 'minimum';
 
 MODE: 'mode';
 
@@ -181,6 +201,8 @@ NOPASSWORD: 'nopassword';
 
 NOTICE: 'notice';
 
+NUMERIC_CHARACTERS: 'numeric-characters';
+
 OSPF: 'ospf';
 
 OVERRIDE_COMPLEXITY_CHECK: 'override-complexity-check';
@@ -196,6 +218,8 @@ PASSWORD
     }
   }
 ;
+
+PASSWORDS: 'passwords';
 
 PERSISTENT: 'persistent';
 
@@ -219,6 +243,8 @@ READ: 'read';
 RECONFIGURE: 'reconfigure';
 
 REMOVE: 'remove';
+
+REPEATED_CHARACTERS: 'repeated-characters';
 
 RETRY: 'retry';
 
@@ -247,6 +273,8 @@ SNTP: 'sntp';
 
 SOURCE_INTERFACE: 'source-interface';
 
+SPECIAL_CHARACTERS: 'special-characters';
+
 START_STOP: 'start-stop';
 
 STATUS
@@ -255,6 +283,10 @@ STATUS
 ;
 
 STOP_ONLY: 'stop-only';
+
+STRENGTH: 'strength';
+
+STRENGTH_CHECK: 'strength-check';
 
 SYSLOG: 'syslog';
 
@@ -278,6 +310,8 @@ TUNNEL: 'tunnel';
 UNICAST: 'unicast';
 
 UNLOCK: 'unlock';
+
+UPPERCASE_LETTERS: 'uppercase-letters';
 
 USERGROUP
 :

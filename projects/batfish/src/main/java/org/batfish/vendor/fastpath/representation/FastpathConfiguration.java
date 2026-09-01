@@ -32,6 +32,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
   private final Map<String, UserAccount> _users;
   private final Map<String, Taskgroup> _taskgroups;
   private final Map<String, Usergroup> _usergroups;
+  private final PasswordPolicy _passwordPolicy;
 
   private transient Configuration _c;
 
@@ -44,6 +45,7 @@ public final class FastpathConfiguration extends VendorConfiguration {
     _users = new LinkedHashMap<>();
     _taskgroups = new LinkedHashMap<>();
     _usergroups = new LinkedHashMap<>();
+    _passwordPolicy = new PasswordPolicy();
   }
 
   @Override
@@ -93,6 +95,10 @@ public final class FastpathConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Usergroup> getUsergroups() {
     return _usergroups;
+  }
+
+  public @Nonnull PasswordPolicy getPasswordPolicy() {
+    return _passwordPolicy;
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
