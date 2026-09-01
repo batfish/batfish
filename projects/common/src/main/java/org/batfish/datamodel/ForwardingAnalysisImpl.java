@@ -401,19 +401,32 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   private static Set<Ip> computeUnownedArpIps(
       Map<String, Map<String, Fib>> fibs, IpSpaceToBDD ipSpaceToBDD, BDD unownedIpsBDD) {
-    return fibs.values().stream()
-        .map(Map::values)
-        .flatMap(Collection::stream)
-        .map(Fib::allEntries)
-        .flatMap(Collection::stream)
-        .map(FibEntry::getAction)
-        .filter(FibForward.class::isInstance)
-        .map(fibAction -> ((FibForward) fibAction).getArpIp())
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .distinct()
-        .filter(arpIp -> ipSpaceToBDD.toBDD(arpIp).andSat(unownedIpsBDD))
-        .collect(ImmutableSet.toImmutableSet());
+    // Collect the distinct ARP IPs in parallel, then test them against the BDD sequentially, since
+    // BDDFactory is not thread safe.
+    //
+    // Worth splitting because the two halves have very different shapes: the first walks every FIB
+    // entry in the snapshot, which is tens of millions of them on a large one, while the set it
+    // produces stays in the thousands. Done as a single sequential stream this was one of the few
+    // parts of dataplane computation that used one core, and it runs once per topology iteration.
+    Set<Ip> arpIps =
+        fibs.values().parallelStream()
+            .flatMap(fibsByVrf -> fibsByVrf.values().stream())
+            .flatMap(fib -> fib.allEntries().stream())
+            .map(FibEntry::getAction)
+            .filter(FibForward.class::isInstance)
+            .map(fibAction -> ((FibForward) fibAction).getArpIp())
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toSet());
+    ImmutableSet.Builder<Ip> unownedArpIps = ImmutableSet.builder();
+    for (Ip arpIp : arpIps) {
+      BDD arpIpBdd = ipSpaceToBDD.toBDD(arpIp);
+      if (arpIpBdd.andSat(unownedIpsBDD)) {
+        unownedArpIps.add(arpIp);
+      }
+      arpIpBdd.free();
+    }
+    return unownedArpIps.build();
   }
 
   /**
