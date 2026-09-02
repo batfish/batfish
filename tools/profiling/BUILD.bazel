@@ -1,3 +1,4 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -67,4 +68,20 @@ py_binary(
     srcs = ["analyze_profile.py"],
     legacy_create_init = 0,
     python_version = "PY3",
+)
+
+java_binary(
+    name = "dataplaneRunner",
+    testonly = True,
+    srcs = ["DataplaneRunner.java"],
+    main_class = "tools.profiling.DataplaneRunner",
+    deps = [
+        "//projects/allinone",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
 )
