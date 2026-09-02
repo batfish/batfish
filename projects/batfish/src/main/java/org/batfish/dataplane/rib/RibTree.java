@@ -94,13 +94,21 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   }
 
   private boolean hasAllowedForwardingRoute(Set<R> routes, ResolutionRestriction<R> restriction) {
-    return routes.stream()
-        .anyMatch(r -> !r.getAbstractRoute().getNonForwarding() && restriction.test(r));
+    for (R r : routes) {
+      if (!r.getAbstractRoute().getNonForwarding() && restriction.test(r)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean onlyAllowedForwardingRoutes(Set<R> routes, ResolutionRestriction<R> restriction) {
-    return routes.stream()
-        .noneMatch(r -> r.getAbstractRoute().getNonForwarding() || !restriction.test(r));
+    for (R r : routes) {
+      if (r.getAbstractRoute().getNonForwarding() || !restriction.test(r)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -113,16 +121,28 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   @Nonnull
   Set<R> getLongestPrefixMatch(
       Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
-    for (int pl = maxPrefixLength; pl >= 0; pl--) {
+    int pl = maxPrefixLength;
+    while (pl >= 0) {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
+      if (routes.isEmpty()) {
+        // No prefix of length at most pl contains the address, so no shorter one does either.
+        return routes;
+      }
       if (hasAllowedForwardingRoute(routes, restriction)) {
         if (onlyAllowedForwardingRoutes(routes, restriction)) {
           return routes;
         }
-        return routes.stream()
-            .filter(r -> !r.getAbstractRoute().getNonForwarding() && restriction.test(r))
-            .collect(ImmutableSet.toImmutableSet());
+        ImmutableSet.Builder<R> allowed = ImmutableSet.builderWithExpectedSize(routes.size());
+        for (R r : routes) {
+          if (!r.getAbstractRoute().getNonForwarding() && restriction.test(r)) {
+            allowed.add(r);
+          }
+        }
+        return allowed.build();
       }
+      // Nothing usable at this prefix; the next candidate is the longest match strictly shorter
+      // than it, so skip the lengths in between rather than searching once per length.
+      pl = routes.iterator().next().getNetwork().getPrefixLength() - 1;
     }
     return ImmutableSet.of();
   }

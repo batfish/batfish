@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -191,6 +192,42 @@ public class AbstractRibTest {
 
     match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"), restriction);
     assertThat(match, empty());
+  }
+
+  /**
+   * The longest match is skipped when none of its routes are usable, whether because they are
+   * non-forwarding or fail the restriction, and a partly usable match is filtered.
+   */
+  @Test
+  public void testLongestPrefixMatchSkipsUnusableMatches() {
+    StaticRoute.Builder srb = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
+    StaticRoute slash8 = srb.setNetwork(Prefix.parse("10.0.0.0/8")).build();
+    StaticRoute slash16 = srb.setNetwork(Prefix.parse("10.1.0.0/16")).build();
+    StaticRoute slash24Forwarding = srb.setNetwork(Prefix.parse("10.1.1.0/24")).build();
+    StaticRoute slash24NonForwarding =
+        srb.setNetwork(Prefix.parse("10.1.1.0/24")).setNonForwarding(true).setTag(1L).build();
+    StaticRoute slash32 =
+        srb.setNetwork(Prefix.parse("10.1.1.1/32")).setNonForwarding(true).setTag(0L).build();
+    for (StaticRoute r :
+        ImmutableList.of(slash8, slash16, slash24Forwarding, slash24NonForwarding, slash32)) {
+      _rib.mergeRouteGetDelta(r);
+    }
+    Ip ip = Ip.parse("10.1.1.1");
+
+    // /32 is non-forwarding; /24 has one forwarding route, which is returned alone.
+    assertThat(_rib.longestPrefixMatch(ip, alwaysTrue()), contains(slash24Forwarding));
+    // With the /24 also rejected by the restriction, fall through to the /16.
+    ResolutionRestriction<StaticRoute> not24 = r -> r.getNetwork().getPrefixLength() != 24;
+    assertThat(_rib.longestPrefixMatch(ip, not24), contains(slash16));
+    // Reject everything longer than a /8.
+    ResolutionRestriction<StaticRoute> only8 = r -> r.getNetwork().getPrefixLength() == 8;
+    assertThat(_rib.longestPrefixMatch(ip, only8), contains(slash8));
+    // Reject everything.
+    assertThat(_rib.longestPrefixMatch(ip, r -> false), empty());
+    // The maximum length bounds the search before the restriction applies.
+    assertThat(_rib.longestPrefixMatch(ip, 20, alwaysTrue()), contains(slash16));
+    assertThat(_rib.longestPrefixMatch(ip, 20, not24), contains(slash16));
+    assertThat(_rib.longestPrefixMatch(ip, 15, alwaysTrue()), contains(slash8));
   }
 
   /**
