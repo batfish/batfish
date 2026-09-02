@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -539,6 +540,58 @@ public class PrefixTrieMultiMapTest {
     ptmm.put(Prefix.parse("20.0.0.0/8"), ++i);
     ptmm.put(Prefix.parse("192.168.0.0/16"), ++i);
     assertThat(ptmm, equalTo(SerializationUtils.clone(ptmm)));
+  }
+
+  @Test
+  public void testHandle() {
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    Prefix p = Prefix.parse("10.0.0.0/8");
+    PrefixTrieMultiMap<Integer>.Handle h = trie.handle(p);
+    assertThat(h.get(), empty());
+    assertThat(trie.getNumElements(), equalTo(0));
+    assertTrue(h.add(1));
+    assertFalse(h.add(1));
+    assertThat(h.get(), equalTo(ImmutableSet.of(1)));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(1)));
+    assertTrue(h.add(2));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(1, 2)));
+    assertTrue(h.replaceAll(3));
+    assertFalse(h.replaceAll(3));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(3)));
+    assertFalse(h.remove(1));
+    assertTrue(h.remove(3));
+    assertThat(trie.get(p), empty());
+    assertThat(trie.getNumElements(), equalTo(0));
+    // The handle stays valid while the trie grows around it, including above it.
+    for (int i = 0; i < 1000; ++i) {
+      trie.put(Prefix.create(Ip.create(0x0B000000L + i), 32), i);
+    }
+    trie.put(Prefix.ZERO, -1);
+    assertTrue(h.add(4));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(4)));
+    assertThat(trie.longestPrefixMatch(Ip.parse("10.1.1.1")), equalTo(ImmutableSet.of(4)));
+    assertThat(trie.handle(p).get(), equalTo(ImmutableSet.of(4)));
+    assertThat(trie.existingHandle(p).get(), equalTo(ImmutableSet.of(4)));
+  }
+
+  @Test
+  public void testExistingHandle() {
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    trie.put(Prefix.parse("10.0.0.0/16"), 1);
+    trie.put(Prefix.parse("10.1.0.0/16"), 2);
+    // Prefixes without elements, including the branching node the two puts created, have no
+    // handle...
+    assertThat(trie.existingHandle(Prefix.parse("10.0.0.0/15")), nullValue());
+    assertThat(trie.existingHandle(Prefix.parse("10.0.0.0/8")), nullValue());
+    assertThat(trie.existingHandle(Prefix.parse("10.0.0.0/24")), nullValue());
+    assertThat(trie.existingHandle(Prefix.parse("11.0.0.0/16")), nullValue());
+    assertThat(new PrefixTrieMultiMap<Integer>().existingHandle(Prefix.ZERO), nullValue());
+    // ...and asking did not add them.
+    assertThat(keysInPostOrder(trie), hasSize(2));
+    PrefixTrieMultiMap<Integer>.Handle h = trie.existingHandle(Prefix.parse("10.1.0.0/16"));
+    assertThat(h.get(), equalTo(ImmutableSet.of(2)));
+    assertTrue(h.remove(2));
+    assertThat(trie.existingHandle(Prefix.parse("10.1.0.0/16")), nullValue());
   }
 
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
