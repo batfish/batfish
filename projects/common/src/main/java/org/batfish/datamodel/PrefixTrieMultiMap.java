@@ -459,25 +459,64 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   /**
-   * Stores a key-value pair in the multimap.
-   *
-   * @return whether the multimap was modified.
+   * The elements at one prefix, found (or created) once and then read and modified without
+   * searching the trie again. Valid until the trie is {@link #clear() cleared}.
    */
-  public boolean put(Prefix p, T e) {
-    return putAll(p, ImmutableList.of(e));
+  public final class Handle {
+    private final @Nonnull Node<T> _node;
+
+    private Handle(Node<T> node) {
+      _node = node;
+    }
+
+    /** The elements at this prefix; empty if there are none. */
+    public @Nonnull Set<T> get() {
+      return _node._elements;
+    }
+
+    /** As {@link PrefixTrieMultiMap#put}. */
+    public boolean add(T e) {
+      return addAll(_node, ImmutableList.of(e));
+    }
+
+    /** As {@link PrefixTrieMultiMap#replaceAll}. */
+    public boolean replaceAll(T e) {
+      return replaceAllAt(_node, e);
+    }
+
+    /** As {@link PrefixTrieMultiMap#remove}. */
+    public boolean remove(T e) {
+      return removeAt(_node, e);
+    }
   }
 
   /**
-   * Stores multiple key-value pairs for a single key in the multimap.
-   *
-   * @return whether the multimap was modified.
+   * A {@link Handle} on the elements at {@code p}, creating the prefix's node if needed. Use it to
+   * read and then update one prefix with a single search.
    */
-  public boolean putAll(Prefix p, Collection<T> elements) {
+  public @Nonnull Handle handle(Prefix p) {
+    return new Handle(findOrCreateNode(p));
+  }
+
+  /**
+   * A {@link Handle} on the elements at {@code p}, or {@code null} if there are none. Unlike {@link
+   * #handle}, this never adds to the trie.
+   */
+  public @Nullable Handle existingHandle(Prefix p) {
+    Node<T> node = exactMatchNode(p);
+    return node == null || node._elements.isEmpty() ? null : new Handle(node);
+  }
+
+  private @Nonnull Node<T> findOrCreateNode(Prefix p) {
     if (_root == null || !_root._prefix.containsPrefix(p)) {
-      _root = combine(new Node<T>(p, elements), _root);
-      return true;
+      Node<T> node = new Node<>(p);
+      _root = combine(node, _root);
+      return node;
     }
-    Node<T> node = _root.findOrCreateNode(p);
+    return _root.findOrCreateNode(p);
+  }
+
+  private static <T> boolean addAll(Node<T> node, Collection<T> elements) {
     if (node._elements.containsAll(elements)) {
       return false;
     }
@@ -493,14 +532,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     return true;
   }
 
-  /**
-   * Remove a key-value pair from the multimap.
-   *
-   * @return whether the multimap was modified.
-   */
-  public boolean remove(Prefix p, T e) {
-    Node<T> node = exactMatchNode(p);
-    if (node == null || !node._elements.contains(e)) {
+  private static <T> boolean removeAt(Node<T> node, T e) {
+    if (!node._elements.contains(e)) {
       return false;
     }
     if (node._elements.size() == 1) {
@@ -514,21 +547,49 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     return true;
   }
 
+  private static <T> boolean replaceAllAt(Node<T> node, T e) {
+    if (node._elements.size() == 1 && node._elements.contains(e)) {
+      return false;
+    }
+    node._elements = ImmutableSet.of(e);
+    return true;
+  }
+
+  /**
+   * Stores a key-value pair in the multimap.
+   *
+   * @return whether the multimap was modified.
+   */
+  public boolean put(Prefix p, T e) {
+    return putAll(p, ImmutableList.of(e));
+  }
+
+  /**
+   * Stores multiple key-value pairs for a single key in the multimap.
+   *
+   * @return whether the multimap was modified.
+   */
+  public boolean putAll(Prefix p, Collection<T> elements) {
+    return addAll(findOrCreateNode(p), elements);
+  }
+
+  /**
+   * Remove a key-value pair from the multimap.
+   *
+   * @return whether the multimap was modified.
+   */
+  public boolean remove(Prefix p, T e) {
+    Node<T> node = exactMatchNode(p);
+    return node != null && removeAt(node, e);
+  }
+
   /**
    * Replace any elements associated with prefix {@code p} with a given element.
    *
    * @return whether the multimap was modified
    */
   public boolean replaceAll(Prefix p, T e) {
-    Node<T> node = _root == null || !_root._prefix.containsPrefix(p) ? null : exactMatchNode(p);
-    if (node == null) {
-      return put(p, e);
-    }
-    if (node._elements.size() == 1 && node._elements.contains(e)) {
-      return false;
-    }
-    node._elements = ImmutableSet.of(e);
-    return true;
+    return replaceAllAt(findOrCreateNode(p), e);
   }
 
   /** Remove all elements from the multimap. */

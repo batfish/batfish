@@ -50,14 +50,14 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     assert reason != Reason.ADD : "cannot remove a route with reason ADD";
 
     Prefix network = route.getNetwork();
-    boolean removed = _root.remove(network, route);
-    if (!removed) {
+    PrefixTrieMultiMap<R>.Handle handle = _root.existingHandle(network);
+    if (handle == null || !handle.remove(route)) {
       return RibDelta.empty();
     }
 
     RouteAdvertisement<R> removeRoute = new RouteAdvertisement<>(route, reason);
 
-    if (!_root.get(network).isEmpty()) {
+    if (!handle.get().isEmpty()) {
       // we still have a route for the network, so don't need to re-merge backups
       return RibDelta.of(removeRoute);
     }
@@ -175,9 +175,10 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
    */
   @Nonnull
   RibDelta<R> mergeRoute(R route) {
-    Set<R> routes = _root.get(route.getNetwork());
+    PrefixTrieMultiMap<R>.Handle handle = _root.handle(route.getNetwork());
+    Set<R> routes = handle.get();
     if (routes.isEmpty()) {
-      _root.put(route.getNetwork(), route);
+      handle.add(route);
       return RibDelta.adding(route);
     }
     /*
@@ -194,7 +195,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
-      if (_root.put(route.getNetwork(), route)) {
+      if (handle.add(route)) {
         return RibDelta.adding(route);
       } else {
         return RibDelta.empty();
@@ -205,7 +206,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
      * Better than all existing routes for this prefix, so
      * replace them with this one.
      */
-    if (_root.replaceAll(route.getNetwork(), route)) {
+    if (handle.replaceAll(route)) {
       // build the RibDelta directly, since we know the routes are distinct
       List<RouteAdvertisement<R>> actions =
           Streams.concat(
