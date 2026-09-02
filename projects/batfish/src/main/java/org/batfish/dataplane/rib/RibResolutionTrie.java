@@ -3,7 +3,6 @@ package org.batfish.dataplane.rib;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -68,11 +67,8 @@ public final class RibResolutionTrie {
     // - whose prefix contains newPrefix.
     // - whose prefix is contained within newPrefix, and do not contain a previously added prefix,
     //   i.e., an intermediate node, or one with just an NHIP.
-    BiPredicate<Prefix, Set<ResolutionTrieValue>> visitNode =
-        (prefix, values) ->
-            prefix.containsPrefix(newPrefix)
-                || (newPrefix.containsPrefix(prefix) && !values.contains(PREFIX));
-    _prefixesAndNextHops.traverseEntries(collectNextHopIp, visitNode);
+    _prefixesAndNextHops.traverseEntriesAround(
+        newPrefix, values -> !values.contains(PREFIX), collectNextHopIp);
     return affectedNextHopIps.build();
   }
 }

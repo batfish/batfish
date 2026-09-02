@@ -129,6 +129,14 @@ public class Ip implements Comparable<Ip>, Serializable {
     _ip = ipAsInt;
   }
 
+  /**
+   * An {@link Ip} that bypasses the cache: equal to, but not the same instance as, {@link
+   * #create}'s.
+   */
+  static Ip uncached(int ipAsInt) {
+    return new Ip(ipAsInt);
+  }
+
   @JsonCreator
   public static Ip parse(String ipAsString) {
     return create(ipStrToInt(ipAsString));

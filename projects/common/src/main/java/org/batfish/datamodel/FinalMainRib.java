@@ -92,6 +92,7 @@ public final class FinalMainRib implements Serializable {
     if (!curRoutes.isEmpty()) {
       ret.putAll(curPrefix[0], curRoutes);
     }
+    ret.trimToSize();
     return ret;
   }
 
