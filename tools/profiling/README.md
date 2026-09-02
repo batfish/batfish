@@ -190,3 +190,27 @@ Output shows regressions:
 - [async-profiler documentation](https://github.com/async-profiler/async-profiler)
 - [Profiling guide](https://krzysztofslusarski.github.io/2022/12/12/async-manual.html)
 - [Flame graph interpretation](http://www.brendangregg.com/flamegraphs.html)
+
+## Headless dataplane runs
+
+`//tools/profiling:dataplaneRunner` parses a snapshot directory and computes its
+dataplane in one JVM, with no coordinator or client, so the profiler sees only
+that work. It prints parse and dataplane times, route and FIB counts with
+order-independent hashes (to check that two builds agree), and optionally a
+class histogram of the live heap.
+
+```bash
+bazel build //tools/profiling:dataplaneRunner_deploy.jar
+java -Xmx12g -jar bazel-bin/tools/profiling/dataplaneRunner_deploy.jar \
+  /path/to/snapshot --filter '^dc1-' --histogram 20
+```
+
+Options: `--filter REGEX` loads only matching config files; `--histogram N`
+prints the top N classes after a full GC; `--retain dataplane|nothing` drops
+the `Batfish` instance (and the dataplane) first, to see what a server would
+keep; `--dump-prefixes FILE` writes the largest main RIB's prefixes for
+microbenchmarks; `--jfr FILE` dumps a flight recording started with
+`-XX:StartFlightRecording:settings=profile,path-to-gc-roots=true`. Add
+`-agentpath:<libasyncProfiler>=start,event=cpu,file=out.collapsed,collapsed`
+to the java command to profile it.
+
