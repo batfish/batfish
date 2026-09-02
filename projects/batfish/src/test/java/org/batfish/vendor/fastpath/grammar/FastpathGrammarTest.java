@@ -468,7 +468,7 @@ public final class FastpathGrammarTest {
     assertThat(p.getMinNumericCharacters(), equalTo(3));
     assertThat(p.getMinSpecialCharacters(), equalTo(4));
     assertThat(p.getMinCharacterClasses(), equalTo(4));
-    assertThat(p.getExcludeKeywords(), equalTo(ImmutableList.of("admin", "password")));
+    assertThat(p.getExcludeKeywords(), equalTo(ImmutableList.of("admin", "password", "Passw0rd")));
     assertThat(p.getStrengthCheck(), equalTo(true));
   }
 

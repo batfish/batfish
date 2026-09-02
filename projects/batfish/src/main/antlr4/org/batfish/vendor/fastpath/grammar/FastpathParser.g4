@@ -752,17 +752,17 @@ ps_maximum
 :
   MAXIMUM
   (
-    psm_consecutive_characters
-    | psm_repeated_characters
+    psmax_consecutive_characters
+    | psmax_repeated_characters
   )
 ;
 
-psm_consecutive_characters
+psmax_consecutive_characters
 :
   CONSECUTIVE_CHARACTERS count = uint8 NEWLINE
 ;
 
-psm_repeated_characters
+psmax_repeated_characters
 :
   REPEATED_CHARACTERS count = uint8 NEWLINE
 ;
@@ -771,42 +771,42 @@ ps_minimum
 :
   MINIMUM
   (
-    psm_uppercase_letters
-    | psm_lowercase_letters
-    | psm_numeric_characters
-    | psm_special_characters
-    | psm_character_classes
+    psmin_uppercase_letters
+    | psmin_lowercase_letters
+    | psmin_numeric_characters
+    | psmin_special_characters
+    | psmin_character_classes
   )
 ;
 
-psm_uppercase_letters
+psmin_uppercase_letters
 :
   UPPERCASE_LETTERS count = uint8 NEWLINE
 ;
 
-psm_lowercase_letters
+psmin_lowercase_letters
 :
   LOWERCASE_LETTERS count = uint8 NEWLINE
 ;
 
-psm_numeric_characters
+psmin_numeric_characters
 :
   NUMERIC_CHARACTERS count = uint8 NEWLINE
 ;
 
-psm_special_characters
+psmin_special_characters
 :
   SPECIAL_CHARACTERS count = uint8 NEWLINE
 ;
 
-psm_character_classes
+psmin_character_classes
 :
   CHARACTER_CLASSES count = uint8 NEWLINE
 ;
 
 ps_exclude_keyword
 :
-  EXCLUDE_KEYWORD keyword = WORD NEWLINE
+  EXCLUDE_KEYWORD keyword = word NEWLINE
 ;
 
 passwords_strength_check

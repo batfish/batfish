@@ -61,13 +61,13 @@ import org.batfish.vendor.fastpath.grammar.FastpathParser.Passwords_lock_outCont
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Passwords_min_lengthContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Passwords_strength_checkContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Ps_exclude_keywordContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_character_classesContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_consecutive_charactersContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_lowercase_lettersContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_numeric_charactersContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_repeated_charactersContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_special_charactersContext;
-import org.batfish.vendor.fastpath.grammar.FastpathParser.Psm_uppercase_lettersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmax_consecutive_charactersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmax_repeated_charactersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmin_character_classesContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmin_lowercase_lettersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmin_numeric_charactersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmin_special_charactersContext;
+import org.batfish.vendor.fastpath.grammar.FastpathParser.Psmin_uppercase_lettersContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.Quoted_textContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_hostnameContext;
 import org.batfish.vendor.fastpath.grammar.FastpathParser.S_taskgroupContext;
@@ -569,7 +569,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_consecutive_characters(Psm_consecutive_charactersContext ctx) {
+  public void exitPsmax_consecutive_characters(Psmax_consecutive_charactersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -579,7 +579,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_repeated_characters(Psm_repeated_charactersContext ctx) {
+  public void exitPsmax_repeated_characters(Psmax_repeated_charactersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -589,7 +589,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_uppercase_letters(Psm_uppercase_lettersContext ctx) {
+  public void exitPsmin_uppercase_letters(Psmin_uppercase_lettersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -599,7 +599,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_lowercase_letters(Psm_lowercase_lettersContext ctx) {
+  public void exitPsmin_lowercase_letters(Psmin_lowercase_lettersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -609,7 +609,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_numeric_characters(Psm_numeric_charactersContext ctx) {
+  public void exitPsmin_numeric_characters(Psmin_numeric_charactersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -619,7 +619,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_special_characters(Psm_special_charactersContext ctx) {
+  public void exitPsmin_special_characters(Psmin_special_charactersContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -629,7 +629,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
   }
 
   @Override
-  public void exitPsm_character_classes(Psm_character_classesContext ctx) {
+  public void exitPsmin_character_classes(Psmin_character_classesContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.count,
@@ -640,7 +640,7 @@ public final class FastpathConfigurationBuilder extends FastpathParserBaseListen
 
   @Override
   public void exitPs_exclude_keyword(Ps_exclude_keywordContext ctx) {
-    _c.getPasswordPolicy().getExcludeKeywords().add(ctx.keyword.getText());
+    _c.getPasswordPolicy().getExcludeKeywords().add(toString(ctx.keyword));
   }
 
   @Override
