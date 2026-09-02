@@ -118,6 +118,7 @@ public final class FibImpl implements Fib {
         .map(AbstractRouteDecorator::getAbstractRoute)
         .filter(r -> !r.getNonForwarding() && fibExportFilter.test(r))
         .forEach(r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction)));
+    _root.trimToSize();
     initSuppliers();
   }
 

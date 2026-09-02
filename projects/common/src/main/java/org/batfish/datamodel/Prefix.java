@@ -113,6 +113,16 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return CACHE.get(p);
   }
 
+  /**
+   * A {@link Prefix} that bypasses the cache: equal to, but not the same instance as, the one
+   * {@link #create} returns. For transient use where the cache traffic would cost more than the
+   * object.
+   */
+  static Prefix uncached(int bits, int prefixLength) {
+    int networkBits = bits & (int) ~wildcardMaskForPrefixLength(prefixLength);
+    return new Prefix(Ip.uncached(networkBits), prefixLength);
+  }
+
   public static Prefix create(Ip address, Ip mask) {
     return create(address, mask.numSubnetBits());
   }

@@ -9,19 +9,28 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -542,6 +551,245 @@ public class PrefixTrieMultiMapTest {
     assertThat(ptmm, equalTo(SerializationUtils.clone(ptmm)));
   }
 
+  /** A naive model of the multimap, for differential testing. */
+  private static final class Model {
+    private final Map<Prefix, Set<Integer>> _map = new HashMap<>();
+
+    boolean put(Prefix p, int e) {
+      return _map.computeIfAbsent(p, k -> new HashSet<>()).add(e);
+    }
+
+    boolean putAll(Prefix p, Collection<Integer> es) {
+      return _map.computeIfAbsent(p, k -> new HashSet<>()).addAll(es);
+    }
+
+    boolean remove(Prefix p, int e) {
+      Set<Integer> s = _map.get(p);
+      return s != null && s.remove(e);
+    }
+
+    boolean replaceAll(Prefix p, int e) {
+      Set<Integer> old = _map.put(p, new HashSet<>(ImmutableSet.of(e)));
+      return old == null || !old.equals(ImmutableSet.of(e));
+    }
+
+    Set<Integer> get(Prefix p) {
+      return _map.getOrDefault(p, ImmutableSet.of());
+    }
+
+    Set<Integer> longestPrefixMatch(Ip ip, int maxLen) {
+      Prefix best = null;
+      for (Map.Entry<Prefix, Set<Integer>> e : _map.entrySet()) {
+        Prefix p = e.getKey();
+        if (e.getValue().isEmpty() || p.getPrefixLength() > maxLen || !p.containsIp(ip)) {
+          continue;
+        }
+        if (best == null || p.getPrefixLength() > best.getPrefixLength()) {
+          best = p;
+        }
+      }
+      return best == null ? ImmutableSet.of() : _map.get(best);
+    }
+
+    Set<Integer> allElements() {
+      return _map.values().stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet());
+    }
+
+    int numElements() {
+      return _map.values().stream().mapToInt(Set::size).sum();
+    }
+
+    /** Post-order over a prefix trie is ascending end IP, then descending start IP. */
+    List<Prefix> keysInPostOrder() {
+      return _map.entrySet().stream()
+          .filter(e -> !e.getValue().isEmpty())
+          .map(Map.Entry::getKey)
+          .sorted(
+              Comparator.comparing(Prefix::getEndIp)
+                  .thenComparing(Prefix::getStartIp, Comparator.reverseOrder()))
+          .collect(ImmutableList.toImmutableList());
+    }
+
+    boolean intersectsPrefixSpace(PrefixSpace space) {
+      return _map.entrySet().stream()
+          .filter(e -> !e.getValue().isEmpty())
+          .anyMatch(
+              e ->
+                  space.getPrefixRanges().stream()
+                      .anyMatch(r -> r.includesPrefixRange(PrefixRange.fromPrefix(e.getKey()))));
+    }
+
+    Set<Prefix> overlappingKeys(RangeSet<Ip> ips) {
+      return _map.entrySet().stream()
+          .filter(e -> !e.getValue().isEmpty())
+          .map(Map.Entry::getKey)
+          .filter(p -> ips.intersects(Range.closed(p.getStartIp(), p.getEndIp())))
+          .collect(ImmutableSet.toImmutableSet());
+    }
+  }
+
+  /** Random prefixes clustered enough that they nest, collide, and sit in the same subtrees. */
+  private static Prefix randomPrefix(Random rng) {
+    int len = rng.nextInt(33);
+    long ip;
+    switch (rng.nextInt(3)) {
+      case 0:
+        ip = rng.nextInt() & 0xFFFFFFFFL;
+        break;
+      case 1:
+        ip = 0x0A000000L | rng.nextInt(1 << 16);
+        break;
+      default:
+        ip = 0x0A000000L | (rng.nextInt(8) << 8) | rng.nextInt(4);
+        break;
+    }
+    return Prefix.create(Ip.create(ip), len);
+  }
+
+  private static void assertMatchesModel(
+      PrefixTrieMultiMap<Integer> trie, Model model, Random rng) {
+    assertThat(trie.getNumElements(), equalTo(model.numElements()));
+    assertThat(trie.getAllElements(), equalTo(model.allElements()));
+    assertThat(keysInPostOrder(trie), equalTo(model.keysInPostOrder()));
+    for (int i = 0; i < 50; ++i) {
+      Prefix p = randomPrefix(rng);
+      assertThat(trie.get(p), equalTo(model.get(p)));
+      Ip ip = p.getStartIp();
+      int maxLen = rng.nextInt(33);
+      assertThat(
+          "lpm " + ip + " maxLen " + maxLen,
+          trie.longestPrefixMatch(ip, maxLen),
+          equalTo(model.longestPrefixMatch(ip, maxLen)));
+      assertThat(trie.longestPrefixMatch(ip), equalTo(model.longestPrefixMatch(ip, 32)));
+      PrefixSpace space = new PrefixSpace(new PrefixRange(p, new SubRange(rng.nextInt(33), 32)));
+      assertThat(
+          space.toString(),
+          trie.intersectsPrefixSpace(space),
+          equalTo(model.intersectsPrefixSpace(space)));
+      RangeSet<Ip> ips = toRangeSet(p);
+      assertThat(
+          trie.getOverlappingEntries(ips)
+              .map(Map.Entry::getKey)
+              .collect(ImmutableSet.toImmutableSet()),
+          equalTo(model.overlappingKeys(ips)));
+    }
+  }
+
+  @Test
+  public void testRandomizedAgainstModel() {
+    Random rng = new Random(20260901);
+    for (int trial = 0; trial < 20; ++trial) {
+      PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+      Model model = new Model();
+      List<Prefix> used = new ArrayList<>();
+      int ops = 50 + rng.nextInt(400);
+      for (int i = 0; i < ops; ++i) {
+        Prefix p =
+            !used.isEmpty() && rng.nextInt(3) == 0
+                ? used.get(rng.nextInt(used.size()))
+                : randomPrefix(rng);
+        used.add(p);
+        int e = rng.nextInt(6);
+        switch (rng.nextInt(5)) {
+          case 0:
+          case 1:
+            assertThat(trie.put(p, e), equalTo(model.put(p, e)));
+            break;
+          case 2:
+            List<Integer> es = ImmutableList.of(e, rng.nextInt(6), rng.nextInt(6));
+            assertThat(trie.putAll(p, es), equalTo(model.putAll(p, es)));
+            break;
+          case 3:
+            assertThat(trie.remove(p, e), equalTo(model.remove(p, e)));
+            break;
+          default:
+            assertThat(trie.replaceAll(p, e), equalTo(model.replaceAll(p, e)));
+            break;
+        }
+        if (rng.nextInt(20) == 0) {
+          trie.trimToSize();
+        }
+      }
+      assertMatchesModel(trie, model, rng);
+
+      // Equality and hashing are over entries, whatever the insertion history.
+      PrefixTrieMultiMap<Integer> rebuilt = new PrefixTrieMultiMap<>();
+      List<Prefix> keys = new ArrayList<>(model.keysInPostOrder());
+      Collections.shuffle(keys, rng);
+      for (Prefix k : keys) {
+        rebuilt.putAll(k, model.get(k));
+      }
+      assertThat(rebuilt, equalTo(trie));
+      assertThat(rebuilt.hashCode(), equalTo(trie.hashCode()));
+      assertThat(SerializationUtils.clone(trie), equalTo(trie));
+
+      // Adding one more element breaks equality.
+      if (!keys.isEmpty()) {
+        rebuilt.put(keys.get(0), 100);
+        assertThat(rebuilt, not(equalTo(trie)));
+      }
+    }
+  }
+
+  @Test
+  public void testManyHostRoutes() {
+    // Enough nodes to grow the backing arrays several times, in a shape that maximizes depth.
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    int n = 5000;
+    for (int i = 0; i < n; ++i) {
+      assertTrue(trie.put(Prefix.create(Ip.create(0x0A000000L + i * 7L), 32), i));
+    }
+    assertThat(trie.getNumElements(), equalTo(n));
+    for (int i = 0; i < n; ++i) {
+      Ip ip = Ip.create(0x0A000000L + i * 7L);
+      assertThat(trie.longestPrefixMatch(ip), equalTo(ImmutableSet.of(i)));
+      assertThat(trie.longestPrefixMatch(Ip.create(ip.asLong() + 1)), empty());
+    }
+    trie.put(Prefix.parse("10.0.0.0/8"), -1);
+    for (int i = 0; i < n; ++i) {
+      Ip ip = Ip.create(0x0A000000L + i * 7L + 1);
+      assertThat(trie.longestPrefixMatch(ip), equalTo(ImmutableSet.of(-1)));
+    }
+    for (int i = 0; i < n; i += 2) {
+      assertTrue(trie.remove(Prefix.create(Ip.create(0x0A000000L + i * 7L), 32), i));
+    }
+    assertThat(trie.getNumElements(), equalTo(n / 2 + 1));
+    assertThat(trie.getAllElements(), hasSize(n / 2 + 1));
+  }
+
+  @Test
+  public void testValueTransitions() {
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    Prefix p = Prefix.parse("10.0.0.0/8");
+    // empty -> single -> multi -> single -> empty
+    assertTrue(trie.put(p, 1));
+    assertFalse(trie.put(p, 1));
+    assertTrue(trie.put(p, 2));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(1, 2)));
+    assertFalse(trie.putAll(p, ImmutableList.of(1, 2)));
+    assertTrue(trie.remove(p, 1));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(2)));
+    assertThat(trie.getNumElements(), equalTo(1));
+    assertFalse(trie.remove(p, 1));
+    assertTrue(trie.remove(p, 2));
+    assertThat(trie.get(p), empty());
+    assertThat(trie.getNumElements(), equalTo(0));
+    assertThat(trie.longestPrefixMatch(Ip.parse("10.1.1.1")), empty());
+    // empty node stays in the structure; a longer prefix still resolves past it
+    assertTrue(trie.put(Prefix.ZERO, 0));
+    assertThat(trie.longestPrefixMatch(Ip.parse("10.1.1.1")), equalTo(ImmutableSet.of(0)));
+    // replaceAll on multi and on single
+    trie.putAll(p, ImmutableList.of(3, 4));
+    assertTrue(trie.replaceAll(p, 5));
+    assertFalse(trie.replaceAll(p, 5));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(5)));
+    assertThat(trie.getNumElements(), equalTo(2));
+    // putAll of a single element onto an equal single element is a no-op
+    assertFalse(trie.putAll(p, ImmutableList.of(5, 5)));
+    assertTrue(trie.putAll(p, ImmutableList.of(5, 6)));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(5, 6)));
+  }
+
   @Test
   public void testHandle() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
@@ -592,6 +840,95 @@ public class PrefixTrieMultiMapTest {
     assertThat(h.get(), equalTo(ImmutableSet.of(2)));
     assertTrue(h.remove(2));
     assertThat(trie.existingHandle(Prefix.parse("10.1.0.0/16")), nullValue());
+  }
+
+  @Test
+  public void testTraverseEntriesAround() {
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    trie.put(Prefix.ZERO, 0);
+    trie.put(Prefix.parse("10.0.0.0/8"), 8);
+    trie.put(Prefix.parse("10.1.0.0/16"), 16);
+    trie.put(Prefix.parse("10.1.1.0/24"), 24);
+    trie.put(Prefix.parse("10.1.1.1/32"), 32);
+    trie.put(Prefix.parse("10.1.2.0/24"), -24);
+    trie.put(Prefix.parse("10.2.0.0/16"), 17);
+    trie.put(Prefix.parse("11.0.0.0/8"), 11);
+    // Ancestors and everything below, in post-order.
+    assertThat(
+        aroundKeys(trie, Prefix.parse("10.1.0.0/16"), s -> true),
+        contains(
+            Prefix.parse("10.1.1.1/32"),
+            Prefix.parse("10.1.1.0/24"),
+            Prefix.parse("10.1.2.0/24"),
+            Prefix.parse("10.1.0.0/16"),
+            Prefix.parse("10.0.0.0/8"),
+            Prefix.ZERO));
+    // Below the prefix, stop at (and exclude) nodes with negative elements; ancestors are exempt.
+    assertThat(
+        aroundKeys(trie, Prefix.parse("10.1.0.0/16"), s -> s.stream().allMatch(e -> e >= 0)),
+        contains(
+            Prefix.parse("10.1.1.1/32"),
+            Prefix.parse("10.1.1.0/24"),
+            Prefix.parse("10.1.0.0/16"),
+            Prefix.parse("10.0.0.0/8"),
+            Prefix.ZERO));
+    assertThat(
+        aroundKeys(trie, Prefix.parse("10.1.0.0/16"), s -> !s.contains(24)),
+        contains(
+            Prefix.parse("10.1.2.0/24"),
+            Prefix.parse("10.1.0.0/16"),
+            Prefix.parse("10.0.0.0/8"),
+            Prefix.ZERO));
+    // A prefix with no node of its own: ancestors plus the contained subtree.
+    assertThat(
+        aroundKeys(trie, Prefix.parse("10.0.0.0/12"), s -> true),
+        contains(
+            Prefix.parse("10.1.1.1/32"),
+            Prefix.parse("10.1.1.0/24"),
+            Prefix.parse("10.1.2.0/24"),
+            Prefix.parse("10.1.0.0/16"),
+            Prefix.parse("10.2.0.0/16"),
+            Prefix.parse("10.0.0.0/8"),
+            Prefix.ZERO));
+    // A prefix disjoint from everything but the default route.
+    assertThat(aroundKeys(trie, Prefix.parse("12.0.0.0/8"), s -> true), contains(Prefix.ZERO));
+    assertThat(aroundKeys(new PrefixTrieMultiMap<Integer>(), Prefix.ZERO, s -> true), empty());
+    // Agrees with the general traversal for random prefixes.
+    Random rng = new Random(3);
+    for (int i = 0; i < 300; ++i) {
+      Prefix p = randomPrefix(rng);
+      int excluded = rng.nextInt(40) - 30;
+      Predicate<Set<Integer>> descend = s -> !s.contains(excluded);
+      List<Prefix> expected = new ArrayList<>();
+      trie.traverseEntries(
+          (k, v) -> expected.add(k),
+          (k, v) -> k.containsPrefix(p) || (p.containsPrefix(k) && descend.test(v)));
+      assertThat(p.toString(), aroundKeys(trie, p, descend), equalTo(expected));
+    }
+  }
+
+  private static List<Prefix> aroundKeys(
+      PrefixTrieMultiMap<Integer> trie, Prefix prefix, Predicate<Set<Integer>> descendThrough) {
+    List<Prefix> keys = new ArrayList<>();
+    trie.traverseEntriesAround(prefix, descendThrough, (k, v) -> keys.add(k));
+    return keys;
+  }
+
+  @Test
+  public void testPutOnInternalNode() {
+    PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
+    trie.put(Prefix.parse("10.0.0.0/16"), 1);
+    trie.put(Prefix.parse("10.1.0.0/16"), 2);
+    // 10.0.0.0/15 is the internal node created above; give it elements.
+    Prefix internal = Prefix.parse("10.0.0.0/15");
+    assertThat(trie.get(internal), empty());
+    assertTrue(trie.put(internal, 3));
+    assertThat(trie.get(internal), equalTo(ImmutableSet.of(3)));
+    assertThat(trie.longestPrefixMatch(Ip.parse("10.1.2.3")), equalTo(ImmutableSet.of(2)));
+    assertThat(trie.longestPrefixMatch(Ip.parse("10.1.2.3"), 15), equalTo(ImmutableSet.of(3)));
+    assertThat(
+        keysInPostOrder(trie),
+        contains(Prefix.parse("10.0.0.0/16"), Prefix.parse("10.1.0.0/16"), internal));
   }
 
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
