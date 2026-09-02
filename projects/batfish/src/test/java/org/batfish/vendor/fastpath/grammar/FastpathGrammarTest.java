@@ -53,6 +53,7 @@ import org.batfish.vendor.fastpath.representation.FastpathConfiguration;
 import org.batfish.vendor.fastpath.representation.Logging;
 import org.batfish.vendor.fastpath.representation.LoggingBuffered;
 import org.batfish.vendor.fastpath.representation.LoggingServer;
+import org.batfish.vendor.fastpath.representation.PasswordPolicy;
 import org.batfish.vendor.fastpath.representation.Sntp;
 import org.batfish.vendor.fastpath.representation.Tacacs;
 import org.batfish.vendor.fastpath.representation.TacacsServer;
@@ -450,6 +451,25 @@ public final class FastpathGrammarTest {
     assertThat(usergroups.get("builder").getTaskgroups(), equalTo(ImmutableList.of("builder")));
     assertThat(usergroups.get("admin").getTaskgroups(), equalTo(ImmutableList.of("admin")));
     assertThat(usergroups.get("ops").getTaskgroups(), equalTo(ImmutableList.of("ops")));
+  }
+
+  @Test
+  public void testPasswordPolicyExtraction() {
+    FastpathConfiguration c = parseVendorConfig("fastpath_passwords");
+    PasswordPolicy p = c.getPasswordPolicy();
+    assertThat(p.getLockOut(), equalTo(3));
+    assertThat(p.getAging(), equalTo(90));
+    assertThat(p.getHistory(), equalTo(5));
+    assertThat(p.getMinLength(), equalTo(8));
+    assertThat(p.getMaxConsecutiveCharacters(), equalTo(3));
+    assertThat(p.getMaxRepeatedCharacters(), equalTo(2));
+    assertThat(p.getMinUppercaseLetters(), equalTo(1));
+    assertThat(p.getMinLowercaseLetters(), equalTo(2));
+    assertThat(p.getMinNumericCharacters(), equalTo(3));
+    assertThat(p.getMinSpecialCharacters(), equalTo(4));
+    assertThat(p.getMinCharacterClasses(), equalTo(4));
+    assertThat(p.getExcludeKeywords(), equalTo(ImmutableList.of("admin", "password", "Passw0rd")));
+    assertThat(p.getStrengthCheck(), equalTo(true));
   }
 
   @Test

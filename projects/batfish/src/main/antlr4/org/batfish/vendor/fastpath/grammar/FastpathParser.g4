@@ -20,6 +20,7 @@ statement
   | s_ip
   | s_logging
   | s_no
+  | s_passwords
   | s_set
   | s_sntp
   | s_tacacs_server
@@ -704,3 +705,111 @@ no_username_null
   USERNAME null_rest_of_line
 ;
 
+s_passwords
+:
+  PASSWORDS
+  (
+    passwords_aging
+    | passwords_history
+    | passwords_lock_out
+    | passwords_min_length
+    | passwords_strength
+    | passwords_strength_check
+  )
+;
+
+passwords_aging
+:
+  AGING count = uint16 NEWLINE
+;
+
+passwords_history
+:
+  HISTORY count = uint8 NEWLINE
+;
+
+passwords_lock_out
+:
+  LOCK_OUT count = uint8 NEWLINE
+;
+
+passwords_min_length
+:
+  MIN_LENGTH count = uint8 NEWLINE
+;
+
+passwords_strength
+:
+  STRENGTH
+  (
+    ps_maximum
+    | ps_minimum
+    | ps_exclude_keyword
+  )
+;
+
+ps_maximum
+:
+  MAXIMUM
+  (
+    psmax_consecutive_characters
+    | psmax_repeated_characters
+  )
+;
+
+psmax_consecutive_characters
+:
+  CONSECUTIVE_CHARACTERS count = uint8 NEWLINE
+;
+
+psmax_repeated_characters
+:
+  REPEATED_CHARACTERS count = uint8 NEWLINE
+;
+
+ps_minimum
+:
+  MINIMUM
+  (
+    psmin_uppercase_letters
+    | psmin_lowercase_letters
+    | psmin_numeric_characters
+    | psmin_special_characters
+    | psmin_character_classes
+  )
+;
+
+psmin_uppercase_letters
+:
+  UPPERCASE_LETTERS count = uint8 NEWLINE
+;
+
+psmin_lowercase_letters
+:
+  LOWERCASE_LETTERS count = uint8 NEWLINE
+;
+
+psmin_numeric_characters
+:
+  NUMERIC_CHARACTERS count = uint8 NEWLINE
+;
+
+psmin_special_characters
+:
+  SPECIAL_CHARACTERS count = uint8 NEWLINE
+;
+
+psmin_character_classes
+:
+  CHARACTER_CLASSES count = uint8 NEWLINE
+;
+
+ps_exclude_keyword
+:
+  EXCLUDE_KEYWORD keyword = word NEWLINE
+;
+
+passwords_strength_check
+:
+  STRENGTH_CHECK NEWLINE
+;
