@@ -51,11 +51,14 @@ public class StaticRouteHelper {
     Prefix network = route.getNetwork();
     int prefixLength = network.getPrefixLength();
     boolean containsOwnNextHop = network.containsIp(nextHopIp);
-    return matchingRoutes.stream()
-        .map(AbstractRouteDecorator::getAbstractRoute)
-        .anyMatch(
-            routeToNextHop ->
-                !containsOwnNextHop
-                    || routeToNextHop.getNetwork().getPrefixLength() > prefixLength);
+    if (!containsOwnNextHop) {
+      return !matchingRoutes.isEmpty();
+    }
+    for (R routeToNextHop : matchingRoutes) {
+      if (routeToNextHop.getNetwork().getPrefixLength() > prefixLength) {
+        return true;
+      }
+    }
+    return false;
   }
 }
