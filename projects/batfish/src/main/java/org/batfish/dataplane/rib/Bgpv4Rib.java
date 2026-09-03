@@ -55,19 +55,40 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
      */
     private final @Nonnull SetMultimap<Prefix, Bgpv4Route> _bgpRoutesByPrefix;
 
-    private final @Nonnull RibResolutionTrie _mainRibPrefixesAndBgpNhips;
+    /** The keys of {@link #_bgpRoutesByNhip}, ordered so the NHIPs inside a prefix can be found. */
+    private final @Nonnull TreeSet<Ip> _nhips;
+
+    /**
+     * NHIPs in {@link #_bgpRoutesByNhip} that were unresolvable the last time all of their routes
+     * were (de)activated together: when the NHIP's first route arrived, or in {@link
+     * #updateActiveRoutes}. All other tracked NHIPs were resolvable then.
+     */
+    private final @Nonnull Set<Ip> _unresolvableNhips;
+
+    /**
+     * NHIPs for which a route arrived and observed a resolvability different from the one recorded
+     * in {@link #_unresolvableNhips}, so their routes are no longer all in the same state and must
+     * be (de)activated together at the next {@link #updateActiveRoutes}.
+     */
+    private final @Nonnull Set<Ip> _mixedNhips;
 
     private ResolvabilityEnforcer() {
       _bgpRoutesByNhip = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
       _bgpRoutesByPrefix = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-      _mainRibPrefixesAndBgpNhips = new RibResolutionTrie();
+      _nhips = new TreeSet<>();
+      _unresolvableNhips = new HashSet<>();
+      _mixedNhips = new HashSet<>();
+    }
+
+    boolean isTracked(Ip nhip) {
+      return _bgpRoutesByNhip.containsKey(nhip);
     }
 
     void addBgpRoute(Bgpv4Route route) {
       Ip nhip = route.getNextHopIp();
       if (nhip != null) {
         _bgpRoutesByNhip.put(nhip, route);
-        _mainRibPrefixesAndBgpNhips.addNextHopIp(nhip);
+        _nhips.add(nhip);
       }
       _bgpRoutesByPrefix.put(route.getNetwork(), route);
     }
@@ -77,10 +98,43 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       if (nhip != null) {
         _bgpRoutesByNhip.remove(nhip, route);
         if (!_bgpRoutesByNhip.containsKey(nhip)) {
-          _mainRibPrefixesAndBgpNhips.removeNextHopIp(nhip);
+          _nhips.remove(nhip);
+          _unresolvableNhips.remove(nhip);
+          _mixedNhips.remove(nhip);
         }
       }
       _bgpRoutesByPrefix.remove(route.getNetwork(), route);
+    }
+
+    /**
+     * Record that all routes with {@code nhip} have just been (de)activated according to {@code
+     * resolvable}.
+     */
+    void setResolvable(Ip nhip, boolean resolvable) {
+      if (resolvable) {
+        _unresolvableNhips.remove(nhip);
+      } else {
+        _unresolvableNhips.add(nhip);
+      }
+      _mixedNhips.remove(nhip);
+    }
+
+    /**
+     * Record that a route with already-tracked {@code nhip} was just (de)activated according to
+     * {@code resolvable}, which may differ from what its other routes saw.
+     */
+    void addedRoute(Ip nhip, boolean resolvable) {
+      if (resolvable == _unresolvableNhips.contains(nhip)) {
+        _mixedNhips.add(nhip);
+      }
+    }
+
+    /**
+     * Whether every route with {@code nhip} is already (de)activated according to {@code
+     * resolvable}, so that (de)activating them again would have no effect.
+     */
+    boolean allRoutesConsistentWith(Ip nhip, boolean resolvable) {
+      return resolvable != _unresolvableNhips.contains(nhip) && !_mixedNhips.contains(nhip);
     }
 
     /** Get all routes with the given {@code prefix} tracked by the resolvability enforcer. */
@@ -89,30 +143,28 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       return _bgpRoutesByPrefix.get(prefix);
     }
 
+    /**
+     * Returns the tracked NHIPs whose routes may need (de)activating after routes for the given
+     * main RIB prefixes were added or removed: those inside one of the prefixes, plus those whose
+     * routes arrived under different main RIB states (a withdrawal and re-add of the same route in
+     * one delta cancel out, so the delta alone can miss them). NHIPs shadowed by a more specific
+     * main RIB route are included; the caller finds their resolvability unchanged.
+     *
+     * <p>The result is a copy, so the caller may (de)activate routes, which mutates the tracked
+     * NHIPs, while iterating it.
+     */
     @Nonnull
-    Stream<Ip> getAffectedNextHopIps(Stream<Prefix> changedPrefixes) {
-      return changedPrefixes
-          .flatMap(prefix -> _mainRibPrefixesAndBgpNhips.getAffectedNextHopIps(prefix).stream())
-          .distinct();
+    SortedSet<Ip> getAffectedNextHopIps(Stream<Prefix> changedPrefixes) {
+      TreeSet<Ip> affected = new TreeSet<>(_mixedNhips);
+      changedPrefixes.forEach(
+          prefix ->
+              affected.addAll(_nhips.subSet(prefix.getStartIp(), true, prefix.getEndIp(), true)));
+      return affected;
     }
 
     @Nonnull
     Set<Bgpv4Route> getRoutesWithNhip(Ip nhip) {
       return ImmutableSet.copyOf(_bgpRoutesByNhip.get(nhip));
-    }
-
-    void updateMainRibPrefixes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-      // TODO Filter to routes that pass the resolution restriction, when one is added
-      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> action : mainRibDelta.getActions()) {
-        Prefix prefix = action.getRoute().getNetwork();
-        if (!action.isWithdrawn()) {
-          // Route was added (note that the same route can't be removed in the same delta)
-          _mainRibPrefixesAndBgpNhips.addPrefix(prefix);
-        } else if (_mainRib.getRoutes(prefix).isEmpty()) {
-          // Route was removed, and there are no remaining routes for this prefix
-          _mainRibPrefixesAndBgpNhips.removePrefix(prefix);
-        }
-      }
     }
 
     /**
@@ -214,9 +266,17 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     if (shouldCheckNextHopReachability(route) && _mainRib != null) {
       assert route.getNextHop() instanceof NextHopIp
           : "shouldCheckNextHopReachability should only return true for NextHopIp";
+      Ip nhip = route.getNextHopIp();
       _resolvabilityEnforcer.evictSamePrefixReceivedFromPathId(route);
+      boolean firstRouteForNhip = !_resolvabilityEnforcer.isTracked(nhip);
       _resolvabilityEnforcer.addBgpRoute(route);
-      if (!isResolvable(route.getNextHopIp())) {
+      boolean resolvable = isResolvable(nhip);
+      if (firstRouteForNhip) {
+        _resolvabilityEnforcer.setResolvable(nhip, resolvable);
+      } else {
+        _resolvabilityEnforcer.addedRoute(nhip, resolvable);
+      }
+      if (!resolvable) {
         return RibDelta.empty();
       }
     } else if (route.isTrackableLocalRoute()) {
@@ -307,10 +367,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     // Should only be null in tests, and those tests shouldn't be using this function
     assert _mainRib != null;
 
-    // Update resolvability enforcer's record of main RIB prefixes
-    _resolvabilityEnforcer.updateMainRibPrefixes(mainRibDelta);
-
-    // (De)activate BGP routes based on updated main RIB
+    // (De)activate BGP routes whose NHIP's resolvability changed with the main RIB update
     RibDelta.Builder<Bgpv4Route> bestPathDelta = RibDelta.builder();
     RibDelta.Builder<Bgpv4Route> multipathDelta = RibDelta.builder();
     _resolvabilityEnforcer
@@ -318,6 +375,11 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
         .forEach(
             nhip -> {
               boolean resolvable = isResolvable(nhip);
+              if (_resolvabilityEnforcer.allRoutesConsistentWith(nhip, resolvable)) {
+                // Re-(de)activating would be a no-op, e.g. the changed prefix is shadowed by a
+                // more specific main RIB route for this NHIP.
+                return;
+              }
               for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
                 MultipathRibDelta<Bgpv4Route> delta;
                 if (resolvable) {
@@ -334,6 +396,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
                 bestPathDelta.from(delta.getBestPathDelta());
                 multipathDelta.from(delta.getMultipathDelta());
               }
+              // Set after the loop: removing a route may have cleared this NHIP's record.
+              _resolvabilityEnforcer.setResolvable(nhip, resolvable);
             });
     return new MultipathRibDelta<>(bestPathDelta.build(), multipathDelta.build());
   }
