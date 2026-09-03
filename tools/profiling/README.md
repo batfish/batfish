@@ -205,7 +205,8 @@ java -Xmx12g -jar bazel-bin/tools/profiling/dataplaneRunner_deploy.jar \
   /path/to/snapshot --filter '^dc1-' --histogram 20
 ```
 
-Options: `--filter REGEX` loads only matching config files; `--histogram N`
+Options: `--filter REGEX` loads only matching config files; `--debug-flag
+FLAG` enables a Batfish debug flag (repeatable); `--histogram N`
 prints the top N classes after a full GC; `--retain dataplane|nothing` drops
 the `Batfish` instance (and the dataplane) first, to see what a server would
 keep; `--dump-prefixes FILE` writes the largest main RIB's prefixes for

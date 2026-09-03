@@ -2,6 +2,8 @@ package tools.profiling;
 
 import static org.batfish.main.TestrigText.loadTestrig;
 
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +31,7 @@ import org.batfish.main.BatfishTestUtils;
  *
  * <pre>
  * dataplaneRunner SNAPSHOT_DIR [--filter REGEX] [--histogram N] [--retain dataplane|nothing]
- *                              [--dump-prefixes FILE] [--jfr FILE]
+ *                              [--dump-prefixes FILE] [--jfr FILE] [--debug-flag FLAG]...
  * </pre>
  *
  * <ul>
@@ -43,6 +45,8 @@ import org.batfish.main.BatfishTestUtils;
  *   <li>{@code --jfr FILE}: dump the running flight recording there with reference chains to GC
  *       roots; start the JVM with {@code -XX:StartFlightRecording:settings=profile,
  *       path-to-gc-roots=true} for old-object samples to be in it.
+ *   <li>{@code --debug-flag FLAG}: enable a Batfish debug flag, e.g. {@code
+ *       enableTopologyContextModifier} as production does; may be repeated.
  * </ul>
  *
  * <p>The RIB and FIB lines give total counts and order-independent hashes, so two builds can be
@@ -56,7 +60,8 @@ public final class DataplaneRunner {
     if (args.length == 0) {
       System.err.println(
           "Usage: dataplaneRunner SNAPSHOT_DIR [--filter REGEX] [--histogram N]"
-              + " [--retain dataplane|nothing] [--dump-prefixes FILE] [--jfr FILE]");
+              + " [--retain dataplane|nothing] [--dump-prefixes FILE] [--jfr FILE]"
+              + " [--debug-flag FLAG]...");
       System.exit(2);
     }
     String snapshotDir = args[0];
@@ -65,6 +70,7 @@ public final class DataplaneRunner {
     String retain = "all";
     Path dumpPrefixes = null;
     Path jfr = null;
+    List<String> debugFlags = new ArrayList<>();
     for (int i = 1; i < args.length; i += 2) {
       String value = i + 1 < args.length ? args[i + 1] : null;
       switch (args[i]) {
@@ -73,6 +79,7 @@ public final class DataplaneRunner {
         case "--retain" -> retain = required(args[i], value);
         case "--dump-prefixes" -> dumpPrefixes = Path.of(required(args[i], value));
         case "--jfr" -> jfr = Path.of(required(args[i], value));
+        case "--debug-flag" -> debugFlags.add(required(args[i], value));
         default -> throw new IllegalArgumentException("Unknown option " + args[i]);
       }
     }
@@ -90,6 +97,7 @@ public final class DataplaneRunner {
     settings.setHaltOnParseError(false);
     settings.setThrowOnLexerError(false);
     settings.setThrowOnParserError(false);
+    settings.setDebugFlags(debugFlags);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     SortedMap<String, Configuration> configs = batfish.loadConfigurations(snapshot);
     long t1 = System.currentTimeMillis();
@@ -116,6 +124,8 @@ public final class DataplaneRunner {
       diagnosticCommand("jfrDump", "filename=" + jfr, "path-to-gc-roots=true");
       System.out.println("JFR dumped to " + jfr);
     }
+    // The snapshot storage under tmp is several GB and tmp is often a tmpfs, so do not leave it.
+    MoreFiles.deleteRecursively(tmp, RecursiveDeleteOption.ALLOW_INSECURE);
     System.out.println("DONE");
     System.out.flush();
     Runtime.getRuntime().halt(0);
