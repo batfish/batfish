@@ -38,6 +38,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -190,8 +191,27 @@ public final class VirtualRouter {
    */
   List<StaticRoute> _unconditionalStatics;
 
-  /** Static routes needing activation each iteration, in {@link Vrf#getStaticRoutes} order. */
-  List<StaticRoute> _conditionalStatics;
+  /**
+   * Static routes needing activation whose next hop is an IP, grouped by that IP. A group's
+   * activation can only change when a main RIB route whose network contains the IP is added or
+   * removed, so between rounds only groups touched by the previous round's main RIB delta are
+   * re-evaluated. Within a group, routes are in {@link Vrf#getStaticRoutes} order.
+   */
+  ImmutableSortedMap<Ip, ImmutableList<StaticRoute>> _conditionalStaticsByNextHopIp;
+
+  /**
+   * Static routes needing activation whose next hop is not an IP: interface next hops, and discard,
+   * VRF, or VTEP next hops with a track. Their activation depends on interface and track state,
+   * which only change between topology rounds, so they are evaluated once per round.
+   */
+  ImmutableList<StaticRoute> _conditionalStaticsWithoutNextHopIp;
+
+  /**
+   * Whether the next {@link #activateStaticRoutes} must evaluate every conditional static route:
+   * true at init and at the start of every topology round, when interface state, track state, or
+   * the main RIB may have changed without being reported in {@link #_mainRibDeltaPrevRound}.
+   */
+  private boolean _conditionalStaticsNeedFullPass = true;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -445,6 +465,8 @@ public final class VirtualRouter {
       TopologyContext topologyContext, TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     assert _mainRibRouteDeltaBuilder.isEmpty(); // or else invariant is not maintained
 
+    // Interface state, track state, and the main RIB may have changed between rounds.
+    _conditionalStaticsNeedFullPass = true;
     initQueuesAndDeltaBuilders(topologyContext);
     if (_bgpRoutingProcess != null) {
       // If the process exists, update the topology and BGP track states
@@ -593,13 +615,44 @@ public final class VirtualRouter {
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes(TrackMethodEvaluator trackMethodEvaluator) {
-    for (StaticRoute sr : _conditionalStatics) {
+    if (_conditionalStaticsNeedFullPass) {
+      _conditionalStaticsNeedFullPass = false;
+      for (List<StaticRoute> group : _conditionalStaticsByNextHopIp.values()) {
+        activateStaticRoutes(trackMethodEvaluator, group);
+      }
+      activateStaticRoutes(trackMethodEvaluator, _conditionalStaticsWithoutNextHopIp);
+      return;
+    }
+    // Within a round, only a next hop IP's resolution can change, and only if a main RIB route
+    // whose network contains that IP was added or removed since the last activation. Every such
+    // change since then is in the previous round's main RIB delta.
+    if (_mainRibDeltaPrevRound.isEmpty() || _conditionalStaticsByNextHopIp.isEmpty()) {
+      return;
+    }
+    SortedSet<Ip> affectedNextHopIps = new TreeSet<>();
+    for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> action :
+        _mainRibDeltaPrevRound.getActions()) {
+      Prefix network = action.getRoute().getNetwork();
+      affectedNextHopIps.addAll(
+          _conditionalStaticsByNextHopIp
+              .subMap(network.getStartIp(), true, network.getEndIp(), true)
+              .keySet());
+      if (affectedNextHopIps.size() == _conditionalStaticsByNextHopIp.size()) {
+        break;
+      }
+    }
+    for (Ip nextHopIp : affectedNextHopIps) {
+      activateStaticRoutes(trackMethodEvaluator, _conditionalStaticsByNextHopIp.get(nextHopIp));
+    }
+  }
+
+  private void activateStaticRoutes(
+      TrackMethodEvaluator trackMethodEvaluator, List<StaticRoute> conditionalStatics) {
+    for (StaticRoute sr : conditionalStatics) {
       if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
-        /*
-         * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
-         */
+        // No effect if the route is not in the RIB.
         _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
       }
     }
@@ -1136,7 +1189,9 @@ public final class VirtualRouter {
     _ripRib = new RipRib();
 
     // Static
-    _conditionalStatics = ImmutableList.of();
+    _conditionalStaticsByNextHopIp = ImmutableSortedMap.of();
+    _conditionalStaticsWithoutNextHopIp = ImmutableList.of();
+    _conditionalStaticsNeedFullPass = true;
     _unconditionalStatics = ImmutableList.of();
   }
 
@@ -1151,17 +1206,37 @@ public final class VirtualRouter {
   /** Initialize the static route RIBs from the VRF config. */
   @VisibleForTesting
   void initStaticRibs() {
-    ImmutableList.Builder<StaticRoute> conditional = ImmutableList.builder();
+    Map<Ip, ImmutableList.Builder<StaticRoute>> conditionalByNextHopIp = new HashMap<>();
+    ImmutableList.Builder<StaticRoute> conditionalWithoutNextHopIp = ImmutableList.builder();
     ImmutableList.Builder<StaticRoute> unconditional = ImmutableList.builder();
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
-      if (isConditionalStaticRoute(sr)) {
-        conditional.add(sr);
-      } else {
+      if (!isConditionalStaticRoute(sr)) {
         unconditional.add(sr);
+      } else if (sr.getNextHop() instanceof NextHopIp) {
+        conditionalByNextHopIp
+            .computeIfAbsent(((NextHopIp) sr.getNextHop()).getIp(), ip -> ImmutableList.builder())
+            .add(sr);
+      } else {
+        conditionalWithoutNextHopIp.add(sr);
       }
     }
-    _conditionalStatics = conditional.build();
+    _conditionalStaticsByNextHopIp =
+        conditionalByNextHopIp.entrySet().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(), Entry::getKey, e -> e.getValue().build()));
+    _conditionalStaticsWithoutNextHopIp = conditionalWithoutNextHopIp.build();
+    _conditionalStaticsNeedFullPass = true;
     _unconditionalStatics = unconditional.build();
+  }
+
+  /** All static routes needing activation. */
+  @VisibleForTesting
+  List<StaticRoute> getConditionalStatics() {
+    return Streams.concat(
+            _conditionalStaticsByNextHopIp.values().stream().flatMap(List::stream),
+            _conditionalStaticsWithoutNextHopIp.stream())
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
