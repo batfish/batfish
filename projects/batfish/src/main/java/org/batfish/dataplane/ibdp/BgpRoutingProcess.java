@@ -653,13 +653,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    // TODO: optimize, don't recreate the map each iteration
-    NetworkConfigurations nc =
+    executeIteration(
+        allNodes,
         NetworkConfigurations.of(
             allNodes.entrySet().stream()
                 .collect(
                     ImmutableMap.toImmutableMap(
-                        Entry::getKey, e -> e.getValue().getConfiguration())));
+                        Entry::getKey, e -> e.getValue().getConfiguration()))));
+  }
+
+  /**
+   * {@link #executeIteration(Map)} with the {@link NetworkConfigurations} of {@code allNodes}
+   * supplied by the caller, which builds it once per iteration rather than once per process.
+   */
+  public void executeIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (!_evpnInitializationDelta.isEmpty()) {
       // If initialization delta has not been sent out, do so now
       sendOutEvpnType3Routes(_evpnInitializationDelta, nc, allNodes);
