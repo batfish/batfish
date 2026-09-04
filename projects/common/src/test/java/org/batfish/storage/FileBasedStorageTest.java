@@ -68,9 +68,11 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.MockFib;
@@ -83,6 +85,7 @@ import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.VrfForwardingBehavior;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -1026,9 +1029,24 @@ public final class FileBasedStorageTest {
             .setVni(1)
             .build();
     EvpnType5Route evpnBackup = evpn.toBuilder().setNetwork(Prefix.MULTICAST).build();
+    VrfForwardingBehavior vfb =
+        new VrfForwardingBehavior(
+            ImmutableMap.of(),
+            ImmutableMap.of(
+                "i",
+                new InterfaceForwardingBehavior(
+                    Prefix.parse("10.0.0.0/8").toIpSpace(),
+                    EmptyIpSpace.INSTANCE,
+                    EmptyIpSpace.INSTANCE,
+                    EmptyIpSpace.INSTANCE,
+                    EmptyIpSpace.INSTANCE)),
+            ImmutableMap.of(),
+            EmptyIpSpace.INSTANCE,
+            UniverseIpSpace.INSTANCE);
     ForwardingAnalysis fa =
         MockForwardingAnalysis.builder()
             .setArpReplies(ImmutableMap.of("n", ImmutableMap.of("i", UniverseIpSpace.INSTANCE)))
+            .setVrfForwardingBehavior(ImmutableMap.of("n", ImmutableMap.of("v", vfb)))
             .build();
 
     DataPlane dp =
@@ -1057,9 +1075,10 @@ public final class FileBasedStorageTest {
         Iterables.getOnlyElement(dp2.getEvpnBackupRoutes().cellSet()).getValue(),
         contains(evpnBackup));
     assertThat(dp2.getFibs(), hasEntry(equalTo("n"), hasKey("v")));
+    assertThat(dp2.getForwardingAnalysis().getArpReplies(), equalTo(fa.getArpReplies()));
     assertThat(
-        dp2.getForwardingAnalysis().getArpReplies().get("n"),
-        hasEntry("i", UniverseIpSpace.INSTANCE));
+        dp2.getForwardingAnalysis().getVrfForwardingBehavior(),
+        equalTo(fa.getVrfForwardingBehavior()));
     assertThat(dp2.getLayer2Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v2")));
     assertThat(dp2.getLayer3Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v3")));
     assertThat(dp2.getPrefixTracingInfoSummary(), hasEntry(equalTo("n"), hasKey("vp")));

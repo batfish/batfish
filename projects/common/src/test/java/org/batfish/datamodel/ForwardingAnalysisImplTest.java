@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.IpOwnersBaseImpl;
@@ -365,6 +366,55 @@ public class ForwardingAnalysisImplTest {
                     containsInAnyOrder(
                         AclIpSpaceLine.permit(nextHopIpSpace),
                         AclIpSpaceLine.permit(dstIpSpace))))));
+  }
+
+  /** Java serialization must round-trip everything, for every node. */
+  @Test
+  public void testJavaSerialization() {
+    Configuration n1 = _cb.setHostname("n1").build();
+    Vrf v1 = _vb.setOwner(n1).build();
+    Interface i1 =
+        _ib.setOwner(n1)
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.1.0/31"))
+            .build();
+    Configuration n2 = _cb.setHostname("n2").build();
+    Vrf v2 = _vb.setOwner(n2).build();
+    _ib.setOwner(n2).setVrf(v2).setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/31")).build();
+    Ip nextHop = Ip.parse("10.0.1.1");
+    StaticRoute route =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopIp(nextHop)
+            .setAdmin(1)
+            .build();
+    MockFib fib1 =
+        MockFib.builder()
+            .setMatchingIps(ImmutableMap.of(route.getNetwork(), route.getNetwork().toIpSpace()))
+            .setFibEntries(
+                ImmutableMap.of(
+                    nextHop,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            FibForward.of(nextHop, i1.getName()), ImmutableList.of(route)))))
+            .build();
+    Map<String, Configuration> configs = ImmutableMap.of("n1", n1, "n2", n2);
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            "n1",
+            ImmutableMap.of(v1.getName(), fib1),
+            "n2",
+            ImmutableMap.of(v2.getName(), MockFib.builder().build()));
+    IpOwners ipOwners = new TestIpOwners(configs);
+    ForwardingAnalysisImpl fa =
+        new ForwardingAnalysisImpl(
+            configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
+
+    ForwardingAnalysisImpl clone = SerializationUtils.clone(fa);
+
+    assertThat(fa.getArpReplies().keySet(), equalTo(ImmutableSet.of("n1", "n2")));
+    assertThat(clone.getArpReplies(), equalTo(fa.getArpReplies()));
+    assertThat(clone.getVrfForwardingBehavior(), equalTo(fa.getVrfForwardingBehavior()));
   }
 
   @Test
