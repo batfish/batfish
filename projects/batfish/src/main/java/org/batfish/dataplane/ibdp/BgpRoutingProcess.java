@@ -21,7 +21,6 @@ import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -652,20 +651,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   @Override
-  public void executeIteration(Map<String, Node> allNodes) {
-    executeIteration(
-        allNodes,
-        NetworkConfigurations.of(
-            allNodes.entrySet().stream()
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey, e -> e.getValue().getConfiguration()))));
-  }
-
-  /**
-   * {@link #executeIteration(Map)} with the {@link NetworkConfigurations} of {@code allNodes}
-   * supplied by the caller, which builds it once per iteration rather than once per process.
-   */
   public void executeIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (!_evpnInitializationDelta.isEmpty()) {
       // If initialization delta has not been sent out, do so now
