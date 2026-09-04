@@ -3,7 +3,9 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class InterfaceForwardingBehavior implements Serializable {
   private final @Nonnull IpSpace _acceptedIps;
@@ -106,5 +108,26 @@ public final class InterfaceForwardingBehavior implements Serializable {
       return new InterfaceForwardingBehavior(
           _accepted, _deliveredToSubnet, _exitsNetwork, _neighborUnreachable, _insufficientInfo);
     }
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof InterfaceForwardingBehavior)) {
+      return false;
+    }
+    InterfaceForwardingBehavior that = (InterfaceForwardingBehavior) o;
+    return _acceptedIps.equals(that._acceptedIps)
+        && _deliveredToSubnet.equals(that._deliveredToSubnet)
+        && _exitsNetwork.equals(that._exitsNetwork)
+        && _neighborUnreachable.equals(that._neighborUnreachable)
+        && _insufficientInfo.equals(that._insufficientInfo);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _acceptedIps, _deliveredToSubnet, _exitsNetwork, _neighborUnreachable, _insufficientInfo);
   }
 }
