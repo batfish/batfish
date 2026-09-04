@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.alwaysFalse;
+import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
@@ -11,6 +12,7 @@ import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.resolveStaticNextHopIp;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
@@ -646,21 +648,55 @@ public final class VirtualRouter {
     }
   }
 
+  /**
+   * Activates or deactivates {@code conditionalStatics}. Those with a next hop IP all share it
+   * (they are one group of {@link #_conditionalStaticsByNextHopIp}), so it is resolved at most once
+   * per recursiveness rather than per route.
+   */
   private void activateStaticRoutes(
       TrackMethodEvaluator trackMethodEvaluator, List<StaticRoute> conditionalStatics) {
+    Set<AnnotatedRoute<AbstractRoute>> resolvedRecursive = null;
+    Set<AnnotatedRoute<AbstractRoute>> resolvedNonRecursive = null;
     for (StaticRoute sr : conditionalStatics) {
-      if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
-        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
+      Set<AnnotatedRoute<AbstractRoute>> nextHopIpResolution = null;
+      if (sr.getNextHop() instanceof NextHopIp) {
+        if (sr.getRecursive()) {
+          if (resolvedRecursive == null) {
+            resolvedRecursive =
+                resolveStaticNextHopIp(sr.getNextHopIp(), true, _mainRib, _resolutionRestriction);
+          }
+          nextHopIpResolution = resolvedRecursive;
+        } else {
+          if (resolvedNonRecursive == null) {
+            resolvedNonRecursive =
+                resolveStaticNextHopIp(sr.getNextHopIp(), false, _mainRib, _resolutionRestriction);
+          }
+          nextHopIpResolution = resolvedNonRecursive;
+        }
+      }
+      AnnotatedRoute<AbstractRoute> route = annotateRoute(sr);
+      if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr, nextHopIpResolution)) {
+        // Merging a route already present is a no-op; skip the work of finding that out.
+        if (!_mainRib.containsRoute(route)) {
+          _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(route));
+        }
       } else {
-        // No effect if the route is not in the RIB.
-        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
+        // No effect if the route is not in the RIB or its backups.
+        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(route));
       }
     }
   }
 
+  /**
+   * @param nextHopIpResolution the routes {@code sr}'s next hop IP resolves through, required when
+   *     {@code sr} has a next hop IP
+   */
   private boolean shouldActivateConditionalStaticRoute(
-      TrackMethodEvaluator trackMethodEvaluator, StaticRoute sr) {
-    if (!shouldActivateConditionalStaticRouteNextHop(sr)) {
+      TrackMethodEvaluator trackMethodEvaluator,
+      StaticRoute sr,
+      @Nullable Set<AnnotatedRoute<AbstractRoute>> nextHopIpResolution) {
+    if (!new ShouldActivateConditionalStaticRouteNextHop(sr, nextHopIpResolution)
+        .visit(sr.getNextHop())) {
       return false;
     }
     if (sr.getTrack() != null && !evaluateTrack(trackMethodEvaluator, sr.getTrack())) {
@@ -670,22 +706,21 @@ public final class VirtualRouter {
     return true;
   }
 
-  private boolean shouldActivateConditionalStaticRouteNextHop(StaticRoute sr) {
-    return new ShouldActivateConditionalStaticRouteNextHop(sr).visit(sr.getNextHop());
-  }
-
   private final class ShouldActivateConditionalStaticRouteNextHop
       implements NextHopVisitor<Boolean> {
 
-    private ShouldActivateConditionalStaticRouteNextHop(StaticRoute sr) {
+    private ShouldActivateConditionalStaticRouteNextHop(
+        StaticRoute sr, @Nullable Set<AnnotatedRoute<AbstractRoute>> nextHopIpResolution) {
       _sr = sr;
+      _nextHopIpResolution = nextHopIpResolution;
     }
 
     private final @Nonnull StaticRoute _sr;
+    private final @Nullable Set<AnnotatedRoute<AbstractRoute>> _nextHopIpResolution;
 
     @Override
     public Boolean visitNextHopIp(NextHopIp nextHopIp) {
-      return shouldActivateNextHopIpRoute(_sr, _mainRib, _resolutionRestriction);
+      return shouldActivateNextHopIpRoute(_sr, requireNonNull(_nextHopIpResolution));
     }
 
     @Override
