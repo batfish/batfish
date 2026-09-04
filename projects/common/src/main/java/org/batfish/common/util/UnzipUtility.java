@@ -3,15 +3,16 @@ package org.batfish.common.util;
 import static com.google.common.io.MoreFiles.createParentDirectories;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import org.batfish.common.BatfishException;
 
 /**
@@ -26,7 +27,7 @@ public final class UnzipUtility {
    * @param zipIn The zip input stream providing the file data
    * @param filePath The path to write the output file
    */
-  private static void extractFile(ZipInputStream zipIn, Path filePath) {
+  private static void extractFile(InputStream zipIn, Path filePath) {
     try {
       Files.copy(zipIn, filePath, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
@@ -64,30 +65,61 @@ public final class UnzipUtility {
           String.format(
               "Output directory does not exist or is not a directory: %s", destDirectory));
     }
-    try (ZipInputStream zipIn = new ZipInputStream(zipStream)) {
-      for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
-        // entry may start with '/', so we do a little magic to ensure it is applied relatively
-        // against destDirectory
-        Path outputPath =
-            validatePath(
-                new File(destDirectory.toFile(), new File(entry.getName()).getPath()).toPath(),
-                destDirectory);
+    // A stream can only be inflated in order on one thread; from a file the entries can be
+    // inflated in parallel, which for a snapshot of thousands of files is several times faster.
+    Path spooled = Files.createTempFile("unzip", ".zip");
+    try {
+      Files.copy(zipStream, spooled, StandardCopyOption.REPLACE_EXISTING);
+      unzipFile(spooled, destDirectory);
+    } finally {
+      Files.deleteIfExists(spooled);
+    }
+  }
+
+  private static void unzipFile(Path zipFile, Path destDirectory) throws IOException {
+    try (ZipFile zip = new ZipFile(zipFile.toFile())) {
+      // Directories first, so that files never race their own directory entries.
+      List<? extends ZipEntry> entries = zip.stream().collect(Collectors.toList());
+      for (ZipEntry entry : entries) {
         if (entry.isDirectory()) {
+          Path outputPath = outputPath(entry, destDirectory);
           // Make the directory, including parent dirs.
           if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdirs()) {
               throw new IOException("Unable to make directory " + outputPath);
             }
           }
-        } else {
-          // Make sure parent directories exist, in case the zip does not contain dir entries
-          createParentDirectories(outputPath);
-          // Extract the file.
-          extractFile(zipIn, outputPath);
         }
-        zipIn.closeEntry();
       }
+      entries.parallelStream()
+          .filter(entry -> !entry.isDirectory())
+          .forEach(
+              entry -> {
+                try {
+                  Path outputPath = outputPath(entry, destDirectory);
+                  // Make sure parent directories exist, in case the zip does not contain dir
+                  // entries
+                  createParentDirectories(outputPath);
+                  try (InputStream in = zip.getInputStream(entry)) {
+                    extractFile(in, outputPath);
+                  }
+                } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+                }
+              });
+    } catch (UncheckedIOException e) {
+      throw e.getCause();
     }
+  }
+
+  /**
+   * The path {@code entry} extracts to. The entry name may start with '/', so a little magic
+   * ensures it is applied relatively against {@code destDirectory}.
+   */
+  private static Path outputPath(ZipEntry entry, Path destDirectory) throws IOException {
+    return validatePath(
+        new File(destDirectory.toFile(), new File(entry.getName()).getPath()).toPath(),
+        destDirectory);
   }
 
   /**
@@ -105,9 +137,12 @@ public final class UnzipUtility {
       assert zipTest != null; // suppress unused warning
     }
 
-    try (FileInputStream fis = new FileInputStream(zipFile.toFile())) {
-      unzip(fis, destDirectory);
+    if (!destDirectory.toFile().isDirectory()) {
+      throw new IOException(
+          String.format(
+              "Output directory does not exist or is not a directory: %s", destDirectory));
     }
+    unzipFile(zipFile, destDirectory);
   }
 
   // Prevent instantiation of utility class.

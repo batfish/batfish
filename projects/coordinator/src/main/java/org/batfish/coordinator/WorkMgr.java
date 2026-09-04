@@ -34,6 +34,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -873,8 +874,13 @@ public class WorkMgr extends AbstractCoordinator {
       // Copy everything over
       try {
         if (Files.isDirectory(subFile)) {
-          Files.walk(subFile)
-              .filter(Files::isRegularFile)
+          // Materialized first: a directory walk's stream does not split well, and copying the
+          // files of a large snapshot in parallel is several times faster.
+          List<Path> deepFiles;
+          try (Stream<Path> walk = Files.walk(subFile)) {
+            deepFiles = walk.filter(Files::isRegularFile).collect(ImmutableList.toImmutableList());
+          }
+          deepFiles.parallelStream()
               .forEach(
                   deepFile -> {
                     try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
@@ -1442,29 +1448,47 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
 
-    // Save uploaded zip for troubleshooting
     Instant creationTime = Instant.now();
     String uploadZipKey = generateFileDateString(snapshotName);
+    // The upload is read once into a local file, which is then both saved to storage for
+    // troubleshooting and extracted. Extraction needs a file: entries of a zip file can be inflated
+    // in parallel, entries of a stream only in order on one thread.
+    Path zipFile;
     try {
-      _storage.storeUploadSnapshotZip(fileStream, uploadZipKey, networkId);
+      zipFile = Files.createTempFile("upload", ".zip");
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-
-    Path unzipDir = createTempDirectory("tr");
-    try (InputStream zipStream = _storage.loadUploadSnapshotZip(uploadZipKey, networkId)) {
-      UnzipUtility.unzip(zipStream, unzipDir);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Failed to extract uploaded zip", e);
-    }
-
     try {
-      initSnapshot(networkName, snapshotName, unzipDir, creationTime);
-    } catch (Exception e) {
-      throw new BatfishException(
-          String.format("Error initializing snapshot: %s", e.getMessage()), e);
+      try {
+        Files.copy(fileStream, zipFile, StandardCopyOption.REPLACE_EXISTING);
+        try (InputStream zipStream = Files.newInputStream(zipFile)) {
+          _storage.storeUploadSnapshotZip(zipStream, uploadZipKey, networkId);
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+      Path unzipDir = createTempDirectory("tr");
+      try {
+        UnzipUtility.unzip(zipFile, unzipDir);
+      } catch (IOException e) {
+        CommonUtil.deleteDirectory(unzipDir);
+        throw new UncheckedIOException("Failed to extract uploaded zip", e);
+      }
+      try {
+        initSnapshot(networkName, snapshotName, unzipDir, creationTime);
+      } catch (Exception e) {
+        throw new BatfishException(
+            String.format("Error initializing snapshot: %s", e.getMessage()), e);
+      } finally {
+        CommonUtil.deleteDirectory(unzipDir);
+      }
     } finally {
-      CommonUtil.deleteDirectory(unzipDir);
+      try {
+        Files.deleteIfExists(zipFile);
+      } catch (IOException e) {
+        LOGGER.warn("Could not delete temporary upload {}", zipFile, e);
+      }
     }
     // Trigger GC since uploading initial snapshot can change expungeBeforeDate
     triggerGarbageCollection();
