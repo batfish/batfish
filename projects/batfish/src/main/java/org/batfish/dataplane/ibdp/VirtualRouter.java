@@ -1711,12 +1711,12 @@ public final class VirtualRouter {
   }
 
   /** Execute one iteration of BGP route propagation. */
-  void bgpIteration(Map<String, Node> allNodes) {
+  void bgpIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (_bgpRoutingProcess == null) {
       return;
     }
     _bgpRoutingProcess.startOfInnerRound();
-    _bgpRoutingProcess.executeIteration(allNodes);
+    _bgpRoutingProcess.executeIteration(allNodes, nc);
     // If we leak to or from EVPN or leak routes as BGP, do so here.
     if (_vrf.getVrfLeakConfig() != null) {
       bgpVrfLeak();

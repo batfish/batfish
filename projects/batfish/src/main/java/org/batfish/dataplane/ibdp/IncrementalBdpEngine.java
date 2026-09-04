@@ -895,7 +895,7 @@ final class IncrementalBdpEngine {
     vrs.parallelStream().forEach(vr -> vr.ospfIteration(allNodes));
     vrs.parallelStream().forEach(VirtualRouter::mergeOspfRoutesToMainRib);
 
-    computeIterationOfBgpRoutes(iterationLabel, allNodes, vrs);
+    computeIterationOfBgpRoutes(iterationLabel, allNodes, vrs, networkConfigurations);
 
     leakAcrossVrfs(vrs, iterationLabel);
 
@@ -909,9 +909,12 @@ final class IncrementalBdpEngine {
   }
 
   private static void computeIterationOfBgpRoutes(
-      String iterationLabel, Map<String, Node> allNodes, List<VirtualRouter> vrs) {
+      String iterationLabel,
+      Map<String, Node> allNodes,
+      List<VirtualRouter> vrs,
+      NetworkConfigurations nc) {
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
-    vrs.parallelStream().forEach(vr -> vr.bgpIteration(allNodes));
+    vrs.parallelStream().forEach(vr -> vr.bgpIteration(allNodes, nc));
     LOGGER.info("{}: Init BGP generated/aggregate routes", iterationLabel);
     // first let's initialize nodes-level generated/aggregate routes
     vrs.parallelStream().forEach(VirtualRouter::initBgpAggregateRoutes);
