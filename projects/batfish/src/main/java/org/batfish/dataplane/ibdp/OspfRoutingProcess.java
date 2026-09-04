@@ -34,6 +34,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -199,7 +200,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   @Override
-  public void executeIteration(Map<String, Node> allNodes) {
+  public void executeIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
       // clear the initialization delta

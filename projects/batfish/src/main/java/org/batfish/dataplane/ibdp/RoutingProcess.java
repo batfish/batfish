@@ -6,6 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.dataplane.rib.RibDelta;
 
 /**
@@ -36,8 +37,9 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
    * <p>Called exactly once per iteration (of route propagation)
    *
    * @param allNodes map of all available nodes that are participating in the computation.
+   * @param nc the configurations of {@code allNodes}, built once per iteration by the caller.
    */
-  void executeIteration(final Map<String, Node> allNodes);
+  void executeIteration(Map<String, Node> allNodes, NetworkConfigurations nc);
 
   /**
    * Must return a {@link RibDelta} indicating which RIB updates need to be propagated to the main

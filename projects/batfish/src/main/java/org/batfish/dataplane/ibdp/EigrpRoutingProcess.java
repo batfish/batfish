@@ -7,7 +7,6 @@ import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Sets;
@@ -15,7 +14,6 @@ import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
@@ -150,15 +148,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   @Override
-  public void executeIteration(Map<String, Node> allNodes) {
+  public void executeIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
     _changeSet = RibDelta.builder();
-    // TODO: optimize, don't recreate the map each iteration
-    NetworkConfigurations nc =
-        NetworkConfigurations.of(
-            allNodes.entrySet().stream()
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey, e -> e.getValue().getConfiguration())));
 
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then

@@ -46,6 +46,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -334,7 +335,8 @@ public class OspfRoutingProcessTest {
   public void testNotDirtyAfterOneIteration() {
     _routingProcess.initialize(new Node(_c));
     // Empty map in this particular case just means no valid neighbors.
-    _routingProcess.executeIteration(ImmutableMap.of());
+    _routingProcess.executeIteration(
+        ImmutableMap.of(), NetworkConfigurations.of(ImmutableMap.of()));
     assertTrue("Still have updates to main RIB", _routingProcess.isDirty());
     _routingProcess.getUpdatesForMainRib();
 

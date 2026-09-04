@@ -39,6 +39,7 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
@@ -435,7 +437,8 @@ public class BgpRoutingProcessTest {
     4. Ensure BGP rib state (at least type 3 routes) are sent to new neighbors.
     */
     routingProcNode1.initialize(node);
-    routingProcNode1.executeIteration(ImmutableMap.of());
+    routingProcNode1.executeIteration(
+        ImmutableMap.of(), NetworkConfigurations.of(ImmutableMap.of()));
     // Update topology
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
         ValueGraphBuilder.directed().build();
@@ -467,12 +470,20 @@ public class BgpRoutingProcessTest {
         sessionBuilderReverse.setAddressFamilies(ImmutableSet.of(Type.EVPN)).build());
     routingProcNode1.updateTopology(new BgpTopology(graph));
     routingProcNode2.updateTopology(new BgpTopology(graph));
-    routingProcNode1.executeIteration(
+    Map<String, Node> nodes =
         ImmutableSortedMap.of(
             node.getConfiguration().getHostname(),
             node,
             node2.getConfiguration().getHostname(),
-            node2));
+            node2);
+    routingProcNode1.executeIteration(
+        nodes,
+        NetworkConfigurations.of(
+            ImmutableMap.of(
+                node.getConfiguration().getHostname(),
+                node.getConfiguration(),
+                node2.getConfiguration().getHostname(),
+                node2.getConfiguration())));
 
     assertThat(
         routingProcNode2._evpnType3IncomingRoutes.get(new BgpTopology.EdgeId(peer1Id, peer2Id)),
@@ -661,7 +672,8 @@ public class BgpRoutingProcessTest {
 
     Node node = new Node(_c);
     _routingProcess.initialize(node);
-    _routingProcess.executeIteration(ImmutableMap.of());
+    _routingProcess.executeIteration(
+        ImmutableMap.of(), NetworkConfigurations.of(ImmutableMap.of()));
     assertThat(
         _routingProcess._bgpv4Rib.getUnannotatedRoutes(),
         contains(

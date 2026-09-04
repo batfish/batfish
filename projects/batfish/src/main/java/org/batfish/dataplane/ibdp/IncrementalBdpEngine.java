@@ -466,7 +466,7 @@ final class IncrementalBdpEngine {
      */
     IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
     // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-    computeIgpDataPlane(nodes, vrs, initialTopologyContext, answerElement);
+    computeIgpDataPlane(nodes, vrs, initialTopologyContext, networkConfigurations, answerElement);
 
     LOGGER.info("Initialize virtual routers before topology fixed point");
     vrs.parallelStream()
@@ -863,7 +863,7 @@ final class IncrementalBdpEngine {
 
     // EIGRP
     LOGGER.info("{}: Propagate EIGRP routes", iterationLabel);
-    vrs.parallelStream().forEach(vr -> vr.eigrpIteration(allNodes));
+    vrs.parallelStream().forEach(vr -> vr.eigrpIteration(allNodes, networkConfigurations));
     vrs.parallelStream().forEach(VirtualRouter::mergeEigrpRoutesToMainRib);
 
     // Re-initialize IS-IS exports.
@@ -892,7 +892,7 @@ final class IncrementalBdpEngine {
     }
 
     LOGGER.info("{}: Propagate OSPF external", iterationLabel);
-    vrs.parallelStream().forEach(vr -> vr.ospfIteration(allNodes));
+    vrs.parallelStream().forEach(vr -> vr.ospfIteration(allNodes, networkConfigurations));
     vrs.parallelStream().forEach(VirtualRouter::mergeOspfRoutesToMainRib);
 
     computeIterationOfBgpRoutes(iterationLabel, allNodes, vrs, networkConfigurations);
@@ -956,6 +956,7 @@ final class IncrementalBdpEngine {
       SortedMap<String, Node> nodes,
       List<VirtualRouter> vrs,
       TopologyContext topologyContext,
+      NetworkConfigurations nc,
       IncrementalBdpAnswerElement ae) {
     LOGGER.info("Compute IGP");
     int numOspfInternalIterations;
@@ -972,7 +973,8 @@ final class IncrementalBdpEngine {
     vrs.stream().forEach(VirtualRouter::applyRibGroupsForIgp);
 
     // OSPF internal routes
-    numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
+    numOspfInternalIterations =
+        initOspfInternalRoutes(nodes, topologyContext.getOspfTopology(), nc);
 
     // RIP internal routes
     initRipInternalRoutes(nodes, vrs, topologyContext.getLayer3Topology());
@@ -1172,7 +1174,8 @@ final class IncrementalBdpEngine {
    * @param ospfTopology graph of OSPF adjacencies
    * @return the number of iterations it took for internal OSPF routes to converge
    */
-  private int initOspfInternalRoutes(Map<String, Node> allNodes, OspfTopology ospfTopology) {
+  private int initOspfInternalRoutes(
+      Map<String, Node> allNodes, OspfTopology ospfTopology, NetworkConfigurations nc) {
     int ospfInternalIterations = 0;
     boolean dirty = true;
 
@@ -1193,7 +1196,7 @@ final class IncrementalBdpEngine {
             toListInRandomOrder(
                 scheduleNodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
         scheduleVrs.parallelStream()
-            .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
+            .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes, nc));
         scheduleVrs.parallelStream().forEach(VirtualRouter::mergeOspfRoutesToMainRib);
       }
       dirty =

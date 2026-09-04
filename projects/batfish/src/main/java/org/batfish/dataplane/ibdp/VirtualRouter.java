@@ -1701,13 +1701,13 @@ public final class VirtualRouter {
         || (_bgpRoutingProcess != null && _bgpRoutingProcess.isDirty());
   }
 
-  void eigrpIteration(Map<String, Node> allNodes) {
-    _eigrpProcesses.values().forEach(p -> p.executeIteration(allNodes));
+  void eigrpIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
+    _eigrpProcesses.values().forEach(p -> p.executeIteration(allNodes, nc));
   }
 
   /** Execute one OSPF iteration, for all processes */
-  void ospfIteration(Map<String, Node> allNodes) {
-    _ospfProcesses.values().forEach(p -> p.executeIteration(allNodes));
+  void ospfIteration(Map<String, Node> allNodes, NetworkConfigurations nc) {
+    _ospfProcesses.values().forEach(p -> p.executeIteration(allNodes, nc));
   }
 
   /** Execute one iteration of BGP route propagation. */
