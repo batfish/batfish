@@ -1,8 +1,8 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,8 +35,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   private transient @Nullable Set<R> _allRoutes;
 
   /**
-   * Keep a (insert ordered) set of alternative routes. Used to update the RIB if best routes are
-   * withdrawn.
+   * Routes this RIB was offered that are not currently in {@link #_tree}, because a preferred route
+   * for the same prefix is. Used to update the RIB if best routes are withdrawn. Most prefixes are
+   * only ever offered the routes they hold, so this is far smaller than the RIB.
    */
   protected final @Nullable BackupRoutes<R> _backupRoutes;
 
@@ -109,17 +110,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     return builder.build();
   }
 
-  /**
-   * Add route to backup route map if the route map is not null
-   *
-   * @param route Route to add
-   */
-  private void addBackupRoute(R route) {
-    if (_backupRoutes != null) {
-      _backupRoutes.put(route.getNetwork(), route);
-    }
-  }
-
   /** Clear all routes from the RIB */
   public final void clear() {
     _tree.clear();
@@ -166,23 +156,34 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     return ImmutableSet.copyOf(_tree.getRoutes());
   }
 
+  /**
+   * Every route this RIB was offered and has not been asked to remove: every route it holds, before
+   * any filtering a subclass applies in {@link #getRoutes()}, plus the backups that lost to them.
+   * Empty if this RIB keeps no backups.
+   */
   @Override
   public @Nonnull Set<R> getBackupRoutes() {
-    return Optional.ofNullable(_backupRoutes)
-        .map(BackupRoutes::values)
-        .map(ImmutableSet::copyOf)
-        .orElse(ImmutableSet.of());
+    if (_backupRoutes == null) {
+      return ImmutableSet.of();
+    }
+    return ImmutableSet.<R>builder()
+        .addAll(_tree.getRoutes())
+        .addAll(_backupRoutes.values())
+        .build();
   }
 
   /**
-   * Remove a route from backup route map if it was present and backup route map exists
-   *
-   * @param route Route to remove
+   * Every route this RIB was offered for {@code prefix} and has not been asked to remove: every
+   * route it holds for it, before any filtering a subclass applies in {@link #getRoutes(Prefix)},
+   * plus the backups that lost to them.
    */
-  private void removeBackupRoute(R route) {
-    if (_backupRoutes != null) {
-      _backupRoutes.remove(route.getNetwork(), route);
+  protected final @Nonnull Set<R> getRoutesAndBackups(Prefix prefix) {
+    Set<R> routes = _tree.getRoutes(prefix);
+    if (_backupRoutes == null) {
+      return routes;
     }
+    Set<R> backups = _backupRoutes.get(prefix);
+    return backups.isEmpty() ? routes : Sets.union(routes, backups);
   }
 
   @Override
@@ -208,11 +209,23 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   public @Nonnull RibDelta<R> mergeRouteGetDelta(R route) {
     RibDelta<R> delta = _tree.mergeRoute(route);
-    addBackupRoute(route);
-    if (!delta.isEmpty()) {
-      // A change to routes has been made
-      _allRoutes = null;
+    if (delta.isEmpty()) {
+      if (_backupRoutes != null && !_tree.containsRoute(route)) {
+        // Lost to a preferred route for its prefix: keep it in case that route is withdrawn.
+        _backupRoutes.put(route.getNetwork(), route);
+      }
+      return delta;
     }
+    if (_backupRoutes != null) {
+      for (RouteAdvertisement<R> action : delta.getActions()) {
+        if (action.getReason() == Reason.REPLACE) {
+          // Displaced by the new route: now a backup.
+          _backupRoutes.put(action.getRoute().getNetwork(), action.getRoute());
+        }
+      }
+    }
+    // A change to routes has been made
+    _allRoutes = null;
     return delta;
   }
 
@@ -236,13 +249,24 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    *     route was not present in the RIB
    */
   public @Nonnull RibDelta<R> removeRouteGetDelta(R route) {
-    // Remove the backup route first, then remove route from rib
-    removeBackupRoute(route);
     RibDelta<R> delta = _tree.removeRouteGetDelta(route, Reason.WITHDRAW);
-    if (!delta.isEmpty()) {
-      // A change to routes has been made
-      _allRoutes = null;
+    if (delta.isEmpty()) {
+      if (_backupRoutes != null) {
+        // Not held, so if it was offered it is a backup.
+        _backupRoutes.remove(route.getNetwork(), route);
+      }
+      return delta;
     }
+    if (_backupRoutes != null) {
+      for (RouteAdvertisement<R> action : delta.getActions()) {
+        if (!action.isWithdrawn()) {
+          // Promoted from backup to replace the removed route.
+          _backupRoutes.remove(action.getRoute().getNetwork(), action.getRoute());
+        }
+      }
+    }
+    // A change to routes has been made
+    _allRoutes = null;
     return delta;
   }
 
