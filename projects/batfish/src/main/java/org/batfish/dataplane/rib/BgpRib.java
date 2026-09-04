@@ -258,9 +258,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
     Prefix prefix = route.getNetwork();
-    R oldRoute =
-        getRouteSamePrefixReceivedFromPathId(
-            route, _backupRoutes != null ? _backupRoutes.get(prefix) : super.getRoutes(prefix));
+    R oldRoute = getRouteSamePrefixReceivedFromPathId(route, getRoutesAndBackups(prefix));
     if (oldRoute == null || route.equals(oldRoute)) {
       return RibDelta.empty();
     } else {

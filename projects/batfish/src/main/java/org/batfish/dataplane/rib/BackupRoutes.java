@@ -13,13 +13,14 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Prefix;
 
 /**
- * Maps a prefix to the insertion-ordered set of alternative routes a RIB holds for it, so a route
- * can be restored when a better one is withdrawn.
+ * Maps a prefix to the insertion-ordered set of routes a RIB was offered for it but does not hold,
+ * because it prefers other routes for that prefix, so one can be restored when a better route is
+ * withdrawn.
  *
- * <p>A RIB records a backup for every route it is ever offered, making this one of the larger
- * structures in a dataplane computation. Nearly every prefix has only one or two backups, so a
- * value is the route itself when there is exactly one and a small list otherwise, rather than a
- * per-prefix set carrying its own hash table.
+ * <p>Only prefixes that were offered a losing route have an entry; on most snapshots that is a
+ * small fraction of the RIB. Nearly every such prefix has only one or two backups, so a value is
+ * the route itself when there is exactly one and a small list otherwise, rather than a per-prefix
+ * set carrying its own hash table.
  *
  * <p>Ordering is per prefix: {@link #values} returns routes grouped by prefix, not in global
  * insertion order.

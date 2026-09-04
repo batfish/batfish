@@ -102,10 +102,25 @@ public class RibTest {
                 .build());
     rib.mergeRoute(r1);
     assertThat(rib.longestPrefixMatch(ip, ResolutionRestriction.alwaysTrue()), contains(r1));
+    assertThat(rib.getBackupRoutes(), contains(r1));
+    // r2 is preferred: r1 is displaced into backup
     rib.mergeRoute(r2);
     assertThat(rib.longestPrefixMatch(ip, ResolutionRestriction.alwaysTrue()), contains(r2));
+    assertThat(rib.getBackupRoutes(), containsInAnyOrder(r1, r2));
+    // offering r1 again changes nothing
+    assertThat(rib.mergeRoute(r1), equalTo(false));
+    assertThat(rib.getBackupRoutes(), containsInAnyOrder(r1, r2));
+    // withdrawing r2 promotes r1
     rib.removeRoute(r2);
     assertThat(rib.longestPrefixMatch(ip, ResolutionRestriction.alwaysTrue()), contains(r1));
+    assertThat(rib.getBackupRoutes(), contains(r1));
+    // a losing route can be withdrawn while in backup
+    rib.mergeRoute(r2);
+    assertThat(rib.removeRoute(r1), equalTo(false));
+    assertThat(rib.getBackupRoutes(), contains(r2));
+    rib.removeRoute(r2);
+    assertThat(rib.getRoutes(), empty());
+    assertThat(rib.getBackupRoutes(), empty());
   }
 
   @Test

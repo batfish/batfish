@@ -220,8 +220,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> processAffectedRoute(
         AnnotatedRoute<AbstractRoute> affectedRoute,
         Collection<AnnotatedRoute<AbstractRoute>> remainingAffectedRoutes) {
-      if (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
-          && !getRoutes(affectedRoute.getNetwork()).contains(affectedRoute)) {
+      if (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)) {
         // The affected route is currently in backup. It cannot be activated nor deactivated until
         // all better routes have been removed/deactivated. It has already been removed from the
         // resolution graph, and its affected routes should have already been queued when a better
