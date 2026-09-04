@@ -9,7 +9,9 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FinalMainRib;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.VrfForwardingBehavior;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 
@@ -19,6 +21,10 @@ final class PerHostDataPlane implements Serializable {
   private final @Nonnull Map<String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   private final @Nonnull Map<String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
   private final @Nonnull Map<String, Fib> _fibs;
+  // interface -> IPs the interface replies to ARP for
+  private final @Nonnull Map<String, IpSpace> _arpReplies;
+  // vrf -> forwarding behavior
+  private final @Nonnull Map<String, VrfForwardingBehavior> _vrfForwardingBehavior;
   private final @Nonnull Map<String, Set<Layer2Vni>> _layer2Vnis;
   private final @Nonnull Map<String, Set<Layer3Vni>> _layer3Vnis;
   private final @Nonnull SortedMap<String, Map<Prefix, Map<String, Set<String>>>>
@@ -31,6 +37,8 @@ final class PerHostDataPlane implements Serializable {
       @Nonnull Map<String, Set<EvpnRoute<?, ?>>> evpnRoutes,
       @Nonnull Map<String, Set<EvpnRoute<?, ?>>> evpnBackupRoutes,
       @Nonnull Map<String, Fib> fibs,
+      @Nonnull Map<String, IpSpace> arpReplies,
+      @Nonnull Map<String, VrfForwardingBehavior> vrfForwardingBehavior,
       @Nonnull Map<String, Set<Layer2Vni>> layer2Vnis,
       @Nonnull Map<String, Set<Layer3Vni>> layer3Vnis,
       @Nonnull SortedMap<String, Map<Prefix, Map<String, Set<String>>>> prefixTracingInfoSummary,
@@ -40,6 +48,8 @@ final class PerHostDataPlane implements Serializable {
     _evpnRoutes = evpnRoutes;
     _evpnBackupRoutes = evpnBackupRoutes;
     _fibs = fibs;
+    _arpReplies = arpReplies;
+    _vrfForwardingBehavior = vrfForwardingBehavior;
     _layer2Vnis = layer2Vnis;
     _layer3Vnis = layer3Vnis;
     _prefixTracingInfoSummary = prefixTracingInfoSummary;
@@ -64,6 +74,14 @@ final class PerHostDataPlane implements Serializable {
 
   public @Nonnull Map<String, Fib> getFibs() {
     return _fibs;
+  }
+
+  public @Nonnull Map<String, IpSpace> getArpReplies() {
+    return _arpReplies;
+  }
+
+  public @Nonnull Map<String, VrfForwardingBehavior> getVrfForwardingBehavior() {
+    return _vrfForwardingBehavior;
   }
 
   public @Nonnull Map<String, Set<Layer2Vni>> getLayer2Vnis() {

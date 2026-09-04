@@ -53,6 +53,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> vrf -> forwarding behavior for that VRF.
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
 
+  /** A forwarding analysis with the given, already computed, contents, as read from storage. */
+  public static ForwardingAnalysisImpl of(
+      Map<String, Map<String, IpSpace>> arpReplies,
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
+    return new ForwardingAnalysisImpl(arpReplies, vrfForwardingBehavior);
+  }
+
+  private ForwardingAnalysisImpl(
+      Map<String, Map<String, IpSpace>> arpReplies,
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
+    _arpReplies = ImmutableMap.copyOf(arpReplies);
+    _vrfForwardingBehavior = ImmutableMap.copyOf(vrfForwardingBehavior);
+  }
+
   /** Helper function to materialize in random order the list of keys in Map of Maps. */
   @VisibleForTesting
   static @Nonnull <T> List<Map.Entry<String, String>> sparseKeys(Map<String, Map<String, T>> map) {

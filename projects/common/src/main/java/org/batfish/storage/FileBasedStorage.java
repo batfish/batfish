@@ -13,8 +13,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.io.Closer;
@@ -81,6 +83,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -141,7 +144,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   private static final String RELPATH_DATA_PLANE = "dp";
-  private static final String RELPATH_DATA_PLANE_FORWARDING_ANALYSIS = "forwarding_analysis";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
@@ -1543,9 +1545,6 @@ public class FileBasedStorage implements StorageProvider {
     try (DirectoryStream<Path> hostDataPlanes = Files.newDirectoryStream(dataplanePath)) {
       for (Path hostDataPlane : hostDataPlanes) {
         String name = hostDataPlane.getFileName().toString();
-        if (name.equals(RELPATH_DATA_PLANE_FORWARDING_ANALYSIS)) {
-          continue;
-        }
         namesByPath.put(hostDataPlane, fromBase64(name));
       }
     } catch (IOException e) {
@@ -1554,13 +1553,20 @@ public class FileBasedStorage implements StorageProvider {
     Map<String, PerHostDataPlane> perNodeDataPlanes =
         deserializeObjects(namesByPath, PerHostDataPlane.class);
     ForwardingAnalysis forwardingAnalysis =
-        deserializeObjectUnchecked(getDataPlaneForwardingAnalysisPath(snapshot));
+        ForwardingAnalysisImpl.of(
+            Maps.transformValues(perNodeDataPlanes, PerHostDataPlane::getArpReplies),
+            Maps.transformValues(perNodeDataPlanes, PerHostDataPlane::getVrfForwardingBehavior));
     return new SimpleFieldsDataPlane(perNodeDataPlanes, forwardingAnalysis);
   }
 
   @Override
   public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
-    dataPlane.getFibs().keySet().parallelStream()
+    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
+    Set<String> fibHosts = dataPlane.getFibs().keySet();
+    assert fibHosts.containsAll(forwardingAnalysis.getArpReplies().keySet());
+    assert fibHosts.containsAll(forwardingAnalysis.getVrfForwardingBehavior().keySet());
+    ImmutableList<String> hostnames = ImmutableList.copyOf(fibHosts);
+    hostnames.parallelStream()
         .forEach(
             hostname -> {
               PerHostDataPlane dp =
@@ -1570,14 +1576,16 @@ public class FileBasedStorage implements StorageProvider {
                       dataPlane.getEvpnRoutes().row(hostname),
                       dataPlane.getEvpnBackupRoutes().row(hostname),
                       dataPlane.getFibs().get(hostname),
+                      forwardingAnalysis.getArpReplies().getOrDefault(hostname, ImmutableMap.of()),
+                      forwardingAnalysis
+                          .getVrfForwardingBehavior()
+                          .getOrDefault(hostname, ImmutableMap.of()),
                       dataPlane.getLayer2Vnis().row(hostname),
                       dataPlane.getLayer3Vnis().row(hostname),
                       dataPlane.getPrefixTracingInfoSummary().get(hostname),
                       dataPlane.getRibs().row(hostname));
               serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
             });
-    serializeObject(
-        dataPlane.getForwardingAnalysis(), getDataPlaneForwardingAnalysisPath(snapshot));
   }
 
   @Override
@@ -1701,10 +1709,6 @@ public class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getDataPlaneHostPath(NetworkSnapshot snapshot, String hostname) {
     return getDataPlanePath(snapshot).resolve(toBase64(hostname));
-  }
-
-  private @Nonnull Path getDataPlaneForwardingAnalysisPath(NetworkSnapshot snapshot) {
-    return getDataPlanePath(snapshot).resolve(RELPATH_DATA_PLANE_FORWARDING_ANALYSIS);
   }
 
   private @Nonnull Path getReferenceLibraryPath(NetworkId network) {
