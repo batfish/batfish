@@ -83,4 +83,24 @@ public class AclIpSpaceTest {
             .build();
     assertThat(space, equalTo(expected));
   }
+
+  /** Lines over addresses and prefixes take a compact serialized form; others are written whole. */
+  @Test
+  public void testJavaSerializationCompactLines() {
+    IpSpace space =
+        AclIpSpace.builder()
+            .thenPermitting(Ip.parse("10.1.1.1").toIpSpace())
+            .thenRejecting(Prefix.parse("10.0.0.0/8").toIpSpace())
+            .thenPermitting(Prefix.parse("255.255.255.255/32").toIpSpace())
+            .thenPermitting(
+                IpWildcardSetIpSpace.builder()
+                    .including(IpWildcard.parse("1.2.3.4:0.0.0.255"))
+                    .excluding(IpWildcard.create(Prefix.parse("1.2.3.0/30")))
+                    .build())
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .build();
+    IpSpace clone = org.apache.commons.lang3.SerializationUtils.clone(space);
+    assertThat(clone, equalTo(space));
+    assertThat(((AclIpSpace) clone).getLines(), equalTo(((AclIpSpace) space).getLines()));
+  }
 }

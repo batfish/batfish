@@ -10,6 +10,10 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -283,12 +287,63 @@ public class AclIpSpace extends IpSpace {
     return builder().thenPermitting(nonEmptySpaces).build();
   }
 
-  private final @Nonnull List<AclIpSpaceLine> _lines;
+  // Serialized compactly; see writeObject.
+  private transient @Nonnull List<AclIpSpaceLine> _lines;
 
   @JsonCreator
   private AclIpSpace(@JsonProperty(PROP_LINES) @Nullable List<AclIpSpaceLine> lines) {
     checkArgument(lines != null, "Missing %s", PROP_LINES);
     _lines = lines;
+  }
+
+  private static final byte SPACE_OTHER = 0;
+  private static final byte SPACE_IP = 1;
+  private static final byte SPACE_PREFIX = 2;
+
+  /*
+   * A line is an action and a space, and the spaces are nearly always a single prefix or address:
+   * a forwarding analysis has such a line per route. Default serialization writes three objects per
+   * such line; this writes the action and the address as bytes, and only other spaces as objects.
+   */
+  @Serial
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+    out.writeInt(_lines.size());
+    for (AclIpSpaceLine line : _lines) {
+      out.writeBoolean(line.getAction() == LineAction.PERMIT);
+      IpSpace space = line.getIpSpace();
+      if (space instanceof IpIpSpace) {
+        out.writeByte(SPACE_IP);
+        out.writeInt((int) ((IpIpSpace) space).getIp().asLong());
+      } else if (space instanceof PrefixIpSpace) {
+        out.writeByte(SPACE_PREFIX);
+        Prefix prefix = ((PrefixIpSpace) space).getPrefix();
+        out.writeInt((int) prefix.getStartIp().asLong());
+        out.writeByte(prefix.getPrefixLength());
+      } else {
+        out.writeByte(SPACE_OTHER);
+        out.writeObject(space);
+      }
+    }
+  }
+
+  @Serial
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    int count = in.readInt();
+    ImmutableList.Builder<AclIpSpaceLine> lines = ImmutableList.builderWithExpectedSize(count);
+    for (int i = 0; i < count; i++) {
+      boolean permit = in.readBoolean();
+      IpSpace space;
+      switch (in.readByte()) {
+        case SPACE_IP -> space = IpIpSpace.create(Ip.create(in.readInt()));
+        case SPACE_PREFIX ->
+            space = PrefixIpSpace.create(Prefix.create(Ip.create(in.readInt()), in.readByte()));
+        default -> space = (IpSpace) in.readObject();
+      }
+      lines.add(permit ? AclIpSpaceLine.permit(space) : AclIpSpaceLine.reject(space));
+    }
+    _lines = lines.build();
   }
 
   @Override

@@ -934,4 +934,26 @@ public class PrefixTrieMultiMapTest {
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
     return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
   }
+
+  @Test
+  public void testJavaSerializationCompact() {
+    PrefixTrieMultiMap<String> map = new PrefixTrieMultiMap<>();
+    map.put(Prefix.parse("0.0.0.0/0"), "default");
+    map.put(Prefix.parse("10.0.0.0/8"), "a");
+    map.put(Prefix.parse("10.0.0.0/8"), "b");
+    map.put(Prefix.parse("255.255.255.255/32"), "c");
+    map.put(Prefix.parse("128.0.0.0/1"), "d");
+    // A node whose only element was removed keeps its slot with no value.
+    map.put(Prefix.parse("192.168.0.0/16"), "gone");
+    map.remove(Prefix.parse("192.168.0.0/16"), "gone");
+    PrefixTrieMultiMap<String> clone = org.apache.commons.lang3.SerializationUtils.clone(map);
+    assertThat(clone, equalTo(map));
+    assertThat(clone.get(Prefix.parse("10.0.0.0/8")), equalTo(ImmutableSet.of("a", "b")));
+    assertThat(clone.getAllElements(), equalTo(map.getAllElements()));
+    assertThat(clone.get(Prefix.parse("192.168.0.0/16")), equalTo(ImmutableSet.of()));
+    assertThat(clone.longestPrefixMatch(Ip.parse("192.168.1.1")), equalTo(ImmutableSet.of("d")));
+    assertThat(
+        org.apache.commons.lang3.SerializationUtils.clone(new PrefixTrieMultiMap<String>()),
+        equalTo(new PrefixTrieMultiMap<String>()));
+  }
 }
