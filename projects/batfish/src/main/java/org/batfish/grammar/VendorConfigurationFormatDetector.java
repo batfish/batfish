@@ -1,7 +1,11 @@
 package org.batfish.grammar;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,88 +28,107 @@ public final class VendorConfigurationFormatDetector {
     return new VendorConfigurationFormatDetector(fileText).identifyConfigurationFormat();
   }
 
-  private static final Pattern BATFISH_CONFIG_FORMAT_PATTERN =
-      Pattern.compile("(?m)^[!#] *BATFISH[-_]FORMAT *: *([a-zA-Z0-9_-]+)");
+  private static final Tell BATFISH_CONFIG_FORMAT_PATTERN =
+      Tell.of("(?m)^[!#] *BATFISH[-_]FORMAT *: *([a-zA-Z0-9_-]+)", "BATFISH");
 
-  private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
-  private static final Pattern A10_PATTERN =
-      Pattern.compile(
+  private static final Tell BANNER_PATTERN = Tell.of("(?m)^banner ", "banner ");
+  private static final Tell A10_PATTERN =
+      Tell.of(
           "(?m)version \\d+.\\d+.\\d+[\\w-.]*, build \\d+"
-              + " \\([A-Za-z]+-\\d{1,2}-\\d{4},\\d\\d:\\d\\d\\)");
-  private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
-  private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
-  private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
-  private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
-  private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
-      Pattern.compile("(?m)^# Configuration of [\\w-]+\\R+# Language version: ");
-  private static final Pattern CUMULUS_CONCATENATED_PATTERN =
-      Pattern.compile("(?m)^# This file describes the network interfaces");
-  private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");
-  private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
-  private static final Pattern F5_BIGIP_STRUCTURED_HEADER_PATTERN =
-      Pattern.compile("(?m)^#TMSH-VERSION: .*$");
-  private static final Pattern F5_BIGIP_STRUCTURED_LTM_GLOBAL_SETTINGS_PATTERN =
-      Pattern.compile("(?m)^ltm\\s+global-settings\\s*(general|rule)\\s*\\{.*$");
-  private static final Pattern F5_BIGIP_STRUCTURED_SYS_GLOBAL_SETTINGS_PATTERN =
-      Pattern.compile("(?m)^sys\\s+global-settings\\s*\\{.*$");
-  private static final Pattern METAMAKO_MOS_PATTERN =
-      Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$");
-  private static final Pattern MRV_HOSTNAME_PATTERN =
-      Pattern.compile("(?m)^configuration hostname .*$");
-  private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
+              + " \\([A-Za-z]+-\\d{1,2}-\\d{4},\\d\\d:\\d\\d\\)",
+          ", build ");
+  private static final Tell ALCATEL_AOS_PATTERN = Tell.of("(?m)^system name", "system name");
+  private static final Tell ARUBAOS_PATTERN = Tell.of("(?m)^netservice.*$", "netservice");
+  private static final Tell BLADE_NETWORK_PATTERN = Tell.of("(?m)^switch-type", "switch-type");
+  private static final Tell CADANT_NETWORK_PATTERN = Tell.of("(?m)^shelfname", "shelfname");
+  private static final Tell CHECK_POINT_GATEWAY_PATTERN =
+      Tell.of("(?m)^# Configuration of [\\w-]+\\R+# Language version: ", "# Language version: ");
+  private static final Tell CUMULUS_CONCATENATED_PATTERN =
+      Tell.of(
+          "(?m)^# This file describes the network interfaces",
+          "# This file describes the network interfaces");
+  private static final Tell CUMULUS_NCLU_PATTERN = Tell.of("(?m)^net del all$", "net del all");
+  private static final Tell F5_HOSTNAME_PATTERN = Tell.of("(?m)^tmsh .*$", "tmsh ");
+  private static final Tell F5_BIGIP_STRUCTURED_HEADER_PATTERN =
+      Tell.of("(?m)^#TMSH-VERSION: .*$", "#TMSH-VERSION: ");
+  private static final Tell F5_BIGIP_STRUCTURED_LTM_GLOBAL_SETTINGS_PATTERN =
+      Tell.of("(?m)^ltm\\s+global-settings\\s*(general|rule)\\s*\\{.*$", "global-settings");
+  private static final Tell F5_BIGIP_STRUCTURED_SYS_GLOBAL_SETTINGS_PATTERN =
+      Tell.of("(?m)^sys\\s+global-settings\\s*\\{.*$", "global-settings");
+  private static final Tell METAMAKO_MOS_PATTERN =
+      Tell.of("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$", " MOS-");
+  private static final Tell MRV_HOSTNAME_PATTERN =
+      Tell.of("(?m)^configuration hostname .*$", "configuration hostname ");
+  private static final Tell MSS_PATTERN = Tell.of("(?m)^set system name", "set system name");
 
-  private static final Pattern FASTPATH_PATTERN =
-      Pattern.compile(
+  private static final Tell FASTPATH_PATTERN =
+      Tell.of(
           "(?m)^(?:!System Software Version"
               + "|!Current SNTP Synchronized Time:"
               + "|no 1583compatibility"
               + "|vlan participation "
-              + "|serviceport )");
+              + "|serviceport )",
+          "!System Software Version",
+          "!Current SNTP Synchronized Time:",
+          "no 1583compatibility",
+          "vlan participation ",
+          "serviceport ");
 
   // checkSros patterns (Nokia SR-OS / SR-SIM, MD-CLI). SR-OS configs are emitted by
   // `admin show configuration` (brace/hierarchical, rooted at `configure {`) and can also
   // be supplied in the absolute-path flat form (`/configure ...` lines, the Junos-`set`
   // analog). The TiMOS banner and the "Configuration format version" header are
   // SR-OS-specific tells that brace form alone (which collides with Juniper) is not.
-  private static final Pattern SROS_TIMOS_PATTERN = Pattern.compile("(?m)^# *TiMOS-");
-  private static final Pattern SROS_CONFIG_VERSION_PATTERN =
-      Pattern.compile("(?m)^# *Configuration format version \\d+\\.\\d+ revision \\d+");
-  private static final Pattern SROS_FLAT_CONFIGURE_PATTERN =
-      Pattern.compile("(?m)^\\s*/configure ");
+  private static final Tell SROS_TIMOS_PATTERN = Tell.of("(?m)^# *TiMOS-", "TiMOS-");
+  private static final Tell SROS_CONFIG_VERSION_PATTERN =
+      Tell.of(
+          "(?m)^# *Configuration format version \\d+\\.\\d+ revision \\d+",
+          "Configuration format version ");
+  private static final Tell SROS_FLAT_CONFIGURE_PATTERN =
+      Tell.of("(?m)^\\s*/configure ", "/configure ");
 
-  private static final Pattern RANCID_BASE_PATTERN =
-      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)");
+  private static final Tell RANCID_BASE_PATTERN =
+      Tell.of("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)", "RANCID-CONTENT-TYPE: ");
 
   // checkCisco patterns
-  private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
-  private static final Pattern CISCO_LIKE_PATTERN =
-      Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
-  private static final Pattern CISCO_STYLE_ACL_PATTERN =
-      Pattern.compile("(?m)(^(ip )?access-list.*$)");
-  private static final Pattern NEXUS_COMMIT_LINE_PATTERN = Pattern.compile("(?m)^ *commit *$");
-  private static final Pattern NEXUS_FEATURE_LINE_PATTERN =
-      Pattern.compile("(?m)^\\s*(no\\s*)?feature\\s+[^\\s+].*$");
-  private static final Pattern NEXUS_BOOT_NXOS_PATTERN = Pattern.compile("boot nxos");
-  private static final Pattern NEXUS_BOOTFLASH_PATTERN =
-      Pattern.compile("bootflash:(n\\d+|/?nxos)");
+  private static final Tell ASA_VERSION_LINE_PATTERN =
+      Tell.of("(?m)(^ASA Version.*$)", "ASA Version");
+  private static final Tell CISCO_LIKE_PATTERN =
+      Tell.of("(?m)(^boot system flash.*$)|(^interface .*$)", "boot system flash", "interface ");
+  private static final Tell CISCO_STYLE_ACL_PATTERN =
+      Tell.of("(?m)(^(ip )?access-list.*$)", "access-list");
+  private static final Tell NEXUS_COMMIT_LINE_PATTERN = Tell.of("(?m)^ *commit *$", "commit");
+  private static final Tell NEXUS_FEATURE_LINE_PATTERN =
+      Tell.of("(?m)^\\s*(no\\s*)?feature\\s+[^\\s+].*$", "feature");
+  private static final Tell NEXUS_BOOT_NXOS_PATTERN = Tell.of("boot nxos", "boot nxos");
+  private static final Tell NEXUS_BOOTFLASH_PATTERN =
+      Tell.of("bootflash:(n\\d+|/?nxos)", "bootflash:");
 
   // checkJuniper patterns
-  private static final Pattern FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN =
-      Pattern.compile("(?m)^set (groups [^ ][^ ]* )?system host-name ");
-  private static final Pattern FLATTENED_JUNIPER_PATTERN =
-      Pattern.compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER));
+  private static final Tell FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN =
+      Tell.of("(?m)^set (groups [^ ][^ ]* )?system host-name ", "system host-name ");
+  private static final Tell FLATTENED_JUNIPER_PATTERN =
+      Tell.of(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER), BATFISH_FLATTENED_JUNIPER_HEADER);
   // Juniper-specific keywords and stanzas (stanzas match "keyword {" or "keyword{")
-  private static final Pattern JUNIPER_PATTERN =
-      Pattern.compile(
-          "(firewall|policy-options|snmp|routing-instances|groups) *\\{|apply-groups|replace:");
+  private static final Tell JUNIPER_PATTERN =
+      Tell.of(
+          "(firewall|policy-options|snmp|routing-instances|groups) *\\{|apply-groups|replace:",
+          "{",
+          "apply-groups",
+          "replace:");
 
   // checkPaloAlto patterns
-  private static final Pattern FLAT_PALO_ALTO_PATTERN =
-      Pattern.compile(Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER));
-  private static final Pattern PALO_ALTO_PANORAMA_DEVICECONFIG_PATTERN =
-      Pattern.compile("(?m)(send-to-panorama|panorama-server|deviceconfig)");
+  private static final Tell FLAT_PALO_ALTO_PATTERN =
+      Tell.of(
+          Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER), BATFISH_FLATTENED_PALO_ALTO_HEADER);
+  private static final Tell PALO_ALTO_PANORAMA_DEVICECONFIG_PATTERN =
+      Tell.of(
+          "(?m)(send-to-panorama|panorama-server|deviceconfig)",
+          "send-to-panorama",
+          "panorama-server",
+          "deviceconfig");
   // open brace not likely to be opening a string literal of a JSON object
-  private static final Pattern PALO_ALTO_NESTED_PATTERN = Pattern.compile("(?m)[^\"']\\{");
+  private static final Tell PALO_ALTO_NESTED_PATTERN = Tell.of("(?m)[^\"']\\{", "{");
 
   private String _fileText;
 
@@ -117,8 +140,56 @@ public final class VendorConfigurationFormatDetector {
     _fileText = fileText;
   }
 
-  private boolean fileTextMatches(Pattern pattern) {
-    return pattern.matcher(_fileText).find();
+  /**
+   * A regular expression together with literals of which every match contains at least one. A
+   * heuristic usually does not match, and {@link String#contains} rules that out far faster than a
+   * regex scan of the whole file does, so the regex runs only when a literal is present.
+   */
+  private static final class Tell {
+    private final @Nonnull Pattern _pattern;
+    private final @Nonnull String[] _literals;
+
+    private Tell(Pattern pattern, String... literals) {
+      checkArgument(literals.length > 0, "A literal is needed for %s", pattern);
+      _pattern = pattern;
+      _literals = literals;
+    }
+
+    /** {@code literals}: every match of {@code regex} contains at least one of them. */
+    static Tell of(String regex, String... literals) {
+      return new Tell(Pattern.compile(regex), literals);
+    }
+
+    boolean matches(String text) {
+      for (String literal : _literals) {
+        if (text.contains(literal)) {
+          return _pattern.matcher(text).find();
+        }
+      }
+      return false;
+    }
+
+    /**
+     * A matcher positioned at the first match in {@code text}, or {@code null} if there is none.
+     */
+    @Nullable
+    Matcher find(String text) {
+      if (!matches(text)) {
+        return null;
+      }
+      Matcher m = _pattern.matcher(text);
+      checkState(m.find());
+      return m;
+    }
+
+    @Override
+    public String toString() {
+      return _pattern.toString();
+    }
+  }
+
+  private boolean fileTextMatches(Tell tell) {
+    return tell.matches(_fileText);
   }
 
   private void configureHeuristicBlacklist() {
@@ -144,15 +215,18 @@ public final class VendorConfigurationFormatDetector {
   private static final String ARISTA_EOS_LINE_REGEX = "^! device: .*\\(.*EOS-\\d";
   private static final String ARISTA_FLASH_REGEX = "^.*boot system flash.*\\.swi";
   private static final String ARISTA_TELLS_REGEX = "^ip (ext)?community-list regexp";
-  private static final Pattern ARISTA_PATTERN =
-      Pattern.compile(
+  private static final Tell ARISTA_PATTERN =
+      Tell.of(
           "(?m)("
               + ARISTA_EOS_LINE_REGEX
               + "|"
               + ARISTA_FLASH_REGEX
               + "|"
               + ARISTA_TELLS_REGEX
-              + ")");
+              + ")",
+          "EOS-",
+          ".swi",
+          "community-list regexp");
 
   private @Nullable ConfigurationFormat checkArista() {
     if (fileTextMatches(ARISTA_PATTERN)) {
@@ -198,9 +272,13 @@ public final class VendorConfigurationFormatDetector {
   }
 
   /** Assuming Cisco device, try to find things that indicate IOS-XR. */
-  private static final Pattern XR_QUALIFIERS =
-      Pattern.compile(
-          "(?m)^\\s*(interface Bundle-Ether|end-policy\\b|end-set\\b|ipv4 access-list\\b)");
+  private static final Tell XR_QUALIFIERS =
+      Tell.of(
+          "(?m)^\\s*(interface Bundle-Ether|end-policy\\b|end-set\\b|ipv4 access-list\\b)",
+          "interface Bundle-Ether",
+          "end-policy",
+          "end-set",
+          "ipv4 access-list");
 
   private @Nullable ConfigurationFormat checkCisco() {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
@@ -286,7 +364,7 @@ public final class VendorConfigurationFormatDetector {
   private @Nullable ConfigurationFormat checkJuniper(boolean preMatch) {
     if (_notJuniper) {
       return null;
-    } else if (FLATTENED_JUNIPER_PATTERN.matcher(_fileText).find(0)) {
+    } else if (fileTextMatches(FLATTENED_JUNIPER_PATTERN)) {
       return ConfigurationFormat.FLAT_JUNIPER;
     } else if (_fileText.contains("set hostname")) {
       return ConfigurationFormat.JUNIPER_SWITCH;
@@ -295,7 +373,7 @@ public final class VendorConfigurationFormatDetector {
     // Decide whether we believe this is a Juniper file.
     boolean isJuniper =
         preMatch
-            || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
+            || fileTextMatches(FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN)
             || fileTextMatches(JUNIPER_PATTERN)
             || _fileText.contains("system")
                 && _fileText.contains("{")
@@ -353,8 +431,8 @@ public final class VendorConfigurationFormatDetector {
   }
 
   private @Nullable ConfigurationFormat checkBatfish() {
-    Matcher m = BATFISH_CONFIG_FORMAT_PATTERN.matcher(_fileText);
-    if (!m.find()) {
+    Matcher m = BATFISH_CONFIG_FORMAT_PATTERN.find(_fileText);
+    if (m == null) {
       return null;
     }
     String format = m.group(1);
@@ -368,8 +446,8 @@ public final class VendorConfigurationFormatDetector {
   }
 
   private @Nullable ConfigurationFormat checkRancid() {
-    Matcher m = RANCID_BASE_PATTERN.matcher(_fileText);
-    if (!m.find()) {
+    Matcher m = RANCID_BASE_PATTERN.find(_fileText);
+    if (m == null) {
       return null;
     }
     // Based on types and aliases defined in
@@ -482,11 +560,10 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  private static final Pattern RUCKUS_ICX_MODULE_PATTERN =
-      Pattern.compile("module \\d+ icx", Pattern.MULTILINE);
+  private static final Tell RUCKUS_ICX_MODULE_PATTERN = Tell.of("(?m)module \\d+ icx", " icx");
 
   private @Nullable ConfigurationFormat checkRuckusIcx() {
-    if (RUCKUS_ICX_MODULE_PATTERN.matcher(_fileText).find()) {
+    if (fileTextMatches(RUCKUS_ICX_MODULE_PATTERN)) {
       return ConfigurationFormat.RUCKUS_ICX;
     }
     return null;
