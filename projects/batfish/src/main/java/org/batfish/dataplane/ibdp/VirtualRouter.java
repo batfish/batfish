@@ -11,6 +11,7 @@ import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.resolveStaticNextHopIp;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
@@ -646,14 +647,47 @@ public final class VirtualRouter {
     }
   }
 
+  /**
+   * Activates or deactivates {@code conditionalStatics}. Those with a next hop IP all share it
+   * (they are one group of {@link #_conditionalStaticsByNextHopIp}), so it is resolved at most once
+   * per recursiveness rather than per route.
+   */
   private void activateStaticRoutes(
       TrackMethodEvaluator trackMethodEvaluator, List<StaticRoute> conditionalStatics) {
+    Set<AnnotatedRoute<AbstractRoute>> resolvedRecursive = null;
+    Set<AnnotatedRoute<AbstractRoute>> resolvedNonRecursive = null;
     for (StaticRoute sr : conditionalStatics) {
-      if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
-        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
+      boolean activate;
+      if (sr.getNextHop() instanceof NextHopIp) {
+        Set<AnnotatedRoute<AbstractRoute>> matching;
+        if (sr.getRecursive()) {
+          if (resolvedRecursive == null) {
+            resolvedRecursive =
+                resolveStaticNextHopIp(sr.getNextHopIp(), true, _mainRib, _resolutionRestriction);
+          }
+          matching = resolvedRecursive;
+        } else {
+          if (resolvedNonRecursive == null) {
+            resolvedNonRecursive =
+                resolveStaticNextHopIp(sr.getNextHopIp(), false, _mainRib, _resolutionRestriction);
+          }
+          matching = resolvedNonRecursive;
+        }
+        activate =
+            shouldActivateNextHopIpRoute(sr, matching)
+                && (sr.getTrack() == null || evaluateTrack(trackMethodEvaluator, sr.getTrack()));
       } else {
-        // No effect if the route is not in the RIB.
-        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
+        activate = shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr);
+      }
+      AnnotatedRoute<AbstractRoute> route = annotateRoute(sr);
+      if (activate) {
+        // Merging a route already present is a no-op; skip the work of finding that out.
+        if (!_mainRib.containsRoute(route)) {
+          _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(route));
+        }
+      } else {
+        // No effect if the route is not in the RIB or its backups.
+        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(route));
       }
     }
   }
