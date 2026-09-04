@@ -43,4 +43,23 @@ public class IpWildcardSetIpSpaceTest {
         IpWildcardSetIpSpace.builder().excluding(IpWildcard.parse("1.2.3.0/24")).build();
     assertThat(actuallyEmpty.complement(), is(UniverseIpSpace.INSTANCE));
   }
+
+  @Test
+  public void testJavaSerializationCompact() {
+    IpWildcardSetIpSpace space =
+        IpWildcardSetIpSpace.builder()
+            .including(
+                IpWildcard.parse("1.2.3.4:0.0.0.255"), IpWildcard.create(Ip.parse("0.0.0.0")))
+            .excluding(
+                IpWildcard.create(Prefix.parse("1.2.3.0/30")),
+                IpWildcard.parse("255.255.255.255:255.255.255.255"))
+            .build();
+    IpWildcardSetIpSpace clone = org.apache.commons.lang3.SerializationUtils.clone(space);
+    assertThat(clone, equalTo(space));
+    assertThat(clone.getBlacklist(), equalTo(space.getBlacklist()));
+    assertThat(clone.getWhitelist(), equalTo(space.getWhitelist()));
+    assertThat(
+        org.apache.commons.lang3.SerializationUtils.clone(IpWildcardSetIpSpace.builder().build()),
+        equalTo(IpWildcardSetIpSpace.builder().build()));
+  }
 }
