@@ -9,6 +9,9 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.util.Arrays;
@@ -77,14 +80,53 @@ public final class IpWildcardSetIpSpace extends IpSpace {
     return new Builder();
   }
 
-  private final @Nonnull Set<IpWildcard> _blacklist;
+  // Serialized compactly; see writeObject.
+  private transient @Nonnull Set<IpWildcard> _blacklist;
 
-  private final @Nonnull Set<IpWildcard> _whitelist;
+  private transient @Nonnull Set<IpWildcard> _whitelist;
 
   private IpWildcardSetIpSpace(
       @Nonnull Set<IpWildcard> blacklist, @Nonnull Set<IpWildcard> whitelist) {
     _blacklist = ImmutableSet.copyOf(blacklist);
     _whitelist = ImmutableSet.copyOf(whitelist);
+  }
+
+  /*
+   * A wildcard is an address and a mask. A forwarding analysis holds a wildcard per route under a
+   * prefix; default serialization writes an object and an Ip per wildcard, this writes the numbers.
+   */
+  @Serial
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+    writeWildcards(out, _blacklist);
+    writeWildcards(out, _whitelist);
+  }
+
+  @Serial
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    _blacklist = readWildcards(in);
+    _whitelist = readWildcards(in);
+  }
+
+  private static void writeWildcards(ObjectOutputStream out, Set<IpWildcard> wildcards)
+      throws IOException {
+    out.writeInt(wildcards.size());
+    for (IpWildcard w : wildcards) {
+      out.writeInt((int) w.getIp().asLong());
+      out.writeInt((int) w.getWildcardMaskAsIp().asLong());
+    }
+  }
+
+  private static Set<IpWildcard> readWildcards(ObjectInputStream in) throws IOException {
+    int count = in.readInt();
+    ImmutableSet.Builder<IpWildcard> wildcards = ImmutableSet.builderWithExpectedSize(count);
+    for (int i = 0; i < count; i++) {
+      wildcards.add(
+          IpWildcard.ipWithWildcardMask(
+              Ip.create(in.readInt()), Integer.toUnsignedLong(in.readInt())));
+    }
+    return wildcards.build();
   }
 
   @JsonCreator

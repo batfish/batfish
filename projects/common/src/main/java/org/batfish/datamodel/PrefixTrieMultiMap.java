@@ -4,12 +4,13 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import java.io.ObjectStreamException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -135,7 +136,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   private static final Object[] EMPTY_VALUES = new Object[0];
   private static final Prefix[] EMPTY_KEYS = new Prefix[0];
 
-  private int[] _nodes;
+  // The arrays are written compactly; see writeObject.
+  private transient int[] _nodes;
 
   /** The number of ints of {@link #_nodes} in use. */
   private int _used;
@@ -143,16 +145,81 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   private int _root;
 
   /** Slot s holds the element ({@code T}) or elements ({@link ImmutableSet}) of one node. */
-  private Object[] _values;
+  private transient Object[] _values;
 
   /** Slot s holds the {@link Prefix} of the node, sharing the caller's instance. */
-  private Prefix[] _keys;
+  private transient Prefix[] _keys;
 
   private int _numSlots;
   private int _numElements;
 
   public PrefixTrieMultiMap() {
     clear();
+  }
+
+  private static final int VALUE_NONE = -2;
+  private static final int VALUE_SINGLE = -1;
+
+  /*
+   * The records are written as the ints in use, each slot's prefix as its address and length, and
+   * each slot's value as its elements, so that nothing but the elements themselves is an object
+   * in the stream. Reading fills the arrays directly; nothing is rebuilt.
+   */
+  @Serial
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+    for (int i = 0; i < _used; i++) {
+      out.writeInt(_nodes[i]);
+    }
+    for (int s = 0; s < _numSlots; s++) {
+      Prefix key = _keys[s];
+      if (key == null) {
+        out.writeByte(-1);
+      } else {
+        out.writeByte(key.getPrefixLength());
+        out.writeInt((int) key.getStartIp().asLong());
+      }
+      Object value = _values[s];
+      if (value == null) {
+        out.writeInt(VALUE_NONE);
+      } else if (value instanceof ImmutableSet) {
+        Set<?> elements = (Set<?>) value;
+        out.writeInt(elements.size());
+        for (Object e : elements) {
+          out.writeObject(e);
+        }
+      } else {
+        out.writeInt(VALUE_SINGLE);
+        out.writeObject(value);
+      }
+    }
+  }
+
+  @Serial
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    _nodes = new int[_used];
+    for (int i = 0; i < _used; i++) {
+      _nodes[i] = in.readInt();
+    }
+    _keys = new Prefix[_numSlots];
+    _values = new Object[_numSlots];
+    for (int s = 0; s < _numSlots; s++) {
+      byte len = in.readByte();
+      if (len >= 0) {
+        _keys[s] = Prefix.create(Ip.create(in.readInt()), len);
+      }
+      int count = in.readInt();
+      if (count == VALUE_SINGLE) {
+        _values[s] = in.readObject();
+      } else if (count != VALUE_NONE) {
+        ImmutableSet.Builder<Object> elements = ImmutableSet.builderWithExpectedSize(count);
+        for (int i = 0; i < count; i++) {
+          elements.add(in.readObject());
+        }
+        _values[s] = elements.build();
+      }
+    }
   }
 
   // Bit arithmetic on prefixes given as (bits, length).
@@ -1004,41 +1071,5 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         .add("numElements", _numElements)
         .add("numKeys", _numSlots)
         .toString();
-  }
-
-  private static class SerializedForm<T> implements Serializable {
-    private final ImmutableList<Prefix> _keys;
-    private final ImmutableList<Set<T>> _values;
-
-    private SerializedForm(ImmutableList<Prefix> keys, ImmutableList<Set<T>> values) {
-      _keys = keys;
-      _values = values;
-    }
-
-    public static <T> SerializedForm<T> of(PrefixTrieMultiMap<T> map) {
-      ImmutableList.Builder<Prefix> keys = ImmutableList.builder();
-      ImmutableList.Builder<Set<T>> values = ImmutableList.builder();
-      map.traverseEntries(
-          (prefix, elements) -> {
-            keys.add(prefix);
-            values.add(elements);
-          });
-      return new SerializedForm<>(keys.build(), values.build());
-    }
-
-    @Serial
-    public Object readResolve() throws ObjectStreamException {
-      PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
-      for (int i = 0; i < _keys.size(); ++i) {
-        ret.putAll(_keys.get(i), _values.get(i));
-      }
-      ret.trimToSize();
-      return ret;
-    }
-  }
-
-  @Serial
-  private Object writeReplace() throws ObjectStreamException {
-    return SerializedForm.of(this);
   }
 }
