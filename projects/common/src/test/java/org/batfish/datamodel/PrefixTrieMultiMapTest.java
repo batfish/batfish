@@ -934,4 +934,21 @@ public class PrefixTrieMultiMapTest {
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
     return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
   }
+
+  @Test
+  public void testJavaSerializationCompact() {
+    PrefixTrieMultiMap<String> map = new PrefixTrieMultiMap<>();
+    map.put(Prefix.parse("0.0.0.0/0"), "default");
+    map.put(Prefix.parse("10.0.0.0/8"), "a");
+    map.put(Prefix.parse("10.0.0.0/8"), "b");
+    map.put(Prefix.parse("255.255.255.255/32"), "c");
+    map.put(Prefix.parse("128.0.0.0/1"), "d");
+    PrefixTrieMultiMap<String> clone = org.apache.commons.lang3.SerializationUtils.clone(map);
+    assertThat(clone, equalTo(map));
+    assertThat(clone.get(Prefix.parse("10.0.0.0/8")), equalTo(ImmutableSet.of("a", "b")));
+    assertThat(clone.getAllElements(), equalTo(map.getAllElements()));
+    assertThat(
+        org.apache.commons.lang3.SerializationUtils.clone(new PrefixTrieMultiMap<String>()),
+        equalTo(new PrefixTrieMultiMap<String>()));
+  }
 }

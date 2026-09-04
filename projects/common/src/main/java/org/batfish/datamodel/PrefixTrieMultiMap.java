@@ -9,6 +9,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serial;
 import java.io.Serializable;
@@ -1007,12 +1010,55 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   private static class SerializedForm<T> implements Serializable {
-    private final ImmutableList<Prefix> _keys;
-    private final ImmutableList<Set<T>> _values;
+    // Written compactly; see writeObject.
+    private transient ImmutableList<Prefix> _keys;
+    private transient ImmutableList<Set<T>> _values;
 
     private SerializedForm(ImmutableList<Prefix> keys, ImmutableList<Set<T>> values) {
       _keys = keys;
       _values = values;
+    }
+
+    /*
+     * Keys are written as numbers and each value set as its size and elements. Default
+     * serialization would write a Prefix, an Ip, and a set with its backing array per key, several
+     * times the objects of the elements themselves for a RIB or FIB of single-route prefixes.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+      out.defaultWriteObject();
+      int size = _keys.size();
+      out.writeInt(size);
+      for (int i = 0; i < size; i++) {
+        Prefix key = _keys.get(i);
+        out.writeInt((int) key.getStartIp().asLong());
+        out.writeByte(key.getPrefixLength());
+        Set<T> value = _values.get(i);
+        out.writeInt(value.size());
+        for (T t : value) {
+          out.writeObject(t);
+        }
+      }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      int size = in.readInt();
+      ImmutableList.Builder<Prefix> keys = ImmutableList.builderWithExpectedSize(size);
+      ImmutableList.Builder<Set<T>> values = ImmutableList.builderWithExpectedSize(size);
+      for (int i = 0; i < size; i++) {
+        keys.add(Prefix.create(Ip.create(in.readInt()), in.readByte()));
+        int count = in.readInt();
+        ImmutableSet.Builder<T> value = ImmutableSet.builderWithExpectedSize(count);
+        for (int j = 0; j < count; j++) {
+          value.add((T) in.readObject());
+        }
+        values.add(value.build());
+      }
+      _keys = keys.build();
+      _values = values.build();
     }
 
     public static <T> SerializedForm<T> of(PrefixTrieMultiMap<T> map) {
