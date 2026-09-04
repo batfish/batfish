@@ -945,9 +945,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _externalAdvertisements = null;
     }
 
-    // Process updates from each neighbor
-    for (EdgeId edgeId : _bgpv4Edges) {
-      pullV4UnicastMessages(bgpTopology, nc, nodes, edgeId, _unicastEdgesWentUp.contains(edgeId));
+    // Process updates from each neighbor. What a neighbor sends and how it looks after import
+    // processing depend on the neighbor and our configuration, not on our RIBs, so that is done
+    // for all neighbors in parallel: a node with many neighbors would otherwise hold up the whole
+    // iteration. The results go into the RIBs neighbor by neighbor, in the same order as always.
+    List<PreparedEdge> prepared =
+        _bgpv4Edges.asList().parallelStream()
+            .map(
+                edgeId ->
+                    prepareV4UnicastMessages(
+                        bgpTopology, nc, nodes, edgeId, _unicastEdgesWentUp.contains(edgeId)))
+            .collect(ImmutableList.toImmutableList());
+    for (PreparedEdge edge : prepared) {
+      applyV4UnicastMessages(nodes, edge);
     }
 
     initBgpAggregateRoutes();
@@ -989,31 +999,45 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
   }
 
-  /** Pull v4Unicast routes from our neighbors' deltas, merge them into our own RIBs */
-  private void pullV4UnicastMessages(
+  /**
+   * A route a neighbor sent us, after import processing: {@code transformed} is what goes into our
+   * RIBs, or {@code null} if the route was filtered, in which case {@code filteredByPolicy} says
+   * whether the import policy rather than the protocol filtered it.
+   */
+  private record ImportedRoute(
+      RouteAdvertisement<Bgpv4Route> advert,
+      @Nullable Bgpv4Route transformed,
+      @Nullable AnnotatedRoute<AbstractRoute> annotated,
+      boolean filteredByPolicy) {}
+
+  /** Everything {@link #applyV4UnicastMessages} needs about one neighbor's routes. */
+  private record PreparedEdge(
+      EdgeId edgeId,
+      BgpSessionProperties ourSessionProperties,
+      BgpPeerConfig ourBgpConfig,
+      @Nullable String importPolicyName,
+      List<ImportedRoute> routes) {}
+
+  /**
+   * Pulls v4Unicast routes from the neighbor on {@code edgeId} and runs them through import
+   * processing. Depends on the neighbor's state and our configuration, not on our RIBs, so it can
+   * run for all neighbors at once; {@link #applyV4UnicastMessages} then merges the results.
+   */
+  private PreparedEdge prepareV4UnicastMessages(
       BgpTopology bgpTopology,
       NetworkConfigurations nc,
       Map<String, Node> nodes,
       EdgeId edgeId,
       boolean isNewSession) {
-
     // Setup helper vars
     BgpPeerConfigId remoteConfigId = edgeId.tail();
     BgpPeerConfigId ourConfigId = edgeId.head();
     // Verify that "ourConfigId" really is ours.
     assert ourConfigId.getHostname().equals(_hostname);
-
     BgpSessionProperties ourSessionProperties =
         getBgpSessionProperties(bgpTopology, edgeId.reverse());
     BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(edgeId.head()));
     assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    boolean useRibGroups =
-        ourBgpConfig.getAppliedRibGroup() != null
-            && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
-
-    Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
-
     BgpRoutingProcess remoteProcess = getNeighborBgpProcess(remoteConfigId, nodes);
     Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
         remoteProcess
@@ -1023,78 +1047,86 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // route and another added route, the add should be applied second.
             .sorted(Comparator.comparing(ra -> !ra.isWithdrawn()))
             .iterator();
+    // Note whether new route is received from route reflector client
+    AddressFamily ourAfSettingsForPeer = ourBgpConfig.getIpv4UnicastAddressFamily();
+    assert ourAfSettingsForPeer
+        != null; // invariant of proper queue setup and route exchange for this AF type
+    boolean receivedFromRouteReflectorClient =
+        !ourSessionProperties.isEbgp() && ourAfSettingsForPeer.getRouteReflectorClient();
+    // TODO: ensure there is always an import policy
+    String importPolicyName = ourAfSettingsForPeer.getImportPolicy();
+    RoutingPolicy importPolicy =
+        importPolicyName == null ? null : _policies.get(importPolicyName).orElse(null);
 
-    // Process all routes from neighbor
+    List<ImportedRoute> routes = new ArrayList<>();
     while (exportedRoutes.hasNext()) {
       // consume exported routes
       RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
       Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
-
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
               remoteRoute,
               ourSessionProperties.getLocalAs(),
-              ourBgpConfig
-                  .getIpv4UnicastAddressFamily()
-                  .getAddressFamilyCapabilities()
-                  .getAllowLocalAsIn(),
+              ourAfSettingsForPeer.getAddressFamilyCapabilities().getAllowLocalAsIn(),
               ourSessionProperties.isEbgp(),
               _process,
               ourSessionProperties.getRemoteIp(),
               ourConfigId.getPeerInterface());
       if (transformedIncomingRouteBuilder == null) {
         // Route could not be imported for core protocol reasons
-        _prefixTracer.filtered(
-            remoteRoute.getNetwork(),
-            remoteConfigId.getHostname(),
-            ourSessionProperties.getRemoteIp(),
-            remoteConfigId.getVrfName(),
-            null,
-            IN);
+        routes.add(new ImportedRoute(remoteRouteAdvert, null, null, false));
         continue;
       }
-
-      // Note whether new route is received from route reflector client
-      AddressFamily ourAfSettingsForPeer = ourBgpConfig.getIpv4UnicastAddressFamily();
-      assert ourAfSettingsForPeer
-          != null; // invariant of proper queue setup and route exchange for this AF type
       transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
-          !ourSessionProperties.isEbgp() && ourAfSettingsForPeer.getRouteReflectorClient());
-
+          receivedFromRouteReflectorClient);
       // Process route through import policy, if one exists
-      String importPolicyName = ourBgpConfig.getIpv4UnicastAddressFamily().getImportPolicy();
-      boolean acceptIncoming = true;
-      // TODO: ensure there is always an import policy
-      if (importPolicyName != null) {
-        RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
-        if (importPolicy != null) {
-          acceptIncoming =
-              importPolicy.processBgpRoute(
-                  remoteRoute,
-                  transformedIncomingRouteBuilder,
-                  ourSessionProperties,
-                  IN,
-                  _successfulWatchedTracks::contains);
-        }
-      }
-      if (!acceptIncoming) {
+      if (importPolicy != null
+          && !importPolicy.processBgpRoute(
+              remoteRoute,
+              transformedIncomingRouteBuilder,
+              ourSessionProperties,
+              IN,
+              _successfulWatchedTracks::contains)) {
         // Route could not be imported due to routing policy
-        _prefixTracer.filtered(
-            remoteRoute.getNetwork(),
-            remoteConfigId.getHostname(),
-            ourSessionProperties.getRemoteIp(),
-            remoteConfigId.getVrfName(),
-            importPolicyName,
-            IN);
+        routes.add(new ImportedRoute(remoteRouteAdvert, null, null, true));
         continue;
       }
       Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-
       // If new route gets leaked to other VRFs via RibGroup, this VRF should be its source VRF.
-      AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
-          annotateRoute(transformedIncomingRoute);
+      routes.add(
+          new ImportedRoute(
+              remoteRouteAdvert,
+              transformedIncomingRoute,
+              annotateRoute(transformedIncomingRoute),
+              false));
+    }
+    return new PreparedEdge(edgeId, ourSessionProperties, ourBgpConfig, importPolicyName, routes);
+  }
 
-      if (remoteRouteAdvert.isWithdrawn()) {
+  /** Merges the routes of {@link #prepareV4UnicastMessages} into our RIBs and updates deltas. */
+  private void applyV4UnicastMessages(Map<String, Node> nodes, PreparedEdge prepared) {
+    BgpPeerConfigId remoteConfigId = prepared.edgeId().tail();
+    BgpSessionProperties ourSessionProperties = prepared.ourSessionProperties();
+    BgpPeerConfig ourBgpConfig = prepared.ourBgpConfig();
+    String importPolicyName = prepared.importPolicyName();
+    boolean useRibGroups =
+        ourBgpConfig.getAppliedRibGroup() != null
+            && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
+    Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
+    for (ImportedRoute imported : prepared.routes()) {
+      Bgpv4Route transformedIncomingRoute = imported.transformed();
+      if (transformedIncomingRoute == null) {
+        _prefixTracer.filtered(
+            imported.advert().getRoute().getNetwork(),
+            remoteConfigId.getHostname(),
+            ourSessionProperties.getRemoteIp(),
+            remoteConfigId.getVrfName(),
+            imported.filteredByPolicy() ? importPolicyName : null,
+            IN);
+        continue;
+      }
+      AnnotatedRoute<AbstractRoute> annotatedTransformedRoute = imported.annotated();
+      if (imported.advert().isWithdrawn()) {
         // Remove from target and overall RIBs and update deltas
         processRemoveInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
         processRemoveInBgpRib(transformedIncomingRoute);
