@@ -15,35 +15,36 @@ import org.batfish.datamodel.StaticRoute;
 public class StaticRouteHelper {
 
   /**
-   * Check if a static route with next hop IP can be activated. If this method returns True, an
-   * attempt should be made to merge it into the RIB. If it returns false, an attempt should be made
-   * to remove it from the RIB.
-   *
-   * @param route a {@link StaticRoute} to check
-   * @param rib the RIB to use for establishing routabilitity to next hop IP
-   * @param restriction predicate that restricts which routes may be used to recursively resolve
-   *     next-hops
+   * The routes in {@code rib} that a static route with next hop {@code nextHopIp} may resolve
+   * through: the longest prefix matches that are connected or, if {@code recursive}, pass {@code
+   * restriction}. Shared by every static route with the same next hop IP and recursiveness, so a
+   * caller with many such routes can resolve once.
+   */
+  public static <R extends AbstractRouteDecorator> Set<R> resolveStaticNextHopIp(
+      Ip nextHopIp, boolean recursive, GenericRib<R> rib, ResolutionRestriction<R> restriction) {
+    return rib.longestPrefixMatch(
+        nextHopIp,
+        r -> {
+          if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
+            // All static routes can be activated by a connected route.
+            return true;
+          }
+          if (!recursive) {
+            // Non-recursive static routes cannot be activated by non-connected routes.
+            return false;
+          }
+          // Recursive routes must pass restriction if present.
+          return restriction.test(r);
+        });
+  }
+
+  /**
+   * Whether {@code route} can be activated given {@code matchingRoutes}, the result of {@link
+   * #resolveStaticNextHopIp} for its next hop IP and recursiveness.
    */
   public static <R extends AbstractRouteDecorator> boolean shouldActivateNextHopIpRoute(
-      StaticRoute route, GenericRib<R> rib, ResolutionRestriction<R> restriction) {
-    boolean recursive = route.getRecursive();
+      StaticRoute route, Set<R> matchingRoutes) {
     Ip nextHopIp = route.getNextHopIp();
-    Set<R> matchingRoutes =
-        rib.longestPrefixMatch(
-            nextHopIp,
-            r -> {
-              if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
-                // All static routes can be activated by a connected route.
-                return true;
-              }
-              if (!recursive) {
-                // Non-recursive static routes cannot be activated by non-connected routes.
-                return false;
-              }
-              // Recursive routes must pass restriction if present.
-              return restriction.test(r);
-            });
-
     // - If matchingRoutes is empty, cannot activate because the next hop ip is unreachable.
     // - If the prefix of the route to be activated contains the route's next hop, then
     //   a matching route must have a longer prefix. Otherwise, the route will become its own
