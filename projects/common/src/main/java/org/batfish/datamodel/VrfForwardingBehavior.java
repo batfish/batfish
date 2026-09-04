@@ -3,7 +3,9 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class VrfForwardingBehavior implements Serializable {
   private final @Nonnull Map<Edge, IpSpace> _arpTrueEdge;
@@ -102,5 +104,26 @@ public final class VrfForwardingBehavior implements Serializable {
       return new VrfForwardingBehavior(
           _arpTrueEdge, _interfaceForwardingBehavior, _nextVrf, _nullRoutedIps, _routableIps);
     }
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof VrfForwardingBehavior)) {
+      return false;
+    }
+    VrfForwardingBehavior that = (VrfForwardingBehavior) o;
+    return _arpTrueEdge.equals(that._arpTrueEdge)
+        && _interfaceForwardingBehavior.equals(that._interfaceForwardingBehavior)
+        && _nextVrf.equals(that._nextVrf)
+        && _nullRoutedIps.equals(that._nullRoutedIps)
+        && _routableIps.equals(that._routableIps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _arpTrueEdge, _interfaceForwardingBehavior, _nextVrf, _nullRoutedIps, _routableIps);
   }
 }
