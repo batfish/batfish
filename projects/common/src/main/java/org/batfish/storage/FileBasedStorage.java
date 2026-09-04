@@ -13,8 +13,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.io.Closer;
@@ -81,6 +83,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -1553,14 +1556,35 @@ public class FileBasedStorage implements StorageProvider {
     }
     Map<String, PerHostDataPlane> perNodeDataPlanes =
         deserializeObjects(namesByPath, PerHostDataPlane.class);
-    ForwardingAnalysis forwardingAnalysis =
-        deserializeObjectUnchecked(getDataPlaneForwardingAnalysisPath(snapshot));
+    ForwardingAnalysis forwardingAnalysis;
+    Path legacyForwardingAnalysis = getDataPlaneForwardingAnalysisPath(snapshot);
+    if (Files.exists(legacyForwardingAnalysis)) {
+      // Written before the forwarding analysis was stored per host.
+      forwardingAnalysis = deserializeObjectUnchecked(legacyForwardingAnalysis);
+    } else {
+      forwardingAnalysis =
+          ForwardingAnalysisImpl.of(
+              Maps.transformValues(perNodeDataPlanes, PerHostDataPlane::getArpReplies),
+              Maps.transformValues(perNodeDataPlanes, PerHostDataPlane::getVrfForwardingBehavior));
+    }
     return new SimpleFieldsDataPlane(perNodeDataPlanes, forwardingAnalysis);
   }
 
   @Override
   public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
-    dataPlane.getFibs().keySet().parallelStream()
+    // The forwarding analysis is stored per host along with everything else, rather than as one
+    // object: it is large, and one object is written by one thread.
+    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
+    // Copied into a list: a set view's spliterator splits into a few large batches, which would
+    // leave most threads idle.
+    ImmutableList<String> hostnames =
+        ImmutableList.copyOf(
+            Sets.union(
+                dataPlane.getFibs().keySet(),
+                Sets.union(
+                    forwardingAnalysis.getArpReplies().keySet(),
+                    forwardingAnalysis.getVrfForwardingBehavior().keySet())));
+    hostnames.parallelStream()
         .forEach(
             hostname -> {
               PerHostDataPlane dp =
@@ -1569,15 +1593,17 @@ public class FileBasedStorage implements StorageProvider {
                       dataPlane.getBgpBackupRoutes().row(hostname),
                       dataPlane.getEvpnRoutes().row(hostname),
                       dataPlane.getEvpnBackupRoutes().row(hostname),
-                      dataPlane.getFibs().get(hostname),
+                      dataPlane.getFibs().getOrDefault(hostname, ImmutableMap.of()),
+                      forwardingAnalysis.getArpReplies().getOrDefault(hostname, ImmutableMap.of()),
+                      forwardingAnalysis
+                          .getVrfForwardingBehavior()
+                          .getOrDefault(hostname, ImmutableMap.of()),
                       dataPlane.getLayer2Vnis().row(hostname),
                       dataPlane.getLayer3Vnis().row(hostname),
                       dataPlane.getPrefixTracingInfoSummary().get(hostname),
                       dataPlane.getRibs().row(hostname));
               serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
             });
-    serializeObject(
-        dataPlane.getForwardingAnalysis(), getDataPlaneForwardingAnalysisPath(snapshot));
   }
 
   @Override
