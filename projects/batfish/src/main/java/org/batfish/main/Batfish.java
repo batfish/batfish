@@ -1088,7 +1088,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
     } else {
       // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-      configurations = actuallyParseConfigurations(snapshot);
+      _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
+      repairConfigurations(snapshot);
+      // Conversion post-processes and caches the configurations it produces; only if the cache has
+      // already let go of them do they need to be read back.
+      configurations = _cachedConfigurations.getIfPresent(snapshot);
+      if (configurations != null) {
+        return Optional.of(configurations);
+      }
+      configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
+      verify(
+          configurations != null,
+          "Configurations should not be null when loaded immediately after repair.");
     }
 
     // Apply things like blacklist and aggregations before installing in the cache.
@@ -1096,19 +1107,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations.put(snapshot, configurations);
 
     return Optional.of(configurations);
-  }
-
-  private @Nonnull SortedMap<String, Configuration> actuallyParseConfigurations(
-      NetworkSnapshot snapshot) {
-    _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
-    repairConfigurations(snapshot);
-    SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
-    verify(
-        configurations != null,
-        "Configurations should not be null when loaded immediately after repair.");
-    assert configurations != null;
-    return configurations;
   }
 
   @Override
@@ -2406,6 +2404,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     LOGGER.info("Post-processing the Vendor-Independent devices");
     postProcessSnapshot(snapshot, configurations);
+    // Initialization goes on to load the configurations, which would read back what was just
+    // written and post-process it again. Keep these instead. Only caches computed lazily on the
+    // objects, such as simplified routing policy statements, distinguish them from a fresh copy.
+    _cachedConfigurations.put(snapshot, new TreeMap<>(configurations));
 
     if (_settings.getPrecomputeAutocomplete()) {
       LOGGER.info("Computing completion metadata");

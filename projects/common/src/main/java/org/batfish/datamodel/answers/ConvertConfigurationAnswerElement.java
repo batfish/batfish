@@ -9,6 +9,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
@@ -19,6 +23,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.ChunkedSerialization;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.version.BatfishVersion;
 
@@ -43,15 +48,17 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   // This will only be null in legacy objects, which used _failed set instead
   private @Nullable SortedMap<String, ConvertStatus> _convertStatus;
 
-  // filename -> structType -> structName -> info
-  private @Nonnull SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+  // filename -> structType -> structName -> info. Serialized per file in parallel; see writeObject.
+  private transient @Nonnull SortedMap<
+          String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       _definedStructures;
 
   /* Map of source filename to generated nodes (e.g. "configs/j1.cfg" -> ["j1_master", "j1_logical_system1"]) */
   private @Nonnull Multimap<String, String> _fileMap;
 
-  // filename -> structType -> structName -> usage -> lines
-  private @Nonnull SortedMap<
+  // filename -> structType -> structName -> usage -> lines. Serialized per file in parallel; see
+  // writeObject.
+  private transient @Nonnull SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       _referencedStructures;
 
@@ -73,6 +80,25 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   public ConvertConfigurationAnswerElement() {
     this(null, null, null, null, null, null, null, null, null);
+  }
+
+  /*
+   * The defined and referenced structures are by far the largest part of this object: a file with
+   * many statements referencing the same structures records a line number per statement. They are
+   * serialized per file, in parallel; see ChunkedSerialization.
+   */
+  @Serial
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+    ChunkedSerialization.writeChunked(out, _definedStructures);
+    ChunkedSerialization.writeChunked(out, _referencedStructures);
+  }
+
+  @Serial
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    _definedStructures = new TreeMap<>(ChunkedSerialization.readChunked(in));
+    _referencedStructures = new TreeMap<>(ChunkedSerialization.readChunked(in));
   }
 
   @VisibleForTesting
