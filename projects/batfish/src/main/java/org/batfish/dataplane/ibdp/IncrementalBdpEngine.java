@@ -1035,15 +1035,22 @@ final class IncrementalBdpEngine {
     Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
 
     Schedule currentSchedule = _settings.getScheduleName();
+    // The node schedule depends on the nodes, the topology, and the schedule type. Within a round
+    // only the type can change, on oscillation, so compute the schedule once per type.
+    List<Map<String, Node>> scheduleSteps = null;
+    Schedule scheduleStepsFor = null;
 
     // Go into iteration mode, until the routes converge (or oscillation is detected)
     do {
       _numIterations++;
       LOGGER.info("Iteration {} begins", _numIterations);
-      LOGGER.info("Compute schedule");
-      // Compute node schedule
-      IbdpSchedule schedule =
-          IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, topologyContext);
+      if (scheduleSteps == null || scheduleStepsFor != currentSchedule) {
+        LOGGER.info("Compute schedule");
+        scheduleSteps =
+            IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, topologyContext)
+                .getAllRemaining();
+        scheduleStepsFor = currentSchedule;
+      }
 
       // (Re)initialization of dependent route calculation
       //  Since this is a local step, coloring not required.
@@ -1067,8 +1074,7 @@ final class IncrementalBdpEngine {
 
       // compute dependent routes for each allowable set of nodes until we cover all nodes
       int nodeSet = 0;
-      while (schedule.hasNext()) {
-        Map<String, Node> iterationNodes = schedule.next();
+      for (Map<String, Node> iterationNodes : scheduleSteps) {
         List<VirtualRouter> iterationVrs =
             toListInRandomOrder(
                 iterationNodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
