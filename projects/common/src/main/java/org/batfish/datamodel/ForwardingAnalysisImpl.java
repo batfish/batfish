@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMapParallel;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -426,7 +427,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       // node -> vrf -> routable IPs
       Map<String, Map<String, IpSpace>> routableIps) {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         configurations,
         Entry::getKey,
         nodeEntry -> {

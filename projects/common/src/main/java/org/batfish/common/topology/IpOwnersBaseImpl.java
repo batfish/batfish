@@ -4,12 +4,14 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMapParallel;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -249,7 +251,7 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   @VisibleForTesting
   static @Nonnull Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
       Map<String, Configuration> configs, boolean excludeInactive) {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         configs,
         Entry::getKey, /* hostname */
         nodeEntry ->
@@ -839,7 +841,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
    */
   private static @Nonnull Map<String, Map<String, Map<String, IpSpace>>> computeIfaceOwnedIpSpaces(
       Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners) {
-    Map<String, Map<String, Map<String, IpWildcardSetIpSpace.Builder>>> builders = new HashMap<>();
+    // Invert to node -> vrf -> interface -> IPs, then build the IP spaces, the expensive part, per
+    // node in parallel. Each interface's IPs stay in the order they were visited.
+    Map<String, Map<String, Map<String, List<Ip>>>> ips = new HashMap<>();
     ipIfaceOwners.forEach(
         (ip, nodeMap) ->
             nodeMap.forEach(
@@ -848,13 +852,12 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                         (vrf, ifaces) ->
                             ifaces.forEach(
                                 iface ->
-                                    builders
-                                        .computeIfAbsent(node, k -> new HashMap<>())
+                                    ips.computeIfAbsent(node, k -> new HashMap<>())
                                         .computeIfAbsent(vrf, k -> new HashMap<>())
-                                        .computeIfAbsent(iface, k -> IpWildcardSetIpSpace.builder())
-                                        .including(IpWildcard.create(ip))))));
-    return toImmutableMap(
-        builders,
+                                        .computeIfAbsent(iface, k -> new ArrayList<>())
+                                        .add(ip)))));
+    return toImmutableMapParallel(
+        ips,
         Entry::getKey, /* node */
         nodeEntry ->
             toImmutableMap(
@@ -864,7 +867,13 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                     toImmutableMap(
                         vrfEntry.getValue(),
                         Entry::getKey, /* interface */
-                        ifaceEntry -> ifaceEntry.getValue().build())));
+                        ifaceEntry -> {
+                          IpWildcardSetIpSpace.Builder space = IpWildcardSetIpSpace.builder();
+                          for (Ip ip : ifaceEntry.getValue()) {
+                            space.including(IpWildcard.create(ip));
+                          }
+                          return space.build();
+                        })));
   }
 
   /**
