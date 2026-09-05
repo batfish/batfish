@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
@@ -27,8 +28,8 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
-import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -237,6 +238,66 @@ public final class FibImplTest {
     assertThat(
         fib.allEntries(),
         contains(new FibEntry(FibNextVrf.of(nextVrf), ImmutableList.of(nextVrfRoute))));
+  }
+
+  /**
+   * Routes sharing a next hop IP share its resolution, except where a route's own network is on the
+   * resolution path: that route is declared a loop, while another route through the same next hop
+   * is not.
+   */
+  @Test
+  public void testResolutionSharedAcrossRoutesWithSameNextHopExceptLoops() {
+    Rib rib = new Rib();
+    ConnectedRoute connected = new ConnectedRoute(Prefix.parse("10.0.0.0/24"), "Eth1");
+    // Two ECMP routes for 2.2.2.0/24: one resolves via the connected route, the other via 2.2.2.2,
+    // which is inside its own network.
+    StaticRoute viaConnected =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute selfLoop =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setAdministrativeCost(1)
+            .build();
+    // Same next hop as selfLoop, but not on its own path.
+    StaticRoute other =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute another =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("3.3.3.0/24"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setAdministrativeCost(1)
+            .build();
+    rib.mergeRoute(annotateRoute(connected));
+    rib.mergeRoute(annotateRoute(viaConnected));
+    rib.mergeRoute(annotateRoute(selfLoop));
+    rib.mergeRoute(annotateRoute(other));
+    rib.mergeRoute(annotateRoute(another));
+
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    // selfLoop only resolves to a loop: the LPM for its next hop is its own network.
+    assertThat(
+        fib.get(Ip.parse("2.2.2.5")),
+        containsInAnyOrder(
+            hasAction(isFibForwardActionThat(hasInterfaceName("Eth1"))),
+            hasAction(equalTo(FibNullRoute.INSTANCE))));
+    // other and another resolve to Eth1 via viaConnected, and to a loop via selfLoop.
+    for (Ip ip : ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("3.3.3.3"))) {
+      assertThat(
+          fib.get(ip),
+          containsInAnyOrder(
+              hasAction(isFibForwardActionThat(hasInterfaceName("Eth1"))),
+              hasAction(equalTo(FibNullRoute.INSTANCE))));
+    }
   }
 
   @Test
