@@ -6,11 +6,13 @@ import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import java.io.IOException;
 import java.io.Serial;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,12 +116,82 @@ public final class FibImpl implements Fib {
       ResolutionRestriction<R> restriction,
       Predicate<AbstractRoute> fibExportFilter) {
     _root = new PrefixTrieMultiMap<>();
+    Map<ResolutionKey, ResolvedNextHop> resolvedNextHops = new HashMap<>();
     rib.getRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .filter(r -> !r.getNonForwarding() && fibExportFilter.test(r))
-        .forEach(r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction)));
+        .forEach(
+            r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction, resolvedNextHops)));
     _root.trimToSize();
     initSuppliers();
+  }
+
+  /**
+   * What the resolution of a next hop IP depends on besides the RIB: the IP, and how the top-level
+   * route's protocol restricts which routes may resolve it (see the filter in {@link
+   * #buildResolutionTree}).
+   */
+  private record ResolutionKey(Ip nextHopIp, boolean isStatic, boolean recursive) {
+    static ResolutionKey of(AbstractRoute route, NextHopIp nextHop) {
+      boolean isStatic = route.getProtocol() == RoutingProtocol.STATIC;
+      return new ResolutionKey(
+          nextHop.getIp(), isStatic, isStatic && ((StaticRoute) route).getRecursive());
+    }
+  }
+
+  /**
+   * The outcome of resolving a next hop IP, shared by every route with the same {@link
+   * ResolutionKey}: the actions it resolves to, and the networks of the routes traversed, since a
+   * top-level route with one of those networks would have been declared a loop instead.
+   */
+  private record ResolvedNextHop(
+      ImmutableList<FibAction> actions, ImmutableSet<Prefix> traversedNetworks, boolean reusable) {
+    boolean appliesTo(AbstractRoute route) {
+      return reusable && !traversedNetworks.contains(route.getNetwork());
+    }
+  }
+
+  /**
+   * Resolves {@code route}, reusing the resolution of its next hop IP from an earlier route with
+   * the same {@link ResolutionKey} when that is exact. A VRF typically has orders of magnitude
+   * fewer distinct next hops than routes, so nearly every route is a hit.
+   */
+  private <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
+      GenericRib<R> rib,
+      AbstractRoute route,
+      ResolutionRestriction<R> restriction,
+      Map<ResolutionKey, ResolvedNextHop> resolvedNextHops) {
+    if (!(route.getNextHop() instanceof NextHopIp)) {
+      return resolveRoute(rib, route, restriction);
+    }
+    ResolutionKey key = ResolutionKey.of(route, (NextHopIp) route.getNextHop());
+    ResolvedNextHop resolved = resolvedNextHops.get(key);
+    if (resolved != null && resolved.appliesTo(route)) {
+      ImmutableList<AbstractRoute> steps = ImmutableList.of(route);
+      Builder<FibEntry> entries = ImmutableSet.builderWithExpectedSize(resolved.actions().size());
+      for (FibAction action : resolved.actions()) {
+        entries.add(new FibEntry(action, steps));
+      }
+      return entries.build();
+    }
+    ResolutionTrace trace = new ResolutionTrace();
+    Set<FibEntry> entries = resolveRoute(rib, route, restriction, trace);
+    if (resolved == null) {
+      trace._visitedNetworks.remove(route.getNetwork());
+      resolvedNextHops.put(
+          key,
+          new ResolvedNextHop(
+              entries.stream().map(FibEntry::getAction).collect(ImmutableList.toImmutableList()),
+              ImmutableSet.copyOf(trace._visitedNetworks),
+              !trace._loopDeclared));
+    }
+    return entries;
+  }
+
+  /** What a resolution visited, to decide whether other routes may share its result. */
+  private static final class ResolutionTrace {
+    private final Set<Prefix> _visitedNetworks = new HashSet<>();
+    private boolean _loopDeclared;
   }
 
   private void initSuppliers() {
@@ -150,8 +222,16 @@ public final class FibImpl implements Fib {
   @VisibleForTesting
   <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
       GenericRib<R> rib, AbstractRoute route, ResolutionRestriction<R> restriction) {
+    return resolveRoute(rib, route, restriction, new ResolutionTrace());
+  }
+
+  private <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
+      GenericRib<R> rib,
+      AbstractRoute route,
+      ResolutionRestriction<R> restriction,
+      ResolutionTrace trace) {
     ResolutionTreeNode resolutionRoot = ResolutionTreeNode.root(route);
-    buildResolutionTree(rib, route, null, new HashSet<>(), 0, resolutionRoot, restriction);
+    buildResolutionTree(rib, route, null, new HashSet<>(), 0, resolutionRoot, restriction, trace);
     Builder<FibEntry> collector = ImmutableSet.builder();
     collectEntries(resolutionRoot, new Stack<>(), collector);
     return collector.build();
@@ -223,10 +303,12 @@ public final class FibImpl implements Fib {
       Set<Prefix> seenNetworks,
       int depth,
       ResolutionTreeNode treeNode,
-      ResolutionRestriction<R> restriction) {
+      ResolutionRestriction<R> restriction,
+      ResolutionTrace trace) {
     assert !route.getNonForwarding();
     Prefix network = route.getNetwork();
     checkState(!seenNetworks.contains(network), "Unexpected resolution loop resolving %s", route);
+    trace._visitedNetworks.add(network);
     Set<Prefix> newSeenNetworks = new HashSet<>(seenNetworks);
     newSeenNetworks.add(network);
     if (depth > MAX_DEPTH) {
@@ -262,6 +344,10 @@ public final class FibImpl implements Fib {
 
         if (lpmRoutes.isEmpty()
             || newSeenNetworks.contains(lpmRoutes.iterator().next().getNetwork())) {
+          if (!lpmRoutes.isEmpty()) {
+            // Declared a loop against a route on the path, so this outcome is specific to it.
+            trace._loopDeclared = true;
+          }
           // The next hop IP does not resolve or resolves in a loop, so this route becomes a
           // discard entry. Note that such entries may only exist on some vendors (e.g. IOS), and
           // will only survive in the final FIB if they do not cause an oscillation during data
@@ -280,7 +366,8 @@ public final class FibImpl implements Fib {
               newSeenNetworks,
               depth + 1,
               ResolutionTreeNode.withParent(genericRoute, treeNode, null),
-              restriction);
+              restriction,
+              trace);
         }
         return null;
       }
