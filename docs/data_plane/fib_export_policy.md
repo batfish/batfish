@@ -98,4 +98,4 @@ Conversion       JuniperConfiguration.convertForwardingTableExport()
 | Extraction | `grammar/flatjuniper/ConfigurationBuilder.java` | `exitRof_export()` |
 | Conversion | `representation/juniper/JuniperConfiguration.java` | `convertForwardingTableExport()` |
 | Data plane | `dataplane/ibdp/VirtualRouter.java` | `computeFib()` |
-| FIB | `datamodel/FibImpl.java` | `fibExportFilter` parameter |
+| FIB | `dataplane/FibImpl.java` | `fibExportFilter` parameter |
