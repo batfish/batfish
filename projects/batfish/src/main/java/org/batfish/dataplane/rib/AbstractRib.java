@@ -35,6 +35,12 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   private transient @Nullable Set<R> _allRoutes;
 
   /**
+   * {@link Set#hashCode()} of {@link #getRoutes()}, the sum of the routes' hash codes, maintained
+   * as routes come and go so that hashing the RIB state need not materialize the set.
+   */
+  private int _routesHashCode;
+
+  /**
    * Routes this RIB was offered that are not currently in {@link #_tree}, because a preferred route
    * for the same prefix is. Used to update the RIB if best routes are withdrawn. Most prefixes are
    * only ever offered the routes they hold, so this is far smaller than the RIB.
@@ -114,6 +120,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   public final void clear() {
     _tree.clear();
     _allRoutes = null;
+    _routesHashCode = 0;
   }
 
   @Override
@@ -150,6 +157,17 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
       _allRoutes = computeRoutes();
     }
     return _allRoutes;
+  }
+
+  /** Number of routes in this RIB, without materializing {@link #getRoutes()}. */
+  public final int getNumRoutes() {
+    return _tree.getNumRoutes();
+  }
+
+  /** {@link Set#hashCode()} of {@link #getRoutes()}, without materializing it. */
+  public final int getRoutesHashCode() {
+    assert _routesHashCode == _tree.getRoutes().hashCode();
+    return _routesHashCode;
   }
 
   protected @Nonnull Set<R> computeRoutes() {
@@ -216,12 +234,15 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
       }
       return delta;
     }
-    if (_backupRoutes != null) {
-      for (RouteAdvertisement<R> action : delta.getActions()) {
-        if (action.getReason() == Reason.REPLACE) {
+    for (RouteAdvertisement<R> action : delta.getActions()) {
+      if (action.isWithdrawn()) {
+        _routesHashCode -= action.getRoute().hashCode();
+        if (_backupRoutes != null && action.getReason() == Reason.REPLACE) {
           // Displaced by the new route: now a backup.
           _backupRoutes.put(action.getRoute().getNetwork(), action.getRoute());
         }
+      } else {
+        _routesHashCode += action.getRoute().hashCode();
       }
     }
     // A change to routes has been made
@@ -257,9 +278,12 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
       }
       return delta;
     }
-    if (_backupRoutes != null) {
-      for (RouteAdvertisement<R> action : delta.getActions()) {
-        if (!action.isWithdrawn()) {
+    for (RouteAdvertisement<R> action : delta.getActions()) {
+      if (action.isWithdrawn()) {
+        _routesHashCode -= action.getRoute().hashCode();
+      } else {
+        _routesHashCode += action.getRoute().hashCode();
+        if (_backupRoutes != null) {
           // Promoted from backup to replace the removed route.
           _backupRoutes.remove(action.getRoute().getNetwork(), action.getRoute());
         }

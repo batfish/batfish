@@ -1703,7 +1703,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             _activatedGeneratedRoutes.stream(),
             // RIB state
             Stream.of(_intraAreaRib, _interAreaRib, _internalSummaryRib, _type1Rib, _type2Rib)
-                .map(AbstractRib::getRoutes))
+                .map(AbstractRib::getRoutesHashCode))
         .collect(toOrderedHashCode());
   }
 

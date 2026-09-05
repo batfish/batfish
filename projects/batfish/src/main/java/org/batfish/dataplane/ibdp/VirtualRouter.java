@@ -1603,8 +1603,8 @@ public final class VirtualRouter {
    */
   int computeIterationHashCode() {
     return Streams.concat(
-            // RIB State
-            Stream.of(_mainRib.getRoutes()),
+            // RIB State: Set.hashCode of the main RIB routes, without materializing the set
+            Stream.of(_mainRib.getRoutesHashCode()),
             // Message queues
             messageQueueStream(_isisIncomingRoutes),
             messageQueueStream(_crossVrfIncomingRoutes),
