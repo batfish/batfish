@@ -1143,7 +1143,7 @@ final class IncrementalBdpEngine {
     ae.getBgpMultipathRibRoutesByIteration()
         .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
     int numMainRibRoutes =
-        vrs.parallelStream().mapToInt(vr -> vr.getMainRib().getRoutes().size()).sum();
+        vrs.parallelStream().mapToInt(vr -> vr.getMainRib().getNumRoutes()).sum();
     ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
   }
 
