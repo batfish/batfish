@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -465,13 +466,17 @@ public final class TopologyUtil {
   @VisibleForTesting
   public static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull L3Adjacencies adjacencies, @Nonnull Map<String, Configuration> configurations) {
+    // Filter each candidate edge as it is synthesized. Every pair of interfaces sharing a subnet is
+    // a candidate, so on large shared subnets the unfiltered set dwarfs the result and is not worth
+    // sorting or wrapping in a Topology.
     Stream<Edge> filteredEdgeStream =
-        synthesizeL3Topology(configurations).getEdges().stream()
-            .filter(
-                edge ->
-                    adjacencies.inSameBroadcastDomain(edge.getHead(), edge.getTail())
-                        // Keep if virtual wire
-                        || isVirtualWireSameDevice(edge));
+        synthesizeL3Edges(
+            configurations,
+            edge ->
+                adjacencies.inSameBroadcastDomain(edge.getHead(), edge.getTail())
+                    // Keep if virtual wire
+                    || isVirtualWireSameDevice(edge))
+            .stream();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // For point-to-point interfaces that don't participate in subnet-based L3 synthesis (link-local
     // or unnumbered addresses), create edges via physical adjacency instead.
@@ -578,29 +583,50 @@ public final class TopologyUtil {
    * <p>Ignores {@code Loopback} interfaces and inactive interfaces.
    */
   public static Topology synthesizeL3Topology(Map<String, Configuration> configurations) {
+    return new Topology(synthesizeL3Edges(configurations, edge -> true));
+  }
+
+  /**
+   * Returns the edges of {@link #synthesizeL3Topology} that satisfy {@code keep}, testing each
+   * candidate before collecting it.
+   */
+  private static @Nonnull ImmutableSortedSet<Edge> synthesizeL3Edges(
+      Map<String, Configuration> configurations, Predicate<Edge> keep) {
     Map<Prefix, List<Interface>> prefixInterfaces = computeInterfacesBucketByPrefix(configurations);
 
-    ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
-    for (Entry<Prefix, List<Interface>> bucketEntry : prefixInterfaces.entrySet()) {
-      Prefix p = bucketEntry.getKey();
-      Set<Interface> candidateInterfaces = candidateInterfacesForPrefix(prefixInterfaces, p);
+    // Handle the buckets in parallel: they are independent, and the collector sorts the result.
+    // This calls keep concurrently.
+    return prefixInterfaces.entrySet().parallelStream()
+        .flatMap(bucketEntry -> synthesizeL3Edges(prefixInterfaces, bucketEntry, keep))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
 
-      for (Interface iface1 : bucketEntry.getValue()) {
-        for (Interface iface2 : candidateInterfaces) {
-          // No device self-adjacencies in the same VRF.
-          if (!isValidLayer3Adjacency(iface1, iface2)) {
-            continue;
-          }
-          // Additionally, don't connect if any of the two endpoint interfaces are tunnels
-          if (iface1.getInterfaceType() == InterfaceType.TUNNEL
-              || iface2.getInterfaceType() == InterfaceType.TUNNEL) {
-            continue;
-          }
-          edges.add(new Edge(iface1, iface2));
+  /** The edges of {@link #synthesizeL3Edges} whose first interface is in {@code bucketEntry}. */
+  private static @Nonnull Stream<Edge> synthesizeL3Edges(
+      Map<Prefix, List<Interface>> prefixInterfaces,
+      Entry<Prefix, List<Interface>> bucketEntry,
+      Predicate<Edge> keep) {
+    Prefix p = bucketEntry.getKey();
+    Set<Interface> candidateInterfaces = candidateInterfacesForPrefix(prefixInterfaces, p);
+    Stream.Builder<Edge> edges = Stream.builder();
+    for (Interface iface1 : bucketEntry.getValue()) {
+      for (Interface iface2 : candidateInterfaces) {
+        // No device self-adjacencies in the same VRF.
+        if (!isValidLayer3Adjacency(iface1, iface2)) {
+          continue;
+        }
+        // Additionally, don't connect if any of the two endpoint interfaces are tunnels
+        if (iface1.getInterfaceType() == InterfaceType.TUNNEL
+            || iface2.getInterfaceType() == InterfaceType.TUNNEL) {
+          continue;
+        }
+        Edge edge = new Edge(iface1, iface2);
+        if (keep.test(edge)) {
+          edges.add(edge);
         }
       }
     }
-    return new Topology(edges.build());
+    return edges.build();
   }
 
   /**
