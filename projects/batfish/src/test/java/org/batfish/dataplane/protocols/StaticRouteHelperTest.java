@@ -2,15 +2,19 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.resolveStaticNextHopIp;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Before;
@@ -18,6 +22,12 @@ import org.junit.Test;
 
 /** Tests for {@link StaticRouteHelper} */
 public final class StaticRouteHelperTest {
+
+  private static boolean shouldActivate(
+      StaticRoute sr, Rib rib, ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
+    return shouldActivateNextHopIpRoute(
+        sr, resolveStaticNextHopIp(sr.getNextHopIp(), sr.getRecursive(), rib, restriction));
+  }
 
   private Rib _rib;
 
@@ -37,7 +47,7 @@ public final class StaticRouteHelperTest {
             .setNextHopIp(nextHop)
             .setAdministrativeCost(1)
             .build();
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /** Do not activate if no match for nextHop IP exists */
@@ -54,7 +64,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /** Activate if next hop IP matches a route */
@@ -77,7 +87,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Do not activate if the route to the next hop IP has same prefix as route in question. */
@@ -100,7 +110,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /**
@@ -119,7 +129,7 @@ public final class StaticRouteHelperTest {
     _rib.mergeRoute(annotateRoute(matching));
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Activate if route exists for the same prefix but next hop is different */
@@ -151,7 +161,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Allow activation in the RIB even if there would be a FIB resolution loop. */
@@ -185,7 +195,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
+    assertThat(shouldActivate(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /**
@@ -205,7 +215,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertFalse(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()));
+    assertFalse(shouldActivate(sr, _rib, alwaysTrue()));
   }
 
   /**
@@ -230,7 +240,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertTrue(shouldActivateNextHopIpRoute(sr, _rib, r -> r.getNetwork().getPrefixLength() == 8));
+    assertTrue(shouldActivate(sr, _rib, r -> r.getNetwork().getPrefixLength() == 8));
   }
 
   /**
@@ -256,8 +266,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertFalse(
-        shouldActivateNextHopIpRoute(sr, _rib, r -> r.getNetwork().getPrefixLength() == 16));
+    assertFalse(shouldActivate(sr, _rib, r -> r.getNetwork().getPrefixLength() == 16));
   }
 
   /**
@@ -284,7 +293,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertFalse(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()));
+    assertFalse(shouldActivate(sr, _rib, alwaysTrue()));
   }
 
   /**
@@ -305,6 +314,6 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertTrue(shouldActivateNextHopIpRoute(sr, _rib, r -> false));
+    assertTrue(shouldActivate(sr, _rib, r -> false));
   }
 }
