@@ -80,8 +80,8 @@ public final class LocationInfoUtils {
       IpSpace snapshotDeviceOwnedIps,
       Map<String, Map<String, IpSpace>> interfaceOwnedIps,
       Map<String, Configuration> configs) {
-
-    return configs.values().stream()
+    // Per device, in parallel; the collector keeps the encounter order.
+    return configs.values().parallelStream()
         .flatMap(
             config -> {
               Map<Location, LocationInfo> locationInfo =
