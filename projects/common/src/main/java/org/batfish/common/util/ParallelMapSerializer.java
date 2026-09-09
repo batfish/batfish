@@ -25,8 +25,18 @@ public final class ParallelMapSerializer {
 
   /** Writes {@code byKey} so that {@link #readMap} can read it back. */
   public static void writeMap(ObjectOutputStream out, Map<String, ?> byKey) throws IOException {
+    // Take keys and values in one traversal, into lists: separate keySet() and values() traversals
+    // are not guaranteed to correspond, and only a stream over an ordered source is guaranteed to
+    // collect in its source's order.
+    List<String> keys = new ArrayList<>(byKey.size());
+    List<Object> values = new ArrayList<>(byKey.size());
+    byKey.forEach(
+        (key, value) -> {
+          keys.add(key);
+          values.add(value);
+        });
     List<byte[]> chunks =
-        byKey.values().parallelStream()
+        values.parallelStream()
             .map(
                 value -> {
                   ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -39,10 +49,9 @@ public final class ParallelMapSerializer {
                 })
             .collect(Collectors.toList());
     out.writeInt(chunks.size());
-    int i = 0;
-    for (String key : byKey.keySet()) {
-      out.writeUTF(key);
-      byte[] chunk = chunks.get(i++);
+    for (int i = 0; i < chunks.size(); i++) {
+      out.writeUTF(keys.get(i));
+      byte[] chunk = chunks.get(i);
       out.writeInt(chunk.length);
       out.write(chunk);
     }
