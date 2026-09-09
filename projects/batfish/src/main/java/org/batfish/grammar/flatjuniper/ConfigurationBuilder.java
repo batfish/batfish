@@ -14,6 +14,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROU
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLY_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
@@ -72,6 +73,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ADD_PATH_
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLY_GROUPS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLY_GROUPS_EXCEPT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_AS_PATH_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
@@ -321,6 +324,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifier_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_expand_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
@@ -2954,6 +2959,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _currentApplicationTerm =
         _currentApplication.getTerms().computeIfAbsent(name, n -> new Term(name));
+  }
+
+  @Override
+  public void enterApply_groups(Apply_groupsContext ctx) {
+    referenceApplyGroup(ctx.name, APPLY_GROUPS);
+  }
+
+  @Override
+  public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
+    referenceApplyGroup(ctx.name, APPLY_GROUPS_EXCEPT);
+  }
+
+  private void referenceApplyGroup(Junos_nameContext nameCtx, JuniperStructureUsage usage) {
+    String name = toString(nameCtx);
+    int line = getLine(nameCtx.getStart());
+    if (name.equals(ApplyGroupsMarker.NODE_VARIABLE)) {
+      // ${node} resolves to the local node's group, and Batfish applies both node groups. Credit a
+      // reference to each node group that exists, rather than reporting the other as undefined.
+      referenceApplyGroupIfDefined(ApplyGroupsMarker.NODE0_GROUP, usage, line);
+      referenceApplyGroupIfDefined(ApplyGroupsMarker.NODE1_GROUP, usage, line);
+      return;
+    }
+    _configuration.referenceStructure(APPLY_GROUP, name, usage, line);
+  }
+
+  private void referenceApplyGroupIfDefined(String name, JuniperStructureUsage usage, int line) {
+    if (_configuration.getStructureManager().hasDefinition(APPLY_GROUP.getDescription(), name)) {
+      _configuration.referenceStructure(APPLY_GROUP, name, usage, line);
+    }
   }
 
   @Override

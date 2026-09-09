@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLY_GROUP;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -60,6 +61,13 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     // Build configuration from pre-processed parse tree
     ConfigurationBuilder cb =
         new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs(), _silentSyntax);
+    // Pre-processing removes 'groups' lines, so record group definitions from the hierarchy. This
+    // must happen before the walk, which records references to these definitions.
+    JuniperConfiguration configuration = cb.getConfiguration();
+    hierarchy
+        .getGroupDefinitions()
+        .forEach(
+            (name, ctx) -> configuration.defineFlattenedStructure(APPLY_GROUP, name, ctx, _parser));
     new BatfishParseTreeWalker(_parser).walk(cb, tree);
     _configuration = cb.getConfiguration();
   }

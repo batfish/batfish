@@ -14,6 +14,8 @@ public enum JuniperStructureType implements StructureType {
   APPLICATION("application"),
   APPLICATION_OR_APPLICATION_SET("application or application-set"),
   APPLICATION_SET("application-set"),
+  /** A configuration group, i.e. {@code groups <name>}, applied via {@code apply-groups}. */
+  APPLY_GROUP("apply-group"),
   AS_PATH("as-path"),
   AS_PATH_GROUP("as-path-group"),
   AS_PATH_GROUP_AS_PATH("as-path-group as-path"),

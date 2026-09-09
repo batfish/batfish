@@ -2605,6 +2605,16 @@
         }
       },
       {
+        "Structure_Type" : "apply-group",
+        "Structure_Name" : "jctyztp",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_apply_macro",
+          "lines" : [
+            3
+          ]
+        }
+      },
+      {
         "Structure_Type" : "as-path-group",
         "Structure_Name" : "AS_PATH_GROUP1",
         "Source_Lines" : {
@@ -2772,6 +2782,16 @@
         }
       },
       {
+        "Structure_Type" : "apply-group",
+        "Structure_Name" : "VRRP-A",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_interfaces",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
         "Structure_Type" : "vlan",
         "Structure_Name" : "unused-vlan",
         "Source_Lines" : {
@@ -2779,6 +2799,16 @@
           "lines" : [
             26,
             27
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "apply-group",
+        "Structure_Name" : "gname",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_isis",
+          "lines" : [
+            4
           ]
         }
       },
@@ -3762,10 +3792,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 245 results",
+      "notes" : "Found 248 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 245
+      "numResults" : 248
     }
   }
 ]
