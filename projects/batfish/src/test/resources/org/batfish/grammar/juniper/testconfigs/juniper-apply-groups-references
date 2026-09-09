@@ -1,0 +1,12 @@
+#
+set system host-name juniper-apply-groups-references
+#
+set groups G_APPLIED interfaces lo0 unit 0 family inet address 1.1.1.1/32
+set groups G_APPLIED system domain-name applied.example.com
+set groups G_UNUSED system domain-name unused.example.com
+#
+set apply-groups G_APPLIED
+set apply-groups G_UNDEFINED
+set interfaces ge-0/0/0 apply-groups-except G_APPLIED
+set interfaces ge-0/0/0 apply-groups-except G_UNDEFINED_EXCEPT
+#

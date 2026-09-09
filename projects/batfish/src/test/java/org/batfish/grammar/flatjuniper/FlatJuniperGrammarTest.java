@@ -167,6 +167,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.securityPo
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.APPLY_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
@@ -193,6 +194,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATT
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLY_GROUPS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.APPLY_GROUPS_EXCEPT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
@@ -5600,6 +5603,34 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplyGroupsReferences() throws IOException {
+    String hostname = "juniper-apply-groups-references";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, APPLY_GROUP, "G_APPLIED", containsInAnyOrder(4, 5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, APPLY_GROUP, "G_UNUSED", contains(6)));
+    // one apply-groups and one apply-groups-except
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_APPLIED", 2));
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_UNUSED", 0));
+    assertThat(
+        ccae,
+        hasUndefinedReferenceWithReferenceLines(
+            filename, APPLY_GROUP, "G_UNDEFINED", APPLY_GROUPS, contains(9)));
+    assertThat(
+        ccae,
+        hasUndefinedReferenceWithReferenceLines(
+            filename, APPLY_GROUP, "G_UNDEFINED_EXCEPT", APPLY_GROUPS_EXCEPT, contains(11)));
+  }
+
+  @Test
   public void testJuniperApplyGroupsChain() {
     Configuration c = parseConfig("apply-groups-chain");
     assertThat(
@@ -5627,6 +5658,14 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "lo0.2", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("2.2.2.2/32")))));
+
+    /* ${node} is not a group name: it should be counted as a reference to node0 and node1. */
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String configFile = "configs/" + filename;
+    assertThat(ccae, hasNumReferrers(configFile, APPLY_GROUP, "node0", 1));
+    assertThat(ccae, hasNumReferrers(configFile, APPLY_GROUP, "node1", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
   }
 
   @Test

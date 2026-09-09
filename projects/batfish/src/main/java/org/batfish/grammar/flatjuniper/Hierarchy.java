@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +44,7 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groups_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
@@ -1098,13 +1101,27 @@ final class Hierarchy {
 
   private final Map<String, HierarchyTree> _trees;
 
+  private final Multimap<String, S_groups_namedContext> _groupDefinitions;
+
   private final Map<Token, String> _tokenInputs;
 
   Hierarchy() {
     _trees = new HashMap<>();
     _masterTree = new HierarchyTree();
     _deactivateTree = new HierarchyTree();
+    _groupDefinitions = LinkedListMultimap.create();
     _tokenInputs = new HashMap<>();
+  }
+
+  /** Record that {@code ctx} is one of the lines defining the group named {@code groupName}. */
+  void addGroupDefinition(String groupName, S_groups_namedContext ctx) {
+    _groupDefinitions.put(groupName, ctx);
+  }
+
+  /** Returns the {@code set groups} lines defining each group, by group name. */
+  @Nonnull
+  Multimap<String, S_groups_namedContext> getGroupDefinitions() {
+    return _groupDefinitions;
   }
 
   /** Add an error node to the root that would be printed first by {@link #toSetLines}. */

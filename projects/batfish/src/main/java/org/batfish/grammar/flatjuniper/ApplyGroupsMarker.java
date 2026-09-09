@@ -20,6 +20,13 @@ import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
  */
 public class ApplyGroupsMarker extends FlatJuniperParserBaseListener {
 
+  /** Variable that resolves to the applying node's own group name in a cluster. */
+  static final String NODE_VARIABLE = "${node}";
+
+  static final String NODE0_GROUP = "node0";
+
+  static final String NODE1_GROUP = "node1";
+
   private HierarchyPath _currentPath;
 
   /** Whether the subtrees of this node go into the {@link #_currentPath}. */
@@ -61,17 +68,13 @@ public class ApplyGroupsMarker extends FlatJuniperParserBaseListener {
       return;
     }
     String groupName = maybeGroupName.get();
-    if (_hierarchy.getTree(groupName) == null) {
-      _warnings.redFlagf(
-          "apply-groups statement at %s refers to non-existent group: '%s'\n",
-          pathString(), groupName);
+    if (groupName.equals(NODE_VARIABLE)) {
+      _hierarchy.markApplyGroups(_currentPath, NODE0_GROUP);
+      _hierarchy.markApplyGroups(_currentPath, NODE1_GROUP);
+      return;
     }
-    if (groupName.equals("${node}")) {
-      _hierarchy.markApplyGroups(_currentPath, "node0");
-      _hierarchy.markApplyGroups(_currentPath, "node1");
-    } else {
-      _hierarchy.markApplyGroups(_currentPath, groupName);
-    }
+    // A group that does not exist surfaces as an undefined reference.
+    _hierarchy.markApplyGroups(_currentPath, groupName);
   }
 
   private @Nonnull String pathString() {
