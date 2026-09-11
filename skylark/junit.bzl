@@ -76,6 +76,40 @@ _gen_suite = rule(
     implementation = _impl,
 )
 
+# The attributes java_test accepts and java_library does not, and vice versa.
+# rules_java defines them: java_test takes java_binary's attributes plus the ones
+# Bazel adds to every test rule, while java_library takes only the compilation
+# attributes. //skylark:junit_attrs_test rederives both lists from the rules
+# themselves, so a rules_java upgrade that changes them fails there rather than
+# in the next BUILD file to pass a new attribute to junit_tests.
+TEST_ONLY_ATTRS = [
+    "args",
+    "classpath_resources",
+    "create_executable",
+    "deploy_manifest_lines",
+    "env",
+    "env_inherit",
+    "flaky",
+    "jvm_flags",
+    "launcher",
+    "local",
+    "main_class",
+    "shard_count",
+    "size",
+    "stamp",
+    "test_class",
+    "timeout",
+    "use_launcher",
+    "use_testrunner",
+]
+
+LIBRARY_ONLY_ATTRS = [
+    "exported_plugins",
+    "exports",
+    "javabuilder_jvm_flags",
+    "proguard_specs",
+]
+
 def junit_tests(name, srcs, skip_pmd = False, **kwargs):
     """Create a reference java_test using the given commands file.
 
@@ -90,8 +124,9 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
         return
 
     # Create a java library containing all the test sources
-    lib_kwargs = dict(**kwargs)  # have to remove non-java_library args
-    lib_kwargs.pop("size", "")
+    lib_kwargs = dict(**kwargs)
+    for attr_name in TEST_ONLY_ATTRS:
+        lib_kwargs.pop(attr_name, None)
     testlib_name = name + "_testlib"
     java_library(
         name = testlib_name,
@@ -111,6 +146,8 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
 
     # Run a Java test with suite source file, and existing deps + new testlib
     test_kwargs = dict(**kwargs)
+    for attr_name in LIBRARY_ONLY_ATTRS:
+        test_kwargs.pop(attr_name, None)
     test_deps = list(test_kwargs.pop("deps", []))
     java_test(
         name = name,

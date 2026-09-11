@@ -1,0 +1,3 @@
+load(":junit_attrs_test.bzl", "junit_attrs_test")
+
+junit_attrs_test(name = "junit_attrs_test")
