@@ -11,9 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import org.batfish.common.BatfishException;
 
 /**
  * This utility extracts files and directories of a standard zip file to a destination directory.
@@ -24,14 +26,21 @@ public final class UnzipUtility {
   /**
    * Extracts a zip entry (file entry)
    *
+   * @param entry The entry being extracted, whose CRC the data must match
    * @param zipIn The zip input stream providing the file data
    * @param filePath The path to write the output file
    */
-  private static void extractFile(InputStream zipIn, Path filePath) {
+  private static void extractFile(ZipEntry entry, InputStream zipIn, Path filePath)
+      throws IOException {
+    // A ZipFile entry's stream, unlike a ZipInputStream, does not check the entry's CRC.
+    CheckedInputStream in = new CheckedInputStream(zipIn, new CRC32());
     try {
-      Files.copy(zipIn, filePath, StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
-      throw new BatfishException("Error unzipping to output file: '" + filePath + "'", e);
+      throw new IOException("Error unzipping to output file: '" + filePath + "'", e);
+    }
+    if (in.getChecksum().getValue() != entry.getCrc()) {
+      throw new ZipException(String.format("Invalid CRC for zip entry '%s'", entry.getName()));
     }
   }
 
@@ -101,7 +110,7 @@ public final class UnzipUtility {
                   // entries
                   createParentDirectories(outputPath);
                   try (InputStream in = zip.getInputStream(entry)) {
-                    extractFile(in, outputPath);
+                    extractFile(entry, in, outputPath);
                   }
                 } catch (IOException e) {
                   throw new UncheckedIOException(e);

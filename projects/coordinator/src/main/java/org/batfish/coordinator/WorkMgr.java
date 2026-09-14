@@ -177,6 +177,20 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  /**
+   * Deletes a temporary directory and everything under it. Logs rather than throws on failure: this
+   * runs while unwinding from another failure, which should not be masked. The coordinator runs for
+   * a long time, so a directory left here is left for good; {@code deleteOnExit} does not fire, and
+   * cannot remove a directory that is not empty.
+   */
+  private static void deleteTempDirectory(Path dir) {
+    try {
+      FileUtils.deleteDirectory(dir.toFile());
+    } catch (IOException e) {
+      LOGGER.warn("Could not delete temporary directory {}", dir, e);
+    }
+  }
+
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
@@ -1012,84 +1026,89 @@ public class WorkMgr extends AbstractCoordinator {
     _storage.storeForkSnapshotRequest(
         BatfishObjectMapper.writeString(forkSnapshotBean), forkSnapshotKey, networkId);
 
-    // Copy baseSnapshot so initSnapshot will see a properly formatted upload
-    Path newSnapshotInputsDir =
-        createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
-    if (!newSnapshotInputsDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
-    }
-
-    try (Stream<String> baseInputObjectKeys =
-        _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
-      List<String> allKeys = baseInputObjectKeys.collect(Collectors.toList());
-      allKeys.parallelStream()
-          .forEach(
-              key -> {
-                try (InputStream baseObjectStream =
-                    _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
-                  writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
-                } catch (IOException e) {
-                  throw new UncheckedIOException(
-                      String.format("Unable to copy base snapshot input object with key: %s", key),
-                      e);
-                }
-              });
-    }
-    // Write user-specified files to the forked snapshot input dir, overwriting existing ones
-    if (forkSnapshotBean.zipFile != null) {
-      Path unzipDir = createTempDirectory("upload");
-      UnzipUtility.unzip(new ByteArrayInputStream(forkSnapshotBean.zipFile), unzipDir);
-
-      // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
-      // into existing top-level dir
-      FileUtils.copyDirectory(getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
-
-      // do not need this directory anymore
-      FileUtils.deleteDirectory(unzipDir.toFile());
-    }
-
-    moveRuntimeDataFile(newSnapshotInputsDir);
-
-    // Update line-up/line-down interface statuses
-    Set<NodeInterfacePair> deactivate = new HashSet<>();
-    if (forkSnapshotBean.deactivateInterfaces != null) {
-      deactivate.addAll(forkSnapshotBean.deactivateInterfaces);
-    }
-    // Deactivate any interfaces in interface blacklist and delete blacklist if present
-    deactivate.addAll(
-        deserializeAndDeleteInterfaceBlacklist(
-            newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE)));
-    List<NodeInterfacePair> restore =
-        firstNonNull(forkSnapshotBean.restoreInterfaces, ImmutableList.of());
-    updateRuntimeData(
-        newSnapshotInputsDir
-            .resolve(BfConsts.RELPATH_BATFISH)
-            .resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
-        deactivate,
-        restore);
-
-    // Add user-specified failures to new blacklists
-    addToSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
-        forkSnapshotBean.deactivateLinks,
-        new TypeReference<List<Edge>>() {});
-    addToSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
-        forkSnapshotBean.deactivateNodes,
-        new TypeReference<List<String>>() {});
-
-    // Remove user-specified items from blacklists
-    removeFromSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
-        forkSnapshotBean.restoreLinks,
-        new TypeReference<List<Edge>>() {});
-    removeFromSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
-        forkSnapshotBean.restoreNodes,
-        new TypeReference<List<String>>() {});
-
-    // Use initSnapshot to handle creating metadata, etc.
+    // Copy baseSnapshot so initSnapshot will see a properly formatted upload. Everything below
+    // happens under this directory, so one finally can clean it up however this ends: the copy of
+    // the base snapshot's inputs is as large as the snapshot itself.
+    Path forkInputsRoot = createTempDirectory("files_to_add");
     try {
+      Path newSnapshotInputsDir = forkInputsRoot.resolve(Paths.get(BfConsts.RELPATH_INPUT));
+      if (!newSnapshotInputsDir.toFile().mkdirs()) {
+        throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
+      }
+
+      try (Stream<String> baseInputObjectKeys =
+          _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
+        List<String> allKeys = baseInputObjectKeys.collect(Collectors.toList());
+        allKeys.parallelStream()
+            .forEach(
+                key -> {
+                  try (InputStream baseObjectStream =
+                      _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+                    writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+                  } catch (IOException e) {
+                    throw new UncheckedIOException(
+                        String.format(
+                            "Unable to copy base snapshot input object with key: %s", key),
+                        e);
+                  }
+                });
+      }
+      // Write user-specified files to the forked snapshot input dir, overwriting existing ones
+      if (forkSnapshotBean.zipFile != null) {
+        Path unzipDir = createTempDirectory("upload");
+        try {
+          UnzipUtility.unzip(new ByteArrayInputStream(forkSnapshotBean.zipFile), unzipDir);
+
+          // Preserve proper snapshot dir formatting (single top-level dir), so copy new files
+          // directly into existing top-level dir
+          FileUtils.copyDirectory(
+              getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
+        } finally {
+          deleteTempDirectory(unzipDir);
+        }
+      }
+
+      moveRuntimeDataFile(newSnapshotInputsDir);
+
+      // Update line-up/line-down interface statuses
+      Set<NodeInterfacePair> deactivate = new HashSet<>();
+      if (forkSnapshotBean.deactivateInterfaces != null) {
+        deactivate.addAll(forkSnapshotBean.deactivateInterfaces);
+      }
+      // Deactivate any interfaces in interface blacklist and delete blacklist if present
+      deactivate.addAll(
+          deserializeAndDeleteInterfaceBlacklist(
+              newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE)));
+      List<NodeInterfacePair> restore =
+          firstNonNull(forkSnapshotBean.restoreInterfaces, ImmutableList.of());
+      updateRuntimeData(
+          newSnapshotInputsDir
+              .resolve(BfConsts.RELPATH_BATFISH)
+              .resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+          deactivate,
+          restore);
+
+      // Add user-specified failures to new blacklists
+      addToSerializedList(
+          newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+          forkSnapshotBean.deactivateLinks,
+          new TypeReference<List<Edge>>() {});
+      addToSerializedList(
+          newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+          forkSnapshotBean.deactivateNodes,
+          new TypeReference<List<String>>() {});
+
+      // Remove user-specified items from blacklists
+      removeFromSerializedList(
+          newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+          forkSnapshotBean.restoreLinks,
+          new TypeReference<List<Edge>>() {});
+      removeFromSerializedList(
+          newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+          forkSnapshotBean.restoreNodes,
+          new TypeReference<List<String>>() {});
+
+      // Use initSnapshot to handle creating metadata, etc.
       initSnapshot(
           networkName,
           snapshotName,
@@ -1097,7 +1116,7 @@ public class WorkMgr extends AbstractCoordinator {
           creationTime,
           baseSnapshotId);
     } finally {
-      FileUtils.deleteDirectory(newSnapshotInputsDir.toFile());
+      deleteTempDirectory(forkInputsRoot);
     }
   }
 
@@ -1470,18 +1489,19 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path unzipDir = createTempDirectory("tr");
       try {
-        UnzipUtility.unzip(zipFile, unzipDir);
-      } catch (IOException e) {
-        CommonUtil.deleteDirectory(unzipDir);
-        throw new UncheckedIOException("Failed to extract uploaded zip", e);
-      }
-      try {
-        initSnapshot(networkName, snapshotName, unzipDir, creationTime);
-      } catch (Exception e) {
-        throw new BatfishException(
-            String.format("Error initializing snapshot: %s", e.getMessage()), e);
+        try {
+          UnzipUtility.unzip(zipFile, unzipDir);
+        } catch (IOException e) {
+          throw new UncheckedIOException("Failed to extract uploaded zip", e);
+        }
+        try {
+          initSnapshot(networkName, snapshotName, unzipDir, creationTime);
+        } catch (Exception e) {
+          throw new BatfishException(
+              String.format("Error initializing snapshot: %s", e.getMessage()), e);
+        }
       } finally {
-        CommonUtil.deleteDirectory(unzipDir);
+        deleteTempDirectory(unzipDir);
       }
     } finally {
       try {
