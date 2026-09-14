@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Rule;
@@ -94,6 +96,34 @@ public class UnzipUtilityTest {
     File dest = _folder.newFolder("dest");
     // Don't crash
     UnzipUtility.unzip(notOrdered.toPath(), dest.toPath());
+  }
+
+  /**
+   * Test that a corrupt entry is rejected. Reading through a {@link java.util.zip.ZipFile} does not
+   * check an entry's CRC on its own.
+   */
+  @Test
+  public void testUnzipCorruptEntry() throws IOException {
+    StringBuilder contents = new StringBuilder();
+    Random random = new Random(1);
+    for (int i = 0; i < 200000; i++) {
+      contents.append((char) ('a' + random.nextInt(26)));
+    }
+    File corrupt = _folder.newFile("corrupt");
+    try (FileOutputStream fos = new FileOutputStream(corrupt);
+        ZipOutputStream out = new ZipOutputStream(fos)) {
+      out.putNextEntry(new ZipEntry("dir/file.txt"));
+      out.write(contents.toString().getBytes(UTF_8));
+    }
+    // Corrupt the entry's data, leaving the central directory at the end of the file intact.
+    byte[] zip = Files.readAllBytes(corrupt.toPath());
+    zip[zip.length / 2] ^= 0x5A;
+    Files.write(corrupt.toPath(), zip);
+
+    File dest = _folder.newFolder("dest");
+    _thrown.expect(instanceOf(IOException.class));
+    _thrown.expectMessage("Invalid CRC for zip entry 'dir/file.txt'");
+    UnzipUtility.unzip(corrupt.toPath(), dest.toPath());
   }
 
   /** Test that unzipping still throws IO exception on legitimate file system access errors */

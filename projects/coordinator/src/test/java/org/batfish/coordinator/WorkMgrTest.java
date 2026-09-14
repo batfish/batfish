@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,6 +54,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -1121,6 +1123,110 @@ public final class WorkMgrTest {
     // Confirm the file was overwritten with the new contents
     String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
     assertThat(readFileContents, equalTo(fileContentsNew));
+  }
+
+  /**
+   * The names directly under {@code java.io.tmpdir}. The coordinator is long-lived, so a temporary
+   * directory it leaves behind is leaked for the life of the process.
+   */
+  private static Set<String> tempDirContents() {
+    String[] names = new File(System.getProperty("java.io.tmpdir")).list();
+    return names == null ? ImmutableSet.of() : ImmutableSet.copyOf(names);
+  }
+
+  @Test
+  public void testUploadSnapshotDeletesTempFiles() throws Exception {
+    String networkName = "network";
+    _manager.initNetwork(networkName, null);
+    Set<String> before = tempDirContents();
+    uploadTestSnapshot(networkName, "snapshot");
+    assertThat(Sets.difference(tempDirContents(), before), empty());
+  }
+
+  @Test
+  public void testUploadSnapshotBadZipDeletesTempFiles() throws Exception {
+    String networkName = "network";
+    _manager.initNetwork(networkName, null);
+    Set<String> before = tempDirContents();
+    try (InputStream inputStream = new ByteArrayInputStream("not a zip".getBytes(UTF_8))) {
+      assertThrows(
+          RuntimeException.class,
+          () -> _manager.uploadSnapshot(networkName, "snapshot", inputStream));
+    }
+    assertThat(Sets.difference(tempDirContents(), before), empty());
+  }
+
+  @Test
+  public void testUploadSnapshotCorruptEntryDeletesTempFiles() throws Exception {
+    String networkName = "network";
+    _manager.initNetwork(networkName, null);
+    byte[] zip = corruptedSnapshotZip("snapshot", "file.type");
+    Set<String> before = tempDirContents();
+    try (InputStream inputStream = new ByteArrayInputStream(zip)) {
+      assertThrows(
+          RuntimeException.class,
+          () -> _manager.uploadSnapshot(networkName, "snapshot", inputStream));
+    }
+    assertThat(Sets.difference(tempDirContents(), before), empty());
+  }
+
+  @Test
+  public void testForkSnapshotDeletesTempFiles() throws Exception {
+    String networkName = "network";
+    String snapshotBaseName = "base";
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName, "file.type", "! empty config");
+    byte[] zipFile = createSnapshotZip("fork", "file.type", "! new config");
+    Set<String> before = tempDirContents();
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(
+            snapshotBaseName, "fork", null, null, null, null, null, null, zipFile));
+    assertThat(Sets.difference(tempDirContents(), before), empty());
+  }
+
+  /**
+   * A failed fork must not leave the copy it made of the base snapshot's inputs, which is as large
+   * as the snapshot itself.
+   */
+  @Test
+  public void testForkSnapshotBadZipDeletesTempFiles() throws Exception {
+    String networkName = "network";
+    String snapshotBaseName = "base";
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName, "file.type", "! empty config");
+    Set<String> before = tempDirContents();
+    assertThrows(
+        IOException.class,
+        () ->
+            _manager.forkSnapshot(
+                networkName,
+                new ForkSnapshotBean(
+                    snapshotBaseName,
+                    "fork",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "not a zip".getBytes(UTF_8))));
+    assertThat(Sets.difference(tempDirContents(), before), empty());
+  }
+
+  /**
+   * A snapshot zip whose central directory is intact but whose entry data is not: it opens, and
+   * fails while inflating the entry.
+   */
+  private byte[] corruptedSnapshotZip(String snapshot, String fileName) throws IOException {
+    StringBuilder contents = new StringBuilder();
+    Random random = new Random(1);
+    for (int i = 0; i < 200000; i++) {
+      contents.append((char) ('a' + random.nextInt(26)));
+    }
+    byte[] zip = createSnapshotZip(snapshot, fileName, contents.toString());
+    zip[zip.length / 2] ^= 0x5A;
+    return zip;
   }
 
   private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
