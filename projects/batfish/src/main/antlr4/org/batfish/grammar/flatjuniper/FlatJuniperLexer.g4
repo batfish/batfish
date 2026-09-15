@@ -2071,7 +2071,10 @@ METRIC: 'metric';
 
 METRIC2: 'metric2';
 
-METRIC_OUT: 'metric-out';
+METRIC_OUT
+:
+   'metric-out' -> pushMode ( M_MetricOut )
+;
 
 METRIC_TYPE
 :
@@ -4742,6 +4745,21 @@ M_TcpFlags2_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
+
+// The offset may be negative, so '-' must lex as DASH rather than as part of an
+// UNRECOGNIZED_WORD.
+mode M_MetricOut;
+DELAY_MED_UPDATE: 'delay-med-update';
+MINIMUM_IGP: 'minimum-igp';
+M_MetricOut_DASH: '-' -> type(DASH);
+M_MetricOut_IGP: 'igp' -> type(IGP);
+M_MetricOut_UINT8: F_Uint8 -> type(UINT8);
+M_MetricOut_UINT16: F_Uint16 -> type(UINT16);
+M_MetricOut_UINT32: F_Uint32 -> type(UINT32);
+M_MetricOut_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_MetricOut_WS: F_WhitespaceChar+ -> channel ( HIDDEN );
+// Anything else, e.g. apply-groups, is lexed in the default mode.
+M_MetricOut_OTHER: F_Alpha F_NonWhitespaceChar* { less(); } -> popMode;
 
 mode M_MetricType;
 

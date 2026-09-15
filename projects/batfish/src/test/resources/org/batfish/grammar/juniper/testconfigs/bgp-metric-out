@@ -1,0 +1,18 @@
+#
+set system host-name bgp-metric-out
+#
+set protocols bgp metric-out 100
+set protocols bgp metric-out 4294967295
+set protocols bgp group G1 metric-out igp
+set protocols bgp group G1 metric-out igp 10
+set protocols bgp group G1 metric-out igp -10
+set protocols bgp group G1 metric-out igp delay-med-update
+set protocols bgp group G1 metric-out igp 10 delay-med-update
+set protocols bgp group G1 neighbor 1.1.1.1 metric-out minimum-igp
+set protocols bgp group G1 neighbor 1.1.1.1 metric-out minimum-igp 20
+set protocols bgp group G1 neighbor 1.1.1.1 metric-out minimum-igp -20
+#
+# Inheritance regenerates and re-parses the group's line.
+set groups G_MED protocols bgp group G2 metric-out igp -10 delay-med-update
+set apply-groups G_MED
+#
