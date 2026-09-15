@@ -1,8 +1,10 @@
 package org.batfish.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Streams.stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.batfish.common.BfConsts.RELPATH_INPUT;
 import static org.batfish.common.BfConsts.RELPATH_ISP_CONFIG_FILE;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
@@ -11,14 +13,11 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import com.google.common.io.Closer;
 import com.google.common.io.MoreFiles;
 import com.google.errorprone.annotations.MustBeClosed;
@@ -54,6 +53,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -116,7 +117,12 @@ import org.batfish.vendor.VendorConfiguration;
 public class FileBasedStorage implements StorageProvider {
   private static final Logger LOGGER = LogManager.getLogger(FileBasedStorage.class);
 
-  @VisibleForTesting static final Duration GC_SKEW_ALLOWANCE = Duration.ofMinutes(10L);
+  /** How long the maintenance thread waits before retrying trash it could not delete. */
+  private static final Duration MAINTENANCE_RETRY_INTERVAL = Duration.ofSeconds(60L);
+
+  /** How long {@link #stopMaintenance} waits for the maintenance thread to finish its pass. */
+  private static final Duration MAINTENANCE_SHUTDOWN_TIMEOUT = Duration.ofSeconds(10L);
+
   private static final String ID_EXTENSION = ".id";
   private static final String SUFFIX_LOG_FILE = ".log";
   private static final String SUFFIX_ANSWER_JSON_FILE = ".json";
@@ -151,10 +157,22 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
   private static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   private static final String RELPATH_OUTPUT = "output";
+  private static final String RELPATH_TRASH = "trash";
+
+  /** Marks a trash entry that names data to be deleted in place rather than holding it. */
+  private static final String TRASH_TOMBSTONE_EXTENSION = ".path";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
   private final Path _baseDir;
+
+  /** Released when there is trash to empty; the maintenance thread waits on it. */
+  private final Semaphore _maintenanceSignal = new Semaphore(0);
+
+  /**
+   * The maintenance thread, or {@code null} if maintenance is not running. Guarded by {@code this}.
+   */
+  private @Nullable Thread _maintenanceThread;
 
   /**
    * Create a new {@link FileBasedStorage} instance that uses the given root path and job batch
@@ -1731,6 +1749,16 @@ public class FileBasedStorage implements StorageProvider {
     return getIdsDir(type, ancestors).resolve(toBase64(name + ID_EXTENSION));
   }
 
+  /**
+   * Holds the name-to-ID mappings of everything inside the given network. A sibling of the files
+   * mapping network names to IDs, which are regular files rather than directories.
+   */
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworkIdsDir(NetworkId network) {
+    return getIdsDir(NetworkId.class).resolve(network.getId());
+  }
+
   private static final String RELPATH_BLOBS = "blobs";
   private static final String RELPATH_EXTENDED = "extended";
   private static final String RELPATH_NODE_ROLES_DIR = "node_roles";
@@ -1763,7 +1791,9 @@ public class FileBasedStorage implements StorageProvider {
     return getOldAnswersDir().resolve(answerId.getId());
   }
 
-  private @Nonnull Path getNetworksDir() {
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworksDir() {
     return _baseDir.resolve("networks");
   }
 
@@ -1808,6 +1838,13 @@ public class FileBasedStorage implements StorageProvider {
   @Nonnull
   Path getStorageBase() {
     return _baseDir;
+  }
+
+  /** Holds data that has been deleted but not yet reclaimed. Nothing here is reachable. */
+  @VisibleForTesting
+  @Nonnull
+  Path getTrashDir() {
+    return getStorageBase().resolve(RELPATH_TRASH);
   }
 
   private @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
@@ -1978,32 +2015,217 @@ public class FileBasedStorage implements StorageProvider {
         .resolve(RELPATH_PARSE_ANSWER_PATH);
   }
 
+  @Override
+  public void deleteNetwork(NetworkId network) throws IOException {
+    trash(getNetworkDir(network));
+    // The mappings of everything inside the network: its snapshots, questions and node roles. They
+    // are unreachable once the network's own mapping is gone.
+    trash(getNetworkIdsDir(network));
+  }
+
+  @Override
+  public void deleteSnapshot(NetworkSnapshot snapshot) throws IOException {
+    trash(getSnapshotDir(snapshot.getNetwork(), snapshot.getSnapshot()));
+  }
+
   /**
-   * Collects garbage inside the given network.
+   * Makes {@code dir} unreachable and queues it for reclamation, without deleting any of it: a
+   * rename takes time independent of how much data is stored under {@code dir}.
    *
-   * <p>May delete things like non-existent snapshots, but does not delete the network itself.
+   * <p>Nothing in the trash is reachable by name or by ID, so the maintenance thread can empty it
+   * without regard for what else is going on.
    */
-  private void garbageCollectNetwork(NetworkId networkId, Instant expungeBeforeDate)
-      throws IOException {
-    for (Path dir : getSnapshotDirsToExpunge(networkId, expungeBeforeDate)) {
+  private void trash(Path dir) throws IOException {
+    Path sanitizedDir = validatePath(dir);
+    if (!Files.exists(sanitizedDir)) {
+      return;
+    }
+    Path trashDir = getTrashDir();
+    mkdirs(trashDir);
+    Path entry = trashDir.resolve(UUID.randomUUID().toString());
+    try {
+      Files.move(sanitizedDir, entry);
+    } catch (IOException e) {
+      // Renaming can fail if the base directory spans filesystems, or on platforms that refuse to
+      // rename a directory containing an open file. Record where the data is and delete it in
+      // place instead.
+      LOGGER.info("Could not move {} to the trash; will delete it in place", sanitizedDir, e);
+      writeStringToFile(
+          trashDir.resolve(entry.getFileName() + TRASH_TOMBSTONE_EXTENSION),
+          sanitizedDir.toString(),
+          UTF_8);
+    }
+    signalMaintenance();
+  }
+
+  /**
+   * Deletes everything in the trash. Returns the number of entries that could not be deleted; those
+   * are left in place for a later pass.
+   */
+  @VisibleForTesting
+  int drainTrash() throws IOException {
+    Path trashDir = getTrashDir();
+    if (!exists(trashDir)) {
+      return 0;
+    }
+    int failed = 0;
+    for (Path entry : listChildren(trashDir)) {
       try {
-        deleteDirectory(dir);
-      } catch (IOException e) {
-        _logger.errorf(
-            "Failed to expunge snapshot directory '%s': %s",
-            dir, Throwables.getStackTraceAsString(e));
-        LOGGER.error("Failed to expunge snapshot directory {}", dir, e);
+        if (entry.getFileName().toString().endsWith(TRASH_TOMBSTONE_EXTENSION)) {
+          deleteRecursively(Paths.get(readFileToString(entry, UTF_8)));
+          Files.delete(entry);
+        } else {
+          deleteRecursively(entry);
+        }
+      } catch (Exception e) {
+        failed++;
+        LOGGER.error("Failed to delete trash entry {}", entry, e);
       }
     }
-    Optional<Instant> maybeOldestExtantSnapshotFileModifiedDate =
-        getOldestSnapshotCreationTime(networkId);
-    if (maybeOldestExtantSnapshotFileModifiedDate.isPresent()) {
-      Instant snapshotMetadataBasedExpungeBeforeDate =
-          maybeOldestExtantSnapshotFileModifiedDate.get().minus(GC_SKEW_ALLOWANCE);
-      Instant blobExpungeBeforeDate =
-          Comparators.min(snapshotMetadataBasedExpungeBeforeDate, expungeBeforeDate);
-      expungeOldBlobs(networkId, blobExpungeBeforeDate);
-    } // else no point expunging blobs if this network has no snapshots
+    return failed;
+  }
+
+  /** Deletes {@code path}, and everything under it if it is a directory. */
+  private void deleteRecursively(Path path) throws IOException {
+    if (Files.isDirectory(path)) {
+      deleteDirectory(path);
+    } else {
+      deleteIfExists(path);
+    }
+  }
+
+  /**
+   * Moves to the trash all data that no name-to-ID mapping points at. Such data is left behind when
+   * the process dies between deleting a mapping and deleting the data it pointed at.
+   *
+   * <p>Only safe to call when nothing else is in flight, i.e. at startup: data is written before
+   * the mapping that makes it reachable, so a network or snapshot that is mid-creation looks
+   * exactly like one that was orphaned.
+   */
+  @VisibleForTesting
+  void recoverOrphans() throws IOException {
+    Set<String> extantNetworkIds = listResolvedIds(NetworkId.class);
+    if (exists(getNetworksDir())) {
+      for (Path networkDir : listChildren(getNetworksDir())) {
+        String id = networkDir.getFileName().toString();
+        if (!extantNetworkIds.contains(id)) {
+          trash(networkDir);
+          continue;
+        }
+        NetworkId networkId = new NetworkId(id);
+        trashOrphanedChildren(
+            getSnapshotsDir(networkId), listResolvedIds(SnapshotId.class, networkId));
+        trashOrphanedChildren(
+            getAdHocQuestionsDir(networkId), listResolvedIds(QuestionId.class, networkId));
+      }
+    }
+    // Mappings of things inside a network are directories here; mappings of network names to IDs
+    // are
+    // regular files, and are what makes a network extant in the first place.
+    if (exists(getIdsDir(NetworkId.class))) {
+      for (Path child : listChildren(getIdsDir(NetworkId.class))) {
+        if (Files.isDirectory(child)
+            && !extantNetworkIds.contains(child.getFileName().toString())) {
+          trash(child);
+        }
+      }
+    }
+  }
+
+  /** Moves to the trash every child of {@code dir} whose name is not in {@code extantIds}. */
+  private void trashOrphanedChildren(Path dir, Set<String> extantIds) throws IOException {
+    if (!exists(dir)) {
+      return;
+    }
+    for (Path child : listChildren(dir)) {
+      if (!extantIds.contains(child.getFileName().toString())) {
+        trash(child);
+      }
+    }
+  }
+
+  /** Materializes the children of {@code dir}, so that they can be deleted while iterating. */
+  private @Nonnull List<Path> listChildren(Path dir) throws IOException {
+    try (Stream<Path> children = list(dir)) {
+      return children.collect(ImmutableList.toImmutableList());
+    }
+  }
+
+  @Override
+  public synchronized void startMaintenance() {
+    checkState(_maintenanceThread == null, "Maintenance is already running");
+    try {
+      recoverOrphans();
+    } catch (IOException e) {
+      LOGGER.error("Failed to recover orphaned data", e);
+    }
+    _maintenanceThread = new Thread(this::maintain, "fbs-maintenance");
+    _maintenanceThread.setDaemon(true);
+    _maintenanceThread.start();
+  }
+
+  @Override
+  public synchronized void stopMaintenance() {
+    if (_maintenanceThread == null) {
+      return;
+    }
+    _maintenanceThread.interrupt();
+    try {
+      _maintenanceThread.join(MAINTENANCE_SHUTDOWN_TIMEOUT.toMillis());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    _maintenanceThread = null;
+  }
+
+  /**
+   * Empties the trash whenever there is something in it, retrying entries that could not be
+   * deleted.
+   *
+   * <p>Also evicts stale caches, but only on a pass that something asked for: a deletion is the
+   * only thing that makes more of the cache evictable, and walking the cache is proportional to its
+   * size. The first pass counts, since startup recovery may have deleted things.
+   */
+  private void maintain() {
+    boolean requested = true;
+    while (!Thread.currentThread().isInterrupted()) {
+      try {
+        drainTrash();
+        if (requested) {
+          evictStaleBlobs();
+        }
+      } catch (Exception e) {
+        LOGGER.error("Error during storage maintenance", e);
+      }
+      try {
+        requested =
+            _maintenanceSignal.tryAcquire(MAINTENANCE_RETRY_INTERVAL.toMillis(), MILLISECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+  /** Wakes the maintenance thread, if it is running and not already awake. */
+  private void signalMaintenance() {
+    if (_maintenanceSignal.availablePermits() == 0) {
+      _maintenanceSignal.release();
+    }
+  }
+
+  /**
+   * Evicts parse cache entries written before the oldest snapshot that still exists, which no
+   * extant snapshot can be responsible for. A snapshot's own entries are written while it is
+   * parsed, after its creation time, so they are never evicted; an entry evicted in error costs one
+   * reparse, since a cache miss just parses the input again.
+   */
+  @VisibleForTesting
+  void evictStaleBlobs() throws IOException {
+    for (String networkId : listResolvedIds(NetworkId.class)) {
+      // No point expunging blobs of a network with no snapshots.
+      getOldestSnapshotCreationTime(new NetworkId(networkId))
+          .ifPresent(oldest -> expungeOldBlobs(new NetworkId(networkId), oldest));
+    }
   }
 
   /** Expunge blobs in a network older than the provided date. */
@@ -2064,159 +2286,5 @@ public class FileBasedStorage implements StorageProvider {
       // Just skip this network
       return Optional.empty();
     }
-  }
-
-  /**
-   * Get the oldest last madified time of any directory entry that is a descendant of provided path.
-   * Return {@link Optional#empty()} if path does not exist or there are errors fetching last
-   * modified time of all descendants.
-   */
-  private @Nonnull Optional<Instant> getOldestEntryLastModifiedDate(Path path) {
-    try (Stream<Path> paths = Files.walk(path)) {
-      return paths
-          .map(
-              p -> {
-                try {
-                  return Optional.of(getLastModifiedTime(p));
-                } catch (IOException e) {
-                  LOGGER.error("Failed to get last modified time of '{}'", p, e);
-
-                  return Optional.<Instant>empty();
-                }
-              })
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .min(Comparator.naturalOrder());
-    } catch (IOException e) {
-      LOGGER.error("Failed to get oldest recursive entry of path rooted at '{}'", path, e);
-
-      return Optional.empty();
-    }
-  }
-
-  @Override
-  public void runGarbageCollection() throws IOException {
-    if (!exists(getNetworksDir())) {
-      // There are no networks, nothing to do.
-      return;
-    }
-
-    // Go back GC_SKEW_ALLOWANCE, so we under-approximate data to delete. This helps minimize race
-    // conditions with in-progress or queued work.
-    Instant expungeBeforeDate = Instant.now().minus(GC_SKEW_ALLOWANCE);
-
-    Set<NetworkId> extantNetworkIds =
-        listResolvedIds(NetworkId.class).stream()
-            .map(NetworkId::new)
-            .collect(ImmutableSet.toImmutableSet());
-    Set<NetworkId> storageNetworkIds;
-    try (Stream<Path> networkDirStream = list(getNetworksDir())) {
-      // storageNetworkIds listed from disk will contain both existing AND deleted networks.
-      storageNetworkIds =
-          networkDirStream
-              .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
-              .collect(Collectors.toSet());
-    }
-
-    for (NetworkId networkId : Sets.intersection(storageNetworkIds, extantNetworkIds)) {
-      // GC inside networks that exist.
-      garbageCollectNetwork(networkId, expungeBeforeDate);
-    }
-    for (NetworkId networkId : Sets.difference(storageNetworkIds, extantNetworkIds)) {
-      if (!canExpungeNetwork(networkId, expungeBeforeDate)) {
-        // Too new, may be being created.
-        continue;
-      }
-      // Delete networks that do not exist.
-      Path dir = getNetworkDir(networkId);
-      try {
-        deleteDirectory(dir);
-      } catch (IOException e) {
-        _logger.errorf(
-            "Failed to expunge network directory '%s': %s",
-            dir, Throwables.getStackTraceAsString(e));
-        LOGGER.error("Failed to expunge network directory {}", dir, e);
-      }
-    }
-  }
-
-  private List<Path> getSnapshotDirsToExpunge(NetworkId networkId, Instant expungeBeforeDate)
-      throws IOException {
-    // the directory may not exist if snapshots were never initialized in the network
-    if (!Files.exists(getSnapshotsDir(networkId))) {
-      return ImmutableList.of();
-    }
-    ImmutableList.Builder<Path> snapshotDirsToDelete = ImmutableList.builder();
-    Set<String> extantSnapshotIds = listResolvedIds(SnapshotId.class, networkId);
-    try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
-      snapshotsDirStream
-          .map(snapshotDir -> new SnapshotId(snapshotDir.getFileName().toString()))
-          .filter(snapshotId -> !extantSnapshotIds.contains(snapshotId.toString()))
-          .forEach(
-              snapshotId -> {
-                if (canExpungeSnapshot(networkId, snapshotId, expungeBeforeDate)) {
-                  snapshotDirsToDelete.add(getSnapshotDir(networkId, snapshotId));
-                }
-              });
-    }
-    return snapshotDirsToDelete.build();
-  }
-
-  /**
-   * Returns if it is safe to delete this network's folder, based on the last modified times of
-   * itself, its subdirs, and its snapshots.
-   */
-  @VisibleForTesting
-  boolean canExpungeNetwork(NetworkId networkId, Instant expungeBeforeDate) throws IOException {
-    Path networkDir = getNetworkDir(networkId);
-    try (Stream<Path> subdirs = list(networkDir)) {
-      if (!canExpunge(expungeBeforeDate, Streams.concat(Stream.of(networkDir), subdirs))) {
-        return false;
-      }
-    }
-    // the directory may not exist if snapshots were never initialized in the network
-    if (!Files.exists(getSnapshotsDir(networkId))) {
-      return true;
-    }
-    try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
-      return snapshotsDirStream
-          .map(snapshotDir -> new SnapshotId(snapshotDir.getFileName().toString()))
-          .allMatch(snapshotId -> canExpungeSnapshot(networkId, snapshotId, expungeBeforeDate));
-    }
-  }
-
-  /**
-   * Returns if it is safe to delete this snapshot's folder, based on the last modified time of its
-   * input, output, and answers.
-   */
-  @VisibleForTesting
-  boolean canExpungeSnapshot(
-      NetworkId networkId, SnapshotId snapshotId, Instant expungeBeforeDate) {
-    return canExpunge(
-        expungeBeforeDate,
-        Stream.of(
-            getSnapshotDir(networkId, snapshotId),
-            getSnapshotInputObjectsDir(networkId, snapshotId),
-            getSnapshotOutputDir(networkId, snapshotId),
-            getAnswersDir(networkId, snapshotId)));
-  }
-
-  /**
-   * Returns if all paths in {@code pathStream} have a last modified time less than the {@code
-   * expungeBeforeDate}..
-   */
-  private boolean canExpunge(Instant expungeBeforeDate, Stream<Path> pathStream) {
-    return pathStream
-        .map(
-            path -> {
-              try {
-                return getLastModifiedTime(path);
-              } catch (IOException e) {
-                // If for some reason the last modified time of the entry cannot be fetched
-                // (e.g. it was just deleted), ignore this path.
-                return Instant.MIN;
-              }
-            })
-        .allMatch(lmTime -> lmTime.compareTo(expungeBeforeDate) < 0);
   }
 }
