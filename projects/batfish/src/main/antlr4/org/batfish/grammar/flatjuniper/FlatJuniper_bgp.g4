@@ -122,6 +122,7 @@ b_common
    | b_local_as
    | b_local_preference
    | b_log_updown_null
+   | b_metric_out
    | b_mtu_discovery_null
    | b_multihop
    | b_multipath
@@ -233,6 +234,16 @@ b_local_as
 b_local_preference
 :
    LOCAL_PREFERENCE localpref = uint32
+;
+
+b_metric_out
+:
+   METRIC_OUT
+   (
+      bmo_igp_null
+      | bmo_med_null
+      | bmo_minimum_igp_null
+   )
 ;
 
 b_multihop
@@ -684,6 +695,30 @@ bm_no_nexthop_change
 bm_ttl
 :
    TTL dec
+;
+
+// Set the MED to the most recent IGP metric to the BGP next hop.
+bmo_igp_null
+:
+   IGP offset = bmo_offset? DELAY_MED_UPDATE?
+;
+
+// Set the MED to a constant.
+bmo_med_null
+:
+   med = uint32
+;
+
+// Set the MED to the lowest IGP metric to the BGP next hop seen so far.
+bmo_minimum_igp_null
+:
+   MINIMUM_IGP offset = bmo_offset?
+;
+
+// Amount by which the IGP-derived MED is increased (positive) or decreased (negative).
+bmo_offset
+:
+   DASH? uint32
 ;
 
 bpa_as

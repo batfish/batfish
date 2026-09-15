@@ -1,0 +1,18 @@
+system {
+    host-name juniper-group-inactive-only;
+}
+groups {
+    replace: G_INACTIVE_ONLY {
+        /* Group whose only statement is inactive. */
+        protocols {
+            bgp {
+                replace: inactive: metric-out 2000000000;
+            }
+        }
+    }
+}
+protocols {
+    bgp {
+        replace: apply-groups G_INACTIVE_ONLY;
+    }
+}

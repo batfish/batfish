@@ -1824,6 +1824,13 @@ public final class FlatJuniperGrammarTest {
     assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from routing instance
   }
 
+  /** Every form of {@code metric-out}, at every level where it is allowed, parses. */
+  @Test
+  public void testBgpMetricOut() {
+    // The MED is not modeled, so this only checks that nothing is unrecognized.
+    parseConfig("bgp-metric-out");
+  }
+
   @Test
   public void testBgpMultipath() {
     assertThat(
@@ -5628,6 +5635,27 @@ public final class FlatJuniperGrammarTest {
         ccae,
         hasUndefinedReferenceWithReferenceLines(
             filename, APPLY_GROUP, "G_UNDEFINED_EXCEPT", APPLY_GROUPS_EXCEPT, contains(11)));
+  }
+
+  /**
+   * A group whose only statement is inactive still exists, so applying it is not an undefined
+   * reference.
+   */
+  @Test
+  public void testApplyGroupsInactiveOnlyGroup() throws IOException {
+    String hostname = "juniper-group-inactive-only";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // The whole group block, whose sole statement is inactive.
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, APPLY_GROUP, "G_INACTIVE_ONLY", contains(5, 6, 7, 8, 9, 10, 11, 12)));
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_INACTIVE_ONLY", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
   }
 
   @Test

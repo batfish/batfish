@@ -31,6 +31,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    *
    * <ol>
    *   <li>Applying insertions (moves) and deletions via {@link ActivationLinePruner}
+   *   <li>Recording the 'groups' lines defining each group via {@link GroupDefinitionRecorder}
    *   <li>Pruning lines deactivated by 'deactivate' lines via {@link DeactivatedLinePruner}
    *   <li>Pruning 'deactivate' lines via {@link DeactivatedLinePruner}
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
@@ -57,6 +58,11 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     // Properly handles set, activate, and deactivate lines.
     InsertDeleteApplicator d = new InsertDeleteApplicator(parser, w);
     walker.walk(d, tree);
+
+    // Record which groups exist, before deactivated and 'groups' lines are pruned below. A group
+    // all of whose statements are inactive still exists and may still be applied.
+    GroupDefinitionRecorder gdr = new GroupDefinitionRecorder(hierarchy);
+    walker.walk(gdr, tree);
 
     // Delete all deactivated lines:
     // 1. Mark parts of the hierarchy as deactivated
