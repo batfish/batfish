@@ -343,7 +343,8 @@ scos_interfaces
 :
     INTERFACES
     (
-        scosi_interface
+        apply
+        | scosi_interface
     )
 ;
 
@@ -354,7 +355,8 @@ scosi_interface
         | interface_id
     )
     (
-        scosii_classifiers
+        apply
+        | scosii_classifiers
         | scosii_forwarding_class
         | scosii_forwarding_class_set
         | scosii_output_traffic_control_profile

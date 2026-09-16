@@ -1,0 +1,13 @@
+#
+set system host-name junos-filter-group
+# See: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/filter-edit-interfaces-logical.html
+set firewall family inet filter FILTER term T then accept
+set interfaces ge-0/0/0 unit 0 family inet filter group 30
+set interfaces ge-0/0/0 unit 0 family inet filter input FILTER
+set interfaces ge-0/0/0 unit 0 family inet6 filter group 255
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
+# A filter may also be named 'group'.
+set firewall family inet filter group term T then accept
+set interfaces ge-0/0/1 unit 0 family inet filter input group
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/24
+#

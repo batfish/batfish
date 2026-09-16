@@ -744,7 +744,10 @@ final class Hierarchy {
                 && _unquotedText.charAt(_unquotedText.length() - 1) == '>',
             "Improperly-formatted wildcard: %s",
             _unquotedText);
-        _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
+        // The hierarchical form quotes a pattern containing brackets, as in <"ae[0-9][0-9]">, and
+        // flattening such a node leaves whitespace inside the angle brackets.
+        String inner = _unquotedText.substring(1, _unquotedText.length() - 1).trim();
+        _wildcard = unquote(inner).orElse(inner);
         _wildcardPattern = PatternProvider.fromString(GroupWildcard.toJavaRegex(_wildcard));
         _matchesAll = _wildcard.equals("*");
       }

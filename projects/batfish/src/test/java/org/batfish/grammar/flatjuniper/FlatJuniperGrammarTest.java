@@ -8778,6 +8778,65 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasReferencedStructure(filename, SRLG, "srlg-a", MPLS_INTERFACE_SRLG));
   }
 
+  /**
+   * An srlg container with no entries, or an srlg with neither cost nor value, is valid config.
+   * Flattening a group whose only statement is such a container must still define the group.
+   */
+  @Test
+  public void testSrlgEmpty() throws IOException {
+    String hostname = "junos-srlg-empty";
+    String filename = "configs/" + hostname;
+    JuniperConfiguration jc = parseJuniperConfig(hostname);
+    assertThat(jc.getMasterLogicalSystem().getSrlgs(), hasKeys("srlg-empty"));
+    Srlg srlg = jc.getMasterLogicalSystem().getSrlgs().get("srlg-empty");
+    assertThat(srlg.getCost(), nullValue());
+    assertThat(srlg.getValue(), nullValue());
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_SRLG", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * The BGP domain path attribute is not modeled, but the statements that control it must parse.
+   */
+  @Test
+  public void testBgpDomainPathId() {
+    parseJuniperConfig("junos-bgp-domain-path-id");
+  }
+
+  /** A filter group number is not modeled, and must not displace an input or output filter. */
+  @Test
+  public void testFilterGroup() {
+    Configuration c = parseConfig("junos-filter-group");
+    assertThat(c, hasInterface("ge-0/0/0.0", hasIncomingFilter(hasName("FILTER"))));
+    // 'group' is still usable as a filter name.
+    assertThat(c, hasInterface("ge-0/0/1.0", hasIncomingFilter(hasName("group"))));
+  }
+
+  /** class-of-service interfaces, and an interface within it, may be empty containers. */
+  @Test
+  public void testCosInterfacesEmpty() throws IOException {
+    String hostname = "junos-cos-interfaces-empty";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * A group wildcard whose pattern is quoted, as in {@code <"ae[0-9][0-9]">}, applies to the
+   * interfaces it matches. Flattening such a wildcard leaves whitespace inside the angle brackets.
+   */
+  @Test
+  public void testGroupWildcardQuotedPattern() {
+    Configuration c = parseConfig("junos-group-wildcard-quoted");
+    assertThat(c, hasInterface("ae10.0", hasIncomingFilter(hasName("FILTER"))));
+    assertThat(c, hasInterface("ae100.0", hasIncomingFilter(nullValue())));
+  }
+
   @Test
   public void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");

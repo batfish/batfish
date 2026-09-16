@@ -747,7 +747,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_route_distinguisher_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_srlgContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_srlg_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
@@ -4086,14 +4086,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterRo_srlg(Ro_srlgContext ctx) {
+  public void enterRo_srlg_named(Ro_srlg_namedContext ctx) {
     String name = toString(ctx.name);
     _configuration.defineFlattenedStructure(SRLG, name, ctx, _parser);
     _currentSrlg = _currentLogicalSystem.getOrCreateSrlg(name);
   }
 
   @Override
-  public void exitRo_srlg(Ro_srlgContext ctx) {
+  public void exitRo_srlg_named(Ro_srlg_namedContext ctx) {
     _currentSrlg = null;
   }
 
