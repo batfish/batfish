@@ -291,8 +291,8 @@ public class Main {
       System.exit(1);
     }
 
-    // run GC on startup
-    _workManager.triggerGarbageCollection();
+    // reclaim space held by deleted data, and data orphaned by an earlier crash
+    _workManager.startMaintenance();
 
     // sleep indefinitely, in 10 minute chunks
     try {
