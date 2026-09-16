@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-interface-vrrp
+!
+interface Ethernet0
+ ip address 10.0.0.2 255.255.255.0
+ ! preempt defaults to on, so only the negation is printed
+ vrrp 1 ip 10.0.0.1
+ vrrp 1 priority 90
+ no vrrp 1 preempt
+ ! affirmative form, with and without a delay
+ vrrp 2 ip 10.0.0.3
+ vrrp 2 preempt
+ vrrp 3 ip 10.0.0.4
+ vrrp 3 preempt delay minimum 10
+ ! no preempt statement at all
+ vrrp 4 ip 10.0.0.5
+!

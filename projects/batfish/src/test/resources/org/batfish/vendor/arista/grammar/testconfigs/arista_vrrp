@@ -6,3 +6,12 @@ interface vlan 20
  vrrp 1 advertisement interval 5
  vrrp 1 ipv4 1.2.3.4
  vrrp 1 priority-level 200
+ ! preempt defaults to on, so only the negation is printed
+ no vrrp 1 preempt
+ ! affirmative form, with and without a delay
+ vrrp 2 ipv4 1.2.3.5
+ vrrp 2 preempt
+ vrrp 3 ipv4 1.2.3.6
+ vrrp 3 preempt delay minimum 10
+ ! no preempt statement at all
+ vrrp 4 ipv4 1.2.3.7
