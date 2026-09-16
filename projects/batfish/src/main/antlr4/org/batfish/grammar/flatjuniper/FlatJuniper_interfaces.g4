@@ -97,7 +97,14 @@ filter
    FILTER
    (
       direction name = filter_name
+      | filter_group_null
    )?
+;
+
+// Number of the interface group used by the interface-group match condition. Not modeled.
+filter_group_null
+:
+   GROUP group = uint8
 ;
 
 i_arp_resp

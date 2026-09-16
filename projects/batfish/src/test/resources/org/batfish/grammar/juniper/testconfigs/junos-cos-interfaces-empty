@@ -1,0 +1,23 @@
+system {
+    host-name junos-cos-interfaces-empty;
+}
+groups {
+    G_QOS {
+        class-of-service {
+            interfaces {
+            }
+        }
+    }
+    G_QOS_IFACE {
+        class-of-service {
+            interfaces {
+                <ge-*> {
+                }
+            }
+        }
+    }
+}
+class-of-service {
+    apply-groups G_QOS;
+    apply-groups G_QOS_IFACE;
+}

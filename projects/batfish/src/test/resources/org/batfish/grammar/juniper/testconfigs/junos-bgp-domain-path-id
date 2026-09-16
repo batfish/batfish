@@ -1,0 +1,13 @@
+#
+set system host-name junos-bgp-domain-path-id
+# See: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/domain-path-id-protocols-bgp.html
+set routing-options autonomous-system 65000
+set protocols bgp domain-path-id receive
+set protocols bgp group G1 domain-path-id send
+set protocols bgp group G1 neighbor 10.0.0.1 domain-path-id receive
+set protocols bgp group G1 neighbor 10.0.0.1 domain-path-id send
+set protocols bgp group G1 neighbor 10.0.0.1 peer-as 65001
+# An empty domain-path-id block, as produced by flattening a group.
+set protocols bgp group G2 domain-path-id
+set protocols bgp group G2 peer-as 65002
+#

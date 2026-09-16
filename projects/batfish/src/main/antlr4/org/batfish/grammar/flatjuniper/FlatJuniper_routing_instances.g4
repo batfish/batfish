@@ -346,9 +346,19 @@ ro_router_id
 
 ro_srlg
 :
-   SRLG name = junos_name
+   SRLG
    (
-      roslrg_srlg_cost
+      apply
+      | ro_srlg_named
+   )
+;
+
+ro_srlg_named
+:
+   name = junos_name
+   (
+      apply
+      | roslrg_srlg_cost
       | roslrg_srlg_value
    )
 ;

@@ -493,6 +493,7 @@ filter_name
 :
   junos_name
   // Edge-cases due to language ambiguity
+  | GROUP
   | INPUT
   | OUTPUT
 ;

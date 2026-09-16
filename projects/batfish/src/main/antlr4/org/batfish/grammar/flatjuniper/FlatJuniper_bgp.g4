@@ -110,6 +110,7 @@ b_common
    | b_damping
    | b_description
    | b_disable_4byte_as
+   | b_domain_path_id
    | b_enforce_first_as
    | b_export
    | b_family
@@ -164,6 +165,29 @@ b_disable_4byte_as
 b_drop_path_attributes
 :
    DROP_PATH_ATTRIBUTES attr = uint8_range
+;
+
+// The BGP domain path attribute is not modeled.
+b_domain_path_id
+:
+   DOMAIN_PATH_ID
+   (
+      apply
+      | bdpi_receive_null
+      | bdpi_send_null
+   )
+;
+
+// Allow receiving the BGP domain path attribute.
+bdpi_receive_null
+:
+   RECEIVE
+;
+
+// Allow sending the BGP domain path attribute.
+bdpi_send_null
+:
+   SEND
 ;
 
 b_enable

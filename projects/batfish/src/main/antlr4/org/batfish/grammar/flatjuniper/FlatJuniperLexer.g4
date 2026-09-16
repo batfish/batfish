@@ -719,6 +719,8 @@ DOMAIN: 'domain';
 
 DOMAIN_NAME: 'domain-name' -> pushMode(M_Name);
 
+DOMAIN_PATH_ID: 'domain-path-id';
+
 DOMAIN_SEARCH: 'domain-search';
 DOMAIN_TYPE: 'domain-type';
 DROP: 'drop';
@@ -5284,6 +5286,7 @@ M_IsisRibGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Filter;
 M_Filter_WILDCARD: F_Wildcard {setWildcard();};
+M_Filter_GROUP: 'group' -> type(GROUP), popMode;
 M_Filter_INPUT: 'input' -> type(INPUT);
 M_Filter_INPUT_LIST: 'input-list' -> type(INPUT_LIST);
 M_Filter_OUTPUT: 'output' -> type(OUTPUT);
