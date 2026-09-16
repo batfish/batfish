@@ -1,0 +1,19 @@
+system {
+    host-name junos-srlg-empty;
+}
+groups {
+    G_SRLG {
+        routing-options {
+            srlg {
+            }
+        }
+    }
+}
+routing-options {
+    /* Apply the SRLG group. */
+    apply-groups G_SRLG;
+    srlg {
+        srlg-empty {
+        }
+    }
+}

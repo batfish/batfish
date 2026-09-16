@@ -1,0 +1,46 @@
+system {
+    host-name junos-group-wildcard-quoted;
+}
+firewall {
+    family inet {
+        filter FILTER {
+            term T {
+                then accept;
+            }
+        }
+    }
+}
+groups {
+    G_FILTERS {
+        interfaces {
+            <"ae[0-9][0-9]"> {
+                unit <*> {
+                    family inet {
+                        filter {
+                            group 30;
+                            input FILTER;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+interfaces {
+    ae10 {
+        apply-groups G_FILTERS;
+        unit 0 {
+            family inet {
+                address 10.0.0.1/24;
+            }
+        }
+    }
+    ae100 {
+        apply-groups G_FILTERS;
+        unit 0 {
+            family inet {
+                address 10.0.1.1/24;
+            }
+        }
+    }
+}
