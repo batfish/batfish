@@ -1,0 +1,48 @@
+system {
+    host-name junos-xstp-tagged-interface;
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members v60;
+                }
+            }
+        }
+    }
+    xe-0/0/11 {
+        flexible-vlan-tagging;
+        unit 60 {
+            vlan-id 60;
+        }
+    }
+    xe-0/0/12 {
+        unit 0 {
+            family inet {
+                address 10.0.1.1/24;
+            }
+        }
+    }
+}
+vlans {
+    v60 {
+        vlan-id 60;
+    }
+}
+protocols {
+    vstp {
+        vlan v60 {
+            interface ge-0/0/0 {
+                mode point-to-point;
+            }
+            interface xe-0/0/11 {
+                mode point-to-point;
+            }
+            interface xe-0/0/12 {
+                mode point-to-point;
+            }
+        }
+    }
+}

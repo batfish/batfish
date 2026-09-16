@@ -1,0 +1,49 @@
+system {
+    host-name junos-vrrp-inet6-group;
+}
+groups {
+    G_VRRP_INET6 {
+        interfaces {
+            irb {
+                unit <*> {
+                    family inet6 {
+                        address <*> {
+                            vrrp-inet6-group <*> {
+                                priority 125;
+                                preempt;
+                                accept-data;
+                                track {
+                                    interface ge-0/0/5 {
+                                        priority-cost 20;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups G_VRRP_INET6;
+interfaces {
+    ge-0/0/5 {
+        unit 0 {
+            family inet {
+                address 10.0.0.1/24;
+            }
+        }
+    }
+    irb {
+        unit 6 {
+            family inet6 {
+                address 2001:db8::2/64 {
+                    vrrp-inet6-group 100 {
+                        virtual-inet6-address 2001:db8::1;
+                        virtual-link-local-address fe80::1;
+                    }
+                }
+            }
+        }
+    }
+}

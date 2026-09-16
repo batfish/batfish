@@ -1,0 +1,51 @@
+system {
+    host-name junos-vlans-forwarding-options-filter;
+}
+groups {
+    G_VLAN_FILTER_WILDCARD {
+        vlans {
+            <*> {
+                forwarding-options {
+                    filter {
+                        input FILTER_IN;
+                    }
+                }
+            }
+        }
+    }
+    G_VLAN_FILTER_NAMED {
+        vlans {
+            V6 {
+                forwarding-options {
+                    filter {
+                        output FILTER_OUT;
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups [ G_VLAN_FILTER_WILDCARD G_VLAN_FILTER_NAMED ];
+firewall {
+    family ethernet-switching {
+        filter FILTER_IN {
+            term T1 {
+                then accept;
+            }
+        }
+        filter FILTER_OUT {
+            term T1 {
+                then accept;
+            }
+        }
+    }
+}
+vlans {
+    V6 {
+        vlan-id 6;
+    }
+    V7 {
+        apply-groups-except G_VLAN_FILTER_WILDCARD;
+        vlan-id 7;
+    }
+}
