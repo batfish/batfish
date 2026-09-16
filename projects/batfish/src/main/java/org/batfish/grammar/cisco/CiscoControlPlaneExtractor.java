@@ -647,6 +647,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
+import org.batfish.grammar.cisco.CiscoParser.If_vrrpnoContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdt_attach_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
@@ -665,6 +666,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipv4Context;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priority_levelContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrpno_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_session_bgp_tailContext;
@@ -2491,6 +2493,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIf_vrrp(If_vrrpContext ctx) {
+    _currentVrrpGroupNum = toInteger(ctx.groupnum);
+  }
+
+  @Override
+  public void enterIf_vrrpno(If_vrrpnoContext ctx) {
     _currentVrrpGroupNum = toInteger(ctx.groupnum);
   }
 
@@ -5928,6 +5935,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_vrrpno(If_vrrpnoContext ctx) {
+    _currentVrrpGroupNum = null;
+  }
+
+  @Override
   public void exitIfipdhcpr_address(Ifipdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
@@ -6032,20 +6044,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  /** Returns the {@link VrrpGroup}s for {@code _currentVrrpGroupNum}, creating them if needed. */
+  private @Nonnull List<VrrpGroup> currentVrrpGroups() {
+    return _currentInterfaces.stream()
+        .map(
+            iface ->
+                _configuration
+                    .getVrrpGroups()
+                    .computeIfAbsent(iface.getName(), n -> new VrrpInterface())
+                    .getVrrpGroups()
+                    .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new))
+        .collect(ImmutableList.toImmutableList());
+  }
+
   @Override
   public void exitIfvrrp_authentication(Ifvrrp_authenticationContext ctx) {
     String hashedAuthenticationText =
         CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setAuthenticationTextHash(hashedAuthenticationText);
-    }
+    currentVrrpGroups().forEach(g -> g.setAuthenticationTextHash(hashedAuthenticationText));
   }
 
   @Override
@@ -6055,75 +6071,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx); // Batfish VI model does not yet handle secondary VRRP addresses.
       return;
     }
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setVirtualAddress(ip);
-    }
+    currentVrrpGroups().forEach(g -> g.setVirtualAddress(ip));
   }
 
   @Override
   public void exitIfvrrp_ipv4(Ifvrrp_ipv4Context ctx) {
     Ip ip = toIp(ctx.ip);
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setVirtualAddress(ip);
-    }
+    currentVrrpGroups().forEach(g -> g.setVirtualAddress(ip));
   }
 
   @Override
   public void exitIfvrrp_preempt(Ifvrrp_preemptContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setPreempt(true);
-    }
+    currentVrrpGroups().forEach(g -> g.setPreempt(true));
+  }
+
+  @Override
+  public void exitIfvrrpno_preempt(Ifvrrpno_preemptContext ctx) {
+    currentVrrpGroups().forEach(g -> g.setPreempt(false));
   }
 
   @Override
   public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setPriority(priority);
-    }
+    currentVrrpGroups().forEach(g -> g.setPriority(priority));
   }
 
   @Override
   public void exitIfvrrp_priority_level(Ifvrrp_priority_levelContext ctx) {
     int priority = toInteger(ctx.priority);
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setPriority(priority);
-    }
+    currentVrrpGroups().forEach(g -> g.setPriority(priority));
   }
 
   @Override

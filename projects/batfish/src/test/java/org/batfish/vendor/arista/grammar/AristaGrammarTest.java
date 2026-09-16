@@ -3133,6 +3133,10 @@ public class AristaGrammarTest {
     assertThat(group.getVirtualAddresses().get(i.getName()), contains(Ip.parse("1.2.3.4")));
     assertThat(group.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.2/24")));
     assertThat(group.getPriority(), equalTo(200));
+    assertFalse(group.getPreempt());
+    assertTrue(i.getVrrpGroups().get(2).getPreempt());
+    assertTrue(i.getVrrpGroups().get(3).getPreempt());
+    assertTrue(i.getVrrpGroups().get(4).getPreempt());
   }
 
   @Test
@@ -3141,10 +3145,17 @@ public class AristaGrammarTest {
     assertThat(c.getInterfaces(), hasKey("Vlan20"));
     assertThat(c.getVrrpGroups(), hasKey("Vlan20"));
     VrrpInterface vrrpI = c.getVrrpGroups().get("Vlan20");
-    assertThat(vrrpI.getVrrpGroups(), hasKey(1));
+    assertThat(vrrpI.getVrrpGroups(), hasKeys(1, 2, 3, 4));
     org.batfish.vendor.arista.representation.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
     assertThat(g.getVirtualAddress(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(g.getPriority(), equalTo(200));
+    // preempt defaults to on, so only the negation appears in a running config
+    assertFalse(g.getPreempt());
+    // affirmative form, with and without a delay
+    assertTrue(vrrpI.getVrrpGroups().get(2).getPreempt());
+    assertTrue(vrrpI.getVrrpGroups().get(3).getPreempt());
+    // no preempt statement at all
+    assertTrue(vrrpI.getVrrpGroups().get(4).getPreempt());
   }
 
   @Test

@@ -1940,11 +1940,14 @@ ifvrrp_ipv6
 
 ifvrrp_preempt
 :
-   PREEMPT DELAY
+   PREEMPT
    (
-      MINIMUM
-      | RELOAD
-   ) dec NEWLINE
+      DELAY
+      (
+         MINIMUM
+         | RELOAD
+      ) dec
+   )? NEWLINE
 ;
 
 ifvrrp_priority

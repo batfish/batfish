@@ -2003,6 +2003,41 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceVrrpExtraction() {
+    CiscoConfiguration vc = parseCiscoConfig("ios-interface-vrrp", ConfigurationFormat.CISCO_IOS);
+    assertThat(vc.getVrrpGroups(), hasKeys("Ethernet0"));
+    Map<Integer, org.batfish.representation.cisco.VrrpGroup> groups =
+        vc.getVrrpGroups().get("Ethernet0").getVrrpGroups();
+    assertThat(groups, hasKeys(1, 2, 3, 4));
+    {
+      org.batfish.representation.cisco.VrrpGroup g = groups.get(1);
+      assertThat(g.getVirtualAddress(), equalTo(Ip.parse("10.0.0.1")));
+      assertThat(g.getPriority(), equalTo(90));
+      // preempt defaults to on, so only the negation appears in a running config
+      assertFalse(g.getPreempt());
+    }
+    // affirmative form, with and without a delay
+    assertTrue(groups.get(2).getPreempt());
+    assertTrue(groups.get(3).getPreempt());
+    // no preempt statement at all
+    assertTrue(groups.get(4).getPreempt());
+  }
+
+  @Test
+  public void testIosInterfaceVrrpConversion() throws IOException {
+    Configuration c = parseConfig("ios-interface-vrrp");
+    Interface i = c.getAllInterfaces().get("Ethernet0");
+    assertThat(i.getVrrpGroups(), hasKeys(1, 2, 3, 4));
+    org.batfish.datamodel.VrrpGroup g = i.getVrrpGroups().get(1);
+    assertThat(g.getVirtualAddresses().get("Ethernet0"), contains(Ip.parse("10.0.0.1")));
+    assertThat(g.getPriority(), equalTo(90));
+    assertFalse(g.getPreempt());
+    assertTrue(i.getVrrpGroups().get(2).getPreempt());
+    assertTrue(i.getVrrpGroups().get(3).getPreempt());
+    assertTrue(i.getVrrpGroups().get(4).getPreempt());
+  }
+
+  @Test
   public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     String filename = "configs/" + hostname;
