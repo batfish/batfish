@@ -67,6 +67,7 @@ ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 ACCESS_START: 'access-start';
 
 ACCOUNTING: 'accounting';
+ACTION_PRIORITY: 'action-priority';
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 
@@ -1233,6 +1234,8 @@ INET_PRECEDENCE
   }
 ;
 
+INET6_ADVERTISE_INTERVAL: 'inet6-advertise-interval';
+
 INET6_MVPN: 'inet6-mvpn';
 
 INET_VPN: 'inet-vpn';
@@ -1979,6 +1982,8 @@ MAC
    'mac' -> pushMode ( M_MacAddress )
 ;
 
+MAC_MOVE_LIMIT: 'mac-move-limit';
+
 MACS: 'macs';
 
 MAIN: 'main';
@@ -2245,6 +2250,7 @@ NNTP: 'nntp';
 
 NTALK: 'ntalk';
 
+NO_ACCEPT_DATA: 'no-accept-data';
 NO_ACTIVE_BACKBONE: 'no-active-backbone';
 NO_ADJACENCY_DOWN_NOTIFICATION: 'no-adjacency-down-notification';
 NO_ADVERTISE: 'no-advertise';
@@ -3304,6 +3310,10 @@ VIRTUAL_CHASSIS: 'virtual-chassis';
 
 VIRTUAL_GATEWAY_ADDRESS: 'virtual-gateway-address';
 
+VIRTUAL_INET6_ADDRESS: 'virtual-inet6-address';
+
+VIRTUAL_LINK_LOCAL_ADDRESS: 'virtual-link-local-address';
+
 VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_SWITCH: 'virtual-switch';
@@ -3354,6 +3364,8 @@ VRF_TARGET
 VRRP: 'vrrp';
 
 VRRP_GROUP: 'vrrp-group';
+
+VRRP_INET6_GROUP: 'vrrp-inet6-group';
 
 VSTP: 'vstp';
 

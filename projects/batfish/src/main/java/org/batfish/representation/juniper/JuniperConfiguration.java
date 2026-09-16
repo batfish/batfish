@@ -4634,9 +4634,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (optIface.isEmpty()) {
         continue;
       }
-      if (optIface.get().getEthernetSwitching() == null) {
-        _w.fatalRedFlag("XSTP : Interface %s is not enabled for Ethernet Switching", ifaceName);
+      Interface iface = optIface.get();
+      if (iface.getEthernetSwitching() != null) {
+        continue;
       }
+      // An xSTP statement names a physical interface, which is resolved to unit 0 above. A tagged
+      // interface carries its logical interfaces on the tagged units and need not have a unit 0 at
+      // all, so do not report one that the configuration does not contain.
+      Interface parent = iface.getParent();
+      if (parent != null && parent.getVlanTagging() != VlanTaggingMode.NONE) {
+        continue;
+      }
+      _w.fatalRedFlag("XSTP : Interface %s is not enabled for Ethernet Switching", ifaceName);
     }
   }
 

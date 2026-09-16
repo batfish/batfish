@@ -511,6 +511,7 @@ ifi6_address
       ifi6a_ndp
       | ifi6a_preferred
       | ifi6a_primary
+      | ifi6a_vrrp_inet6_group
    )?
 ;
 
@@ -526,6 +527,46 @@ ifi6a_ndp
 
 ifi6a_preferred: PREFERRED;
 ifi6a_primary: PRIMARY;
+
+// VRRP for IPv6, the inet6 counterpart of ifia_vrrp_group. Not modeled.
+// See: https://www.juniper.net/documentation/us/en/software/junos/high-availability/topics/ref/statement/vrrp-inet6-group-edit-interfaces.html
+ifi6a_vrrp_inet6_group
+:
+   VRRP_INET6_GROUP (wildcard | number = uint8)
+   (
+      apply
+      | ifi6av_accept_data_null
+      | ifi6av_fast_interval_null
+      | ifi6av_inet6_advertise_interval_null
+      | ifi6av_no_accept_data_null
+      | ifi6av_no_preempt_null
+      | ifi6av_preempt_null
+      | ifi6av_priority_null
+      | ifi6av_track_null
+      | ifi6av_virtual_inet6_address_null
+      | ifi6av_virtual_link_local_address_null
+   )
+;
+
+ifi6av_accept_data_null: ACCEPT_DATA;
+
+ifi6av_fast_interval_null: FAST_INTERVAL milliseconds = uint16;
+
+ifi6av_inet6_advertise_interval_null: INET6_ADVERTISE_INTERVAL milliseconds = uint16;
+
+ifi6av_no_accept_data_null: NO_ACCEPT_DATA;
+
+ifi6av_no_preempt_null: NO_PREEMPT;
+
+ifi6av_preempt_null: PREEMPT (HOLD_TIME seconds = uint16)?;
+
+ifi6av_priority_null: PRIORITY priority = uint8;
+
+ifi6av_track_null: ifiav_track;
+
+ifi6av_virtual_inet6_address_null: VIRTUAL_INET6_ADDRESS ipv6_address;
+
+ifi6av_virtual_link_local_address_null: VIRTUAL_LINK_LOCAL_ADDRESS ipv6_address;
 
 ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
 

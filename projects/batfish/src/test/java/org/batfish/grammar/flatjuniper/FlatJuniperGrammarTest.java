@@ -8837,6 +8837,79 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ae100.0", hasIncomingFilter(nullValue())));
   }
 
+  /**
+   * A filter applied to a VLAN under {@code forwarding-options} is not modeled, but must parse so
+   * that a group whose only statement is such a filter is still defined.
+   */
+  @Test
+  public void testVlansForwardingOptionsFilter() throws IOException {
+    String hostname = "junos-vlans-forwarding-options-filter";
+    String filename = "configs/" + hostname;
+    parseJuniperConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_VLAN_FILTER_WILDCARD", 2));
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_VLAN_FILTER_NAMED", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * A VLAN mac-move-limit, including its packet-action and per-interface action-priority, is not
+   * modeled, but must parse so that a group whose only statement is one is still defined.
+   */
+  @Test
+  public void testVlansMacMoveLimit() throws IOException {
+    String hostname = "junos-vlans-mac-move-limit";
+    String filename = "configs/" + hostname;
+    parseJuniperConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_MAC_MOVE", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * VRRP for IPv6 is not modeled, but {@code vrrp-inet6-group} and its statements must parse so
+   * that a group containing them is still defined.
+   */
+  @Test
+  public void testVrrpInet6Group() throws IOException {
+    String hostname = "junos-vrrp-inet6-group";
+    String filename = "configs/" + hostname;
+    parseJuniperConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, APPLY_GROUP, "G_VRRP_INET6", 1));
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  /**
+   * xSTP on a tagged interface names the physical interface, which need not have a unit 0 at all.
+   * The nonexistent unit must not be reported as not enabled for Ethernet switching, while an
+   * untagged interface whose unit 0 lacks ethernet-switching still is.
+   */
+  @Test
+  public void testXstpTaggedInterface() throws IOException {
+    String hostname = "junos-xstp-tagged-interface";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Nothing is reported for tagged xe-0/0/11, which has no unit 0.
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                containsString(
+                    "XSTP : Interface xe-0/0/12.0 is not enabled for Ethernet Switching"))));
+  }
+
   @Test
   public void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");

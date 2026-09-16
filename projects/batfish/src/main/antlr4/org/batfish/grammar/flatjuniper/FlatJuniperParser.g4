@@ -200,6 +200,7 @@ s_vlans_named
     | vlt_forwarding_options
     | vlt_interface
     | vlt_l3_interface
+    | vlt_switch_options
     | vlt_vlan_id
     | vlt_vlan_id_list
     | vlt_vni_id
@@ -237,8 +238,15 @@ vlt_forwarding_options
    FORWARDING_OPTIONS
    (
       apply
+      | vltfo_filter_null
       | vltfo_null
    )
+;
+
+// Filter applied to traffic in this VLAN. Not modeled, as with vlt_filter.
+vltfo_filter_null
+:
+   filter
 ;
 
 vltfo_null
@@ -256,6 +264,54 @@ vlt_interface
 vlt_l3_interface
 :
    L3_INTERFACE interface_id
+;
+
+vlt_switch_options
+:
+   SWITCH_OPTIONS
+   (
+      apply
+      | vltso_mac_move_limit
+   )
+;
+
+// How many times a MAC address may move between interfaces in this VLAN, and what to do once the
+// limit is exceeded. Not modeled, as with switch-options interface-mac-limit.
+vltso_mac_move_limit
+:
+   MAC_MOVE_LIMIT
+   (
+      vltsomml_interface
+      | vltsomml_limit_null
+      | vltsomml_packet_action_null
+   )
+;
+
+vltsomml_interface
+:
+   INTERFACE interface_id vltsommli_action_priority_null
+;
+
+vltsommli_action_priority_null
+:
+   ACTION_PRIORITY priority = uint8
+;
+
+vltsomml_limit_null
+:
+   uint32
+;
+
+vltsomml_packet_action_null
+:
+   PACKET_ACTION
+   (
+      DROP
+      | DROP_AND_LOG
+      | LOG
+      | NONE
+      | SHUTDOWN
+   )
 ;
 
 vlt_vlan_id

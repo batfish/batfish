@@ -1,0 +1,38 @@
+system {
+    host-name junos-vlans-mac-move-limit;
+}
+groups {
+    G_MAC_MOVE {
+        vlans {
+            <*> {
+                switch-options {
+                    mac-move-limit {
+                        15;
+                        packet-action log;
+                        interface ae1.0 {
+                            action-priority 7;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups G_MAC_MOVE;
+interfaces {
+    ae1 {
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members V6;
+                }
+            }
+        }
+    }
+}
+vlans {
+    V6 {
+        vlan-id 6;
+    }
+}
