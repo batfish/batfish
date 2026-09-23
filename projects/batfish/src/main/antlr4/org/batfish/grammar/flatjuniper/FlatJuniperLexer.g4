@@ -2254,6 +2254,8 @@ NFSD: 'nfsd';
 
 NHRP: 'nhrp';
 
+NLRI_ROUTE_TYPE: 'nlri-route-type';
+
 NNTP: 'nntp';
 
 NTALK: 'ntalk';
