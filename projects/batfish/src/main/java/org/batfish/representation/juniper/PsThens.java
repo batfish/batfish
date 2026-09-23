@@ -16,7 +16,8 @@ import javax.annotation.Nullable;
  *
  * <ul>
  *   <li>Scalar/numeric families (origin, metric, local-preference, next-hop, tunnel-attribute,
- *       etc.) use last-wins semantics: only the last action is retained.
+ *       etc.) use last-wins semantics: only the last action is retained. Distinct source components
+ *       of one metric expression are retained together.
  *   <li>Community actions (set/add/delete) live in a single ordered list, executed in declared
  *       order. A new {@code community set} wipes all prior community actions (since {@code set}
  *       replaces the route's communities, prior add/delete are no-ops). Within add/delete, a new
@@ -57,6 +58,9 @@ public final class PsThens implements Serializable {
     }
     if (isDefaultAction(then)) {
       return setDefaultAction(then);
+    }
+    if (then instanceof PsThenMetricExpression) {
+      return addMetricExpression((PsThenMetricExpression) then);
     }
     String family = getFamily(then);
     if (family == null) {
@@ -165,6 +169,10 @@ public final class PsThens implements Serializable {
       return "metric2";
     } else if (then instanceof PsThenValidationState) {
       return "validation-state";
+    } else if (then instanceof PsThenMetricExpression) {
+      return ((PsThenMetricExpression) then).getTarget() == PsThenMetricExpression.Target.METRIC
+          ? "metric"
+          : "metric2";
     } else if (then instanceof PsThenLoadBalance) {
       return "load-balance";
     } else if (then instanceof PsThenAsPathPrepend) {
@@ -230,6 +238,39 @@ public final class PsThens implements Serializable {
       return ImmutableList.of(family + " (dedup)");
     }
     return ImmutableList.of(family);
+  }
+
+  private @Nonnull List<String> addMetricExpression(PsThenMetricExpression then) {
+    String family = then.getTarget() == PsThenMetricExpression.Target.METRIC ? "metric" : "metric2";
+    List<PsThen> existing = _familyActions.get(family);
+    if (existing == null) {
+      List<PsThen> list = new ArrayList<>(2);
+      list.add(then);
+      _familyActions.put(family, list);
+      return ImmutableList.of();
+    }
+    if (!(existing.get(0) instanceof PsThenMetricExpression)) {
+      existing.clear();
+      existing.add(then);
+      return ImmutableList.of(family);
+    }
+    for (int i = 0; i < existing.size(); i++) {
+      PsThenMetricExpression prior = (PsThenMetricExpression) existing.get(i);
+      if (prior.getSource() == then.getSource()) {
+        existing.set(i, then);
+        String component =
+            family
+                + " expression "
+                + (then.getSource() == PsThenMetricExpression.Source.METRIC ? "metric" : "metric2");
+        return ImmutableList.of(prior.equals(then) ? component + " (dedup)" : component);
+      }
+    }
+    if (then.getSource() == PsThenMetricExpression.Source.METRIC) {
+      existing.add(0, then);
+    } else {
+      existing.add(then);
+    }
+    return ImmutableList.of();
   }
 
   // --- Community actions: ordered list with set-as-barrier and add/delete conflict detection ---
