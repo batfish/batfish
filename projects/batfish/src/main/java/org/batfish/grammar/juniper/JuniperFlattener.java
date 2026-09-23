@@ -109,7 +109,9 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _stack.add(_currentStatement);
     _inDelete = false;
     for (TagContext tagCtx : ctx.tag()) {
-      constructTagCommand(tagCtx, ctx.words);
+      if (tagCtx.PROTECT() == null) {
+        constructTagCommand(tagCtx, ctx.words);
+      }
       _inDelete |= tagCtx.DELETE() != null;
     }
   }

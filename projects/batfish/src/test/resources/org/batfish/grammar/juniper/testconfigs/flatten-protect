@@ -1,0 +1,13 @@
+system {
+    protect: host-name router;
+    protect: license {
+        keys {
+            key "%CENSORED%";
+        }
+    }
+    login {
+        protect: user test-user {
+            uid 1000;
+        }
+    }
+}
