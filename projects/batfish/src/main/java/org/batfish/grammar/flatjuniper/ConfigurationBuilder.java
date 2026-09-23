@@ -5283,6 +5283,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_remove_private(B_remove_privateContext ctx) {
     _currentBgpGroup.setRemovePrivate(true);
+    boolean all = !ctx.ALL().isEmpty();
+    boolean nearest = !ctx.NEAREST().isEmpty();
+    boolean noPeerLoopCheck = !ctx.NO_PEER_LOOP_CHECK().isEmpty();
+    boolean replace = !ctx.REPLACE().isEmpty();
+    if (all) {
+      _currentBgpGroup.setRemovePrivateAll(true);
+    }
+    if (nearest) {
+      _currentBgpGroup.setRemovePrivateNearest(true);
+    }
+    if (noPeerLoopCheck) {
+      _currentBgpGroup.setRemovePrivateNoPeerLoopCheck(true);
+    }
+    if (replace) {
+      _currentBgpGroup.setRemovePrivateReplace(true);
+    }
+    if (nearest || replace || !(all || noPeerLoopCheck)) {
+      todo(ctx);
+    }
   }
 
   @Override
