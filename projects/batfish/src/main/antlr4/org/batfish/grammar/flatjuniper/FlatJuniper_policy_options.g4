@@ -221,6 +221,7 @@ pops_to
    TO
    (
       popsto_level
+      | popsto_policy
       | popsto_protocol
       | popsto_rib
    )
@@ -890,6 +891,12 @@ popstta_set: SET name = junos_name;
 popsto_level
 :
    LEVEL dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/policy-statement-edit-policy-options.html
+popsto_policy
+:
+   POLICY expr = policy_expression
 ;
 
 popsto_protocol

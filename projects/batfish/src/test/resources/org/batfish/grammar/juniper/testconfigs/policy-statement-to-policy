@@ -1,0 +1,4 @@
+set system host-name policy-statement-to-policy
+set policy-options policy-statement SUBROUTINE term ACCEPT then accept
+set policy-options policy-statement OUTER term CALL to policy SUBROUTINE
+set policy-options policy-statement OUTER term CALL then accept

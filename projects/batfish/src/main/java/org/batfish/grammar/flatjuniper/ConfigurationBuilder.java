@@ -202,6 +202,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_TO_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.RESOLUTION_RIB_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_IMPORT;
@@ -718,6 +719,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_peer_addressCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_selfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_levelContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
@@ -1321,6 +1323,7 @@ import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThens;
 import org.batfish.representation.juniper.PsToLevel;
+import org.batfish.representation.juniper.PsToPolicyStatement;
 import org.batfish.representation.juniper.PsToProtocol;
 import org.batfish.representation.juniper.PsToRib;
 import org.batfish.representation.juniper.QualifiedNextHop;
@@ -7067,6 +7070,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsto_level(Popsto_levelContext ctx) {
     todo(ctx);
     _currentPsTerm.getTos().setToLevel(new PsToLevel(toLong(ctx.dec())));
+  }
+
+  @Override
+  public void exitPopsto_policy(Popsto_policyContext ctx) {
+    String policyName = toComplexPolicyStatement(ctx.expr, POLICY_STATEMENT_TO_POLICY);
+    _currentPsTerm.getTos().setToPolicyStatement(new PsToPolicyStatement(policyName));
+    todo(ctx);
   }
 
   @Override
