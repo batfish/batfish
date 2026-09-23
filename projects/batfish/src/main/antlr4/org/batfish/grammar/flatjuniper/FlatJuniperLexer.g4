@@ -232,6 +232,8 @@ ALWAYS_COMPARE_MED: 'always-compare-med';
 
 ALWAYS_SEND: 'always-send';
 
+ALWAYS_WAIT_FOR_KRT_DRAIN: 'always-wait-for-krt-drain';
+
 ALWAYS_WRITE_GIADDR: 'always-write-giaddr';
 
 ANALYZER: 'analyzer';
@@ -605,6 +607,7 @@ DEFAULT_POLICY: 'default-policy';
 
 DEFAULTS: 'defaults';
 DELAY: 'delay';
+DELAY_ROUTE_ADVERTISEMENTS: 'delay-route-advertisements';
 DELEGATE_PROCESSING: 'delegate-processing';
 DELETE
 :
@@ -1222,6 +1225,8 @@ INCOMPLETE: 'incomplete';
 INDIRECT_NEXT_HOP: 'indirect-next-hop';
 
 INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS: 'indirect-next-hop-change-acknowledgements';
+
+INBOUND_CONVERGENCE: 'inbound-convergence';
 
 INET
 :
@@ -2042,6 +2047,8 @@ MAXIMUM: 'maximum';
 
 MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
 
+MAXIMUM_DELAY: 'maximum-delay';
+
 MAXIMUM_LABELS: 'maximum-labels';
 
 MAXIMUM_LENGTH: 'maximum-length';
@@ -2120,6 +2127,8 @@ MINIMUM_BANDWIDTH: 'minimum-bandwidth';
 MINIMUM_CHANGES: 'minimum-changes';
 
 MINIMUM_CHARACTER_CHANGES: 'minimum-character-changes';
+
+MINIMUM_DELAY: 'minimum-delay';
 
 MINIMUM_INTERVAL: 'minimum-interval';
 
@@ -2793,6 +2802,8 @@ ROUTE_DISTINGUISHER_ID: 'route-distinguisher-id';
 
 ROUTE_FILTER: 'route-filter';
 
+ROUTE_AGE: 'route-age';
+
 ROUTE_MONITORING: 'route-monitoring';
 
 ROUTE_RECORD: 'route-record';
@@ -2823,6 +2834,7 @@ ROUTING_INSTANCE_NAME: 'routing-instance-name' -> pushMode(M_RoutingInstanceName
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
+ROUTING_UPTIME: 'routing-uptime';
 
 RPC_PROGRAM_NUMBER: 'rpc-program-number';
 

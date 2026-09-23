@@ -529,6 +529,7 @@ bfi_unicast
    (
       apply
       | bfiu_add_path
+      | bfiu_delay_route_advertisements
       | bfiu_extended_nexthop_tunnel_null
       | bfiu_loops
       | bfiu_prefix_limit
@@ -557,12 +558,48 @@ bfi6_unicast
    (
       apply
       | bfi6u_add_path
+      | bfi6u_delay_route_advertisements
       | bfi6u_extended_nexthop_tunnel_null
       | bfi6u_loops
       | bfi6u_prefix_limit
       | bfi6u_rib_group
       | bfi6u_withdraw_priority
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/ref/statement/delay-route-advertisements-edit-protocols-group-family-unicast.html
+bfiu_delay_route_advertisements
+:
+   DELAY_ROUTE_ADVERTISEMENTS
+   (
+      ALWAYS_WAIT_FOR_KRT_DRAIN
+      | bdra_option_null
+   )
+;
+
+bfi6u_delay_route_advertisements
+:
+   DELAY_ROUTE_ADVERTISEMENTS
+   (
+      ALWAYS_WAIT_FOR_KRT_DRAIN
+      | bdra_option_null
+   )
+;
+
+bdra_option_null
+:
+   (
+      MAXIMUM_DELAY
+      (
+         ROUTE_AGE
+         | ROUTING_UPTIME
+      )
+      | MINIMUM_DELAY
+      (
+         INBOUND_CONVERGENCE
+         | ROUTING_UPTIME
+      )
+   ) delay = uint32
 ;
 
 bfi6u_add_path

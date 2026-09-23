@@ -1,0 +1,16 @@
+set system host-name bgp-delay-route-advertisements
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set protocols bgp group PEERS type external
+set protocols bgp group PEERS peer-as 65100
+set protocols bgp group PEERS family inet unicast delay-route-advertisements minimum-delay inbound-convergence 100
+set protocols bgp group PEERS family inet unicast delay-route-advertisements minimum-delay routing-uptime 200
+set protocols bgp group PEERS family inet unicast delay-route-advertisements maximum-delay route-age 300
+set protocols bgp group PEERS family inet unicast delay-route-advertisements maximum-delay routing-uptime 400
+set protocols bgp group PEERS family inet unicast delay-route-advertisements always-wait-for-krt-drain
+set protocols bgp group PEERS family inet6 unicast delay-route-advertisements minimum-delay inbound-convergence 500
+set protocols bgp group PEERS family inet6 unicast delay-route-advertisements minimum-delay routing-uptime 600
+set protocols bgp group PEERS family inet6 unicast delay-route-advertisements maximum-delay route-age 700
+set protocols bgp group PEERS family inet6 unicast delay-route-advertisements maximum-delay routing-uptime 800
+set protocols bgp group PEERS family inet6 unicast delay-route-advertisements always-wait-for-krt-drain
+set protocols bgp group PEERS neighbor 198.51.100.2
