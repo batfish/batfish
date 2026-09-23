@@ -57,6 +57,7 @@ public class BgpGroup implements Serializable {
   private Boolean _removePrivate;
   private @Nullable String _ribGroup;
   private BgpGroupType _type;
+  private @Nullable Boolean _vpnApplyExport;
 
   public BgpGroup() {
     _dropPathAttributes = IntegerSpace.EMPTY;
@@ -159,6 +160,9 @@ public class BgpGroup implements Serializable {
       }
       if (_type == null) {
         _type = _parent._type;
+      }
+      if (_vpnApplyExport == null) {
+        _vpnApplyExport = _parent._vpnApplyExport;
       }
     }
   }
@@ -331,6 +335,10 @@ public class BgpGroup implements Serializable {
     return _type;
   }
 
+  public @Nullable Boolean getVpnApplyExport() {
+    return _vpnApplyExport;
+  }
+
   public void setAcceptRemoteNexthop(boolean acceptRemoteNexthop) {
     _acceptRemoteNexthop = acceptRemoteNexthop;
   }
@@ -441,5 +449,9 @@ public class BgpGroup implements Serializable {
 
   public final void setType(BgpGroupType type) {
     _type = type;
+  }
+
+  public void setVpnApplyExport(boolean vpnApplyExport) {
+    _vpnApplyExport = vpnApplyExport;
   }
 }
