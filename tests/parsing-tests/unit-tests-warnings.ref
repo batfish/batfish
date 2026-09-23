@@ -1247,6 +1247,62 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 9,
+        "Text" : "remove-private all",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 10,
+        "Text" : "remove-private nearest",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 11,
+        "Text" : "remove-private replace",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 12,
+        "Text" : "remove-private no-peer-loop-check",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 13,
+        "Text" : "remove-private all",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 14,
+        "Text" : "remove-private nearest",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 15,
+        "Text" : "remove-private replace",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_bgp_remove_private_as",
+        "Line" : 16,
+        "Text" : "remove-private no-peer-loop-check",
+        "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/juniper_extended_community",
         "Line" : 6,
         "Text" : "8075:[1][0][0-3,5-9][0-9][0-9]$",
@@ -1577,10 +1633,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 219 results",
+      "notes" : "Found 227 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 219
+      "numResults" : 227
     }
   }
 ]

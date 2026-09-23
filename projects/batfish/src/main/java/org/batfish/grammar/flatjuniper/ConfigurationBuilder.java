@@ -2674,6 +2674,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private BgpGroup _currentBgpGroup;
 
+  private final Map<BgpGroup, List<B_remove_privateContext>> _bgpRemovePrivateContexts =
+      new HashMap<>();
+
   private @Nullable String _currentBgpDynamicNeighborName;
 
   private NamedCommunity _currentCommunityList;
@@ -5283,6 +5286,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_remove_private(B_remove_privateContext ctx) {
     _currentBgpGroup.setRemovePrivate(true);
+    if (!ctx.ALL().isEmpty()) {
+      _currentBgpGroup.setRemovePrivateAll(true);
+    }
+    if (!ctx.NEAREST().isEmpty()) {
+      _currentBgpGroup.setRemovePrivateNearest(true);
+    }
+    if (!ctx.NO_PEER_LOOP_CHECK().isEmpty()) {
+      _currentBgpGroup.setRemovePrivateNoPeerLoopCheck(true);
+    }
+    if (!ctx.REPLACE().isEmpty()) {
+      _currentBgpGroup.setRemovePrivateReplace(true);
+    }
+    _bgpRemovePrivateContexts
+        .computeIfAbsent(_currentBgpGroup, unused -> new ArrayList<>())
+        .add(ctx);
   }
 
   @Override
@@ -6017,6 +6035,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    _bgpRemovePrivateContexts.forEach(
+        (group, contexts) -> {
+          if (!group.isRemovePrivateAllNoPeerLoopCheck()) {
+            contexts.forEach(this::todo);
+          }
+        });
     if (_hasZones) {
       if (_defaultCrossZoneAction == null) {
         _defaultCrossZoneAction = LineAction.DENY;

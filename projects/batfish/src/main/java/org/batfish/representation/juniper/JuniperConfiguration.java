@@ -809,6 +809,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .getStatements()
             .add(new SetLocalPreference(new LiteralLong(ig.getLocalPreference())));
       }
+      if (ig.isRemovePrivateAllNoPeerLoopCheck()) {
+        peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
+      }
 
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()

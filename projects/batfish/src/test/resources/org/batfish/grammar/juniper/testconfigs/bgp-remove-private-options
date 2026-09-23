@@ -1,0 +1,17 @@
+set system host-name bgp-remove-private-options
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set protocols bgp group ALL-REPLACE type external
+set protocols bgp group ALL-REPLACE peer-as 65100
+set protocols bgp group ALL-REPLACE remove-private all
+set protocols bgp group ALL-REPLACE remove-private replace
+set protocols bgp group ALL-REPLACE neighbor 198.51.100.2
+set protocols bgp group NEAREST type external
+set protocols bgp group NEAREST peer-as 65200
+set protocols bgp group NEAREST remove-private all replace nearest no-peer-loop-check
+set protocols bgp group NEAREST neighbor 203.0.113.2
+set protocols bgp group SUPPORTED type external
+set protocols bgp group SUPPORTED peer-as 65300
+set protocols bgp group SUPPORTED remove-private all
+set protocols bgp group SUPPORTED remove-private no-peer-loop-check
+set protocols bgp group SUPPORTED neighbor 192.0.2.2
