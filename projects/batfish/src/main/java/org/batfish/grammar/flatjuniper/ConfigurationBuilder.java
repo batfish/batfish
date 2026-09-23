@@ -338,6 +338,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_allowContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_key_chainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_bgp_error_toleranceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_disableContext;
@@ -360,6 +361,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_vpn_apply_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bbet_malformed_route_limitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bbet_malformed_update_log_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bbet_no_malformed_route_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bf_evpnContext;
@@ -5182,6 +5186,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_enforce_first_as(B_enforce_first_asContext ctx) {
     _currentBgpGroup.setEnforceFirstAs(true);
+  }
+
+  @Override
+  public void exitBbet_malformed_route_limit(Bbet_malformed_route_limitContext ctx) {
+    _currentBgpGroup.setMalformedRouteLimit(toLong(ctx.limit));
+  }
+
+  @Override
+  public void exitBbet_malformed_update_log_interval(
+      Bbet_malformed_update_log_intervalContext ctx) {
+    _currentBgpGroup.setMalformedUpdateLogInterval(toInteger(ctx.interval));
+  }
+
+  @Override
+  public void exitBbet_no_malformed_route_limit(Bbet_no_malformed_route_limitContext ctx) {
+    _currentBgpGroup.setNoMalformedRouteLimit(true);
+  }
+
+  @Override
+  public void enterB_bgp_error_tolerance(B_bgp_error_toleranceContext ctx) {
+    _currentBgpGroup.setErrorTolerance(true);
+    todo(ctx);
   }
 
   @Override
