@@ -59,6 +59,10 @@ public class BgpGroup implements Serializable {
   private Long _peerAs;
   private @Nullable Integer _preference;
   private Boolean _removePrivate;
+  private boolean _removePrivateAll;
+  private boolean _removePrivateNearest;
+  private boolean _removePrivateNoPeerLoopCheck;
+  private boolean _removePrivateReplace;
   private @Nullable String _ribGroup;
   private @Nullable String _ribGroup6;
   private BgpGroupType _type;
@@ -169,6 +173,13 @@ public class BgpGroup implements Serializable {
       }
       if (_preference == null) {
         _preference = _parent._preference;
+      }
+      if (_removePrivate == null) {
+        _removePrivate = _parent._removePrivate;
+        _removePrivateAll = _parent._removePrivateAll;
+        _removePrivateNearest = _parent._removePrivateNearest;
+        _removePrivateNoPeerLoopCheck = _parent._removePrivateNoPeerLoopCheck;
+        _removePrivateReplace = _parent._removePrivateReplace;
       }
       if (_ribGroup == null) {
         _ribGroup = _parent._ribGroup;
@@ -361,6 +372,22 @@ public class BgpGroup implements Serializable {
     return _removePrivate;
   }
 
+  public boolean getRemovePrivateAll() {
+    return _removePrivateAll;
+  }
+
+  public boolean getRemovePrivateNearest() {
+    return _removePrivateNearest;
+  }
+
+  public boolean getRemovePrivateNoPeerLoopCheck() {
+    return _removePrivateNoPeerLoopCheck;
+  }
+
+  public boolean getRemovePrivateReplace() {
+    return _removePrivateReplace;
+  }
+
   public @Nullable String getRibGroup() {
     return _ribGroup;
   }
@@ -497,6 +524,22 @@ public class BgpGroup implements Serializable {
 
   public void setRemovePrivate(boolean removePrivate) {
     _removePrivate = removePrivate;
+  }
+
+  public void setRemovePrivateAll(boolean removePrivateAll) {
+    _removePrivateAll = removePrivateAll;
+  }
+
+  public void setRemovePrivateNearest(boolean removePrivateNearest) {
+    _removePrivateNearest = removePrivateNearest;
+  }
+
+  public void setRemovePrivateNoPeerLoopCheck(boolean removePrivateNoPeerLoopCheck) {
+    _removePrivateNoPeerLoopCheck = removePrivateNoPeerLoopCheck;
+  }
+
+  public void setRemovePrivateReplace(boolean removePrivateReplace) {
+    _removePrivateReplace = removePrivateReplace;
   }
 
   public void setRibGroup(@Nullable String ribGroup) {

@@ -393,6 +393,7 @@ b_preference
   PREFERENCE pref = dec
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/remove-private-edit-protocols-bgp.html
 b_remove_private
 :
    REMOVE_PRIVATE
@@ -401,7 +402,7 @@ b_remove_private
      | NEAREST
      | REPLACE
      | NO_PEER_LOOP_CHECK
-   )?
+   )*
 ;
 
 b_tcp_mss
