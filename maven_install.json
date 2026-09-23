@@ -65,7 +65,7 @@
     "org.hamcrest:hamcrest": 1547523135,
     "org.hamcrest:hamcrest-core": 168210752,
     "org.jgrapht:jgrapht-core": -733997147,
-    "org.mockito:mockito-core": 1330163800,
+    "org.mockito:mockito-core": -466787559,
     "org.mockito:mockito-inline": 724093597,
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": -1448162181,
@@ -286,9 +286,9 @@
     "org.junit.platform:junit-platform-commons:jar:sources": 1345426247,
     "org.junit.platform:junit-platform-engine": -163998054,
     "org.junit.platform:junit-platform-engine:jar:sources": -98239888,
-    "org.mockito:mockito-core": -343816595,
-    "org.mockito:mockito-core:jar:sources": 1900207417,
-    "org.mockito:mockito-inline": 2098418541,
+    "org.mockito:mockito-core": 1068811845,
+    "org.mockito:mockito-core:jar:sources": 1799409451,
+    "org.mockito:mockito-inline": -1565219978,
     "org.mockito:mockito-inline:jar:sources": -1291228261,
     "org.objenesis:objenesis": 1798216877,
     "org.objenesis:objenesis:jar:sources": 1586171112,
@@ -1085,10 +1085,10 @@
     },
     "org.mockito:mockito-core": {
       "shasums": {
-        "jar": "ae295bebd5d11fab97ab297815dc7617188b86003cbce3dfd5c0d5c3a6cc4a0c",
-        "sources": "38f869a12a1168ca8dc2a4acd090d8129a7f81afc8f1fc61582701894755fefd"
+        "jar": "97a1f835ad84075255aa37809e4379eff541273c02c6201cbad49bd5950932cd",
+        "sources": "6941ad79b3a92ba2dbd8a00570b0e2dcaf15529de4452c789454f11660f03bf7"
       },
-      "version": "5.23.0"
+      "version": "5.24.0"
     },
     "org.mockito:mockito-inline": {
       "shasums": {
