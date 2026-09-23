@@ -3048,6 +3048,8 @@ STANDARD: 'standard';
 
 START_TIME: 'start-time' -> pushMode(M_RestOfLine);
 
+STATE: 'state';
+
 STATIC: 'static';
 
 STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);

@@ -3333,6 +3333,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (froms.getFromRouteType() != null) {
       conj.getConjuncts().add(froms.getFromRouteType().toBooleanExpr(this, _c, _w));
     }
+    if (froms.getFromState() != null) {
+      conj.getConjuncts().add(froms.getFromState().toBooleanExpr(this, _c, _w));
+    }
     if (!froms.getFromTags().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
     }

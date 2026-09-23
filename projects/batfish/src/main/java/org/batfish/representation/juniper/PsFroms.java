@@ -36,6 +36,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromRouteFilter> _fromRouteFilters;
   private PsFromExternal _fromExternal;
   private PsFromRouteType _fromRouteType;
+  private PsFromState _fromState;
   private final Set<PsFromTag> _fromTags;
   private PsFromUnsupported _fromUnsupported;
   private PsFromValidationDatabase _fromValidationDatabase;
@@ -139,6 +140,11 @@ public final class PsFroms implements Serializable {
   public void setFromRouteType(@Nonnull PsFromRouteType fromRouteType) {
     _atLeastOneFrom = true;
     _fromRouteType = fromRouteType;
+  }
+
+  public void setFromState(@Nonnull PsFromState fromState) {
+    _atLeastOneFrom = true;
+    _fromState = fromState;
   }
 
   public void addFromTag(@Nonnull PsFromTag fromTag) {
@@ -249,6 +255,11 @@ public final class PsFroms implements Serializable {
 
   public @Nullable PsFromRouteType getFromRouteType() {
     return _fromRouteType;
+  }
+
+  @VisibleForTesting
+  public @Nullable PsFromState getFromState() {
+    return _fromState;
   }
 
   @VisibleForTesting
