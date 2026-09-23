@@ -772,6 +772,8 @@ DYNAMIC: 'dynamic';
 
 DYNAMIC_DNS: 'dynamic-dns';
 
+DYNAMIC_NEIGHBOR: 'dynamic-neighbor' -> pushMode(M_Name);
+
 ECE: 'ece';
 
 ECHO_REPLY: 'echo-reply';

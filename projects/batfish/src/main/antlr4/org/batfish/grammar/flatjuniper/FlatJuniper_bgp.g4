@@ -152,6 +152,12 @@ b_description
    DESCRIPTION text = bgp_description_text
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dynamic-neighbor-edit-protocols-bgp.html
+b_dynamic_neighbor
+:
+   DYNAMIC_NEIGHBOR name = junos_name b_allow
+;
+
 b_disable
 :
    DISABLE
@@ -226,6 +232,7 @@ b_group
    GROUP name = junos_name
    (
       b_common
+      | b_dynamic_neighbor
       | b_neighbor
       | b_allow
    )
