@@ -79,6 +79,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_G
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET6_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
@@ -368,6 +369,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bf_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bf_route_targetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfi6u_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_add_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
@@ -5292,6 +5294,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         RIB_GROUP, groupName, BGP_FAMILY_INET_UNICAST_RIB_GROUP, getLine(ctx.name.getStart()));
     _currentBgpGroup.setRibGroup(groupName);
+  }
+
+  @Override
+  public void enterBfi6u_rib_group(Bfi6u_rib_groupContext ctx) {
+    String groupName = toString(ctx.name);
+    _configuration.referenceStructure(
+        RIB_GROUP, groupName, BGP_FAMILY_INET6_UNICAST_RIB_GROUP, getLine(ctx.name.getStart()));
+    _currentBgpGroup.setRibGroup6(groupName);
+    todo(ctx);
   }
 
   @Override

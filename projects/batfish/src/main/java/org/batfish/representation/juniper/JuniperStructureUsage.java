@@ -18,6 +18,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_NEIGHBOR("bgp group neighbor"),
   BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self ref"),
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
+  BGP_FAMILY_INET6_UNICAST_RIB_GROUP("bgp family inet6 unicast rib-group"),
   CLASS_OF_SERVICE_CLASSIFIERS_DSCP_FORWARDING_CLASS(
       "class-of-service classifiers dscp forwarding-class"),
   CLASS_OF_SERVICE_CLASSIFIERS_DSCP_CODE_POINTS("class-of-service classifiers dscp code-points"),
