@@ -124,6 +124,7 @@ public final class PsThens implements Serializable {
           "local-preference",
           "metric",
           "metric2",
+          "validation-state",
           "load-balance",
           "source-class",
           "destination-class",
@@ -159,6 +160,8 @@ public final class PsThens implements Serializable {
       return "metric";
     } else if (then instanceof PsThenMetric2) {
       return "metric2";
+    } else if (then instanceof PsThenValidationState) {
+      return "validation-state";
     } else if (then instanceof PsThenLoadBalance) {
       return "load-balance";
     } else if (then instanceof PsThenAsPathPrepend) {
