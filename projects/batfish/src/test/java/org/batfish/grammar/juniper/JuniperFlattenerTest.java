@@ -146,6 +146,26 @@ public class JuniperFlattenerTest {
     }
   }
 
+  @Test
+  public void testRoutingEnginePrompts() {
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + "flatten-routing-engine-prompts", UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
+    assertThat(
+        flattener.getFlattenedConfigurationText(),
+        equalTo(
+            """
+            ####BATFISH FLATTENED JUNIPER CONFIG####
+            set system host-name device
+            """));
+  }
+
   /**
    * Test that delete and replace tags do not generate spurious set lines.
    *
