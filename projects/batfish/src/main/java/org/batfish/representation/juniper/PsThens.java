@@ -116,6 +116,7 @@ public final class PsThens implements Serializable {
       ImmutableList.of(
           "as-path-prepend",
           "as-path-expand",
+          "aigp-adjust",
           "origin",
           "preference",
           "tag",
@@ -142,6 +143,8 @@ public final class PsThens implements Serializable {
   static @Nullable String getFamily(PsThen then) {
     if (then instanceof PsThenOrigin) {
       return "origin";
+    } else if (then instanceof PsThenAigpAdjust) {
+      return "aigp-adjust";
     } else if (then instanceof PsThenPreference) {
       return "preference";
     } else if (then instanceof PsThenTag) {
