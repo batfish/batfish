@@ -391,6 +391,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_always_compare_medContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_external_router_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_med_plus_igpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bridge_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
@@ -1442,6 +1443,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace NTP_KEY_NUMBER_RANGE = IntegerSpace.of(new SubRange(1, 65534));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+  private static final IntegerSpace BGP_PATH_SELECTION_MULTIPLIER_RANGE =
+      IntegerSpace.of(new SubRange(1, 1000));
 
   // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
   private static final IntegerSpace ISIS_LEVEL_METRIC_RANGE =
@@ -5388,12 +5391,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBps_always_compare_med(Bps_always_compare_medContext ctx) {
-    todo(ctx);
+    _currentRoutingInstance.setBgpAlwaysCompareMed(true);
   }
 
   @Override
   public void exitBps_external_router_id(Bps_external_router_idContext ctx) {
-    todo(ctx);
+    _currentRoutingInstance.setBgpExternalRouterId(true);
+  }
+
+  @Override
+  public void exitBps_med_plus_igp(Bps_med_plus_igpContext ctx) {
+    _currentRoutingInstance.setBgpMedPlusIgp(true);
+    boolean valid = true;
+    if (ctx.igp_multiplier != null) {
+      Optional<Integer> multiplier =
+          toIntegerInSpace(
+              ctx,
+              ctx.igp_multiplier,
+              BGP_PATH_SELECTION_MULTIPLIER_RANGE,
+              "BGP path-selection multiplier");
+      multiplier.ifPresent(_currentRoutingInstance::setBgpMedPlusIgpIgpMultiplier);
+      valid = multiplier.isPresent();
+    } else if (ctx.med_multiplier != null) {
+      Optional<Integer> multiplier =
+          toIntegerInSpace(
+              ctx,
+              ctx.med_multiplier,
+              BGP_PATH_SELECTION_MULTIPLIER_RANGE,
+              "BGP path-selection multiplier");
+      multiplier.ifPresent(_currentRoutingInstance::setBgpMedPlusIgpMedMultiplier);
+      valid = multiplier.isPresent();
+    }
+    if (valid) {
+      todo(ctx);
+    }
   }
 
   @Override

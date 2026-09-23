@@ -370,12 +370,14 @@ b_passive
    PASSIVE
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/path-selection-edit-protocols-bgp.html
 b_path_selection
 :
    PATH_SELECTION
    (
       bps_always_compare_med
       | bps_external_router_id
+      | bps_med_plus_igp
    )
 ;
 
@@ -789,6 +791,16 @@ bps_always_compare_med
 bps_external_router_id
 :
    EXTERNAL_ROUTER_ID
+;
+
+bps_med_plus_igp
+:
+   MED_PLUS_IGP
+   (
+      apply
+      | IGP_MULTIPLIER igp_multiplier = uint16
+      | MED_MULTIPLIER med_multiplier = uint16
+   )
 ;
 
 p_bgp
