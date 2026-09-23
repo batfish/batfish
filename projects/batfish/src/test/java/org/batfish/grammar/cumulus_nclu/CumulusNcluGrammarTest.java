@@ -973,8 +973,8 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasInterface("swp3", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp4", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp5", hasBandwidth(10E9D)));
-    assertThat(c, hasInterface("swp6", hasSpeed(10E11D)));
-    assertThat(c, hasInterface("swp6", hasBandwidth(10E11D)));
+    assertThat(c, hasInterface("swp6", hasSpeed(100E9D)));
+    assertThat(c, hasInterface("swp6", hasBandwidth(100E9D)));
 
     // channel group
     assertThat(c.getAllInterfaces().get("swp1").getChannelGroup(), equalTo("bond1"));

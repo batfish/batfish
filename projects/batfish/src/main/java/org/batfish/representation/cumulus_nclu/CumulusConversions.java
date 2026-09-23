@@ -170,7 +170,7 @@ public final class CumulusConversions {
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
-  public static final double SPEED_CONVERSION_FACTOR = 10e6;
+  public static final double SPEED_CONVERSION_FACTOR = 1e6;
 
   // Follow the default setting of Cisco.
   // TODO: need to verify this

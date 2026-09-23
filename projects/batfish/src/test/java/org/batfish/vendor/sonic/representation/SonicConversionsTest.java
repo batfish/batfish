@@ -13,6 +13,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDhcpRelayAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHumanName;
@@ -23,7 +24,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
-import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.vendor.sonic.representation.SonicConversions.allowsSnmp;
 import static org.batfish.vendor.sonic.representation.SonicConversions.attachAcl;
 import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
@@ -121,7 +121,8 @@ public class SonicConversionsTest {
               hasAddress(ifaceAddress),
               hasMtu(56),
               hasDescription("desc"),
-              hasSpeed(23 * SPEED_CONVERSION_FACTOR)));
+              hasSpeed(23E6D),
+              hasBandwidth(23E6D)));
     }
     {
       // interface does not exist
