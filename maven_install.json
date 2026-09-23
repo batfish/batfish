@@ -13,7 +13,7 @@
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": -182968498,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 1548616537,
     "com.fasterxml.jackson:jackson-bom": -317695990,
-    "com.github.ben-manes.caffeine:caffeine": 1815596219,
+    "com.github.ben-manes.caffeine:caffeine": -1341471880,
     "com.google.auto.service:auto-service": -1729498094,
     "com.google.auto.service:auto-service-annotations": -843120535,
     "com.google.auto.value:auto-value": -661233359,
@@ -95,8 +95,8 @@
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources": 1899432031,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 828672252,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": 1204744168,
-    "com.github.ben-manes.caffeine:caffeine": -1094095223,
-    "com.github.ben-manes.caffeine:caffeine:jar:sources": -57104877,
+    "com.github.ben-manes.caffeine:caffeine": 1500020498,
+    "com.github.ben-manes.caffeine:caffeine:jar:sources": -1083399443,
     "com.github.oowekyala.ooxml:nice-xml-messages": -1242718147,
     "com.github.oowekyala.ooxml:nice-xml-messages:jar:sources": 923999346,
     "com.google.auto.service:auto-service": -577796184,
@@ -414,10 +414,10 @@
     },
     "com.github.ben-manes.caffeine:caffeine": {
       "shasums": {
-        "jar": "9d9d2cfd681fd9272ded3d27c9930db12f89f732345975aa113ebc223bbf1224",
-        "sources": "5079e1b327d79e2fc8ae3f5927587e59c968603e63785fb33479acd8b732211d"
+        "jar": "5d015adc655191c8f9a152c4cc871170a04d28040ed281d0e74ade87d6ae8aff",
+        "sources": "b3d73b6460ac46bbeda72372579356d2f47d6bda3d6fb94239fc1e24a1e07879"
       },
-      "version": "3.2.4"
+      "version": "3.3.0"
     },
     "com.github.oowekyala.ooxml:nice-xml-messages": {
       "shasums": {
