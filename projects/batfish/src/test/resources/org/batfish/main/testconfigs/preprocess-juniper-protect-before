@@ -1,0 +1,6 @@
+set system host-name router
+set system license keys key "%CENSORED-ORIGINAL%"
+protect system
+delete system host-name router
+replace system license
+set system license keys key "%CENSORED-REPLACEMENT%"

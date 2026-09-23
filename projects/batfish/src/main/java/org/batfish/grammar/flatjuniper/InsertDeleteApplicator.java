@@ -1,7 +1,9 @@
 package org.batfish.grammar.flatjuniper;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +25,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_dstContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_srcContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Protect_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Protect_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Replace_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
@@ -61,6 +65,10 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
    * - remove the node (and therefore its subtrees) from the tree
    *   - note that this removes 'set', 'activate', and 'deactivate' lines
    *
+   * Each time a 'protect' parse-tree is encountered:
+   * - record the words following 'protect'
+   * - reject later delete and replace operations that overlap the protected hierarchy
+   *
    * Each of these statements takes affect when it is reached, rather than after a pass. That way you don't
    * (e.g.) delete set lines that occur later in the text.
    *
@@ -73,6 +81,8 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     _warnings = warnings;
     _statementTree = new StatementTree();
     _statementsByTree = HashMultimap.create();
+    _protectedPaths = new ArrayList<>();
+    _blockedReplacePaths = new ArrayList<>();
   }
 
   @Override
@@ -124,6 +134,9 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSet_line(Set_lineContext ctx) {
+    if (isBlockedReplacement(_words)) {
+      return;
+    }
     addStatementToTree(_statementTree, ctx);
   }
 
@@ -140,12 +153,23 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   @Override
   public void exitDelete_line(Delete_lineContext ctx) {
+    if (isProtected(_words)) {
+      warn(ctx, "cannot delete protected configuration");
+      _dirty = true;
+      return;
+    }
     deleteSubtree(_statementTree, false);
     _dirty = true;
   }
 
   @Override
   public void exitReplace_line(Replace_lineContext ctx) {
+    if (isProtected(_words)) {
+      warn(ctx, "cannot replace protected configuration");
+      _blockedReplacePaths.add(ImmutableList.copyOf(_words));
+      _dirty = true;
+      return;
+    }
     // Replace is just delete, except we preserve the parent node so that the replacement lines
     // appear at the same spot in the output config.
     deleteSubtree(_statementTree, true);
@@ -161,6 +185,23 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
   @Override
   public void exitDelete_line_tail(Delete_line_tailContext ctx) {
     _enablePathRecording = false;
+  }
+
+  @Override
+  public void enterProtect_line_tail(Protect_line_tailContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitProtect_line_tail(Protect_line_tailContext ctx) {
+    _enablePathRecording = false;
+  }
+
+  @Override
+  public void exitProtect_line(Protect_lineContext ctx) {
+    _protectedPaths.add(ImmutableList.copyOf(_words));
+    _dirty = true;
   }
 
   @Override
@@ -270,6 +311,21 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     }
   }
 
+  private boolean isBlockedReplacement(List<String> path) {
+    return _blockedReplacePaths.stream().anyMatch(blockedPath -> isPrefix(blockedPath, path));
+  }
+
+  private boolean isProtected(List<String> path) {
+    return _protectedPaths.stream()
+        .anyMatch(
+            protectedPath ->
+                isPrefix(protectedPath, path) || isPrefix(path, protectedPath));
+  }
+
+  private static boolean isPrefix(List<String> prefix, List<String> path) {
+    return prefix.size() <= path.size() && path.subList(0, prefix.size()).equals(prefix);
+  }
+
   /*
    * - Find the node of tree corresponding to _insertSrcWords
    * - Remove the node from the tree
@@ -333,6 +389,8 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
   private Insert_lineContext _currentInsert;
   private boolean _dirty;
   private boolean _enablePathRecording;
+  private final List<List<String>> _blockedReplacePaths;
+  private final List<List<String>> _protectedPaths;
   private final @Nonnull StatementTree _statementTree;
   private List<String> _words;
   private List<String> _insertSrcWords;
