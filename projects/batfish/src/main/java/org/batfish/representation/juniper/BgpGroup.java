@@ -21,6 +21,7 @@ public class BgpGroup implements Serializable {
     NONE
   }
 
+  private @Nullable Boolean _acceptRemoteNexthop;
   private @Nullable AddPath _addPath;
   private Boolean _advertiseExternal;
   private Boolean _advertiseInactive;
@@ -70,6 +71,9 @@ public class BgpGroup implements Serializable {
     _inherited = true;
     if (_parent != null) {
       _parent.cascadeInheritance();
+      if (_acceptRemoteNexthop == null) {
+        _acceptRemoteNexthop = _parent._acceptRemoteNexthop;
+      }
       if (_addPath == null) {
         _addPath = _parent._addPath;
       }
@@ -157,6 +161,10 @@ public class BgpGroup implements Serializable {
         _type = _parent._type;
       }
     }
+  }
+
+  public @Nullable Boolean getAcceptRemoteNexthop() {
+    return _acceptRemoteNexthop;
   }
 
   /** Returns add-path configuration for family inet unicast. */
@@ -321,6 +329,10 @@ public class BgpGroup implements Serializable {
 
   public final BgpGroupType getType() {
     return _type;
+  }
+
+  public void setAcceptRemoteNexthop(boolean acceptRemoteNexthop) {
+    _acceptRemoteNexthop = acceptRemoteNexthop;
   }
 
   public void setAdvertiseExternal(boolean advertiseExternal) {

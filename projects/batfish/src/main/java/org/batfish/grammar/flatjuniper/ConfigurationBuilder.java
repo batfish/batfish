@@ -330,6 +330,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_expand_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_accept_remote_nexthopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_inactiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asContext;
@@ -5098,6 +5099,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                     .add(subrange)
                     .build())
             .build());
+  }
+
+  @Override
+  public void exitB_accept_remote_nexthop(B_accept_remote_nexthopContext ctx) {
+    _currentBgpGroup.setAcceptRemoteNexthop(true);
+    todo(ctx);
   }
 
   @Override

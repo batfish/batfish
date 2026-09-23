@@ -1,0 +1,7 @@
+set system host-name bgp-accept-remote-nexthop
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set protocols bgp group EBGP-PEERS type external
+set protocols bgp group EBGP-PEERS peer-as 65100
+set protocols bgp group EBGP-PEERS accept-remote-nexthop
+set protocols bgp group EBGP-PEERS neighbor 198.51.100.2

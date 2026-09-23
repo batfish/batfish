@@ -96,6 +96,7 @@ b_cluster
 b_common
 :
    apply
+   | b_accept_remote_nexthop
    | b_advertise_external
    | b_advertise_inactive
    | b_advertise_peer_as
@@ -138,6 +139,12 @@ b_common
    | b_tcp_mss
    | b_traceoptions_null
    | b_type
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/accept-remote-nexthop-edit-protocols-bgp.html
+b_accept_remote_nexthop
+:
+   ACCEPT_REMOTE_NEXTHOP
 ;
 
 b_damping
