@@ -6,15 +6,21 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/metric-edit-policy-options-policy-statement-then.html
+// https://www.juniper.net/documentation/en_US/junos13.2/topics/reference/statement-hierarchy/policy-options-ex-series.html
 metric_expression
 :
    (
       METRIC
       | METRIC2
-   ) MULTIPLIER multiplier = dec
+   )
    (
-      OFFSET offset = dec
-   )?
+      MULTIPLIER multiplier = dec
+      (
+         OFFSET DASH? offset = dec
+      )?
+      | OFFSET DASH? offset = dec
+   )
 ;
 
 po_as_path

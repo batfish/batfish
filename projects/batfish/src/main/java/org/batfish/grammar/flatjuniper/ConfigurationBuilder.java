@@ -588,6 +588,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Metric_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
@@ -1340,6 +1341,7 @@ import org.batfish.representation.juniper.PsThenLoadBalance.LoadBalanceMethod;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
+import org.batfish.representation.juniper.PsThenMetricExpression;
 import org.batfish.representation.juniper.PsThenNextHopDiscard;
 import org.batfish.representation.juniper.PsThenNextHopIp;
 import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
@@ -7488,7 +7490,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopstm_expression(Popstm_expressionContext ctx) {
-    // TODO: implement metric expression
+    addPsThen(
+        toPsThenMetricExpression(ctx.metric_expression(), PsThenMetricExpression.Target.METRIC),
+        ctx);
     todo(ctx);
   }
 
@@ -7519,8 +7523,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopstm2_expression(Popstm2_expressionContext ctx) {
-    // TODO: implement metric2 expression
+    addPsThen(
+        toPsThenMetricExpression(ctx.metric_expression(), PsThenMetricExpression.Target.METRIC2),
+        ctx);
     todo(ctx);
+  }
+
+  private PsThenMetricExpression toPsThenMetricExpression(
+      Metric_expressionContext ctx, PsThenMetricExpression.Target target) {
+    PsThenMetricExpression.Source source =
+        ctx.METRIC() != null
+            ? PsThenMetricExpression.Source.METRIC
+            : PsThenMetricExpression.Source.METRIC2;
+    long offset = ctx.offset == null ? 0L : toLong(ctx.offset);
+    if (ctx.DASH() != null) {
+      offset = -offset;
+    }
+    long multiplier = ctx.multiplier == null ? 1L : toLong(ctx.multiplier);
+    return new PsThenMetricExpression(target, source, multiplier, offset);
   }
 
   @Override
