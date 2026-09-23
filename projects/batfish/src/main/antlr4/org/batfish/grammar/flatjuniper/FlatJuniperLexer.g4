@@ -4354,6 +4354,8 @@ M_Interface_WS: F_WhitespaceChar+ -> skip;
 
 M_Interface_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID), popMode;
 
+M_Interface_NAME: F_Name -> type(NAME), popMode;
+
 // for interface-range member
 M_Interface_DOUBLE_QUOTED_STRING: F_DoubleQuotedString -> type(DOUBLE_QUOTED_STRING), popMode;
 

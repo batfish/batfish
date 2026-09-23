@@ -6873,10 +6873,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
-    String ifaceName = getInterfaceFullName(ctx.id);
+    String ifaceName = ctx.id != null ? getInterfaceFullName(ctx.id) : toString(ctx.name);
     _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(ifaceName));
     _configuration.referenceStructure(
-        INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
+        INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.getStop()));
   }
 
   @Override
