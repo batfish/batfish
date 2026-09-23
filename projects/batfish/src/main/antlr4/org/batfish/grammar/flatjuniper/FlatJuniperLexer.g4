@@ -1173,6 +1173,8 @@ IGP_METRIC: 'igp-metric';
 
 IGP_METRIC_THRESHOLD: 'igp-metric-threshold';
 
+IGP_MULTIPLIER: 'igp-multiplier';
+
 IKE: 'ike';
 
 IKE_ESP_NAT: 'ike-esp-nat';
@@ -2056,6 +2058,10 @@ MEDIUM: 'medium';
 MEDIUM_HIGH: 'medium-high';
 
 MEDIUM_LOW: 'medium-low';
+
+MED_PLUS_IGP: 'med-plus-igp';
+
+MED_MULTIPLIER: 'med-multiplier';
 
 MEMBER
 :

@@ -102155,7 +102155,7 @@
                   "replaceNonLocalAsesOnExport" : false
                 }
               },
-              "tieBreaker" : "ARRIVAL_ORDER"
+              "tieBreaker" : "ROUTER_ID"
             }
           }
         }

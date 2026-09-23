@@ -78,6 +78,7 @@ import org.batfish.datamodel.BgpAuthenticationSettings;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -505,6 +506,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setEbgpAdminCost(bgpAdmin)
             .setIbgpAdminCost(bgpAdmin)
             .build();
+    if (routingInstance.getBgpExternalRouterId()) {
+      proc.setTieBreaker(BgpTieBreaker.ROUTER_ID);
+    }
 
     // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html#id-conditional-advertisement-and-import-policy-routing-table-with-certain-match-conditions
     // TODO: To avoid unnecessary route re-evaluation, only record conditions actually used by BGP
