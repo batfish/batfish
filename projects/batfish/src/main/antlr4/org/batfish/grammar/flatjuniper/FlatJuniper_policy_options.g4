@@ -632,6 +632,7 @@ popst_common
    | popst_tag
    | popst_tag2
    | popst_tunnel_attribute
+   | popst_validation_state
 ;
 
 popst_community_add
@@ -893,6 +894,17 @@ popst_tunnel_attribute
    (
       popstta_remove
       | popstta_set
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/bgp_origin_validation.html
+popst_validation_state
+:
+   VALIDATION_STATE
+   (
+      INVALID
+      | UNKNOWN
+      | VALID
    )
 ;
 
