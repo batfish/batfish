@@ -51,6 +51,30 @@ po_condition
   )
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/damping-edit-policy-options.html
+po_damping
+:
+  DAMPING name = junos_name
+  (
+    apply
+    | pod_disable
+    | pod_half_life
+    | pod_max_suppress
+    | pod_reuse
+    | pod_suppress
+  )
+;
+
+pod_disable: DISABLE;
+
+pod_half_life: HALF_LIFE value = uint8;
+
+pod_max_suppress: MAX_SUPPRESS value = uint16;
+
+pod_reuse: REUSE value = uint16;
+
+pod_suppress: SUPPRESS value = uint16;
+
 pocond_if_route_exists
 :
   IF_ROUTE_EXISTS
@@ -630,6 +654,7 @@ popst_common
    | popst_community_delete
    | popst_community_set
    | popst_cos_next_hop_map
+   | popst_damping
    | popst_default_action_accept
    | popst_default_action_reject
    | popst_destination_class
@@ -684,6 +709,12 @@ popst_default_action_accept
 popst_default_action_reject
 :
    DEFAULT_ACTION REJECT
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/damping-edit-policy-options.html
+popst_damping
+:
+   DAMPING name = junos_name
 ;
 
 popst_destination_class
@@ -983,6 +1014,7 @@ s_policy_options
       | po_as_path_group
       | po_community
       | po_condition
+      | po_damping
       | po_policy_statement
       | po_prefix_list
       | po_rtf_prefix_list
