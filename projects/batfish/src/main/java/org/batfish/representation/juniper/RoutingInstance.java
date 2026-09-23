@@ -30,6 +30,11 @@ public class RoutingInstance implements Serializable {
   private @Nullable Long _as;
   private AggregateRoute _aggregateRouteDefaults;
   private @Nonnull Map<RoutingProtocol, String> _appliedRibGroups;
+  private boolean _bgpAlwaysCompareMed;
+  private boolean _bgpExternalRouterId;
+  private boolean _bgpMedPlusIgp;
+  private @Nullable Integer _bgpMedPlusIgpIgpMultiplier;
+  private @Nullable Integer _bgpMedPlusIgpMedMultiplier;
   private Long _confederation;
   private Set<Long> _confederationMembers;
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
@@ -121,6 +126,26 @@ public class RoutingInstance implements Serializable {
 
   public @Nonnull Map<RoutingProtocol, String> getAppliedRibGroups() {
     return _appliedRibGroups;
+  }
+
+  public boolean getBgpAlwaysCompareMed() {
+    return _bgpAlwaysCompareMed;
+  }
+
+  public boolean getBgpExternalRouterId() {
+    return _bgpExternalRouterId;
+  }
+
+  public boolean getBgpMedPlusIgp() {
+    return _bgpMedPlusIgp;
+  }
+
+  public @Nullable Integer getBgpMedPlusIgpIgpMultiplier() {
+    return _bgpMedPlusIgpIgpMultiplier;
+  }
+
+  public @Nullable Integer getBgpMedPlusIgpMedMultiplier() {
+    return _bgpMedPlusIgpMedMultiplier;
   }
 
   public void applyRibGroup(RoutingProtocol protocol, String ribGroupName) {
@@ -263,6 +288,26 @@ public class RoutingInstance implements Serializable {
 
   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {
     _forwardingTableExportPolicy = forwardingTableExportPolicy;
+  }
+
+  public void setBgpAlwaysCompareMed(boolean bgpAlwaysCompareMed) {
+    _bgpAlwaysCompareMed = bgpAlwaysCompareMed;
+  }
+
+  public void setBgpExternalRouterId(boolean bgpExternalRouterId) {
+    _bgpExternalRouterId = bgpExternalRouterId;
+  }
+
+  public void setBgpMedPlusIgp(boolean bgpMedPlusIgp) {
+    _bgpMedPlusIgp = bgpMedPlusIgp;
+  }
+
+  public void setBgpMedPlusIgpIgpMultiplier(int bgpMedPlusIgpIgpMultiplier) {
+    _bgpMedPlusIgpIgpMultiplier = bgpMedPlusIgpIgpMultiplier;
+  }
+
+  public void setBgpMedPlusIgpMedMultiplier(int bgpMedPlusIgpMedMultiplier) {
+    _bgpMedPlusIgpMedMultiplier = bgpMedPlusIgpMedMultiplier;
   }
 
   public void setHostname(String hostname) {
