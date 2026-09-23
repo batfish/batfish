@@ -177,6 +177,7 @@ AH: 'ah';
 
 AH_HEADER: 'AH-header';
 AGING_TIMER: 'aging-timer';
+AIGP_ADJUST: 'aigp-adjust';
 AIGP_ORIGINATE: 'aigp-originate';
 ALARM_WITHOUT_DROP: 'alarm-without-drop';
 
@@ -706,11 +707,15 @@ DIRECT: 'direct';
 
 DIRECT_NEXTHOP: 'direct-nexthop';
 
+DISTANCE_TO_PROTOCOL_NEXTHOP: 'distance-to-protocol-nexthop';
+
 DISABLE: 'disable';
 
 DISABLE_4BYTE_AS: 'disable-4byte-as';
 
 DISCARD: 'discard';
+
+DIVIDE: 'divide';
 
 DNS: 'dns';
 
@@ -2176,6 +2181,8 @@ MULTIPATH: 'multipath';
 MULTIPATH_RESOLVE: 'multipath-resolve';
 
 MULTIPLE_AS: 'multiple-as';
+
+MULTIPLY: 'multiply';
 
 MULTIPLIER: 'multiplier';
 
