@@ -131,6 +131,7 @@ public final class PsThens implements Serializable {
           "metric2",
           "validation-state",
           "load-balance",
+          "damping",
           "source-class",
           "destination-class",
           "tunnel-attribute set",
@@ -171,6 +172,8 @@ public final class PsThens implements Serializable {
       return "validation-state";
     } else if (then instanceof PsThenLoadBalance) {
       return "load-balance";
+    } else if (then instanceof PsThenDamping) {
+      return "damping";
     } else if (then instanceof PsThenAsPathPrepend) {
       return "as-path-prepend";
     } else if (then instanceof PsThenAsPathExpand) {

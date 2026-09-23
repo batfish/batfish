@@ -555,7 +555,27 @@ CWR: 'cwr';
 
 DAEMON: 'daemon';
 
-DAMPING: 'damping';
+DAMPING
+:
+  'damping'
+  {
+    switch (lastTokenType()) {
+      case EXACT:
+      case IP_ADDRESS:
+      case IP_PREFIX:
+      case IPV6_PREFIX:
+      case LONGER:
+      case ORLONGER:
+      case POLICY_OPTIONS:
+      case THEN:
+      case UINT8:
+        pushMode(M_Name);
+        break;
+      default:
+        break;
+    }
+  }
+;
 
 DATABASE_REPLICATION: 'database-replication';
 DEVICE_COUNT: 'device-count';

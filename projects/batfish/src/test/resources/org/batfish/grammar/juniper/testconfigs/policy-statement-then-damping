@@ -1,0 +1,3 @@
+set system host-name policy-statement-then-damping
+set policy-options policy-statement DAMPING-POLICY term PROFILE then damping conservative
+set policy-options policy-statement DAMPING-POLICY term NONE then damping none

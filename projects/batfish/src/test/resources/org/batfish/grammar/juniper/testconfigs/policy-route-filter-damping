@@ -1,0 +1,3 @@
+set system host-name policy-route-filter-damping
+set policy-options damping TIMID half-life 10
+set policy-options policy-statement DAMP-POLICY from route-filter 0.0.0.0/0 orlonger damping TIMID

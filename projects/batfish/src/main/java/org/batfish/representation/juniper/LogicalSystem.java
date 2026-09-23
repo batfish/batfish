@@ -111,6 +111,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Condition> _conditions;
 
+  private final Map<String, DampingProfile> _dampingProfiles;
+
   private final Map<String, PolicyStatement> _policyStatements;
 
   private final Map<String, PrefixList> _prefixLists;
@@ -183,6 +185,7 @@ public class LogicalSystem implements Serializable {
     _ntpTrustedKeys = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _conditions = new TreeMap<>();
+    _dampingProfiles = new TreeMap<>();
     _policyStatements = new TreeMap<>();
     _ribGroups = new HashMap<>();
     _routeFilters = new TreeMap<>();
@@ -460,6 +463,10 @@ public class LogicalSystem implements Serializable {
 
   public @Nonnull Map<String, Condition> getConditions() {
     return _conditions;
+  }
+
+  public @Nonnull Map<String, DampingProfile> getDampingProfiles() {
+    return _dampingProfiles;
   }
 
   public Map<String, PolicyStatement> getPolicyStatements() {
