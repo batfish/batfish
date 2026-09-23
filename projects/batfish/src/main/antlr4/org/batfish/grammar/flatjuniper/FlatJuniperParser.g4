@@ -98,7 +98,12 @@ newline
 
 protect_line
 :
-   PROTECT hierarchy_element* NEWLINE
+   PROTECT protect_line_tail NEWLINE
+;
+
+protect_line_tail
+:
+   hierarchy_element*
 ;
 
 statement

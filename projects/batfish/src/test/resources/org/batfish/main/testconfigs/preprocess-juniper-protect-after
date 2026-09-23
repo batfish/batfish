@@ -1,0 +1,3 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set system host-name router
+set system license keys key "%CENSORED-ORIGINAL%"
