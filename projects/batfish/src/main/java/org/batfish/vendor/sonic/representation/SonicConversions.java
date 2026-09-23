@@ -61,11 +61,10 @@ public class SonicConversions {
   static void convertPorts(
       Configuration c, Map<String, Port> ports, Map<String, L3Interface> interfaces, Vrf vrf) {
 
-    // TODO: Set bandwidth appropriately. Factor in runtime data
-
     for (String portName : ports.keySet()) {
       Port port = ports.get(portName);
       boolean active = port.getAdminStatusUp().orElse(true); // default is active
+      Double speed = port.getSpeed().map(s -> s * SPEED_CONVERSION_FACTOR).orElse(null);
       Interface.Builder ib =
           Interface.builder()
               .setName(portName)
@@ -75,10 +74,8 @@ public class SonicConversions {
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
-              .setSpeed(
-                  port.getSpeed()
-                      .map(speed -> speed * SPEED_CONVERSION_FACTOR)
-                      .orElse(null)) // TODO: default speed
+              .setSpeed(speed) // TODO: default speed
+              .setBandwidth(speed)
               .setAdminUp(active);
 
       if (interfaces.containsKey(portName)) {

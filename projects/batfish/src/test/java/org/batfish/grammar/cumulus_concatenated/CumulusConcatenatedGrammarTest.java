@@ -380,10 +380,7 @@ public class CumulusConcatenatedGrammarTest {
     Interface swp2 = c.getAllInterfaces().get("swp2");
     assertThat(
         swp2,
-        allOf(
-            hasAddress("3.3.3.3/24"),
-            hasSpeed(10000 * 10e6),
-            hasInterfaceType(InterfaceType.PHYSICAL)));
+        allOf(hasAddress("3.3.3.3/24"), hasSpeed(10E9D), hasInterfaceType(InterfaceType.PHYSICAL)));
   }
 
   @Test

@@ -171,7 +171,7 @@ public final class FrrConversions {
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
-  public static final double SPEED_CONVERSION_FACTOR = 10e6;
+  public static final double SPEED_CONVERSION_FACTOR = 1e6;
 
   // TODO: need to verify this
   public static final double DEFAULT_LOOPBACK_BANDWIDTH = 8e9;
