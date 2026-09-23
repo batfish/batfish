@@ -707,6 +707,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_source_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_validation_stateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_subtractContext;
@@ -1326,6 +1327,7 @@ import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
+import org.batfish.representation.juniper.PsThenValidationState;
 import org.batfish.representation.juniper.PsThens;
 import org.batfish.representation.juniper.PsToLevel;
 import org.batfish.representation.juniper.PsToPolicyStatement;
@@ -7512,6 +7514,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_tag2(Popst_tag2Context ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopst_validation_state(Popst_validation_stateContext ctx) {
+    PsThenValidationState.State state;
+    if (ctx.INVALID() != null) {
+      state = PsThenValidationState.State.INVALID;
+    } else if (ctx.UNKNOWN() != null) {
+      state = PsThenValidationState.State.UNKNOWN;
+    } else {
+      assert ctx.VALID() != null;
+      state = PsThenValidationState.State.VALID;
+    }
+    addPsThen(new PsThenValidationState(state), ctx);
     todo(ctx);
   }
 

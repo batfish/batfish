@@ -1,0 +1,4 @@
+set system host-name policy-statement-then-validation-state
+set policy-options policy-statement RPKI-POLICY term UNKNOWN then validation-state unknown
+set policy-options policy-statement RPKI-POLICY term VALID then validation-state valid
+set policy-options policy-statement RPKI-POLICY term INVALID then validation-state invalid
