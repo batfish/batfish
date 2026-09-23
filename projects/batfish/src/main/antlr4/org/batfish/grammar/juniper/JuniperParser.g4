@@ -69,5 +69,6 @@ tag
   ACTIVE
   | DELETE
   | INACTIVE
+  | PROTECT
   | REPLACE
 ;

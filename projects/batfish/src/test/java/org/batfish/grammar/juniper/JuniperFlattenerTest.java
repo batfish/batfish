@@ -166,6 +166,30 @@ public class JuniperFlattenerTest {
             """));
   }
 
+  /** A protected parent hierarchy and all its children remain in the effective configuration. */
+  @Test
+  public void testProtectedHierarchy() {
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + "flatten-protect", UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assertThat(flattener, instanceOf(JuniperFlattener.class));
+    assertThat(
+        flattener.getFlattenedConfigurationText(),
+        equalTo(
+            """
+            ####BATFISH FLATTENED JUNIPER CONFIG####
+            protect system
+            set system host-name router
+            set system license keys key "%CENSORED%"
+            set system login user test-user uid 1000
+            """));
+  }
+
   /**
    * Test that delete and replace tags do not generate spurious set lines.
    *
