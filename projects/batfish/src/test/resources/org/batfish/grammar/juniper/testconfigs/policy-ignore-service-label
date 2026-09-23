@@ -1,0 +1,2 @@
+set system host-name policy-ignore-service-label
+set policy-options policy-statement IGNORE-LABEL then ignore-service-label

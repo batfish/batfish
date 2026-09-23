@@ -610,6 +610,7 @@ popst_common
    | popst_destination_class
    | popst_external
    | popst_forwarding_class
+   | popst_ignore_service_label_null
    | popst_install_nexthop
    | popst_local_preference
    | popst_metric
@@ -672,6 +673,12 @@ popst_external
 popst_forwarding_class
 :
    FORWARDING_CLASS junos_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/interfaces-encryption/topics/concept/bgp-layer3-vpn-over-ipip-tunnels-overview.html
+popst_ignore_service_label_null
+:
+   IGNORE_SERVICE_LABEL
 ;
 
 popst_install_nexthop
