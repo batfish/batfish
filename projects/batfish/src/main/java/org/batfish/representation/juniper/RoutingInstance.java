@@ -60,6 +60,7 @@ public class RoutingInstance implements Serializable {
   private Map<String, NamedBgpGroup> _namedBgpGroups;
   private final Map<String, NodeDevice> _nodeDevices;
   private @Nullable Long _ospf3DomainVpnTag;
+  private final Map<String, String> _ospf3RibGroups;
   private Map<Long, OspfArea> _ospfAreas;
   private @Nullable Long _ospfDomainVpnTag;
   private List<String> _ospfExportPolicies;
@@ -67,6 +68,7 @@ public class RoutingInstance implements Serializable {
   private @Nullable Long _ospfExternalPreference;
   private @Nullable Long _ospfPreference;
   private double _ospfReferenceBandwidth;
+  private final Map<String, String> _ospfRibGroups;
   private @Nullable OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
   private Ip _routerId;
@@ -104,9 +106,11 @@ public class RoutingInstance implements Serializable {
     _name = name;
     _namedBgpGroups = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
+    _ospf3RibGroups = new TreeMap<>();
     _ospfAreas = new TreeMap<>();
     _ospfExportPolicies = new LinkedList<>();
     _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
+    _ospfRibGroups = new TreeMap<>();
     _ribs = new TreeMap<>();
     _ribs.put(
         RoutingInformationBase.RIB_IPV4_UNICAST,
@@ -264,6 +268,10 @@ public class RoutingInstance implements Serializable {
     return _ospf3DomainVpnTag;
   }
 
+  public Map<String, String> getOspf3RibGroups() {
+    return _ospf3RibGroups;
+  }
+
   public Map<Long, OspfArea> getOspfAreas() {
     return _ospfAreas;
   }
@@ -290,6 +298,10 @@ public class RoutingInstance implements Serializable {
 
   public double getOspfReferenceBandwidth() {
     return _ospfReferenceBandwidth;
+  }
+
+  public Map<String, String> getOspfRibGroups() {
+    return _ospfRibGroups;
   }
 
   public Map<String, RoutingInformationBase> getRibs() {
@@ -375,6 +387,10 @@ public class RoutingInstance implements Serializable {
     _ospf3DomainVpnTag = ospf3DomainVpnTag;
   }
 
+  public void setOspf3RibGroup(String family, String ribGroup) {
+    _ospf3RibGroups.put(family, ribGroup);
+  }
+
   public void setOspfDisable(boolean ospfDisable) {
     _ospfDisable = ospfDisable;
   }
@@ -393,6 +409,10 @@ public class RoutingInstance implements Serializable {
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
     _ospfReferenceBandwidth = ospfReferenceBandwidth;
+  }
+
+  public void setOspfRibGroup(String family, String ribGroup) {
+    _ospfRibGroups.put(family, ribGroup);
   }
 
   public void setLoops(@Nullable Integer loops) {

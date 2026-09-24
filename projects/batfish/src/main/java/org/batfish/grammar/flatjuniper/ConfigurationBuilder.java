@@ -194,8 +194,10 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATI
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATIC_RULE_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SOURCE_ADDRESS_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF3_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
@@ -639,6 +641,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_external_preferenceCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_prefix_export_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_rib_groupContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
@@ -7136,6 +7140,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitO_reference_bandwidth(O_reference_bandwidthContext ctx) {
     long referenceBandwidth = toBandwidth(ctx.bandwidth());
     _currentRoutingInstance.setOspfReferenceBandwidth((double) referenceBandwidth);
+  }
+
+  @Override
+  public void exitO_rib_group(O_rib_groupContext ctx) {
+    setOspfRibGroup(ctx, isOspf3(ctx) ? "inet6" : "inet", ctx.name);
+  }
+
+  @Override
+  public void exitO_rib_groups(O_rib_groupsContext ctx) {
+    setOspfRibGroup(ctx, toString(ctx.family), ctx.name);
+  }
+
+  private void setOspfRibGroup(
+      ParserRuleContext ctx, String family, FlatJuniperParser.Junos_nameContext nameContext) {
+    String name = toString(nameContext);
+    boolean ospf3 = isOspf3(ctx);
+    if (ospf3) {
+      _currentRoutingInstance.setOspf3RibGroup(family, name);
+    } else {
+      _currentRoutingInstance.setOspfRibGroup(family, name);
+    }
+    _configuration.referenceStructure(
+        RIB_GROUP, name, ospf3 ? OSPF3_RIB_GROUP : OSPF_RIB_GROUP, getLine(nameContext.getStart()));
+    todo(ctx);
+  }
+
+  private static boolean isOspf3(ParserRuleContext ctx) {
+    ParserRuleContext protocolContext = ctx.getParent().getParent();
+    assert protocolContext instanceof P_ospfContext || protocolContext instanceof P_ospf3Context;
+    return protocolContext instanceof P_ospf3Context;
   }
 
   @Override

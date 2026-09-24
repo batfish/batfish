@@ -1,0 +1,10 @@
+set system host-name ospf-rib-groups
+set routing-options rib-groups INET-RIB-GROUP import-rib inet.0
+set routing-options rib-groups INET3-RIB-GROUP import-rib inet.3
+set routing-options rib-groups LEGACY-RIB-GROUP import-rib CLIENT.inet.0
+set routing-options rib-groups OSPF3-RIB-GROUP import-rib inet6.0
+set protocols ospf rib-groups inet INET-RIB-GROUP
+set protocols ospf rib-groups inet3 INET3-RIB-GROUP
+set protocols ospf3 rib-group OSPF3-RIB-GROUP
+set routing-instances CLIENT instance-type virtual-router
+set routing-instances CLIENT protocols ospf rib-group LEGACY-RIB-GROUP

@@ -2828,7 +2828,17 @@ RIB_GROUP
    }
 ;
 
-RIB_GROUPS: 'rib-groups' -> pushMode(M_Name);
+RIB_GROUPS
+:
+  'rib-groups'
+  {
+    if (lastTokenType() == OSPF || lastTokenType() == OSPF3) {
+      pushMode(M_OspfRibGroups);
+    } else {
+      pushMode(M_Name);
+    }
+  }
+;
 
 RIB_OUT: 'rib-out';
 
@@ -5465,6 +5475,11 @@ mode M_IsisRibGroup;
 M_IsisRibGroup_INET: 'inet' -> type(INET), mode(M_Name);
 M_IsisRibGroup_WS: F_WhitespaceChar+ -> skip;
 M_IsisRibGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_OspfRibGroups;
+M_OspfRibGroups_FAMILY: ('inet' | 'inet3') -> type(NAME), mode(M_Name);
+M_OspfRibGroups_WS: F_WhitespaceChar+ -> skip;
+M_OspfRibGroups_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Filter;
 M_Filter_WILDCARD: F_Wildcard {setWildcard();};
