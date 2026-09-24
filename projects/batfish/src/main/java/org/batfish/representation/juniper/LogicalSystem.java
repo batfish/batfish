@@ -82,6 +82,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Policer> _policers;
 
+  private final Map<String, PkiCaProfile> _pkiCaProfiles;
+
   private final Map<String, ConcreteFirewallFilter> _securityPolicies;
 
   private final SecurityForwardingOptions _securityForwardingOptions;
@@ -191,6 +193,7 @@ public class LogicalSystem implements Serializable {
     _inetPrecedenceAliases = new TreeMap<>();
     _filters = new TreeMap<>();
     _policers = new TreeMap<>();
+    _pkiCaProfiles = new TreeMap<>();
     _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
@@ -374,6 +377,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Policer> getPolicers() {
     return _policers;
+  }
+
+  public Map<String, PkiCaProfile> getPkiCaProfiles() {
+    return _pkiCaProfiles;
   }
 
   public Map<String, ConcreteFirewallFilter> getSecurityPolicies() {

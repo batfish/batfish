@@ -1,0 +1,5 @@
+set system host-name security-pki-ca-profile
+set routing-instances MGMT instance-type virtual-router
+set security pki ca-profile ROOT-CA ca-identity root.example.com
+set security pki ca-profile ROOT-CA revocation-check disable
+set security pki ca-profile ROOT-CA routing-instance MGMT
