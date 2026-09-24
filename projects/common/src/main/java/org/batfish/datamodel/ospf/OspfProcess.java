@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Optional.ofNullable;
+import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +24,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -48,7 +48,7 @@ public final class OspfProcess implements Serializable {
 
     private static final long DEFAULT_SUMMARY_DISCARD_METRIC = 0L;
 
-    private @Nullable Map<RoutingProtocol, Integer> _adminCosts;
+    private @Nullable Map<RoutingProtocol, Long> _adminCosts;
     private @Nullable String _exportPolicy;
     private @Nullable Long _maxMetricExternalNetworks;
     private @Nullable Long _maxMetricStubNetworks;
@@ -64,8 +64,15 @@ public final class OspfProcess implements Serializable {
     private @Nullable Set<GeneratedRoute> _generatedRoutes;
     private @Nullable Boolean _rfc1583Compatible;
     private @Nullable Ip _routerId;
-    private @Nullable Integer _summaryAdminCost;
+    private @Nullable Long _summaryAdminCost;
     private @Nullable Long _summaryDiscardMetric;
+
+    private static void checkAdminCost(long adminCost) {
+      checkArgument(
+          adminCost >= 0 && adminCost <= MAX_ADMIN_DISTANCE,
+          "Invalid OSPF administrative cost %s",
+          adminCost);
+    }
 
     private Builder(@Nullable Supplier<String> processIdGenerator) {
       // Default to Cisco IOS values
@@ -76,7 +83,8 @@ public final class OspfProcess implements Serializable {
       _processIdGenerator = processIdGenerator;
       // Default to Cisco IOS value
       _summaryAdminCost =
-          RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS);
+          (long)
+              RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS);
       _generatedRoutes = ImmutableSet.of();
     }
 
@@ -117,15 +125,25 @@ public final class OspfProcess implements Serializable {
       return ospfProcess;
     }
 
-    public Builder setAllAdminCosts(@Nonnull int adminCosts) {
-      _adminCosts =
-          REQUIRES_ADMIN.stream()
-              .collect(ImmutableMap.toImmutableMap(Function.identity(), rp -> adminCosts));
+    public Builder setAllAdminCosts(long adminCost) {
+      checkAdminCost(adminCost);
+      ImmutableMap.Builder<RoutingProtocol, Long> adminCosts = ImmutableMap.builder();
+      for (RoutingProtocol protocol : REQUIRES_ADMIN) {
+        adminCosts.put(protocol, adminCost);
+      }
+      _adminCosts = adminCosts.build();
       return this;
     }
 
-    public Builder setAdminCosts(@Nonnull Map<RoutingProtocol, Integer> adminCosts) {
-      _adminCosts = ImmutableSortedMap.copyOf(adminCosts);
+    public Builder setAdminCosts(@Nonnull Map<RoutingProtocol, ? extends Number> adminCosts) {
+      ImmutableSortedMap.Builder<RoutingProtocol, Long> convertedAdminCosts =
+          ImmutableSortedMap.naturalOrder();
+      for (Map.Entry<RoutingProtocol, ? extends Number> entry : adminCosts.entrySet()) {
+        long adminCost = entry.getValue().longValue();
+        checkAdminCost(adminCost);
+        convertedAdminCosts.put(entry.getKey(), adminCost);
+      }
+      _adminCosts = convertedAdminCosts.build();
       return this;
     }
 
@@ -205,8 +223,9 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setSummaryAdminCost(int admin) {
-      _summaryAdminCost = admin;
+    public Builder setSummaryAdminCost(long adminCost) {
+      checkAdminCost(adminCost);
+      _summaryAdminCost = adminCost;
       return this;
     }
 
@@ -250,7 +269,7 @@ public final class OspfProcess implements Serializable {
     return new Builder(null);
   }
 
-  private final @Nonnull Map<RoutingProtocol, Integer> _adminCosts;
+  private final @Nonnull Map<RoutingProtocol, Long> _adminCosts;
 
   private @Nonnull Map<Long, OspfArea> _areas;
   private @Nullable String _exportPolicy;
@@ -269,11 +288,11 @@ public final class OspfProcess implements Serializable {
   private @Nonnull Double _referenceBandwidth;
   private @Nullable Boolean _rfc1583Compatible;
   private @Nonnull Ip _routerId;
-  private int _summaryAdminCost;
+  private long _summaryAdminCost;
   private long _summaryDiscardMetric;
 
   private OspfProcess(
-      Map<RoutingProtocol, Integer> adminCosts,
+      Map<RoutingProtocol, Long> adminCosts,
       Map<Long, OspfArea> areas,
       @Nullable String exportPolicy,
       Set<String> exportPolicySources,
@@ -287,7 +306,7 @@ public final class OspfProcess implements Serializable {
       Double referenceBandwidth,
       @Nullable Boolean rfc1583Compatible,
       Ip routerId,
-      Integer summaryAdminCost,
+      Long summaryAdminCost,
       long summaryDiscardMetric) {
     _adminCosts = adminCosts;
     _areas = areas;
@@ -312,7 +331,7 @@ public final class OspfProcess implements Serializable {
 
   @JsonCreator
   private static @Nonnull OspfProcess create(
-      @JsonProperty(PROP_ADMIN_COSTS) @Nullable SortedMap<RoutingProtocol, Integer> adminCosts,
+      @JsonProperty(PROP_ADMIN_COSTS) @Nullable SortedMap<RoutingProtocol, Long> adminCosts,
       @JsonProperty(PROP_AREAS) @Nullable SortedMap<Long, OspfArea> areas,
       @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
       @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
@@ -325,7 +344,7 @@ public final class OspfProcess implements Serializable {
       @JsonProperty(PROP_REFERENCE_BANDWIDTH) @Nullable Double referenceBandwidth,
       @JsonProperty(PROP_RFC1583) @Nullable Boolean rfc1583Compatible,
       @JsonProperty(PROP_ROUTER_ID) @Nullable Ip routerId,
-      @JsonProperty(PROP_SUMMARY_ADMIN) @Nullable Integer summaryAdminCost,
+      @JsonProperty(PROP_SUMMARY_ADMIN) @Nullable Long summaryAdminCost,
       @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) @Nullable Long ignoredSummaryDiscardMetric) {
     OspfProcess.Builder builder = builder();
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
@@ -351,11 +370,12 @@ public final class OspfProcess implements Serializable {
   }
 
   /** Compute default admin costs based on a given configuration format */
-  public static Map<RoutingProtocol, Integer> computeDefaultAdminCosts(ConfigurationFormat format) {
-    return REQUIRES_ADMIN.stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(), rp -> rp.getDefaultAdministrativeCost(format)));
+  public static Map<RoutingProtocol, Long> computeDefaultAdminCosts(ConfigurationFormat format) {
+    ImmutableMap.Builder<RoutingProtocol, Long> adminCosts = ImmutableMap.builder();
+    for (RoutingProtocol protocol : REQUIRES_ADMIN) {
+      adminCosts.put(protocol, (long) protocol.getDefaultAdministrativeCost(format));
+    }
+    return adminCosts.build();
   }
 
   public int computeInterfaceCost(Interface i) {
@@ -383,12 +403,12 @@ public final class OspfProcess implements Serializable {
    * #REQUIRES_ADMIN})
    */
   @JsonIgnore
-  public @Nonnull Map<RoutingProtocol, Integer> getAdminCosts() {
+  public @Nonnull Map<RoutingProtocol, Long> getAdminCosts() {
     return _adminCosts;
   }
 
   @JsonProperty(PROP_ADMIN_COSTS)
-  private @Nonnull SortedMap<RoutingProtocol, Integer> getAdminCostsSorted() {
+  private @Nonnull SortedMap<RoutingProtocol, Long> getAdminCostsSorted() {
     return ImmutableSortedMap.copyOf(_adminCosts);
   }
 
@@ -495,7 +515,7 @@ public final class OspfProcess implements Serializable {
   }
 
   /** Return the admin cost assigned to inter-area summaries */
-  public int getSummaryAdminCost() {
+  public long getSummaryAdminCost() {
     return _summaryAdminCost;
   }
 

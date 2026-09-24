@@ -1,8 +1,10 @@
 package org.batfish.datamodel.ospf;
 
+import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
@@ -10,6 +12,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TestInterface;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +24,24 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class OspfProcessTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testAdminCosts() {
+    OspfProcess process =
+        OspfProcess.builder()
+            .setAllAdminCosts(MAX_ADMIN_DISTANCE)
+            .setSummaryAdminCost(MAX_ADMIN_DISTANCE)
+            .setProcessId("1")
+            .setReferenceBandwidth(1e8)
+            .setRouterId(Ip.ZERO)
+            .build();
+
+    assertThat(process.getAdminCosts().get(RoutingProtocol.OSPF), equalTo(MAX_ADMIN_DISTANCE));
+    assertThat(process.getSummaryAdminCost(), equalTo(MAX_ADMIN_DISTANCE));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> OspfProcess.builder().setAllAdminCosts(MAX_ADMIN_DISTANCE + 1));
+  }
 
   @Test
   public void testComputeInterfaceCost() {
