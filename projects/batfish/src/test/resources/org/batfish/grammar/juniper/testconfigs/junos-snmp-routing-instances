@@ -1,0 +1,4 @@
+set system host-name junos-snmp-routing-instances
+set routing-instances MGMT instance-type virtual-router
+set snmp community COMMUNITY routing-instance MGMT
+set snmp community COMMUNITY routing-instance MGMT clients 192.0.2.0/24
