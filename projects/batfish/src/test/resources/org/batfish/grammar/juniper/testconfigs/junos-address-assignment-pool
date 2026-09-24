@@ -1,0 +1,21 @@
+set system host-name junos-address-assignment-pool
+set access address-assignment pool GLOBAL family inet network 192.0.2.0/24
+set access address-assignment pool GLOBAL family inet range DYNAMIC low 192.0.2.10
+set access address-assignment pool GLOBAL family inet range DYNAMIC high 192.0.2.200
+set access address-assignment pool GLOBAL family inet dhcp-attributes maximum-lease-time 86400
+set access address-assignment pool GLOBAL family inet dhcp-attributes name-server 192.0.2.53
+set access address-assignment pool GLOBAL family inet dhcp-attributes router 192.0.2.1
+set access address-assignment pool GLOBAL family inet dhcp-attributes option 42 ip-address 192.0.2.42
+set access address-assignment pool GLOBAL family inet dhcp-attributes option 60 string CLIENT-TYPE
+set access address-assignment pool GLOBAL family inet dhcp-attributes boot-file boot/pxe
+set access address-assignment pool GLOBAL family inet dhcp-attributes boot-server 192.0.2.2
+set access address-assignment pool GLOBAL family inet dhcp-attributes domain-name example.test
+set access address-assignment pool GLOBAL family inet dhcp-attributes propagate-settings ge-0/0/0.0
+set access address-assignment pool GLOBAL family inet dhcp-attributes server-identifier 192.0.2.1
+set access address-assignment pool GLOBAL family inet dhcp-attributes tftp-server 192.0.2.3 192.0.2.4
+set access address-assignment pool GLOBAL family inet host CLIENT ip-address 192.0.2.10
+set access address-assignment pool GLOBAL family inet host CLIENT hardware-address 00:11:22:33:44:55
+set routing-instances TENANT access address-assignment pool CLIENTS family inet network 198.51.100.0/24
+set routing-instances TENANT access address-assignment pool CLIENTS family inet range DYNAMIC low 198.51.100.10
+set routing-instances TENANT access address-assignment pool CLIENTS family inet range DYNAMIC high 198.51.100.200
+set routing-instances TENANT access address-assignment pool CLIENTS family inet dhcp-attributes router 198.51.100.1
