@@ -18,6 +18,10 @@ public class RoutingInformationBase implements Serializable {
   public static final String RIB_MPLS = "mpls.0";
 
   private final Map<Prefix, AggregateRoute> _aggregateRoutes;
+  private boolean _multipath;
+  private boolean _multipathAsPathCompare;
+  private boolean _multipathVpnEqualExternalInternal;
+  private boolean _multipathVpnUnequalCost;
   private final Map<Prefix, GeneratedRoute> _generatedRoutes;
   private final String _name;
   private final Map<Prefix, StaticRouteV4> _staticRoutes;
@@ -45,6 +49,22 @@ public class RoutingInformationBase implements Serializable {
     return _generatedRoutes;
   }
 
+  public boolean getMultipath() {
+    return _multipath;
+  }
+
+  public boolean getMultipathAsPathCompare() {
+    return _multipathAsPathCompare;
+  }
+
+  public boolean getMultipathVpnEqualExternalInternal() {
+    return _multipathVpnEqualExternalInternal;
+  }
+
+  public boolean getMultipathVpnUnequalCost() {
+    return _multipathVpnUnequalCost;
+  }
+
   public @Nonnull String getName() {
     return _name;
   }
@@ -65,5 +85,21 @@ public class RoutingInformationBase implements Serializable {
   /** Default attributes inherited by IPv6 static routes in this RIB. */
   public @Nonnull StaticRouteV6 getStaticRouteDefaultsV6() {
     return _staticRouteDefaultsV6;
+  }
+
+  public void setMultipath(boolean multipath) {
+    _multipath = multipath;
+  }
+
+  public void setMultipathAsPathCompare(boolean multipathAsPathCompare) {
+    _multipathAsPathCompare = multipathAsPathCompare;
+  }
+
+  public void setMultipathVpnEqualExternalInternal(boolean multipathVpnEqualExternalInternal) {
+    _multipathVpnEqualExternalInternal = multipathVpnEqualExternalInternal;
+  }
+
+  public void setMultipathVpnUnequalCost(boolean multipathVpnUnequalCost) {
+    _multipathVpnUnequalCost = multipathVpnUnequalCost;
   }
 }
