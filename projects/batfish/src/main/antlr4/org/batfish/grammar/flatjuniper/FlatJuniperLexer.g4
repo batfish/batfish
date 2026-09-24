@@ -853,6 +853,7 @@ EXCLUDE: 'exclude';
 EXCLUDE_HOSTNAME: 'exclude-hostname';
 EXCLUDE_NON_ELIGIBLE: 'exclude-non-eligible';
 EXCLUDE_NON_FEASIBLE: 'exclude-non-feasible';
+EXCLUDE_SRLG: 'exclude-srlg';
 EXEC: 'exec';
 EXP
 :
@@ -3085,6 +3086,8 @@ SSH_ED25519: 'ssh-ed25519';
 SSH_RSA: 'ssh-rsa';
 
 STANDARD: 'standard';
+
+STANDBY: 'standby';
 
 START_TIME: 'start-time' -> pushMode(M_RestOfLine);
 

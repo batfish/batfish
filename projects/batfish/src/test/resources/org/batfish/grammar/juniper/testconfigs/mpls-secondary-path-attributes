@@ -1,0 +1,6 @@
+set system host-name mpls-secondary-path-attributes
+set protocols mpls path BACKUP 192.0.2.1 loose
+set protocols mpls label-switched-path LSP secondary BACKUP exclude-srlg
+set protocols mpls label-switched-path LSP secondary BACKUP hop-limit 8
+set protocols mpls label-switched-path LSP secondary BACKUP hop-limit 1
+set protocols mpls label-switched-path LSP secondary BACKUP standby

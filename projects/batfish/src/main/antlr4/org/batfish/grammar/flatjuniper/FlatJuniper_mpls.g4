@@ -388,11 +388,18 @@ mplslsp_soft_preemption_null
 
 mplslsp_secondary
 :
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/secondary-edit-protocols-mpls.html
    SECONDARY name = junos_name
    (
       apply
+      // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/exclude-srlg-edit-protocols-mpls.html
+      | exclude_srlg = EXCLUDE_SRLG
+      // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/hop-limit-edit-protocols-mpls.html
+      | HOP_LIMIT hop_limit = uint8
       | mplslsps_admin_group
       | mplslsps_preference
+      // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/standby-edit-protocols-mpls.html
+      | standby = STANDBY
    )
 ;
 

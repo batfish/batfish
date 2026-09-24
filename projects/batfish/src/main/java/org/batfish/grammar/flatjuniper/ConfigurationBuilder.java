@@ -1455,6 +1455,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
   private static final IntegerSpace BGP_PATH_SELECTION_MULTIPLIER_RANGE =
       IntegerSpace.of(new SubRange(1, 1000));
+  private static final IntegerSpace MPLS_LSP_HOP_LIMIT_RANGE =
+      IntegerSpace.of(new SubRange(2, 255));
 
   // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
   private static final IntegerSpace ISIS_LEVEL_METRIC_RANGE =
@@ -10340,6 +10342,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         MPLS_PATH, name, MPLS_LSP_SECONDARY_PATH, getLine(ctx.name.getStart()));
+    boolean unsupported = ctx.exclude_srlg != null || ctx.standby != null;
+    if (ctx.hop_limit != null) {
+      unsupported =
+          toIntegerInSpace(ctx, ctx.hop_limit, MPLS_LSP_HOP_LIMIT_RANGE, "MPLS LSP hop-limit")
+              .isPresent();
+    }
+    if (unsupported) {
+      todo(ctx);
+    }
   }
 
   private @Nonnull Optional<String> toString(
