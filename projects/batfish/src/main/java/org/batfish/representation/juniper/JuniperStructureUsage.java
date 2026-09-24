@@ -104,6 +104,8 @@ public enum JuniperStructureUsage implements StructureUsage {
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
+  DOT1X_AUTHENTICATION_PROFILE("dot1x authentication-profile-name"),
+  DOT1X_AUTHENTICATOR_INTERFACE("dot1x authenticator interface"),
   DYNAMIC_TUNNELS_INET_IMPORT_POLICY("dynamic-tunnels inet-import policy-statement"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
   FIREWALL_FILTER_DSCP("firewall filter dscp"),

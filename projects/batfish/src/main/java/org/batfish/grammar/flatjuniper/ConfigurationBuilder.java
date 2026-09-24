@@ -10,6 +10,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_RO
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
+import static org.batfish.representation.juniper.JuniperStructureType.ACCESS_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -136,6 +137,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DOT1X_AUTHENTICATION_PROFILE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DOT1X_AUTHENTICATOR_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DYNAMIC_TUNNELS_INET_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
@@ -690,6 +693,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospf3Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_rstpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pda_authentication_profile_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pda_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -962,6 +967,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sa_profileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_scheduler_mapsContext;
@@ -7531,6 +7537,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPda_authentication_profile_name(Pda_authentication_profile_nameContext ctx) {
+    _configuration.referenceStructure(
+        ACCESS_PROFILE,
+        toString(ctx.name),
+        DOT1X_AUTHENTICATION_PROFILE,
+        getLine(ctx.name.getStart()));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPda_interface(Pda_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        INTERFACE,
+        toInterfaceId(ctx.id).getFullName(),
+        DOT1X_AUTHENTICATOR_INTERFACE,
+        getLine(ctx.id.getStart()));
+    todo(ctx);
+  }
+
+  @Override
   public void exitB_dynamic_neighbor(B_dynamic_neighborContext ctx) {
     _currentBgpDynamicNeighborName = null;
   }
@@ -9376,6 +9402,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitS_routing_options(S_routing_optionsContext ctx) {
     _currentRib = null;
+  }
+
+  @Override
+  public void enterSa_profile(Sa_profileContext ctx) {
+    _configuration.defineFlattenedStructure(ACCESS_PROFILE, toString(ctx.name), ctx, _parser);
   }
 
   @Override
