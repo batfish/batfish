@@ -44,6 +44,10 @@ public class Interface implements Serializable {
     PHYSICAL,
     /** A unit on a physical port, such as xe-0/0/0.7. */
     PHYSICAL_UNIT,
+    /** A PPP service interface, such as pp0. */
+    PPP,
+    /** A unit on a PPP service interface, such as pp0.7. */
+    PPP_UNIT,
     /** A redundant ethernet interface, such as reth0. */
     REDUNDANT,
     /** A unit on a redundant ethernet interface, such as reth0.7. */
@@ -70,6 +74,7 @@ public class Interface implements Serializable {
     return _type == InterfaceType.PHYSICAL
         || _type == InterfaceType.MANAGEMENT
         || _type == InterfaceType.AGGREGATED
+        || _type == InterfaceType.PPP
         || _type == InterfaceType.REDUNDANT;
   }
 
@@ -79,6 +84,7 @@ public class Interface implements Serializable {
         || _type == InterfaceType.IRB_UNIT
         || _type == InterfaceType.LOOPBACK_UNIT
         || _type == InterfaceType.MANAGEMENT_UNIT
+        || _type == InterfaceType.PPP_UNIT
         || _type == InterfaceType.AGGREGATED_UNIT
         || _type == InterfaceType.REDUNDANT_UNIT;
   }
@@ -129,6 +135,8 @@ public class Interface implements Serializable {
       return name.contains(".") ? InterfaceType.LOOPBACK_UNIT : InterfaceType.LOOPBACK;
     } else if (name.startsWith("em") || name.startsWith("fxp")) {
       return name.contains(".") ? InterfaceType.MANAGEMENT_UNIT : InterfaceType.MANAGEMENT;
+    } else if (name.startsWith("pp")) {
+      return name.contains(".") ? InterfaceType.PPP_UNIT : InterfaceType.PPP;
     } else if (name.startsWith("ae")) {
       return name.contains(".") ? InterfaceType.AGGREGATED_UNIT : InterfaceType.AGGREGATED;
     } else if (name.startsWith("reth")) {

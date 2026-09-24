@@ -3971,6 +3971,8 @@ F_InterfaceMediaType
    'oc3' |
    'pd' |
    'pe' |
+   // https://www.juniper.net/documentation/en_US/junos12.1x46/topics/example/pppoe-security-interface-configuring.html
+   'pp' |
    'pimd' |
    'pime' |
    'reth' |
