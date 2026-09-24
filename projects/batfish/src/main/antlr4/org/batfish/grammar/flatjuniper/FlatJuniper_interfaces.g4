@@ -540,10 +540,13 @@ ifi6_address
    )?
 ;
 
-// Static NDP entry: ndp <ip> (mac | multicast-mac) <mac> [publish]. Mirrors v4 static arp.
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dynamic-profiles-interfaces-unit-family-inet6-address-ndp.html
 ifi6a_ndp
 :
    NDP ip = ipv6_address
+   (
+      L2_INTERFACE interface_id
+   )?
    (
       MAC
       | MULTICAST_MAC

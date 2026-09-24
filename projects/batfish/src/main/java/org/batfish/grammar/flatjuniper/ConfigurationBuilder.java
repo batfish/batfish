@@ -234,6 +234,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_CLIENT_LIST_NAME;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_NDP_L2_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SWITCH_OPTIONS_VRF_EXPORT;
@@ -534,6 +535,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_ndpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
@@ -6873,6 +6875,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfi6_address(Ifi6_addressContext ctx) {
     _currentInterfaceAddress6 = null;
+  }
+
+  @Override
+  public void exitIfi6a_ndp(Ifi6a_ndpContext ctx) {
+    if (ctx.interface_id() != null) {
+      _configuration.referenceStructure(
+          INTERFACE,
+          toInterfaceId(ctx.interface_id()).getFullName(),
+          STATIC_NDP_L2_INTERFACE,
+          getLine(ctx.interface_id().getStart()));
+    }
+    todo(ctx);
   }
 
   @Override
