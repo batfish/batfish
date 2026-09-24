@@ -1,0 +1,8 @@
+set system host-name junos-dhcp-relay-forwarding
+set forwarding-options dhcp-relay forward-only logical-system current
+set forwarding-options dhcp-relay forward-only-replies
+set forwarding-options dhcp-relay no-snoop
+set forwarding-options dhcp-relay route-suppression access-internal
+set forwarding-options dhcp-relay group CLIENTS forward-only routing-instance default
+set forwarding-options dhcp-relay group CLIENTS route-suppression destination
+set routing-instances TENANT forwarding-options dhcp-relay forward-only-replies
