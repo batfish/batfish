@@ -1,0 +1,10 @@
+set system host-name junos-interface-range-unit
+set interfaces interface-range ACCESS_PORTS member-range ge-0/0/0 to ge-0/0/1
+set interfaces interface-range ACCESS_PORTS unit 0 description RANGE_UNIT
+set interfaces interface-range ACCESS_PORTS unit 0 family ethernet-switching interface-mode access
+set interfaces interface-range ACCESS_PORTS unit 0 family ethernet-switching vlan members USERS
+set interfaces ge-0/0/1 unit 0 description EXPLICIT
+set interfaces interface-range RESERVED member ge-0/0/2
+set interfaces interface-range RESERVED unit 0 description RESERVED
+set interfaces interface-range RESERVED unit 0 family inet
+set vlans USERS vlan-id 100

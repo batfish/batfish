@@ -512,6 +512,29 @@ public class Interface implements Serializable {
     }
   }
 
+  /** Copies logical-unit settings from an interface range into a member interface's unit. */
+  public void inheritUnsetUnitFields(Interface bestower) {
+    if (_description == null) {
+      _description = bestower._description;
+    }
+    if (bestower._ethernetSwitching != null) {
+      if (_ethernetSwitching == null) {
+        _ethernetSwitching = new EthernetSwitching();
+      }
+      if (_ethernetSwitching.getNativeVlan() == null
+          && bestower._ethernetSwitching.getNativeVlan() != null) {
+        _ethernetSwitching.setNativeVlan(bestower._ethernetSwitching.getNativeVlan());
+      }
+      if (_ethernetSwitching.getSwitchportMode() == null
+          && bestower._ethernetSwitching.getSwitchportMode() != null) {
+        _ethernetSwitching.setSwitchportMode(bestower._ethernetSwitching.getSwitchportMode());
+      }
+      if (_ethernetSwitching.getVlanMembers().isEmpty()) {
+        _ethernetSwitching.getVlanMembers().addAll(bestower._ethernetSwitching.getVlanMembers());
+      }
+    }
+  }
+
   /**
    * Returns true if the interface was defined in the config. Needed to check if interface was
    * referred but not defined

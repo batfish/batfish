@@ -998,6 +998,7 @@ int_interface_range
        i_common_physical
        | intir_member
        | intir_member_range
+       | intir_unit
    )
 ;
 
@@ -1042,6 +1043,28 @@ intir_member
 intir_member_range
 :
    MEMBER_RANGE from_i = interface_id TO to_i = interface_id
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interface-range-edit-interfaces-qfx-series.html
+intir_unit
+:
+   UNIT unit = dec
+   (
+      i_description
+      | intiru_family
+   )
+;
+intiru_family
+:
+   FAMILY
+   (
+      if_ethernet_switching
+      | intiruf_inet
+   )
+;
+intiruf_inet
+:
+   INET
 ;
 
 s_interfaces
