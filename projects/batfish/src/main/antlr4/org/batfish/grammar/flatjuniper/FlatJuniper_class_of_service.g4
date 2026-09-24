@@ -11,6 +11,7 @@ s_class_of_service
        | scos_application_traffic_control_null
        | scos_classifiers
        | scos_code_point_aliases
+       | scos_dedicated_buffer_null
        | scos_drop_profiles_null
        | scos_forwarding_class_sets
        | scos_forwarding_classes
@@ -843,6 +844,18 @@ scos_application_traffic_control_null
 :
    APPLICATION_TRAFFIC_CONTROL null_filler
 ;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/class-of-service-dedicated-buffer.html
+scos_dedicated_buffer_null
+:
+   DEDICATED_BUFFER
+   (
+      EGRESS
+      | INGRESS
+   )
+   PERCENT dec
+;
+
 scos_drop_profiles_null
 :
    DROP_PROFILES null_filler

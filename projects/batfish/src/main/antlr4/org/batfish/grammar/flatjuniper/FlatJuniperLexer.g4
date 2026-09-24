@@ -620,6 +620,7 @@ DEAD_INTERVAL: 'dead-interval';
 DEAD_PEER_DETECTION: 'dead-peer-detection';
 
 DECAPSULATE: 'decapsulate';
+DEDICATED_BUFFER: 'dedicated-buffer';
 DEMUX_OPTIONS: 'demux-options';
 
 DEFAULT

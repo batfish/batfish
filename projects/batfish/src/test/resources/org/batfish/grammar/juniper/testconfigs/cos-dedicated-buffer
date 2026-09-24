@@ -1,0 +1,3 @@
+set system host-name cos-dedicated-buffer
+set class-of-service dedicated-buffer ingress percent 50
+set class-of-service dedicated-buffer egress percent 50
