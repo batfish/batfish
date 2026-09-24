@@ -1419,16 +1419,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     Ip ospfRouterId = getRouterId(routingInstance);
+    Map<RoutingProtocol, Integer> adminCosts =
+        new EnumMap<>(
+            org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
+                _c.getConfigurationFormat()));
+    Long ospfPreference = routingInstance.getOspfPreference();
+    if (ospfPreference != null && ospfPreference <= Integer.MAX_VALUE) {
+      int preference = ospfPreference.intValue();
+      adminCosts.put(RoutingProtocol.OSPF, preference);
+      adminCosts.put(RoutingProtocol.OSPF_IA, preference);
+      adminCosts.put(RoutingProtocol.OSPF_IS, preference);
+    }
+    Long ospfExternalPreference = routingInstance.getOspfExternalPreference();
+    if (ospfExternalPreference != null && ospfExternalPreference <= Integer.MAX_VALUE) {
+      int externalPreference = ospfExternalPreference.intValue();
+      adminCosts.put(RoutingProtocol.OSPF_E1, externalPreference);
+      adminCosts.put(RoutingProtocol.OSPF_E2, externalPreference);
+    }
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
             .setProcessId(routingInstance.getName())
             .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
-            .setAdminCosts(
-                org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
-                    _c.getConfigurationFormat()))
+            .setAdminCosts(adminCosts)
             .setSummaryAdminCost(
-                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
+                ospfPreference != null && ospfPreference <= Integer.MAX_VALUE
+                    ? ospfPreference.intValue()
+                    : RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(
+                        _c.getConfigurationFormat()))
             .setRouterId(ospfRouterId)
             .setSummaryDiscardMetric(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC)
             .build();

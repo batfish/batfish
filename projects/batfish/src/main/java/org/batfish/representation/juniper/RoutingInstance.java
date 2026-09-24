@@ -54,6 +54,8 @@ public class RoutingInstance implements Serializable {
   private Map<Long, OspfArea> _ospfAreas;
   private List<String> _ospfExportPolicies;
   private @Nullable Boolean _ospfDisable;
+  private @Nullable Long _ospfExternalPreference;
+  private @Nullable Long _ospfPreference;
   private double _ospfReferenceBandwidth;
   private @Nullable OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
@@ -225,6 +227,14 @@ public class RoutingInstance implements Serializable {
     return _ospfDisable;
   }
 
+  public @Nullable Long getOspfExternalPreference() {
+    return _ospfExternalPreference;
+  }
+
+  public @Nullable Long getOspfPreference() {
+    return _ospfPreference;
+  }
+
   public double getOspfReferenceBandwidth() {
     return _ospfReferenceBandwidth;
   }
@@ -282,6 +292,14 @@ public class RoutingInstance implements Serializable {
 
   public void setOspfDisable(boolean ospfDisable) {
     _ospfDisable = ospfDisable;
+  }
+
+  public void setOspfExternalPreference(long ospfExternalPreference) {
+    _ospfExternalPreference = ospfExternalPreference;
+  }
+
+  public void setOspfPreference(long ospfPreference) {
+    _ospfPreference = ospfPreference;
   }
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
