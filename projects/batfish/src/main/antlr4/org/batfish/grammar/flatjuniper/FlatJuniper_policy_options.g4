@@ -200,6 +200,7 @@ pops_from
       | popsf_route_type
       | popsf_rtf_prefix_list
       | popsf_source_address_filter
+      | popsf_state
       | popsf_tag
       | popsf_tag2
       | popsf_validation_database
@@ -433,6 +434,12 @@ popsf_source_address_filter
       IP_PREFIX
       | IPV6_PREFIX
    ) popsfrf_common
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html
+popsf_state
+:
+   STATE (ACTIVE | INACTIVE)
 ;
 
 popsf_tag

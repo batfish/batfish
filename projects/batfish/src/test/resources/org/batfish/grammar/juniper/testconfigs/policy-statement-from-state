@@ -1,0 +1,5 @@
+set system host-name policy-statement-from-state
+set policy-options policy-statement STATE-POLICY term ACTIVE from state active
+set policy-options policy-statement STATE-POLICY term ACTIVE then accept
+set policy-options policy-statement STATE-POLICY term INACTIVE from state inactive
+set policy-options policy-statement STATE-POLICY term INACTIVE then accept
