@@ -611,6 +611,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Large_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Metric_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_no_propagate_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_admin_groupContext;
@@ -10909,6 +10911,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int value = maybeValue.get();
     _currentLogicalSystem.getAdminGroups().put(name, new AdminGroup(name, value));
     _configuration.defineFlattenedStructure(ADMIN_GROUP, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitMpls_disable(Mpls_disableContext ctx) {
+    _currentLogicalSystem.setMplsDisabled(true);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitMpls_no_propagate_ttl(Mpls_no_propagate_ttlContext ctx) {
+    _currentLogicalSystem.setMplsNoPropagateTtl(true);
+    todo(ctx);
   }
 
   @Override

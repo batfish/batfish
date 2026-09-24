@@ -1,0 +1,3 @@
+set system host-name junos-mpls-protocol-controls
+set protocols mpls disable
+set protocols mpls no-propagate-ttl
