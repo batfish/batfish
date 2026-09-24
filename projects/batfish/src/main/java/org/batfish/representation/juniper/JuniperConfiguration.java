@@ -2688,18 +2688,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<AclLine> lines = new ArrayList<>();
     for (FwTerm term : filter.getTerms().values()) {
       if (term.getFilter() != null) {
-        assert conjunctMatchExpr == null;
         String nestedFilter = term.getFilter();
         FirewallFilter nested = _masterLogicalSystem.getFirewallFilters().get(nestedFilter);
         if (nested == null || nested.getFamily() != filter.getFamily()) {
           continue;
         }
+        TraceElement traceElement = matchingFirewallFilter(_filename, nestedFilter);
+        VendorStructureId vendorStructureId =
+            firewallFilterVendorStructureId(_filename, nestedFilter);
         lines.add(
-            new AclAclLine(
-                term.getName(),
-                nestedFilter,
-                matchingFirewallFilter(_filename, nestedFilter),
-                firewallFilterVendorStructureId(_filename, nestedFilter)));
+            conjunctMatchExpr == null
+                ? new AclAclLine(term.getName(), nestedFilter, traceElement, vendorStructureId)
+                : ExprAclLine.builder()
+                    .accepting()
+                    .setName(term.getName())
+                    .setMatchCondition(
+                        and(conjunctMatchExpr, new PermittedByAcl(nestedFilter, traceElement)))
+                    .setTraceElement(traceElement)
+                    .setVendorStructureId(vendorStructureId)
+                    .build());
         continue;
       }
       Optional<ExprAclLine> line = convertFwTermToExprAclLine(filter.getName(), term, aclType);

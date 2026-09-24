@@ -4,6 +4,7 @@ import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarning;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
@@ -35,6 +36,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.routingInstan
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
@@ -829,6 +831,52 @@ public class JuniperConfigurationTest {
     TraceElement actual = acl.getLines().get(0).getTraceElement();
     assertThat(actual, equalTo(expected));
     assertThat(actual.getText(), equalTo("Matched term"));
+  }
+
+  @Test
+  public void testFwTermToIpAccessList_nestedFilterWithConjunct() {
+    JuniperConfiguration config = createConfig();
+    ConcreteFirewallFilter nested = new ConcreteFirewallFilter("nested", Family.INET);
+    config.getMasterLogicalSystem().getFirewallFilters().put(nested.getName(), nested);
+    FwTerm term = new FwTerm("term");
+    term.setFilter(nested.getName());
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("acl", Family.INET);
+    filter.getTerms().put(term.getName(), term);
+    AclLineMatchExpr conjunct = matchSrcInterface("iface");
+
+    IpAccessList acl = config.fwTermsToIpAccessList("acl", filter, conjunct, FIREWALL_FILTER);
+
+    assertThat(acl.getLines(), hasSize(1));
+    ExprAclLine line = (ExprAclLine) acl.getLines().get(0);
+    assertThat(
+        line.getMatchCondition(),
+        equalTo(
+            and(
+                conjunct,
+                new PermittedByAcl(
+                    nested.getName(),
+                    matchingFirewallFilter(config.getFilename(), nested.getName())))));
+  }
+
+  @Test
+  public void testFwTermToIpAccessList_undefinedAndWrongFamilyNestedFilters() {
+    JuniperConfiguration config = createConfig();
+    ConcreteFirewallFilter inet6 = new ConcreteFirewallFilter("inet6", Family.INET6);
+    config.getMasterLogicalSystem().getFirewallFilters().put(inet6.getName(), inet6);
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("acl", Family.INET);
+    FwTerm undefined = new FwTerm("undefined");
+    undefined.setFilter("undefined");
+    filter.getTerms().put(undefined.getName(), undefined);
+    FwTerm wrongFamily = new FwTerm("wrongFamily");
+    wrongFamily.setFilter(inet6.getName());
+    filter.getTerms().put(wrongFamily.getName(), wrongFamily);
+    FwTerm nextTerm = new FwTerm("nextTerm");
+    nextTerm.getThens().add(FwThenNextTerm.INSTANCE);
+    filter.getTerms().put(nextTerm.getName(), nextTerm);
+
+    IpAccessList acl = config.fwTermsToIpAccessList("acl", filter, null, FIREWALL_FILTER);
+
+    assertThat(acl.getLines(), empty());
   }
 
   @Test
