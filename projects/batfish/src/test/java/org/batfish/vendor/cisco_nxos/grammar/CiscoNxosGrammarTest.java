@@ -6162,7 +6162,7 @@ public final class CiscoNxosGrammarTest {
       }
       {
         org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("distance");
-        assertTrue(proc.getAdminCosts().values().stream().allMatch(i -> i.equals(243)));
+        assertTrue(proc.getAdminCosts().values().stream().allMatch(i -> i.equals(243L)));
       }
     }
     // TODO: convert and test "lac" - OSPF log-adjacency-changes
