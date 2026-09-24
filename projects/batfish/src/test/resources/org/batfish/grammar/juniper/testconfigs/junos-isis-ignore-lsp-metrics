@@ -1,0 +1,2 @@
+set system host-name junos-isis-ignore-lsp-metrics
+set protocols isis traffic-engineering ignore-lsp-metrics

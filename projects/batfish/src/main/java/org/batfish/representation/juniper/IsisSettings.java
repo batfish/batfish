@@ -24,6 +24,8 @@ public class IsisSettings implements Serializable {
 
   private boolean _trafficEngineeringCredibilityProtocolPreference;
 
+  private boolean _trafficEngineeringIgnoreLspMetrics;
+
   private boolean _trafficEngineeringShortcuts;
 
   public IsisSettings() {
@@ -68,6 +70,10 @@ public class IsisSettings implements Serializable {
     return _trafficEngineeringCredibilityProtocolPreference;
   }
 
+  public boolean getTrafficEngineeringIgnoreLspMetrics() {
+    return _trafficEngineeringIgnoreLspMetrics;
+  }
+
   public boolean getTrafficEngineeringShortcuts() {
     return _trafficEngineeringShortcuts;
   }
@@ -96,6 +102,10 @@ public class IsisSettings implements Serializable {
       boolean trafficEngineeringCredibilityProtocolPreference) {
     _trafficEngineeringCredibilityProtocolPreference =
         trafficEngineeringCredibilityProtocolPreference;
+  }
+
+  public void setTrafficEngineeringIgnoreLspMetrics(boolean trafficEngineeringIgnoreLspMetrics) {
+    _trafficEngineeringIgnoreLspMetrics = trafficEngineeringIgnoreLspMetrics;
   }
 
   public void setTrafficEngineeringShortcuts(boolean trafficEngineeringShortcuts) {

@@ -591,6 +591,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metr
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_ignore_lsp_metricsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
@@ -6863,6 +6864,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else { // ipv4
       _currentRoutingInstance.getIsisSettings().setTrafficEngineeringShortcuts(true);
     }
+  }
+
+  @Override
+  public void exitIst_ignore_lsp_metrics(Ist_ignore_lsp_metricsContext ctx) {
+    _currentRoutingInstance.getIsisSettings().setTrafficEngineeringIgnoreLspMetrics(true);
+    todo(ctx);
   }
 
   @Override
