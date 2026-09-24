@@ -16,6 +16,21 @@ a_application
    )
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/security-policies/topics/topic-map/security-policy-applications.html
+a_application_any
+:
+   APPLICATION ANY
+   (
+      aat_inactivity_timeout
+      | aaa_term
+   )
+;
+
+aaa_term
+:
+   TERM junos_name aat_inactivity_timeout
+;
+
 a_application_set
 :
    APPLICATION_SET name = junos_name
@@ -166,6 +181,7 @@ s_applications
    (
       apply
       | a_application
+      | a_application_any
       | a_application_set
    )
 ;
