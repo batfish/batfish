@@ -561,6 +561,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv6_routingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_overloadContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_disableContext;
@@ -6562,6 +6563,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIs_no_ipv4_routing(Is_no_ipv4_routingContext ctx) {
     _currentRoutingInstance.getIsisSettings().setNoIpv4Routing(true);
+  }
+
+  @Override
+  public void exitIs_no_ipv6_routing(Is_no_ipv6_routingContext ctx) {
+    _currentRoutingInstance.getIsisSettings().setNoIpv6Routing(true);
+    todo(ctx);
   }
 
   @Override

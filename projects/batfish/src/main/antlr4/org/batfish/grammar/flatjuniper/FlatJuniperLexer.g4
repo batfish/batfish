@@ -2299,6 +2299,7 @@ NO_GATEWAY_COMMUNITY: 'no-gateway-community';
 NO_HIDDEN_COMMANDS: 'no-hidden-commands';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
+NO_IPV6_ROUTING: 'no-ipv6-routing';
 NO_MALFORMED_ROUTE_LIMIT: 'no-malformed-route-limit';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';

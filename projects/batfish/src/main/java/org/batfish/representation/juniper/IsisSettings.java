@@ -14,6 +14,8 @@ public class IsisSettings implements Serializable {
 
   private boolean _noIpv4Routing;
 
+  private boolean _noIpv6Routing;
+
   private boolean _overload;
 
   private Integer _overloadTimeout;
@@ -46,6 +48,10 @@ public class IsisSettings implements Serializable {
     return _noIpv4Routing;
   }
 
+  public boolean getNoIpv6Routing() {
+    return _noIpv6Routing;
+  }
+
   public boolean getOverload() {
     return _overload;
   }
@@ -68,6 +74,10 @@ public class IsisSettings implements Serializable {
 
   public void setNoIpv4Routing(boolean noIpv4Routing) {
     _noIpv4Routing = noIpv4Routing;
+  }
+
+  public void setNoIpv6Routing(boolean noIpv6Routing) {
+    _noIpv6Routing = noIpv6Routing;
   }
 
   public void setOverload(boolean overload) {
