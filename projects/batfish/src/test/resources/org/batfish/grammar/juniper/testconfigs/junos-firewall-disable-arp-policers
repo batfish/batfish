@@ -1,0 +1,3 @@
+set system host-name junos-firewall-disable-arp-policers
+set firewall disable-arp-policer
+set firewall disable-arp-policers

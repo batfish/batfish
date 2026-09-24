@@ -13,6 +13,12 @@ f_common
    | f_service_filter_null
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/security-services/topics/topic-map/configuring-ddos-protection.html
+f_disable_arp_policers_null
+:
+   DISABLE_ARP_POLICER | DISABLE_ARP_POLICERS
+;
+
 f_family
 :
    FAMILY
@@ -581,6 +587,7 @@ s_firewall
    FIREWALL
    (
       f_common
+      | f_disable_arp_policers_null
       | f_family
       | f_interface_set
    )

@@ -738,6 +738,10 @@ DISABLE: 'disable';
 
 DISABLE_4BYTE_AS: 'disable-4byte-as';
 
+DISABLE_ARP_POLICER: 'disable-arp-policer';
+
+DISABLE_ARP_POLICERS: 'disable-arp-policers';
+
 DISCARD: 'discard';
 
 DISTANCE_TO_PROTOCOL_NEXTHOP: 'distance-to-protocol-nexthop';
