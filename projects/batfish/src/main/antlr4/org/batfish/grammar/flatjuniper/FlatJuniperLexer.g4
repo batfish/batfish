@@ -2351,7 +2351,17 @@ OAM: 'oam';
 
 OFF: 'off';
 
-OFFSET: 'offset';
+OFFSET
+:
+  'offset'
+  {
+    if (secondToLastTokenType() == MULTIPLIER
+        || (secondToLastTokenType() == EXPRESSION
+            && (lastTokenType() == METRIC || lastTokenType() == METRIC2))) {
+      pushMode(M_MetricExpressionOffset);
+    }
+  }
+;
 OPTIMIZE_ADAPTIVE_TEARDOWN: 'optimize-adaptive-teardown';
 OPTIMIZE_AGGRESSIVE: 'optimize-aggressive';
 OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
@@ -4819,6 +4829,14 @@ M_MetricOut_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_MetricOut_WS: F_WhitespaceChar+ -> channel ( HIDDEN );
 // Anything else, e.g. apply-groups, is lexed in the default mode.
 M_MetricOut_OTHER: F_Alpha F_NonWhitespaceChar* { less(); } -> popMode;
+
+mode M_MetricExpressionOffset;
+M_MetricExpressionOffset_DASH: '-' -> type(DASH);
+M_MetricExpressionOffset_UINT8: F_Uint8 -> type(UINT8), popMode;
+M_MetricExpressionOffset_UINT16: F_Uint16 -> type(UINT16), popMode;
+M_MetricExpressionOffset_UINT32: F_Uint32 -> type(UINT32), popMode;
+M_MetricExpressionOffset_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_MetricExpressionOffset_WS: F_WhitespaceChar+ -> channel(HIDDEN);
 
 mode M_MetricType;
 

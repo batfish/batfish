@@ -1,0 +1,8 @@
+set system host-name policy-metric-expression
+set policy-options policy-statement METRIC-EXPRESSION term METRIC-NEGATIVE then metric expression metric multiplier 2 offset -50
+set policy-options policy-statement METRIC-EXPRESSION term METRIC2-POSITIVE then metric expression metric2 multiplier 1 offset 50
+set policy-options policy-statement METRIC-EXPRESSION term TARGET-METRIC2 then metric2 expression metric multiplier 3
+set policy-options policy-statement METRIC-EXPRESSION term TARGET-METRIC2-NEGATIVE then metric2 expression metric2 multiplier 4 offset - 10
+set policy-options policy-statement METRIC-EXPRESSION term OFFSET-ONLY then metric expression metric2 offset -5
+set policy-options policy-statement METRIC-EXPRESSION term COMBINED then metric expression metric multiplier 1
+set policy-options policy-statement METRIC-EXPRESSION term COMBINED then metric expression metric2 multiplier 1
