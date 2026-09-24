@@ -150,6 +150,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_DEMUX_UNDERLYING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST;
@@ -496,6 +497,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_tagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Id_underlying_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ieee_802_1_code_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_bridgeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
@@ -6179,6 +6181,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentInterfaceOrRange.setInnerVlanTag(toInterfaceVlanTag(ctx.inner));
     }
     todo(ctx);
+  }
+
+  @Override
+  public void exitId_underlying_interface(Id_underlying_interfaceContext ctx) {
+    String ifaceName = getInterfaceFullName(ctx.id);
+    _currentInterfaceOrRange.setDemuxUnderlyingInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, INTERFACE_DEMUX_UNDERLYING_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
