@@ -1,0 +1,10 @@
+set system host-name junos-interface-policer
+set firewall policer ARP-POLICER then discard
+set firewall policer INPUT4-POLICER then discard
+set firewall policer OUTPUT4-POLICER then discard
+set firewall policer INPUT6-POLICER then discard
+set interfaces ae0 unit 0 family inet policer arp ARP-POLICER
+set interfaces ae0 unit 0 family inet policer input INPUT4-POLICER
+set interfaces ae0 unit 0 family inet policer output OUTPUT4-POLICER
+set interfaces ae0 unit 0 family inet6 policer input INPUT6-POLICER
+set interfaces ae0 unit 0 family inet6 policer output OUTPUT6-MISSING

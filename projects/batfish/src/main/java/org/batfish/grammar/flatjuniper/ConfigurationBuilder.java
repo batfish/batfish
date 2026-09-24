@@ -167,12 +167,15 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ARP_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_DEMUX_UNDERLYING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INPUT_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTPUT_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_RPF_CHECK_FAIL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
@@ -584,6 +587,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_interface_rangeCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_vlan_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interfacep6_inputContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interfacep6_outputContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interfacep_arpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interfacep_inputContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interfacep_outputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_addressContext;
@@ -7074,6 +7082,47 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           getLine(ctx.ifirpf_fail_filter().name.getStart()));
     }
     todo(ctx);
+  }
+
+  @Override
+  public void exitInterfacep_arp(Interfacep_arpContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setArpPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_ARP_POLICER);
+  }
+
+  @Override
+  public void exitInterfacep_input(Interfacep_inputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setIncomingPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_INPUT_POLICER);
+  }
+
+  @Override
+  public void exitInterfacep_output(Interfacep_outputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setOutgoingPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_OUTPUT_POLICER);
+  }
+
+  @Override
+  public void exitInterfacep6_input(Interfacep6_inputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setIncomingPolicer6(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_INPUT_POLICER);
+  }
+
+  @Override
+  public void exitInterfacep6_output(Interfacep6_outputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setOutgoingPolicer6(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_OUTPUT_POLICER);
+  }
+
+  private void referenceInterfacePolicer(
+      ParserRuleContext ctx, String name, JuniperStructureUsage usage) {
+    _configuration.referenceStructure(FIREWALL_POLICER, name, usage, getLine(ctx.getStart()));
+    todo(ctx.getParent());
   }
 
   @Override

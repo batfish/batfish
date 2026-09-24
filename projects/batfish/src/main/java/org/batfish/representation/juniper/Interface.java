@@ -184,6 +184,7 @@ public class Interface implements Serializable {
   private final Set<ConcreteInterfaceAddress6> _allAddresses6;
   // Dumb name to appease checkstyle
   private String _agg8023adInterface;
+  private @Nullable String _arpPolicer;
   private final Set<Ip> _allAddressIps;
   private final List<SubRange> _allowedVlans;
   private final List<String> _allowedVlanNames;
@@ -199,6 +200,8 @@ public class Interface implements Serializable {
   private @Nullable List<String> _incomingFilterList;
   private @Nullable String _incomingFilter6;
   private @Nullable List<String> _incomingFilterList6;
+  private @Nullable String _incomingPolicer;
+  private @Nullable String _incomingPolicer6;
   private @Nullable InterfaceVlanTag _innerVlanTag;
   private @Nullable Integer _interfaceGroup;
   private @Nullable Integer _interfaceGroup6;
@@ -215,6 +218,8 @@ public class Interface implements Serializable {
   private @Nullable List<String> _outgoingFilterList;
   private @Nullable String _outgoingFilter6;
   private @Nullable List<String> _outgoingFilterList6;
+  private @Nullable String _outgoingPolicer;
+  private @Nullable String _outgoingPolicer6;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private @Nullable ConcreteInterfaceAddress6 _preferredAddress6;
@@ -296,6 +301,10 @@ public class Interface implements Serializable {
     return _speedMode;
   }
 
+  public @Nullable String getArpPolicer() {
+    return _arpPolicer;
+  }
+
   public String getDescription() {
     return _description;
   }
@@ -318,6 +327,14 @@ public class Interface implements Serializable {
 
   public @Nullable List<String> getIncomingFilterList6() {
     return _incomingFilterList6;
+  }
+
+  public @Nullable String getIncomingPolicer() {
+    return _incomingPolicer;
+  }
+
+  public @Nullable String getIncomingPolicer6() {
+    return _incomingPolicer6;
   }
 
   public @Nullable Integer getInterfaceGroup() {
@@ -382,6 +399,14 @@ public class Interface implements Serializable {
 
   public @Nullable List<String> getOutgoingFilterList6() {
     return _outgoingFilterList6;
+  }
+
+  public @Nullable String getOutgoingPolicer() {
+    return _outgoingPolicer;
+  }
+
+  public @Nullable String getOutgoingPolicer6() {
+    return _outgoingPolicer6;
   }
 
   public Interface getParent() {
@@ -534,6 +559,10 @@ public class Interface implements Serializable {
     _additionalArpIps = ImmutableSet.copyOf(additionalArpIps);
   }
 
+  public void setArpPolicer(@Nullable String arpPolicer) {
+    _arpPolicer = arpPolicer;
+  }
+
   public void setBandwidth(double bandwidth) {
     _bandwidth = bandwidth;
   }
@@ -568,6 +597,10 @@ public class Interface implements Serializable {
     _incomingFilterList = null;
   }
 
+  public void setIncomingPolicer(@Nullable String incomingPolicer) {
+    _incomingPolicer = incomingPolicer;
+  }
+
   public void addIncomingFilterList(@Nonnull String accessListName) {
     _incomingFilter = null;
     if (_incomingFilterList == null) {
@@ -579,6 +612,10 @@ public class Interface implements Serializable {
   public void setIncomingFilter6(@Nullable String accessListName) {
     _incomingFilter6 = accessListName;
     _incomingFilterList6 = null;
+  }
+
+  public void setIncomingPolicer6(@Nullable String incomingPolicer6) {
+    _incomingPolicer6 = incomingPolicer6;
   }
 
   public void setInterfaceGroup(int interfaceGroup) {
@@ -630,6 +667,10 @@ public class Interface implements Serializable {
     _outgoingFilterList = null;
   }
 
+  public void setOutgoingPolicer(@Nullable String outgoingPolicer) {
+    _outgoingPolicer = outgoingPolicer;
+  }
+
   public void addOutgoingFilterList(@Nonnull String accessListName) {
     _outgoingFilter = null;
     if (_outgoingFilterList == null) {
@@ -641,6 +682,10 @@ public class Interface implements Serializable {
   public void setOutgoingFilter6(@Nullable String accessListName) {
     _outgoingFilter6 = accessListName;
     _outgoingFilterList6 = null;
+  }
+
+  public void setOutgoingPolicer6(@Nullable String outgoingPolicer6) {
+    _outgoingPolicer6 = outgoingPolicer6;
   }
 
   public void addOutgoingFilterList6(@Nonnull String accessListName) {
