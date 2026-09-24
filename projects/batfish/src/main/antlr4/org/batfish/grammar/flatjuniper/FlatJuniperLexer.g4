@@ -1929,7 +1929,7 @@ KPASSWD: 'kpasswd';
 KRB_PROP: 'krb-prop';
 
 KRBUPDATE: 'krbupdate';
-
+KRT_NEXTHOP_ACK_TIMEOUT: 'krt-nexthop-ack-timeout';
 KSHELL: 'kshell';
 
 L: 'L';
