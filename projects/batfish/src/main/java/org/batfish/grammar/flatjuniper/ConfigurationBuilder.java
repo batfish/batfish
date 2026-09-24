@@ -333,6 +333,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -552,6 +553,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_output_vlan_mapContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_speed_autoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_speed_auto_10m_100mContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_virtual_gateway_accept_dataContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_virtual_gateway_v4_macContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_tagsContext;
@@ -6844,6 +6847,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitI_unit(I_unitContext ctx) {
     _currentInterfaceOrRange = _currentMasterInterface;
+  }
+
+  @Override
+  public void exitI_virtual_gateway_accept_data(I_virtual_gateway_accept_dataContext ctx) {
+    _currentInterfaceOrRange.setVirtualGatewayAcceptData(true);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_virtual_gateway_v4_mac(I_virtual_gateway_v4_macContext ctx) {
+    _currentInterfaceOrRange.setVirtualGatewayV4Mac(MacAddress.parse(ctx.mac.getText()));
+    todo(ctx);
   }
 
   @Override
