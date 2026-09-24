@@ -1,0 +1,7 @@
+system {
+    host-name device;
+}
+{master}
+{backup}
+{master:0}
+{backup:1}

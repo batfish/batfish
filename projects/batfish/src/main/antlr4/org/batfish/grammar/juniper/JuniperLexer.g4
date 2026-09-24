@@ -41,7 +41,8 @@ MULTILINE_COMMENT
   }
 ;
 
-PROMPT: '{master:0}' -> channel(HIDDEN);
+// https://www.juniper.net/documentation/en_US/junos13.2/topics/task/operational/issu-before-you-begin.html
+PROMPT: '{' ('master' | 'backup') (':' [0-9]+)? '}' -> channel(HIDDEN);
 
 SEMICOLON
 :
