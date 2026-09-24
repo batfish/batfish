@@ -1,0 +1,4 @@
+set system host-name junos-interface-range-unit
+set interfaces interface-range ACCESS_PORTS member-range ge-0/0/0 to ge-0/0/1
+set interfaces interface-range ACCESS_PORTS unit 0 description RANGE_UNIT
+set interfaces interface-range ACCESS_PORTS unit 0 family inet address 192.0.2.1/24

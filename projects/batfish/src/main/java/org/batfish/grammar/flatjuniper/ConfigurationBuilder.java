@@ -586,6 +586,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_vlan_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_address_and_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_optionContext;
@@ -7088,6 +7089,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           "Could not include member range '%s to %s' in interface-range '%s': %s",
           from, to, _currentInterfaceOrRange.getName(), e.getMessage());
     }
+  }
+
+  @Override
+  public void exitIntir_unit(Intir_unitContext ctx) {
+    todo(ctx);
   }
 
   @Override
