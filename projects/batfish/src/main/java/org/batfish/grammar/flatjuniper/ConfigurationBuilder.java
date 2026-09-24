@@ -573,6 +573,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_rpf_checkContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_ndpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
@@ -584,6 +585,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_rpf_checkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_vrrp_groupContext;
@@ -7025,6 +7027,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitIfia_destination(Ifia_destinationContext ctx) {
+    _currentInterfaceOrRange.setDestinationAddress(toIp(ctx.address));
+    todo(ctx);
+  }
+
+  @Override
   public void exitIfia_preferred(Ifia_preferredContext ctx) {
     _currentInterfaceOrRange.setPreferredAddress(_currentInterfaceAddress);
   }
@@ -7146,6 +7154,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           STATIC_NDP_L2_INTERFACE,
           getLine(ctx.interface_id().getStart()));
     }
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIfi6a_destination(Ifi6a_destinationContext ctx) {
+    _currentInterfaceOrRange.setDestinationAddress6(toIp6(ctx.address));
     todo(ctx);
   }
 

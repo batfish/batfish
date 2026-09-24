@@ -1,0 +1,3 @@
+set system host-name junos-interface-address-destination
+set interfaces dsc unit 0 family inet address 192.0.2.1/32 destination 192.0.2.2
+set interfaces dsc unit 0 family inet6 address 2001:db8::1/128 destination 2001:db8::2
