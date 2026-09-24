@@ -845,11 +845,17 @@ DYNAMIC_TUNNELS: 'dynamic-tunnels' -> pushMode(M_DynamicTunnels);
 
 DYNAMIC_NEIGHBOR: 'dynamic-neighbor' -> pushMode(M_Name);
 
+ECDSA_SHA2_NISTP256: 'ecdsa-sha2-nistp256';
+ECDSA_SHA2_NISTP384: 'ecdsa-sha2-nistp384';
+ECDSA_SHA2_NISTP521: 'ecdsa-sha2-nistp521';
+
 ECE: 'ece';
 
 ECHO_REPLY: 'echo-reply';
 
 ECHO_REQUEST: 'echo-request';
+
+ED25519: 'ed25519';
 
 EDGE: 'edge';
 
@@ -1184,6 +1190,8 @@ HOST_UNREACHABLE: 'host-unreachable';
 HOST_UNREACHABLE_FOR_TOS: 'host-unreachable-for-tos';
 
 HOSTKEY_ALGORITHM: 'hostkey-algorithm';
+
+HOSTKEY_ALGORITHM_LIST: 'hostkey-algorithm-list';
 
 HOSTNAME: 'hostname' -> pushMode(M_Name);
 
@@ -3028,6 +3036,9 @@ RPL_OPTION: 'RPL-option';
 
 RPM: 'rpm';
 
+RSA: 'rsa';
+RSA_SHA2_256: 'rsa-sha2-256';
+RSA_SHA2_512: 'rsa-sha2-512';
 RSA_SIGNATURES: 'rsa-signatures';
 
 RSH: 'rsh';

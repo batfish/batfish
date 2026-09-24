@@ -1361,6 +1361,7 @@ syserv_ssh
       | syservs_client_alive_interval_null
       | syservs_fingerprint_hash_null
       | syservs_hostkey_algorithm_null
+      | syservs_hostkey_algorithm_list_null
       | syservs_key_exchange_null
       | syservs_macs_null
       | syservs_max_pre_authentication_packets_null
@@ -1599,6 +1600,22 @@ syservs_hostkey_algorithm_null
 :
    HOSTKEY_ALGORITHM null_filler
 ;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/system-edit-ssh-hostkey-algorithm-list.html
+syservs_hostkey_algorithm_list_null
+:
+   HOSTKEY_ALGORITHM_LIST
+   (
+      ECDSA_SHA2_NISTP256
+      | ECDSA_SHA2_NISTP384
+      | ECDSA_SHA2_NISTP521
+      | ED25519
+      | RSA
+      | RSA_SHA2_256
+      | RSA_SHA2_512
+   )
+;
+
 syservs_key_exchange_null
 :
    KEY_EXCHANGE null_filler
