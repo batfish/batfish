@@ -374,6 +374,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_vpn_apply_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
@@ -401,6 +402,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bm_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_always_compare_medContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_external_router_idContext;
@@ -1477,6 +1479,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(Prefix.ZERO);
 
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
+
+  private static final IntegerSpace BGP_MULTIHOP_TTL_RANGE = IntegerSpace.of(new SubRange(1, 255));
+  private static final IntegerSpace BGP_SINGLE_HOP_TTL_RANGE =
+      IntegerSpace.builder().including(1, 255).build();
 
   private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 255));
@@ -5592,6 +5598,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitB_ttl(B_ttlContext ctx) {
+    Optional<Integer> ttl =
+        toIntegerInSpace(ctx, ctx.ttl, BGP_SINGLE_HOP_TTL_RANGE, "BGP single-hop TTL");
+    if (ttl.isPresent()) {
+      _currentBgpGroup.setTtl(ttl.get());
+      todo(ctx);
+    }
+  }
+
+  @Override
   public void exitB_type(B_typeContext ctx) {
     if (ctx.INTERNAL() != null) {
       _currentBgpGroup.setType(BgpGroupType.INTERNAL);
@@ -5654,6 +5670,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitBl_private(Bl_privateContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void exitBm_ttl(Bm_ttlContext ctx) {
+    Optional<Integer> ttl =
+        toIntegerInSpace(ctx, ctx.ttl, BGP_MULTIHOP_TTL_RANGE, "BGP multihop TTL");
+    if (ttl.isPresent()) {
+      _currentBgpGroup.setTtl(ttl.get());
+      todo(ctx);
+    }
   }
 
   @Override
