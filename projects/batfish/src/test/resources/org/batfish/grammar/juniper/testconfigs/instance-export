@@ -1,0 +1,6 @@
+set system host-name instance-export
+set routing-instances TENANT instance-type virtual-router
+set routing-instances TENANT routing-options instance-export EXPORT-A
+set routing-instances TENANT routing-options instance-export EXPORT-B
+set policy-options policy-statement EXPORT-A then accept
+set policy-options policy-statement EXPORT-B then reject

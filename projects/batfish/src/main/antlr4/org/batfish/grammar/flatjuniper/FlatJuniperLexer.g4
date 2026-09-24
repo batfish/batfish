@@ -1288,6 +1288,8 @@ INSTALL_NEXTHOP: 'install-nexthop';
 
 INSTANCE: 'instance' -> pushMode(M_Name);
 
+INSTANCE_EXPORT: 'instance-export' -> pushMode(M_Name);
+
 INSTANCE_IMPORT: 'instance-import' -> pushMode(M_Name);
 
 INSTANCE_TYPE: 'instance-type';
