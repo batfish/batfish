@@ -9,6 +9,7 @@ import java.util.Set;
 import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
+  ACCESS_PROFILE("access profile"),
   ADDRESS_BOOK("address-book"),
   ADMIN_GROUP("admin-group"),
   APPLICATION("application"),

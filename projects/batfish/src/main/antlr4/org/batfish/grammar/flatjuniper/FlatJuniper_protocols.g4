@@ -15,6 +15,7 @@ s_protocols
       | apply
       | p_bgp
       | p_connections
+      | p_dot1x
       | p_evpn
       | p_isis
       | p_mpls
@@ -50,6 +51,93 @@ s_protocols
       | p_stp
       | p_vstp
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/user-access/topics/topic-map/802-1x-authentication-switching-devices.html
+p_dot1x
+:
+   DOT1X
+   (
+      pd_authenticator
+      | pd_traceoptions_null
+   )
+;
+
+pd_authenticator
+:
+   AUTHENTICATOR
+   (
+      pda_authentication_profile_name
+      | pda_interface
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/authenticator-802-1x.html
+pda_authentication_profile_name
+:
+   AUTHENTICATION_PROFILE_NAME name = junos_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/authenticator-802-1x.html
+pda_interface
+:
+   INTERFACE id = interface_id
+   (
+      pdai_authentication_order
+      | pdai_mac_radius
+      | pdai_reauthentication
+      | pdai_server_fail
+      | pdai_server_reject_vlan
+      | pdai_server_timeout
+      | pdai_supplicant
+      | pdai_transmit_period
+   )
+;
+
+pdai_authentication_order
+:
+   AUTHENTICATION_ORDER (DOT1X | MAC_RADIUS)
+;
+
+pdai_mac_radius
+:
+   MAC_RADIUS AUTHENTICATION_PROTOCOL PAP
+;
+
+pdai_reauthentication
+:
+   REAUTHENTICATION uint16
+;
+
+pdai_server_fail
+:
+   SERVER_FAIL VLAN_NAME junos_name
+;
+
+pdai_server_reject_vlan
+:
+   SERVER_REJECT_VLAN junos_name
+;
+
+pdai_server_timeout
+:
+   SERVER_TIMEOUT uint16
+;
+
+pdai_supplicant
+:
+   SUPPLICANT MULTIPLE
+;
+
+pdai_transmit_period
+:
+   TRANSMIT_PERIOD uint16
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/traceoptions-802-1x.html
+pd_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
 
 p_bfd_null

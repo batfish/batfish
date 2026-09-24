@@ -114,7 +114,8 @@ statement
 
 s_common
 :
-   s_applications
+   s_access
+   | s_applications
    | apply_groups
    | s_bridge_domains
    | s_class_of_service
@@ -132,6 +133,26 @@ s_common
    | s_switch_options
    | s_system
    | s_vlans
+;
+
+s_access
+:
+   ACCESS
+   (
+      sa_null
+      | sa_profile
+   )
+;
+
+sa_null
+:
+   ~(NEWLINE | PROFILE) null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/access-edit-profile.html
+sa_profile
+:
+   PROFILE name = junos_name null_filler
 ;
 
 s_groups
@@ -167,8 +188,7 @@ s_null
 :
    (
       (
-         ACCESS
-         | APPLY_MACRO
+         APPLY_MACRO
          | ETHERNET_SWITCHING_OPTIONS
          | MULTI_CHASSIS
          | POE

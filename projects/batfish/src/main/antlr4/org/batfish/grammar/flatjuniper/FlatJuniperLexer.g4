@@ -348,19 +348,15 @@ AUTHENTICATION_KEY
 ;
 
 AUTHENTICATION_KEY_CHAIN: 'authentication-key-chain' -> pushMode(M_Name);
-
 AUTHENTICATION_KEY_CHAINS: 'authentication-key-chains';
-
 AUTHENTICATION_METHOD: 'authentication-method';
-
 AUTHENTICATION_ORDER: 'authentication-order';
-
+AUTHENTICATION_PROFILE_NAME: 'authentication-profile-name' -> pushMode(M_Name);
+AUTHENTICATION_PROTOCOL: 'authentication-protocol';
 AUTHENTICATION_TYPE: 'authentication-type';
-
+AUTHENTICATOR: 'authenticator';
 AUTHORIZATION: 'authorization';
-
 AUTHORIZED_KEYS_COMMAND: 'authorized-keys-command';
-
 AUTHORIZED_KEYS_COMMAND_USER: 'authorized-keys-command-user';
 
 AUTO: 'auto';
@@ -769,6 +765,7 @@ DOMAIN_PATH_ID: 'domain-path-id';
 DOMAIN_SEARCH: 'domain-search';
 DOMAIN_TYPE: 'domain-type';
 DOMAIN_VPN_TAG: 'domain-vpn-tag';
+DOT1X: 'dot1x';
 DROP: 'drop';
 DROP_AND_LOG: 'drop-and-log';
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes' -> pushMode(M_SubRange);
@@ -2074,7 +2071,7 @@ MAC
 ;
 
 MAC_MOVE_LIMIT: 'mac-move-limit';
-
+MAC_RADIUS: 'mac-radius';
 MACS: 'macs';
 
 MAIN: 'main';
@@ -2259,6 +2256,7 @@ MULTICAST_MODE: 'multicast-mode';
 MULTIHOP: 'multihop';
 MULTIPATH: 'multipath';
 MULTIPATH_RESOLVE: 'multipath-resolve';
+MULTIPLE: 'multiple';
 MULTIPLE_AS: 'multiple-as';
 MULTIPLIER: 'multiplier';
 MULTIPLY: 'multiply';
@@ -2472,11 +2470,9 @@ PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 PACKET_LENGTH_EXCEPT: 'packet-length-except' -> pushMode(M_SubRange);
 
 PACKET_TOO_BIG: 'packet-too-big';
-
 PARAMETER_PROBLEM: 'parameter-problem';
-
+PAP: 'pap';
 PASSIVE: 'passive';
-
 PASSWORD: 'password';
 
 PATH
@@ -2670,6 +2666,7 @@ PRIVATE_VLAN: 'private-vlan';
 
 PROBE_IDLE_TUNNEL: 'probe-idle-tunnel';
 PROCESSES: 'processes';
+PROFILE: 'profile' -> pushMode(M_Name);
 PROFILE1: 'profile1';
 PROFILE2: 'profile2';
 
@@ -2743,11 +2740,9 @@ RATE_LIMIT: 'rate-limit';
 REALAUDIO: 'realaudio';
 
 READ_ONLY: 'read-only';
-
 READ_WRITE: 'read-write';
-
 READVERTISE: 'readvertise';
-
+REAUTHENTICATION: 'reauthentication';
 RECEIVE: 'receive';
 RECORD: 'record';
 
@@ -3032,8 +3027,10 @@ SEND: 'send';
 SEND_COUNT: 'send-count';
 
 SERVER: 'server' -> pushMode(M_NameOrIp);
-
+SERVER_FAIL: 'server-fail';
 SERVER_GROUP: 'server-group' -> pushMode(M_Name);
+SERVER_REJECT_VLAN: 'server-reject-vlan' -> pushMode(M_Name);
+SERVER_TIMEOUT: 'server-timeout';
 
 SERVICE
 :
@@ -3212,9 +3209,8 @@ SUBSCRIBER_MANAGEMENT: 'subscriber-management';
 SUBTRACT: 'subtract';
 
 SUN_RPC: 'sun-rpc';
-
 SUNRPC: 'sunrpc';
-
+SUPPLICANT: 'supplicant';
 SUPPRESS: 'suppress';
 
 SWAP: 'swap';
@@ -3326,6 +3322,7 @@ TRAFFIC_ENGINEERING: 'traffic-engineering';
 TRANSFER_INTERVAL: 'transfer-interval';
 TRANSLATION_TABLE: 'translation-table';
 TRANSMIT_INTERVAL: 'transmit-interval';
+TRANSMIT_PERIOD: 'transmit-period';
 TRANSMIT_RATE: 'transmit-rate' -> pushMode(M_TransmitRate);
 TRANSPORT: 'transport';
 TRAP: 'trap';
@@ -3461,11 +3458,9 @@ VLAN
 VLANS: 'vlans' -> pushMode(M_Name);
 
 VLAN_ID: 'vlan-id';
-
 VLAN_ID_LIST: 'vlan-id-list' -> pushMode(M_VlanIdList);
-
+VLAN_NAME: 'vlan-name' -> pushMode(M_Name);
 VLAN_TAGS: 'vlan-tags';
-
 VLAN_TAGGING: 'vlan-tagging';
 
 VNI: 'vni';
