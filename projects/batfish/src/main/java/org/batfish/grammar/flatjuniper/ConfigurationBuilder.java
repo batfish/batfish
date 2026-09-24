@@ -2582,48 +2582,133 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Optional.of(new SubRange(rangeStart.get(), rangeEnd.get()));
   }
 
-  private static TcpFlagsMatchConditions toTcpFlags(Tcp_flags_alternativeContext ctx) {
+  private static final int TCP_FLAG_FIN = 0x01;
+  private static final int TCP_FLAG_SYN = 0x02;
+  private static final int TCP_FLAG_RST = 0x04;
+  private static final int TCP_FLAG_PSH = 0x08;
+  private static final int TCP_FLAG_ACK = 0x10;
+  private static final int TCP_FLAG_URG = 0x20;
+  private static final int TCP_FLAG_ECE = 0x40;
+  private static final int TCP_FLAG_CWR = 0x80;
+
+  private static final class TcpFlagsBits {
+    private TcpFlagsBits(int used, int set) {
+      _set = set;
+      _used = used;
+    }
+
+    private final int _set;
+    private final int _used;
+  }
+
+  private static @Nullable TcpFlagsBits addTcpFlagsRequirement(
+      TcpFlagsBits current, int mask, boolean value) {
+    int requiredSet = value ? mask : 0;
+    if ((current._used & mask & (current._set ^ requiredSet)) != 0) {
+      return null;
+    }
+    return new TcpFlagsBits(current._used | mask, (current._set & ~mask) | requiredSet);
+  }
+
+  private static int toTcpFlagsMask(Tcp_flags_atomContext atom) {
+    if (atom.ACK() != null) {
+      return TCP_FLAG_ACK;
+    } else if (atom.CWR() != null) {
+      return TCP_FLAG_CWR;
+    } else if (atom.ECE() != null) {
+      return TCP_FLAG_ECE;
+    } else if (atom.FIN() != null) {
+      return TCP_FLAG_FIN;
+    } else if (atom.PSH() != null) {
+      return TCP_FLAG_PSH;
+    } else if (atom.RST() != null) {
+      return TCP_FLAG_RST;
+    } else if (atom.SYN() != null) {
+      return TCP_FLAG_SYN;
+    } else if (atom.URG() != null) {
+      return TCP_FLAG_URG;
+    }
+    assert atom.TCP_FLAGS_HEX() != null;
+    return Integer.parseUnsignedInt(atom.TCP_FLAGS_HEX().getText().substring(2), 16);
+  }
+
+  private static TcpFlagsMatchConditions toTcpFlags(TcpFlagsBits bits) {
     TcpFlagsMatchConditions.Builder tcpFlagsConditionsBuilder = TcpFlagsMatchConditions.builder();
     TcpFlags.Builder tcpFlagsBuilder = TcpFlags.builder();
-    for (Tcp_flags_literalContext literalCtx : ctx.literals) {
-      boolean value = literalCtx.BANG() == null;
-      Tcp_flags_atomContext atom = literalCtx.tcp_flags_atom();
-      if (atom.ACK() != null) {
-        tcpFlagsConditionsBuilder.setUseAck(true);
-        tcpFlagsBuilder.setAck(value);
-      } else if (atom.CWR() != null) {
-        tcpFlagsConditionsBuilder.setUseCwr(true);
-        tcpFlagsBuilder.setCwr(value);
-      } else if (atom.ECE() != null) {
-        tcpFlagsConditionsBuilder.setUseEce(true);
-        tcpFlagsBuilder.setEce(value);
-      } else if (atom.FIN() != null) {
-        tcpFlagsConditionsBuilder.setUseFin(true);
-        tcpFlagsBuilder.setFin(value);
-      } else if (atom.PSH() != null) {
-        tcpFlagsConditionsBuilder.setUsePsh(true);
-        tcpFlagsBuilder.setPsh(value);
-      } else if (atom.RST() != null) {
-        tcpFlagsConditionsBuilder.setUseRst(true);
-        tcpFlagsBuilder.setRst(value);
-      } else if (atom.SYN() != null) {
-        tcpFlagsConditionsBuilder.setUseSyn(true);
-        tcpFlagsBuilder.setSyn(value);
-      } else if (atom.URG() != null) {
-        tcpFlagsConditionsBuilder.setUseUrg(true);
-        tcpFlagsBuilder.setUrg(value);
-      } else {
-        throw new BatfishException("Invalid tcp-flags atom: " + atom.getText());
-      }
+    if ((bits._used & TCP_FLAG_ACK) != 0) {
+      tcpFlagsConditionsBuilder.setUseAck(true);
+      tcpFlagsBuilder.setAck((bits._set & TCP_FLAG_ACK) != 0);
+    }
+    if ((bits._used & TCP_FLAG_CWR) != 0) {
+      tcpFlagsConditionsBuilder.setUseCwr(true);
+      tcpFlagsBuilder.setCwr((bits._set & TCP_FLAG_CWR) != 0);
+    }
+    if ((bits._used & TCP_FLAG_ECE) != 0) {
+      tcpFlagsConditionsBuilder.setUseEce(true);
+      tcpFlagsBuilder.setEce((bits._set & TCP_FLAG_ECE) != 0);
+    }
+    if ((bits._used & TCP_FLAG_FIN) != 0) {
+      tcpFlagsConditionsBuilder.setUseFin(true);
+      tcpFlagsBuilder.setFin((bits._set & TCP_FLAG_FIN) != 0);
+    }
+    if ((bits._used & TCP_FLAG_PSH) != 0) {
+      tcpFlagsConditionsBuilder.setUsePsh(true);
+      tcpFlagsBuilder.setPsh((bits._set & TCP_FLAG_PSH) != 0);
+    }
+    if ((bits._used & TCP_FLAG_RST) != 0) {
+      tcpFlagsConditionsBuilder.setUseRst(true);
+      tcpFlagsBuilder.setRst((bits._set & TCP_FLAG_RST) != 0);
+    }
+    if ((bits._used & TCP_FLAG_SYN) != 0) {
+      tcpFlagsConditionsBuilder.setUseSyn(true);
+      tcpFlagsBuilder.setSyn((bits._set & TCP_FLAG_SYN) != 0);
+    }
+    if ((bits._used & TCP_FLAG_URG) != 0) {
+      tcpFlagsConditionsBuilder.setUseUrg(true);
+      tcpFlagsBuilder.setUrg((bits._set & TCP_FLAG_URG) != 0);
     }
     return tcpFlagsConditionsBuilder.setTcpFlags(tcpFlagsBuilder.build()).build();
+  }
+
+  private static List<TcpFlagsMatchConditions> toTcpFlags(Tcp_flags_alternativeContext ctx) {
+    List<TcpFlagsBits> alternatives = new ArrayList<>();
+    alternatives.add(new TcpFlagsBits(0, 0));
+    for (Tcp_flags_literalContext literalCtx : ctx.literals) {
+      int mask = toTcpFlagsMask(literalCtx.tcp_flags_atom());
+      List<TcpFlagsBits> nextAlternatives = new ArrayList<>();
+      if (literalCtx.BANG() == null) {
+        for (TcpFlagsBits current : alternatives) {
+          TcpFlagsBits next = addTcpFlagsRequirement(current, mask, true);
+          if (next != null) {
+            nextAlternatives.add(next);
+          }
+        }
+      } else {
+        for (TcpFlagsBits current : alternatives) {
+          for (int bit = TCP_FLAG_FIN; bit <= TCP_FLAG_CWR; bit <<= 1) {
+            if ((mask & bit) == 0) {
+              continue;
+            }
+            TcpFlagsBits next = addTcpFlagsRequirement(current, bit, false);
+            if (next != null) {
+              nextAlternatives.add(next);
+            }
+          }
+        }
+      }
+      alternatives = nextAlternatives;
+    }
+    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
+    for (TcpFlagsBits alternative : alternatives) {
+      tcpFlags.add(toTcpFlags(alternative));
+    }
+    return tcpFlags;
   }
 
   private static List<TcpFlagsMatchConditions> toTcpFlags(Tcp_flagsContext ctx) {
     List<TcpFlagsMatchConditions> tcpFlagsList = new ArrayList<>();
     for (Tcp_flags_alternativeContext alternativeCtx : ctx.alternatives) {
-      TcpFlagsMatchConditions tcpFlags = toTcpFlags(alternativeCtx);
-      tcpFlagsList.add(tcpFlags);
+      tcpFlagsList.addAll(toTcpFlags(alternativeCtx));
     }
     return tcpFlagsList;
   }
@@ -5972,7 +6057,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftf_tcp_flags(Fftf_tcp_flagsContext ctx) {
     List<TcpFlagsMatchConditions> tcpFlags = toTcpFlags(ctx.tcp_flags());
-    FwFrom from = FwFromTcpFlags.fromTcpFlags(tcpFlags);
+    FwFrom from =
+        tcpFlags.isEmpty() ? FwFromTcpFlags.never() : FwFromTcpFlags.fromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }
 

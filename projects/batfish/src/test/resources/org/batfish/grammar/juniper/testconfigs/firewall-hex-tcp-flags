@@ -1,0 +1,9 @@
+set system host-name firewall-hex-tcp-flags
+set firewall family inet filter HEX-SYN term MATCH from tcp-flags 0x2
+set firewall family inet filter HEX-SYN term MATCH then accept
+set firewall family inet filter HEX-BOTH term MATCH from tcp-flags 0x3
+set firewall family inet filter HEX-BOTH term MATCH then accept
+set firewall family inet filter HEX-NOT-BOTH term MATCH from tcp-flags "!0x3"
+set firewall family inet filter HEX-NOT-BOTH term MATCH then accept
+set firewall family inet filter HEX-NEVER term MATCH from tcp-flags "0x3 & !0x3"
+set firewall family inet filter HEX-NEVER term MATCH then accept
