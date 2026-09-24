@@ -22,6 +22,7 @@ public final class FwTerm implements Serializable {
     ICMP_CODE_EXCEPT,
     ICMP_TYPE,
     ICMP_TYPE_EXCEPT,
+    LEARN_VLAN_ID,
     PACKET_LENGTH,
     PACKET_LENGTH_EXCEPT,
     PORT,

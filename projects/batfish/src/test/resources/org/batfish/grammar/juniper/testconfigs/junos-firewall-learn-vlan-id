@@ -1,0 +1,4 @@
+set system host-name junos-firewall-learn-vlan-id
+set firewall family ethernet-switching filter VLAN-FILTER term BLOCK from learn-vlan-id 100
+set firewall family ethernet-switching filter VLAN-FILTER term BLOCK from learn-vlan-id 4095
+set firewall family ethernet-switching filter VLAN-FILTER term BLOCK then discard

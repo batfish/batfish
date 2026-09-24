@@ -164,6 +164,7 @@ fft_from
       | fftf_ip_protocol
       | fftf_is_fragment
       | fftf_learn_vlan_1p_priority
+      | fftf_learn_vlan_id
       | fftf_next_header
       | fftf_packet_length
       | fftf_packet_length_except
@@ -384,6 +385,12 @@ fftf_is_fragment
 fftf_learn_vlan_1p_priority
 :
    LEARN_VLAN_1P_PRIORITY dec
+;
+
+// https://www.juniper.net/documentation/en_US/junos/topics/task/configuration/vpls-l2-packet-filtering-solutions.html
+fftf_learn_vlan_id
+:
+   LEARN_VLAN_ID id = vlan_number
 ;
 
 fftf_next_header
