@@ -104,6 +104,7 @@ is_overload
   (
     apply
     | iso_advertise_high_metrics
+    | iso_allow_route_leaking
     | iso_timeout
   )
 ;
@@ -111,6 +112,12 @@ is_overload
 iso_advertise_high_metrics
 :
   ADVERTISE_HIGH_METRICS
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/overload-edit-protocols-isis.html
+iso_allow_route_leaking
+:
+  ALLOW_ROUTE_LEAKING
 ;
 
 is_reference_bandwidth

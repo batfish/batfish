@@ -18,6 +18,8 @@ public class IsisSettings implements Serializable {
 
   private boolean _overload;
 
+  private boolean _overloadAllowRouteLeaking;
+
   private Integer _overloadTimeout;
 
   private Double _referenceBandwidth;
@@ -58,6 +60,10 @@ public class IsisSettings implements Serializable {
     return _overload;
   }
 
+  public boolean getOverloadAllowRouteLeaking() {
+    return _overloadAllowRouteLeaking;
+  }
+
   public Integer getOverloadTimeout() {
     return _overloadTimeout;
   }
@@ -88,6 +94,10 @@ public class IsisSettings implements Serializable {
 
   public void setOverload(boolean overload) {
     _overload = overload;
+  }
+
+  public void setOverloadAllowRouteLeaking(boolean overloadAllowRouteLeaking) {
+    _overloadAllowRouteLeaking = overloadAllowRouteLeaking;
   }
 
   public void setOverloadTimeout(int overloadTimeout) {
