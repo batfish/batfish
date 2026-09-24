@@ -1,0 +1,5 @@
+set system host-name junos-mge-interface
+set interfaces mge-0/0/0 description uplink
+set interfaces mge-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces mge-0/0/0 unit 0 family ethernet-switching vlan members MANAGEMENT
+set vlans MANAGEMENT vlan-id 100
