@@ -140,6 +140,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_POLICER;
@@ -425,6 +426,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fft_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_classContext;
@@ -5754,6 +5756,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFf_term(Ff_termContext ctx) {
     _currentFwTerm = null;
+  }
+
+  @Override
+  public void exitFft_filter(Fft_filterContext ctx) {
+    String name = toString(ctx.name);
+    _currentFwTerm.setFilter(name);
+    JuniperStructureType filterType =
+        _currentFirewallFamily == Family.INET6 ? FIREWALL_INET6_FILTER : FIREWALL_FILTER;
+    _configuration.referenceStructure(
+        filterType, name, FIREWALL_FILTER_TERM_FILTER, getLine(ctx.name.getStop()));
   }
 
   @Override

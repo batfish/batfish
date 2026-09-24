@@ -119,9 +119,16 @@ ff_term
 :
    TERM name = junos_name
    (
-      fft_from
+      fft_filter
+      | fft_from
       | fft_then
    )?
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/term-edit-firewall.html
+fft_filter
+:
+   FILTER name = filter_name
 ;
 
 fft_from
