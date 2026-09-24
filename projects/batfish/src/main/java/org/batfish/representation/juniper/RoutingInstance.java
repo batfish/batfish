@@ -64,6 +64,7 @@ public class RoutingInstance implements Serializable {
   private Map<Long, OspfArea> _ospfAreas;
   private @Nullable Long _ospfDomainVpnTag;
   private List<String> _ospfExportPolicies;
+  private boolean _ospfIgnoreLspMetrics;
   private @Nullable Boolean _ospfDisable;
   private @Nullable Long _ospfExternalPreference;
   private @Nullable Long _ospfPreference;
@@ -285,6 +286,10 @@ public class RoutingInstance implements Serializable {
     return _ospfExportPolicies;
   }
 
+  public boolean getOspfIgnoreLspMetrics() {
+    return _ospfIgnoreLspMetrics;
+  }
+
   public @Nullable Boolean getOspfDisable() {
     return _ospfDisable;
   }
@@ -410,6 +415,10 @@ public class RoutingInstance implements Serializable {
 
   public void setOspfPreference(long ospfPreference) {
     _ospfPreference = ospfPreference;
+  }
+
+  public void setOspfIgnoreLspMetrics(boolean ospfIgnoreLspMetrics) {
+    _ospfIgnoreLspMetrics = ospfIgnoreLspMetrics;
   }
 
   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
