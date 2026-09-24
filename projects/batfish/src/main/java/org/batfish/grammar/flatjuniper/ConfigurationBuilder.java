@@ -145,6 +145,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_OPTION_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DOT1X_AUTHENTICATION_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DOT1X_AUTHENTICATOR_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DYNAMIC_TUNNELS_INET_IMPORT_POLICY;
@@ -512,6 +513,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_group
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodro_relay_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fods_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_filter_specificContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_if_exceedingContext;
@@ -6616,6 +6618,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFod_group(Fod_groupContext ctx) {
     _currentDhcpRelayGroup = null;
+  }
+
+  @Override
+  public void exitFodro_relay_server_group(Fodro_relay_server_groupContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        DHCP_RELAY_SERVER_GROUP,
+        name,
+        DHCP_RELAY_OPTION_RELAY_SERVER_GROUP,
+        getLine(ctx.getStart()));
   }
 
   @Override

@@ -106,6 +106,8 @@ fod_common
 :
    fod_active_server_group
    | fod_forward_only_null
+   | fod_relay_option
+   | fod_relay_option_82_null
    | fod_route_suppression_null
 ;
 
@@ -149,6 +151,138 @@ fod_route_suppression_null
       ACCESS
       | ACCESS_INTERNAL
       | DESTINATION
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/relay-option-edit-forwarding-options.html
+fod_relay_option
+:
+   RELAY_OPTION
+   (
+      fodro_default_action
+      | fodro_equals
+      | fodro_option_number_null
+      | fodro_starts_with
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/relay-option-82-edit-forwarding-options.html
+fod_relay_option_82_null
+:
+   RELAY_OPTION_82
+   (
+      fodro82_circuit_id_null
+      | fodro82_link_selection_null
+      | fodro82_remote_id_null
+      | fodro82_server_id_override_null
+      | fodro82_vendor_specific_null
+   )
+;
+
+fodro_action
+:
+   fodro_drop_null
+   | fodro_forward_only_null
+   | fodro_local_server_group_null
+   | fodro_relay_server_group
+;
+
+fodro_default_action
+:
+   DEFAULT_ACTION fodro_action
+;
+
+fodro_drop_null
+:
+   DROP
+;
+
+fodro_equals
+:
+   EQUALS fodro_value fodro_action
+;
+
+fodro_forward_only_null
+:
+   FORWARD_ONLY
+;
+
+fodro_local_server_group_null
+:
+   LOCAL_SERVER_GROUP junos_name
+;
+
+fodro_option_number_null
+:
+   OPTION_NUMBER uint8
+;
+
+fodro_relay_server_group
+:
+   RELAY_SERVER_GROUP name = junos_name
+;
+
+fodro_starts_with
+:
+   STARTS_WITH fodro_value fodro_action
+;
+
+fodro_value
+:
+   ASCII junos_name
+   | HEXADECIMAL secret_string
+;
+
+fodro82_circuit_id_null
+:
+   CIRCUIT_ID
+   (
+      INCLUDE_IRB_AND_L2
+      | KEEP_INCOMING_CIRCUIT_ID
+      | NO_VLAN_INTERFACE_NAME
+      | PREFIX junos_name
+      | USE_INTERFACE_DESCRIPTION
+        (
+           DEVICE
+           | LOGICAL
+        )
+      | USE_VLAN_ID
+   )
+;
+
+fodro82_link_selection_null
+:
+   LINK_SELECTION
+;
+
+fodro82_remote_id_null
+:
+   REMOTE_ID
+   (
+      INCLUDE_IRB_AND_L2
+      | KEEP_INCOMING_REMOTE_ID
+      | NO_VLAN_INTERFACE_NAME
+      | PREFIX junos_name
+      | USE_INTERFACE_DESCRIPTION
+        (
+           DEVICE
+           | LOGICAL
+        )
+      | USE_VLAN_ID
+   )
+;
+
+fodro82_server_id_override_null
+:
+   SERVER_ID_OVERRIDE
+;
+
+fodro82_vendor_specific_null
+:
+   VENDOR_SPECIFIC
+   (
+      HOST_NAME
+      | LOCATION
    )
 ;
 
