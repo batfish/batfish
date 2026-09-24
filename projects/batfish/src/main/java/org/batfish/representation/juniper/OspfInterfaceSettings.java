@@ -36,6 +36,7 @@ public class OspfInterfaceSettings implements Serializable {
   private @Nullable Boolean _ospfDisable;
   private @Nullable Integer _ospfHelloInterval;
   private @Nullable OspfInterfaceType _ospfInterfaceType;
+  private @Nullable Integer _ospfMtu;
   private boolean _ospfPassive;
   private final @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
   private final @Nonnull Map<String, Integer> _ospfTopologyCosts;
@@ -77,6 +78,10 @@ public class OspfInterfaceSettings implements Serializable {
     return _ospfInterfaceType;
   }
 
+  public @Nullable Integer getOspfMtu() {
+    return _ospfMtu;
+  }
+
   public boolean getOspfPassive() {
     return _ospfPassive;
   }
@@ -111,5 +116,9 @@ public class OspfInterfaceSettings implements Serializable {
 
   public void setOspfInterfaceType(@Nullable OspfInterfaceType ospfInterfaceType) {
     _ospfInterfaceType = ospfInterfaceType;
+  }
+
+  public void setOspfMtu(int ospfMtu) {
+    _ospfMtu = ospfMtu;
   }
 }
