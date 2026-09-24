@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class RoutingInstance implements Serializable {
   private @Nullable String _dynamicTunnelsInetImportPolicy;
   private boolean _exportLocalRoutesLan;
   private boolean _exportLocalRoutesPointToPoint;
+  private final Set<Family> _explicitNullCosFamilies;
   private String _forwardingTableExportPolicy;
   private GeneratedRoute _generatedRouteDefaults;
   private final Interface _globalMasterInterface;
@@ -102,6 +104,7 @@ public class RoutingInstance implements Serializable {
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();
     _dynamicTunnels = new TreeMap<>();
+    _explicitNullCosFamilies = EnumSet.noneOf(Family.class);
     _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
     _instanceExports = new LinkedList<>();
@@ -208,6 +211,10 @@ public class RoutingInstance implements Serializable {
 
   public boolean getExportLocalRoutesPointToPoint() {
     return _exportLocalRoutesPointToPoint;
+  }
+
+  public Set<Family> getExplicitNullCosFamilies() {
+    return _explicitNullCosFamilies;
   }
 
   public String getForwardingTableExportPolicy() {
