@@ -1,0 +1,4 @@
+set system host-name junos-interface-esi
+set interfaces ae0 esi 00:00:00:00:00:00:00:00:00:01
+set interfaces ae1 esi all-active
+set interfaces ae2 esi single-active

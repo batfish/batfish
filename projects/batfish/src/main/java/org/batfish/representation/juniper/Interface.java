@@ -57,6 +57,11 @@ public class Interface implements Serializable {
     UNKNOWN,
   }
 
+  public enum EthernetSegmentRedundancyMode {
+    ALL_ACTIVE,
+    SINGLE_ACTIVE
+  }
+
   /**
    * Returns true if this interface is configured like a physical interface. The main use of this
    * function is for features that can be configured on a group of bundled interfaces.
@@ -168,6 +173,8 @@ public class Interface implements Serializable {
   private String _description;
   private boolean _defined;
   private @Nullable BridgeSwitching _bridgeSwitching;
+  private @Nullable String _ethernetSegmentIdentifier;
+  private @Nullable EthernetSegmentRedundancyMode _ethernetSegmentRedundancyMode;
   private @Nullable EthernetSwitching _ethernetSwitching;
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
@@ -223,6 +230,14 @@ public class Interface implements Serializable {
 
   public String get8023adInterface() {
     return _agg8023adInterface;
+  }
+
+  public @Nullable String getEthernetSegmentIdentifier() {
+    return _ethernetSegmentIdentifier;
+  }
+
+  public @Nullable EthernetSegmentRedundancyMode getEthernetSegmentRedundancyMode() {
+    return _ethernetSegmentRedundancyMode;
   }
 
   public boolean getActive() {
@@ -509,6 +524,15 @@ public class Interface implements Serializable {
 
   public void setDemuxUnderlyingInterface(@Nullable String demuxUnderlyingInterface) {
     _demuxUnderlyingInterface = demuxUnderlyingInterface;
+  }
+
+  public void setEthernetSegmentIdentifier(String ethernetSegmentIdentifier) {
+    _ethernetSegmentIdentifier = ethernetSegmentIdentifier;
+  }
+
+  public void setEthernetSegmentRedundancyMode(
+      EthernetSegmentRedundancyMode ethernetSegmentRedundancyMode) {
+    _ethernetSegmentRedundancyMode = ethernetSegmentRedundancyMode;
   }
 
   public void setIncomingFilter(@Nullable String accessListName) {

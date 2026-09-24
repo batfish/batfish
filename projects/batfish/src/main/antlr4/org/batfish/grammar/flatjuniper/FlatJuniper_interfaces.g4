@@ -155,6 +155,7 @@ i_common_physical
     | i_description
     | i_disable
     | i_encapsulation_null
+    | i_esi
     | i_ether_options
     | i_fabric_options_null
     | i_fastether_options
@@ -231,6 +232,12 @@ i_disable
 i_enable
 :
    ENABLE
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/esi-edit-interfaces.html
+i_esi
+:
+   ESI (ALL_ACTIVE | identifier = ESI_IDENTIFIER | SINGLE_ACTIVE)
 ;
 
 i_ether_options
