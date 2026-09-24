@@ -1,0 +1,18 @@
+version 20.4R3;
+system {
+    host-name junos-escaped-quoted-string;
+}
+interfaces {
+}
+event-options {
+    policy HASH {
+        then {
+            execute-commands {
+                commands {
+                    "request pfe execute target fpc0 command \"set slot[0] register example 1\"";
+                    "request pfe execute target fpc0 command \"set shell \\"register EXAMPLE=1\\"\"";
+                }
+            }
+        }
+    }
+}

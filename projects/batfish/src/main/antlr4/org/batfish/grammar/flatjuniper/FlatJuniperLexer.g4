@@ -3499,7 +3499,7 @@ DOUBLE_PIPE
 
 DOUBLE_QUOTED_STRING
 :
-   '"' ~'"'* '"'
+   F_DoubleQuotedString
 ;
 
 /*
@@ -3918,7 +3918,8 @@ F_Letter
 fragment
 F_DoubleQuotedString
 :
-  '"' F_NonNewlineChar* '"'
+  // https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/cli-configuration.html#id-entering-configuration-statements-and-identifiers
+  '"' ('\\' F_NonNewlineChar | ~["\r\n])* '"'
 ;
 
 fragment
@@ -4959,6 +4960,10 @@ M_PolicyExpression_CLOSE_PAREN: ')' -> type(CLOSE_PAREN);
 M_PolicyExpression_DOUBLE_AMPERSAND: '&&' -> type(DOUBLE_AMPERSAND);
 M_PolicyExpression_DOUBLE_PIPE: '||' -> type(DOUBLE_PIPE);
 M_PolicyExpression_BANG: '!' -> type(BANG);
+// https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/cli-configuration.html#id-entering-configuration-statements-and-identifiers
+M_PolicyExpression_DOUBLE_QUOTED_STRING:
+  F_DoubleQuotedString -> type(DOUBLE_QUOTED_STRING)
+;
 M_PolicyExpression_NAME: F_Name -> type(NAME);
 
 M_PolicyExpression_NEWLINE: F_Newline -> type(NEWLINE), popMode;
