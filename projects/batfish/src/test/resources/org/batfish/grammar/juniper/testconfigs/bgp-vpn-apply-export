@@ -1,0 +1,5 @@
+set system host-name bgp-vpn-apply-export
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set protocols bgp group VPN-PEERS type internal
+set protocols bgp group VPN-PEERS vpn-apply-export

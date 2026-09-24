@@ -358,6 +358,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_vpn_apply_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
@@ -5245,6 +5246,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (ctx.EXTERNAL() != null) {
       _currentBgpGroup.setType(BgpGroupType.EXTERNAL);
     }
+  }
+
+  @Override
+  public void exitB_vpn_apply_export(B_vpn_apply_exportContext ctx) {
+    _currentBgpGroup.setVpnApplyExport(true);
+    todo(ctx);
   }
 
   @Override

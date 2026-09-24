@@ -3352,6 +3352,8 @@ VPLS: 'vpls';
 
 VPN: 'vpn' -> pushMode(M_Name);
 
+VPN_APPLY_EXPORT: 'vpn-apply-export';
+
 VPN_MONITOR: 'vpn-monitor';
 
 VRF: 'vrf';

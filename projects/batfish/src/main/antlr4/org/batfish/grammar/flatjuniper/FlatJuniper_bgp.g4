@@ -139,6 +139,7 @@ b_common
    | b_tcp_mss
    | b_traceoptions_null
    | b_type
+   | b_vpn_apply_export
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/accept-remote-nexthop-edit-protocols-bgp.html
@@ -414,6 +415,12 @@ b_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vpn-apply-export-edit-protocols-bgp-vp.html
+b_vpn_apply_export
+:
+   VPN_APPLY_EXPORT
 ;
 
 bf_accepted_prefix_limit
