@@ -128,6 +128,7 @@ is_traffic_engineering
   (
     ist_credibility_protocol_preference
     | ist_family_shortcuts
+    | ist_ignore_lsp_metrics
     | ist_multipath
   )
 ;
@@ -312,6 +313,12 @@ ist_family_shortcuts
     INET
     | INET6
   ) SHORTCUTS
+;
+
+// https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/ignore-lsp-metrics-edit-protocols-isis.html
+ist_ignore_lsp_metrics
+:
+  IGNORE_LSP_METRICS
 ;
 
 ist_multipath
