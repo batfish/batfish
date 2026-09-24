@@ -706,6 +706,11 @@ sc_named
   | NO_EXPORT_SUBCONFED
 ;
 
+large_community
+:
+  LARGE_COMMUNITY
+;
+
 standard_community
 :
   sc_literal

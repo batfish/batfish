@@ -308,7 +308,9 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -597,6 +599,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_ignore_lsp_metricsC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Large_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Metric_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
@@ -1065,6 +1068,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sovt_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_costContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Static_route_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_accountingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
@@ -2157,6 +2161,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       assert ctx.sc_named() != null;
       return toStandardCommunity(ctx.sc_named());
     }
+  }
+
+  private static @Nonnull LargeCommunity toLargeCommunity(Large_communityContext ctx) {
+    return LargeCommunity.parse(ctx.LARGE_COMMUNITY().getText());
+  }
+
+  private @Nonnull Community toStaticRouteCommunity(Static_route_communityContext ctx) {
+    if (ctx.large_community() != null) {
+      return toLargeCommunity(ctx.large_community());
+    }
+    return toStandardCommunity(ctx.standard_community());
   }
 
   private static EncryptionAlgorithm toEncryptionAlgorithm(Encryption_algorithmContext ctx) {
@@ -8365,7 +8380,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_community(Rosr_communityContext ctx) {
-    _currentStaticRoute.addCommunity(toStandardCommunity(ctx.standard_community()));
+    _currentStaticRoute.addCommunity(toStaticRouteCommunity(ctx.static_route_community()));
   }
 
   @Override
