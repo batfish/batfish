@@ -1322,6 +1322,10 @@ INTERFACE
    'interface' -> pushMode ( M_Interface )
 ;
 
+INTERFACE_GROUP: 'interface-group' -> pushMode(M_SubRange);
+
+INTERFACE_GROUP_EXCEPT: 'interface-group-except' -> pushMode(M_SubRange);
+
 INTERFACE_MAC_LIMIT: 'interface-mac-limit';
 INTERFACE_MODE: 'interface-mode';
 
@@ -4423,6 +4427,12 @@ M_Interface_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Interface_INTERFACE: 'interface' -> type(INTERFACE);
 
 M_Interface_WS: F_WhitespaceChar+ -> skip;
+
+M_Interface_INTERFACE_WILDCARD
+:
+  F_NonWhitespaceChar* ('*' | '?' | '[') F_NonWhitespaceChar*
+  -> type(INTERFACE_WILDCARD), popMode
+;
 
 M_Interface_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID), popMode;
 

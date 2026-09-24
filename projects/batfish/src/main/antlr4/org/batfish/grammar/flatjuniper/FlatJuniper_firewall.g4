@@ -150,6 +150,8 @@ fft_from
       | fftf_icmp_type
       | fftf_icmp_type_except
       | fftf_interface
+      | fftf_interface_group
+      | fftf_interface_group_except
       | fftf_interface_set
       | fftf_ip_options
       | fftf_ip_protocol
@@ -331,10 +333,25 @@ fftf_icmp_type_except
    )
 ;
 
-// TODO This should also support interface wildcard
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/concept/firewall-filter-match-understanding.html
 fftf_interface
 :
-   INTERFACE iface_name = interface_id
+   INTERFACE
+   (
+      iface_name = interface_id
+      | iface_wildcard = interface_wildcard
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/example/firewall-filter-option-received-on-interface-group-example.html
+fftf_interface_group
+:
+   INTERFACE_GROUP group = uint8_range
+;
+
+fftf_interface_group_except
+:
+   INTERFACE_GROUP_EXCEPT group = uint8_range
 ;
 
 fftf_interface_set

@@ -468,6 +468,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.FilterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_dhcp_relayContext;
@@ -1191,7 +1192,9 @@ import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
 import org.batfish.representation.juniper.FwFromInterface;
+import org.batfish.representation.juniper.FwFromInterfaceGroup;
 import org.batfish.representation.juniper.FwFromInterfaceSet;
+import org.batfish.representation.juniper.FwFromInterfaceWildcard;
 import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
@@ -5880,13 +5883,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_interface(FlatJuniperParser.Fftf_interfaceContext ctx) {
-    String interfaceName = getInterfaceFullName(ctx.interface_id());
-    _currentFwTerm.getFroms().add(new FwFromInterface(interfaceName));
-    _configuration.referenceStructure(
-        INTERFACE,
-        interfaceName,
-        FIREWALL_FILTER_TERM_FROM_INTERFACE,
-        getLine(ctx.interface_id().getStop()));
+    if (ctx.iface_name != null) {
+      String interfaceName = getInterfaceFullName(ctx.iface_name);
+      _currentFwTerm.getFroms().add(new FwFromInterface(interfaceName));
+      _configuration.referenceStructure(
+          INTERFACE,
+          interfaceName,
+          FIREWALL_FILTER_TERM_FROM_INTERFACE,
+          getLine(ctx.iface_name.getStop()));
+    } else {
+      assert ctx.iface_wildcard != null;
+      _currentFwTerm.getFroms().add(new FwFromInterfaceWildcard(ctx.iface_wildcard.getText()));
+    }
+  }
+
+  @Override
+  public void exitFftf_interface_group(FlatJuniperParser.Fftf_interface_groupContext ctx) {
+    _currentFwTerm
+        .getFroms()
+        .add(new FwFromInterfaceGroup(toSubRange(ctx.group), false, _currentFirewallFamily));
+  }
+
+  @Override
+  public void exitFftf_interface_group_except(
+      FlatJuniperParser.Fftf_interface_group_exceptContext ctx) {
+    _currentFwTerm
+        .getFroms()
+        .add(new FwFromInterfaceGroup(toSubRange(ctx.group), true, _currentFirewallFamily));
   }
 
   @Override
@@ -6422,6 +6445,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFilter_group(Filter_groupContext ctx) {
+    int group = toInteger(ctx.group);
+    if (ctx.getParent().getParent() instanceof Ifi6_filterContext) {
+      _currentInterfaceOrRange.setInterfaceGroup6(group);
+    } else {
+      _currentInterfaceOrRange.setInterfaceGroup(group);
+    }
+  }
+
+  @Override
   public void exitIfi_filter(Ifi_filterContext ctx) {
     FilterContext filter = ctx.filter();
     if (filter.direction() == null) {
@@ -6529,11 +6562,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIntir_member(Intir_memberContext ctx) {
-    String member =
-        unquote(
-            (ctx.interface_id() == null ? ctx.DOUBLE_QUOTED_STRING() : ctx.interface_id())
-                .getText(),
-            ctx);
+    String memberText;
+    if (ctx.interface_id() != null) {
+      memberText = ctx.interface_id().getText();
+    } else {
+      assert ctx.interface_wildcard() != null;
+      memberText = ctx.interface_wildcard().getText();
+    }
+    String member = unquote(memberText, ctx);
     try {
       InterfaceRangeMember mc = new InterfaceRangeMember(member);
       ((InterfaceRange) _currentInterfaceOrRange).getMembers().add(mc);
