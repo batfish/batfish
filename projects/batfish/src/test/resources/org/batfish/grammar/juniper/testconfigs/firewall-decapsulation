@@ -1,0 +1,5 @@
+set system host-name firewall-decapsulation
+set routing-instances DECAP-VRF instance-type virtual-router
+set firewall family inet filter DECAP term GRE then decapsulate gre routing-instance DECAP-VRF
+set firewall family inet filter DECAP term GRE-UDP then decapsulate gre-in-udp
+set firewall family inet filter DECAP term MPLS-UDP then decapsulate mpls-in-udp

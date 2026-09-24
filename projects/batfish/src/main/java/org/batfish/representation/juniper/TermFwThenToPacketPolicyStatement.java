@@ -39,6 +39,11 @@ public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<St
   }
 
   @Override
+  public @Nullable Statement visitFwThenDecapsulate(FwThenDecapsulate decapsulate) {
+    return null;
+  }
+
+  @Override
   public @Nullable Statement visitFwThenNextIp(FwThenNextIp nextIp) {
     return null;
   }

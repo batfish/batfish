@@ -466,9 +466,16 @@ fftt_accept
    ACCEPT
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/decapsulate-l2tp-edit-firewall-filter-term-then.html
 fftt_decapsulate
 :
-   DECAPSULATE GRE
+   DECAPSULATE
+   (
+      GRE
+      | GRE_IN_UDP
+      | MPLS_IN_UDP
+   )
+   (ROUTING_INSTANCE name = junos_name)?
 ;
 
 fftt_discard
