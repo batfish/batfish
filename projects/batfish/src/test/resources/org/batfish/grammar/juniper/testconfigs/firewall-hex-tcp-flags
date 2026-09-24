@@ -1,0 +1,19 @@
+set system host-name firewall-hex-tcp-flags
+set firewall family inet filter HEX-SYN term MATCH from tcp-flags 0x2
+set firewall family inet filter HEX-SYN term MATCH then accept
+set firewall family inet filter HEX-BOTH term MATCH from tcp-flags 0x3
+set firewall family inet filter HEX-BOTH term MATCH then accept
+set firewall family inet filter HEX-NOT-BOTH term MATCH from tcp-flags "!0x3"
+set firewall family inet filter HEX-NOT-BOTH term MATCH then accept
+set firewall family inet filter HEX-NEVER term MATCH from tcp-flags "0x3 & !0x3"
+set firewall family inet filter HEX-NEVER term MATCH then accept
+set firewall family inet filter HEX-NEVER-REVERSE term MATCH from tcp-flags "!0x3 & 0x3"
+set firewall family inet filter HEX-NEVER-REVERSE term MATCH then accept
+set firewall family inet filter HEX-ALL term MATCH from tcp-flags 0xff
+set firewall family inet filter HEX-ALL term MATCH then accept
+set firewall family inet filter HEX-NOT-ALL term MATCH from tcp-flags "!0xff"
+set firewall family inet filter HEX-NOT-ALL term MATCH then accept
+set firewall family inet filter HEX-NOT-ZERO term MATCH from tcp-flags "!0x0"
+set firewall family inet filter HEX-NOT-ZERO term MATCH then accept
+set firewall family inet filter NAMED-ALL term MATCH from tcp-flags "ack & cwr & ece & fin & psh & rst & syn & urg"
+set firewall family inet filter NAMED-ALL term MATCH then accept

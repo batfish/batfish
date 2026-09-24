@@ -10,6 +10,15 @@ import javax.annotation.Nonnull;
 
 /** Collection of TCP flags. */
 public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
+  public static final int FIN = 0x01;
+  public static final int SYN = 0x02;
+  public static final int RST = 0x04;
+  public static final int PSH = 0x08;
+  public static final int ACK = 0x10;
+  public static final int URG = 0x20;
+  public static final int ECE = 0x40;
+  public static final int CWR = 0x80;
+
   /** Some legacy code requires TCP Flags to be present for non-TCP flows. */
   public static final TcpFlags FALSE =
       new TcpFlags(false, false, false, false, false, false, false, false);

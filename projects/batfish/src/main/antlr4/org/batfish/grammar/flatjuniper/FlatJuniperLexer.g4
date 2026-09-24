@@ -40,6 +40,7 @@ tokens {
    RST,
    SUB_RANGE,
    SYN,
+   TCP_FLAGS_HEX,
    UINT32L,
    VERSION_STRING,
    VXLAN_RIB_NAME,
@@ -4702,9 +4703,19 @@ M_TcpFlags_FIN
    'fin' -> type ( FIN )
 ;
 
+M_TcpFlags_HEX
+:
+   '0x' [0-9A-Fa-f] [0-9A-Fa-f]? -> type(TCP_FLAGS_HEX)
+;
+
 M_TcpFlags_NEWLINE
 :
    F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_TcpFlags_PSH
+:
+   ('psh' | 'push') -> type ( PSH )
 ;
 
 M_TcpFlags_RST
@@ -4764,6 +4775,11 @@ M_TcpFlags2_FIN
    'fin' -> type ( FIN )
 ;
 
+M_TcpFlags2_HEX
+:
+   '0x' [0-9A-Fa-f] [0-9A-Fa-f]? -> type(TCP_FLAGS_HEX)
+;
+
 M_TcpFlags2_OPEN_PAREN
 :
    '(' -> type ( OPEN_PAREN )
@@ -4772,6 +4788,11 @@ M_TcpFlags2_OPEN_PAREN
 M_TcpFlags2_PIPE
 :
    '|' -> type ( PIPE )
+;
+
+M_TcpFlags2_PSH
+:
+   ('psh' | 'push') -> type ( PSH )
 ;
 
 M_TcpFlags2_RST
