@@ -161,6 +161,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_RPF_CHECK_FAIL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
@@ -536,12 +537,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_rpf_checkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_ndpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_rpf_checkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
@@ -6763,6 +6766,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitIfi_rpf_check(Ifi_rpf_checkContext ctx) {
+    if (ctx.ifirpf_fail_filter() != null) {
+      String name = toString(ctx.ifirpf_fail_filter().name);
+      _configuration.referenceStructure(
+          FIREWALL_FILTER,
+          name,
+          INTERFACE_RPF_CHECK_FAIL_FILTER,
+          getLine(ctx.ifirpf_fail_filter().name.getStart()));
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void exitIfi_tcp_mss(Ifi_tcp_mssContext ctx) {
     int tcpMss = toInt(ctx.size);
     _currentInterfaceOrRange.setTcpMss(tcpMss);
@@ -6948,6 +6964,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
     _configuration.referenceStructure(
         FIREWALL_INET6_FILTER, name, usage, getLine(filter.name.getStart()));
+  }
+
+  @Override
+  public void exitIfi6_rpf_check(Ifi6_rpf_checkContext ctx) {
+    if (ctx.ifirpf_fail_filter() != null) {
+      String name = toString(ctx.ifirpf_fail_filter().name);
+      _configuration.referenceStructure(
+          FIREWALL_INET6_FILTER,
+          name,
+          INTERFACE_RPF_CHECK_FAIL_FILTER,
+          getLine(ctx.ifirpf_fail_filter().name.getStart()));
+    }
+    todo(ctx);
   }
 
   @Override

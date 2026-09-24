@@ -128,6 +128,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   INTERFACE_INCOMING_FILTER_LIST("interface firewall filter input-list"),
   INTERFACE_OUTGOING_FILTER("interface firewall filter output"),
   INTERFACE_OUTGOING_FILTER_LIST("interface firewall filter output-list"),
+  INTERFACE_RPF_CHECK_FAIL_FILTER("interface rpf-check fail-filter"),
   INTERFACE_ROUTING_OPTIONS("routing-options interface-routes"),
   INTERFACE_SELF_REFERENCE("interface"),
   INTERFACE_VLAN("interface vlan"),

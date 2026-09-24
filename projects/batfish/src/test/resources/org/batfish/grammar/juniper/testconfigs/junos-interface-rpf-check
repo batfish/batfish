@@ -1,0 +1,9 @@
+set system host-name junos-interface-rpf-check
+set firewall family inet filter RPF4 term accept then accept
+set firewall family inet6 filter RPF6 term accept then accept
+set interfaces ae0 unit 0 family inet rpf-check
+set interfaces ae0 unit 1 family inet rpf-check fail-filter RPF4
+set interfaces ae0 unit 2 family inet rpf-check mode strict
+set interfaces ae0 unit 3 family inet6 rpf-check
+set interfaces ae0 unit 4 family inet6 rpf-check fail-filter RPF6
+set interfaces ae0 unit 5 family inet6 rpf-check mode loose
