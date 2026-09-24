@@ -64,6 +64,7 @@ public enum JuniperStructureType implements StructureType {
   POLICY_STATEMENT("policy-statement"),
   POLICY_STATEMENT_TERM("policy-statement term"),
   PREFIX_LIST("prefix-list"),
+  RADSEC_DESTINATION("radsec destination"),
   RIB_GROUP("rib-group"),
   ROUTING_INSTANCE("routing-instance"),
   RTF_PREFIX_LIST("rtf-prefix-list"),

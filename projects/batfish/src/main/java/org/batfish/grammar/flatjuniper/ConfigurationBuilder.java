@@ -63,6 +63,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.PKI_LOCAL_
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.RADSEC_DESTINATION;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
@@ -75,6 +76,11 @@ import static org.batfish.representation.juniper.JuniperStructureType.SOURCE_CLA
 import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RADIUS_SERVER_RADSEC_DESTINATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RADIUS_SERVER_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RADSEC_DYNAMIC_REQUESTS_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RADSEC_LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RADSEC_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
@@ -1002,6 +1008,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sa_profileContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sa_radius_serverContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sard_destinationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sardd_dynamic_requestsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_forwarding_class_setsContext;
@@ -9683,6 +9692,64 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterSa_profile(Sa_profileContext ctx) {
     _configuration.defineFlattenedStructure(ACCESS_PROFILE, toString(ctx.name), ctx, _parser);
+  }
+
+  @Override
+  public void enterSard_destination(Sard_destinationContext ctx) {
+    _configuration.defineFlattenedStructure(RADSEC_DESTINATION, ctx.id.getText(), ctx, _parser);
+  }
+
+  @Override
+  public void exitSa_radius_server(Sa_radius_serverContext ctx) {
+    if (ctx.destination != null) {
+      _configuration.referenceStructure(
+          RADSEC_DESTINATION,
+          ctx.destination.getText(),
+          ACCESS_RADIUS_SERVER_RADSEC_DESTINATION,
+          getLine(ctx.destination.getStart()));
+    } else if (ctx.routing_instance != null) {
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE,
+          toString(ctx.routing_instance),
+          ACCESS_RADIUS_SERVER_ROUTING_INSTANCE,
+          getLine(ctx.routing_instance.getStart()));
+    }
+  }
+
+  @Override
+  public void exitSard_destination(Sard_destinationContext ctx) {
+    if (ctx.logical_system != null) {
+      _configuration.referenceStructure(
+          LOGICAL_SYSTEM,
+          toString(ctx.logical_system),
+          ACCESS_RADSEC_LOGICAL_SYSTEM,
+          getLine(ctx.logical_system.getStart()));
+    }
+    if (ctx.logical_system_routing_instance != null) {
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE,
+          toString(ctx.logical_system_routing_instance),
+          ACCESS_RADSEC_ROUTING_INSTANCE,
+          getLine(ctx.logical_system_routing_instance.getStart()));
+    }
+    if (ctx.routing_instance != null) {
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE,
+          toString(ctx.routing_instance),
+          ACCESS_RADSEC_ROUTING_INSTANCE,
+          getLine(ctx.routing_instance.getStart()));
+    }
+  }
+
+  @Override
+  public void exitSardd_dynamic_requests(Sardd_dynamic_requestsContext ctx) {
+    if (ctx.routing_instance != null) {
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE,
+          toString(ctx.routing_instance),
+          ACCESS_RADSEC_DYNAMIC_REQUESTS_ROUTING_INSTANCE,
+          getLine(ctx.routing_instance.getStart()));
+    }
   }
 
   @Override
