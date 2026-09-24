@@ -45,6 +45,7 @@ o_common
    | o_rib_group
    | o_rib_groups
    | o_spf_options_null
+   | o_topology
    | o_traceoptions_null
    | o_traffic_engineering
 ;
@@ -101,6 +102,13 @@ o_spf_options_null
 :
    SPF_OPTIONS null_filler
 ;
+
+// https://www.juniper.net/documentation/us/en/software/junos/ospf/topics/topic-map/configuring-multitopology-routing-in-ospf.html
+o_topology
+:
+   TOPOLOGY name = junos_name OVERLOAD
+;
+
 o_traceoptions_null
 :
    TRACEOPTIONS null_filler
@@ -188,6 +196,7 @@ oa_interface
       | oai_priority
       | oai_retransmit_interval_null
       | oai_te_metric
+      | oai_topology
    )
 ;
 
@@ -341,6 +350,12 @@ oai_retransmit_interval_null
 oai_te_metric
 :
    TE_METRIC dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/topology-edit-protocols-ospf-interface.html
+oai_topology
+:
+   TOPOLOGY name = junos_name METRIC metric = uint16
 ;
 
 oal_metric

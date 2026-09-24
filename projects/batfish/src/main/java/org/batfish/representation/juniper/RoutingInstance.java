@@ -64,6 +64,7 @@ public class RoutingInstance implements Serializable {
   private Map<Long, OspfArea> _ospfAreas;
   private @Nullable Long _ospfDomainVpnTag;
   private List<String> _ospfExportPolicies;
+  private final @Nonnull Set<String> _ospfOverloadedTopologies;
   private @Nullable Boolean _ospfDisable;
   private @Nullable Long _ospfExternalPreference;
   private @Nullable Long _ospfPreference;
@@ -110,6 +111,7 @@ public class RoutingInstance implements Serializable {
     _ospf3RibGroups = new TreeMap<>();
     _ospfAreas = new TreeMap<>();
     _ospfExportPolicies = new LinkedList<>();
+    _ospfOverloadedTopologies = new TreeSet<>();
     _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
     _ospfRibGroups = new TreeMap<>();
     _ribs = new TreeMap<>();
@@ -283,6 +285,10 @@ public class RoutingInstance implements Serializable {
 
   public List<String> getOspfExportPolicies() {
     return _ospfExportPolicies;
+  }
+
+  public @Nonnull Set<String> getOspfOverloadedTopologies() {
+    return _ospfOverloadedTopologies;
   }
 
   public @Nullable Boolean getOspfDisable() {
