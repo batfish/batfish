@@ -174,6 +174,8 @@ public class Interface implements Serializable {
   private @Nullable String _incomingFilter6;
   private @Nullable List<String> _incomingFilterList6;
   private @Nullable InterfaceVlanTag _innerVlanTag;
+  private @Nullable Integer _interfaceGroup;
+  private @Nullable Integer _interfaceGroup6;
   private transient boolean _inherited;
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
@@ -276,6 +278,14 @@ public class Interface implements Serializable {
 
   public @Nullable List<String> getIncomingFilterList6() {
     return _incomingFilterList6;
+  }
+
+  public @Nullable Integer getInterfaceGroup() {
+    return _interfaceGroup;
+  }
+
+  public @Nullable Integer getInterfaceGroup6() {
+    return _interfaceGroup6;
   }
 
   public @Nullable IsisInterfaceSettings getIsisSettings() {
@@ -512,6 +522,14 @@ public class Interface implements Serializable {
   public void setIncomingFilter6(@Nullable String accessListName) {
     _incomingFilter6 = accessListName;
     _incomingFilterList6 = null;
+  }
+
+  public void setInterfaceGroup(int interfaceGroup) {
+    _interfaceGroup = interfaceGroup;
+  }
+
+  public void setInterfaceGroup6(int interfaceGroup6) {
+    _interfaceGroup6 = interfaceGroup6;
   }
 
   public void addIncomingFilterList6(@Nonnull String accessListName) {
