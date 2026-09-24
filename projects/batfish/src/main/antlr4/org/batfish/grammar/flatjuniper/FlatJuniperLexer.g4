@@ -3992,6 +3992,8 @@ F_InterfaceMediaType
    'stm1' |
    'stm4' |
    'stm16' |
+   // https://www.juniper.net/documentation/us/en/software/junos/nfx250-getting-started/topics/example/service-chaining-virtio-configuring-nfx250-ng.html
+   'sxe' |
    't1' |
    't3' |
    'tap' |
