@@ -558,6 +558,12 @@ popst_add_path
    ADD_PATH SEND_COUNT count = send_path_count
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/aigp-adjust-edit-policy-options.html
+popst_aigp_adjust
+:
+  AIGP_ADJUST (ADD | DIVIDE | MULTIPLY | SUBTRACT) (DISTANCE_TO_PROTOCOL_NEXTHOP | dec)
+;
+
 popst_aigp_originate: AIGP_ORIGINATE (distance = uint32)?;
 
 popst_as_path_expand
@@ -607,6 +613,7 @@ popst_common
 :
    popst_accept
    | popst_add_path
+   | popst_aigp_adjust
    | popst_aigp_originate
    | popst_as_path_expand
    | popst_as_path_prepend

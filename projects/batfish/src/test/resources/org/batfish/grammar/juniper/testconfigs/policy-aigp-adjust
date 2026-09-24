@@ -1,0 +1,6 @@
+set system host-name policy-aigp-adjust
+set policy-options policy-statement AIGP-ADJUST term ADD-DISTANCE then aigp-adjust add distance-to-protocol-nexthop
+set policy-options policy-statement AIGP-ADJUST term DIVIDE-VALUE then aigp-adjust divide 2
+set policy-options policy-statement AIGP-ADJUST term MULTIPLY-VALUE then aigp-adjust multiply 3
+set policy-options policy-statement AIGP-ADJUST term SUBTRACT-VALUE then aigp-adjust subtract 900000
+set policy-options policy-statement AIGP-ADJUST term ADD-MAX then aigp-adjust add 18446744073709551615

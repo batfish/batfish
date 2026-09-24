@@ -240,6 +240,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -693,6 +694,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_add_pathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_aigp_adjustContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_aigp_originateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
@@ -1310,6 +1312,7 @@ import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
 import org.batfish.representation.juniper.PsThenAddPathSendCount;
+import org.batfish.representation.juniper.PsThenAigpAdjust;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpand;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
@@ -7247,6 +7250,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_add_path(Popst_add_pathContext ctx) {
     toInteger(ctx, ctx.count).ifPresent(count -> addPsThen(new PsThenAddPathSendCount(count), ctx));
+  }
+
+  @Override
+  public void exitPopst_aigp_adjust(Popst_aigp_adjustContext ctx) {
+    PsThenAigpAdjust.Operator operator;
+    if (ctx.ADD() != null) {
+      operator = PsThenAigpAdjust.Operator.ADD;
+    } else if (ctx.DIVIDE() != null) {
+      operator = PsThenAigpAdjust.Operator.DIVIDE;
+    } else if (ctx.MULTIPLY() != null) {
+      operator = PsThenAigpAdjust.Operator.MULTIPLY;
+    } else {
+      assert ctx.SUBTRACT() != null;
+      operator = PsThenAigpAdjust.Operator.SUBTRACT;
+    }
+    addPsThen(
+        new PsThenAigpAdjust(
+            operator,
+            ctx.DISTANCE_TO_PROTOCOL_NEXTHOP() != null
+                ? null
+                : new BigInteger(ctx.dec().getText())),
+        ctx);
+    todo(ctx);
   }
 
   @Override
