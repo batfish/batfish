@@ -896,7 +896,7 @@ rosr_common
 
 rosr_community
 :
-   COMMUNITY standard_community
+   COMMUNITY static_route_community
 ;
 
 rosr_discard
@@ -1006,6 +1006,13 @@ rosr_tag
 rosr_tag2
 :
    TAG2 tag = uint32
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/community-edit-routing-options.html
+static_route_community
+:
+   LARGE_COMMUNITY
+   | standard_community
 ;
 
 rosrqnh_common
