@@ -1,0 +1,11 @@
+set system host-name ospf-preference
+set interfaces lo0 unit 0 family inet address 192.0.2.1/32
+set interfaces lo0 unit 1 family inet address 192.0.2.2/32
+set protocols ospf preference 180
+set protocols ospf external-preference 181
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set routing-instances HIGH instance-type virtual-router
+set routing-instances HIGH interface lo0.1
+set routing-instances HIGH protocols ospf preference 4294967295
+set routing-instances HIGH protocols ospf external-preference 4294967295
+set routing-instances HIGH protocols ospf area 0.0.0.0 interface lo0.1 passive

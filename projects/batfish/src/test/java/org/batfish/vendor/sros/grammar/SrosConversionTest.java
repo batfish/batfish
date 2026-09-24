@@ -303,12 +303,12 @@ public final class SrosConversionTest {
     assertThat(proc.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     // The configured `preference 20` becomes the internal OSPF admin distance (default would be
     // 10); this lab raises it above the IS-IS preference (18) so IS-IS is the preferred IGP.
-    assertThat(proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF), equalTo(20));
+    assertThat(proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF), equalTo(20L));
     assertThat(
-        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_IA), equalTo(20));
+        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_IA), equalTo(20L));
     // External preference is unchanged at the SR-OS default 150.
     assertThat(
-        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_E2), equalTo(150));
+        proc.getAdminCosts().get(org.batfish.datamodel.RoutingProtocol.OSPF_E2), equalTo(150L));
     assertThat(proc.getAreas(), hasKey(0L));
     assertThat(proc.getAreas().get(0L).getInterfaces(), containsInAnyOrder("system", "to-r3"));
 
