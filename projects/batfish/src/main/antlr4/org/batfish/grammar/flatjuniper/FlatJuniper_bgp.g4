@@ -139,6 +139,7 @@ b_common
    | b_remove_private
    | b_tcp_mss
    | b_traceoptions_null
+   | b_ttl
    | b_type
    | b_vpn_apply_export
 ;
@@ -410,6 +411,12 @@ b_remove_private
 b_tcp_mss
 :
    TCP_MSS dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/ttl-edit-protocols-bgp.html
+b_ttl
+:
+   TTL ttl = uint8
 ;
 
 b_type
@@ -762,9 +769,10 @@ bm_no_nexthop_change
    NO_NEXTHOP_CHANGE
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/multihop-edit-protocols-bgp.html
 bm_ttl
 :
-   TTL dec
+   TTL ttl = uint8
 ;
 
 // Set the MED to the most recent IGP metric to the BGP next hop.
