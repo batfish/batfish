@@ -443,6 +443,7 @@ fftf_tcp_established
    TCP_ESTABLISHED
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/concept/firewall-filter-stateless-match-conditions-bit-field-values.html
 fftf_tcp_flags
 :
    TCP_FLAGS tcp_flags
@@ -588,6 +589,7 @@ tcp_flags_atom
    | PSH
    | RST
    | SYN
+   | TCP_FLAGS_HEX
    | URG
 ;
 
