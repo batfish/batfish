@@ -144,6 +144,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_LOCAL_SERVER_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_OPTION_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DOT1X_AUTHENTICATION_PROFILE;
@@ -858,6 +859,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rissdg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
@@ -9021,6 +9023,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRoaa_path(Roaa_pathContext ctx) {
     AsPath asPath = toAsPath(ctx.path);
     _currentAggregateRoute.setAsPath(asPath);
+  }
+
+  @Override
+  public void exitRissdg_interface(Rissdg_interfaceContext ctx) {
+    String interfaceName = getInterfaceFullName(ctx.id);
+    _configuration.referenceStructure(
+        INTERFACE, interfaceName, DHCP_LOCAL_SERVER_GROUP_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override

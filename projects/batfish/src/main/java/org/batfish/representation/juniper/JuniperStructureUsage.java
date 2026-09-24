@@ -114,6 +114,7 @@ public enum JuniperStructureUsage implements StructureUsage {
       "class-of-service system-defaults classifiers exp"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
+  DHCP_LOCAL_SERVER_GROUP_INTERFACE("dhcp local-server group interface"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   DHCP_RELAY_OPTION_RELAY_SERVER_GROUP("dhcp relay option relay-server-group"),
   DOT1X_AUTHENTICATION_PROFILE("dot1x authentication-profile-name"),

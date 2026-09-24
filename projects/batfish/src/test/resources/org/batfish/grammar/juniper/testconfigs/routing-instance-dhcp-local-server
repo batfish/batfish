@@ -1,0 +1,3 @@
+set system host-name routing-instance-dhcp-local-server
+set interfaces irb unit 100 family inet address 192.0.2.1/24
+set routing-instances TENANT system services dhcp-local-server group CLIENTS interface irb.100
