@@ -8,7 +8,31 @@ options {
 
 a_application
 :
-   APPLICATION name = junos_name
+   APPLICATION
+   (
+      aa_any
+      | aa_named
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/security-policies/topics/topic-map/security-policy-applications.html
+aa_any
+:
+   ANY
+   (
+      aat_inactivity_timeout
+      | aa_any_term
+   )
+;
+
+aa_any_term
+:
+   TERM junos_name aat_inactivity_timeout
+;
+
+aa_named
+:
+   name = junos_name
    (
       aa_common+
       | aa_description
