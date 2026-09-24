@@ -791,6 +791,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instan
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_propagate_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_table_labelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
@@ -8244,6 +8245,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
     _currentRoutingInstance.setVrfImportPolicy(name);
+  }
+
+  @Override
+  public void exitRi_vrf_propagate_ttl(Ri_vrf_propagate_ttlContext ctx) {
+    _currentRoutingInstance.setVrfPropagateTtl(ctx.VRF_PROPAGATE_TTL() != null);
+    todo(ctx);
   }
 
   @Override

@@ -34,6 +34,14 @@ ri_interface
    INTERFACE id = interface_id
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-vrf-propagate-ttl-edit-routing-instances.html
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vrf-propagate-ttl-edit-routing-instances2.html
+ri_vrf_propagate_ttl
+:
+   NO_VRF_PROPAGATE_TTL
+   | VRF_PROPAGATE_TTL
+;
+
 ri_named_routing_instance
 :
    name = junos_name
@@ -54,6 +62,7 @@ ri_named_routing_instance
       | ri_snmp
       | ri_vrf_export
       | ri_vrf_import
+      | ri_vrf_propagate_ttl
       | ri_vrf_table_label
       | ri_vrf_target
       | ri_vtep_source_interface
