@@ -21,8 +21,18 @@ public class NextHop implements Serializable {
     _nextHopIp = nextHopIp;
   }
 
+  public NextHop(@Nonnull Ip nextHopIp, @Nonnull String nextHopInterface) {
+    _nextHopIp = nextHopIp;
+    _nextHopInterface = nextHopInterface;
+  }
+
   public NextHop(@Nonnull Ip6 nextHopIp6) {
     _nextHopIp6 = nextHopIp6;
+  }
+
+  public NextHop(@Nonnull Ip6 nextHopIp6, @Nonnull String nextHopInterface) {
+    _nextHopIp6 = nextHopIp6;
+    _nextHopInterface = nextHopInterface;
   }
 
   public @Nullable String getNextHopInterface() {

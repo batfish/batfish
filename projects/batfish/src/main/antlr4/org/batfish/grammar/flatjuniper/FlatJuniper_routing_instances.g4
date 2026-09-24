@@ -850,9 +850,10 @@ rosr_preference
 
 rosr_qualified_next_hop
 :
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/qualified-next-hop-edit-routing-options.html
    QUALIFIED_NEXT_HOP
    (
-      ip_address
+      ip_address (INTERFACE interface_id)?
       | interface_id
    )
    rosrqnh_common?
@@ -862,7 +863,7 @@ rosr_qualified_next_hop6
 :
    QUALIFIED_NEXT_HOP
    (
-      ipv6_address
+      ipv6_address (INTERFACE interface_id)?
       | interface_id
    )
    rosrqnh_common?
