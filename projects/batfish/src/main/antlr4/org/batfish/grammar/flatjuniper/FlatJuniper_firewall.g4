@@ -52,6 +52,7 @@ f_policer
       fp_filter_specific
       | fp_if_exceeding
       | fp_logical_interface_policer
+      | fp_shared_bandwidth_policer
       | fp_then
    )
 ;
@@ -83,6 +84,12 @@ fpie_burst_size_limit
 fp_logical_interface_policer
 :
    LOGICAL_INTERFACE_POLICER
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/shared-bandwidth-policer-edit-firewall-cs.html
+fp_shared_bandwidth_policer
+:
+   SHARED_BANDWIDTH_POLICER
 ;
 
 fp_then

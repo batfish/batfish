@@ -11,6 +11,7 @@ public final class Policer implements Serializable {
   private @Nullable Boolean _filterSpecific;
   private @Nullable PolicerIfExceeding _ifExceeding;
   private @Nullable Boolean _logicalInterfacePolicer;
+  private @Nullable Boolean _sharedBandwidthPolicer;
   private @Nullable PolicerThen _then;
 
   public Policer(@Nonnull String name) {
@@ -43,6 +44,14 @@ public final class Policer implements Serializable {
 
   public void setLogicalInterfacePolicer(boolean logicalInterfacePolicer) {
     _logicalInterfacePolicer = logicalInterfacePolicer;
+  }
+
+  public @Nullable Boolean getSharedBandwidthPolicer() {
+    return _sharedBandwidthPolicer;
+  }
+
+  public void setSharedBandwidthPolicer(boolean sharedBandwidthPolicer) {
+    _sharedBandwidthPolicer = sharedBandwidthPolicer;
   }
 
   public @Nullable PolicerThen getThen() {

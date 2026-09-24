@@ -2963,6 +2963,7 @@ SHA_384: 'sha-384';
 SHA1: 'sha1';
 SHA512: 'sha512';
 SHAPING_RATE: 'shaping-rate';
+SHARED_BANDWIDTH_POLICER: 'shared-bandwidth-policer';
 SHARED_BUFFER: 'shared-buffer';
 SHARED_IKE_ID: 'shared-ike-id';
 SHIM6_HEADER: 'shim6-header';
