@@ -1452,6 +1452,9 @@ ISIS: 'isis';
 
 ISIS_ENHANCED: 'isis-enhanced';
 
+ISOLATED: 'isolated';
+ISOLATED_VLAN: 'isolated-vlan' -> pushMode(M_Name);
+
 ISO
 :
    'iso' -> pushMode ( M_ISO )
@@ -2658,6 +2661,7 @@ PRIORITY: 'priority';
 PRIORITY_COST: 'priority-cost';
 
 PRIVATE: 'private';
+PRIVATE_VLAN: 'private-vlan';
 
 PROBE_IDLE_TUNNEL: 'probe-idle-tunnel';
 PROCESSES: 'processes';

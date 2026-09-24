@@ -16,7 +16,9 @@ public class Vlan implements Serializable {
   private final String _name;
 
   private @Nonnull Set<String> _interfaces;
+  private @Nullable String _isolatedVlan;
   private @Nullable String _l3Interface;
+  private boolean _privateVlanIsolated;
   private @Nullable Integer _vlanId;
   private @Nullable List<SubRange> _vlanIdList;
   private @Nullable Integer _vniId;
@@ -32,6 +34,10 @@ public class Vlan implements Serializable {
 
   public @Nonnull Set<String> getInterfaces() {
     return _interfaces;
+  }
+
+  public @Nullable String getIsolatedVlan() {
+    return _isolatedVlan;
   }
 
   public @Nullable String getL3Interface() {
@@ -54,6 +60,10 @@ public class Vlan implements Serializable {
     return _vniId;
   }
 
+  public boolean getPrivateVlanIsolated() {
+    return _privateVlanIsolated;
+  }
+
   public void setVlanId(int vlanId) {
     _vlanId = vlanId;
     _vlanIdList = null;
@@ -74,5 +84,13 @@ public class Vlan implements Serializable {
 
   public void setL3Interface(String l3Interface) {
     _l3Interface = l3Interface;
+  }
+
+  public void setIsolatedVlan(String isolatedVlan) {
+    _isolatedVlan = isolatedVlan;
+  }
+
+  public void setPrivateVlanIsolated(boolean privateVlanIsolated) {
+    _privateVlanIsolated = privateVlanIsolated;
   }
 }

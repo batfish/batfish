@@ -204,7 +204,9 @@ s_vlans_named
     | vlt_filter
     | vlt_forwarding_options
     | vlt_interface
+    | vlt_isolated_vlan
     | vlt_l3_interface
+    | vlt_private_vlan
     | vlt_switch_options
     | vlt_vlan_id
     | vlt_vlan_id_list
@@ -266,9 +268,21 @@ vlt_interface
    INTERFACE interface_id
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/isolated-vlan-bridging-ex-series.html
+vlt_isolated_vlan
+:
+   ISOLATED_VLAN name = junos_name
+;
+
 vlt_l3_interface
 :
    L3_INTERFACE interface_id
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/private-vlan-bridging-ex-series.html
+vlt_private_vlan
+:
+   PRIVATE_VLAN ISOLATED
 ;
 
 vlt_switch_options

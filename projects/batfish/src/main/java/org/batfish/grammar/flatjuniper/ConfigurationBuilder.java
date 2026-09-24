@@ -241,6 +241,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HO
 import static org.batfish.representation.juniper.JuniperStructureUsage.SYSTEM_SERVICES_DNS_PROXY_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_ISOLATED_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VSTP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
@@ -1183,7 +1184,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_isolated_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_private_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
@@ -10661,11 +10664,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitVlt_isolated_vlan(Vlt_isolated_vlanContext ctx) {
+    String name = toString(ctx.name);
+    _currentNamedVlan.setIsolatedVlan(name);
+    _configuration.referenceStructure(VLAN, name, VLAN_ISOLATED_VLAN, getLine(ctx.name.getStart()));
+    todo(ctx);
+  }
+
+  @Override
   public void exitVlt_l3_interface(Vlt_l3_interfaceContext ctx) {
     String name = getInterfaceFullName(ctx.interface_id());
     _configuration.referenceStructure(
         INTERFACE, name, VLAN_L3_INTERFACE, getLine(ctx.interface_id().getStart()));
     _currentNamedVlan.setL3Interface(name);
+  }
+
+  @Override
+  public void exitVlt_private_vlan(Vlt_private_vlanContext ctx) {
+    _currentNamedVlan.setPrivateVlanIsolated(true);
+    todo(ctx);
   }
 
   @Override

@@ -1,0 +1,5 @@
+set system host-name junos-private-vlan
+set vlans ISOLATED vlan-id 100
+set vlans ISOLATED private-vlan isolated
+set vlans PRIMARY vlan-id 200
+set vlans PRIMARY isolated-vlan ISOLATED
