@@ -1,0 +1,12 @@
+set system host-name junos-interface-dhcpv6-client
+set interfaces em0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces em0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces em0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces em0 unit 0 family inet6 dhcpv6-client interface-identifier 1
+set interfaces em0 unit 0 family inet6 dhcpv6-client rapid-commit
+set interfaces em0 unit 0 family inet6 dhcpv6-client req-option dns-server
+set interfaces em0 unit 0 family inet6 dhcpv6-client retransmission-attempt 3
+set interfaces em0 unit 0 family inet6 dhcpv6-client update-router-advertisement interface ge-0/0/0.0 prefix-identifier 1
+set interfaces em0 unit 0 family inet6 dhcpv6-client update-server
+set interfaces em0 unit 0 family inet6 dhcpv6-client use-ra-prefix
+set interfaces em0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:router
