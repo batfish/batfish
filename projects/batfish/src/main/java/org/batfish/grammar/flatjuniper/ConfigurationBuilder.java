@@ -58,6 +58,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.PKI_CA_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
@@ -219,6 +220,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF3_RIB
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_RIB_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.PKI_CA_PROFILE_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
@@ -1120,9 +1122,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Send_path_countContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_ca_profileContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepc_ca_identityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepc_revocation_checkContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepc_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctx_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_destination_addressContext;
@@ -1451,6 +1457,7 @@ import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PathSelectionMode;
+import org.batfish.representation.juniper.PkiCaProfile;
 import org.batfish.representation.juniper.Policer;
 import org.batfish.representation.juniper.PolicerIfExceeding;
 import org.batfish.representation.juniper.PolicerThen;
@@ -3008,6 +3015,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private Policer _currentPolicer;
 
   private PolicerIfExceeding _currentPolicerIfExceeding;
+
+  private PkiCaProfile _currentPkiCaProfile;
 
   private GeneratedRoute _currentGeneratedRoute;
 
@@ -5024,6 +5033,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentAuthenticationKeyChain
             .getKeys()
             .computeIfAbsent(name, JuniperAuthenticationKey::new);
+  }
+
+  @Override
+  public void enterSep_ca_profile(Sep_ca_profileContext ctx) {
+    String name = toString(ctx.name);
+    _currentPkiCaProfile =
+        _currentLogicalSystem.getPkiCaProfiles().computeIfAbsent(name, PkiCaProfile::new);
+    _configuration.defineFlattenedStructure(PKI_CA_PROFILE, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitSep_ca_profile(Sep_ca_profileContext ctx) {
+    _currentPkiCaProfile = null;
+  }
+
+  @Override
+  public void exitSepc_ca_identity(Sepc_ca_identityContext ctx) {
+    _currentPkiCaProfile.setCaIdentity(toString(ctx.name));
+  }
+
+  @Override
+  public void exitSepc_revocation_check(Sepc_revocation_checkContext ctx) {
+    _currentPkiCaProfile.setRevocationCheckDisabled();
+  }
+
+  @Override
+  public void exitSepc_routing_instance(Sepc_routing_instanceContext ctx) {
+    String name = toString(ctx.name);
+    _currentPkiCaProfile.setRoutingInstance(name);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, PKI_CA_PROFILE_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
   }
 
   @Override

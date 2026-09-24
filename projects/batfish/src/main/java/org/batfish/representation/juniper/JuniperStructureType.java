@@ -59,6 +59,7 @@ public enum JuniperStructureType implements StructureType {
   NAT_POOL("nat pool"),
   NAT_RULE("nat rule"),
   NAT_RULE_SET("nat rule set"),
+  PKI_CA_PROFILE("pki ca-profile"),
   POLICY_STATEMENT("policy-statement"),
   POLICY_STATEMENT_TERM("policy-statement term"),
   PREFIX_LIST("prefix-list"),
