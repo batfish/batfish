@@ -32,6 +32,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -63,6 +64,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -33726,6 +33728,7 @@
               "Ethernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -33754,6 +33757,7 @@
               "Ethernet1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -33822,6 +33826,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.2.3.4/23",
@@ -34095,6 +34100,7 @@
               "Ethernet1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingTransformation" : {
@@ -34218,6 +34224,7 @@
               "Ethernet1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -34329,6 +34336,7 @@
               "Ethernet1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -34507,6 +34515,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -34540,6 +34549,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -34573,6 +34583,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -34610,6 +34621,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~redundant1sub~",
@@ -34645,6 +34657,7 @@
             },
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -34683,6 +34696,7 @@
             },
             "hmm" : false,
             "inactiveReason" : "PARENT_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~redundant2sub~",
@@ -35750,6 +35764,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -35970,6 +35985,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -41282,6 +41298,7 @@
               "Cable1/2/3"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -42200,6 +42217,7 @@
               "Ethernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -42855,6 +42873,7 @@
               "GigabitEthernet0/1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43008,6 +43027,7 @@
               "Async1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43034,6 +43054,7 @@
               "Cable1/2/3:4"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43060,6 +43081,7 @@
               "Crypto-Engine1/2/3"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43086,6 +43108,7 @@
               "Dot11Radio0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43132,6 +43155,7 @@
             },
             "hmm" : false,
             "inactiveReason" : "INVALID",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 6,
@@ -43169,6 +43193,7 @@
               "ethernet1/11"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43197,6 +43222,7 @@
               "ethernet1/12"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43227,6 +43253,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -43264,6 +43291,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43290,6 +43318,7 @@
               "Modular-Cable1/2/3:4"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43316,6 +43345,7 @@
               "Null0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43342,6 +43372,7 @@
               "tunnel0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43368,6 +43399,7 @@
               "tunnel-ip6"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43394,6 +43426,7 @@
               "vlan1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43422,6 +43455,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43449,6 +43483,7 @@
               "vlan3"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43477,6 +43512,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43505,6 +43541,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43533,6 +43570,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43561,6 +43599,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43589,6 +43628,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43616,6 +43656,7 @@
               "Wideband-Cable1/2/3:4"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43643,6 +43684,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -43669,6 +43711,7 @@
               "Wlan-GigabitEthernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -44422,6 +44465,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -44463,6 +44507,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "137.164.25.57/30",
@@ -44500,6 +44545,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -44536,6 +44582,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -44572,6 +44619,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -44607,6 +44655,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -45838,6 +45887,7 @@
               "ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -45880,6 +45930,7 @@
               "ethernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -45919,6 +45970,7 @@
               "loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.1.1.1/32",
@@ -46222,6 +46274,7 @@
               "ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -46325,6 +46378,7 @@
               "ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -46367,6 +46421,7 @@
               "ethernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -46409,6 +46464,7 @@
               "loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.1.1.1/32",
@@ -46636,6 +46692,7 @@
               "ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -51100,6 +51157,7 @@
               "swp8"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mlagId" : 1,
             "mtu" : 1500,
@@ -51128,6 +51186,7 @@
             "blacklisted" : false,
             "encapsulationVlan" : 4094,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.0.2.6/24",
@@ -51153,6 +51212,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51177,6 +51237,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51204,6 +51265,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.0.2.8/32",
@@ -51231,6 +51293,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.0.2/8",
@@ -51255,6 +51318,7 @@
             "bandwidth" : 1.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -51279,6 +51343,7 @@
             "bandwidth" : 1.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -51303,6 +51368,7 @@
             "bandwidth" : 1.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -51328,6 +51394,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51352,6 +51419,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51376,6 +51444,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51400,6 +51469,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51424,6 +51494,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -51451,6 +51522,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.0.2.9/24",
@@ -51475,6 +51547,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52097,6 +52170,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52119,6 +52193,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52353,6 +52428,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52438,6 +52514,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52460,6 +52537,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52585,6 +52663,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.0.2.8/32",
@@ -52671,6 +52750,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52768,6 +52848,7 @@
               "swp9"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52791,6 +52872,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52817,6 +52899,7 @@
               "swp3s0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52841,6 +52924,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52865,6 +52949,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52889,6 +52974,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52913,6 +52999,7 @@
             "blacklisted" : false,
             "channelGroup" : "otherbond",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52937,6 +53024,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52961,6 +53049,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -52985,6 +53074,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53009,6 +53099,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53033,6 +53124,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53057,6 +53149,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53081,6 +53174,7 @@
             "blacklisted" : false,
             "channelGroup" : "AGG",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53130,6 +53224,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53153,6 +53248,7 @@
             "bandwidth" : 1.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53176,6 +53272,7 @@
             "bandwidth" : 1.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53225,6 +53322,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53247,6 +53345,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53300,6 +53399,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53323,6 +53423,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53345,6 +53446,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53400,6 +53502,7 @@
               "swp1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53423,6 +53526,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53447,6 +53551,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53499,6 +53604,7 @@
               "swp0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53522,6 +53628,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53546,6 +53653,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53568,6 +53676,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53620,6 +53729,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53672,6 +53782,7 @@
               "swp1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53695,6 +53806,7 @@
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53719,6 +53831,7 @@
             "blacklisted" : false,
             "channelGroup" : "bond1",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -53775,6 +53888,7 @@
             "description" : "to MLAG PEER",
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -53811,6 +53925,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mlagId" : 2,
             "mtu" : 1500,
@@ -53874,6 +53989,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "NO_MEMBERS",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -54190,6 +54306,7 @@
             "bandwidth" : 4.0E10,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -54214,6 +54331,7 @@
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -54237,6 +54355,7 @@
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -54270,6 +54389,7 @@
             },
             "hmm" : false,
             "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.0.1/24",
@@ -54295,6 +54415,7 @@
             "bandwidth" : 2.0E12,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -55093,6 +55214,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "filter::INPUT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "filter::OUTPUT",
@@ -55513,6 +55635,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "iptables_Ethernet0_ingress",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -55556,6 +55679,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "iptables_Ethernet1_ingress",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -56122,6 +56246,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -56149,6 +56274,7 @@
               "ge-0/0/1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -56179,6 +56305,7 @@
               "reth0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -56213,6 +56340,7 @@
               "reth0.3"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "3.3.3.3/31",
@@ -56296,6 +56424,7 @@
               "Vlan303"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 9100,
             "prefix" : "10.22.33.10/29",
@@ -56331,6 +56460,7 @@
               "10.22.33.112"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 9100,
             "prefix" : "10.12.12.1/23",
@@ -56427,6 +56557,7 @@
             ],
             "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "137.164.16.80/32",
@@ -56517,6 +56648,7 @@
               "node1::xe-0/0/0:0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -56543,6 +56675,7 @@
               "node1:xe-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -56569,6 +56702,7 @@
               "xe-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 9300,
             "proxyArp" : false,
@@ -56595,6 +56729,7 @@
               "xe-0/0/0:0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 9300,
             "proxyArp" : false,
@@ -56629,6 +56764,7 @@
               "xe-0/0/0:0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 9000,
             "ospfSettings" : {
@@ -56783,6 +56919,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -56809,6 +56946,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "240.254.254.1/30",
@@ -56983,6 +57121,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.0.1/24",
@@ -57078,6 +57217,7 @@
               "FastEthernet1/1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.4.8.149/24",
@@ -57553,6 +57693,7 @@
               "GigabitEthernet1/0/1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -57644,6 +57785,7 @@
               "Ethernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -57735,6 +57877,7 @@
               "Ethernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -57826,6 +57969,7 @@
               "Ethernet0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -57931,6 +58075,7 @@
             },
             "hsrpVersion" : "2",
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -57972,6 +58117,7 @@
             },
             "hsrpVersion" : "2",
             "inactiveReason" : "AUTOSTATE_FAILURE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -61088,6 +61234,7 @@
               },
               "pointToPoint" : false
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -61963,6 +62110,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "incomingFilter" : "Block incoming traffic using reserved addresses",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "Block outgoing traffic using reserved addresses",
@@ -61987,6 +62135,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -102861,6 +103010,7 @@
               "lo0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -102887,6 +103037,7 @@
               "lo0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104307,6 +104458,7 @@
               "ae0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104333,6 +104485,7 @@
               "ae0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104360,6 +104513,7 @@
             ],
             "description" : "Fabric interface 0",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104386,6 +104540,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104413,6 +104568,7 @@
               "ge-1/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104439,6 +104595,7 @@
               "ge-2/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104465,6 +104622,7 @@
               "ge-2/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104491,6 +104649,7 @@
               "ge-2/0/0.1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104517,6 +104676,7 @@
               "ge-3/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104543,6 +104703,7 @@
               "ge-3/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104569,6 +104730,7 @@
               "ge-4/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104595,6 +104757,7 @@
               "ge-4/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104621,6 +104784,7 @@
               "ge-5/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104647,6 +104811,7 @@
               "ge-5/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104682,6 +104847,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.2.3.1/24",
@@ -104710,6 +104876,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104745,6 +104912,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "100.100.100.100/32",
@@ -104772,6 +104940,7 @@
               "xe-0/0/0:0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104798,6 +104967,7 @@
               "xe-0/0/0:0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104824,6 +104994,7 @@
               "xe-0/0/5:0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104850,6 +105021,7 @@
               "xe-0/0/5:0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104876,6 +105048,7 @@
               "xe-0/0/6"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 11,
@@ -104958,6 +105131,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -104984,6 +105158,7 @@
               "ge-0/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -105166,6 +105341,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -105238,6 +105414,7 @@
                 }
               ]
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingTransformation" : {
@@ -107398,6 +107575,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -107436,6 +107614,7 @@
               "ge-0/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.1.1.1/24",
@@ -107769,6 +107948,7 @@
               "xe-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -107810,6 +107990,7 @@
             },
             "hmm" : false,
             "inboundFilter" : "~INBOUND_ZONE_FILTER~A",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~xe-0/0/0.0",
@@ -107839,6 +108020,7 @@
               "xe-1/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -107880,6 +108062,7 @@
             },
             "hmm" : false,
             "inboundFilter" : "~INBOUND_ZONE_FILTER~B",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~xe-1/0/0.0",
@@ -109505,6 +109688,7 @@
               "xe-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -109532,6 +109716,7 @@
               "xe-0/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 666,
@@ -110024,6 +110209,7 @@
               "ap1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -110050,6 +110236,7 @@
               "et1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -110077,6 +110264,7 @@
               "et2"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -110105,6 +110293,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -110775,6 +110964,7 @@
               "GigabitEthernet1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.10.10.1/24",
@@ -111637,6 +111827,7 @@
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "1.2.3.4/24",
@@ -111677,6 +111868,7 @@
                 ]
               }
             },
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 2000,
             "proxyArp" : false,
@@ -111914,6 +112106,7 @@
               "ethernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -115071,6 +115264,7 @@
               "ge-0/0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -115105,6 +115299,7 @@
               "ge-0/0/0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.0.0/31",
@@ -115229,6 +115424,7 @@
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~ethernet1/1~OUTGOING_FILTER~",
@@ -115257,6 +115453,7 @@
             "description" : "layer2 subif comment",
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~ethernet1/1.4~OUTGOING_FILTER~",
@@ -115284,6 +115481,7 @@
             "encapsulationVlan" : 5,
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
@@ -115308,6 +115506,7 @@
             "blacklisted" : false,
             "description" : "loopback comment",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~loopback~OUTGOING_FILTER~",
@@ -115332,6 +115531,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~loopback.1~OUTGOING_FILTER~",
@@ -115355,6 +115555,7 @@
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~tunnel~OUTGOING_FILTER~",
@@ -115380,6 +115581,7 @@
             "description" : "tunnel.3 comment",
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~tunnel.3~OUTGOING_FILTER~",
@@ -115404,6 +115606,7 @@
             "blacklisted" : false,
             "description" : "vlan comment",
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~vlan~OUTGOING_FILTER~",
@@ -115428,6 +115631,7 @@
             "blacklisted" : false,
             "hmm" : false,
             "inactiveReason" : "INCOMPLETE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~vlan.1~OUTGOING_FILTER~",
@@ -115840,6 +116044,7 @@
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -115871,6 +116076,7 @@
               ]
             },
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingOriginalFlowFilter" : "~ethernet1/2~OUTGOING_FILTER~",
@@ -115897,6 +116103,7 @@
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -115922,6 +116129,7 @@
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -119761,6 +119969,7 @@
               "FastEthernet0/1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -120664,6 +120873,7 @@
               "FastEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -120755,6 +120965,7 @@
               "FastEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -120997,6 +121208,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -121032,6 +121244,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "IGNORE_MGMT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.10.20.4/24",
@@ -121067,6 +121280,7 @@
               "irb.100"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.200.100.254/24",
@@ -121095,6 +121309,7 @@
               "lo0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -121129,6 +121344,7 @@
               "lo0.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.1.2/32",
@@ -121164,6 +121380,7 @@
               "lo0.1"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.100.200/32",
@@ -121191,6 +121408,7 @@
               "xe-0/0/2"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -121225,6 +121443,7 @@
               "xe-0/0/2.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.16.7.1/30",
@@ -121252,6 +121471,7 @@
               "xe-0/0/3"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -121286,6 +121506,7 @@
               "xe-0/0/3.0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.16.5.1/30",
@@ -121314,6 +121535,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : false,
@@ -121349,6 +121571,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "PARENT_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.16.3.1/30",

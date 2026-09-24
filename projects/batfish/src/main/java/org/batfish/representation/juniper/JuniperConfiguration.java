@@ -2003,6 +2003,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (iface.get8023adInterface() != null) {
       newIface.setChannelGroup(iface.get8023adInterface());
     }
+    newIface.setLacpForceUp(Boolean.TRUE.equals(iface.getLacpForceUp()));
     // Redundant ethernet
     if (iface.getRedundantParentInterface() != null) {
       newIface.setChannelGroup(iface.getRedundantParentInterface());

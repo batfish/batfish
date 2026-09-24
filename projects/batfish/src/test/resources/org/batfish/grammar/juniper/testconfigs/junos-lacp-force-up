@@ -1,0 +1,6 @@
+set system host-name junos-lacp-force-up
+set interfaces ae0 unit 0 family inet address 192.0.2.1/24
+set interfaces xe-0/0/0 ether-options 802.3ad lacp force-up
+set interfaces xe-0/0/1 ether-options 802.3ad ae0
+set interfaces interface-range FORCE-UP member xe-0/0/2
+set interfaces interface-range FORCE-UP ether-options 802.3ad lacp force-up

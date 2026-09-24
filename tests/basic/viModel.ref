@@ -85,6 +85,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -115,6 +116,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -157,6 +159,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.12.11.1/24",
@@ -188,6 +191,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -1733,6 +1737,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -1763,6 +1768,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.13.22.1/24",
@@ -1794,6 +1800,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -1836,6 +1843,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.14.22.1/24",
@@ -1867,6 +1875,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -3334,6 +3343,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -3364,6 +3374,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -3406,6 +3417,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -3448,6 +3460,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -3883,6 +3896,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -3914,6 +3928,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "INSIDE_TO_AS1",
@@ -3946,6 +3961,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -3988,6 +4004,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -4030,6 +4047,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -5630,6 +5648,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -5661,6 +5680,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "INSIDE_TO_AS3",
@@ -5693,6 +5713,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -5735,6 +5756,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -5777,6 +5799,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -7242,6 +7265,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -7272,6 +7296,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -7314,6 +7339,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -7357,6 +7383,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "blocktelnet",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -7400,6 +7427,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "blocktelnet",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -7442,6 +7470,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -8029,6 +8058,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -8059,6 +8089,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1800,
             "ospfSettings" : {
@@ -8101,6 +8132,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1600,
             "ospfSettings" : {
@@ -8143,6 +8175,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1700,
             "ospfSettings" : {
@@ -8185,6 +8218,7 @@
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -8227,6 +8261,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -8738,6 +8773,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -8768,6 +8804,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.101.4/24",
@@ -8799,6 +8836,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.201.4/24",
@@ -8831,6 +8869,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.128.0.1/24",
@@ -8863,6 +8902,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.128.1.1/24",
@@ -8894,6 +8934,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.1.1.2/32",
@@ -10045,6 +10086,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -10075,6 +10117,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -10117,6 +10160,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -10159,6 +10203,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.101.3/24",
@@ -10190,6 +10235,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -11089,6 +11135,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -11119,6 +11166,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -11161,6 +11209,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -11203,6 +11252,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.201.3/24",
@@ -11234,6 +11284,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -12167,6 +12218,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -12197,6 +12249,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -12239,6 +12292,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.23.21.3/24",
@@ -12270,6 +12324,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -13706,6 +13761,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -13736,6 +13792,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.13.22.3/24",
@@ -13767,6 +13824,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -13809,6 +13867,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -15107,6 +15166,7 @@
             ],
             "hmm" : false,
             "inactiveReason" : "ADMIN_DOWN",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
@@ -15137,6 +15197,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -15179,6 +15240,7 @@
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -15221,6 +15283,7 @@
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "90.90.90.1/24",
@@ -15252,6 +15315,7 @@
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "90.90.90.2/24",
@@ -15283,6 +15347,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
@@ -15753,6 +15818,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "filter::INPUT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "filter::OUTPUT",
@@ -16098,6 +16164,7 @@
             ],
             "hmm" : false,
             "incomingFilter" : "filter::INPUT",
+            "lacpForceUp" : false,
             "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "filter::OUTPUT",

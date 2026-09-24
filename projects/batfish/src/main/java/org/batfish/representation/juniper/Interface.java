@@ -179,6 +179,7 @@ public class Interface implements Serializable {
   private transient boolean _inherited;
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
+  private @Nullable Boolean _lacpForceUp;
   private Integer _mtu;
   private @Nullable Boolean _multipoint;
   private final String _name;
@@ -291,6 +292,10 @@ public class Interface implements Serializable {
 
   public @Nullable IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
+  }
+
+  public @Nullable Boolean getLacpForceUp() {
+    return _lacpForceUp;
   }
 
   /** Initializes {@link IsisInterfaceSettings} for this interface if not already initialized */
@@ -465,6 +470,9 @@ public class Interface implements Serializable {
     if (_description == null) {
       _description = bestower._description;
     }
+    if (_lacpForceUp == null) {
+      _lacpForceUp = bestower._lacpForceUp;
+    }
     if (_mtu == null) {
       _mtu = bestower._mtu;
     }
@@ -551,6 +559,10 @@ public class Interface implements Serializable {
 
   public void setInnerVlanTag(@Nullable InterfaceVlanTag innerVlanTag) {
     _innerVlanTag = innerVlanTag;
+  }
+
+  public void setLacpForceUp(boolean lacpForceUp) {
+    _lacpForceUp = lacpForceUp;
   }
 
   public void setMtu(Integer mtu) {

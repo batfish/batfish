@@ -69,6 +69,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
+    private boolean _lacpForceUp;
     private @Nullable Boolean _lineUp;
     private @Nullable Integer _mlagId;
     private @Nullable Integer _mtu;
@@ -154,6 +155,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIncomingFilter(_incomingFilter);
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
+      iface.setLacpForceUp(_lacpForceUp);
       iface.setMlagId(_mlagId);
       if (_mtu != null) {
         iface.setMtu(_mtu);
@@ -372,6 +374,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setIsis(IsisInterfaceSettings isis) {
       _isis = isis;
+      return this;
+    }
+
+    public Builder setLacpForceUp(boolean lacpForceUp) {
+      _lacpForceUp = lacpForceUp;
       return this;
     }
 
@@ -614,6 +621,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
   private static final String PROP_INTERFACE_TYPE = "type";
   private static final String PROP_ISIS = "isis";
+  private static final String PROP_LACP_FORCE_UP = "lacpForceUp";
   private static final String PROP_LINE_UP = "lineUp";
   private static final String PROP_MLAG_ID = "mlagId";
   private static final String PROP_MTU = "mtu";
@@ -746,6 +754,7 @@ public final class Interface extends ComparableStructure<String> {
   private Transformation _incomingTransformation;
   private InterfaceType _interfaceType;
   private IsisInterfaceSettings _isis;
+  private boolean _lacpForceUp;
   private @Nullable Boolean _lineUp;
   private @Nullable Integer _mlagId;
   private int _mtu;
@@ -862,6 +871,9 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (_interfaceType != other._interfaceType) {
+      return false;
+    }
+    if (_lacpForceUp != other._lacpForceUp) {
       return false;
     }
     if (!Objects.equals(_key, other._key)) {
@@ -1147,6 +1159,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS)
   public @Nullable IsisInterfaceSettings getIsis() {
     return _isis;
+  }
+
+  /** Whether this interface forwards without receiving LACP packets from its peer. */
+  @JsonProperty(PROP_LACP_FORCE_UP)
+  public boolean getLacpForceUp() {
+    return _lacpForceUp;
   }
 
   @JsonProperty(PROP_MLAG_ID)
@@ -1574,6 +1592,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS)
   public void setIsis(@Nullable IsisInterfaceSettings isis) {
     _isis = isis;
+  }
+
+  @JsonProperty(PROP_LACP_FORCE_UP)
+  public void setLacpForceUp(boolean lacpForceUp) {
+    _lacpForceUp = lacpForceUp;
   }
 
   @JsonProperty(PROP_MLAG_ID)

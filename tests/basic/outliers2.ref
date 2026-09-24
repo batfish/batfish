@@ -39,6 +39,7 @@
           ],
           "hmm" : false,
           "inactiveReason" : "ADMIN_DOWN",
+          "lacpForceUp" : false,
           "lineUp" : true,
           "mtu" : 1500,
           "proxyArp" : true,
@@ -93,6 +94,7 @@
             "GigabitEthernet0/0"
           ],
           "hmm" : false,
+          "lacpForceUp" : false,
           "lineUp" : true,
           "mtu" : 1500,
           "ospfSettings" : {
@@ -159,6 +161,7 @@
             "GigabitEthernet1/0"
           ],
           "hmm" : false,
+          "lacpForceUp" : false,
           "lineUp" : true,
           "mtu" : 1500,
           "prefix" : "10.12.11.1/24",
@@ -213,6 +216,7 @@
             "Loopback0"
           ],
           "hmm" : false,
+          "lacpForceUp" : false,
           "mtu" : 1500,
           "ospfSettings" : {
             "area" : 1,

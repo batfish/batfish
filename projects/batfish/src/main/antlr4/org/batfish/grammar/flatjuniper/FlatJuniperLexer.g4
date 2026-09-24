@@ -832,7 +832,7 @@ EGP: 'egp';
 
 EGRESS: 'egress';
 
-EIGHT02_3AD: '802.3ad' -> pushMode(M_Interface);
+EIGHT02_3AD: '802.3ad' -> pushMode(M_8023ad);
 
 EKLOGIN: 'eklogin';
 
@@ -4461,6 +4461,13 @@ M_Description_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
+
+mode M_8023ad;
+
+M_8023ad_LACP: 'lacp' -> type(LACP), popMode;
+M_8023ad_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID), popMode;
+M_8023ad_WS: F_WhitespaceChar+ -> skip;
+M_8023ad_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_DynamicTunnels;
 
