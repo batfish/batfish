@@ -1,0 +1,11 @@
+set system host-name static-route-large-community
+set interfaces lo0 unit 0 family inet address 192.0.2.1/32
+set routing-options autonomous-system 64512
+set routing-options static route 192.0.2.0/24 discard
+set routing-options static route 192.0.2.0/24 community large:64512:1:2
+set policy-options policy-statement EXPORT term STATIC from protocol static
+set policy-options policy-statement EXPORT term STATIC then accept
+set protocols bgp group INTERNAL type internal
+set protocols bgp group INTERNAL local-address 192.0.2.1
+set protocols bgp group INTERNAL export EXPORT
+set protocols bgp group INTERNAL neighbor 192.0.2.2 peer-as 64512

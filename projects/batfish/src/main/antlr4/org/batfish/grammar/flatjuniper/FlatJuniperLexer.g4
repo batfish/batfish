@@ -3523,6 +3523,8 @@ COMMENT_LINE
 
 WILDCARD: F_Wildcard {setWildcard();};
 
+LARGE_COMMUNITY: F_LargeCommunity;
+
 STANDARD_COMMUNITY: F_StandardCommunity;
 
 AMPERSAND
@@ -4137,6 +4139,12 @@ fragment
 F_Variable_RequiredVarChar
 :
    ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"']
+;
+
+fragment
+F_LargeCommunity
+:
+  'large:' F_Uint32 ':' F_Uint32 ':' F_Uint32
 ;
 
 fragment
