@@ -855,9 +855,25 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_retainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_detection_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_holddown_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_minimum_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_minimum_receive_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_multiplierContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfd_no_adaptationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfdt_minimum_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrbfdt_thresholdContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_detection_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_holddown_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_minimum_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_minimum_receive_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_multiplierContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_no_adaptationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfdt_minimum_intervalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfdt_thresholdContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
@@ -1473,6 +1489,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace NTP_KEY_NUMBER_RANGE = IntegerSpace.of(new SubRange(1, 65534));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+  private static final IntegerSpace BFD_LIVENESS_DETECTION_HOLDDOWN_INTERVAL_RANGE =
+      IntegerSpace.of(new SubRange(0, 255000));
+  private static final IntegerSpace BFD_LIVENESS_DETECTION_INTERVAL_RANGE =
+      IntegerSpace.of(new SubRange(1, 255000));
+  private static final IntegerSpace BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE =
+      IntegerSpace.of(new SubRange(1, 255));
   private static final IntegerSpace BGP_PATH_SELECTION_MULTIPLIER_RANGE =
       IntegerSpace.of(new SubRange(1, 1000));
   private static final IntegerSpace MPLS_LSP_HOP_LIMIT_RANGE =
@@ -8468,6 +8490,152 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     long tag = toLong(ctx.tag);
     _currentStaticRoute.setTag2(tag);
     todo(ctx);
+  }
+
+  @Override
+  public void exitRosrbfd_detection_time(Rosrbfd_detection_timeContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD detection-time threshold")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionDetectionTimeThreshold);
+  }
+
+  @Override
+  public void exitRosrbfd_holddown_interval(Rosrbfd_holddown_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_HOLDDOWN_INTERVAL_RANGE,
+            "BFD holddown-interval")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionHolddownInterval);
+  }
+
+  @Override
+  public void exitRosrbfd_minimum_interval(Rosrbfd_minimum_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.interval, BFD_LIVENESS_DETECTION_INTERVAL_RANGE, "BFD minimum-interval")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionMinimumInterval);
+  }
+
+  @Override
+  public void exitRosrbfd_minimum_receive_interval(Rosrbfd_minimum_receive_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_INTERVAL_RANGE,
+            "BFD minimum-receive-interval")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionMinimumReceiveInterval);
+  }
+
+  @Override
+  public void exitRosrbfd_multiplier(Rosrbfd_multiplierContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.multiplier,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD multiplier")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionMultiplier);
+  }
+
+  @Override
+  public void exitRosrbfd_no_adaptation(Rosrbfd_no_adaptationContext ctx) {
+    _currentStaticRoute.setBfdLivenessDetectionNoAdaptation(true);
+  }
+
+  @Override
+  public void exitRosrbfdt_minimum_interval(Rosrbfdt_minimum_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_INTERVAL_RANGE,
+            "BFD transmit-interval minimum-interval")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionTransmitIntervalMinimumInterval);
+  }
+
+  @Override
+  public void exitRosrbfdt_threshold(Rosrbfdt_thresholdContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD transmit-interval threshold")
+        .ifPresent(_currentStaticRoute::setBfdLivenessDetectionTransmitIntervalThreshold);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_detection_time(Rosrqnhcbfd_detection_timeContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD detection-time threshold")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionDetectionTimeThreshold);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_holddown_interval(Rosrqnhcbfd_holddown_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_HOLDDOWN_INTERVAL_RANGE,
+            "BFD holddown-interval")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionHolddownInterval);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_minimum_interval(Rosrqnhcbfd_minimum_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.interval, BFD_LIVENESS_DETECTION_INTERVAL_RANGE, "BFD minimum-interval")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionMinimumInterval);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_minimum_receive_interval(
+      Rosrqnhcbfd_minimum_receive_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_INTERVAL_RANGE,
+            "BFD minimum-receive-interval")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionMinimumReceiveInterval);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_multiplier(Rosrqnhcbfd_multiplierContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.multiplier,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD multiplier")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionMultiplier);
+  }
+
+  @Override
+  public void exitRosrqnhcbfd_no_adaptation(Rosrqnhcbfd_no_adaptationContext ctx) {
+    _currentQualifiedNextHop.setBfdLivenessDetectionNoAdaptation(true);
+  }
+
+  @Override
+  public void exitRosrqnhcbfdt_minimum_interval(Rosrqnhcbfdt_minimum_intervalContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.interval,
+            BFD_LIVENESS_DETECTION_INTERVAL_RANGE,
+            "BFD transmit-interval minimum-interval")
+        .ifPresent(
+            _currentQualifiedNextHop::setBfdLivenessDetectionTransmitIntervalMinimumInterval);
+  }
+
+  @Override
+  public void exitRosrqnhcbfdt_threshold(Rosrqnhcbfdt_thresholdContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.value,
+            BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE,
+            "BFD transmit-interval threshold")
+        .ifPresent(_currentQualifiedNextHop::setBfdLivenessDetectionTransmitIntervalThreshold);
   }
 
   @Override
