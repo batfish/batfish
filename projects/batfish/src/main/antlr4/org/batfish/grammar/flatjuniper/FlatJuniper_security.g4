@@ -670,6 +670,7 @@ sea_key
    KEY name = junos_name
    (
       seak_algorithm
+      | seak_key_name
       | seak_options
       | seak_secret
       | seak_start_time
@@ -738,6 +739,12 @@ seak_algorithm
       HMAC_SHA1
       | MD5
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/key-edit-security-authentication-key-chains.html
+seak_key_name
+:
+   KEY_NAME name = junos_name
 ;
 
 seak_options

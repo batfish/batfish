@@ -1083,6 +1083,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_attachContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_algorithmContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_key_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_start_timeContext;
@@ -10348,6 +10349,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ctx.HMAC_SHA1() != null
             ? IsisAuthenticationAlgorithm.HMAC_SHA_1
             : IsisAuthenticationAlgorithm.MD5);
+  }
+
+  @Override
+  public void exitSeak_key_name(Seak_key_nameContext ctx) {
+    _currentAuthenticationKey.setKeyName(toString(ctx.name));
+    todo(ctx);
   }
 
   @Override

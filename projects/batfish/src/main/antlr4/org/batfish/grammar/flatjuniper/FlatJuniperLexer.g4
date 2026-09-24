@@ -1944,11 +1944,13 @@ KEY
   }
 ;
 
-KEYS: 'keys';
-
 KEY_CHAIN: 'key-chain' -> pushMode(M_Name);
 
 KEY_EXCHANGE: 'key-exchange';
+
+KEY_NAME: 'key-name' -> pushMode(M_Name);
+
+KEYS: 'keys';
 
 KLOGIN: 'klogin';
 

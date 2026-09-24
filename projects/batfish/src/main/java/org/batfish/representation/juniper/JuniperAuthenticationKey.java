@@ -15,6 +15,8 @@ public class JuniperAuthenticationKey implements Serializable {
 
   private IsisOption _isisOption;
 
+  private String _keyName;
+
   private final String _name;
 
   private String _secret;
@@ -39,6 +41,10 @@ public class JuniperAuthenticationKey implements Serializable {
     return _name;
   }
 
+  public String getKeyName() {
+    return _keyName;
+  }
+
   public String getSecret() {
     return _secret;
   }
@@ -53,6 +59,10 @@ public class JuniperAuthenticationKey implements Serializable {
 
   public void setIsisOption(IsisOption isisOption) {
     _isisOption = isisOption;
+  }
+
+  public void setKeyName(String keyName) {
+    _keyName = keyName;
   }
 
   public void setSecret(String secret) {
