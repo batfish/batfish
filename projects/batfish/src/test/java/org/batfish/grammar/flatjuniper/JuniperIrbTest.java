@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResourceBytes;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.grammar.JunosGrammarTestUtils.parseConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 
@@ -11,9 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -31,31 +30,9 @@ public final class JuniperIrbTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-  }
-
-  private Configuration parseConfig(String hostname) {
-    try {
-      Map<String, Configuration> configs = parseTextConfigs(hostname);
-      assertThat(configs, hasKey(hostname.toLowerCase()));
-      return configs.get(hostname.toLowerCase());
-    } catch (IOException e) {
-      throw new AssertionError("Failed to parse " + hostname, e);
-    }
-  }
-
-  private Map<String, Configuration> parseTextConfigs(String... configurationNames)
-      throws IOException {
-    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
-  }
-
   @Test
   public void testIrbDeactivate() {
-    Configuration c = parseConfig("irb-deactivate");
+    Configuration c = parseConfig(_folder, "irb-deactivate");
     assertThat(c, hasInterface("irb.2", isActive()));
     assertThat(c, hasInterface("irb.5", isActive(false)));
   }
@@ -71,7 +48,7 @@ public final class JuniperIrbTest {
 
     // Without runtime data: VLAN100 has a trunk member (xe-0/0/0), VLAN200 does not.
     // irb.100 should be active, irb.200 should be deactivated by autostate.
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig(_folder, hostname);
     assertThat(c, hasInterface("irb.100", isActive()));
     assertThat(c, hasInterface("irb.200", isActive(false)));
 

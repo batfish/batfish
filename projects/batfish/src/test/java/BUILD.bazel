@@ -15,6 +15,7 @@ java_library(
     ),
     deps = [
         "//projects/batfish",
+        "//projects/batfish/src/main/java/org/batfish/representation/juniper",
         "//projects/bdd",
         "//projects/common",
         "//projects/common/src/test/java/org/batfish/datamodel:testlib",
