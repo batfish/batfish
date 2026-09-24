@@ -20,11 +20,17 @@ tokens {
    CERTIFICATE_STRING,
    CODE_POINT_3_BIT,
    CODE_POINT_6_BIT,
+   CONFIG_DATA,
+   DEVICE_NAME,
+   DEVICE_TYPE,
+   DISABLE_SPOOF_CHECK,
    DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
-   SECRET_STRING,
+   FEATURES,
    FIN,
+   HUGEPAGES,
    IGNORED_WORD,
+   IMAGE,
    INTERFACE_ID,
    INTERFACE_WILDCARD,
    INET_RIB_NAME,
@@ -33,16 +39,23 @@ tokens {
    ISO_ADDRESS,
    LAST_AS,
    LITERAL_OR_REGEX_COMMUNITY,
+   MAPPING,
+   MEMORY,
    MPLS_RIB_NAME,
    NAME,
+   PAGE_SIZE,
+   PHYSICAL_CPU,
    PIPE,
    POLICY_EXPRESSION,
    RST,
+   SECRET_STRING,
    SUB_RANGE,
    SYN,
    TCP_FLAGS_HEX,
    UINT32L,
    VERSION_STRING,
+   VIRTUAL_CPU,
+   VIRTUAL_FUNCTION,
    VXLAN_RIB_NAME,
    WILDCARD_ARTIFACT
 }
@@ -3565,6 +3578,8 @@ VIRTUAL_INET6_ADDRESS: 'virtual-inet6-address';
 
 VIRTUAL_LINK_LOCAL_ADDRESS: 'virtual-link-local-address';
 
+VIRTUAL_NETWORK_FUNCTIONS: 'virtual-network-functions' -> pushMode(M_VirtualNetworkFunctionName);
+
 VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_SWITCH: 'virtual-switch';
@@ -5223,6 +5238,41 @@ M_Version_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
+
+mode M_VirtualNetworkFunctionName;
+M_VirtualNetworkFunctionName_NAME:
+  F_Name -> type(NAME), mode(M_VirtualNetworkFunction);
+M_VirtualNetworkFunctionName_WS: F_WhitespaceChar+ -> skip;
+M_VirtualNetworkFunctionName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_VirtualNetworkFunction;
+M_VirtualNetworkFunction_CONFIG_DATA: 'config-data' -> type(CONFIG_DATA);
+M_VirtualNetworkFunction_COUNT: 'count' -> type(COUNT);
+M_VirtualNetworkFunction_DEVICE_NAME: 'device-name' -> type(DEVICE_NAME);
+M_VirtualNetworkFunction_DEVICE_TYPE: 'device-type' -> type(DEVICE_TYPE);
+M_VirtualNetworkFunction_DISABLE_SPOOF_CHECK:
+  'disable-spoof-check' -> type(DISABLE_SPOOF_CHECK);
+M_VirtualNetworkFunction_FEATURES: 'features' -> type(FEATURES);
+M_VirtualNetworkFunction_FILE: 'file' -> type(FILE);
+M_VirtualNetworkFunction_HUGEPAGES: 'hugepages' -> type(HUGEPAGES);
+M_VirtualNetworkFunction_IMAGE: 'image' -> type(IMAGE);
+M_VirtualNetworkFunction_INTERFACE:
+  'interface' -> type(INTERFACE);
+M_VirtualNetworkFunction_INTERFACES: 'interfaces' -> type(INTERFACES);
+M_VirtualNetworkFunction_MAPPING: 'mapping' -> type(MAPPING);
+M_VirtualNetworkFunction_MEMORY: 'memory' -> type(MEMORY);
+M_VirtualNetworkFunction_PAGE_SIZE: 'page-size' -> type(PAGE_SIZE);
+M_VirtualNetworkFunction_PHYSICAL_CPU: 'physical-cpu' -> type(PHYSICAL_CPU);
+M_VirtualNetworkFunction_SIZE: 'size' -> type(SIZE);
+M_VirtualNetworkFunction_SOURCE: 'source' -> type(SOURCE);
+M_VirtualNetworkFunction_TARGET: 'target' -> type(TARGET);
+M_VirtualNetworkFunction_TRUST: 'trust' -> type(TRUST);
+M_VirtualNetworkFunction_VIRTUAL_CPU: 'virtual-cpu' -> type(VIRTUAL_CPU);
+M_VirtualNetworkFunction_VIRTUAL_FUNCTION: 'virtual-function' -> type(VIRTUAL_FUNCTION);
+M_VirtualNetworkFunction_UINT32: F_Uint32 -> type(UINT32);
+M_VirtualNetworkFunction_NAME: F_Name -> type(NAME);
+M_VirtualNetworkFunction_WS: F_WhitespaceChar+ -> skip;
+M_VirtualNetworkFunction_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_VlanMembers;
 
