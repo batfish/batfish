@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.Warnings;
@@ -43,7 +45,8 @@ public final class FwFromTcpFlags implements FwFrom {
                   .setTcpFlags(TcpFlags.builder().setRst(true).build())
                   .setUseRst(true)
                   .build()),
-          CommandType.ESTABLISHED);
+          CommandType.ESTABLISHED,
+          false);
 
   /** from tcp-initial */
   public static final FwFromTcpFlags TCP_INITIAL =
@@ -54,24 +57,32 @@ public final class FwFromTcpFlags implements FwFrom {
                   .setUseAck(true)
                   .setUseSyn(true)
                   .build()),
-          CommandType.INITIAL);
+          CommandType.INITIAL,
+          false);
 
   /** from tcp-flags */
   public static FwFromTcpFlags fromTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
-    return new FwFromTcpFlags(tcpFlags, CommandType.FLAGS);
+    return new FwFromTcpFlags(tcpFlags, CommandType.FLAGS, false);
+  }
+
+  public static FwFromTcpFlags never() {
+    return new FwFromTcpFlags(ImmutableList.of(), CommandType.FLAGS, true);
   }
 
   private List<TcpFlagsMatchConditions> _tcpFlags;
   private CommandType _commandType;
+  private final boolean _never;
 
-  private FwFromTcpFlags(List<TcpFlagsMatchConditions> tcpFlags, CommandType commandType) {
+  private FwFromTcpFlags(
+      List<TcpFlagsMatchConditions> tcpFlags, CommandType commandType, boolean never) {
     _tcpFlags = tcpFlags;
     _commandType = commandType;
+    _never = never;
   }
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderSpace(), getTraceElement());
+    return _never ? FALSE : new MatchHeaderSpace(toHeaderSpace(), getTraceElement());
   }
 
   @Override
