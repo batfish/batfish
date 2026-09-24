@@ -714,6 +714,8 @@ DESTINATION_PREFIX_LIST: 'destination-prefix-list' -> pushMode(M_Name);
 DESTINATION_UDP_PORT: 'destination-udp-port';
 DESTINATION_UNREACHABLE: 'destination-unreachable';
 
+DETECTION_TIME: 'detection-time';
+
 DF_BIT: 'df-bit';
 
 DFC: 'dfc';
@@ -1116,6 +1118,8 @@ HMAC_SHA_1_96: 'hmac-sha-1-96';
 HMAC_SHA_256_128: 'hmac-sha-256-128';
 
 HOLD_DOWN: 'hold-down';
+
+HOLDDOWN_INTERVAL: 'holddown-interval';
 
 HOLD_TIME: 'hold-time';
 
@@ -2168,6 +2172,8 @@ MINIMUM_NUMERICS: 'minimum-numerics';
 
 MINIMUM_PUNCTUATIONS: 'minimum-punctuations';
 
+MINIMUM_RECEIVE_INTERVAL: 'minimum-receive-interval';
+
 MINIMUM_REUSE: 'minimum-reuse';
 
 MINIMUM_TIME: 'minimum-time';
@@ -2316,6 +2322,7 @@ NTALK: 'ntalk';
 
 NO_ACCEPT_DATA: 'no-accept-data';
 NO_ACTIVE_BACKBONE: 'no-active-backbone';
+NO_ADAPTATION: 'no-adaptation';
 NO_ADJACENCY_DOWN_NOTIFICATION: 'no-adjacency-down-notification';
 NO_ADVERTISE: 'no-advertise';
 NO_ANTI_REPLAY: 'no-anti-replay';
@@ -3281,6 +3288,7 @@ TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles' -> pushMode(M_Name);
 TRAFFIC_ENGINEERING: 'traffic-engineering';
 TRANSFER_INTERVAL: 'transfer-interval';
 TRANSLATION_TABLE: 'translation-table';
+TRANSMIT_INTERVAL: 'transmit-interval';
 TRANSMIT_RATE: 'transmit-rate' -> pushMode(M_TransmitRate);
 TRANSPORT: 'transport';
 TRAP: 'trap';
