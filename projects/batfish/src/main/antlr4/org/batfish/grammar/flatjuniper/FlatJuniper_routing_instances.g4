@@ -195,6 +195,12 @@ ro_generate
   )
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/instance-export-edit-routing-options.html
+ro_instance_export
+:
+   INSTANCE_EXPORT names = junos_name_list
+;
+
 ro_instance_import
 :
    INSTANCE_IMPORT name = junos_name
@@ -945,6 +951,7 @@ s_routing_options
       | ro_forwarding_table
       | ro_generate
       | ro_graceful_restart_null
+      | ro_instance_export
       | ro_instance_import
       | ro_interface_routes
       | ro_lsp_telemetry_null

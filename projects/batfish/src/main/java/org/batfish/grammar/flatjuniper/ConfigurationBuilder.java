@@ -215,6 +215,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.RSTP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_DEFINITION;
@@ -773,6 +774,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro6_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_maximum_prefixesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
@@ -7916,6 +7918,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     // number. So confederation members should not make it into data model when confederation number
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
+  }
+
+  @Override
+  public void exitRo_instance_export(Ro_instance_exportContext ctx) {
+    for (Junos_nameContext nameCtx : ctx.names.junos_name()) {
+      String policyName = toString(nameCtx);
+      _currentRoutingInstance.getInstanceExports().add(policyName);
+      _configuration.referenceStructure(
+          POLICY_STATEMENT,
+          policyName,
+          ROUTING_OPTIONS_INSTANCE_EXPORT,
+          getLine(nameCtx.getStart()));
+    }
+    todo(ctx);
   }
 
   @Override
