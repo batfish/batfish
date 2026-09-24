@@ -1095,6 +1095,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_external_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_ike_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_local_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgd_general_ikeidContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_distinguished_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_hostnameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_inet6Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_inetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_key_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikgl_user_at_hostnameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_pre_shared_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposal_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposalsContext;
@@ -1384,6 +1391,7 @@ import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.IkeGateway;
+import org.batfish.representation.juniper.IkeGateway.LocalIdentityType;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
@@ -10399,6 +10407,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSeikgd_general_ikeid(Seikgd_general_ikeidContext ctx) {
+    _currentIkeGateway.setGeneralIkeId();
+    todo(ctx);
+  }
+
+  @Override
   public void exitSeikg_ike_policy(Seikg_ike_policyContext ctx) {
     String name = toString(ctx.name);
     _currentIkeGateway.setIkePolicy(name);
@@ -10410,6 +10424,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSeikg_local_address(Seikg_local_addressContext ctx) {
     Ip ip = toIp(ctx.ip_address());
     _currentIkeGateway.setLocalAddress(ip);
+  }
+
+  @Override
+  public void exitSeikgl_distinguished_name(Seikgl_distinguished_nameContext ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.DISTINGUISHED_NAME, null);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSeikgl_hostname(Seikgl_hostnameContext ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.HOSTNAME, toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSeikgl_inet(Seikgl_inetContext ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.INET, toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSeikgl_inet6(Seikgl_inet6Context ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.INET6, ctx.address.getText());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSeikgl_key_id(Seikgl_key_idContext ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.KEY_ID, toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSeikgl_user_at_hostname(Seikgl_user_at_hostnameContext ctx) {
+    _currentIkeGateway.setLocalIdentity(LocalIdentityType.USER_AT_HOSTNAME, toString(ctx.name));
+    todo(ctx);
   }
 
   @Override

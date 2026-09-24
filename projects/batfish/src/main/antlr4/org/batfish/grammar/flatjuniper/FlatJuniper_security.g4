@@ -840,6 +840,7 @@ seikg_dynamic
    (
       apply
       | seikgd_connections_limit
+      | seikgd_general_ikeid
       | seikgd_hostname
       | seikgd_ike_user_type
    )
@@ -864,7 +865,12 @@ seikg_local_identity
 :
    LOCAL_IDENTITY
    (
-      seikgl_inet
+      seikgl_distinguished_name
+      | seikgl_hostname
+      | seikgl_inet
+      | seikgl_inet6
+      | seikgl_key_id
+      | seikgl_user_at_hostname
    )
 ;
 
@@ -888,6 +894,12 @@ seikgd_connections_limit
    CONNECTIONS_LIMIT limit = dec
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/general-ikeid.html
+seikgd_general_ikeid
+:
+   GENERAL_IKEID
+;
+
 seikgd_hostname
 :
    HOSTNAME name = junos_name
@@ -902,9 +914,35 @@ seikgd_ike_user_type
    )
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-local-identity.html
+seikgl_distinguished_name
+:
+   DISTINGUISHED_NAME
+;
+
+seikgl_hostname
+:
+   HOSTNAME name = junos_name
+;
+
 seikgl_inet
 :
    INET name = junos_name
+;
+
+seikgl_inet6
+:
+   INET6 address = ipv6_address
+;
+
+seikgl_key_id
+:
+   KEY_ID name = junos_name
+;
+
+seikgl_user_at_hostname
+:
+   USER_AT_HOSTNAME name = junos_name
 ;
 
 seikp_description
