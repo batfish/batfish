@@ -7,6 +7,8 @@ options {
 ACTIVE: 'active:';
 DELETE: 'delete:';
 INACTIVE: 'inactive:';
+// https://www.juniper.net/documentation/us/en/software/junos/cli/topics/example/junos-cli-configuration-protecting.html
+PROTECT: 'protect:';
 REPLACE: 'replace:';
 
 CLOSE_BRACE: '}';
