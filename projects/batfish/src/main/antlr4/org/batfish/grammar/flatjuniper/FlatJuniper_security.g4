@@ -480,6 +480,7 @@ s_security
       | se_pki
       | se_policies
       | se_screen
+      | se_traceoptions_null
       | se_utm_null
       | se_zones
    )
@@ -495,6 +496,19 @@ sef_family
 :
    FAMILY family = (INET | INET6 | ISO | MPLS)
    MODE processing_mode = (DROP | FLOW_BASED | PACKET_BASED)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-traceoptions-security.html
+se_traceoptions_null
+:
+   TRACEOPTIONS
+   (
+      security_trace_file_null
+      | FLAG junos_name
+      | LEVEL junos_name
+      | NO_REMOTE_TRACE
+      | RATE_LIMIT dec
+   )
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-mime-whitelist.html
@@ -604,6 +618,20 @@ se_ike
       seik_gateway
       | seik_policy
       | seik_proposal
+      | seik_traceoptions_null
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-traceoptions-ike.html
+seik_traceoptions_null
+:
+   TRACEOPTIONS
+   (
+      security_trace_file_null
+      | FLAG junos_name
+      | LEVEL junos_name
+      | NO_REMOTE_TRACE
+      | RATE_LIMIT dec
    )
 ;
 
@@ -613,8 +641,33 @@ se_ipsec
    (
       seip_policy
       | seip_proposal
+      | seip_traceoptions_null
       | seip_vpn
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-traceoptions-ipsec.html
+seip_traceoptions_null
+:
+   TRACEOPTIONS FLAG junos_name
+;
+
+security_trace_file_null
+:
+   FILE security_trace_value
+   (
+      FILES dec
+      | MATCH security_trace_value
+      | NO_WORLD_READABLE
+      | SIZE security_trace_value
+      | WORLD_READABLE
+   )*
+;
+
+security_trace_value
+:
+   DOUBLE_QUOTED_STRING
+   | junos_name
 ;
 
 se_nat

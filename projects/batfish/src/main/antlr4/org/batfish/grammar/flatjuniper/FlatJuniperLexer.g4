@@ -31,6 +31,7 @@ tokens {
    EXCEPTION,
    FEATURES,
    FIN,
+   FLAG,
    FLEX,
    HUGEPAGES,
    IGNORED_WORD,
@@ -50,6 +51,7 @@ tokens {
    MPLS_RIB_NAME,
    NAME,
    NFV_BACK_PLANE,
+   NO_REMOTE_TRACE,
    PAGE_SIZE,
    PHYSICAL_CPU,
    PIPE,
@@ -3508,7 +3510,19 @@ TOLERANCE: 'tolerance';
 TOPOLOGY: 'topology' -> pushMode(M_Name);
 TRACE: 'trace';
 TRACE_OPTIONS: 'trace-options';
-TRACEOPTIONS: 'traceoptions';
+TRACEOPTIONS
+:
+  'traceoptions'
+  {
+    if (lastTokenType() == SECURITY) {
+      pushMode(M_SecurityTraceoptions);
+    } else if (lastTokenType() == IKE) {
+      pushMode(M_IkeTraceoptions);
+    } else if (lastTokenType() == IPSEC) {
+      pushMode(M_IpsecTraceoptions);
+    }
+  }
+;
 TRACEROUTE: 'traceroute';
 TRACK: 'track';
 TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles' -> pushMode(M_Name);
@@ -5785,6 +5799,47 @@ M_Screen_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Screen_NAME: F_Name -> type(NAME), popMode;
 M_Screen_WS: F_WhitespaceChar+ -> skip;
 M_Screen_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SecurityTraceoptions;
+M_SecurityTraceoptions_FILE: 'file' -> type(FILE), mode(M_SecurityTraceFile);
+M_SecurityTraceoptions_FLAG: 'flag' -> type(FLAG), mode(M_Name);
+M_SecurityTraceoptions_LEVEL: 'level' -> type(LEVEL), mode(M_Name);
+M_SecurityTraceoptions_NO_REMOTE_TRACE: 'no-remote-trace' -> type(NO_REMOTE_TRACE);
+M_SecurityTraceoptions_RATE_LIMIT: 'rate-limit' -> type(RATE_LIMIT), mode(M_SecurityTraceRate);
+M_SecurityTraceoptions_WS: F_WhitespaceChar+ -> skip;
+M_SecurityTraceoptions_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_IkeTraceoptions;
+M_IkeTraceoptions_FILE: 'file' -> type(FILE), mode(M_SecurityTraceFile);
+M_IkeTraceoptions_FLAG: 'flag' -> type(FLAG), mode(M_Name);
+M_IkeTraceoptions_LEVEL: 'level' -> type(LEVEL), mode(M_Name);
+M_IkeTraceoptions_NO_REMOTE_TRACE: 'no-remote-trace' -> type(NO_REMOTE_TRACE);
+M_IkeTraceoptions_RATE_LIMIT: 'rate-limit' -> type(RATE_LIMIT), mode(M_SecurityTraceRate);
+M_IkeTraceoptions_WS: F_WhitespaceChar+ -> skip;
+M_IkeTraceoptions_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_IpsecTraceoptions;
+M_IpsecTraceoptions_FLAG: 'flag' -> type(FLAG), mode(M_Name);
+M_IpsecTraceoptions_WS: F_WhitespaceChar+ -> skip;
+M_IpsecTraceoptions_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SecurityTraceFile;
+M_SecurityTraceFile_FILES: 'files' -> type(FILES);
+M_SecurityTraceFile_MATCH: 'match' -> type(MATCH);
+M_SecurityTraceFile_NO_WORLD_READABLE: 'no-world-readable' -> type(NO_WORLD_READABLE);
+M_SecurityTraceFile_SIZE: 'size' -> type(SIZE);
+M_SecurityTraceFile_WORLD_READABLE: 'world-readable' -> type(WORLD_READABLE);
+M_SecurityTraceFile_DOUBLE_QUOTED_STRING:
+  F_DoubleQuotedString -> type(DOUBLE_QUOTED_STRING);
+M_SecurityTraceFile_UINT32: F_Uint32 -> type(UINT32);
+M_SecurityTraceFile_NAME: F_Name -> type(NAME);
+M_SecurityTraceFile_WS: F_WhitespaceChar+ -> skip;
+M_SecurityTraceFile_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SecurityTraceRate;
+M_SecurityTraceRate_UINT32: F_Uint32 -> type(UINT32);
+M_SecurityTraceRate_WS: F_WhitespaceChar+ -> skip;
+M_SecurityTraceRate_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Zone;
 M_Zone_JUNOS_HOST: 'junos-host' -> type(JUNOS_HOST), popMode;
