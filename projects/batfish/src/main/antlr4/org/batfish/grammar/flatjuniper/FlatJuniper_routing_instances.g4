@@ -283,7 +283,8 @@ ro_forwarding_table
 :
    FORWARDING_TABLE
    (
-      rof_export
+      rof_chained_composite_next_hop_null
+      | rof_export
       | rof_indirect_next_hop_change_acknowledgements_null
       | rof_indirect_next_hop_null
       | rof_krt_nexthop_ack_timeout_null
@@ -296,6 +297,80 @@ ro_forwarding_table
 rof_krt_nexthop_ack_timeout_null
 :
    KRT_NEXTHOP_ACK_TIMEOUT dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/chained-composite-next-hop-edit-routing-options.html
+rof_chained_composite_next_hop_null
+:
+   CHAINED_COMPOSITE_NEXT_HOP
+   (
+      rofcc_ingress_null
+      | rofcc_transit_null
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/ingress-edit-routing-options-chained.html
+rofcc_ingress_null
+:
+   INGRESS
+   (
+      EVPN
+      | FEC129_VPWS
+      | L2CKT
+      | L2VPN
+      | LDP
+      | NO_EVPN
+      | NO_FEC129_VPWS
+      | NO_L2CKT
+      | NO_L2VPN
+      | rofcci_l3vpn_null
+      | rofcci_labeled_bgp_null
+   )
+;
+
+rofcci_l3vpn_null
+:
+   L3VPN
+   (
+      EXTENDED_SPACE
+      | PE_PE_CONNECTION EXTENDED_SPACE
+   )
+;
+
+rofcci_labeled_bgp_null
+:
+   LABELED_BGP
+   (
+      INET
+      | INET6
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/transit-edit-routing-options-chained.html
+rofcc_transit_null
+:
+   TRANSIT
+   (
+      ALL
+      | L2VPN
+      | L3VPN
+      | LABELED_BGP
+      | LDP
+      | LDP_P2MP
+      | LSP_STATISTICS_FROM_ROUTE
+      | NO_ALL
+      | NO_L2VPN
+      | NO_L3VPN
+      | NO_LABELED_BGP
+      | NO_LDP
+      | NO_LDP_P2MP
+      | NO_RSVP
+      | NO_RSVP_P2MP
+      | NO_STATIC
+      | RSVP
+      | RSVP_P2MP
+      | STATIC
+   )
 ;
 
 ro_generate

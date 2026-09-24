@@ -446,6 +446,8 @@ CCC: 'ccc';
 
 CERTIFICATES: 'certificates';
 
+CHAINED_COMPOSITE_NEXT_HOP: 'chained-composite-next-hop';
+
 CHANGE_LOG: 'change-log';
 
 CHANGE_TYPE: 'change-type';
@@ -940,6 +942,7 @@ EXPORT
 EXPORT_RIB: 'export-rib' -> pushMode(M_Name);
 EXPRESSION: 'expression';
 EXTENDED_NEXTHOP_TUNNEL: 'extended-nexthop-tunnel';
+EXTENDED_SPACE: 'extended-space';
 EXTENDED_VNI_LIST: 'extended-vni-list' -> pushMode(M_ExtendedVniList);
 EXTENSIBLE_SUBSCRIBER: 'extensible-subscriber';
 EXTENSION_SERVICE: 'extension-service';
@@ -968,6 +971,8 @@ FAST_INTERVAL: 'fast-interval';
 FAST_REROUTE: 'fast-reroute';
 
 FASTETHER_OPTIONS: 'fastether-options';
+
+FEC129_VPWS: 'fec129-vpws';
 
 FILE
 :
@@ -1942,6 +1947,7 @@ KSHELL: 'kshell';
 L: 'L';
 
 L2CIRCUIT: 'l2circuit';
+L2CKT: 'l2ckt';
 
 L2VPN: 'l2vpn';
 
@@ -1962,6 +1968,8 @@ L3_INTERFACE
 ;
 
 LABEL_SWITCHED_PATH: 'label-switched-path' -> pushMode(M_Name);
+
+LABELED_BGP: 'labeled-bgp';
 
 LABELED_UNICAST: 'labeled-unicast';
 
@@ -1987,6 +1995,7 @@ LITE_MODE: 'lite-mode';
 LDAP: 'ldap';
 
 LDP: 'ldp';
+LDP_P2MP: 'ldp-p2mp';
 
 LEARN_VLAN_1P_PRIORITY: 'learn-vlan-1p-priority';
 
@@ -2082,6 +2091,8 @@ LSP_EQUAL_COST: 'lsp-equal-cost';
 LSP_INTERVAL: 'lsp-interval';
 
 LSP_LIFETIME: 'lsp-lifetime';
+
+LSP_STATISTICS_FROM_ROUTE: 'lsp-statistics-from-route';
 
 LSP_TELEMETRY: 'lsp-telemetry';
 
@@ -2377,6 +2388,7 @@ NO_ACCEPT_DATA: 'no-accept-data';
 NO_ACTIVE_BACKBONE: 'no-active-backbone';
 NO_ADAPTATION: 'no-adaptation';
 NO_ADJACENCY_DOWN_NOTIFICATION: 'no-adjacency-down-notification';
+NO_ALL: 'no-all';
 NO_ADVERTISE: 'no-advertise';
 NO_ANTI_REPLAY: 'no-anti-replay';
 NO_ARP: 'no-arp';
@@ -2389,8 +2401,10 @@ NO_CLIENT_REFLECT: 'no-client-reflect';
 NO_CSPF: 'no-cspf';
 NO_DECREMENT_TTL: 'no-decrement-ttl';
 NO_ECMP_FAST_REROUTE: 'no-ecmp-fast-reroute';
+NO_EVPN: 'no-evpn';
 NO_EXPORT: 'no-export';
 NO_EXPORT_SUBCONFED: 'no-export-subconfed';
+NO_FEC129_VPWS: 'no-fec129-vpws';
 NO_FLOW_CONTROL: 'no-flow-control';
 NO_GATEWAY_COMMUNITY: 'no-gateway-community';
 NO_HIERARCHICAL_ECMP: 'no-hierarchical-ecmp';
@@ -2398,6 +2412,12 @@ NO_HIDDEN_COMMANDS: 'no-hidden-commands';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
 NO_IPV6_ROUTING: 'no-ipv6-routing';
+NO_L2CKT: 'no-l2ckt';
+NO_L2VPN: 'no-l2vpn';
+NO_L3VPN: 'no-l3vpn';
+NO_LABELED_BGP: 'no-labeled-bgp';
+NO_LDP: 'no-ldp';
+NO_LDP_P2MP: 'no-ldp-p2mp';
 NO_MALFORMED_ROUTE_LIMIT: 'no-malformed-route-limit';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';
@@ -2421,10 +2441,13 @@ NO_RESOLVE: 'no-resolve';
 NO_RETAIN: 'no-retain';
 NO_RFC_1583: 'no-rfc-1583';
 NO_ROOT_PORT: 'no-root-port';
+NO_RSVP: 'no-rsvp';
+NO_RSVP_P2MP: 'no-rsvp-p2mp';
 NO_SCP_SERVER: 'no-scp-server';
 NO_SELF_PING: 'no-self-ping';
 NO_SFTP_SERVER: 'no-sftp-server';
 NO_SNOOP: 'no-snoop';
+NO_STATIC: 'no-static';
 NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
@@ -2525,6 +2548,7 @@ PATH_MTU: 'path-mtu';
 PATH_SELECTION: 'path-selection';
 PATH_SELECTION_MODE: 'path-selection-mode';
 PAYLOAD_PROTOCOL: 'payload-protocol';
+PE_PE_CONNECTION: 'pe-pe-connection';
 PEER: 'peer';
 PEER_ADDRESS: 'peer-address';
 PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
@@ -2973,6 +2997,7 @@ RSH: 'rsh';
 RSTP: 'rstp';
 
 RSVP: 'rsvp';
+RSVP_P2MP: 'rsvp-p2mp';
 
 RTF_PREFIX_LIST
 :
@@ -3376,6 +3401,7 @@ TRANSMIT_INTERVAL: 'transmit-interval';
 TRANSMIT_PERIOD: 'transmit-period';
 TRANSMIT_RATE: 'transmit-rate' -> pushMode(M_TransmitRate);
 TRANSPORT: 'transport';
+TRANSIT: 'transit';
 TRAP: 'trap';
 TRAP_DESTINATIONS: 'trap-destinations';
 TRAP_GROUP: 'trap-group' -> pushMode(M_Name);

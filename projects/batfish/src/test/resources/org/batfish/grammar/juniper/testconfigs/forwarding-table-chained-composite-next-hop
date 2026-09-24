@@ -1,0 +1,33 @@
+set system host-name forwarding-table-chained-composite-next-hop
+set routing-options forwarding-table chained-composite-next-hop ingress evpn
+set routing-options forwarding-table chained-composite-next-hop ingress fec129-vpws
+set routing-options forwarding-table chained-composite-next-hop ingress l2ckt
+set routing-options forwarding-table chained-composite-next-hop ingress l2vpn
+set routing-options forwarding-table chained-composite-next-hop ingress l3vpn extended-space
+set routing-options forwarding-table chained-composite-next-hop ingress labeled-bgp inet
+set routing-options forwarding-table chained-composite-next-hop ingress labeled-bgp inet6
+set routing-options forwarding-table chained-composite-next-hop ingress ldp
+set routing-options forwarding-table chained-composite-next-hop transit all
+set routing-options forwarding-table chained-composite-next-hop transit l2vpn
+set routing-options forwarding-table chained-composite-next-hop transit l3vpn
+set routing-options forwarding-table chained-composite-next-hop transit labeled-bgp
+set routing-options forwarding-table chained-composite-next-hop transit ldp
+set routing-options forwarding-table chained-composite-next-hop transit ldp-p2mp
+set routing-options forwarding-table chained-composite-next-hop transit lsp-statistics-from-route
+set routing-options forwarding-table chained-composite-next-hop transit rsvp
+set routing-options forwarding-table chained-composite-next-hop transit rsvp-p2mp
+set routing-options forwarding-table chained-composite-next-hop transit static
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop ingress no-evpn
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop ingress no-fec129-vpws
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop ingress no-l2ckt
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop ingress no-l2vpn
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-all
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-l2vpn
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-l3vpn
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-labeled-bgp
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-ldp
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-ldp-p2mp
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-rsvp
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-rsvp-p2mp
+set logical-systems disabled routing-options forwarding-table chained-composite-next-hop transit no-static
+set logical-systems legacy routing-options forwarding-table chained-composite-next-hop ingress l3vpn pe-pe-connection extended-space
