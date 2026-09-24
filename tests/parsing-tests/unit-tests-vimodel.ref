@@ -108344,7 +108344,47 @@
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched host-inbound-traffic system-service BOOTP"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstPorts" : [
+                          "67-68"
+                        ],
+                        "ipProtocols" : [
+                          "UDP"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
                             "text" : "Matched host-inbound-traffic system-service DHCP"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstPorts" : [
+                          "546-547"
+                        ],
+                        "ipProtocols" : [
+                          "UDP"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched host-inbound-traffic system-service DHCPV6"
                           }
                         ]
                       }

@@ -41,6 +41,35 @@ public class HostSystemServiceTest {
   }
 
   @Test
+  public void testGetMatchExpr_bootServices() {
+    assertThat(
+        HostSystemService.BOOTP.getMatchExpr().orElseThrow(),
+        equalTo(
+            new MatchHeaderSpace(
+                HeaderSpace.builder()
+                    .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                    .setDstPorts(
+                        ImmutableSet.of(
+                            new SubRange(
+                                NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number())))
+                    .build(),
+                HostSystemService.BOOTP.getTraceElement())));
+    assertThat(
+        HostSystemService.DHCPV6.getMatchExpr().orElseThrow(),
+        equalTo(
+            new MatchHeaderSpace(
+                HeaderSpace.builder()
+                    .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                    .setDstPorts(
+                        ImmutableSet.of(
+                            new SubRange(
+                                NamedPort.DHCPV6_CLIENT.number(),
+                                NamedPort.DHCPV6_SERVER.number())))
+                    .build(),
+                HostSystemService.DHCPV6.getTraceElement())));
+  }
+
+  @Test
   public void testGetMatchExpr_all_traceElement() {
     HostSystemService from = HostSystemService.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();

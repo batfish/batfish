@@ -19,7 +19,9 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 public enum HostSystemService {
   ALL,
   ANY_SERVICE,
+  BOOTP,
   DHCP,
+  DHCPV6,
   DNS,
   FINGER,
   FTP,
@@ -79,13 +81,24 @@ public enum HostSystemService {
                 .build();
         yield Optional.of(new MatchHeaderSpace(hs, getTraceElement()));
       }
-      case DHCP -> {
+      case BOOTP, DHCP -> {
         HeaderSpace hs =
             HeaderSpace.builder()
                 .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
                 .setDstPorts(
                     ImmutableSet.of(
                         new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number())))
+                .build();
+        yield Optional.of(new MatchHeaderSpace(hs, getTraceElement()));
+      }
+      case DHCPV6 -> {
+        HeaderSpace hs =
+            HeaderSpace.builder()
+                .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                .setDstPorts(
+                    ImmutableSet.of(
+                        new SubRange(
+                            NamedPort.DHCPV6_CLIENT.number(), NamedPort.DHCPV6_SERVER.number())))
                 .build();
         yield Optional.of(new MatchHeaderSpace(hs, getTraceElement()));
       }

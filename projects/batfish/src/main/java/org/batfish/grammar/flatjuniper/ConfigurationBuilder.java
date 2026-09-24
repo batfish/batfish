@@ -2288,8 +2288,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return HostSystemService.ALL;
     } else if (ctx.ANY_SERVICE() != null) {
       return HostSystemService.ANY_SERVICE;
+    } else if (ctx.BOOTP() != null) {
+      return HostSystemService.BOOTP;
     } else if (ctx.DHCP() != null) {
       return HostSystemService.DHCP;
+    } else if (ctx.DHCPV6() != null) {
+      return HostSystemService.DHCPV6;
     } else if (ctx.DNS() != null) {
       return HostSystemService.DNS;
     } else if (ctx.FINGER() != null) {

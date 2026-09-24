@@ -1,0 +1,3 @@
+set system host-name junos-host-inbound-boot-services
+set security zones security-zone TRUST host-inbound-traffic system-services bootp
+set security zones security-zone TRUST host-inbound-traffic system-services dhcpv6

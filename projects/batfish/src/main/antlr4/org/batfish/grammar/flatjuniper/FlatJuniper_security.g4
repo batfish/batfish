@@ -71,11 +71,14 @@ hib_protocol
    | VRRP
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-system-service-zone-host-inbound-traffic.html
 hib_system_service
 :
    ALL
    | ANY_SERVICE
+   | BOOTP
    | DHCP
+   | DHCPV6
    | DNS
    | FINGER
    | FTP
