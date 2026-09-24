@@ -97,12 +97,12 @@ filter
    FILTER
    (
       direction name = filter_name
-      | filter_group_null
+      | filter_group
    )?
 ;
 
-// Number of the interface group used by the interface-group match condition. Not modeled.
-filter_group_null
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/example/firewall-filter-option-received-on-interface-group-example.html
+filter_group
 :
    GROUP group = uint8
 ;
@@ -960,8 +960,8 @@ intir_member
 :
    MEMBER
    (
-       DOUBLE_QUOTED_STRING
-       | interface_id
+       interface_id
+       | interface_wildcard
    )
 ;
 
