@@ -1,0 +1,5 @@
+set system host-name security-forwarding-options
+set security forwarding-options family inet mode packet-based
+set security forwarding-options family inet6 mode packet-based
+set security forwarding-options family iso mode packet-based
+set security forwarding-options family mpls mode flow-based

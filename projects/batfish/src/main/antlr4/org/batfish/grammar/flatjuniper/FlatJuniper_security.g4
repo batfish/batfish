@@ -471,6 +471,7 @@ s_security
       | se_authentication_key_chain
       | se_certificates
       | se_flow_null
+      | se_forwarding_options
       | se_ike
       | se_ipsec
       | se_key_chain
@@ -480,6 +481,18 @@ s_security
       | se_screen
       | se_zones
    )
+;
+
+se_forwarding_options
+:
+   FORWARDING_OPTIONS sef_family
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-mode-forwarding-options.html
+sef_family
+:
+   FAMILY family = (INET | INET6 | ISO | MPLS)
+   MODE processing_mode = (DROP | FLOW_BASED | PACKET_BASED)
 ;
 
 se_address_book

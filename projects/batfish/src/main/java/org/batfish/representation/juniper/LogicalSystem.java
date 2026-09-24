@@ -84,6 +84,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, ConcreteFirewallFilter> _securityPolicies;
 
+  private final SecurityForwardingOptions _securityForwardingOptions;
+
   private final Map<String, IkeGateway> _ikeGateways;
 
   private final Map<String, IkePolicy> _ikePolicies;
@@ -213,6 +215,7 @@ public class LogicalSystem implements Serializable {
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _securityPolicies = new TreeMap<>();
+    _securityForwardingOptions = new SecurityForwardingOptions();
     _snmpClientLists = new TreeMap<>();
     _srlgs = new HashMap<>();
     _syslogFiles = new TreeMap<>();
@@ -375,6 +378,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, ConcreteFirewallFilter> getSecurityPolicies() {
     return _securityPolicies;
+  }
+
+  public SecurityForwardingOptions getSecurityForwardingOptions() {
+    return _securityForwardingOptions;
   }
 
   public @Nonnull AddressBook getGlobalAddressBook() {
