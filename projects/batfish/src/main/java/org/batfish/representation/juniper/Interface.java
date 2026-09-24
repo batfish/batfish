@@ -180,6 +180,7 @@ public class Interface implements Serializable {
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
   private Integer _mtu;
+  private @Nullable Boolean _multipoint;
   private final String _name;
   private @Nullable Integer _nativeVlan;
   private @Nullable OspfInterfaceSettings _ospfSettings;
@@ -306,6 +307,10 @@ public class Interface implements Serializable {
 
   public @Nullable Integer getMtu() {
     return _mtu;
+  }
+
+  public @Nullable Boolean getMultipoint() {
+    return _multipoint;
   }
 
   public String getName() {
@@ -550,6 +555,10 @@ public class Interface implements Serializable {
 
   public void setMtu(Integer mtu) {
     _mtu = mtu;
+  }
+
+  public void setMultipoint(boolean multipoint) {
+    _multipoint = multipoint;
   }
 
   public void setNativeVlan(Integer vlan) {

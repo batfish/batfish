@@ -1,0 +1,2 @@
+set system host-name junos-interface-multipoint
+set interfaces st0 unit 0 multipoint

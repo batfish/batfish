@@ -509,6 +509,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_flexible_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_input_vlan_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_multipointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_output_vlan_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
@@ -6528,6 +6529,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitI_mtu(I_mtuContext ctx) {
     int size = toInteger(ctx.bytes);
     _currentInterfaceOrRange.setMtu(size);
+  }
+
+  @Override
+  public void exitI_multipoint(I_multipointContext ctx) {
+    _currentInterfaceOrRange.setMultipoint(true);
+    todo(ctx);
   }
 
   @Override
