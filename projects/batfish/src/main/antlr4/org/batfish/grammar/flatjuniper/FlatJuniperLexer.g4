@@ -2250,6 +2250,8 @@ MULTIPATH: 'multipath';
 
 MULTIPATH_RESOLVE: 'multipath-resolve';
 
+MULTIPOINT: 'multipoint';
+
 MULTIPLE_AS: 'multiple-as';
 
 MULTIPLIER: 'multiplier';

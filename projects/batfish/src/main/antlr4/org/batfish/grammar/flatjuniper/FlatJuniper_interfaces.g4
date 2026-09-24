@@ -397,6 +397,7 @@ i_unit
       | i_bandwidth
       | i_demux_options
       | i_input_vlan_map
+      | i_multipoint
       | i_output_vlan_map
       | i_peer_unit
       | i_vlan_tags
@@ -412,6 +413,12 @@ i_demux_options
 id_underlying_interface
 :
    UNDERLYING_INTERFACE id = interface_id
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/multipoint-edit-interfaces.html
+i_multipoint
+:
+   MULTIPOINT
 ;
 
 i_vlan_action
