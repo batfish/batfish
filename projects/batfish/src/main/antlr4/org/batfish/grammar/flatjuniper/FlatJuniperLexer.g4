@@ -3986,6 +3986,8 @@ F_InterfaceMediaType
    'so' |
    'sp' |
    'st' |
+   // https://www.juniper.net/documentation/us/en/software/junos/nfx250-getting-started/topics/example/service-chaining-virtio-configuring-nfx250-ng.html
+   'sxe' |
    'stm1' |
    'stm4' |
    'stm16' |

@@ -112,6 +112,8 @@ public class Interface implements Serializable {
   public static double getDefaultBandwidthByName(String name) {
     if (name.startsWith("xe")) {
       return 1E10;
+    } else if (name.startsWith("sxe")) {
+      return 1E10;
     } else if (name.startsWith("ge")) {
       return 1E9;
     } else if (name.startsWith("fe")) {
@@ -132,6 +134,7 @@ public class Interface implements Serializable {
     if (name.startsWith("et")
         || name.startsWith("fe")
         || name.startsWith("ge")
+        || name.startsWith("sxe")
         || name.startsWith("xe")) {
       return name.contains(".") ? InterfaceType.PHYSICAL_UNIT : InterfaceType.PHYSICAL;
     } else if (name.startsWith("irb.")) {

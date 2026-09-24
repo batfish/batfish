@@ -1,0 +1,7 @@
+set system host-name junos-sxe-interface
+set interfaces sxe-0/0/0 description internal-facing
+set interfaces sxe-0/0/0 ether-options no-flow-control
+set interfaces sxe-0/0/0 mtu 9192
+set interfaces sxe-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces sxe-0/0/0 unit 0 family ethernet-switching vlan members INTERNAL
+set vlans INTERNAL vlan-id 100
