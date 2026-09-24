@@ -190,6 +190,7 @@ pops_from
       | popsf_metric2
       | popsf_neighbor
       | popsf_next_hop
+      | popsf_nlri_route_type
       | popsf_origin
       | popsf_policy
       | popsf_prefix_list
@@ -346,6 +347,12 @@ popsf_next_hop
       v4 = ip_address
       | v6 = ipv6_address
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/bgp/topics/example/mbpg-mvpn-family-based-damping.html
+popsf_nlri_route_type
+:
+   NLRI_ROUTE_TYPE uint8
 ;
 
 popsf_origin

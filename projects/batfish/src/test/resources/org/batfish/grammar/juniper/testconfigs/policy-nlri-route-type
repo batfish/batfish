@@ -1,0 +1,5 @@
+set system host-name policy-nlri-route-type
+set policy-options policy-statement ROUTE-TYPE-POLICY term MATCH-TYPES from nlri-route-type 3
+set policy-options policy-statement ROUTE-TYPE-POLICY term MATCH-TYPES from nlri-route-type 4
+set policy-options policy-statement ROUTE-TYPE-POLICY term MATCH-TYPES from nlri-route-type 5
+set policy-options policy-statement ROUTE-TYPE-POLICY term MATCH-TYPES then accept

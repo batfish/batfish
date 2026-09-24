@@ -665,6 +665,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metric2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_next_hopContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_nlri_route_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
@@ -1287,6 +1288,7 @@ import org.batfish.representation.juniper.PsFromMetric;
 import org.batfish.representation.juniper.PsFromNeighbor;
 import org.batfish.representation.juniper.PsFromNextHop;
 import org.batfish.representation.juniper.PsFromNextHop.Hop;
+import org.batfish.representation.juniper.PsFromNlriRouteType;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
 import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
 import org.batfish.representation.juniper.PsFromPrefixList;
@@ -6985,6 +6987,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       hop = Hop.of(toIp6(ctx.v6));
     }
     _currentPsTerm.getFroms().addFromNextHop(new PsFromNextHop(hop));
+  }
+
+  @Override
+  public void exitPopsf_nlri_route_type(Popsf_nlri_route_typeContext ctx) {
+    _currentPsTerm.getFroms().addFromNlriRouteType(new PsFromNlriRouteType(toInteger(ctx.uint8())));
+    todo(ctx);
   }
 
   @Override
