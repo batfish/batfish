@@ -503,6 +503,7 @@ if_inet
    INET
    (
       apply
+      | ifi_accounting_null
       | ifi_address
       | ifi_destination_udp_port
       | ifi_dhcp_null
@@ -523,12 +524,23 @@ if_inet6
    INET6
    (
       apply
+      | ifi_accounting_null
       | ifi6_address
       | ifi6_destination_udp_port
       | ifi6_filter
       | ifi6_mtu
       | ifi6_rpf_check
       | ifi6_sampling_null
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/source-class-usage-edit-interfaces.html
+ifi_accounting_null
+:
+   ACCOUNTING SOURCE_CLASS_USAGE
+   (
+      INPUT
+      | OUTPUT
    )
 ;
 

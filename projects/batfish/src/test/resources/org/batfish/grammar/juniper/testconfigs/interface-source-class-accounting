@@ -1,0 +1,5 @@
+set system host-name interface-source-class-accounting
+set interfaces ge-0/0/0 unit 0 family inet accounting source-class-usage input
+set interfaces ge-0/0/0 unit 0 family inet accounting source-class-usage output
+set interfaces ge-0/0/0 unit 0 family inet6 accounting source-class-usage input
+set interfaces ge-0/0/0 unit 0 family inet6 accounting source-class-usage output
