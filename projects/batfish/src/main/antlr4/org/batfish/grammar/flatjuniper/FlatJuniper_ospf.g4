@@ -43,6 +43,7 @@ o_common
    | o_preference
    | o_reference_bandwidth
    | o_rib_group
+   | o_rib_groups
    | o_spf_options_null
    | o_traceoptions_null
    | o_traffic_engineering
@@ -121,9 +122,15 @@ o_reference_bandwidth
    REFERENCE_BANDWIDTH bandwidth
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rib-group-edit-protocols-ospf.html
 o_rib_group
 :
    RIB_GROUP name = junos_name
+;
+
+o_rib_groups
+:
+   RIB_GROUPS family = junos_name name = junos_name
 ;
 
 o_traffic_engineering
