@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
@@ -4457,20 +4458,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (resolution == null) {
       return;
     }
-    ResolutionRib rib = resolution.getRib();
+    String mainRibName =
+        ri.getName().equals(DEFAULT_VRF_NAME)
+            ? RIB_IPV4_UNICAST
+            : String.format("%s.%s", ri.getName(), RIB_IPV4_UNICAST);
+    ResolutionRib rib = resolution.getRibs().get(mainRibName);
     if (rib == null) {
       return;
     }
-    if (!rib.getName().equals(RIB_IPV4_UNICAST)) {
-      // TODO: support other resolution ribs
+    List<String> importPolicies =
+        ImmutableList.<String>builder()
+            .addAll(rib.getImportPolicies())
+            .addAll(rib.getInetImportPolicies())
+            .build();
+    if (importPolicies.isEmpty()) {
       return;
     }
     // Already warned on undefined reference, ignore
-    List<BooleanExpr> policyCalls =
-        rib.getImportPolicies().stream()
-            .filter(_c.getRoutingPolicies()::containsKey)
-            .map(CallExpr::new)
-            .collect(ImmutableList.toImmutableList());
+    ImmutableList.Builder<BooleanExpr> policyCalls = ImmutableList.builder();
+    for (String importPolicy : importPolicies) {
+      if (_c.getRoutingPolicies().containsKey(importPolicy)) {
+        policyCalls.add(new CallExpr(importPolicy));
+      }
+    }
 
     String policyName = generateResolutionRibImportPolicyName(ri.getName());
     RoutingPolicy.builder()
@@ -4482,7 +4492,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 new SetDefaultPolicy(DEFAULT_REJECT_POLICY_NAME),
                 // Construct a policy chain based on defined import policies
                 new If(
-                    new FirstMatchChain(policyCalls),
+                    new FirstMatchChain(policyCalls.build()),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                     ImmutableList.of(ReturnFalse.toStaticStatement()))))
         .build();
