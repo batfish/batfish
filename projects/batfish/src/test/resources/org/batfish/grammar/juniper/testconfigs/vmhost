@@ -1,0 +1,7 @@
+set system host-name vmhost
+set vmhost mode custom flex layer-3-infrastructure cpu count MIN
+set vmhost mode custom flex layer-3-infrastructure memory size 32768
+set vmhost mode custom flex nfv-back-plane cpu count 4
+set vmhost mode custom flex nfv-back-plane memory size MIN
+set vmhost virtualization-options interfaces ge-1/0/1
+set vmhost vlans ROUTER_VLAN vlan-id 100

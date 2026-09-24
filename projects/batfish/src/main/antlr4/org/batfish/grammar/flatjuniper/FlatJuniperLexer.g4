@@ -21,6 +21,8 @@ tokens {
    CODE_POINT_3_BIT,
    CODE_POINT_6_BIT,
    CONFIG_DATA,
+   CPU,
+   CUSTOM,
    DEVICE_NAME,
    DEVICE_TYPE,
    DISABLE_SPOOF_CHECK,
@@ -28,6 +30,7 @@ tokens {
    DYNAMIC_DB,
    FEATURES,
    FIN,
+   FLEX,
    HUGEPAGES,
    IGNORED_WORD,
    IMAGE,
@@ -38,11 +41,13 @@ tokens {
    ISO_RIB_NAME,
    ISO_ADDRESS,
    LAST_AS,
+   LAYER_3_INFRASTRUCTURE,
    LITERAL_OR_REGEX_COMMUNITY,
    MAPPING,
    MEMORY,
    MPLS_RIB_NAME,
    NAME,
+   NFV_BACK_PLANE,
    PAGE_SIZE,
    PHYSICAL_CPU,
    PIPE,
@@ -56,6 +61,7 @@ tokens {
    VERSION_STRING,
    VIRTUAL_CPU,
    VIRTUAL_FUNCTION,
+   VIRTUALIZATION_OPTIONS,
    VXLAN_RIB_NAME,
    WILDCARD_ARTIFACT
 }
@@ -3624,6 +3630,7 @@ VLAN_ID_LIST: 'vlan-id-list' -> pushMode(M_VlanIdList);
 VLAN_NAME: 'vlan-name' -> pushMode(M_Name);
 VLAN_TAGS: 'vlan-tags';
 VLAN_TAGGING: 'vlan-tagging';
+VMHOST: 'vmhost' -> pushMode(M_Vmhost);
 
 VNI: 'vni';
 
@@ -5318,6 +5325,28 @@ M_VlanMembers_RANGE
 ;
 
 M_VlanMembers_NAME: F_Name -> type(NAME), popMode;
+
+mode M_Vmhost;
+M_Vmhost_COUNT: 'count' -> type(COUNT);
+M_Vmhost_CPU: 'cpu' -> type(CPU);
+M_Vmhost_CUSTOM: 'custom' -> type(CUSTOM);
+M_Vmhost_FLEX: 'flex' -> type(FLEX);
+M_Vmhost_INTERFACES: 'interfaces' -> type(INTERFACES);
+M_Vmhost_LAYER_3_INFRASTRUCTURE:
+  'layer-3-infrastructure' -> type(LAYER_3_INFRASTRUCTURE);
+M_Vmhost_MEMORY: 'memory' -> type(MEMORY);
+M_Vmhost_MODE: 'mode' -> type(MODE);
+M_Vmhost_NFV_BACK_PLANE: 'nfv-back-plane' -> type(NFV_BACK_PLANE);
+M_Vmhost_SIZE: 'size' -> type(SIZE);
+M_Vmhost_VIRTUALIZATION_OPTIONS:
+  'virtualization-options' -> type(VIRTUALIZATION_OPTIONS);
+M_Vmhost_VLAN_ID: 'vlan-id' -> type(VLAN_ID);
+M_Vmhost_VLANS: 'vlans' -> type(VLANS);
+M_Vmhost_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID);
+M_Vmhost_UINT16: F_Uint16 -> type(UINT16);
+M_Vmhost_NAME: F_Name -> type(NAME);
+M_Vmhost_WS: F_WhitespaceChar+ -> skip;
+M_Vmhost_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_VrfTarget;
 
