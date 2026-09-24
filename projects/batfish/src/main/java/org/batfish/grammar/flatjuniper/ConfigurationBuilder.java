@@ -624,6 +624,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ntp_key_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_domain_vpn_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_external_preferenceContext;
@@ -649,6 +650,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospf3Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -6940,6 +6943,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitO_disable(O_disableContext ctx) {
     _currentRoutingInstance.setOspfDisable(true);
+  }
+
+  @Override
+  public void exitO_domain_vpn_tag(O_domain_vpn_tagContext ctx) {
+    ParserRuleContext protocolContext = ctx.getParent().getParent();
+    if (protocolContext instanceof P_ospf3Context) {
+      _currentRoutingInstance.setOspf3DomainVpnTag(toLong(ctx.tag));
+    } else {
+      assert protocolContext instanceof P_ospfContext;
+      _currentRoutingInstance.setOspfDomainVpnTag(toLong(ctx.tag));
+    }
+    todo(ctx);
   }
 
   @Override

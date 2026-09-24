@@ -57,7 +57,9 @@ public class RoutingInstance implements Serializable {
   private final @Nonnull String _name;
   private Map<String, NamedBgpGroup> _namedBgpGroups;
   private final Map<String, NodeDevice> _nodeDevices;
+  private @Nullable Long _ospf3DomainVpnTag;
   private Map<Long, OspfArea> _ospfAreas;
+  private @Nullable Long _ospfDomainVpnTag;
   private List<String> _ospfExportPolicies;
   private @Nullable Boolean _ospfDisable;
   private @Nullable Long _ospfExternalPreference;
@@ -246,8 +248,16 @@ public class RoutingInstance implements Serializable {
     return _nodeDevices;
   }
 
+  public @Nullable Long getOspf3DomainVpnTag() {
+    return _ospf3DomainVpnTag;
+  }
+
   public Map<Long, OspfArea> getOspfAreas() {
     return _ospfAreas;
+  }
+
+  public @Nullable Long getOspfDomainVpnTag() {
+    return _ospfDomainVpnTag;
   }
 
   public List<String> getOspfExportPolicies() {
@@ -341,8 +351,16 @@ public class RoutingInstance implements Serializable {
     _interfaceAllIsisSettings = interfaceAllIsisSettings;
   }
 
+  public void setOspf3DomainVpnTag(@Nullable Long ospf3DomainVpnTag) {
+    _ospf3DomainVpnTag = ospf3DomainVpnTag;
+  }
+
   public void setOspfDisable(boolean ospfDisable) {
     _ospfDisable = ospfDisable;
+  }
+
+  public void setOspfDomainVpnTag(@Nullable Long ospfDomainVpnTag) {
+    _ospfDomainVpnTag = ospfDomainVpnTag;
   }
 
   public void setOspfExternalPreference(long ospfExternalPreference) {
