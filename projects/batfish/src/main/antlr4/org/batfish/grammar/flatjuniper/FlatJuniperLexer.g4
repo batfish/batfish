@@ -1157,6 +1157,8 @@ IGNORE_ATTACHED_BIT: 'ignore-attached-bit';
 
 IGNORE_L3_INCOMPLETES: 'ignore-l3-incompletes';
 
+IGNORE_SERVICE_LABEL: 'ignore-service-label';
+
 IGP: 'igp';
 
 IGP_METRIC: 'igp-metric';
