@@ -147,6 +147,7 @@ o_traffic_engineering
    (
       apply
       | ot_credibility_protocol_preference
+      | ot_ignore_lsp_metrics
       | ot_shortcuts
    )
 ;
@@ -428,9 +429,15 @@ ot_credibility_protocol_preference
    CREDIBILITY_PROTOCOL_PREFERENCE
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/ignore-lsp-metrics-edit-protocols-ospf-mp.html
+ot_ignore_lsp_metrics
+:
+   IGNORE_LSP_METRICS
+;
+
 ot_shortcuts
 :
-   SHORTCUTS
+   SHORTCUTS ot_ignore_lsp_metrics?
 ;
 
 p_ospf
