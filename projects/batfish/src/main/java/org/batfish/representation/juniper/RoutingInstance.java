@@ -46,6 +46,7 @@ public class RoutingInstance implements Serializable {
   private GeneratedRoute _generatedRouteDefaults;
   private final Interface _globalMasterInterface;
   private String _hostname;
+  private final List<String> _instanceExports;
   private final List<String> _instanceImports;
   private final Map<String, Interface> _interfaces;
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
@@ -85,6 +86,7 @@ public class RoutingInstance implements Serializable {
     _dhcpRelayServerGroups = new TreeMap<>();
     _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
+    _instanceExports = new LinkedList<>();
     _instanceImports = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
@@ -202,6 +204,10 @@ public class RoutingInstance implements Serializable {
 
   public String getHostname() {
     return _hostname;
+  }
+
+  public List<String> getInstanceExports() {
+    return _instanceExports;
   }
 
   public List<String> getInstanceImports() {
