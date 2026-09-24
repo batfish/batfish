@@ -438,6 +438,10 @@ C: 'c';
 
 CACHE: 'cache';
 
+CA_IDENTITY: 'ca-identity' -> pushMode(M_Name);
+
+CA_PROFILE: 'ca-profile' -> pushMode(M_Name);
+
 CALIPSO_OPTION: 'CALIPSO-option';
 
 CATEGORIES: 'categories';
@@ -2579,6 +2583,8 @@ PING: 'ping';
 
 PING_DEATH: 'ping-death';
 
+PKI: 'pki';
+
 PLAIN_TEXT_PASSWORD: 'plain-text-password';
 
 POE: 'poe';
@@ -2898,6 +2904,7 @@ REVERSE: 'reverse';
 REVERSE_SSH: 'reverse-ssh';
 REVERSE_TELNET: 'reverse-telnet';
 REVERT_TIMER: 'revert-timer';
+REVOCATION_CHECK: 'revocation-check';
 REWRITE_RULES: 'rewrite-rules';
 
 RIB: 'rib' -> pushMode(M_RibName);

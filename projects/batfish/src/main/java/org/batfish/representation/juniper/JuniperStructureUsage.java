@@ -189,6 +189,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   OSPF_AREA_INTERFACE("ospf area interface"),
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
   OSPF_RIB_GROUP("ospf rib-group"),
+  PKI_CA_PROFILE_ROUTING_INSTANCE("pki ca-profile routing-instance"),
   POLICY_STATEMENT_FROM_AS_PATH("policy-statement from as-path"),
   POLICY_STATEMENT_FROM_AS_PATH_GROUP("policy-statement from as-path-group"),
   POLICY_STATEMENT_FROM_COMMUNITY("policy-statement from community"),
