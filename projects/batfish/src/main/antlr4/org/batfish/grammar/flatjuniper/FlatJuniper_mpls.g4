@@ -42,6 +42,7 @@ p_mpls
        | mpls_log_updown_null
        | mpls_optimize_adaptive_teardown_null
        | mpls_optimize_aggressive_null
+       | mpls_optimize_switchover_delay_null
        | mpls_optimize_timer_null
        | mpls_path
        | mpls_path_mtu_null
@@ -471,6 +472,12 @@ mpls_optimize_adaptive_teardown_null
 mpls_optimize_aggressive_null
 :
    OPTIMIZE_AGGRESSIVE null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/optimize-switchover-delay-edit-protocols-mpls.html
+mpls_optimize_switchover_delay_null
+:
+   OPTIMIZE_SWITCHOVER_DELAY uint16
 ;
 
 mpls_optimize_timer_null

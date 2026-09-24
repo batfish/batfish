@@ -2389,6 +2389,7 @@ OFFSET
 OPTIMIZE_ADAPTIVE_TEARDOWN: 'optimize-adaptive-teardown';
 OPTIMIZE_AGGRESSIVE: 'optimize-aggressive';
 OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
+OPTIMIZE_SWITCHOVER_DELAY: 'optimize-switchover-delay';
 OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
 OPTIONS: 'options';
