@@ -1,0 +1,5 @@
+set system host-name junos-vrf-propagate-ttl
+set routing-instances CUSTOMER_A instance-type vrf
+set routing-instances CUSTOMER_A no-vrf-propagate-ttl
+set routing-instances CUSTOMER_B instance-type vrf
+set routing-instances CUSTOMER_B vrf-propagate-ttl

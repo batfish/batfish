@@ -2387,6 +2387,7 @@ NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
 NO_TRAPS: 'no-traps';
+NO_VRF_PROPAGATE_TTL: 'no-vrf-propagate-ttl';
 NO_WORLD_READABLE: 'no-world-readable';
 
 NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);
@@ -3479,6 +3480,8 @@ VRF: 'vrf';
 VRF_EXPORT: 'vrf-export' -> pushMode(M_NameList);
 
 VRF_IMPORT: 'vrf-import' -> pushMode(M_NameList);
+
+VRF_PROPAGATE_TTL: 'vrf-propagate-ttl';
 
 VRF_TABLE_LABEL: 'vrf-table-label';
 

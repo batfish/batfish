@@ -83,6 +83,7 @@ public class RoutingInstance implements Serializable {
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
   private @Nullable String _vrfImportPolicy;
+  private @Nullable Boolean _vrfPropagateTtl;
   private boolean _vrfTableLabel;
   private boolean _vrfTableLabelSourceClassUsage;
 
@@ -308,6 +309,10 @@ public class RoutingInstance implements Serializable {
     return _ribs;
   }
 
+  public @Nullable Boolean getVrfPropagateTtl() {
+    return _vrfPropagateTtl;
+  }
+
   public Ip getRouterId() {
     return _routerId;
   }
@@ -425,6 +430,10 @@ public class RoutingInstance implements Serializable {
 
   public void setSnmpServer(SnmpServer snmpServer) {
     _snmpServer = snmpServer;
+  }
+
+  public void setVrfPropagateTtl(boolean vrfPropagateTtl) {
+    _vrfPropagateTtl = vrfPropagateTtl;
   }
 
   public void setConfederation(@Nullable Long confederation) {
