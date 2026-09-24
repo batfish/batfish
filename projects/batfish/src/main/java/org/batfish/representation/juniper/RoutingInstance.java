@@ -51,6 +51,7 @@ public class RoutingInstance implements Serializable {
   private String _hostname;
   private final List<String> _instanceExports;
   private final List<String> _instanceImports;
+  private @Nullable RoutingInstanceType _instanceType;
   private final Map<String, Interface> _interfaces;
   private boolean _independentDomain;
   private boolean _independentDomainNoAttrset;
@@ -58,6 +59,8 @@ public class RoutingInstance implements Serializable {
   private final @Nonnull IsisSettings _isisSettings;
   private @Nullable IsisInterfaceSettings _interfaceAllIsisSettings;
   private @Nullable Integer _loops;
+  private @Nullable MacVrfServiceType _macVrfServiceType;
+  private final SortedMap<String, MacVrfVlan> _macVrfVlans;
   private BgpGroup _masterBgpGroup;
   private final @Nonnull String _name;
   private Map<String, NamedBgpGroup> _namedBgpGroups;
@@ -105,6 +108,7 @@ public class RoutingInstance implements Serializable {
     _instanceImports = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
+    _macVrfVlans = new TreeMap<>();
     _masterBgpGroup = new BgpGroup();
     _masterBgpGroup.setMultipath(false);
     _masterBgpGroup.setMultipathMultipleAs(false);
@@ -256,6 +260,10 @@ public class RoutingInstance implements Serializable {
     return _independentDomainNoAttrset;
   }
 
+  public @Nullable RoutingInstanceType getInstanceType() {
+    return _instanceType;
+  }
+
   public Map<Prefix, IpBgpGroup> getIpBgpGroups() {
     return _ipBgpGroups;
   }
@@ -270,6 +278,14 @@ public class RoutingInstance implements Serializable {
 
   public BgpGroup getMasterBgpGroup() {
     return _masterBgpGroup;
+  }
+
+  public @Nullable MacVrfServiceType getMacVrfServiceType() {
+    return _macVrfServiceType;
+  }
+
+  public SortedMap<String, MacVrfVlan> getMacVrfVlans() {
+    return _macVrfVlans;
   }
 
   public @Nonnull String getName() {
@@ -411,6 +427,14 @@ public class RoutingInstance implements Serializable {
 
   public void setIndependentDomainNoAttrset(boolean independentDomainNoAttrset) {
     _independentDomainNoAttrset = independentDomainNoAttrset;
+  }
+
+  public void setInstanceType(RoutingInstanceType instanceType) {
+    _instanceType = instanceType;
+  }
+
+  public void setMacVrfServiceType(MacVrfServiceType macVrfServiceType) {
+    _macVrfServiceType = macVrfServiceType;
   }
 
   /** Sets the OSPF settings configures for "interface all" */
