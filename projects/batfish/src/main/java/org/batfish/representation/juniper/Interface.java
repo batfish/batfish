@@ -129,22 +129,25 @@ public class Interface implements Serializable {
   }
 
   public static InterfaceType getInterfaceTypeByName(String name) {
-    if (name.startsWith("et")
-        || name.startsWith("fe")
-        || name.startsWith("ge")
-        || name.startsWith("xe")) {
+    String unqualifiedName = name.substring(name.indexOf(':') + 1);
+    if (unqualifiedName.startsWith("et")
+        || unqualifiedName.startsWith("fe")
+        || unqualifiedName.startsWith("ge")
+        || unqualifiedName.startsWith("xe")) {
       return name.contains(".") ? InterfaceType.PHYSICAL_UNIT : InterfaceType.PHYSICAL;
-    } else if (name.startsWith("irb.")) {
+    } else if (unqualifiedName.startsWith("irb.")) {
       return InterfaceType.IRB_UNIT;
-    } else if (name.startsWith("lo")) {
+    } else if (unqualifiedName.startsWith("lo")) {
       return name.contains(".") ? InterfaceType.LOOPBACK_UNIT : InterfaceType.LOOPBACK;
-    } else if (name.startsWith("em") || name.startsWith("fxp")) {
+    } else if (unqualifiedName.startsWith("em")
+        || unqualifiedName.startsWith("fxp")
+        || unqualifiedName.startsWith("mgmt")) {
       return name.contains(".") ? InterfaceType.MANAGEMENT_UNIT : InterfaceType.MANAGEMENT;
-    } else if (name.startsWith("pp")) {
+    } else if (unqualifiedName.startsWith("pp")) {
       return name.contains(".") ? InterfaceType.PPP_UNIT : InterfaceType.PPP;
-    } else if (name.startsWith("ae")) {
+    } else if (unqualifiedName.startsWith("ae")) {
       return name.contains(".") ? InterfaceType.AGGREGATED_UNIT : InterfaceType.AGGREGATED;
-    } else if (name.startsWith("reth")) {
+    } else if (unqualifiedName.startsWith("reth")) {
       return name.contains(".") ? InterfaceType.REDUNDANT_UNIT : InterfaceType.REDUNDANT;
     } else if (name.equals(RoutingInstance.MASTER_INTERFACE_NAME)) {
       return InterfaceType.MASTER;
