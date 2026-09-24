@@ -3305,6 +3305,7 @@ VALIDATION: 'validation';
 VALUE: 'value' -> pushMode(M_SecretString);
 
 VALIDATION_DATABASE: 'validation-database';
+VALIDATION_STATE: 'validation-state';
 
 VERSION
 :
