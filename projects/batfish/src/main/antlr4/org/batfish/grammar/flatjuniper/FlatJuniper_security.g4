@@ -1300,6 +1300,7 @@ sepctxpt_permit
       apply
       | sepctxptp_application_services
       | sepctxptp_services_offload
+      | sepctxptp_tcp_options
       | sepctxptp_tunnel
    )
 ;
@@ -1317,6 +1318,44 @@ sepctxpt_trace
 sepctxptp_services_offload
 :
    SERVICES_OFFLOAD apply
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-tcp-options.html
+sepctxptp_tcp_options
+:
+   TCP_OPTIONS
+   (
+      sepctxptpto_initial_tcp_mss
+      | sepctxptpto_reverse_tcp_mss
+      | sepctxptpto_sequence_check_required
+      | sepctxptpto_syn_check_required
+      | sepctxptpto_window_scale
+   )
+;
+
+sepctxptpto_initial_tcp_mss
+:
+   INITIAL_TCP_MSS mss = uint16
+;
+
+sepctxptpto_reverse_tcp_mss
+:
+   REVERSE_TCP_MSS mss = uint16
+;
+
+sepctxptpto_sequence_check_required
+:
+   SEQUENCE_CHECK_REQUIRED
+;
+
+sepctxptpto_syn_check_required
+:
+   SYN_CHECK_REQUIRED
+;
+
+sepctxptpto_window_scale
+:
+   WINDOW_SCALE
 ;
 
 sepctxptp_tunnel

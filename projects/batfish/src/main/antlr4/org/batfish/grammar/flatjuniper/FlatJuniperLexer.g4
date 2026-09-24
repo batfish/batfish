@@ -1363,6 +1363,8 @@ INSTALL: 'install';
 
 INSTALL_NEXTHOP: 'install-nexthop';
 
+INITIAL_TCP_MSS: 'initial-tcp-mss';
+
 INSTANCE: 'instance' -> pushMode(M_Name);
 
 INSTANCE_EXPORT: 'instance-export' -> pushMode(M_Name);
@@ -2892,6 +2894,7 @@ RETRY_OPTIONS: 'retry-options';
 RETRY_TIMER: 'retry-timer';
 REUSE: 'reuse';
 REVERSE: 'reverse';
+REVERSE_TCP_MSS: 'reverse-tcp-mss';
 REVERSE_SSH: 'reverse-ssh';
 REVERSE_TELNET: 'reverse-telnet';
 REVERT_TIMER: 'revert-timer';
@@ -3083,6 +3086,8 @@ SCRUBBED: F_Scrubbed;
 SECRET: 'secret' -> pushMode(M_SecretString);
 
 SECONDARY: 'secondary' -> pushMode(M_Name);
+
+SEQUENCE_CHECK_REQUIRED: 'sequence-check-required';
 
 SECURITY: 'security';
 
@@ -3310,6 +3315,8 @@ SYN_FLOOD: 'syn-flood';
 
 SYN_FRAG: 'syn-frag';
 
+SYN_CHECK_REQUIRED: 'syn-check-required';
+
 SYSLOG: 'syslog';
 SYSTEM: 'system';
 SYSTEM_DEFAULTS: 'system-defaults';
@@ -3351,6 +3358,7 @@ TCP_FORWARDING: 'tcp-forwarding';
 TCP_INITIAL: 'tcp-initial';
 TCP_MSS: 'tcp-mss';
 TCP_NO_FLAG: 'tcp-no-flag';
+TCP_OPTIONS: 'tcp-options';
 TCP_RST: 'tcp-rst';
 TCP_SWEEP: 'tcp-sweep';
 
@@ -3609,6 +3617,8 @@ WHO: 'who';
 WIDE_METRICS_ONLY: 'wide-metrics-only';
 
 WILDCARD_ADDRESS: 'wildcard-address';
+
+WINDOW_SCALE: 'window-scale';
 
 WINNUKE: 'winnuke';
 WITHDRAW_PRIORITY: 'withdraw-priority';

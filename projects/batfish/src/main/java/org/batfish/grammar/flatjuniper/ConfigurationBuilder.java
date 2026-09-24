@@ -1132,6 +1132,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_identit
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_denyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptp_application_servicesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptpto_initial_tcp_mssContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptpto_reverse_tcp_mssContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptpto_sequence_check_requiredContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptpto_syn_check_requiredContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxptpto_window_scaleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_largeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_ping_deathContext;
@@ -10613,6 +10618,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     }
+  }
+
+  @Override
+  public void exitSepctxptpto_initial_tcp_mss(Sepctxptpto_initial_tcp_mssContext ctx) {
+    _currentFwTerm.getOrCreateSecurityPolicyTcpOptions().setInitialTcpMss(toInteger(ctx.mss));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSepctxptpto_reverse_tcp_mss(Sepctxptpto_reverse_tcp_mssContext ctx) {
+    _currentFwTerm.getOrCreateSecurityPolicyTcpOptions().setReverseTcpMss(toInteger(ctx.mss));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSepctxptpto_sequence_check_required(
+      Sepctxptpto_sequence_check_requiredContext ctx) {
+    _currentFwTerm.getOrCreateSecurityPolicyTcpOptions().setSequenceCheckRequired();
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSepctxptpto_syn_check_required(Sepctxptpto_syn_check_requiredContext ctx) {
+    _currentFwTerm.getOrCreateSecurityPolicyTcpOptions().setSynCheckRequired();
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSepctxptpto_window_scale(Sepctxptpto_window_scaleContext ctx) {
+    _currentFwTerm.getOrCreateSecurityPolicyTcpOptions().setWindowScale();
+    todo(ctx);
   }
 
   @Override
