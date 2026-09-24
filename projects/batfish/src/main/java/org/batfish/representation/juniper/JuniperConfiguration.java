@@ -226,6 +226,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_COMBINED_INCOMING = "~COMBINED_INCOMING_FILTER~";
 
+  private static final long OSPF_MAX_METRIC = 0xFFFFL;
+
   public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
 
   public static final String ACL_NAME_SCREEN = "~SCREEN~";
@@ -1456,6 +1458,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setRouterId(ospfRouterId)
             .setSummaryDiscardMetric(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC)
             .build();
+    if (routingInstance.getOspfOverloadedTopologies().contains("default")) {
+      newProc.setMaxMetricTransitLinks(OSPF_MAX_METRIC);
+    }
     String vrfName = routingInstance.getName();
     // export policies
     String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
