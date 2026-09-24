@@ -2018,6 +2018,8 @@ LLDP_MED: 'lldp-med';
 
 LOAD_BALANCE: 'load-balance';
 
+LOAD_BALANCE_LABEL_CAPABILITY: 'load-balance-label-capability';
+
 LOAD_KEY_FILE: 'load-key-file';
 
 LOC_RIB: 'loc-rib';
@@ -2418,6 +2420,7 @@ NO_L3VPN: 'no-l3vpn';
 NO_LABELED_BGP: 'no-labeled-bgp';
 NO_LDP: 'no-ldp';
 NO_LDP_P2MP: 'no-ldp-p2mp';
+NO_LOAD_BALANCE_LABEL_CAPABILITY: 'no-load-balance-label-capability';
 NO_MALFORMED_ROUTE_LIMIT: 'no-malformed-route-limit';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';
