@@ -72030,6 +72030,34 @@
             }
           ]
         },
+        "configs/juniper_bgp_remove_private_as" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "remove-private nearest"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 11,
+              "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "remove-private replace"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "remove-private nearest"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 15,
+              "Parser_Context" : "[b_remove_private b_common b_group p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "remove-private replace"
+            }
+          ]
+        },
         "configs/juniper_extended_community" : {
           "Parse warnings" : [
             {
