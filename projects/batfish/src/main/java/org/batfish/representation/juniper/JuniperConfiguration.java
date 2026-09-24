@@ -2766,6 +2766,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private @Nullable LineAction getLineAction(String aclName, FwTerm term) {
+    if (term.getFilter() != null) {
+      // Unsupported nested evaluation is reported while parsing the filter reference.
+      return null;
+    }
+
     if (term.getThens().contains(FwThenAccept.INSTANCE)) {
       return LineAction.PERMIT;
     }

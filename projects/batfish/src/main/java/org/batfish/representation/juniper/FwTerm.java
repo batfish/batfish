@@ -44,6 +44,8 @@ public final class FwTerm implements Serializable {
 
   private final List<FwFrom> _froms;
 
+  private @Nullable String _filter;
+
   private @Nullable FwFromIpOptions _fromIpOptions;
 
   private boolean _ipv6;
@@ -88,6 +90,10 @@ public final class FwTerm implements Serializable {
     return _froms;
   }
 
+  public @Nullable String getFilter() {
+    return _filter;
+  }
+
   public boolean getIpv6() {
     return _ipv6;
   }
@@ -102,5 +108,9 @@ public final class FwTerm implements Serializable {
 
   public void setIpv6(boolean ipv6) {
     _ipv6 = ipv6;
+  }
+
+  public void setFilter(String filter) {
+    _filter = filter;
   }
 }
