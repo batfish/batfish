@@ -747,12 +747,33 @@ seik_policy
 :
    POLICY name = junos_name
    (
-      seikp_description
+      seikp_certificate
+      | seikp_description
       | seikp_mode
       | seikp_pre_shared_key
       | seikp_proposal_set
       | seikp_proposals
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-certificate.html
+seikp_certificate
+:
+   CERTIFICATE
+   (
+      seikpc_local_certificate
+      | seikpc_peer_certificate_type
+   )
+;
+
+seikpc_local_certificate
+:
+   LOCAL_CERTIFICATE name = junos_name
+;
+
+seikpc_peer_certificate_type
+:
+   PEER_CERTIFICATE_TYPE type = (PKCS7 | X509_SIGNATURE)
 ;
 
 seik_proposal
