@@ -172,6 +172,7 @@ public class Interface implements Serializable {
   private @Nullable List<String> _incomingFilterList;
   private @Nullable String _incomingFilter6;
   private @Nullable List<String> _incomingFilterList6;
+  private @Nullable InterfaceVlanTag _innerVlanTag;
   private transient boolean _inherited;
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
@@ -179,6 +180,7 @@ public class Interface implements Serializable {
   private final String _name;
   private @Nullable Integer _nativeVlan;
   private @Nullable OspfInterfaceSettings _ospfSettings;
+  private @Nullable InterfaceVlanTag _outerVlanTag;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private @Nullable String _outgoingFilter6;
@@ -369,6 +371,14 @@ public class Interface implements Serializable {
     return _units;
   }
 
+  public @Nullable InterfaceVlanTag getInnerVlanTag() {
+    return _innerVlanTag;
+  }
+
+  public @Nullable InterfaceVlanTag getOuterVlanTag() {
+    return _outerVlanTag;
+  }
+
   public @Nullable Integer getVlanId() {
     return _vlanId;
   }
@@ -507,6 +517,10 @@ public class Interface implements Serializable {
     _isoAddress = address;
   }
 
+  public void setInnerVlanTag(@Nullable InterfaceVlanTag innerVlanTag) {
+    _innerVlanTag = innerVlanTag;
+  }
+
   public void setMtu(Integer mtu) {
     _mtu = mtu;
   }
@@ -517,6 +531,10 @@ public class Interface implements Serializable {
 
   public void setOspfSettings(OspfInterfaceSettings ospfSettings) {
     _ospfSettings = ospfSettings;
+  }
+
+  public void setOuterVlanTag(@Nullable InterfaceVlanTag outerVlanTag) {
+    _outerVlanTag = outerVlanTag;
   }
 
   public void setOutgoingFilter(@Nullable String accessListName) {
