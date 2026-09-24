@@ -123,6 +123,8 @@ public class LogicalSystem implements Serializable {
 
   private final @Nonnull Map<String, RibGroup> _ribGroups;
 
+  private @Nullable Integer _rstpBridgePriority;
+
   private final Map<String, RouteFilter> _routeFilters;
 
   private final Map<String, RoutingInstance> _routingInstances;
@@ -493,6 +495,10 @@ public class LogicalSystem implements Serializable {
     return _ribGroups;
   }
 
+  public @Nullable Integer getRstpBridgePriority() {
+    return _rstpBridgePriority;
+  }
+
   public Map<String, RouteFilter> getRouteFilters() {
     return _routeFilters;
   }
@@ -583,6 +589,10 @@ public class LogicalSystem implements Serializable {
 
   public void setNatStatic(Nat natStatic) {
     _natStatic = natStatic;
+  }
+
+  public void setRstpBridgePriority(int rstpBridgePriority) {
+    _rstpBridgePriority = rstpBridgePriority;
   }
 
   public void setSyslogFiles(Map<String, JunosSyslogFile> syslogFiles) {

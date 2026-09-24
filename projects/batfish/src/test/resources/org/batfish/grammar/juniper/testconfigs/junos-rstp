@@ -1,0 +1,7 @@
+set system host-name junos-rstp
+set interfaces ge-0/0/0 unit 0 family ethernet-switching interface-mode access
+set vlans default vlan-id 1
+set protocols rstp
+set protocols rstp bridge-priority 60k
+set protocols rstp interface all
+set protocols rstp interface ge-0/0/0
