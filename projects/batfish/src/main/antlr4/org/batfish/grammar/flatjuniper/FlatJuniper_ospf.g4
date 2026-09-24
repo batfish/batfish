@@ -30,6 +30,7 @@ o_common
    apply
    | o_area
    | o_disable
+   | o_domain_vpn_tag
    | o_enable
    | o_export
    | o_external_preference
@@ -50,6 +51,12 @@ o_common
 o_disable
 :
    DISABLE
+;
+
+// https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/domain-vpn-tag-edit-protocols-ospf.html
+o_domain_vpn_tag
+:
+   DOMAIN_VPN_TAG tag = uint32
 ;
 
 o_enable

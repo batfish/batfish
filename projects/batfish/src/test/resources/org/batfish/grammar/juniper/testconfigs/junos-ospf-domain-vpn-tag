@@ -1,0 +1,5 @@
+set system host-name junos-ospf-domain-vpn-tag
+set routing-instances CUSTOMER instance-type vrf
+set routing-instances CUSTOMER protocols ospf domain-vpn-tag 4294967295
+set routing-instances CUSTOMER6 instance-type vrf
+set routing-instances CUSTOMER6 protocols ospf3 domain-vpn-tag 1234
