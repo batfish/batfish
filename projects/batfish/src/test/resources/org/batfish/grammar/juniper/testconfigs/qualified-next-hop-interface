@@ -1,0 +1,5 @@
+set system host-name qualified-next-hop-interface
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
+set interfaces ge-0/0/1 unit 0 family inet6 address 2001:db8:1::1/64
+set routing-options static route 203.0.113.0/24 qualified-next-hop 192.0.2.2 interface ge-0/0/0.0
+set routing-options rib inet6.0 static route 2001:db8:2::/64 qualified-next-hop fe80::1 interface ge-0/0/1.0 preference 170

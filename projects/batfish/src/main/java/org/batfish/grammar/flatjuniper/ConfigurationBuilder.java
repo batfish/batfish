@@ -8012,7 +8012,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void enterRosr_qualified_next_hop(Rosr_qualified_next_hopContext ctx) {
     if (ctx.ip_address() != null) {
       Ip ip = toIp(ctx.ip_address());
-      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ip));
+      String ifaceName =
+          ctx.interface_id() == null ? null : getInterfaceFullName(ctx.interface_id());
+      NextHop nextHop = ifaceName == null ? new NextHop(ip) : new NextHop(ip, ifaceName);
+      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(nextHop);
+      if (ifaceName != null) {
+        _configuration.referenceStructure(
+            INTERFACE,
+            ifaceName,
+            STATIC_ROUTE_NEXT_HOP_INTERFACE,
+            getLine(ctx.interface_id().getStop()));
+      }
       return;
     }
     assert ctx.interface_id() != null;
@@ -8030,7 +8040,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void enterRosr_qualified_next_hop6(Rosr_qualified_next_hop6Context ctx) {
     if (ctx.ipv6_address() != null) {
       Ip6 ip = toIp6(ctx.ipv6_address());
-      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ip));
+      String ifaceName =
+          ctx.interface_id() == null ? null : getInterfaceFullName(ctx.interface_id());
+      NextHop nextHop = ifaceName == null ? new NextHop(ip) : new NextHop(ip, ifaceName);
+      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(nextHop);
+      if (ifaceName != null) {
+        _configuration.referenceStructure(
+            INTERFACE,
+            ifaceName,
+            STATIC_ROUTE_NEXT_HOP_INTERFACE,
+            getLine(ctx.interface_id().getStop()));
+      }
       return;
     }
     assert ctx.interface_id() != null;
