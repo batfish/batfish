@@ -1,0 +1,39 @@
+set system host-name junos-static-route-bfd
+
+set routing-options static defaults bfd-liveness-detection detection-time threshold 1
+set routing-options static defaults bfd-liveness-detection holddown-interval 0
+set routing-options static defaults bfd-liveness-detection minimum-interval 1
+set routing-options static defaults bfd-liveness-detection minimum-receive-interval 1
+set routing-options static defaults bfd-liveness-detection multiplier 1
+set routing-options static defaults bfd-liveness-detection no-adaptation
+set routing-options static defaults bfd-liveness-detection transmit-interval minimum-interval 1
+set routing-options static defaults bfd-liveness-detection transmit-interval threshold 1
+set routing-options static route 203.0.113.0/24 next-hop 192.0.2.3
+
+set routing-options static route 192.0.2.0/24 next-hop 192.0.2.1
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection detection-time threshold 255
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection holddown-interval 255000
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection minimum-interval 300
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection minimum-receive-interval 400
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection multiplier 5
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection no-adaptation
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection transmit-interval minimum-interval 500
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection transmit-interval threshold 10
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection detection-time threshold 0
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection holddown-interval 255001
+set routing-options static route 192.0.2.0/24 bfd-liveness-detection minimum-interval 0
+
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection detection-time threshold 3
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection holddown-interval 1000
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection minimum-interval 600
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection minimum-receive-interval 700
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection multiplier 4
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection no-adaptation
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection transmit-interval minimum-interval 800
+set routing-options static route 198.51.100.0/24 qualified-next-hop 192.0.2.2 bfd-liveness-detection transmit-interval threshold 9
+
+set routing-instances EDGE instance-type virtual-router
+set routing-instances EDGE routing-options rib EDGE.inet6.0 static route 2001:db8::/64 next-hop 2001:db8::1
+set routing-instances EDGE routing-options rib EDGE.inet6.0 static route 2001:db8::/64 bfd-liveness-detection minimum-interval 900
+set routing-instances EDGE routing-options rib EDGE.inet6.0 static route 2001:db8::/64 bfd-liveness-detection no-adaptation
