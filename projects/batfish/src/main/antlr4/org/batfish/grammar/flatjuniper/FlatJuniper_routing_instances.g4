@@ -237,9 +237,14 @@ ro_multicast_null
 :
    MULTICAST null_filler
 ;
-ro_multipath_null
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/multipath-edit-routing-options.html
+ro_multipath
 :
-   MULTIPATH null_filler
+  MULTIPATH
+  (
+    AS_PATH_COMPARE
+    | VPN_UNEQUAL_COST EQUAL_EXTERNAL_INTERNAL?
+  )?
 ;
 ro_nonstop_routing_null
 :
@@ -306,6 +311,7 @@ ror_inet6
       | ro_aggregate
       | ro_generate
       | ro_martians
+      | ro_multipath
       | ro6_static
    )
 ;
@@ -327,6 +333,7 @@ ror_common
   | ro_aggregate
   | ro_generate
   | ro_martians
+  | ro_multipath
   | ro_static
 ;
 
@@ -958,7 +965,7 @@ s_routing_options
       | ro_martians
       | ro_maximum_prefixes
       | ro_multicast_null
-      | ro_multipath_null
+      | ro_multipath
       | ro_nonstop_routing_null
       | ro_options_null
       | ro_ppm_null
