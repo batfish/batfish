@@ -8,12 +8,19 @@ options {
 
 a_application
 :
-   APPLICATION name = junos_name
+   APPLICATION name = a_application_name
    (
       aa_common+
       | aa_description
       | aa_term
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/application-edit-applications-srx.html
+a_application_name
+:
+   ANY
+   | junos_name
 ;
 
 a_application_set
