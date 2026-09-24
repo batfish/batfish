@@ -52,6 +52,8 @@ ACCEPT: 'accept';
 
 ACCEPT_DATA: 'accept-data';
 
+ACCEPT_REMOTE_NEXTHOP: 'accept-remote-nexthop';
+
 ACCEPTED_PREFIX_LIMIT: 'accepted-prefix-limit';
 
 ACCESS: 'access';
