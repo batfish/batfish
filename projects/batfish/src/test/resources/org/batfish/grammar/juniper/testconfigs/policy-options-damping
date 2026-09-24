@@ -1,0 +1,12 @@
+set system host-name policy-options-damping
+set policy-options damping CONSERVATIVE half-life 10
+set policy-options damping CONSERVATIVE max-suppress 60
+set policy-options damping CONSERVATIVE reuse 750
+set policy-options damping CONSERVATIVE suppress 10000
+set policy-options damping NONE disable
+set policy-options damping INVALID half-life 0
+set policy-options damping INVALID max-suppress 721
+set policy-options damping INVALID reuse 0
+set policy-options damping INVALID suppress 20001
+set policy-options policy-statement DAMPING-POLICY term PROFILE then damping CONSERVATIVE
+set policy-options policy-statement DAMPING-POLICY term UNDEFINED then damping UNDEFINED

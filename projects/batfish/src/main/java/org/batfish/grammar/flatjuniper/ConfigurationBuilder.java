@@ -34,6 +34,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_S
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_SCHEDULER_MAP;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
+import static org.batfish.representation.juniper.JuniperStructureType.DAMPING_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.DESTINATION_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
@@ -204,6 +205,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DAMPING;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
@@ -649,6 +651,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_conditionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_dampingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_rtf_prefix_listContext;
@@ -661,6 +664,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiaf_cccContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiafi_prefix6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiafi_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiafi_tableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pod_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pod_half_lifeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pod_max_suppressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pod_reuseContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pod_suppressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
@@ -717,6 +725,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_dampingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_destination_classContext;
@@ -1154,6 +1163,7 @@ import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.CommunityMemberParseResult;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
+import org.batfish.representation.juniper.DampingProfile;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Evpn;
@@ -1334,6 +1344,7 @@ import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenDamping;
 import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenDestinationClass;
@@ -1458,6 +1469,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 1000));
   private static final IntegerSpace MPLS_LSP_HOP_LIMIT_RANGE =
       IntegerSpace.of(new SubRange(2, 255));
+  private static final IntegerSpace DAMPING_HALF_LIFE_RANGE = IntegerSpace.of(new SubRange(1, 45));
+  private static final IntegerSpace DAMPING_MAX_SUPPRESS_RANGE =
+      IntegerSpace.of(new SubRange(1, 720));
+  private static final IntegerSpace DAMPING_REUSE_OR_SUPPRESS_RANGE =
+      IntegerSpace.of(new SubRange(1, 20000));
 
   // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
   private static final IntegerSpace ISIS_LEVEL_METRIC_RANGE =
@@ -2888,6 +2904,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private ResolutionRib _currentResolutionRib;
 
+  private DampingProfile _currentDampingProfile;
+
   private BridgeDomain _currentBridgeDomain;
 
   private TunnelAttribute _currentTunnelAttribute;
@@ -3754,6 +3772,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPo_as_path_group(Po_as_path_groupContext ctx) {
     _currentAsPathGroup = null;
+  }
+
+  @Override
+  public void enterPo_damping(Po_dampingContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(DAMPING_PROFILE, name, ctx, _parser);
+    _currentDampingProfile =
+        _currentLogicalSystem.getDampingProfiles().computeIfAbsent(name, n -> new DampingProfile());
+  }
+
+  @Override
+  public void exitPo_damping(Po_dampingContext ctx) {
+    _currentDampingProfile = null;
   }
 
   @Override
@@ -7492,6 +7523,45 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_default_action_reject(Popst_default_action_rejectContext ctx) {
     addPsThen(new PsThenDefaultActionReject(), ctx);
+  }
+
+  @Override
+  public void exitPopst_damping(Popst_dampingContext ctx) {
+    String profile = toString(ctx.name);
+    if (!profile.equals("none")) {
+      _configuration.referenceStructure(
+          DAMPING_PROFILE, profile, POLICY_STATEMENT_THEN_DAMPING, getLine(ctx.name.start));
+    }
+    addPsThen(new PsThenDamping(profile), ctx);
+  }
+
+  @Override
+  public void exitPod_disable(Pod_disableContext ctx) {
+    _currentDampingProfile.setDisabled(true);
+  }
+
+  @Override
+  public void exitPod_half_life(Pod_half_lifeContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, DAMPING_HALF_LIFE_RANGE, "damping half-life")
+        .ifPresent(_currentDampingProfile::setHalfLife);
+  }
+
+  @Override
+  public void exitPod_max_suppress(Pod_max_suppressContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, DAMPING_MAX_SUPPRESS_RANGE, "damping max-suppress")
+        .ifPresent(_currentDampingProfile::setMaxSuppress);
+  }
+
+  @Override
+  public void exitPod_reuse(Pod_reuseContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, DAMPING_REUSE_OR_SUPPRESS_RANGE, "damping reuse")
+        .ifPresent(_currentDampingProfile::setReuse);
+  }
+
+  @Override
+  public void exitPod_suppress(Pod_suppressContext ctx) {
+    toIntegerInSpace(ctx, ctx.value, DAMPING_REUSE_OR_SUPPRESS_RANGE, "damping suppress")
+        .ifPresent(_currentDampingProfile::setSuppress);
   }
 
   @Override

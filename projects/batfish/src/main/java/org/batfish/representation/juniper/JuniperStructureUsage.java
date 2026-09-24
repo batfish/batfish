@@ -174,6 +174,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_RTF_PREFIX_LIST("policy-statement rtf-prefix-list"),
   POLICY_STATEMENT_TERM_DEFINITION("policy-statement term"),
   POLICY_STATEMENT_THEN_ADD_COMMUNITY("policy-statement then add community"),
+  POLICY_STATEMENT_THEN_DAMPING("policy-statement then damping"),
   POLICY_STATEMENT_THEN_DELETE_COMMUNITY("policy-statement then delete community"),
   POLICY_STATEMENT_THEN_SET_COMMUNITY("policy-statement then set community"),
   POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE("policy-statement then tunnel-attribute"),
