@@ -28,6 +28,22 @@ public abstract class StaticRoute<T> implements Serializable {
 
   private final Set<Community> _communities;
 
+  private @Nullable Integer _bfdLivenessDetectionDetectionTimeThreshold;
+
+  private @Nullable Integer _bfdLivenessDetectionHolddownInterval;
+
+  private @Nullable Integer _bfdLivenessDetectionMinimumInterval;
+
+  private @Nullable Integer _bfdLivenessDetectionMinimumReceiveInterval;
+
+  private @Nullable Integer _bfdLivenessDetectionMultiplier;
+
+  private @Nullable Boolean _bfdLivenessDetectionNoAdaptation;
+
+  private @Nullable Integer _bfdLivenessDetectionTransmitIntervalMinimumInterval;
+
+  private @Nullable Integer _bfdLivenessDetectionTransmitIntervalThreshold;
+
   // Null distinguishes "unset" (inherit from defaults) from an explicit value. An unset field with
   // no defaults to inherit reads as the Junos default via the getter.
   private @Nullable Integer _distance;
@@ -84,6 +100,56 @@ public abstract class StaticRoute<T> implements Serializable {
   /** Adds a community to this route's own set (used while parsing). */
   public void addCommunity(Community community) {
     _communities.add(community);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionDetectionTimeThreshold() {
+    return _bfdLivenessDetectionDetectionTimeThreshold != null
+        ? _bfdLivenessDetectionDetectionTimeThreshold
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionDetectionTimeThreshold() : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionHolddownInterval() {
+    return _bfdLivenessDetectionHolddownInterval != null
+        ? _bfdLivenessDetectionHolddownInterval
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionHolddownInterval() : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionMinimumInterval() {
+    return _bfdLivenessDetectionMinimumInterval != null
+        ? _bfdLivenessDetectionMinimumInterval
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionMinimumInterval() : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionMinimumReceiveInterval() {
+    return _bfdLivenessDetectionMinimumReceiveInterval != null
+        ? _bfdLivenessDetectionMinimumReceiveInterval
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionMinimumReceiveInterval() : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionMultiplier() {
+    return _bfdLivenessDetectionMultiplier != null
+        ? _bfdLivenessDetectionMultiplier
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionMultiplier() : null);
+  }
+
+  public @Nullable Boolean getBfdLivenessDetectionNoAdaptation() {
+    return _bfdLivenessDetectionNoAdaptation != null
+        ? _bfdLivenessDetectionNoAdaptation
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionNoAdaptation() : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionTransmitIntervalMinimumInterval() {
+    return _bfdLivenessDetectionTransmitIntervalMinimumInterval != null
+        ? _bfdLivenessDetectionTransmitIntervalMinimumInterval
+        : (_defaults != null
+            ? _defaults.getBfdLivenessDetectionTransmitIntervalMinimumInterval()
+            : null);
+  }
+
+  public @Nullable Integer getBfdLivenessDetectionTransmitIntervalThreshold() {
+    return _bfdLivenessDetectionTransmitIntervalThreshold != null
+        ? _bfdLivenessDetectionTransmitIntervalThreshold
+        : (_defaults != null ? _defaults.getBfdLivenessDetectionTransmitIntervalThreshold() : null);
   }
 
   /**
@@ -165,6 +231,38 @@ public abstract class StaticRoute<T> implements Serializable {
 
   public void setDistance(int distance) {
     _distance = distance;
+  }
+
+  public void setBfdLivenessDetectionDetectionTimeThreshold(int detectionTimeThreshold) {
+    _bfdLivenessDetectionDetectionTimeThreshold = detectionTimeThreshold;
+  }
+
+  public void setBfdLivenessDetectionHolddownInterval(int holddownInterval) {
+    _bfdLivenessDetectionHolddownInterval = holddownInterval;
+  }
+
+  public void setBfdLivenessDetectionMinimumInterval(int minimumInterval) {
+    _bfdLivenessDetectionMinimumInterval = minimumInterval;
+  }
+
+  public void setBfdLivenessDetectionMinimumReceiveInterval(int minimumReceiveInterval) {
+    _bfdLivenessDetectionMinimumReceiveInterval = minimumReceiveInterval;
+  }
+
+  public void setBfdLivenessDetectionMultiplier(int multiplier) {
+    _bfdLivenessDetectionMultiplier = multiplier;
+  }
+
+  public void setBfdLivenessDetectionNoAdaptation(boolean noAdaptation) {
+    _bfdLivenessDetectionNoAdaptation = noAdaptation;
+  }
+
+  public void setBfdLivenessDetectionTransmitIntervalMinimumInterval(int minimumInterval) {
+    _bfdLivenessDetectionTransmitIntervalMinimumInterval = minimumInterval;
+  }
+
+  public void setBfdLivenessDetectionTransmitIntervalThreshold(int threshold) {
+    _bfdLivenessDetectionTransmitIntervalThreshold = threshold;
   }
 
   /** Clears other next hops and sets discard/drop for the route. */

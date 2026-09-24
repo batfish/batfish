@@ -767,11 +767,76 @@ rosr_as_path
    AS_PATH PATH path = as_path_expr
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bfd-liveness-detection-edit-routing-options.html
+rosr_bfd_liveness_detection
+:
+   BFD_LIVENESS_DETECTION
+   (
+      rosrbfd_detection_time
+      | rosrbfd_holddown_interval
+      | rosrbfd_minimum_interval
+      | rosrbfd_minimum_receive_interval
+      | rosrbfd_multiplier
+      | rosrbfd_no_adaptation
+      | rosrbfd_transmit_interval
+   )
+;
+
+rosrbfd_detection_time
+:
+   DETECTION_TIME THRESHOLD value = dec
+;
+
+rosrbfd_holddown_interval
+:
+   HOLDDOWN_INTERVAL interval = dec
+;
+
+rosrbfd_minimum_interval
+:
+   MINIMUM_INTERVAL interval = dec
+;
+
+rosrbfd_minimum_receive_interval
+:
+   MINIMUM_RECEIVE_INTERVAL interval = dec
+;
+
+rosrbfd_multiplier
+:
+   MULTIPLIER multiplier = dec
+;
+
+rosrbfd_no_adaptation
+:
+   NO_ADAPTATION
+;
+
+rosrbfd_transmit_interval
+:
+   TRANSMIT_INTERVAL
+   (
+      rosrbfdt_minimum_interval
+      | rosrbfdt_threshold
+   )
+;
+
+rosrbfdt_minimum_interval
+:
+   MINIMUM_INTERVAL interval = dec
+;
+
+rosrbfdt_threshold
+:
+   THRESHOLD value = dec
+;
+
 rosr_common
 :
    apply
    | rosr_active
    | rosr_as_path
+   | rosr_bfd_liveness_detection
    | rosr_community
    | rosr_discard
    | rosr_install
@@ -908,10 +973,75 @@ rosr_tag2
 rosrqnh_common
 :
    (
-      rosrqnhc_metric
+      rosrqnhc_bfd_liveness_detection
+      | rosrqnhc_metric
       | rosrqnhc_preference
       | rosrqnhc_tag
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bfd-liveness-detection-edit-routing-options.html
+rosrqnhc_bfd_liveness_detection
+:
+   BFD_LIVENESS_DETECTION
+   (
+      rosrqnhcbfd_detection_time
+      | rosrqnhcbfd_holddown_interval
+      | rosrqnhcbfd_minimum_interval
+      | rosrqnhcbfd_minimum_receive_interval
+      | rosrqnhcbfd_multiplier
+      | rosrqnhcbfd_no_adaptation
+      | rosrqnhcbfd_transmit_interval
+   )
+;
+
+rosrqnhcbfd_detection_time
+:
+   DETECTION_TIME THRESHOLD value = dec
+;
+
+rosrqnhcbfd_holddown_interval
+:
+   HOLDDOWN_INTERVAL interval = dec
+;
+
+rosrqnhcbfd_minimum_interval
+:
+   MINIMUM_INTERVAL interval = dec
+;
+
+rosrqnhcbfd_minimum_receive_interval
+:
+   MINIMUM_RECEIVE_INTERVAL interval = dec
+;
+
+rosrqnhcbfd_multiplier
+:
+   MULTIPLIER multiplier = dec
+;
+
+rosrqnhcbfd_no_adaptation
+:
+   NO_ADAPTATION
+;
+
+rosrqnhcbfd_transmit_interval
+:
+   TRANSMIT_INTERVAL
+   (
+      rosrqnhcbfdt_minimum_interval
+      | rosrqnhcbfdt_threshold
+   )
+;
+
+rosrqnhcbfdt_minimum_interval
+:
+   MINIMUM_INTERVAL interval = dec
+;
+
+rosrqnhcbfdt_threshold
+:
+   THRESHOLD value = dec
 ;
 
 rosrqnhc_metric
