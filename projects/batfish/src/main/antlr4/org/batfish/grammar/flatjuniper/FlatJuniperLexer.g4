@@ -89,6 +89,9 @@ ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 ACCESS_START: 'access-start';
 
 ACCOUNTING: 'accounting';
+ACCOUNTING_PORT: 'accounting-port';
+ACCOUNTING_RETRY: 'accounting-retry';
+ACCOUNTING_TIMEOUT: 'accounting-timeout';
 ACTION_PRIORITY: 'action-priority';
 ACTIVATE: 'activate';
 ACTIVE: 'active';
@@ -640,6 +643,7 @@ DEAD_INTERVAL: 'dead-interval';
 
 DEAD_PEER_DETECTION: 'dead-peer-detection';
 
+DEAD_TIME: 'dead-time';
 DECAPSULATE: 'decapsulate';
 DEDICATED_BUFFER: 'dedicated-buffer';
 DEMUX_OPTIONS: 'demux-options';
@@ -865,9 +869,10 @@ DYNAMIC: 'dynamic';
 
 DYNAMIC_DNS: 'dynamic-dns';
 
-DYNAMIC_TUNNELS: 'dynamic-tunnels' -> pushMode(M_DynamicTunnels);
-
 DYNAMIC_NEIGHBOR: 'dynamic-neighbor' -> pushMode(M_Name);
+DYNAMIC_REQUEST_PORT: 'dynamic-request-port';
+DYNAMIC_REQUESTS: 'dynamic-requests';
+DYNAMIC_TUNNELS: 'dynamic-tunnels' -> pushMode(M_DynamicTunnels);
 
 ECDSA_SHA2_NISTP256: 'ecdsa-sha2-nistp256';
 ECDSA_SHA2_NISTP384: 'ecdsa-sha2-nistp384';
@@ -1245,6 +1250,7 @@ ICMP6_TYPE: 'icmp6-type';
 
 ICMPV6: 'icmpv6';
 
+ID_REUSE_TIMEOUT: 'id-reuse-timeout';
 IDENT: 'ident';
 
 IDENT_RESET: 'ident-reset';
@@ -2196,6 +2202,7 @@ MAX_CONFIGURATION_ROLLBACKS: 'max-configuration-rollbacks';
 
 MAX_NCACHE_TTL: 'max-ncache-ttl';
 
+MAX_OUTSTANDING_REQUESTS: 'max-outstanding-requests';
 MAX_PRE_AUTHENTICATION_PACKETS: 'max-pre-authentication-packets';
 
 MAX_SESSION_NUMBER: 'max-session-number';
@@ -2205,6 +2212,7 @@ MAX_SESSIONS_PER_CONNECTION: 'max-sessions-per-connection';
 
 MAX_SUPPRESS: 'max-suppress';
 
+MAX_TX_BUFFERS: 'max-tx-buffers';
 MAXIMUM: 'maximum';
 
 MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
@@ -2266,6 +2274,7 @@ MEMORY: 'memory';
 
 MESSAGE: 'message';
 
+MESSAGE_AUTHENTICATOR: 'message-authenticator';
 METRIC: 'metric';
 
 METRIC2: 'metric2';
@@ -2482,6 +2491,7 @@ NO_LDP: 'no-ldp';
 NO_LDP_P2MP: 'no-ldp-p2mp';
 NO_LOAD_BALANCE_LABEL_CAPABILITY: 'no-load-balance-label-capability';
 NO_MALFORMED_ROUTE_LIMIT: 'no-malformed-route-limit';
+NO_MESSAGE_AUTHENTICATOR: 'no-message-authenticator';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';
 NO_NEIGHBOR_LEARN: 'no-neighbor-learn';
@@ -2744,10 +2754,10 @@ PRE_SHARED_KEY: 'pre-shared-key';
 
 PRE_SHARED_KEYS: 'pre-shared-keys';
 
+PREAUTHENTICATION_PORT: 'preauthentication-port';
+PREAUTHENTICATION_SECRET: 'preauthentication-secret' -> pushMode(M_SecretString);
 PRECEDENCE: 'precedence';
-
 PRECEDENCE_CUTOFF_IN_EFFECT: 'precedence-cutoff-in-effect';
-
 PRECISION_TIMERS: 'precision-timers';
 
 PREEMPT: 'preempt';
@@ -2872,6 +2882,8 @@ RADIUS_OPTIONS: 'radius-options';
 
 RADIUS_SERVER: 'radius-server';
 
+RADSEC: 'radsec';
+RADSEC_DESTINATION: 'radsec-destination';
 RANGE
 :
   'range'
@@ -2971,6 +2983,7 @@ RESTRICTED_QUEUES: 'restricted-queues';
 RETAIN: 'retain';
 RETRANSMISSION_ATTEMPT: 'retransmission-attempt';
 RETRANSMIT_INTERVAL: 'retransmit-interval';
+RETRY: 'retry';
 RETRY_OPTIONS: 'retry-options';
 RETRY_TIMER: 'retry-timer';
 REUSE: 'reuse';
@@ -3477,6 +3490,11 @@ TIMESTAMP_OPTION: 'timestamp-option';
 TIMESTAMP_REPLY: 'timestamp-reply';
 
 TLS: 'tls';
+TLS_CERTIFICATE: 'tls-certificate' -> pushMode(M_Name);
+TLS_FORCE_CIPHERS: 'tls-force-ciphers';
+TLS_MIN_VERSION: 'tls-min-version' -> pushMode(M_Name);
+TLS_PEER_NAME: 'tls-peer-name' -> pushMode(M_Name);
+TLS_TIMEOUT: 'tls-timeout';
 TLSDETAILS: 'tlsdetails';
 
 TO: 'to';
