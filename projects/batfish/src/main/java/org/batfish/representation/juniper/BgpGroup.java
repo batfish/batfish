@@ -65,6 +65,7 @@ public class BgpGroup implements Serializable {
   private boolean _removePrivateReplace;
   private @Nullable String _ribGroup;
   private @Nullable String _ribGroup6;
+  private @Nullable Integer _ttl;
   private BgpGroupType _type;
   private @Nullable Boolean _vpnApplyExport;
 
@@ -186,6 +187,9 @@ public class BgpGroup implements Serializable {
       }
       if (_ribGroup6 == null) {
         _ribGroup6 = _parent._ribGroup6;
+      }
+      if (_ttl == null) {
+        _ttl = _parent._ttl;
       }
       if (_type == null) {
         _type = _parent._type;
@@ -404,6 +408,10 @@ public class BgpGroup implements Serializable {
     return _ribGroup6;
   }
 
+  public @Nullable Integer getTtl() {
+    return _ttl;
+  }
+
   public final BgpGroupType getType() {
     return _type;
   }
@@ -556,6 +564,10 @@ public class BgpGroup implements Serializable {
 
   public void setRibGroup6(@Nullable String ribGroup6) {
     _ribGroup6 = ribGroup6;
+  }
+
+  public void setTtl(@Nullable Integer ttl) {
+    _ttl = ttl;
   }
 
   public final void setType(BgpGroupType type) {

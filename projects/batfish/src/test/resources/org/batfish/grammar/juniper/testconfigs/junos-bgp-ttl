@@ -1,0 +1,9 @@
+set system host-name junos-bgp-ttl
+set protocols bgp ttl 255
+set protocols bgp group GTSM type external
+set protocols bgp group DIRECT type external
+set protocols bgp group DIRECT ttl 1
+set protocols bgp group INVALID-DIRECT type external
+set protocols bgp group INVALID-DIRECT ttl 2
+set protocols bgp group MULTIHOP type external
+set protocols bgp group MULTIHOP multihop ttl 2
