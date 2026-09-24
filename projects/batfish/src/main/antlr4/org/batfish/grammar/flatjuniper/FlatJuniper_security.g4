@@ -470,12 +470,14 @@ s_security
       | se_application_tracking_null
       | se_authentication_key_chain
       | se_certificates
+      | sem_connectivity_association
       | se_flow_null
       | se_forwarding_options
       | se_ike
       | se_ipsec
       | se_key_chain
       | se_log_null
+      | se_macsec
       | se_nat
       | se_pki
       | se_policies
@@ -533,6 +535,65 @@ se_utm_null
       )?
    )
 ;
+
+se_macsec
+:
+   MACSEC
+   (
+      sem_connectivity_association
+      | sem_interfaces
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/connectivity-association-edit-security-macsec.html
+sem_connectivity_association
+:
+   CONNECTIVITY_ASSOCIATION name = junos_name macsec_connectivity_association_setting
+;
+
+sem_interfaces
+:
+   INTERFACES iface = interface_id CONNECTIVITY_ASSOCIATION name = junos_name
+;
+
+macsec_connectivity_association_setting
+:
+   semca_cak
+   | semca_cipher_suite
+   | semca_ckn
+   | semca_include_sci
+   | semca_mka
+   | semca_pre_shared_key
+   | semca_pre_shared_key_chain
+   | semca_security_mode
+;
+
+semca_cak: CAK value = secret_string;
+semca_cipher_suite
+:
+   CIPHER_SUITE value = (GCM_AES_128 | GCM_AES_256 | GCM_AES_XPN_128 | GCM_AES_XPN_256)
+;
+semca_ckn: CKN value = junos_name;
+semca_include_sci: INCLUDE_SCI;
+semca_mka
+:
+   MKA
+   (
+      KEY_SERVER_PRIORITY priority = uint8
+      | MUST_SECURE
+      | SHOULD_SECURE
+   )
+;
+semca_pre_shared_key
+:
+   PRE_SHARED_KEY
+   (
+      CAK cak = secret_string
+      | CKN ckn = junos_name
+   )
+;
+semca_pre_shared_key_chain: PRE_SHARED_KEY_CHAIN name = junos_name;
+semca_security_mode: SECURITY_MODE security_mode = (DYNAMIC | STATIC_CAK);
 
 se_address_book
 :

@@ -45,6 +45,7 @@ public class LogicalSystem implements Serializable {
   private final Login _login;
 
   private boolean _managementInstance;
+  private final Map<String, MacsecConnectivityAssociation> _macsecConnectivityAssociations;
 
   private final Map<String, NamedCommunity> _namedCommunities;
 
@@ -179,6 +180,7 @@ public class LogicalSystem implements Serializable {
     _authenticationKeyChains = new TreeMap<>();
     _chassisPortSpeeds = new TreeMap<>();
     _login = new Login();
+    _macsecConnectivityAssociations = new TreeMap<>();
     _namedCommunities = new TreeMap<>();
     _classOfServiceInterfaces = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
@@ -301,6 +303,10 @@ public class LogicalSystem implements Serializable {
 
   public Login getLogin() {
     return _login;
+  }
+
+  public Map<String, MacsecConnectivityAssociation> getMacsecConnectivityAssociations() {
+    return _macsecConnectivityAssociations;
   }
 
   public boolean getManagementInstance() {

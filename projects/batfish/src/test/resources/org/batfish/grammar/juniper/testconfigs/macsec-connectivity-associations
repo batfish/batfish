@@ -1,0 +1,24 @@
+set system host-name macsec-connectivity-associations
+set interfaces et-0/0/0 disable
+set interfaces et-0/0/1 disable
+set interfaces et-0/0/2 disable
+set security authentication-key-chains key-chain MACSEC-KEYS key KEY options basic
+set security macsec connectivity-association MODERN cak <SCRUBBED>
+set security macsec connectivity-association MODERN cipher-suite gcm-aes-256
+set security macsec connectivity-association MODERN ckn 00112233445566778899
+set security macsec connectivity-association MODERN include-sci
+set security macsec connectivity-association MODERN mka key-server-priority 16
+set security macsec connectivity-association MODERN mka must-secure
+set security macsec connectivity-association MODERN pre-shared-key cak <SCRUBBED>
+set security macsec connectivity-association MODERN pre-shared-key ckn 99887766554433221100
+set security macsec connectivity-association MODERN pre-shared-key-chain MACSEC-KEYS
+set security macsec connectivity-association MODERN security-mode static-cak
+set security macsec interfaces et-0/0/0 connectivity-association MODERN
+set connectivity-association LEGACY cipher-suite gcm-aes-128
+set connectivity-association LEGACY mka should-secure
+set connectivity-association LEGACY security-mode dynamic
+set interfaces et-0/0/1 connectivity-association LEGACY
+set security connectivity-association SECURITY-LEGACY cak <SCRUBBED>
+set interfaces et-0/0/2 connectivity-association SECURITY-LEGACY
+set security macsec connectivity-association XPN cipher-suite gcm-aes-xpn-128
+set security macsec connectivity-association XPN cipher-suite gcm-aes-xpn-256
