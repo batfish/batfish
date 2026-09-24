@@ -341,6 +341,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_drop_path_attributesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_dynamic_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
@@ -2654,6 +2655,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private BgpGroup _currentBgpGroup;
 
+  private @Nullable String _currentBgpDynamicNeighborName;
+
   private NamedCommunity _currentCommunityList;
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
@@ -3015,9 +3018,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       ipBgpGroup = new IpBgpGroup(remotePrefix);
       ipBgpGroup.setParent(_currentBgpGroup);
       ipBgpGroups.put(remotePrefix, ipBgpGroup);
-      ipBgpGroup.setDynamic(true);
     }
+    ipBgpGroup.setDynamic(true);
+    ipBgpGroup.setDynamicNeighborName(_currentBgpDynamicNeighborName);
     _currentBgpGroup = ipBgpGroup;
+  }
+
+  @Override
+  public void enterB_dynamic_neighbor(B_dynamic_neighborContext ctx) {
+    _currentBgpDynamicNeighborName = toString(ctx.name);
   }
 
   @Override
@@ -6713,6 +6722,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitP_bgp(P_bgpContext ctx) {
     _currentBgpGroup = null;
+  }
+
+  @Override
+  public void exitB_dynamic_neighbor(B_dynamic_neighborContext ctx) {
+    _currentBgpDynamicNeighborName = null;
   }
 
   @Override
