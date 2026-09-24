@@ -151,6 +151,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
+import static org.batfish.grammar.JunosGrammarTestUtils.getBatfish;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
@@ -420,6 +421,7 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.JunosGrammarTestUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -563,7 +565,6 @@ import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VniOptions;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
-import org.batfish.vendor.VendorConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -572,8 +573,6 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link FlatJuniperParser} and {@link FlatJuniperControlPlaneExtractor}. */
 public final class FlatJuniperGrammarTest {
-
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
   private static final String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
 
@@ -605,61 +604,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    return getBatfish(_folder, configurationNames);
   }
 
   private Configuration parseConfig(String hostname) {
-    try {
-      Map<String, Configuration> configs = parseTextConfigs(hostname);
-      assertThat(configs, hasKey(hostname.toLowerCase()));
-      return configs.get(hostname.toLowerCase());
-    } catch (IOException e) {
-      throw new AssertionError("Failed to parse " + hostname, e);
-    }
+    return JunosGrammarTestUtils.parseConfig(_folder, hostname);
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    return parseJuniperConfig(hostname, false);
+    return JunosGrammarTestUtils.parseJuniperConfig(_folder, hostname);
   }
 
-  /** Parse a Juniper config with optional error recovery. */
   private JuniperConfiguration parseJuniperConfig(String hostname, boolean allowErrors) {
-    try {
-      Batfish batfish = getBatfishForConfigurationNames(hostname);
-      Settings settings = batfish.getSettings();
-      if (allowErrors) {
-        settings.setDisableUnrecognized(false);
-        settings.setHaltOnConvertError(false);
-        settings.setHaltOnParseError(false);
-        settings.setThrowOnLexerError(false);
-        settings.setThrowOnParserError(false);
-      }
-      Map<String, VendorConfiguration> vendorConfigs =
-          batfish.loadVendorConfigurations(batfish.getSnapshot());
-      assertThat(vendorConfigs, hasKey(hostname));
-      String filename = "configs/" + hostname;
-      Warnings w =
-          batfish
-              .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
-              .getWarnings()
-              .get(filename);
-      if (w == null) {
-        w = new Warnings(Warnings.Settings.fromLogger(batfish.getLogger()));
-      }
-      JuniperConfiguration ret = (JuniperConfiguration) vendorConfigs.get(hostname);
-      ret.setWarnings(w);
-      return ret;
-    } catch (IOException e) {
-      throw new AssertionError("Failed to parse " + hostname, e);
-    }
+    return JunosGrammarTestUtils.parseJuniperConfig(_folder, hostname, allowErrors);
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+    return JunosGrammarTestUtils.parseTextConfigs(_folder, configurationNames);
   }
 
   @Test

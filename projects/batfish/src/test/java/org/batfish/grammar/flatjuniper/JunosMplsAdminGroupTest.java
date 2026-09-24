@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMa
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.grammar.JunosGrammarTestUtils.getBatfish;
 import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
@@ -19,7 +20,6 @@ import static org.hamcrest.Matchers.contains;
 import java.io.IOException;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -29,19 +29,11 @@ public final class JunosMplsAdminGroupTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
-    String[] names =
-        java.util.Arrays.stream(configurationNames)
-            .map(s -> "org/batfish/grammar/juniper/testconfigs/" + s)
-            .toArray(String[]::new);
-    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-  }
-
   @Test
   public void testAdminGroupDefinitions() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Batfish batfish = getBatfish(_folder, hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
@@ -67,7 +59,7 @@ public final class JunosMplsAdminGroupTest {
   public void testAdminGroupReferences() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Batfish batfish = getBatfish(_folder, hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
@@ -130,7 +122,7 @@ public final class JunosMplsAdminGroupTest {
   public void testAdminGroupReferenceCount() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Batfish batfish = getBatfish(_folder, hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
@@ -161,7 +153,7 @@ public final class JunosMplsAdminGroupTest {
   public void testUndefinedReferences() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Batfish batfish = getBatfish(_folder, hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
