@@ -95,6 +95,10 @@ public class LogicalSystem implements Serializable {
 
   private final JuniperFamily _jf;
 
+  private boolean _mplsDisabled;
+
+  private boolean _mplsNoPropagateTtl;
+
   private final String _name;
 
   private @Nullable Nat _natDestination;
@@ -386,6 +390,14 @@ public class LogicalSystem implements Serializable {
     return _jf;
   }
 
+  public boolean getMplsDisabled() {
+    return _mplsDisabled;
+  }
+
+  public boolean getMplsNoPropagateTtl() {
+    return _mplsNoPropagateTtl;
+  }
+
   public @Nonnull String getName() {
     return _name;
   }
@@ -547,6 +559,14 @@ public class LogicalSystem implements Serializable {
 
   public void setEvpn(Evpn evpn) {
     _evpn = evpn;
+  }
+
+  public void setMplsDisabled(boolean mplsDisabled) {
+    _mplsDisabled = mplsDisabled;
+  }
+
+  public void setMplsNoPropagateTtl(boolean mplsNoPropagateTtl) {
+    _mplsNoPropagateTtl = mplsNoPropagateTtl;
   }
 
   public void setHostname(String hostname) {

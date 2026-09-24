@@ -33,6 +33,7 @@ p_mpls
    (
        apply
        | mpls_admin_groups
+       | mpls_disable
        | mpls_explicit_null_null
        | mpls_icmp_tunneling_null
        | mpls_interface
@@ -40,6 +41,7 @@ p_mpls
        | mpls_label_switched_path
        | mpls_log_lsp_history_null
        | mpls_log_updown_null
+       | mpls_no_propagate_ttl
        | mpls_optimize_adaptive_teardown_null
        | mpls_optimize_aggressive_null
        | mpls_optimize_switchover_delay_null
@@ -53,6 +55,18 @@ p_mpls
        | mpls_traffic_engineering_null
        | mpls_traceoptions_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/disable-edit-protocols-mpls.html
+mpls_disable
+:
+   DISABLE
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-propagate-ttl-edit-protocols-mpls.html
+mpls_no_propagate_ttl
+:
+   NO_PROPAGATE_TTL
 ;
 
 mpls_admin_groups
