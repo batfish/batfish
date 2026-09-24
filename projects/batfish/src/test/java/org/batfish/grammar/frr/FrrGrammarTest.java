@@ -2,6 +2,7 @@ package org.batfish.grammar.frr;
 
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.ParseWarningMatchers.isTodo;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkPolicyName;
@@ -2697,9 +2698,7 @@ public class FrrGrammarTest {
   @Test
   public void testNoIpForwarding() {
     parseLines("no ip forwarding\n");
-    assertThat(
-        Iterables.getOnlyElement(_warnings.getParseWarnings()).getComment(),
-        equalTo("This feature is not currently supported"));
+    assertThat(Iterables.getOnlyElement(_warnings.getParseWarnings()), isTodo());
   }
 
   @Test

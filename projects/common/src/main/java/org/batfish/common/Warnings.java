@@ -64,6 +64,10 @@ public class Warnings implements Serializable {
   public static final String TAG_RED_FLAG = "MISCELLANEOUS";
 
   public static final String TAG_UNIMPLEMENTED = "UNIMPLEMENTED";
+
+  /** Comment used for parse-time TODO warnings. */
+  public static final String TODO_COMMENT = "This feature is not currently supported";
+
   private static final String PROP_ERROR_DETAILS = "Error details";
   private static final String PROP_PARSE_WARNINGS = "Parse warnings";
   private static final String PROP_PEDANTIC = "Pedantic complaints";
@@ -303,7 +307,7 @@ public class Warnings implements Serializable {
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,
       @Nonnull BatfishCombinedParser<?, ?> parser) {
-    addWarning(ctx, line, parser, "This feature is not currently supported");
+    addWarning(ctx, line, parser, TODO_COMMENT);
   }
 
   public void unimplemented(String msg) {

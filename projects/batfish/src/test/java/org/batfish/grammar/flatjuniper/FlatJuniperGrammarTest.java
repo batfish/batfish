@@ -3,7 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
-import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.ParseWarningMatchers.isTodo;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
@@ -1943,9 +1943,7 @@ public final class FlatJuniperGrammarTest {
             .getWarnings()
             .get(filename)
             .getParseWarnings();
-    assertThat(
-        parseWarnings,
-        hasItem(allOf(hasComment("This feature is not currently supported"), hasText("private"))));
+    assertThat(parseWarnings, hasItem(isTodo("private")));
     SortedMap<String, Warnings> convertWarnings =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings();
     assertThat(
@@ -6738,11 +6736,7 @@ public final class FlatJuniperGrammarTest {
 
     // Verify that the configuration generates expected unsupported warnings
     List<ParseWarning> parseWarnings = vc.getWarnings().getParseWarnings();
-    assertThat(
-        parseWarnings,
-        contains(
-            allOf(hasComment("This feature is not currently supported"), hasText("metric2 0")),
-            allOf(hasComment("This feature is not currently supported"), hasText("metric2 100"))));
+    assertThat(parseWarnings, contains(isTodo("metric2 0"), isTodo("metric2 100")));
 
     // Verify that the METRIC2_POLICY was parsed into the policy statement map
     assertThat(vc.getMasterLogicalSystem().getPolicyStatements(), hasKey("METRIC2_POLICY"));
@@ -7694,12 +7688,7 @@ public final class FlatJuniperGrammarTest {
             .getWarnings()
             .get("configs/" + hostname)
             .getParseWarnings();
-    assertThat(
-        parseWarnings,
-        hasItem(
-            allOf(
-                hasComment("This feature is not currently supported"),
-                hasText("vxlan-routing overlay-ecmp"))));
+    assertThat(parseWarnings, hasItem(isTodo("vxlan-routing overlay-ecmp")));
   }
 
   @Test
@@ -11825,9 +11814,7 @@ public final class FlatJuniperGrammarTest {
     }
 
     // Verify that parse-time todo warnings are generated for all to conditions
-    assertThat(
-        vc.getWarnings().getParseWarnings(),
-        hasItem(hasComment("This feature is not currently supported")));
+    assertThat(vc.getWarnings().getParseWarnings(), hasItem(isTodo()));
   }
 
   @Test
@@ -11866,9 +11853,7 @@ public final class FlatJuniperGrammarTest {
     }
 
     // Verify that parse-time todo warnings are generated
-    assertThat(
-        vc.getWarnings().getParseWarnings(),
-        hasItem(hasComment("This feature is not currently supported")));
+    assertThat(vc.getWarnings().getParseWarnings(), hasItem(isTodo()));
   }
 
   @Test

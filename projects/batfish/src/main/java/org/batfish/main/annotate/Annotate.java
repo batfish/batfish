@@ -225,7 +225,7 @@ public final class Annotate {
     switch (comment) {
       case "This syntax is unrecognized":
         return String.format("%s UNRECOGNIZED SYNTAX: %s\n", commentHeader, parseWarning.getText());
-      case "This feature is not currently supported":
+      case Warnings.TODO_COMMENT:
         return String.format(
             "%s PARTIALLY UNSUPPORTED: %s\n", commentHeader, parseWarning.getText());
       default:

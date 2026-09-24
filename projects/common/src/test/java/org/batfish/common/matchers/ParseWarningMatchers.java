@@ -1,5 +1,7 @@
 package org.batfish.common.matchers;
 
+import static org.batfish.common.Warnings.TODO_COMMENT;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
@@ -38,6 +40,16 @@ public class ParseWarningMatchers {
   /** Provides a matcher that matches if the parse warning's text is the given text. */
   public static Matcher<ParseWarning> hasText(String text) {
     return hasText(equalTo(text));
+  }
+
+  /** Provides a matcher that matches a parse-time TODO warning. */
+  public static Matcher<ParseWarning> isTodo() {
+    return hasComment(TODO_COMMENT);
+  }
+
+  /** Provides a matcher that matches a parse-time TODO warning with the given text. */
+  public static Matcher<ParseWarning> isTodo(String text) {
+    return allOf(isTodo(), hasText(text));
   }
 
   private ParseWarningMatchers() {}
