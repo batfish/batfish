@@ -224,6 +224,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   VLAN_ISOLATED_VLAN("vlan isolated-vlan"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
   VSTP_INTERFACE("vstp interface"),
+  VSTP_VLAN("vstp vlan"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
 
   private final String _description;
