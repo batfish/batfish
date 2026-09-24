@@ -57,9 +57,9 @@ The MPLS admin-group implementation demonstrates an important pattern for handli
 
 ```antlr
 mode M_AdminGroup;
-M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_Name);
-M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_Name);
-M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_Name);
+M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_NameList);
+M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_NameList);
+M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_NameList);
 M_AdminGroup_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_AdminGroup_NAME: F_Name -> type(NAME), popMode;
 M_AdminGroup_WS: F_WhitespaceChar+ -> skip;
@@ -71,7 +71,7 @@ M_AdminGroup_NEWLINE: F_NewlineChar+ -> type(NEWLINE), popMode;
 The important pattern here is:
 
 1. Create a specialized mode (`M_AdminGroup`) that recognizes specific keywords
-2. For those keywords, emit the appropriate token and then transition to M_Name mode
+2. For those keywords, emit the appropriate token and then transition to M_NameList mode
 3. For simple names without keywords, emit NAME token and return to previous mode
 
 This pattern is used when you need to handle both:

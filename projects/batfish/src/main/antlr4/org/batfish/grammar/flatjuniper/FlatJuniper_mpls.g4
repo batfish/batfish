@@ -344,6 +344,36 @@ mplslsp_optimize_timer_null
 mplslsp_primary
 :
    PRIMARY name = junos_name
+   (
+      apply
+      | mplslspp_admin_group
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/admin-group-edit-protocols-mpls-lsp.html
+mplslspp_admin_group
+:
+   ADMIN_GROUP
+   (
+      mplslsppag_exclude
+      | mplslsppag_include_all
+      | mplslsppag_include_any
+   )
+;
+
+mplslsppag_exclude
+:
+   EXCLUDE names = junos_name_list
+;
+
+mplslsppag_include_all
+:
+   INCLUDE_ALL names = junos_name_list
+;
+
+mplslsppag_include_any
+:
+   INCLUDE_ANY names = junos_name_list
 ;
 
 mplslsp_revert_timer_null
