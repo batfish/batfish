@@ -481,7 +481,7 @@ CLIENT_LIST_NAME: 'client-list-name' -> pushMode(M_Name);
 CLIENTS: 'clients';
 
 CLUSTER: 'cluster';
-
+CLUSTER_ID: 'cluster-id';
 CMD: 'cmd';
 CODE_POINT: 'code-point' -> pushMode(M_CodePointOrAlias);
 
@@ -971,7 +971,7 @@ FLAPS: 'flaps';
 FLEXIBLE_VLAN_TAGGING: 'flexible-vlan-tagging';
 
 FLOOD: 'flood';
-
+FLOOD_REFLECTOR: 'flood-reflector';
 FLOW: 'flow';
 
 FLOW_CONTROL: 'flow-control';
@@ -2763,7 +2763,7 @@ REFERENCE_BANDWIDTH
 :
    'reference-bandwidth' -> pushMode ( M_Bandwidth )
 ;
-
+REFLECTOR: 'reflector';
 REFRESH_TIME: 'refresh-time';
 REJECT: 'reject';
 
@@ -2782,7 +2782,6 @@ REMOVE: 'remove' -> pushMode(M_Remove);
 REMOVE_PRIVATE: 'remove-private';
 
 REMOVED: 'Removed';
-
 REPLACE: 'replace';
 
 REQUIRED_OPTION_MISSING: 'required-option-missing';

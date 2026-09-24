@@ -585,6 +585,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_minimum_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_multiplierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_flood_reflectorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
@@ -595,6 +596,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isis_level_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_flood_reflectorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metricsContext;
@@ -1292,6 +1294,8 @@ import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
 import org.batfish.representation.juniper.IpsecVpn;
+import org.batfish.representation.juniper.IsisFloodReflector;
+import org.batfish.representation.juniper.IsisFloodReflector.Role;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisInterfaceSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
@@ -1528,6 +1532,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 255000));
   private static final IntegerSpace BFD_LIVENESS_DETECTION_THRESHOLD_OR_MULTIPLIER_RANGE =
       IntegerSpace.of(new SubRange(1, 255));
+  private static final LongSpace ISIS_FLOOD_REFLECTOR_CLUSTER_ID_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_PATH_SELECTION_MULTIPLIER_RANGE =
       IntegerSpace.of(new SubRange(1, 1000));
   private static final IntegerSpace MPLS_LSP_HOP_LIMIT_RANGE =
@@ -6890,6 +6896,41 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIs_level(Is_levelContext ctx) {
     _currentIsisLevelSettings = null;
+  }
+
+  @Override
+  public void exitIsil_flood_reflector(Isil_flood_reflectorContext ctx) {
+    Optional<Long> clusterId =
+        toLongInSpace(ctx, ctx.id, ISIS_FLOOD_REFLECTOR_CLUSTER_ID_RANGE, "IS-IS cluster ID");
+    if (!clusterId.isPresent()) {
+      return;
+    }
+    IsisFloodReflector floodReflector = new IsisFloodReflector();
+    floodReflector.setClusterId(clusterId.get());
+    _currentIsisInterfaceLevelSettings.setFloodReflector(floodReflector);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIsl_flood_reflector(Isl_flood_reflectorContext ctx) {
+    IsisFloodReflector floodReflector = new IsisFloodReflector();
+    if (ctx.islfr_client() != null) {
+      floodReflector.setRole(Role.CLIENT);
+    } else {
+      Optional<Long> clusterId =
+          toLongInSpace(
+              ctx,
+              ctx.islfr_reflector().id,
+              ISIS_FLOOD_REFLECTOR_CLUSTER_ID_RANGE,
+              "IS-IS cluster ID");
+      if (!clusterId.isPresent()) {
+        return;
+      }
+      floodReflector.setRole(Role.REFLECTOR);
+      floodReflector.setClusterId(clusterId.get());
+    }
+    _currentIsisLevelSettings.setFloodReflector(floodReflector);
+    todo(ctx);
   }
 
   @Override

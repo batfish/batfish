@@ -8,6 +8,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   // Enabled by default
   private boolean _enabled = true;
+  private @Nullable IsisFloodReflector _floodReflector;
   private @Nullable String _helloAuthenticationKey;
   private @Nullable IsisHelloAuthenticationType _helloAuthenticationType;
   private @Nullable Integer _helloInterval;
@@ -18,6 +19,10 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   public boolean getEnabled() {
     return _enabled;
+  }
+
+  public @Nullable IsisFloodReflector getFloodReflector() {
+    return _floodReflector;
   }
 
   public @Nullable String getHelloAuthenticationKey() {
@@ -50,6 +55,10 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   public void setEnabled(boolean enabled) {
     _enabled = enabled;
+  }
+
+  public void setFloodReflector(IsisFloodReflector floodReflector) {
+    _floodReflector = floodReflector;
   }
 
   public void setHelloAuthenticationKey(String helloAuthenticationKey) {
