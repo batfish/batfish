@@ -210,6 +210,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   STP_INTERFACE("stp interface"),
   SYSTEM_SERVICES_DNS_PROXY_INTERFACE("system services dns dns-proxy interface"),
   VLAN_INTERFACE("vlan interface"),
+  VLAN_ISOLATED_VLAN("vlan isolated-vlan"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
   VSTP_INTERFACE("vstp interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
