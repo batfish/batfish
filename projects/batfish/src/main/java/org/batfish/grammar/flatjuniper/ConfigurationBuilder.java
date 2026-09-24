@@ -28,6 +28,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_S
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_DSCP_IPV6_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_EXP_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_FORWARDING_CLASS_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_IEEE_802_1_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_INET_PRECEDENCE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_REWRITE_RULE;
@@ -101,8 +102,10 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_CODE_POINTS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_FORWARDING_CLASS_SETS_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6;
@@ -964,6 +967,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_forwarding_class_setsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_scheduler_mapsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_schedulersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscl_dscpContext;
@@ -990,8 +994,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscpa_ieee_802_1Conte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoscpa_inet_precedenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfc_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfc_queueContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfcs_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoshob_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_forwarding_class_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_scheduler_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiiu_dscpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiiu_dscp_ipv6Context;
@@ -1268,6 +1274,7 @@ import org.batfish.representation.juniper.EvpnIpPrefixRoutesAdvertise;
 import org.batfish.representation.juniper.ExtendedCommunityOrAuto;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
+import org.batfish.representation.juniper.ForwardingClassSet;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromAddress;
 import org.batfish.representation.juniper.FwFromApplicationOrApplicationSet;
@@ -2938,6 +2945,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   // TODO: separate firewall filter and security-policy
   private ConcreteFirewallFilter _currentFilter;
+
+  private ForwardingClassSet _currentForwardingClassSet;
+
   private String _currentSecurityPolicyName; // Follows _currentFilter, but with correct name.
 
   private Family _currentFirewallFamily;
@@ -9610,6 +9620,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterScos_forwarding_class_sets(Scos_forwarding_class_setsContext ctx) {
+    String name = toString(ctx.name);
+    _currentForwardingClassSet =
+        _currentLogicalSystem
+            .getForwardingClassSets()
+            .computeIfAbsent(name, ForwardingClassSet::new);
+    _configuration.defineFlattenedStructure(
+        CLASS_OF_SERVICE_FORWARDING_CLASS_SET, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitScos_forwarding_class_sets(Scos_forwarding_class_setsContext ctx) {
+    _currentForwardingClassSet = null;
+  }
+
+  @Override
+  public void exitScosfcs_class(Scosfcs_classContext ctx) {
+    String name = toString(ctx.fc);
+    _currentForwardingClassSet.getForwardingClasses().add(name);
+    referenceBuiltIn(
+        ctx.fc, CLASS_OF_SERVICE_FORWARDING_CLASS, CLASS_OF_SERVICE_FORWARDING_CLASS_SETS_CLASS);
+  }
+
+  @Override
   public void exitScosfc_class(Scosfc_classContext ctx) {
     _configuration.defineFlattenedStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS, toString(ctx.name), ctx, _parser);
@@ -9782,6 +9816,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitScosii_forwarding_class(Scosii_forwarding_classContext ctx) {
     referenceBuiltIn(
         ctx.name, CLASS_OF_SERVICE_FORWARDING_CLASS, CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS);
+  }
+
+  @Override
+  public void exitScosii_forwarding_class_set(Scosii_forwarding_class_setContext ctx) {
+    _configuration.referenceStructure(
+        CLASS_OF_SERVICE_FORWARDING_CLASS_SET,
+        toString(ctx.name),
+        CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET,
+        getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override

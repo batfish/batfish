@@ -455,6 +455,7 @@ CLASS
   {
     if (lastTokenType() == FORWARDING_CLASSES
         || lastTokenType() == LOGIN
+        || secondToLastTokenType() == FORWARDING_CLASS_SETS
         || secondToLastTokenType() == USER) {
       pushMode(M_Name);
     }
@@ -1004,11 +1005,9 @@ FORWARDERS: 'forwarders';
 FORWARDING: 'forwarding';
 
 FORWARDING_CLASS: 'forwarding-class' -> pushMode(M_Name);
-
 FORWARDING_CLASS_ACCOUNTING: 'forwarding-class-accounting';
-
 FORWARDING_CLASS_SET: 'forwarding-class-set' -> pushMode(M_Name);
-
+FORWARDING_CLASS_SETS: 'forwarding-class-sets' -> pushMode(M_Name);
 FORWARDING_CLASSES: 'forwarding-classes';
 FORWARDING_CONTEXT: 'forwarding-context' -> pushMode(M_Name);
 FORWARDING_OPTIONS: 'forwarding-options';

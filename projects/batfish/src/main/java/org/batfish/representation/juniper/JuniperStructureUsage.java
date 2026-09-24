@@ -39,9 +39,12 @@ public enum JuniperStructureUsage implements StructureUsage {
       "class-of-service classifiers inet-precedence forwarding-class"),
   CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_CODE_POINTS(
       "class-of-service classifiers inet-precedence code-points"),
+  CLASS_OF_SERVICE_FORWARDING_CLASS_SETS_CLASS("class-of-service forwarding-class-sets class"),
   CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS(
       "class-of-service host-outbound-traffic forwarding-class"),
   CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS("class-of-service interfaces forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET(
+      "class-of-service interfaces forwarding-class-set"),
   CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP("class-of-service interfaces scheduler-map"),
   CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP(
       "class-of-service interfaces unit classifiers dscp"),
