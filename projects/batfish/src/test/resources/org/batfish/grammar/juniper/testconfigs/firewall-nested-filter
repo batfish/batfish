@@ -1,0 +1,6 @@
+set system host-name firewall-nested-filter
+set firewall family inet filter CHILD term ACCEPT then accept
+set firewall family inet filter PARENT term NESTED filter CHILD
+set firewall family inet filter PARENT term UNDEFINED filter UNKNOWN
+set firewall family inet6 filter CHILD6 term ACCEPT then accept
+set firewall family inet6 filter PARENT6 term NESTED filter CHILD6

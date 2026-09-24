@@ -2685,16 +2685,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
       JuniperStructureType aclType)
       throws VendorConversionException {
 
-    List<ExprAclLine> lines =
-        filter.getTerms().values().stream()
-            .map(term -> convertFwTermToExprAclLine(filter.getName(), term, aclType))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(ImmutableList.toImmutableList());
+    List<AclLine> lines = new ArrayList<>();
+    for (FwTerm term : filter.getTerms().values()) {
+      if (term.getFilter() != null) {
+        assert conjunctMatchExpr == null;
+        String nestedFilter = term.getFilter();
+        FirewallFilter nested = _masterLogicalSystem.getFirewallFilters().get(nestedFilter);
+        if (nested == null || nested.getFamily() != filter.getFamily()) {
+          continue;
+        }
+        lines.add(
+            new AclAclLine(
+                term.getName(),
+                nestedFilter,
+                matchingFirewallFilter(_filename, nestedFilter),
+                firewallFilterVendorStructureId(_filename, nestedFilter)));
+        continue;
+      }
+      Optional<ExprAclLine> line = convertFwTermToExprAclLine(filter.getName(), term, aclType);
+      if (line.isEmpty()) {
+        continue;
+      }
+      ExprAclLine exprLine = line.get();
+      lines.add(
+          conjunctMatchExpr == null
+              ? exprLine
+              : new ExprAclLine(
+                  exprLine.getAction(),
+                  and(exprLine.getMatchCondition(), conjunctMatchExpr),
+                  exprLine.getName(),
+                  exprLine.getTraceElement(),
+                  exprLine.getVendorStructureId().orElse(null)));
+    }
 
     return IpAccessList.builder()
         .setName(createdAclName)
-        .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
+        .setLines(lines)
         .setSourceName(filter.getName())
         .setSourceType(aclType.getDescription())
         .build();
