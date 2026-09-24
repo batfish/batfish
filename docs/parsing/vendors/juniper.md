@@ -85,9 +85,9 @@ For example, the MPLS admin-group mode handles both simple names and complex exp
 
 ```antlr
 mode M_AdminGroup;
-M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_Name);
-M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_Name);
-M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_Name);
+M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_NameList);
+M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_NameList);
+M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_NameList);
 M_AdminGroup_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_AdminGroup_NAME: F_Name -> type(NAME), popMode;
 ```

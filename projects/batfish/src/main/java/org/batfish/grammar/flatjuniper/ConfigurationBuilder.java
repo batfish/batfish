@@ -173,6 +173,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_POLICING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_ADMIN_GROUP_EXCLUDE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_ADMIN_GROUP_INCLUDE_ALL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_ADMIN_GROUP_INCLUDE_ANY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL;
@@ -595,6 +598,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_secondaryContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_allContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_anyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppag_excludeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppag_include_allContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppag_include_anyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsppol_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_allContext;
@@ -10221,10 +10227,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitMplslsppag_exclude(Mplslsppag_excludeContext ctx) {
+    for (Junos_nameContext nameContext : ctx.names.junos_name()) {
+      _configuration.referenceStructure(
+          ADMIN_GROUP,
+          toString(nameContext),
+          MPLS_LSP_PRIMARY_ADMIN_GROUP_EXCLUDE,
+          getLine(nameContext.getStart()));
+    }
+  }
+
+  @Override
+  public void exitMplslsppag_include_all(Mplslsppag_include_allContext ctx) {
+    for (Junos_nameContext nameContext : ctx.names.junos_name()) {
+      _configuration.referenceStructure(
+          ADMIN_GROUP,
+          toString(nameContext),
+          MPLS_LSP_PRIMARY_ADMIN_GROUP_INCLUDE_ALL,
+          getLine(nameContext.getStart()));
+    }
+  }
+
+  @Override
+  public void exitMplslsppag_include_any(Mplslsppag_include_anyContext ctx) {
+    for (Junos_nameContext nameContext : ctx.names.junos_name()) {
+      _configuration.referenceStructure(
+          ADMIN_GROUP,
+          toString(nameContext),
+          MPLS_LSP_PRIMARY_ADMIN_GROUP_INCLUDE_ANY,
+          getLine(nameContext.getStart()));
+    }
+  }
+
+  @Override
   public void exitMplslsp_primary(Mplslsp_primaryContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         MPLS_PATH, name, MPLS_LSP_PRIMARY_PATH, getLine(ctx.name.getStart()));
+    if (ctx.mplslspp_admin_group() != null) {
+      todo(ctx);
+    }
   }
 
   @Override

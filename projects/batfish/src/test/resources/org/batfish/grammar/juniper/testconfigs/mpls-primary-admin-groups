@@ -1,0 +1,11 @@
+set system host-name mpls-primary-admin-groups
+set protocols mpls admin-groups AVOID 1
+set protocols mpls admin-groups ALSO-AVOID 4
+set protocols mpls admin-groups REQUIRED 2
+set protocols mpls admin-groups PREFERRED 3
+set protocols mpls path PATH1 192.0.2.1 strict
+set protocols mpls path PATH2 192.0.2.2 strict
+set protocols mpls label-switched-path LSP primary PATH1
+set protocols mpls label-switched-path LSP primary PATH2 admin-group exclude [ AVOID ALSO-AVOID ]
+set protocols mpls label-switched-path LSP primary PATH1 admin-group include-all REQUIRED
+set protocols mpls label-switched-path LSP primary PATH1 admin-group include-any PREFERRED
