@@ -62,6 +62,11 @@ public class Interface implements Serializable {
     SINGLE_ACTIVE
   }
 
+  public enum SpeedMode {
+    AUTO,
+    AUTO_10M_100M
+  }
+
   /**
    * Returns true if this interface is configured like a physical interface. The main use of this
    * function is for features that can be configured on a group of bundled interfaces.
@@ -204,6 +209,7 @@ public class Interface implements Serializable {
   private boolean _primary;
   private @Nullable String _redundantParentInterface;
   private RoutingInstance _routingInstance;
+  private @Nullable SpeedMode _speedMode;
   private final @Nonnull InterfaceType _type;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
@@ -270,6 +276,10 @@ public class Interface implements Serializable {
 
   public double getBandwidth() {
     return _bandwidth;
+  }
+
+  public @Nullable SpeedMode getSpeedMode() {
+    return _speedMode;
   }
 
   public String getDescription() {
@@ -512,6 +522,10 @@ public class Interface implements Serializable {
 
   public void setBandwidth(double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setSpeedMode(@Nullable SpeedMode speedMode) {
+    _speedMode = speedMode;
   }
 
   public void setDefined(boolean defined) {

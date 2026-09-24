@@ -389,7 +389,23 @@ i_redundant_ether_options
 
 i_speed
 :
-   SPEED dec speed_abbreviation
+   SPEED
+   (
+      dec speed_abbreviation
+      | i_speed_auto
+      | i_speed_auto_10m_100m
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-interfaces-ethernet.html
+i_speed_auto
+:
+   AUTO
+;
+
+i_speed_auto_10m_100m
+:
+   AUTO_10M_100M
 ;
 
 i_unit

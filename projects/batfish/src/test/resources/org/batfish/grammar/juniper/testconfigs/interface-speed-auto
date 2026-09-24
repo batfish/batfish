@@ -1,0 +1,3 @@
+set system host-name interface-speed-auto
+set interfaces ge-0/0/0 speed auto
+set interfaces ge-0/0/1 speed auto-10m-100m
