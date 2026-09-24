@@ -3579,6 +3579,11 @@ SINGLE_QUOTE
    '\''
 ;
 
+TPID_VLAN_ID
+:
+  '0x' F_HexDigit+ PERIOD F_Digit+
+;
+
 UNDERSCORE: '_';
 
 V3: 'v3';

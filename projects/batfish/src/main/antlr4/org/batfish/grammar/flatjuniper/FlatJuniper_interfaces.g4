@@ -398,7 +398,7 @@ i_unit
       | i_input_vlan_map
       | i_output_vlan_map
       | i_peer_unit
-      | i_vlan_tags_null
+      | i_vlan_tags
    )
 ;
 
@@ -422,10 +422,16 @@ i_vlan_tagging
    VLAN_TAGGING
 ;
 
-// Dual-tagged (Q-in-Q) outer/inner VLAN IDs. Not modeled.
-i_vlan_tags_null
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vlan-tags-edit-interfaces.html
+i_vlan_tags
 :
-   VLAN_TAGS OUTER outer = vlan_number (INNER inner = vlan_number)?
+   VLAN_TAGS OUTER outer = interface_vlan_tag (INNER inner = interface_vlan_tag)?
+;
+
+interface_vlan_tag
+:
+   vlan_number
+   | TPID_VLAN_ID
 ;
 
 if_bridge

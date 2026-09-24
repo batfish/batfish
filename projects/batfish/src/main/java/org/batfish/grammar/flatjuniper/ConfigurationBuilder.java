@@ -489,6 +489,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_output_vlan_mapContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_tagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ieee_802_1_code_pointContext;
@@ -530,6 +531,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Inet_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_interface_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_vlan_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_addressContext;
@@ -1199,6 +1201,7 @@ import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.InterfaceSet;
+import org.batfish.representation.juniper.InterfaceVlanTag;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpOptions;
 import org.batfish.representation.juniper.IpUnknownProtocol;
@@ -6117,6 +6120,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitI_vlan_tags(I_vlan_tagsContext ctx) {
+    _currentInterfaceOrRange.setOuterVlanTag(toInterfaceVlanTag(ctx.outer));
+    if (ctx.inner != null) {
+      _currentInterfaceOrRange.setInnerVlanTag(toInterfaceVlanTag(ctx.inner));
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void exitIfe_filter(Ife_filterContext ctx) {
     FilterContext filter = ctx.filter();
     if (filter.direction() == null) {
@@ -8185,6 +8197,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static int toInt(Dscp_code_pointContext ctx) {
     return Integer.parseInt(ctx.CODE_POINT_6_BIT().getText(), 2);
+  }
+
+  private static InterfaceVlanTag toInterfaceVlanTag(Interface_vlan_tagContext ctx) {
+    String text = ctx.getText();
+    int separator = text.indexOf('.');
+    if (separator < 0) {
+      return new InterfaceVlanTag(null, Integer.parseInt(text));
+    }
+    return new InterfaceVlanTag(
+        Integer.parseInt(text.substring(2, separator), 16),
+        Integer.parseInt(text.substring(separator + 1)));
   }
 
   private static int toInt(Exp_code_pointContext ctx) {

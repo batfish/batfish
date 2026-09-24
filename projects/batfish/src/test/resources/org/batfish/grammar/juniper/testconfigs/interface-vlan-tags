@@ -1,0 +1,4 @@
+set system host-name interface-vlan-tags
+set interfaces xe-0/0/0 flexible-vlan-tagging
+set interfaces xe-0/0/0 unit 100 vlan-tags outer 100 inner 101
+set interfaces xe-0/0/0 unit 200 vlan-tags outer 0x88a8.200 inner 0x8100.201
