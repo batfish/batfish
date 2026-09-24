@@ -2382,6 +2382,7 @@ NO_EXPORT: 'no-export';
 NO_EXPORT_SUBCONFED: 'no-export-subconfed';
 NO_FLOW_CONTROL: 'no-flow-control';
 NO_GATEWAY_COMMUNITY: 'no-gateway-community';
+NO_HIERARCHICAL_ECMP: 'no-hierarchical-ecmp';
 NO_HIDDEN_COMMANDS: 'no-hidden-commands';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
