@@ -876,6 +876,7 @@ EVENT_OPTIONS: 'event-options';
 EVENTS: 'events';
 
 EVPN: 'evpn';
+EVPN_VXLAN: 'evpn-vxlan';
 
 EXACT: 'exact';
 EXCEPT: 'except';
@@ -3066,6 +3067,7 @@ SHAPING_RATE: 'shaping-rate';
 SHARED_BANDWIDTH_POLICER: 'shared-bandwidth-policer';
 SHARED_BUFFER: 'shared-buffer';
 SHARED_IKE_ID: 'shared-ike-id';
+SHARED_TUNNELS: 'shared-tunnels';
 SHIM6_HEADER: 'shim6-header';
 SHORTCUTS: 'shortcuts';
 SHUTDOWN: 'shutdown';

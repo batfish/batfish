@@ -35,6 +35,17 @@ fo_enhanced_hash_key_null
 :
    ENHANCED_HASH_KEY null_filler
 ;
+fo_evpn_vxlan
+:
+   EVPN_VXLAN foev_shared_tunnels_null
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/evpn-vxlan.html
+foev_shared_tunnels_null
+:
+   SHARED_TUNNELS
+;
+
 fo_family_null
 :
    FAMILY null_filler
@@ -201,6 +212,7 @@ s_forwarding_options
       | fo_analyzer_null
       | fo_dhcp_relay
       | fo_enhanced_hash_key_null
+      | fo_evpn_vxlan
       | fo_family_null
       | fo_hash_key_null
       | fo_helpers
