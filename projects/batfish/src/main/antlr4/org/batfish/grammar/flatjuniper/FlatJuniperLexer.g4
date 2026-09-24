@@ -26,6 +26,7 @@ tokens {
    DISABLE_SPOOF_CHECK,
    DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
+   EXCEPTION,
    FEATURES,
    FIN,
    HUGEPAGES,
@@ -39,6 +40,7 @@ tokens {
    ISO_ADDRESS,
    LAST_AS,
    LITERAL_OR_REGEX_COMMUNITY,
+   LIST,
    MAPPING,
    MEMORY,
    MPLS_RIB_NAME,
@@ -258,6 +260,7 @@ ALWAYS_WRITE_GIADDR: 'always-write-giaddr';
 ANALYZER: 'analyzer';
 
 ANNOUNCEMENT: 'announcement';
+ANTI_VIRUS: 'anti-virus';
 
 ANY: 'any';
 
@@ -1002,6 +1005,7 @@ FAST_REROUTE: 'fast-reroute';
 
 FASTETHER_OPTIONS: 'fastether-options';
 
+FEATURE_PROFILE: 'feature-profile';
 FEC129_VPWS: 'fec129-vpws';
 
 FILE
@@ -2269,6 +2273,7 @@ METRIC_TYPE
 MGCP_CA: 'mgcp-ca';
 
 MGCP_UA: 'mgcp-ua';
+MIME_WHITELIST: 'mime-whitelist' -> pushMode(M_MimeWhitelist);
 
 MINIMUM_BANDWIDTH: 'minimum-bandwidth';
 
@@ -3567,6 +3572,7 @@ USER
 ;
 
 USER_DEFINED_OPTION_TYPE: 'user-defined-option-type';
+UTM: 'utm';
 
 UUID: 'uuid';
 
@@ -4858,6 +4864,25 @@ M_Name_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Name_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
 M_Name_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Name_NAME: F_Name -> type(NAME), popMode;
+
+mode M_MimeWhitelist;
+
+M_MimeWhitelist_EXCEPTION: 'exception' -> type(EXCEPTION), mode(M_Name);
+M_MimeWhitelist_LIST: 'list' -> type(LIST), mode(M_MimeWhitelistListName);
+M_MimeWhitelist_WS: F_WhitespaceChar+ -> skip;
+M_MimeWhitelist_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_MimeWhitelistListName;
+
+M_MimeWhitelistListName_NAME: F_Name -> type(NAME), mode(M_MimeWhitelistAfterList);
+M_MimeWhitelistListName_WS: F_WhitespaceChar+ -> skip;
+M_MimeWhitelistListName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_MimeWhitelistAfterList;
+
+M_MimeWhitelistAfterList_EXCEPTION: 'exception' -> type(EXCEPTION), mode(M_Name);
+M_MimeWhitelistAfterList_WS: F_WhitespaceChar+ -> skip;
+M_MimeWhitelistAfterList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_SyslogFileName;
 

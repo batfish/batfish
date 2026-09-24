@@ -1,0 +1,4 @@
+set system host-name utm-mime-whitelist
+set security utm feature-profile anti-virus mime-whitelist exception MIME-EXCEPTIONS
+set security utm feature-profile anti-virus mime-whitelist list junos-default-bypass-mime
+set security utm feature-profile anti-virus mime-whitelist list CUSTOM-MIME exception MIME-EXCEPTIONS
