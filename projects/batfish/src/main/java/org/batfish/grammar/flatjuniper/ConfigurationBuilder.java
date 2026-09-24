@@ -631,6 +631,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natpp_port_overloading_factor_nullContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ntp_key_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
@@ -1529,6 +1530,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 720));
   private static final IntegerSpace DAMPING_REUSE_OR_SUPPRESS_RANGE =
       IntegerSpace.of(new SubRange(1, 20000));
+  private static final IntegerSpace NAT_PORT_OVERLOADING_FACTOR_RANGE =
+      IntegerSpace.of(new SubRange(2, 32));
 
   // IS-IS wide metric: 1 through 16,777,215 (2^24 - 1).
   private static final IntegerSpace ISIS_LEVEL_METRIC_RANGE =
@@ -7070,6 +7073,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");
     }
+  }
+
+  @Override
+  public void exitNatpp_port_overloading_factor_null(
+      Natpp_port_overloading_factor_nullContext ctx) {
+    toIntegerInSpace(
+        ctx, ctx.uint8(), NAT_PORT_OVERLOADING_FACTOR_RANGE, "source NAT port-overloading-factor");
   }
 
   @Override
