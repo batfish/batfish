@@ -71,6 +71,7 @@ eo8023ad_interface
    interface_id
 ;
 
+// https://github.com/Juniper/yang/blob/master/20.3/20.3R1/junos/conf-with-extensions/junos-conf-interfaces%402019-01-01.yang
 eo8023ad_lacp
 :
    LACP FORCE_UP
