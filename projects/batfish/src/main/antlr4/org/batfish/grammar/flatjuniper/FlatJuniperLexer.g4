@@ -480,6 +480,8 @@ CLIENTS: 'clients';
 
 CLUSTER: 'cluster';
 
+CLUSTER_ID: 'cluster-id';
+
 CMD: 'cmd';
 CODE_POINT: 'code-point' -> pushMode(M_CodePointOrAlias);
 
@@ -968,6 +970,8 @@ FLAPS: 'flaps';
 FLEXIBLE_VLAN_TAGGING: 'flexible-vlan-tagging';
 
 FLOOD: 'flood';
+
+FLOOD_REFLECTOR: 'flood-reflector';
 
 FLOW: 'flow';
 
@@ -2778,6 +2782,8 @@ REMOVE: 'remove' -> pushMode(M_Remove);
 REMOVE_PRIVATE: 'remove-private';
 
 REMOVED: 'Removed';
+
+REFLECTOR: 'reflector';
 
 REPLACE: 'replace';
 

@@ -68,6 +68,7 @@ is_level
     isl_authentication_key_null
     | isl_authentication_type_null
     | isl_disable
+    | isl_flood_reflector
     | isl_prefix_export_limit_null
     | isl_wide_metrics_only
   )
@@ -152,6 +153,7 @@ isi_level
   LEVEL dec
   (
     isil_disable
+    | isil_flood_reflector
     | isil_hello_authentication_key
     | isil_hello_authentication_type
     | isil_hello_interval
@@ -164,6 +166,35 @@ isi_level
     | isil_priority
     | isil_te_metric
   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/flood-reflector-edit-protocols-isis.html
+isl_flood_reflector
+:
+  FLOOD_REFLECTOR
+  (
+    islfr_client
+    | islfr_reflector
+  )
+;
+
+islfr_client
+:
+  CLIENT
+;
+
+islfr_reflector
+:
+  REFLECTOR CLUSTER_ID
+  // 1-4294967295
+  id = uint32
+;
+
+isil_flood_reflector
+:
+  FLOOD_REFLECTOR REFLECTOR? CLUSTER_ID
+  // 1-4294967295
+  id = uint32
 ;
 
 isi_hello_padding_null
