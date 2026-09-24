@@ -1178,6 +1178,8 @@ import org.batfish.representation.juniper.FwFromTcpFlags;
 import org.batfish.representation.juniper.FwFromTtl;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
+import org.batfish.representation.juniper.FwThenDecapsulate;
+import org.batfish.representation.juniper.FwThenDecapsulate.Type;
 import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.FwThenNextTerm;
@@ -3228,6 +3230,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftt_decapsulate(Fftt_decapsulateContext ctx) {
+    Type type =
+        ctx.GRE() != null
+            ? Type.GRE
+            : ctx.GRE_IN_UDP() != null ? Type.GRE_IN_UDP : Type.MPLS_IN_UDP;
+    String routingInstance = ctx.name == null ? null : toString(ctx.name);
+    _currentFwTerm.getThens().add(new FwThenDecapsulate(type, routingInstance));
+    if (routingInstance != null) {
+      referenceRoutingInstance(
+          routingInstance, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
+    }
     todo(ctx);
   }
 

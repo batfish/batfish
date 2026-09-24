@@ -66,6 +66,12 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
+  public void testVisitDecapsulate() {
+    _fwTerm.getThens().add(new FwThenDecapsulate(FwThenDecapsulate.Type.GRE, null));
+    assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), empty());
+  }
+
+  @Test
   public void testVisitNextIp() {
     _fwTerm.getThens().add(new FwThenNextIp(Prefix.parse("1.1.1.0/24")));
     // Not implemented yet:

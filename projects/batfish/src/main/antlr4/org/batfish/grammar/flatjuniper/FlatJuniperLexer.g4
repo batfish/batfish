@@ -1017,6 +1017,8 @@ GRE_6IN4: 'gre-6in4';
 
 GRE_6IN6: 'gre-6in6';
 
+GRE_IN_UDP: 'gre-in-udp';
+
 GROUP: 'group' -> pushMode(M_Name);
 
 GROUP_IKE_ID: 'group-ike-id';
@@ -2143,6 +2145,8 @@ MPLS_ANY: 'mpls-any';
 MPLS_INET_BOTH: 'mpls-inet-both';
 
 MPLS_INET_BOTH_NON_VPN: 'mpls-inet-both-non-vpn';
+
+MPLS_IN_UDP: 'mpls-in-udp';
 
 MSDP: 'msdp';
 

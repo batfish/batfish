@@ -2768,6 +2768,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
 
+    for (FwThen then : term.getThens()) {
+      if (then instanceof FwThenDecapsulate) {
+        // Unsupported action already reported during parsing.
+        return null;
+      }
+    }
+
     _w.redFlag(
         "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
     return LineAction.DENY;

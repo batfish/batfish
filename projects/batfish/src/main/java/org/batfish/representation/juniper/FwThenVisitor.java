@@ -11,6 +11,8 @@ public interface FwThenVisitor<T> {
 
   T visitFwThenDiscard(FwThenDiscard discard);
 
+  T visitFwThenDecapsulate(FwThenDecapsulate decapsulate);
+
   T visitFwThenNextIp(FwThenNextIp nextIp);
 
   T visitFwThenNextTerm(FwThenNextTerm accept);
