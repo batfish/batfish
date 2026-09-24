@@ -48,6 +48,7 @@ ri_named_routing_instance
    name = junos_name
    (
       apply
+      | ri_access_null
       | ri_chassis
       | ri_event_options_null
       | ri_provider_tunnel_null
@@ -70,6 +71,12 @@ ri_named_routing_instance
       | ri_vrf_target
       | ri_vtep_source_interface
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/access-edit-address-assignment.html
+ri_access_null
+:
+   ACCESS sa_address_assignment_null
 ;
 
 ri_chassis

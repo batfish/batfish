@@ -139,9 +139,78 @@ s_access
 :
    ACCESS
    (
-      sa_profile
+      sa_address_assignment_null
+      | sa_profile
       | sa_radius_server_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/access-edit-address-assignment.html
+sa_address_assignment_null
+:
+   ADDRESS_ASSIGNMENT saa_pool_null
+;
+
+saa_pool_null
+:
+   POOL name = junos_name saaap_family_inet_null
+;
+
+saaap_family_inet_null
+:
+   FAMILY INET
+   (
+      saaapfi_dhcp_attributes_null
+      | saaapfi_host_null
+      | saaapfi_network_null
+      | saaapfi_range_null
+   )
+;
+
+saaapfi_dhcp_attributes_null
+:
+   DHCP_ATTRIBUTES
+   (
+      BOOT_FILE junos_name
+      | BOOT_SERVER (ip_address | junos_name)
+      | DOMAIN_NAME junos_name
+      | MAXIMUM_LEASE_TIME (uint32 | INFINITE)
+      | NAME_SERVER ip_address
+      | OPTION uint8 saaapfida_option_value_null
+      | PROPAGATE_SETTINGS interface_id
+      | ROUTER ip_address
+      | SERVER_IDENTIFIER ip_address
+      | TFTP_SERVER (ip_address | junos_name)+
+   )
+;
+
+saaapfida_option_value_null
+:
+   IP_ADDRESS_LITERAL ip_address
+   | STRING junos_name
+;
+
+saaapfi_host_null
+:
+   HOST name = junos_name
+   (
+      HARDWARE_ADDRESS MAC_ADDRESS
+      | IP_ADDRESS_LITERAL ip_address
+   )
+;
+
+saaapfi_network_null
+:
+   NETWORK ip_prefix
+;
+
+saaapfi_range_null
+:
+   RANGE junos_name
+   (
+      HIGH
+      | LOW
+   ) ip_address
 ;
 
 sa_radius_server_null
