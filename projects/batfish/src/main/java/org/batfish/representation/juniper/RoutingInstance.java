@@ -79,6 +79,8 @@ public class RoutingInstance implements Serializable {
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
   private @Nullable String _vrfImportPolicy;
+  private boolean _vrfTableLabel;
+  private boolean _vrfTableLabelSourceClassUsage;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -524,5 +526,21 @@ public class RoutingInstance implements Serializable {
 
   public void setVrfImportPolicy(@Nullable String vrfImportPolicy) {
     _vrfImportPolicy = vrfImportPolicy;
+  }
+
+  public boolean getVrfTableLabel() {
+    return _vrfTableLabel;
+  }
+
+  public void setVrfTableLabel(boolean vrfTableLabel) {
+    _vrfTableLabel = vrfTableLabel;
+  }
+
+  public boolean getVrfTableLabelSourceClassUsage() {
+    return _vrfTableLabelSourceClassUsage;
+  }
+
+  public void setVrfTableLabelSourceClassUsage(boolean vrfTableLabelSourceClassUsage) {
+    _vrfTableLabelSourceClassUsage = vrfTableLabelSourceClassUsage;
   }
 }

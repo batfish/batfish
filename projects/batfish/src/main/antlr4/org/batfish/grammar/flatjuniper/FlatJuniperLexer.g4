@@ -3074,6 +3074,7 @@ SOURCE_ADDRESS_EXCLUDED: 'source-address-excluded';
 SOURCE_ADDRESS_FILTER: 'source-address-filter';
 SOURCE_ADDRESS_NAME: 'source-address-name' -> pushMode(M_Name);
 SOURCE_CLASS: 'source-class' -> pushMode(M_Name);
+SOURCE_CLASS_USAGE: 'source-class-usage';
 SOURCE_HOST_ISOLATED: 'source-host-isolated';
 SOURCE_IDENTITY: 'source-identity' -> pushMode(M_SourceIdentity);
 SOURCE_INTERFACE: 'source-interface' -> pushMode(M_Interface);
