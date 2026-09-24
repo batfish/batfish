@@ -1,0 +1,2 @@
+set system host-name junos-isis-no-ipv6-routing
+set protocols isis no-ipv6-routing

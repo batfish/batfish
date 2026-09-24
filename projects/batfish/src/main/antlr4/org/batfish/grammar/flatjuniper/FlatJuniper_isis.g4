@@ -78,6 +78,12 @@ is_no_ipv4_routing
   NO_IPV4_ROUTING
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-ipv6-routing-edit-protocols-isis.html
+is_no_ipv6_routing
+:
+  NO_IPV6_ROUTING
+;
+
 is_lsp_lifetime_null
 :
    LSP_LIFETIME null_filler
@@ -325,6 +331,7 @@ p_isis
     | is_level
     | is_lsp_lifetime_null
     | is_no_ipv4_routing
+    | is_no_ipv6_routing
     | is_overload
     | is_reference_bandwidth
     | is_rib_group
