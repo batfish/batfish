@@ -605,6 +605,7 @@ DEFAULT_POLICY: 'default-policy';
 
 DEFAULTS: 'defaults';
 DELAY: 'delay';
+DELAY_ROUTE_ADVERTISEMENTS: 'delay-route-advertisements';
 DELEGATE_PROCESSING: 'delegate-processing';
 DELETE
 :
@@ -2823,7 +2824,6 @@ ROUTING_INSTANCE_NAME: 'routing-instance-name' -> pushMode(M_RoutingInstanceName
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
-
 RPC_PROGRAM_NUMBER: 'rpc-program-number';
 
 RPF_CHECK: 'rpf-check';
