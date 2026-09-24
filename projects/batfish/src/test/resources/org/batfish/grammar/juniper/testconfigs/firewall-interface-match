@@ -1,0 +1,15 @@
+set system host-name firewall-interface-match
+set interfaces ge-0/0/0 unit 0 family inet filter group 5
+set interfaces ge-0/0/0 unit 0 family inet6 filter group 29
+set interfaces ge-0/0/1 unit 0 family inet filter group 7
+set interfaces ge-0/0/1 unit 0 family inet6 filter group 31
+set interfaces ge-0/0/2 unit 0 family inet6 address 2001:db8::1/64
+set interfaces interface-range RANGE member ge-0/0/[0-2]
+set firewall family inet filter FILTER term EXACT from interface ge-0/0/0.0
+set firewall family inet filter FILTER term EXACT then accept
+set firewall family inet filter FILTER term GROUP from interface-group 5
+set firewall family inet filter FILTER term GROUP then accept
+set firewall family inet filter FILTER term WILDCARD from interface ge-0/0/[01].0
+set firewall family inet filter FILTER term WILDCARD then accept
+set firewall family inet6 filter FILTER6 term EXCEPT from interface-group-except 30-33
+set firewall family inet6 filter FILTER6 term EXCEPT then accept
