@@ -1,0 +1,3 @@
+set system host-name junos-bmp-loc-rib-add-path
+set routing-options bmp station collector bmp-loc-rib-add-path multipath
+set routing-options bmp station collector bmp-loc-rib-add-path path-count 64
