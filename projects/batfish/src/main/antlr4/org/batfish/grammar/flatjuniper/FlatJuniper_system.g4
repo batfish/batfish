@@ -555,6 +555,7 @@ syl_idle_timeout_null
 :
    IDLE_TIMEOUT null_filler
 ;
+// https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/cli-configuration.html#id-entering-configuration-statements-and-identifiers
 syl_message_null
 :
    MESSAGE null_filler

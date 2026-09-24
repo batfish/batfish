@@ -1,0 +1,3 @@
+set version 20.4R3
+set system host-name junos-escaped-login-message
+set system login message "Authorized users only.\nRun \"show system users\"."

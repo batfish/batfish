@@ -107,7 +107,8 @@ F_ParenString
 fragment
 F_QuotedString
 :
-   '"' ~["\r\n]* '"'
+   // https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/cli-configuration.html#id-entering-configuration-statements-and-identifiers
+   '"' ('\\' F_NonNewlineChar | ~["\r\n])* '"'
 ;
 
 // This may appear before a semicolon if settings are present to hide certain secrets.
