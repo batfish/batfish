@@ -1994,6 +1994,8 @@ MACS: 'macs';
 
 MAIN: 'main';
 MAINTENANCE_DOMAIN: 'maintenance-domain' -> pushMode(M_Name);
+MALFORMED_ROUTE_LIMIT: 'malformed-route-limit';
+MALFORMED_UPDATE_LOG_INTERVAL: 'malformed-update-log-interval';
 MAPPED_PORT: 'mapped-port';
 
 MARTIANS: 'martians';
@@ -2277,6 +2279,7 @@ NO_GATEWAY_COMMUNITY: 'no-gateway-community';
 NO_HIDDEN_COMMANDS: 'no-hidden-commands';
 NO_INSTALL: 'no-install';
 NO_IPV4_ROUTING: 'no-ipv4-routing';
+NO_MALFORMED_ROUTE_LIMIT: 'no-malformed-route-limit';
 NO_NAT_TRAVERSAL: 'no-nat-traversal';
 NO_NEIGHBOR_DOWN_NOTIFICATION: 'no-neighbor-down-notification';
 NO_NEIGHBOR_LEARN: 'no-neighbor-learn';

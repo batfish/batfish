@@ -106,6 +106,7 @@ b_common
    | b_authentication_key_chain
    | b_authentication_key_null
    | b_bfd_liveness_detection_null
+   | b_bgp_error_tolerance
    | b_bmp
    | b_cluster
    | b_damping
@@ -786,7 +787,6 @@ p_bgp
    BGP
    (
       b_advertise_from_main_vpn_tables_null
-      | b_bgp_error_tolerance_null
       | b_common
       | b_disable
       | b_drop_path_attributes
@@ -799,5 +799,20 @@ p_bgp
 
 // Protocol-wide config only
 b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
-b_bgp_error_tolerance_null: BGP_ERROR_TOLERANCE;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bgp-error-tolerance.html
+b_bgp_error_tolerance
+:
+   BGP_ERROR_TOLERANCE
+   (
+      bbet_malformed_route_limit
+      | bbet_malformed_update_log_interval
+      | bbet_no_malformed_route_limit
+   )?
+;
+
+bbet_malformed_route_limit: MALFORMED_ROUTE_LIMIT limit = uint32;
+bbet_malformed_update_log_interval: MALFORMED_UPDATE_LOG_INTERVAL interval = uint16;
+bbet_no_malformed_route_limit: NO_MALFORMED_ROUTE_LIMIT;
+
 b_forwarding_context: FORWARDING_CONTEXT name = junos_name;

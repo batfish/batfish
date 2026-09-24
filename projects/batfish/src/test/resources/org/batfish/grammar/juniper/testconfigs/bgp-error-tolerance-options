@@ -1,0 +1,7 @@
+set system host-name bgp-error-tolerance-options
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set protocols bgp bgp-error-tolerance
+set protocols bgp group LIMITED bgp-error-tolerance malformed-route-limit 20
+set protocols bgp group LIMITED bgp-error-tolerance malformed-update-log-interval 300
+set protocols bgp group UNLIMITED bgp-error-tolerance no-malformed-route-limit

@@ -36,6 +36,7 @@ public class BgpGroup implements Serializable {
   private boolean _dynamic;
   private Boolean _ebgpMultihop;
   private Boolean _enforceFirstAs;
+  private @Nullable Boolean _errorTolerance;
   private @Nullable Boolean _evpnAf;
   private final List<String> _exportPolicies;
   private @Nullable String _forwardingContext;
@@ -48,8 +49,11 @@ public class BgpGroup implements Serializable {
   private Long _localAs;
   private @Nullable Long _localPreference;
   private Integer _loops;
+  private @Nullable Long _malformedRouteLimit;
+  private @Nullable Integer _malformedUpdateLogInterval;
   private Boolean _multipath;
   private Boolean _multipathMultipleAs;
+  private @Nullable Boolean _noMalformedRouteLimit;
   private Boolean _noPrependGlobalAs;
   private BgpGroup _parent;
   private Long _peerAs;
@@ -107,6 +111,9 @@ public class BgpGroup implements Serializable {
       if (_enforceFirstAs == null) {
         _enforceFirstAs = _parent._enforceFirstAs;
       }
+      if (_errorTolerance == null) {
+        _errorTolerance = _parent._errorTolerance;
+      }
       if (_evpnAf == null) {
         _evpnAf = _parent._evpnAf;
       }
@@ -137,8 +144,15 @@ public class BgpGroup implements Serializable {
       if (_loops == null) {
         _loops = _parent._loops;
       }
+      if (_malformedRouteLimit == null && _noMalformedRouteLimit == null) {
+        _malformedRouteLimit = _parent._malformedRouteLimit;
+        _noMalformedRouteLimit = _parent._noMalformedRouteLimit;
+      }
       if (_localAddress == null) {
         _localAddress = _parent._localAddress;
+      }
+      if (_malformedUpdateLogInterval == null) {
+        _malformedUpdateLogInterval = _parent._malformedUpdateLogInterval;
       }
       if (_multipath == null) {
         _multipath = _parent._multipath;
@@ -235,6 +249,10 @@ public class BgpGroup implements Serializable {
     return _enforceFirstAs;
   }
 
+  public @Nullable Boolean getErrorTolerance() {
+    return _errorTolerance;
+  }
+
   public @Nullable Boolean getEvpnAf() {
     return _evpnAf;
   }
@@ -283,12 +301,24 @@ public class BgpGroup implements Serializable {
     return _loops;
   }
 
+  public @Nullable Long getMalformedRouteLimit() {
+    return _malformedRouteLimit;
+  }
+
+  public @Nullable Integer getMalformedUpdateLogInterval() {
+    return _malformedUpdateLogInterval;
+  }
+
   public Boolean getMultipath() {
     return _multipath;
   }
 
   public Boolean getMultipathMultipleAs() {
     return _multipathMultipleAs;
+  }
+
+  public @Nullable Boolean getNoMalformedRouteLimit() {
+    return _noMalformedRouteLimit;
   }
 
   public final BgpGroup getParent() {
@@ -395,6 +425,10 @@ public class BgpGroup implements Serializable {
     _enforceFirstAs = enforceFirstAs;
   }
 
+  public void setErrorTolerance(boolean errorTolerance) {
+    _errorTolerance = errorTolerance;
+  }
+
   public void setIpv6(boolean ipv6) {
     _ipv6 = ipv6;
   }
@@ -415,12 +449,26 @@ public class BgpGroup implements Serializable {
     _loops = loops;
   }
 
+  public void setMalformedRouteLimit(long malformedRouteLimit) {
+    _malformedRouteLimit = malformedRouteLimit;
+    _noMalformedRouteLimit = null;
+  }
+
+  public void setMalformedUpdateLogInterval(int malformedUpdateLogInterval) {
+    _malformedUpdateLogInterval = malformedUpdateLogInterval;
+  }
+
   public void setMultipath(Boolean multipath) {
     _multipath = multipath;
   }
 
   public void setMultipathMultipleAs(Boolean multipathMultipleAs) {
     _multipathMultipleAs = multipathMultipleAs;
+  }
+
+  public void setNoMalformedRouteLimit(boolean noMalformedRouteLimit) {
+    _noMalformedRouteLimit = noMalformedRouteLimit;
+    _malformedRouteLimit = null;
   }
 
   public @Nullable Boolean getNoPrependGlobalAs() {
