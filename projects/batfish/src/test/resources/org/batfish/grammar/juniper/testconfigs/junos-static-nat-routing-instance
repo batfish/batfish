@@ -1,0 +1,12 @@
+set system host-name junos-static-nat-routing-instance
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/31
+set routing-instances VRF instance-type virtual-router
+set security address-book global address INTERNAL 10.0.0.0/24
+set security zones security-zone UNTRUST interfaces ge-0/0/0.0
+set security nat static rule-set STATIC from zone UNTRUST
+set security nat static rule-set STATIC rule PREFIX match destination-address 198.51.100.0/24
+set security nat static rule-set STATIC rule PREFIX then static-nat prefix routing-instance VRF
+set security nat static rule-set STATIC rule PREFIX then static-nat prefix 10.0.0.0/24
+set security nat static rule-set STATIC rule PREFIX_NAME match destination-address 203.0.113.0/24
+set security nat static rule-set STATIC rule PREFIX_NAME then static-nat prefix-name INTERNAL
+set security nat static rule-set STATIC rule PREFIX_NAME then static-nat prefix-name routing-instance MISSING

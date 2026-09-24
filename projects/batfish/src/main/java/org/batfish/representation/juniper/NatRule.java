@@ -24,6 +24,14 @@ public final class NatRule implements Serializable {
 
   private final String _name;
 
+  /**
+   * Routing instance in which the translated packet should be forwarded. This is similar to a PBR
+   * next-table action and is not yet modeled during conversion.
+   *
+   * <p>TODO: Validate this behavior in a lab before modeling it.
+   */
+  private @Nullable String _staticNatRoutingInstance;
+
   private @Nullable NatRuleThen _then;
 
   public NatRule(String name) {
@@ -42,6 +50,14 @@ public final class NatRule implements Serializable {
 
   public @Nullable NatRuleThen getThen() {
     return _then;
+  }
+
+  public @Nullable String getStaticNatRoutingInstance() {
+    return _staticNatRoutingInstance;
+  }
+
+  public void setStaticNatRoutingInstance(String staticNatRoutingInstance) {
+    _staticNatRoutingInstance = staticNatRoutingInstance;
   }
 
   public void setThen(@Nullable NatRuleThen then) {
