@@ -275,8 +275,15 @@ ro_resolution
   RESOLUTION
   (
     apply
+    | rores_preserve_nexthop_hierarchy
     | rores_rib
   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/resolution-edit-routing-options.html
+rores_preserve_nexthop_hierarchy
+:
+  PRESERVE_NEXTHOP_HIERARCHY
 ;
 
 rores_rib
@@ -284,13 +291,56 @@ rores_rib
   RIB name = rib_name
   (
     apply
+    | roresr_inet6_import
+    | roresr_inet6_resolution_ribs
+    | roresr_inet_import
+    | roresr_inet_resolution_ribs
     | roresr_import
+    | roresr_iso_import
+    | roresr_iso_resolution_ribs
+    | roresr_resolution_ribs
   )
+;
+
+roresr_inet6_import
+:
+  INET6_IMPORT expr = policy_expression
+;
+
+roresr_inet6_resolution_ribs
+:
+  INET6_RESOLUTION_RIBS name = rib_name
+;
+
+roresr_inet_import
+:
+  INET_IMPORT expr = policy_expression
+;
+
+roresr_inet_resolution_ribs
+:
+  INET_RESOLUTION_RIBS name = rib_name
 ;
 
 roresr_import
 :
   IMPORT expr = policy_expression
+;
+
+roresr_iso_import
+:
+  ISO_IMPORT expr = policy_expression
+;
+
+roresr_iso_resolution_ribs
+:
+  ISO_RESOLUTION_RIBS name = rib_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/resolution-ribs-edit-routing-options.html
+roresr_resolution_ribs
+:
+  RESOLUTION_RIBS name = rib_name
 ;
 
 ro_rib

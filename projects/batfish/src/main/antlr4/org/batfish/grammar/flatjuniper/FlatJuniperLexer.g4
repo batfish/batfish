@@ -1270,6 +1270,14 @@ INET
 
 INET6: 'inet6';
 
+INET6_IMPORT: 'inet6-import' -> pushMode(M_PolicyExpression);
+
+INET6_RESOLUTION_RIBS: 'inet6-resolution-ribs' -> pushMode(M_RibName);
+
+INET_IMPORT: 'inet-import' -> pushMode(M_PolicyExpression);
+
+INET_RESOLUTION_RIBS: 'inet-resolution-ribs' -> pushMode(M_RibName);
+
 INET_MDT: 'inet-mdt';
 
 INET_MVPN: 'inet-mvpn';
@@ -1443,6 +1451,10 @@ ISO
 :
    'iso' -> pushMode ( M_ISO )
 ;
+
+ISO_IMPORT: 'iso-import' -> pushMode(M_PolicyExpression);
+
+ISO_RESOLUTION_RIBS: 'iso-resolution-ribs' -> pushMode(M_RibName);
 
 ISO_VPN: 'iso-vpn';
 
@@ -2614,6 +2626,8 @@ PREFIX_LIST_FILTER: 'prefix-list-filter' -> pushMode(M_Name);
 
 PREFIX_POLICY: 'prefix-policy' -> pushMode(M_Name);
 
+PRESERVE_NEXTHOP_HIERARCHY: 'preserve-nexthop-hierarchy';
+
 PRIMARY
 :
   'primary'
@@ -2770,6 +2784,8 @@ REPLACE: 'replace';
 REQUIRED_OPTION_MISSING: 'required-option-missing';
 
 RESOLUTION: 'resolution';
+
+RESOLUTION_RIBS: 'resolution-ribs' -> pushMode(M_RibName);
 
 RESOLVE: 'resolve';
 
