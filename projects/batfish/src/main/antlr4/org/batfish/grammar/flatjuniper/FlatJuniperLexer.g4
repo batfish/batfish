@@ -1246,6 +1246,8 @@ INCLUDE_MP_NEXT_HOP: 'include-mp-next-hop';
 
 INCOMPLETE: 'incomplete';
 
+INDEPENDENT_DOMAIN: 'independent-domain';
+
 INDIRECT_NEXT_HOP: 'indirect-next-hop';
 
 INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS: 'indirect-next-hop-change-acknowledgements';
@@ -2318,6 +2320,7 @@ NO_ADJACENCY_DOWN_NOTIFICATION: 'no-adjacency-down-notification';
 NO_ADVERTISE: 'no-advertise';
 NO_ANTI_REPLAY: 'no-anti-replay';
 NO_ARP: 'no-arp';
+NO_ATTRSET: 'no-attrset';
 NO_AUTO_NEGOTIATION: 'no-auto-negotiation';
 NO_AUTO_POLICING: 'no-auto-policing';
 NO_BINARY_DATA: 'no-binary-data';

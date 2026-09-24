@@ -808,6 +808,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_independent_domainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
@@ -8238,6 +8239,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentRoutingInstance.setLoops(toInt(ctx.dec()));
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitRoas_independent_domain(Roas_independent_domainContext ctx) {
+    _currentRoutingInstance.setIndependentDomain(true);
+    if (ctx.NO_ATTRSET() != null) {
+      _currentRoutingInstance.setIndependentDomainNoAttrset(true);
+    }
+    todo(ctx);
   }
 
   @Override

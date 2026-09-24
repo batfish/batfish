@@ -166,6 +166,7 @@ ro_autonomous_system
       |
       (
          roas_asdot_notation
+         | roas_independent_domain
          | roas_loops
       )*
    )
@@ -572,6 +573,12 @@ roaa_path
 roas_asdot_notation
 :
    ASDOT_NOTATION
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/independent-domain-edit-routing-options.html
+roas_independent_domain
+:
+  INDEPENDENT_DOMAIN NO_ATTRSET?
 ;
 
 roas_loops

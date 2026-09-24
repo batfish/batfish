@@ -49,6 +49,8 @@ public class RoutingInstance implements Serializable {
   private final List<String> _instanceExports;
   private final List<String> _instanceImports;
   private final Map<String, Interface> _interfaces;
+  private boolean _independentDomain;
+  private boolean _independentDomainNoAttrset;
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
   private final @Nonnull IsisSettings _isisSettings;
   private @Nullable IsisInterfaceSettings _interfaceAllIsisSettings;
@@ -222,6 +224,14 @@ public class RoutingInstance implements Serializable {
     return _interfaces;
   }
 
+  public boolean getIndependentDomain() {
+    return _independentDomain;
+  }
+
+  public boolean getIndependentDomainNoAttrset() {
+    return _independentDomainNoAttrset;
+  }
+
   public Map<Prefix, IpBgpGroup> getIpBgpGroups() {
     return _ipBgpGroups;
   }
@@ -341,6 +351,14 @@ public class RoutingInstance implements Serializable {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+  }
+
+  public void setIndependentDomain(boolean independentDomain) {
+    _independentDomain = independentDomain;
+  }
+
+  public void setIndependentDomainNoAttrset(boolean independentDomainNoAttrset) {
+    _independentDomainNoAttrset = independentDomainNoAttrset;
   }
 
   /** Sets the OSPF settings configures for "interface all" */
