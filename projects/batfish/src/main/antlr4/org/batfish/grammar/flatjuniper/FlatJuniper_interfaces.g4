@@ -527,6 +527,7 @@ if_inet6
       | ifi6_destination_udp_port
       | ifi6_filter
       | ifi6_mtu
+      | ifi6_rpf_check
       | ifi6_sampling_null
    )
 ;
@@ -766,9 +767,37 @@ ifi_sampling_null
    SAMPLING null_filler
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rpf-check-edit-interfaces.html
 ifi_rpf_check
 :
-   RPF_CHECK FAIL_FILTER name = junos_name
+   RPF_CHECK
+   (
+      ifirpf_fail_filter
+      | ifirpf_mode
+   )?
+;
+
+ifi6_rpf_check
+:
+   RPF_CHECK
+   (
+      ifirpf_fail_filter
+      | ifirpf_mode
+   )?
+;
+
+ifirpf_fail_filter
+:
+   FAIL_FILTER name = junos_name
+;
+
+ifirpf_mode
+:
+   MODE
+   (
+      LOOSE
+      | STRICT
+   )
 ;
 
 ifi_tcp_mss
