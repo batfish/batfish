@@ -283,6 +283,8 @@ ARP_RESP: 'arp-resp';
 
 AS_OVERRIDE: 'as-override';
 
+AS_PATH_COMPARE: 'as-path-compare';
+
 AS_PATH
 :
   'as-path'
@@ -843,6 +845,8 @@ ENHANCED_AVS_MAX: 'enhanced-avs-max';
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
 
 EQUAL_COST_PATHS: 'equal-cost-paths';
+
+EQUAL_EXTERNAL_INTERNAL: 'equal-external-internal';
 
 ERROR: 'error';
 
@@ -3423,6 +3427,8 @@ VPN: 'vpn' -> pushMode(M_Name);
 VPN_APPLY_EXPORT: 'vpn-apply-export';
 
 VPN_MONITOR: 'vpn-monitor';
+
+VPN_UNEQUAL_COST: 'vpn-unequal-cost';
 
 VRF: 'vrf';
 

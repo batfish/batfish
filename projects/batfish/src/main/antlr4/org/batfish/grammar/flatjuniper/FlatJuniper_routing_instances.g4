@@ -300,6 +300,7 @@ ror_inet6
       | ro_aggregate
       | ro_generate
       | ro_martians
+      | ror_multipath
       | ro6_static
    )
 ;
@@ -321,7 +322,18 @@ ror_common
   | ro_aggregate
   | ro_generate
   | ro_martians
+  | ror_multipath
   | ro_static
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/multipath-edit-routing-options.html
+ror_multipath
+:
+  MULTIPATH
+  (
+    AS_PATH_COMPARE
+    | VPN_UNEQUAL_COST EQUAL_EXTERNAL_INTERNAL?
+  )?
 ;
 
 ro_rib_groups

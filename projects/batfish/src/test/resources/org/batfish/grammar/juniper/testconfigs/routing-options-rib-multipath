@@ -1,0 +1,7 @@
+set system host-name routing-options-rib-multipath
+set routing-options rib inet.0 multipath
+set routing-options rib inet.0 multipath as-path-compare
+set routing-options rib inet.0 multipath vpn-unequal-cost
+set routing-options rib inet6.0 multipath vpn-unequal-cost
+set routing-instances RI instance-type virtual-router
+set routing-instances RI routing-options rib RI.inet.0 multipath vpn-unequal-cost equal-external-internal

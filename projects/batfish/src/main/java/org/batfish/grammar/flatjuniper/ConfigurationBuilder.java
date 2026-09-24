@@ -822,6 +822,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inet6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_defaultsContext;
@@ -4172,6 +4173,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
     _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void exitRor_multipath(Ror_multipathContext ctx) {
+    _currentRib.setMultipath(true);
+    if (ctx.AS_PATH_COMPARE() != null) {
+      _currentRib.setMultipathAsPathCompare(true);
+    }
+    if (ctx.VPN_UNEQUAL_COST() != null) {
+      _currentRib.setMultipathVpnUnequalCost(true);
+    }
+    if (ctx.EQUAL_EXTERNAL_INTERNAL() != null) {
+      _currentRib.setMultipathVpnEqualExternalInternal(true);
+    }
+    todo(ctx);
   }
 
   @Override
