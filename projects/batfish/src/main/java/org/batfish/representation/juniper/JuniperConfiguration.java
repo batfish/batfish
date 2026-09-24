@@ -3191,6 +3191,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       terms.add(ps.getDefaultTerm());
     }
     for (PsTerm term : terms) {
+      if (term.getTos().getToPolicyStatement() != null) {
+        continue;
+      }
       List<Statement> thens = toStatements(term.getThens().getAllThens());
       if (term.hasAtLeastOneFrom()) {
         If ifStatement = new If();

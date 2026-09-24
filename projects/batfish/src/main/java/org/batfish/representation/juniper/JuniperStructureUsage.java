@@ -172,6 +172,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_THEN_DELETE_COMMUNITY("policy-statement then delete community"),
   POLICY_STATEMENT_THEN_SET_COMMUNITY("policy-statement then set community"),
   POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE("policy-statement then tunnel-attribute"),
+  POLICY_STATEMENT_TO_POLICY("policy-statement to policy"),
   RESOLUTION_RIB_IMPORT_POLICY("routing-instance resolution rib import"),
   ROUTING_OPTIONS_RIB_GROUPS_IMPORT_POLICY("routing-options rib-groups import-policy"),
   ROUTING_INSTANCE_EVPN_IP_PREFIX_ROUTES_EXPORT("routing-instance evpn ip-prefix-routes export"),

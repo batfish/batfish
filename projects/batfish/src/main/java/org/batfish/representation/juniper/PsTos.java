@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 public final class PsTos implements Serializable {
 
   private PsToLevel _toLevel;
+  private PsToPolicyStatement _toPolicyStatement;
   private final Set<PsToProtocol> _toProtocols;
   private PsToRib _toRib;
 
@@ -33,6 +34,14 @@ public final class PsTos implements Serializable {
     return _toLevel;
   }
 
+  public void setToPolicyStatement(@Nonnull PsToPolicyStatement toPolicyStatement) {
+    _toPolicyStatement = toPolicyStatement;
+  }
+
+  public @Nullable PsToPolicyStatement getToPolicyStatement() {
+    return _toPolicyStatement;
+  }
+
   public void setToRib(@Nonnull PsToRib toRib) {
     _toRib = toRib;
   }
@@ -42,6 +51,9 @@ public final class PsTos implements Serializable {
   }
 
   boolean hasAtLeastOneTo() {
-    return _toLevel != null || !_toProtocols.isEmpty() || _toRib != null;
+    return _toLevel != null
+        || _toPolicyStatement != null
+        || !_toProtocols.isEmpty()
+        || _toRib != null;
   }
 }
