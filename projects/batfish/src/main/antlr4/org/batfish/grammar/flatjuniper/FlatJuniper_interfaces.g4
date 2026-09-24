@@ -395,11 +395,23 @@ i_unit
    (
       i_common
       | i_bandwidth
+      | i_demux_options
       | i_input_vlan_map
       | i_output_vlan_map
       | i_peer_unit
       | i_vlan_tags
    )
+;
+
+i_demux_options
+:
+   DEMUX_OPTIONS id_underlying_interface
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/underlying-interface-edit-interfaces.html
+id_underlying_interface
+:
+   UNDERLYING_INTERFACE id = interface_id
 ;
 
 i_vlan_action

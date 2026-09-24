@@ -1,0 +1,5 @@
+set system host-name demux-underlying-interface
+set interfaces ae0 aggregated-ether-options lacp active
+set interfaces ae0 unit 0 family inet address 198.51.100.1/24
+set interfaces demux0 unit 100 demux-options underlying-interface ae0.0
+set interfaces demux0 unit 100 family inet address 192.0.2.1/24

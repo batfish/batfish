@@ -120,6 +120,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   IKE_GATEWAY_EXTERNAL_INTERFACE("ike gateway external-interface"),
   IKE_GATEWAY_IKE_POLICY("ike gateway ike policy"),
   IKE_POLICY_IKE_PROPOSAL("ike policy ike proposal"),
+  INTERFACE_DEMUX_UNDERLYING_INTERFACE("interface demux-options underlying-interface"),
   INTERFACE_FILTER("interface firewall filter"),
   INTERFACE_INCOMING_FILTER("interface firewall filter input"),
   INTERFACE_INCOMING_FILTER_LIST("interface firewall filter input-list"),

@@ -164,6 +164,7 @@ public class Interface implements Serializable {
   private final List<SubRange> _allowedVlans;
   private final List<String> _allowedVlanNames;
   private double _bandwidth;
+  private @Nullable String _demuxUnderlyingInterface;
   private String _description;
   private boolean _defined;
   private @Nullable BridgeSwitching _bridgeSwitching;
@@ -255,6 +256,10 @@ public class Interface implements Serializable {
 
   public String getDescription() {
     return _description;
+  }
+
+  public @Nullable String getDemuxUnderlyingInterface() {
+    return _demuxUnderlyingInterface;
   }
 
   public @Nullable String getIncomingFilter() {
@@ -485,6 +490,10 @@ public class Interface implements Serializable {
 
   public void setDescription(String description) {
     _description = description;
+  }
+
+  public void setDemuxUnderlyingInterface(@Nullable String demuxUnderlyingInterface) {
+    _demuxUnderlyingInterface = demuxUnderlyingInterface;
   }
 
   public void setIncomingFilter(@Nullable String accessListName) {

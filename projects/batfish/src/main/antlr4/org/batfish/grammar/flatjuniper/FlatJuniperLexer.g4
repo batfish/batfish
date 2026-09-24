@@ -574,6 +574,7 @@ DEAD_INTERVAL: 'dead-interval';
 DEAD_PEER_DETECTION: 'dead-peer-detection';
 
 DECAPSULATE: 'decapsulate';
+DEMUX_OPTIONS: 'demux-options';
 
 DEFAULT
 :
@@ -3277,6 +3278,8 @@ UID: 'uid';
 UNICAST: 'unicast';
 
 UNIT: 'unit';
+
+UNDERLYING_INTERFACE: 'underlying-interface' -> pushMode(M_Interface);
 
 UNKNOWN: 'unknown';
 

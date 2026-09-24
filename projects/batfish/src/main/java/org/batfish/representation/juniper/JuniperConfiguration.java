@@ -4715,8 +4715,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
                         // really an 'irb' interface
                         if (!name.startsWith("irb")) {
+                          String bindInterface =
+                              firstNonNull(
+                                  unit.getDemuxUnderlyingInterface(), newParentIface.getName());
                           newUnitInterface.addDependency(
-                              new Dependency(newParentIface.getName(), DependencyType.BIND));
+                              new Dependency(bindInterface, DependencyType.BIND));
                         }
                         resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
                       });
