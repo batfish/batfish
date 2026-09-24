@@ -1346,6 +1346,7 @@ INFO_REQUEST: 'info-request';
 INGRESS: 'ingress';
 
 INGRESS_REPLICATION: 'ingress-replication';
+INITIAL_TCP_MSS: 'initial-tcp-mss';
 
 INNER: 'inner';
 
@@ -2893,6 +2894,7 @@ RETRY_TIMER: 'retry-timer';
 REUSE: 'reuse';
 REVERSE: 'reverse';
 REVERSE_SSH: 'reverse-ssh';
+REVERSE_TCP_MSS: 'reverse-tcp-mss';
 REVERSE_TELNET: 'reverse-telnet';
 REVERT_TIMER: 'revert-timer';
 REWRITE_RULES: 'rewrite-rules';
@@ -3093,6 +3095,7 @@ SECURITY_PROFILE: 'security-profile' -> pushMode(M_Name);
 SECURITY_ROLE: 'security-role';
 
 SECURITY_ZONE: 'security-zone' -> pushMode(M_Zone);
+SEQUENCE_CHECK_REQUIRED: 'sequence-check-required';
 
 SELF: 'self';
 
@@ -3303,6 +3306,7 @@ SWITCHOVER_ON_ROUTING_CRASH: 'switchover-on-routing-crash';
 SYMMETRIC_CONSISTENT_HASH: 'symmetric-consistent-hash';
 
 SYN_ACK_ACK_PROXY: 'syn-ack-ack-proxy';
+SYN_CHECK_REQUIRED: 'syn-check-required';
 
 SYN_FIN: 'syn-fin';
 
@@ -3351,6 +3355,7 @@ TCP_FORWARDING: 'tcp-forwarding';
 TCP_INITIAL: 'tcp-initial';
 TCP_MSS: 'tcp-mss';
 TCP_NO_FLAG: 'tcp-no-flag';
+TCP_OPTIONS: 'tcp-options';
 TCP_RST: 'tcp-rst';
 TCP_SWEEP: 'tcp-sweep';
 
@@ -3609,6 +3614,7 @@ WHO: 'who';
 WIDE_METRICS_ONLY: 'wide-metrics-only';
 
 WILDCARD_ADDRESS: 'wildcard-address';
+WINDOW_SCALE: 'window-scale';
 
 WINNUKE: 'winnuke';
 WITHDRAW_PRIORITY: 'withdraw-priority';

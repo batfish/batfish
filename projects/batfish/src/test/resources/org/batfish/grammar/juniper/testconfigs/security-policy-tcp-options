@@ -1,0 +1,11 @@
+set system host-name security-policy-tcp-options
+set security zones security-zone INSIDE
+set security zones security-zone OUTSIDE
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP match source-address any
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP match destination-address any
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP match application junos-ssh
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP then permit tcp-options initial-tcp-mss 1200
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP then permit tcp-options reverse-tcp-mss 1300
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP then permit tcp-options sequence-check-required
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP then permit tcp-options syn-check-required
+set security policies from-zone INSIDE to-zone OUTSIDE policy ALLOW-TCP then permit tcp-options window-scale
