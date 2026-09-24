@@ -45,6 +45,14 @@ public enum JuniperStructureUsage implements StructureUsage {
   CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS("class-of-service interfaces forwarding-class"),
   CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET(
       "class-of-service interfaces forwarding-class-set"),
+  CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP("class-of-service interfaces rewrite-rules dscp"),
+  CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP_IPV6(
+      "class-of-service interfaces rewrite-rules dscp-ipv6"),
+  CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_EXP("class-of-service interfaces rewrite-rules exp"),
+  CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_IEEE_802_1(
+      "class-of-service interfaces rewrite-rules ieee-802.1"),
+  CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_INET_PRECEDENCE(
+      "class-of-service interfaces rewrite-rules inet-precedence"),
   CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP("class-of-service interfaces scheduler-map"),
   CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP(
       "class-of-service interfaces unit classifiers dscp"),

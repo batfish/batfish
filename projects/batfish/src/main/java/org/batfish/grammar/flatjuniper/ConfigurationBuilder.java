@@ -107,6 +107,11 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP_IPV6;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_EXP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_IEEE_802_1;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_INET_PRECEDENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6;
@@ -1002,9 +1007,16 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfc_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfc_queueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosfcs_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scoshob_forwarding_classContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosi_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_forwarding_class_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_rewrite_rulesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosii_scheduler_mapContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiir_dscpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiir_dscp_ipv6Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiir_expContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiir_ieee_802_1Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiir_inet_precedenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiiu_dscpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiiu_dscp_ipv6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosiiu_dscp_ipv6_rwContext;
@@ -1264,6 +1276,9 @@ import org.batfish.representation.juniper.BridgeDomainVlanId;
 import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
+import org.batfish.representation.juniper.ClassOfServiceInterface;
+import org.batfish.representation.juniper.ClassOfServiceInterface.RewriteRule;
+import org.batfish.representation.juniper.ClassOfServiceInterface.RewriteRuleType;
 import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.CommunityMemberParseResult;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
@@ -2945,6 +2960,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nullable String _currentBgpDynamicNeighborName;
 
   private NamedCommunity _currentCommunityList;
+
+  private ClassOfServiceInterface _currentClassOfServiceInterface;
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
   private DhcpRelayServerGroup _currentDhcpRelayServerGroup;
@@ -9857,6 +9874,89 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS_SET,
         getLine(ctx.name.getStart()));
     todo(ctx);
+  }
+
+  @Override
+  public void enterScosii_rewrite_rules(Scosii_rewrite_rulesContext ctx) {
+    Scosi_interfaceContext interfaceContext = (Scosi_interfaceContext) ctx.getParent();
+    String interfaceName;
+    if (interfaceContext.ALL() != null) {
+      interfaceName = "all";
+    } else if (interfaceContext.interface_id() != null) {
+      interfaceName = getInterfaceFullName(interfaceContext.interface_id());
+    } else {
+      interfaceName = interfaceContext.interface_wildcard().getText();
+    }
+    _currentClassOfServiceInterface =
+        _currentLogicalSystem
+            .getClassOfServiceInterfaces()
+            .computeIfAbsent(interfaceName, ClassOfServiceInterface::new);
+  }
+
+  @Override
+  public void exitScosii_rewrite_rules(Scosii_rewrite_rulesContext ctx) {
+    todo(ctx);
+    _currentClassOfServiceInterface = null;
+  }
+
+  @Override
+  public void exitScosiir_dscp(Scosiir_dscpContext ctx) {
+    recordInterfaceRewriteRule(
+        RewriteRuleType.DSCP,
+        toString(ctx.name),
+        null,
+        ctx.name,
+        CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP);
+  }
+
+  @Override
+  public void exitScosiir_dscp_ipv6(Scosiir_dscp_ipv6Context ctx) {
+    recordInterfaceRewriteRule(
+        RewriteRuleType.DSCP_IPV6,
+        toString(ctx.name),
+        null,
+        ctx.name,
+        CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_DSCP_IPV6);
+  }
+
+  @Override
+  public void exitScosiir_exp(Scosiir_expContext ctx) {
+    recordInterfaceRewriteRule(
+        RewriteRuleType.EXP,
+        toString(ctx.name),
+        ctx.proto == null ? null : ctx.proto.getText(),
+        ctx.name,
+        CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_EXP);
+  }
+
+  @Override
+  public void exitScosiir_ieee_802_1(Scosiir_ieee_802_1Context ctx) {
+    recordInterfaceRewriteRule(
+        RewriteRuleType.IEEE_802_1,
+        toString(ctx.name),
+        null,
+        ctx.name,
+        CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_IEEE_802_1);
+  }
+
+  @Override
+  public void exitScosiir_inet_precedence(Scosiir_inet_precedenceContext ctx) {
+    recordInterfaceRewriteRule(
+        RewriteRuleType.INET_PRECEDENCE,
+        toString(ctx.name),
+        null,
+        ctx.name,
+        CLASS_OF_SERVICE_INTERFACES_REWRITE_RULES_INET_PRECEDENCE);
+  }
+
+  private void recordInterfaceRewriteRule(
+      RewriteRuleType type,
+      String name,
+      @Nullable String protocol,
+      Junos_nameContext nameContext,
+      JuniperStructureUsage usage) {
+    _currentClassOfServiceInterface.getRewriteRules().put(type, new RewriteRule(name, protocol));
+    referenceBuiltIn(nameContext, CLASS_OF_SERVICE_REWRITE_RULE, usage);
   }
 
   @Override

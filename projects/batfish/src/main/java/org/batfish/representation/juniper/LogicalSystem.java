@@ -43,6 +43,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, NamedCommunity> _namedCommunities;
 
+  private final Map<String, ClassOfServiceInterface> _classOfServiceInterfaces;
+
   private boolean _defaultAddressSelection;
 
   private LineAction _defaultCrossZoneAction;
@@ -167,6 +169,7 @@ public class LogicalSystem implements Serializable {
     _authenticationKeyChains = new TreeMap<>();
     _login = new Login();
     _namedCommunities = new TreeMap<>();
+    _classOfServiceInterfaces = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
@@ -275,6 +278,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, NamedCommunity> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  public Map<String, ClassOfServiceInterface> getClassOfServiceInterfaces() {
+    return _classOfServiceInterfaces;
   }
 
   public boolean getDefaultAddressSelection() {

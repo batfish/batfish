@@ -380,7 +380,8 @@ scos_interfaces
 scosi_interface
 :
     (
-        interface_wildcard
+        ALL
+        | interface_wildcard
         | interface_id
     )
     (
@@ -389,6 +390,7 @@ scosi_interface
         | scosii_forwarding_class
         | scosii_forwarding_class_set
         | scosii_output_traffic_control_profile
+        | scosii_rewrite_rules
         | scosii_scheduler_map
         | scosii_unit
     )
@@ -427,6 +429,44 @@ scosii_output_traffic_control_profile
 scosii_forwarding_class
 :
     FORWARDING_CLASS name = junos_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rewrite-rules-edit-cos-interfaces.html
+scosii_rewrite_rules
+:
+    REWRITE_RULES
+    (
+        scosiir_dscp
+        | scosiir_dscp_ipv6
+        | scosiir_exp
+        | scosiir_ieee_802_1
+        | scosiir_inet_precedence
+    )
+;
+
+scosiir_dscp
+:
+    DSCP name = junos_name
+;
+
+scosiir_dscp_ipv6
+:
+    DSCP_IPV6 name = junos_name
+;
+
+scosiir_exp
+:
+    EXP name = junos_name (PROTOCOL proto = scos_protocol_type)?
+;
+
+scosiir_ieee_802_1
+:
+    IEEE_802_1 name = junos_name
+;
+
+scosiir_inet_precedence
+:
+    INET_PRECEDENCE name = junos_name
 ;
 
 scosii_scheduler_map
