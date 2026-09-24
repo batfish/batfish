@@ -30,6 +30,7 @@ s_system
       | sy_license_null
       | sy_location_null
       | sy_login
+      | sy_management_instance
       | sy_max_configuration_rollbacks_null
       | sy_max_configurations_on_flash_null
       | sy_name_resolution_null
@@ -55,6 +56,12 @@ s_system
       | sy_tacplus_server
       | sy_time_zone_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/management-instance-edit-system.html
+sy_management_instance
+:
+   MANAGEMENT_INSTANCE
 ;
 
 sy_authentication_method
@@ -1662,4 +1669,3 @@ sysp_zone_null
 :
    ZONE null_filler
 ;
-

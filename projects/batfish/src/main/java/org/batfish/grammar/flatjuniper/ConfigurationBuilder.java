@@ -1177,6 +1177,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_order
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_default_address_selectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_management_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_name_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_porttypeContext;
@@ -10773,6 +10774,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSy_host_name(Sy_host_nameContext ctx) {
     _currentRoutingInstance.setHostname(toString(ctx.name));
+  }
+
+  @Override
+  public void exitSy_management_instance(Sy_management_instanceContext ctx) {
+    _currentLogicalSystem.setManagementInstance(true);
   }
 
   @Override

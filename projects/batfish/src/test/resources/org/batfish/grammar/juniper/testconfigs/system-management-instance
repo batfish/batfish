@@ -1,0 +1,6 @@
+set system host-name system-management-instance
+set system management-instance
+set interfaces fxp0 unit 0 family inet address 192.0.2.1/24
+set interfaces re0:mgmt-0 description "Routing Engine management interface"
+set interfaces re0:mgmt-0 unit 0 family inet address 203.0.113.1/24
+set interfaces ge-0/0/0 unit 0 family inet address 198.51.100.1/24
