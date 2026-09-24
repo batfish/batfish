@@ -1,0 +1,3 @@
+set system host-name system-phone-home
+set system phone-home server https://redirect.example.com
+set system phone-home rfc-compliant

@@ -2602,6 +2602,7 @@ PERSISTENT_NAT: 'persistent-nat';
 PFE: 'pfe';
 
 PGM: 'pgm';
+PHONE_HOME: 'phone-home';
 PIC: 'pic';
 PIM: 'pim';
 
@@ -2943,6 +2944,7 @@ REVERSE_TELNET: 'reverse-telnet';
 REVERT_TIMER: 'revert-timer';
 REVOCATION_CHECK: 'revocation-check';
 REWRITE_RULES: 'rewrite-rules';
+RFC_COMPLIANT: 'rfc-compliant';
 
 RIB: 'rib' -> pushMode(M_RibName);
 
