@@ -858,6 +858,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inet6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_vxlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_preserve_nexthop_hierarchyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
@@ -3462,7 +3463,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
-    todo(ctx);
+    if (ctx.fov_overlay_ecmp() != null) {
+      todo(ctx);
+    }
   }
 
   @Override
@@ -4287,6 +4290,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.EQUAL_EXTERNAL_INTERNAL() != null) {
       rib.setMultipathVpnEqualExternalInternal(true);
     }
+    todo(ctx);
+  }
+
+  @Override
+  public void enterRor_vxlan(Ror_vxlanContext ctx) {
+    String name = ctx.name.getText();
+    Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
+    _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void exitRor_vxlan(Ror_vxlanContext ctx) {
     todo(ctx);
   }
 

@@ -79,7 +79,9 @@ fo_vxlan_routing
 :
    VXLAN_ROUTING
    (
-      fov_overlay_ecmp
+      fov_interface_num_null
+      | fov_next_hop_null
+      | fov_overlay_ecmp
    )
 ;
 
@@ -202,6 +204,18 @@ fohb_server_null
 fov_overlay_ecmp
 :
    OVERLAY_ECMP
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/evpn-vxlan/topics/ref/statement/interface-num-edit-forwarding-options.html
+fov_interface_num_null
+:
+   INTERFACE_NUM uint32
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/next-hop-edit-forwarding-options-vxlan-routing.html
+fov_next_hop_null
+:
+   NEXT_HOP uint32
 ;
 
 s_forwarding_options
