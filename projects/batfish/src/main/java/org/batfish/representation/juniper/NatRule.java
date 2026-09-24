@@ -24,6 +24,8 @@ public final class NatRule implements Serializable {
 
   private final String _name;
 
+  private @Nullable String _staticNatRoutingInstance;
+
   private @Nullable NatRuleThen _then;
 
   public NatRule(String name) {
@@ -42,6 +44,14 @@ public final class NatRule implements Serializable {
 
   public @Nullable NatRuleThen getThen() {
     return _then;
+  }
+
+  public @Nullable String getStaticNatRoutingInstance() {
+    return _staticNatRoutingInstance;
+  }
+
+  public void setStaticNatRoutingInstance(String staticNatRoutingInstance) {
+    _staticNatRoutingInstance = staticNatRoutingInstance;
   }
 
   public void setThen(@Nullable NatRuleThen then) {

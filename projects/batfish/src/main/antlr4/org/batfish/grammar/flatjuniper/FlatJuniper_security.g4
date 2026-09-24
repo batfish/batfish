@@ -408,10 +408,12 @@ rsrtnpp_permit
 
 rsrtst_prefix
 :
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-prefix-static-nat.html
    PREFIX
    (
       rsrtstp_mapped_port
       | rsrtstp_prefix
+      | rsrtstp_routing_instance
    )
 ;
 
