@@ -400,6 +400,7 @@ BFD_LIVENESS_DETECTION: 'bfd-liveness-detection';
 BGP: 'bgp';
 BGP_ERROR_TOLERANCE: 'bgp-error-tolerance';
 BGP_OUTPUT_QUEUE_PRIORITY: 'bgp-output-queue-priority';
+BGP_SIGNAL: 'bgp-signal';
 
 BIFF: 'biff';
 BINARY_DATA: 'binary-data';
@@ -705,6 +706,8 @@ DESTINATION_NETWORK_PROHIBITED: 'destination-network-prohibited';
 
 DESTINATION_NETWORK_UNKNOWN: 'destination-network-unknown';
 
+DESTINATION_NETWORKS: 'destination-networks';
+
 DESTINATION_PORT: 'destination-port' -> pushMode(M_Port);
 
 DESTINATION_PORT_EXCEPT: 'destination-port-except' -> pushMode(M_Port);
@@ -806,6 +809,8 @@ DVMRP: 'dvmrp';
 DYNAMIC: 'dynamic';
 
 DYNAMIC_DNS: 'dynamic-dns';
+
+DYNAMIC_TUNNELS: 'dynamic-tunnels' -> pushMode(M_DynamicTunnels);
 
 DYNAMIC_NEIGHBOR: 'dynamic-neighbor' -> pushMode(M_Name);
 
@@ -1001,6 +1006,8 @@ FORWARDING_CONTEXT: 'forwarding-context' -> pushMode(M_Name);
 FORWARDING_OPTIONS: 'forwarding-options';
 
 FORWARDING_POLICY: 'forwarding-policy';
+
+FORWARDING_RIB: 'forwarding-rib';
 
 FORWARDING_TABLE: 'forwarding-table';
 
@@ -4448,6 +4455,14 @@ M_Description_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
+
+mode M_DynamicTunnels;
+
+M_DynamicTunnels_FORWARDING_RIB:
+  'forwarding-rib' -> type(FORWARDING_RIB), mode(M_Name);
+M_DynamicTunnels_NAME: F_Name -> type(NAME), popMode;
+M_DynamicTunnels_WS: F_WhitespaceChar+ -> skip;
+M_DynamicTunnels_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Interface;
 

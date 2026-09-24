@@ -40,6 +40,9 @@ public class RoutingInstance implements Serializable {
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
   private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
   private String _domainName;
+  private final @Nonnull Map<String, DynamicTunnel> _dynamicTunnels;
+  private @Nullable String _dynamicTunnelsForwardingRib;
+  private @Nullable String _dynamicTunnelsInetImportPolicy;
   private boolean _exportLocalRoutesLan;
   private boolean _exportLocalRoutesPointToPoint;
   private String _forwardingTableExportPolicy;
@@ -95,6 +98,7 @@ public class RoutingInstance implements Serializable {
     _confederationMembers = new TreeSet<>();
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();
+    _dynamicTunnels = new TreeMap<>();
     _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
     _instanceExports = new LinkedList<>();
@@ -180,6 +184,18 @@ public class RoutingInstance implements Serializable {
 
   public String getDomainName() {
     return _domainName;
+  }
+
+  public @Nonnull Map<String, DynamicTunnel> getDynamicTunnels() {
+    return _dynamicTunnels;
+  }
+
+  public @Nullable String getDynamicTunnelsForwardingRib() {
+    return _dynamicTunnelsForwardingRib;
+  }
+
+  public @Nullable String getDynamicTunnelsInetImportPolicy() {
+    return _dynamicTunnelsInetImportPolicy;
   }
 
   public boolean getExportLocalRoutesLan() {
@@ -342,6 +358,14 @@ public class RoutingInstance implements Serializable {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setDynamicTunnelsForwardingRib(String dynamicTunnelsForwardingRib) {
+    _dynamicTunnelsForwardingRib = dynamicTunnelsForwardingRib;
+  }
+
+  public void setDynamicTunnelsInetImportPolicy(String dynamicTunnelsInetImportPolicy) {
+    _dynamicTunnelsInetImportPolicy = dynamicTunnelsInetImportPolicy;
   }
 
   public void setExportLocalRoutesLan(boolean exportLocalRoutesLan) {
