@@ -54401,7 +54401,7 @@
             "                        EIGHT02_3AD:'802.3ad'",
             "                        (eo8023ad_interface",
             "                          (interface_id*",
-            "                            INTERFACE_ID:'ae0'  <== mode:M_Interface))))))))))))",
+            "                            INTERFACE_ID:'ae0'  <== mode:M_8023ad))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",

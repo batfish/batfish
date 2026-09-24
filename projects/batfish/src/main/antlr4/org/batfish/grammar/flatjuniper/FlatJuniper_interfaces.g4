@@ -71,6 +71,7 @@ eo8023ad_interface
    interface_id
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/force-up-edit-interfaces-qfx-series.html
 eo8023ad_lacp
 :
    LACP FORCE_UP

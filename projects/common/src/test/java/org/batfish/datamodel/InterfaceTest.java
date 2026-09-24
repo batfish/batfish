@@ -550,6 +550,7 @@ public class InterfaceTest {
             .setType(InterfaceType.PHYSICAL)
             .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().build())
             .setHmm(true)
+            .setLacpForceUp(true)
             .build();
 
     // test (de)serialization
@@ -565,6 +566,7 @@ public class InterfaceTest {
             .setName("ifaceName")
             .setType(InterfaceType.PHYSICAL)
             .setHmm(true)
+            .setLacpForceUp(true)
             .build();
     assertEquals(obj, BatfishObjectMapper.clone(obj, Interface.class));
   }
@@ -582,6 +584,7 @@ public class InterfaceTest {
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
         .addEqualityGroup(b.setHmm(true).build())
+        .addEqualityGroup(b.setLacpForceUp(true).build())
         .addEqualityGroup(b.setName("iface2").build())
         .testEquals();
   }
