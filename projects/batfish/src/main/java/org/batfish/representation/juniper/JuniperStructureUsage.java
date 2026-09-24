@@ -99,6 +99,8 @@ public enum JuniperStructureUsage implements StructureUsage {
   CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS(
       "class-of-service scheduler-maps forwarding-class"),
   CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER("class-of-service scheduler-maps scheduler"),
+  CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP(
+      "class-of-service system-defaults classifiers exp"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
