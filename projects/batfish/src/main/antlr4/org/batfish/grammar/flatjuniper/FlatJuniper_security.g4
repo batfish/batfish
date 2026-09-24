@@ -203,8 +203,15 @@ natp_port
    PORT
    (
       NO_TRANSLATION
+      | natpp_port_overloading_factor_null
       | RANGE from = port_number (TO to = port_number)?
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-nat-port-overloading-factor.html
+natpp_port_overloading_factor_null
+:
+   PORT_OVERLOADING_FACTOR uint8
 ;
 
 natp_description
@@ -1119,7 +1126,14 @@ sen_source
       | nat_pool_utilization_alarm
       | nat_port_randomization
       | nat_pool_default_port_range
+      | sens_address_persistent_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-address-persistent.html
+sens_address_persistent_null
+:
+   ADDRESS_PERSISTENT
 ;
 
 sen_static

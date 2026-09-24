@@ -118,6 +118,8 @@ ADDRESS_FAMILY: 'address-family';
 
 ADDRESS_MASK: 'address-mask';
 
+ADDRESS_PERSISTENT: 'address-persistent';
+
 ADDRESS_SET: 'address-set' -> pushMode(M_Name);
 
 ADJUST_INTERVAL: 'adjust-interval';

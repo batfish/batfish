@@ -1,0 +1,8 @@
+set system host-name junos-source-nat-allocation
+set security nat source address-persistent
+set security nat source pool POOL address 192.0.2.1/32
+set security nat source pool POOL port port-overloading-factor 2
+set security nat source pool POOL-MAX address 192.0.2.2/32
+set security nat source pool POOL-MAX port port-overloading-factor 32
+set security nat source pool INVALID-LOW port port-overloading-factor 1
+set security nat source pool INVALID-HIGH port port-overloading-factor 33
