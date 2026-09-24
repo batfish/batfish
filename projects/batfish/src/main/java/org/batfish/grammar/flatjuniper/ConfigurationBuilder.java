@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.CommunityMemberParseResult.parseCommunityMember;
@@ -833,8 +834,16 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inet6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_preserve_nexthop_hierarchyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_inet6_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_inet6_resolution_ribsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_inet_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_inet_resolution_ribsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_iso_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_iso_resolution_ribsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_resolution_ribsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_defaultsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route4Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route6Context;
@@ -4264,12 +4273,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitRores_preserve_nexthop_hierarchy(Rores_preserve_nexthop_hierarchyContext ctx) {
+    _currentResolution.setPreserveNexthopHierarchy(true);
+    todo(ctx);
+  }
+
+  @Override
   public void enterRores_rib(Rores_ribContext ctx) {
     String name = toString(ctx.name);
-    if (!name.equals(RIB_IPV4_UNICAST)) {
-      warn(ctx, "Resolution ribs other than inet.0 are currently unsupported");
+    String mainRibName =
+        _currentRoutingInstance.getName().equals(DEFAULT_VRF_NAME)
+            ? RIB_IPV4_UNICAST
+            : String.format("%s.%s", _currentRoutingInstance.getName(), RIB_IPV4_UNICAST);
+    boolean childReportsUnsupported =
+        ctx.roresr_inet6_import() != null
+            || ctx.roresr_inet6_resolution_ribs() != null
+            || ctx.roresr_inet_resolution_ribs() != null
+            || ctx.roresr_iso_import() != null
+            || ctx.roresr_iso_resolution_ribs() != null
+            || ctx.roresr_resolution_ribs() != null;
+    if (!name.equals(mainRibName) && !childReportsUnsupported) {
+      todo(ctx);
     }
-    _currentResolutionRib = _currentResolution.getOrReplaceRib(name);
+    _currentResolutionRib = _currentResolution.getOrCreateRib(name);
   }
 
   @Override
@@ -4281,6 +4307,50 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRoresr_import(Roresr_importContext ctx) {
     _currentResolutionRib.addImportPolicy(
         toComplexPolicyStatement(ctx.expr, RESOLUTION_RIB_IMPORT_POLICY));
+  }
+
+  @Override
+  public void exitRoresr_inet6_import(Roresr_inet6_importContext ctx) {
+    _currentResolutionRib.addInet6ImportPolicy(
+        toComplexPolicyStatement(ctx.expr, RESOLUTION_RIB_IMPORT_POLICY));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoresr_inet6_resolution_ribs(Roresr_inet6_resolution_ribsContext ctx) {
+    _currentResolutionRib.addInet6ResolutionRib(toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoresr_inet_import(Roresr_inet_importContext ctx) {
+    _currentResolutionRib.addInetImportPolicy(
+        toComplexPolicyStatement(ctx.expr, RESOLUTION_RIB_IMPORT_POLICY));
+  }
+
+  @Override
+  public void exitRoresr_inet_resolution_ribs(Roresr_inet_resolution_ribsContext ctx) {
+    _currentResolutionRib.addInetResolutionRib(toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoresr_iso_import(Roresr_iso_importContext ctx) {
+    _currentResolutionRib.addIsoImportPolicy(
+        toComplexPolicyStatement(ctx.expr, RESOLUTION_RIB_IMPORT_POLICY));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoresr_iso_resolution_ribs(Roresr_iso_resolution_ribsContext ctx) {
+    _currentResolutionRib.addIsoResolutionRib(toString(ctx.name));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoresr_resolution_ribs(Roresr_resolution_ribsContext ctx) {
+    _currentResolutionRib.addResolutionRib(toString(ctx.name));
+    todo(ctx);
   }
 
   @Override

@@ -10072,7 +10072,7 @@ public final class FlatJuniperGrammarTest {
 
     assertNotNull(r);
 
-    ResolutionRib rr = r.getRib();
+    ResolutionRib rr = r.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST);
 
     assertNotNull(rr);
     assertThat(rr.getName(), equalTo(RoutingInformationBase.RIB_IPV4_UNICAST));

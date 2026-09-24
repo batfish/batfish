@@ -1,0 +1,22 @@
+set system host-name resolution
+set policy-options policy-statement GENERIC term MATCH from route-filter 0.0.0.0/8 exact
+set policy-options policy-statement GENERIC term MATCH then accept
+set policy-options policy-statement IPV4 term MATCH from route-filter 1.0.0.0/8 exact
+set policy-options policy-statement IPV4 term MATCH then accept
+set policy-options policy-statement IPV6 then accept
+set policy-options policy-statement ISO then accept
+set routing-options resolution preserve-nexthop-hierarchy
+set routing-options resolution rib inet.0 import GENERIC
+set routing-options resolution rib inet.0 inet-import IPV4
+set routing-options resolution rib inet.0 inet6-import IPV6
+set routing-options resolution rib inet.0 iso-import ISO
+set routing-options resolution rib inet.0 resolution-ribs CLIENT.inet.0
+set routing-options resolution rib inet.0 resolution-ribs inet.3
+set routing-options resolution rib inet.0 inet-resolution-ribs inet.0
+set routing-options resolution rib inet.0 inet-resolution-ribs inet.3
+set routing-options resolution rib inet.0 inet6-resolution-ribs inet6.0
+set routing-options resolution rib inet.0 inet6-resolution-ribs inet6.3
+set routing-options resolution rib inet.0 iso-resolution-ribs iso.0
+set routing-instances CLIENT instance-type virtual-router
+set routing-instances CLIENT routing-options resolution rib CLIENT.inet.0 inet-import IPV4
+set routing-instances CLIENT routing-options resolution rib CLIENT.inet6.0 inet6-import IPV6

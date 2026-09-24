@@ -1,24 +1,35 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Resolution settings for a routing instance. */
 @ParametersAreNonnullByDefault
 public final class Resolution implements Serializable {
 
-  public @Nonnull ResolutionRib getOrReplaceRib(String name) {
-    if (_rib == null || !_rib.getName().equals(name)) {
-      _rib = new ResolutionRib(name);
-    }
-    return _rib;
+  public Resolution() {
+    _ribs = new HashMap<>();
   }
 
-  public @Nullable ResolutionRib getRib() {
-    return _rib;
+  public @Nonnull ResolutionRib getOrCreateRib(String name) {
+    return _ribs.computeIfAbsent(name, ResolutionRib::new);
   }
 
-  private @Nullable ResolutionRib _rib;
+  public boolean getPreserveNexthopHierarchy() {
+    return _preserveNexthopHierarchy;
+  }
+
+  public @Nonnull Map<String, ResolutionRib> getRibs() {
+    return _ribs;
+  }
+
+  public void setPreserveNexthopHierarchy(boolean preserveNexthopHierarchy) {
+    _preserveNexthopHierarchy = preserveNexthopHierarchy;
+  }
+
+  private boolean _preserveNexthopHierarchy;
+  private final @Nonnull Map<String, ResolutionRib> _ribs;
 }
