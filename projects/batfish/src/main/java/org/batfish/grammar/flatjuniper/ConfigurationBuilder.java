@@ -426,6 +426,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eipr_vniContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_lacpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_autoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_communityContext;
@@ -5780,6 +5781,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     // TODO: handle node
     String interfaceName = getInterfaceFullName(ctx.interface_id());
     _currentInterfaceOrRange.set8023adInterface(interfaceName);
+  }
+
+  @Override
+  public void exitEo8023ad_lacp(Eo8023ad_lacpContext ctx) {
+    _currentInterfaceOrRange.setLacpForceUp(true);
+    todo(ctx);
   }
 
   @Override
