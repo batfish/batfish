@@ -1929,10 +1929,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String name = ikePolicy.getName();
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(name);
 
-    // pre-shared-key
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
-    ikePhase1Key.setKeyHash(ikePolicy.getPreSharedKeyHash());
+    if (ikePolicy.getLocalCertificates().isEmpty()) {
+      ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
+      ikePhase1Key.setKeyHash(ikePolicy.getPreSharedKeyHash());
+    } else {
+      ikePhase1Key.setKeyType(IkeKeyType.RSA_PUB_KEY);
+    }
 
     ikePhase1Keys.put(String.format("~IKE_PHASE1_KEY_%s~", ikePolicy.getName()), ikePhase1Key);
 
