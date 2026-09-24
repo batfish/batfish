@@ -1,0 +1,4 @@
+set system host-name policy-statement-from-generic-interface-name
+set policy-options policy-statement INTERFACE-POLICY term GENERIC from interface primary
+set policy-options policy-statement INTERFACE-POLICY term GENERIC from interface eth-example-vrf
+set policy-options policy-statement INTERFACE-POLICY term GENERIC then accept

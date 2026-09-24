@@ -286,9 +286,14 @@ popsf_instance
    INSTANCE name = junos_name
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/concept/policy-configuring-match-conditions-in-routing-policy-terms.html
 popsf_interface
 :
-   INTERFACE id = interface_id
+   INTERFACE
+   (
+      id = interface_id
+      | name = junos_name
+   )
 ;
 
 popsf_level
