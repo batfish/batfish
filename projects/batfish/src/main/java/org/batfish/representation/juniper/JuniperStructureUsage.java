@@ -158,6 +158,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   NAT_RULE_SET_TO_INTERFACE("nat rule-set rule to interface"),
   NAT_RULE_SET_TO_ROUTING_INSTANCE("nat rule-set rule to routing-instance"),
   NAT_SOURCE_RULE_SET_RULE_THEN("nat source rule-set rule then pool"),
+  NAT_STATIC_RULE_THEN_ROUTING_INSTANCE("nat static rule then routing-instance"),
   NAT_STATIC_RULE_SET_RULE_THEN("nat static rule-set rule then pool"),
   NTP_SERVER_ROUTING_INSTANCE("ntp server routing-instance"),
   NTP_SOURCE_ADDRESS_ROUTING_INSTANCE("ntp source-address routing-instance"),

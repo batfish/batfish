@@ -190,6 +190,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_TO_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATIC_RULE_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SOURCE_ADDRESS_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
@@ -895,6 +896,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_bridge_domainsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
@@ -8808,6 +8810,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRsrtstp_prefix_name(Rsrtstp_prefix_nameContext ctx) {
     String prefixName = toString(ctx.name);
     _currentNatRule.setThen(new NatRuleThenPrefixName(prefixName, IpField.DESTINATION));
+  }
+
+  @Override
+  public void exitRsrtstp_routing_instance(Rsrtstp_routing_instanceContext ctx) {
+    String name = toString(ctx.name);
+    _currentNatRule.setStaticNatRoutingInstance(name);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE,
+        name,
+        NAT_STATIC_RULE_THEN_ROUTING_INSTANCE,
+        getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
