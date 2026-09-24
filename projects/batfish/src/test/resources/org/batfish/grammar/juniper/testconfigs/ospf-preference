@@ -1,0 +1,5 @@
+set system host-name ospf-preference
+set interfaces lo0 unit 0 family inet address 192.0.2.1/32
+set protocols ospf preference 180
+set protocols ospf external-preference 181
+set protocols ospf area 0.0.0.0 interface lo0.0 passive

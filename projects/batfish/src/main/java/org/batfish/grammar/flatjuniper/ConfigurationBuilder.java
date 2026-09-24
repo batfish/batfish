@@ -609,6 +609,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_external_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_prefix_export_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
@@ -6710,6 +6712,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentRoutingInstance
         .getOspfExportPolicies()
         .add(toComplexPolicyStatement(ctx.expr, OSPF_EXPORT_POLICY));
+  }
+
+  @Override
+  public void exitO_external_preference(O_external_preferenceContext ctx) {
+    _currentRoutingInstance.setOspfExternalPreference(toInt(ctx.preference));
+  }
+
+  @Override
+  public void exitO_preference(O_preferenceContext ctx) {
+    _currentRoutingInstance.setOspfPreference(toInt(ctx.preference));
   }
 
   @Override

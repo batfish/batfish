@@ -1419,16 +1419,32 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     Ip ospfRouterId = getRouterId(routingInstance);
+    Map<RoutingProtocol, Integer> adminCosts =
+        new EnumMap<>(
+            org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
+                _c.getConfigurationFormat()));
+    if (routingInstance.getOspfPreference() != null) {
+      int preference = routingInstance.getOspfPreference();
+      adminCosts.put(RoutingProtocol.OSPF, preference);
+      adminCosts.put(RoutingProtocol.OSPF_IA, preference);
+      adminCosts.put(RoutingProtocol.OSPF_IS, preference);
+    }
+    if (routingInstance.getOspfExternalPreference() != null) {
+      int externalPreference = routingInstance.getOspfExternalPreference();
+      adminCosts.put(RoutingProtocol.OSPF_E1, externalPreference);
+      adminCosts.put(RoutingProtocol.OSPF_E2, externalPreference);
+    }
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
             .setProcessId(routingInstance.getName())
             .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
-            .setAdminCosts(
-                org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
-                    _c.getConfigurationFormat()))
+            .setAdminCosts(adminCosts)
             .setSummaryAdminCost(
-                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
+                firstNonNull(
+                    routingInstance.getOspfPreference(),
+                    RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(
+                        _c.getConfigurationFormat())))
             .setRouterId(ospfRouterId)
             .setSummaryDiscardMetric(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC)
             .build();

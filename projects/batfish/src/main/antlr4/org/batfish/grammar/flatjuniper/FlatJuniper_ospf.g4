@@ -39,6 +39,7 @@ o_common
    | o_no_rfc_1583_null
    | o_overload_null
    | o_prefix_export_limit
+   | o_preference
    | o_reference_bandwidth
    | o_rib_group
    | o_spf_options_null
@@ -63,7 +64,7 @@ o_export
 
 o_external_preference
 :
-   EXTERNAL_PREFERENCE dec
+   EXTERNAL_PREFERENCE preference = dec
 ;
 
 o_import
@@ -100,6 +101,12 @@ o_traceoptions_null
 o_prefix_export_limit
 :
     PREFIX_EXPORT_LIMIT limit = uint32
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/ospf/topics/concept/multi-instance-ospf-overview.html
+o_preference
+:
+   PREFERENCE preference = dec
 ;
 
 o_reference_bandwidth
