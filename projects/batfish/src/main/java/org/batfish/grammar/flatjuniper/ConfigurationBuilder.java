@@ -134,6 +134,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DYNAMIC_TUNNELS_INET_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_FROM_DESTINATION_CLASS;
@@ -837,6 +838,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_independent_domainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodt_forwarding_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodt_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodtn_bgp_signalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodtn_destination_networksContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodtn_ipipContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodtn_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rodtn_udpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
@@ -1230,6 +1238,8 @@ import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DampingProfile;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
+import org.batfish.representation.juniper.DynamicTunnel;
+import org.batfish.representation.juniper.DynamicTunnelDestination;
 import org.batfish.representation.juniper.Evpn;
 import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.EvpnIpPrefixRoutes;
@@ -2926,6 +2936,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private ConcreteInterfaceAddress6 _currentInterfaceAddress6;
 
+  private DynamicTunnel _currentDynamicTunnel;
+
   private IpsecPolicy _currentIpsecPolicy;
 
   private IpsecProposal _currentIpsecProposal;
@@ -4316,6 +4328,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRo_resolution(Ro_resolutionContext ctx) {
     _currentResolution = _currentRoutingInstance.getOrCreateResolution();
+  }
+
+  @Override
+  public void enterRodt_named(Rodt_namedContext ctx) {
+    _currentDynamicTunnel =
+        _currentRoutingInstance
+            .getDynamicTunnels()
+            .computeIfAbsent(toString(ctx.name), n -> new DynamicTunnel());
   }
 
   @Override
@@ -8473,6 +8493,57 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         policyName,
         ROUTING_OPTIONS_INSTANCE_EXPORT,
         getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitRodt_forwarding_rib(Rodt_forwarding_ribContext ctx) {
+    String policy = toString(ctx.policy);
+    _currentRoutingInstance.setDynamicTunnelsForwardingRib(toString(ctx.rib));
+    _currentRoutingInstance.setDynamicTunnelsInetImportPolicy(policy);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT,
+        policy,
+        DYNAMIC_TUNNELS_INET_IMPORT_POLICY,
+        getLine(ctx.policy.getStart()));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodt_named(Rodt_namedContext ctx) {
+    _currentDynamicTunnel = null;
+  }
+
+  @Override
+  public void exitRodtn_bgp_signal(Rodtn_bgp_signalContext ctx) {
+    _currentDynamicTunnel.setBgpSignal(true);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodtn_destination_networks(Rodtn_destination_networksContext ctx) {
+    _currentDynamicTunnel
+        .getDestinationNetworks()
+        .put(
+            toPrefix(ctx.prefix),
+            new DynamicTunnelDestination(ctx.preference == null ? null : toLong(ctx.preference)));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodtn_ipip(Rodtn_ipipContext ctx) {
+    _currentDynamicTunnel.setType(DynamicTunnel.Type.IPIP);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodtn_source_address(Rodtn_source_addressContext ctx) {
+    _currentDynamicTunnel.setSourceAddress(toIp(ctx.address));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodtn_udp(Rodtn_udpContext ctx) {
+    _currentDynamicTunnel.setType(DynamicTunnel.Type.UDP);
     todo(ctx);
   }
 

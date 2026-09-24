@@ -1182,6 +1182,7 @@ s_routing_options
       | ro_autonomous_system
       | ro_bmp
       | ro_confederation
+      | ro_dynamic_tunnels
       | ro_forwarding_table
       | ro_generate
       | ro_graceful_restart_null
@@ -1206,4 +1207,56 @@ s_routing_options
       | ro_traceoptions_null
       | ro_validation
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dynamic-tunnels-edit-routing-options.html
+ro_dynamic_tunnels
+:
+   DYNAMIC_TUNNELS
+   (
+      rodt_forwarding_rib
+      | rodt_named
+   )
+;
+
+rodt_forwarding_rib
+:
+   FORWARDING_RIB rib = junos_name INET_IMPORT policy = junos_name
+;
+
+rodt_named
+:
+   name = junos_name
+   (
+      rodtn_bgp_signal
+      | rodtn_destination_networks
+      | rodtn_ipip
+      | rodtn_source_address
+      | rodtn_udp
+   )
+;
+
+rodtn_bgp_signal
+:
+   BGP_SIGNAL
+;
+
+rodtn_destination_networks
+:
+   DESTINATION_NETWORKS prefix = ip_prefix (PREFERENCE preference = uint32)?
+;
+
+rodtn_ipip
+:
+   IPIP
+;
+
+rodtn_source_address
+:
+   SOURCE_ADDRESS address = ip_address
+;
+
+rodtn_udp
+:
+   UDP
 ;
