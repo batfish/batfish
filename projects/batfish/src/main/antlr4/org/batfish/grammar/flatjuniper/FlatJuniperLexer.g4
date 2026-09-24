@@ -33,6 +33,10 @@ tokens {
    FIN,
    FLAG,
    FLEX,
+   GCM_AES_128,
+   GCM_AES_256,
+   GCM_AES_XPN_128,
+   GCM_AES_XPN_256,
    HUGEPAGES,
    IGNORED_WORD,
    IMAGE,
@@ -467,6 +471,7 @@ BURST_SIZE_LIMIT: 'burst-size-limit' -> pushMode(M_Bandwidth);
 C: 'c';
 
 CACHE: 'cache';
+CAK: 'cak' -> pushMode(M_SecretString);
 
 CA_IDENTITY: 'ca-identity' -> pushMode(M_Name);
 
@@ -493,7 +498,9 @@ CHARACTER_SETS: 'character-sets';
 CHASSIS: 'chassis';
 
 CIPHERS: 'ciphers';
+CIPHER_SUITE: 'cipher-suite' -> pushMode(M_CipherSuite);
 CIRCUIT_ID: 'circuit-id';
+CKN: 'ckn' -> pushMode(M_Name);
 
 CLASS
 :
@@ -589,6 +596,7 @@ CONNECTION_LIMIT: 'connection-limit';
 CONNECTIONS_LIMIT: 'connections-limit';
 
 CONNECTION_MODE: 'connection-mode';
+CONNECTIVITY_ASSOCIATION: 'connectivity-association' -> pushMode(M_Name);
 
 CONNECTIVITY_FAULT_MANAGEMENT: 'connectivity-fault-management';
 CONSISTENT_HASH: 'consistent-hash';
@@ -1344,6 +1352,7 @@ INCLUDE_ANY: 'include-any';
 INCLUDE_IRB_AND_L2: 'include-irb-and-l2';
 
 INCLUDE_MP_NEXT_HOP: 'include-mp-next-hop';
+INCLUDE_SCI: 'include-sci';
 
 INCOMPLETE: 'incomplete';
 
@@ -1999,6 +2008,8 @@ KEY_EXCHANGE: 'key-exchange';
 KEY_ID: 'key-id' -> pushMode(M_Name);
 KEY_NAME: 'key-name' -> pushMode(M_Name);
 
+KEY_SERVER_PRIORITY: 'key-server-priority';
+
 KEYS: 'keys';
 
 KLOGIN: 'klogin';
@@ -2180,6 +2191,7 @@ MAC_MOVE_LIMIT: 'mac-move-limit';
 MAC_RADIUS: 'mac-radius';
 MAC_VRF: 'mac-vrf';
 MACS: 'macs';
+MACSEC: 'macsec';
 
 MAIN: 'main';
 MAINTENANCE_DOMAIN: 'maintenance-domain' -> pushMode(M_Name);
@@ -2326,7 +2338,7 @@ MINIMUM_TIME: 'minimum-time';
 
 MINIMUM_UPPER_CASES: 'minimum-upper-cases';
 
-MS_RPC: 'ms-rpc';
+MKA: 'mka';
 
 MLD: 'mld';
 
@@ -2347,6 +2359,8 @@ MPLS_INET_BOTH: 'mpls-inet-both';
 MPLS_INET_BOTH_NON_VPN: 'mpls-inet-both-non-vpn';
 
 MPLS_IN_UDP: 'mpls-in-udp';
+
+MS_RPC: 'ms-rpc';
 
 MSDP: 'msdp';
 
@@ -2376,6 +2390,7 @@ MULTIPLIER: 'multiplier';
 MULTIPLY: 'multiply';
 MULTIPOINT: 'multipoint';
 MULTISERVICE_OPTIONS: 'multiservice-options';
+MUST_SECURE: 'must-secure';
 
 MVPN: 'mvpn';
 
@@ -2758,6 +2773,7 @@ PPTP: 'pptp';
 PRE_POLICY: 'pre-policy';
 
 PRE_SHARED_KEY: 'pre-shared-key';
+PRE_SHARED_KEY_CHAIN: 'pre-shared-key-chain' -> pushMode(M_Name);
 
 PRE_SHARED_KEYS: 'pre-shared-keys';
 
@@ -3195,6 +3211,7 @@ SECRET: 'secret' -> pushMode(M_SecretString);
 SECONDARY: 'secondary' -> pushMode(M_Name);
 
 SECURITY: 'security';
+SECURITY_MODE: 'security-mode';
 
 SECURITY_OPTION: 'security-option';
 
@@ -3267,6 +3284,7 @@ SHARED_IKE_ID: 'shared-ike-id';
 SHARED_TUNNELS: 'shared-tunnels';
 SHIM6_HEADER: 'shim6-header';
 SHORTCUTS: 'shortcuts';
+SHOULD_SECURE: 'should-secure';
 SHUTDOWN: 'shutdown';
 SIGNALING: 'signaling';
 SIMPLE: 'simple';
@@ -3368,6 +3386,8 @@ START_TIME: 'start-time' -> pushMode(M_RestOfLine);
 STARTS_WITH: 'starts-with';
 STATE: 'state';
 STATIC: 'static';
+STATIC_CAK: 'static-cak';
+
 STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
 STATIC_NAT: 'static-nat';
 STATION: 'station' -> pushMode(M_Name);
@@ -5779,6 +5799,14 @@ M_Certificate_CERTIFICATE_STRING: F_CertificateString -> type(CERTIFICATE_STRING
 M_Certificate_SCRUBBED: F_Scrubbed -> type(SCRUBBED), popMode;
 M_Certificate_WS: F_WhitespaceChar+ -> skip;
 M_Certificate_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_CipherSuite;
+M_CipherSuite_GCM_AES_128: 'gcm-aes-128' -> type(GCM_AES_128), popMode;
+M_CipherSuite_GCM_AES_256: 'gcm-aes-256' -> type(GCM_AES_256), popMode;
+M_CipherSuite_GCM_AES_XPN_128: 'gcm-aes-xpn-128' -> type(GCM_AES_XPN_128), popMode;
+M_CipherSuite_GCM_AES_XPN_256: 'gcm-aes-xpn-256' -> type(GCM_AES_XPN_256), popMode;
+M_CipherSuite_WS: F_WhitespaceChar+ -> skip;
+M_CipherSuite_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_RestOfLine;
 M_RestOfLine_WS: F_WhitespaceChar+ -> skip;

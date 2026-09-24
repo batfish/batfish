@@ -53,6 +53,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLI
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGIN_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureType.MACSEC_CONNECTIVITY_ASSOCIATION;
 import static org.batfish.representation.juniper.JuniperStructureType.MAC_VRF_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
@@ -184,6 +185,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INPUT_POLICER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_MACSEC_CONNECTIVITY_ASSOCIATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTPUT_POLICER;
@@ -199,6 +201,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPO
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.LOGIN_USER_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MACSEC_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MACSEC_INTERFACE_CONNECTIVITY_ASSOCIATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MACSEC_PRE_SHARED_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MAC_VRF_VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
@@ -539,6 +544,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offset_rangeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_connectivity_associationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
@@ -1003,6 +1009,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_bridge_domainsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_connectivity_associationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
@@ -1141,6 +1148,16 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipv_bind_interfaceCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sekc_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sem_connectivity_associationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sem_interfacesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_cakContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_cipher_suiteContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_cknContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_include_sciContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_mkaContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_pre_shared_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_pre_shared_key_chainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Semca_security_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
@@ -1456,6 +1473,9 @@ import org.batfish.representation.juniper.LoginRetryOptions;
 import org.batfish.representation.juniper.LoginUser;
 import org.batfish.representation.juniper.MacVrfServiceType;
 import org.batfish.representation.juniper.MacVrfVlan;
+import org.batfish.representation.juniper.MacsecConnectivityAssociation;
+import org.batfish.representation.juniper.MacsecConnectivityAssociation.MkaSecurityMode;
+import org.batfish.representation.juniper.MacsecConnectivityAssociation.SecurityMode;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
@@ -3079,6 +3099,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private IsisLevelSettings _currentIsisLevelSettings;
 
   private Line _currentLine;
+
+  private MacsecConnectivityAssociation _currentMacsecConnectivityAssociation;
 
   private Interface _currentMasterInterface;
 
@@ -5124,6 +5146,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentIkeProposal =
         _currentLogicalSystem.getIkeProposals().computeIfAbsent(name, IkeProposal::new);
     _configuration.defineFlattenedStructure(IKE_PROPOSAL, name, ctx, _parser);
+  }
+
+  @Override
+  public void enterSem_connectivity_association(Sem_connectivity_associationContext ctx) {
+    enterMacsecConnectivityAssociation(toString(ctx.name), ctx);
+  }
+
+  @Override
+  public void enterS_connectivity_association(S_connectivity_associationContext ctx) {
+    enterMacsecConnectivityAssociation(toString(ctx.name), ctx);
+  }
+
+  private void enterMacsecConnectivityAssociation(String name, ParserRuleContext ctx) {
+    _currentMacsecConnectivityAssociation =
+        _currentLogicalSystem
+            .getMacsecConnectivityAssociations()
+            .computeIfAbsent(name, MacsecConnectivityAssociation::new);
+    _configuration.defineFlattenedStructure(MACSEC_CONNECTIVITY_ASSOCIATION, name, ctx, _parser);
   }
 
   @Override
@@ -10474,6 +10514,109 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSeik_proposal(Seik_proposalContext ctx) {
     _currentIkeProposal = null;
+  }
+
+  @Override
+  public void exitSem_connectivity_association(Sem_connectivity_associationContext ctx) {
+    _currentMacsecConnectivityAssociation = null;
+  }
+
+  @Override
+  public void exitS_connectivity_association(S_connectivity_associationContext ctx) {
+    _currentMacsecConnectivityAssociation = null;
+  }
+
+  @Override
+  public void exitSem_interfaces(Sem_interfacesContext ctx) {
+    String interfaceName = getInterfaceFullName(ctx.iface);
+    String associationName = toString(ctx.name);
+    _currentLogicalSystem
+        .getInterfaces()
+        .computeIfAbsent(interfaceName, Interface::new)
+        .setMacsecConnectivityAssociation(associationName);
+    _configuration.referenceStructure(
+        INTERFACE, interfaceName, MACSEC_INTERFACE, getLine(ctx.iface.getStart()));
+    referenceMacsecConnectivityAssociation(
+        ctx.name, associationName, MACSEC_INTERFACE_CONNECTIVITY_ASSOCIATION);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_connectivity_association(I_connectivity_associationContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setMacsecConnectivityAssociation(name);
+    referenceMacsecConnectivityAssociation(
+        ctx.name, name, INTERFACE_MACSEC_CONNECTIVITY_ASSOCIATION);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_cak(Semca_cakContext ctx) {
+    _currentMacsecConnectivityAssociation.setCakHash(applySecret(ctx.value));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_cipher_suite(Semca_cipher_suiteContext ctx) {
+    _currentMacsecConnectivityAssociation.setCipherSuite(ctx.value.getText());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_ckn(Semca_cknContext ctx) {
+    _currentMacsecConnectivityAssociation.setCkn(toString(ctx.value));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_include_sci(Semca_include_sciContext ctx) {
+    _currentMacsecConnectivityAssociation.setIncludeSci();
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_mka(Semca_mkaContext ctx) {
+    if (ctx.priority != null) {
+      _currentMacsecConnectivityAssociation.setKeyServerPriority(toInteger(ctx.priority));
+    } else {
+      _currentMacsecConnectivityAssociation.setMkaSecurityMode(
+          ctx.MUST_SECURE() != null ? MkaSecurityMode.MUST_SECURE : MkaSecurityMode.SHOULD_SECURE);
+    }
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_pre_shared_key(Semca_pre_shared_keyContext ctx) {
+    if (ctx.cak != null) {
+      _currentMacsecConnectivityAssociation.setPreSharedKeyCakHash(applySecret(ctx.cak));
+    } else {
+      _currentMacsecConnectivityAssociation.setPreSharedKeyCkn(toString(ctx.ckn));
+    }
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_pre_shared_key_chain(Semca_pre_shared_key_chainContext ctx) {
+    String name = toString(ctx.name);
+    _currentMacsecConnectivityAssociation.setPreSharedKeyChain(name);
+    _configuration.referenceStructure(
+        AUTHENTICATION_KEY_CHAIN, name, MACSEC_PRE_SHARED_KEY_CHAIN, getLine(ctx.name.getStart()));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSemca_security_mode(Semca_security_modeContext ctx) {
+    _currentMacsecConnectivityAssociation.setSecurityMode(
+        ctx.DYNAMIC() != null
+            ? SecurityMode.DYNAMIC
+            : SecurityMode.STATIC_CONNECTIVITY_ASSOCIATION_KEY);
+    todo(ctx);
+  }
+
+  private void referenceMacsecConnectivityAssociation(
+      ParserRuleContext ctx, String name, JuniperStructureUsage usage) {
+    _configuration.referenceStructure(
+        MACSEC_CONNECTIVITY_ASSOCIATION, name, usage, getLine(ctx.getStart()));
   }
 
   @Override

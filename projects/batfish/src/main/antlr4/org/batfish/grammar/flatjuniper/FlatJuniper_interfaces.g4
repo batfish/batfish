@@ -122,6 +122,7 @@ i_common
    apply
    | i_aggregated_ether_options_null
    | i_arp_resp
+   | i_connectivity_association
    | i_description
    | i_common_physical
    | i_disable
@@ -144,6 +145,12 @@ i_common
    | i_vlan_id
    | i_vlan_id_list
    | i_vlan_tagging
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/connectivity-association-edit-security-macsec.html
+i_connectivity_association
+:
+   CONNECTIVITY_ASSOCIATION name = junos_name
 ;
 
 // configuration relevant for physical interfaces; there can be overlap with non-physical ones

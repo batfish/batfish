@@ -211,6 +211,7 @@ public class Interface implements Serializable {
   private transient boolean _inherited;
   private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
+  private @Nullable String _macsecConnectivityAssociation;
   private Integer _mtu;
   private @Nullable Boolean _multipoint;
   private final String _name;
@@ -374,6 +375,10 @@ public class Interface implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  public @Nullable String getMacsecConnectivityAssociation() {
+    return _macsecConnectivityAssociation;
   }
 
   /**
@@ -670,6 +675,10 @@ public class Interface implements Serializable {
 
   public void setMtu(Integer mtu) {
     _mtu = mtu;
+  }
+
+  public void setMacsecConnectivityAssociation(String macsecConnectivityAssociation) {
+    _macsecConnectivityAssociation = macsecConnectivityAssociation;
   }
 
   public void setMultipoint(boolean multipoint) {
