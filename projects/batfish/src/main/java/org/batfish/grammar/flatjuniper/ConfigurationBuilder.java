@@ -776,6 +776,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instan
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_table_labelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
@@ -8047,6 +8048,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
     _currentRoutingInstance.setVrfImportPolicy(name);
+  }
+
+  @Override
+  public void exitRi_vrf_table_label(Ri_vrf_table_labelContext ctx) {
+    _currentRoutingInstance.setVrfTableLabel(true);
+    if (ctx.SOURCE_CLASS_USAGE() != null) {
+      _currentRoutingInstance.setVrfTableLabelSourceClassUsage(true);
+    }
+    todo(ctx);
   }
 
   @Override

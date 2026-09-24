@@ -102,9 +102,10 @@ ri_vrf_import
    VRF_IMPORT name = junos_name
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vrf-table-label-edit-routing-instances-vp.html
 ri_vrf_table_label
 :
-   VRF_TABLE_LABEL
+   VRF_TABLE_LABEL SOURCE_CLASS_USAGE?
 ;
 
 ri_vrf_target

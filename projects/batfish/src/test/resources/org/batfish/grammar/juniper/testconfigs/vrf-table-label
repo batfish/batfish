@@ -1,0 +1,5 @@
+set system host-name vrf-table-label
+set routing-instances PLAIN instance-type vrf
+set routing-instances PLAIN vrf-table-label
+set routing-instances SOURCE-CLASS instance-type vrf
+set routing-instances SOURCE-CLASS vrf-table-label source-class-usage
