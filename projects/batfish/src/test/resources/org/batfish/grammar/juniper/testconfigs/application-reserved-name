@@ -1,0 +1,4 @@
+set system host-name application-reserved-name
+set applications application any inactivity-timeout 600
+set groups TIMEOUT applications application any term t1 inactivity-timeout 300
+set applications apply-groups TIMEOUT

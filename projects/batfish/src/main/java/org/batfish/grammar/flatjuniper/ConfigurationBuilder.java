@@ -3247,7 +3247,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterA_application(A_applicationContext ctx) {
-    String name = toString(ctx.name);
+    if (ctx.aa_named() == null) {
+      return;
+    }
+    String name = toString(ctx.aa_named().name);
     _currentApplication =
         _currentLogicalSystem
             .getApplications()
