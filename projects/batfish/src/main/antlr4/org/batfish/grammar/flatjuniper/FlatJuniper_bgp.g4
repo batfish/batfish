@@ -557,6 +557,7 @@ bfi6_unicast
       | bfi6u_extended_nexthop_tunnel_null
       | bfi6u_loops
       | bfi6u_prefix_limit
+      | bfi6u_rib_group
       | bfi6u_withdraw_priority
    )
 ;
@@ -625,6 +626,12 @@ bfi6u_prefix_limit
    PREFIX_LIMIT null_filler
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rib-group-edit-protocols-bgp.html
+bfi6u_rib_group
+:
+   RIB_GROUP name = junos_name
+;
+
 bfi6u_withdraw_priority: WITHDRAW_PRIORITY bgp_priority_queue_id;
 
 bfiu_add_path
@@ -650,6 +657,7 @@ bfiu_prefix_limit
    PREFIX_LIMIT null_filler
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rib-group-edit-protocols-bgp.html
 bfiu_rib_group
 :
    RIB_GROUP name = junos_name
@@ -799,7 +807,6 @@ p_bgp
 
 // Protocol-wide config only
 b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
-
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bgp-error-tolerance.html
 b_bgp_error_tolerance
 :
