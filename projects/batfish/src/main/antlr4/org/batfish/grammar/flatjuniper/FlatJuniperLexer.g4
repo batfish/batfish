@@ -1956,6 +1956,8 @@ LDP: 'ldp';
 
 LEARN_VLAN_1P_PRIORITY: 'learn-vlan-1p-priority';
 
+LEARN_VLAN_ID: 'learn-vlan-id';
+
 LEVEL: 'level';
 
 LIFETIME_KILOBYTES: 'lifetime-kilobytes';

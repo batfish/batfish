@@ -452,6 +452,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_type_exceptCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_learn_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_length_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_portContext;
@@ -1250,6 +1251,7 @@ import org.batfish.representation.juniper.FwFromInterfaceWildcard;
 import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
+import org.batfish.representation.juniper.FwFromLearnVlanId;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
@@ -6230,6 +6232,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     SubRange subRange = SubRange.singleton(0);
     FwFrom from = new FwFromFragmentOffset(subRange, true);
     _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_learn_vlan_id(Fftf_learn_vlan_idContext ctx) {
+    toInteger(ctx, ctx.id)
+        .ifPresent(
+            vlanId -> {
+              _currentFwTerm.getFroms().add(new FwFromLearnVlanId(vlanId));
+              todo(ctx);
+            });
   }
 
   @Override
