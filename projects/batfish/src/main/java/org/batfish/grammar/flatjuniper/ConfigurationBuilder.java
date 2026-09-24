@@ -601,6 +601,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_flood_reflectorCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metricsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_allow_route_leakingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
@@ -7888,6 +7889,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIso_advertise_high_metrics(Iso_advertise_high_metricsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIso_allow_route_leaking(Iso_allow_route_leakingContext ctx) {
+    _currentRoutingInstance.getIsisSettings().setOverloadAllowRouteLeaking(true);
     todo(ctx);
   }
 

@@ -217,6 +217,8 @@ ALLOW_GRPC_RPC_REGEXPS: 'allow-grpc-rpc-regexps';
 
 ALLOW_HIDDEN_COMMANDS: 'allow-hidden-commands';
 
+ALLOW_ROUTE_LEAKING: 'allow-route-leaking';
+
 ALLOW_SNOOPED_CLIENTS: 'allow-snooped-clients';
 
 ALLOW_SOURCES: 'allow-sources';
