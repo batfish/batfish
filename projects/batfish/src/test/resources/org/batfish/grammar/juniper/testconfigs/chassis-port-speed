@@ -1,0 +1,3 @@
+set system host-name chassis-port-speed
+set chassis fpc 0 pic 0 port 8 speed 1
+set chassis fpc 0 pic 0 port 40 speed 1G

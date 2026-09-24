@@ -973,6 +973,7 @@ FINGER: 'finger';
 FINGERPRINT_HASH: 'fingerprint-hash';
 FIREWALL: 'firewall';
 FIRST_FRAGMENT: 'first-fragment';
+FPC: 'fpc';
 
 FLAP_PERIOD: 'period';
 
@@ -2517,6 +2518,8 @@ PERSISTENT_NAT: 'persistent-nat';
 PFE: 'pfe';
 
 PGM: 'pgm';
+
+PIC: 'pic';
 
 PIM: 'pim';
 
@@ -5031,12 +5034,17 @@ M_Speed_DEC
 
 M_Speed_G
 :
-   'g' -> type ( G ) , popMode
+   [gG] -> type ( G ) , popMode
 ;
 
 M_Speed_M
 :
-   'm' -> type ( M ) , popMode
+   [mM] -> type ( M ) , popMode
+;
+
+M_Speed_NEWLINE
+:
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_Speed_WS

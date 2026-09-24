@@ -841,6 +841,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_propagate_ttlCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_table_labelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpc_port_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
@@ -8651,6 +8652,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       serviceType = MacVrfServiceType.VLAN_BUNDLE;
     }
     _currentRoutingInstance.setMacVrfServiceType(serviceType);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRic_fpc_port_speed(Ric_fpc_port_speedContext ctx) {
+    String port =
+        String.format("%d/%d/%d", toInt(ctx.fpc), toInt(ctx.pic), toInteger(ctx.port_num));
+    String speed = Integer.toString(toInt(ctx.value));
+    if (ctx.unit != null) {
+      speed += ctx.unit.G() != null ? "G" : "M";
+    }
+    _currentLogicalSystem.getChassisPortSpeeds().put(port, speed);
     todo(ctx);
   }
 

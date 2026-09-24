@@ -74,7 +74,18 @@ ri_named_routing_instance
 
 ri_chassis_null
 :
-   CHASSIS null_filler
+   CHASSIS
+   (
+      ric_fpc_port_speed
+      | null_filler
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-chassis.html
+ric_fpc_port_speed
+:
+   FPC fpc = dec PIC pic = dec PORT port_num = uint16 SPEED value = dec
+   unit = speed_abbreviation?
 ;
 ri_event_options_null
 :
