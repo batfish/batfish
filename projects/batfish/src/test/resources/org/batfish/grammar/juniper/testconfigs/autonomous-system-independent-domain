@@ -1,0 +1,6 @@
+set system host-name autonomous-system-independent-domain
+set routing-options autonomous-system 65000 independent-domain
+set routing-instances RI1 instance-type virtual-router
+set routing-instances RI1 routing-options autonomous-system 65001 independent-domain
+set routing-instances RI2 instance-type virtual-router
+set routing-instances RI2 routing-options autonomous-system 65002 independent-domain no-attrset
