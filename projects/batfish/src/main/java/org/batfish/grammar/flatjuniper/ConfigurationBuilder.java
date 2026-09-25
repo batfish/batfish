@@ -507,6 +507,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_esiContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_flexible_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_input_vlan_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
@@ -1307,6 +1308,7 @@ import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
+import org.batfish.representation.juniper.Interface.EthernetSegmentRedundancyMode;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -6552,6 +6554,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitI_enable(I_enableContext ctx) {
     _currentInterfaceOrRange.setActive(true);
+  }
+
+  @Override
+  public void exitI_esi(I_esiContext ctx) {
+    if (ctx.identifier != null) {
+      _currentInterfaceOrRange.setEthernetSegmentIdentifier(ctx.identifier.getText());
+    } else {
+      _currentInterfaceOrRange.setEthernetSegmentRedundancyMode(
+          ctx.ALL_ACTIVE() != null
+              ? EthernetSegmentRedundancyMode.ALL_ACTIVE
+              : EthernetSegmentRedundancyMode.SINGLE_ACTIVE);
+    }
+    todo(ctx);
   }
 
   @Override

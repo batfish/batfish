@@ -197,8 +197,9 @@ ALIAS: 'alias';
 ALIASES: 'aliases';
 
 ALL: 'all';
-ALL_PATHS: 'all-paths';
+ALL_ACTIVE: 'all-active';
 ALL_INTERNAL_INTERFACES: 'all-internal-interfaces';
+ALL_PATHS: 'all-paths';
 ALLOW: 'allow';
 
 ALLOW_COMMANDS: 'allow-commands';
@@ -880,7 +881,7 @@ ETHERNET_SWITCHING: 'ethernet-switching';
 ETHERNET_SWITCH_PROFILE: 'ethernet-switch-profile';
 
 ETHERNET_SWITCHING_OPTIONS: 'ethernet-switching-options';
-
+ESI: 'esi';
 EVENT_OPTIONS: 'event-options';
 
 EVENTS: 'events';
@@ -3086,6 +3087,7 @@ SHORTCUTS: 'shortcuts';
 SHUTDOWN: 'shutdown';
 SIGNALING: 'signaling';
 SIMPLE: 'simple';
+SINGLE_ACTIVE: 'single-active';
 SINGLE_CONNECTION: 'single-connection';
 SIP: 'sip';
 
@@ -3557,11 +3559,10 @@ COMMENT_LINE
   F_NonNewlineChar* (F_NewlineChar+ | EOF) -> channel(HIDDEN)
 ;
 
-WILDCARD: F_Wildcard {setWildcard();};
-
+ESI_IDENTIFIER: F_EsiIdentifier;
 LARGE_COMMUNITY: F_LargeCommunity;
-
 STANDARD_COMMUNITY: F_StandardCommunity;
+WILDCARD: F_Wildcard {setWildcard();};
 
 AMPERSAND
 :
@@ -3764,6 +3765,21 @@ fragment
 F_Digit
 :
   [0-9]
+;
+
+fragment
+F_EsiIdentifier
+:
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit
 ;
 
 fragment
