@@ -4925,6 +4925,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _indirectAccessPorts.put(memberIfName, new VlanReference(vlan.getName()));
       }
     }
+    for (RoutingInstance routingInstance : _masterLogicalSystem.getRoutingInstances().values()) {
+      for (MacVrfVlan vlan : routingInstance.getMacVrfVlans().values()) {
+        Integer vlanId = vlan.getVlanId();
+        String l3Interface = vlan.getL3Interface();
+        if (l3Interface == null || vlanId == null) {
+          continue;
+        }
+        Integer existingVlanId = irbVlanIds.putIfAbsent(l3Interface, vlanId);
+        if (existingVlanId != null && !existingVlanId.equals(vlanId)) {
+          _w.redFlagf(
+              "Cannot assign vlan '%s' to MAC-VRF l3-interface '%s' because it is already assigned"
+                  + " to vlan '%s'",
+              vlanId, l3Interface, existingVlanId);
+        }
+      }
+    }
     applyBridgeDomainVlanIds(irbVlanIds);
     return irbVlanIds;
   }

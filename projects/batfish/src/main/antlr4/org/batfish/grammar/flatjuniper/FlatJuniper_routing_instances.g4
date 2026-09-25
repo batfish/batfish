@@ -23,6 +23,7 @@ ri_instance_type
    (
       FORWARDING
       | L2VPN
+      | MAC_VRF
       | VIRTUAL_ROUTER
       | VIRTUAL_SWITCH
       | VRF
@@ -59,7 +60,9 @@ ri_named_routing_instance
       | ri_interface
       | ri_protocols
       | ri_route_distinguisher
+      | ri_service_type
       | ri_snmp
+      | ri_vlans
       | ri_vrf_export
       | ri_vrf_import
       | ri_vrf_propagate_ttl
@@ -94,6 +97,12 @@ ri_protocols
 ri_route_distinguisher
 :
    ROUTE_DISTINGUISHER route_distinguisher
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/service-type.html
+ri_service_type
+:
+   SERVICE_TYPE (VLAN_AWARE | VLAN_BASED | VLAN_BUNDLE)
 ;
 
 ri_snmp
@@ -135,6 +144,44 @@ ri_vrf_target
 ri_vtep_source_interface
 :
    VTEP_SOURCE_INTERFACE iface = interface_id
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/mac-vrf.html
+ri_vlans
+:
+   VLANS name = junos_name
+   (
+      rivl_description
+      | rivl_forwarding_options_null
+      | rivl_l3_interface
+      | rivl_vlan_id
+      | rivl_vxlan
+   )
+;
+
+rivl_description
+:
+   description
+;
+
+rivl_forwarding_options_null
+:
+   FORWARDING_OPTIONS null_filler
+;
+
+rivl_l3_interface
+:
+   L3_INTERFACE id = interface_id
+;
+
+rivl_vlan_id
+:
+   VLAN_ID id = vlan_number
+;
+
+rivl_vxlan
+:
+   VXLAN VNI id = vni_number
 ;
 
 riv_community

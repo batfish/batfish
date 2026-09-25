@@ -51,6 +51,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLI
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGIN_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureType.MAC_VRF_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
@@ -172,6 +173,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPO
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.LOGIN_USER_CLASS;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MAC_VRF_VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
@@ -810,9 +812,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstpv_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_instance_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_route_distinguisherContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_service_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vlansContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_propagate_ttlContext;
@@ -822,6 +827,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rivl_descriptionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rivl_l3_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rivl_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rivl_vxlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro6_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
@@ -1354,6 +1363,8 @@ import org.batfish.representation.juniper.LoginClass;
 import org.batfish.representation.juniper.LoginPassword;
 import org.batfish.representation.juniper.LoginRetryOptions;
 import org.batfish.representation.juniper.LoginUser;
+import org.batfish.representation.juniper.MacVrfServiceType;
+import org.batfish.representation.juniper.MacVrfVlan;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
@@ -1488,6 +1499,7 @@ import org.batfish.representation.juniper.Route6FilterLineUpTo;
 import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
+import org.batfish.representation.juniper.RoutingInstanceType;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.Srlg;
@@ -3039,6 +3051,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private RoutingInstance _currentRoutingInstance;
 
+  private MacVrfVlan _currentMacVrfVlan;
+
   private SnmpCommunity _currentSnmpCommunity;
 
   private SnmpServer _currentSnmpServer;
@@ -4195,6 +4209,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(ROUTING_INSTANCE, name, ctx, _parser);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, ROUTING_INSTANCE_SELF_REFERENCE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void enterRi_vlans(Ri_vlansContext ctx) {
+    String vlanName = toString(ctx.name);
+    _currentMacVrfVlan =
+        _currentRoutingInstance.getMacVrfVlans().computeIfAbsent(vlanName, MacVrfVlan::new);
+    _configuration.defineFlattenedStructure(
+        MAC_VRF_VLAN,
+        String.format("%s %s", _currentRoutingInstance.getName(), vlanName),
+        ctx,
+        _parser);
   }
 
   @Override
@@ -8500,8 +8526,49 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitRi_instance_type(Ri_instance_typeContext ctx) {
+    RoutingInstanceType type;
+    if (ctx.FORWARDING() != null) {
+      type = RoutingInstanceType.FORWARDING;
+    } else if (ctx.L2VPN() != null) {
+      type = RoutingInstanceType.L2VPN;
+    } else if (ctx.MAC_VRF() != null) {
+      type = RoutingInstanceType.MAC_VRF;
+      todo(ctx);
+    } else if (ctx.VIRTUAL_ROUTER() != null) {
+      type = RoutingInstanceType.VIRTUAL_ROUTER;
+    } else if (ctx.VIRTUAL_SWITCH() != null) {
+      type = RoutingInstanceType.VIRTUAL_SWITCH;
+    } else {
+      assert ctx.VRF() != null;
+      type = RoutingInstanceType.VRF;
+    }
+    _currentRoutingInstance.setInstanceType(type);
+  }
+
+  @Override
   public void exitRi_named_routing_instance(Ri_named_routing_instanceContext ctx) {
     _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
+  }
+
+  @Override
+  public void exitRi_service_type(Ri_service_typeContext ctx) {
+    MacVrfServiceType serviceType;
+    if (ctx.VLAN_AWARE() != null) {
+      serviceType = MacVrfServiceType.VLAN_AWARE;
+    } else if (ctx.VLAN_BASED() != null) {
+      serviceType = MacVrfServiceType.VLAN_BASED;
+    } else {
+      assert ctx.VLAN_BUNDLE() != null;
+      serviceType = MacVrfServiceType.VLAN_BUNDLE;
+    }
+    _currentRoutingInstance.setMacVrfServiceType(serviceType);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRi_vlans(Ri_vlansContext ctx) {
+    _currentMacVrfVlan = null;
   }
 
   @Override
@@ -8565,6 +8632,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRiv_import(Riv_importContext ctx) {
     toExtendedCommunity(ctx, ctx.vrf_target_community())
         .ifPresent(_currentRoutingInstance::setVrfTargetImport);
+  }
+
+  @Override
+  public void exitRivl_description(Rivl_descriptionContext ctx) {
+    _currentMacVrfVlan.setDescription(toString(ctx.description()));
+  }
+
+  @Override
+  public void exitRivl_l3_interface(Rivl_l3_interfaceContext ctx) {
+    String interfaceName = getInterfaceFullName(ctx.id);
+    _currentMacVrfVlan.setL3Interface(interfaceName);
+    _configuration.referenceStructure(
+        INTERFACE, interfaceName, MAC_VRF_VLAN_L3_INTERFACE, getLine(ctx.id.getStart()));
+  }
+
+  @Override
+  public void exitRivl_vlan_id(Rivl_vlan_idContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentMacVrfVlan::setVlanId);
+  }
+
+  @Override
+  public void exitRivl_vxlan(Rivl_vxlanContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentMacVrfVlan::setVniId);
+    todo(ctx);
   }
 
   @Override

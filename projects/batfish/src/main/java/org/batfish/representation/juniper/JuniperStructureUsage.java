@@ -140,6 +140,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   ISIS_IMPORT_POLICY("isis import"),
   ISIS_INTERFACE("isis interface"),
   LOGIN_USER_CLASS("login user class"),
+  MAC_VRF_VLAN_L3_INTERFACE("mac-vrf vlan l3-interface"),
   MPLS_INTERFACE_ADMIN_GROUP("mpls interface admin-group"),
   MPLS_INTERFACE_SRLG("mpls interface srlg"),
   MPLS_LSP_ADMIN_GROUP_EXCLUDE("mpls lsp admin-group exclude"),

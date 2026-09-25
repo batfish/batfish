@@ -2075,7 +2075,7 @@ MAC
 ;
 
 MAC_MOVE_LIMIT: 'mac-move-limit';
-
+MAC_VRF: 'mac-vrf';
 MACS: 'macs';
 
 MAIN: 'main';
@@ -3047,11 +3047,9 @@ SERVICE
 ;
 
 SERVICE_DEPLOYMENT: 'service-deployment';
-
 SERVICE_FILTER: 'service-filter';
-
+SERVICE_TYPE: 'service-type';
 SERVICES: 'services';
-
 SERVICES_OFFLOAD: 'services-offload';
 SESSION: 'session';
 
@@ -3461,11 +3459,11 @@ VLAN
 ;
 
 VLANS: 'vlans' -> pushMode(M_Name);
-
+VLAN_AWARE: 'vlan-aware';
+VLAN_BASED: 'vlan-based';
+VLAN_BUNDLE: 'vlan-bundle';
 VLAN_ID: 'vlan-id';
-
 VLAN_ID_LIST: 'vlan-id-list' -> pushMode(M_VlanIdList);
-
 VLAN_TAGS: 'vlan-tags';
 
 VLAN_TAGGING: 'vlan-tagging';
