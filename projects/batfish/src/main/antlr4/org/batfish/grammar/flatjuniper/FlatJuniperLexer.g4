@@ -724,6 +724,8 @@ DH_GROUP: 'dh-group';
 
 DHCP: 'dhcp';
 
+DHCPV6: 'dhcpv6';
+
 DHCP_LOCAL_SERVER: 'dhcp-local-server';
 
 DHCP_RELAY: 'dhcp-relay';
