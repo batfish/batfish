@@ -402,18 +402,14 @@ BGP_ERROR_TOLERANCE: 'bgp-error-tolerance';
 BGP_OUTPUT_QUEUE_PRIORITY: 'bgp-output-queue-priority';
 
 BIFF: 'biff';
-
 BINARY_DATA: 'binary-data';
-
 BIND_INTERFACE
 :
    'bind-interface' -> pushMode ( M_Interface )
 ;
-
 BLOCK_FRAG: 'block-frag';
-
 BMP: 'bmp';
-
+BMP_LOC_RIB_ADD_PATH: 'bmp-loc-rib-add-path';
 BOOT_SERVER: 'boot-server';
 BOOTP: 'bootp';
 BOOTP_SUPPORT: 'bootp-support';

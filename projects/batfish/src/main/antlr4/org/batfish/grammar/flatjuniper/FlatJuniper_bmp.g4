@@ -26,6 +26,7 @@ rob_station_null
    STATION name = junos_name
    (
      apply_groups
+     | robs_bmp_loc_rib_add_path_null
      | robs_connection_mode_null
      | robs_hold_down_null
      | robs_local_address_null
@@ -34,6 +35,16 @@ rob_station_null
      | robs_route_monitoring_null
      | robs_station_address_null
      | robs_statistics_timeout_null
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bmp-loc-rib-add-path-edit-routing-options-bmp.html
+robs_bmp_loc_rib_add_path_null
+:
+   BMP_LOC_RIB_ADD_PATH
+   (
+     MULTIPATH
+     | PATH_COUNT uint8
    )
 ;
 
