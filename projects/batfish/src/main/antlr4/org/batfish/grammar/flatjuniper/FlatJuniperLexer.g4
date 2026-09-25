@@ -2244,21 +2244,14 @@ MULTICAST_MAC
 ;
 
 MULTICAST_CLIENT: 'multicast-client';
-
 MULTICAST_MODE: 'multicast-mode';
-
 MULTIHOP: 'multihop';
-
 MULTIPATH: 'multipath';
-
 MULTIPATH_RESOLVE: 'multipath-resolve';
-
 MULTIPLE_AS: 'multiple-as';
-
 MULTIPLIER: 'multiplier';
-
 MULTIPLY: 'multiply';
-
+MULTIPOINT: 'multipoint';
 MULTISERVICE_OPTIONS: 'multiservice-options';
 
 MVPN: 'mvpn';
