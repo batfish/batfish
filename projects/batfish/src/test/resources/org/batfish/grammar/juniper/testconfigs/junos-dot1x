@@ -1,0 +1,16 @@
+set system host-name junos-dot1x
+set interfaces ge-0/0/0 unit 0 description access-port
+set access radius-server 192.0.2.1 timeout 5
+set access profile RADIUS authentication-order radius
+set protocols dot1x authenticator authentication-profile-name RADIUS
+set protocols dot1x authenticator interface ge-0/0/0.0 authentication-order dot1x
+set protocols dot1x authenticator interface ge-0/0/0.0 authentication-order mac-radius
+set protocols dot1x authenticator interface ge-0/0/0.0 mac-radius authentication-protocol pap
+set protocols dot1x authenticator interface ge-0/0/0.0 reauthentication 3600
+set protocols dot1x authenticator interface ge-0/0/0.0 server-fail vlan-name fallback
+set protocols dot1x authenticator interface ge-0/0/0.0 server-reject-vlan rejected
+set protocols dot1x authenticator interface ge-0/0/0.0 server-timeout 30
+set protocols dot1x authenticator interface ge-0/0/0.0 supplicant multiple
+set protocols dot1x authenticator interface ge-0/0/0.0 transmit-period 30
+set protocols dot1x traceoptions file dot1x.log size 1m
+set protocols dot1x traceoptions flag all
