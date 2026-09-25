@@ -3614,6 +3614,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getAsPathGroups().putAll(ls.getAsPathGroups());
     // inherited?
     _masterLogicalSystem.getAuthenticationKeyChains().putAll(ls.getAuthenticationKeyChains());
+    _masterLogicalSystem.getChassisPortSpeeds().putAll(ls.getChassisPortSpeeds());
     _masterLogicalSystem.getNamedCommunities().putAll(ls.getNamedCommunities());
     _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
     if (ls.getDefaultCrossZoneAction() != null) {
@@ -3743,6 +3744,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // process interface ranges. this changes the _interfaces map
     _masterLogicalSystem.expandInterfaceRanges();
+    applyChassisPortSpeeds();
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
@@ -4657,6 +4659,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
       if (filter.getTerms().isEmpty()) {
         _masterLogicalSystem.getFirewallFilters().remove(name);
+      }
+    }
+  }
+
+  private void applyChassisPortSpeeds() {
+    for (Entry<String, Double> portSpeed : _masterLogicalSystem.getChassisPortSpeeds().entrySet()) {
+      String interfaceSuffix = "-" + portSpeed.getKey();
+      for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
+        if (!iface.getName().endsWith(interfaceSuffix)) {
+          continue;
+        }
+        iface.setBandwidth(portSpeed.getValue());
+        for (Interface unit : iface.getUnits().values()) {
+          unit.setBandwidth(portSpeed.getValue());
+        }
       }
     }
   }

@@ -1017,7 +1017,7 @@ FORWARDING_POLICY: 'forwarding-policy';
 FORWARDING_RIB: 'forwarding-rib';
 
 FORWARDING_TABLE: 'forwarding-table';
-
+FPC: 'fpc';
 FRAGMENT: 'fragment';
 
 FRAGMENT_HEADER: 'fragment-header';
@@ -1966,6 +1966,7 @@ LINE_IDENTIFICATION_OPTION: 'line-identification-option';
 
 LINK_MODE: 'link-mode';
 LINK_SPEED: 'link-speed';
+LITE_MODE: 'lite-mode';
 LDAP: 'ldap';
 
 LDP: 'ldp';
@@ -2519,7 +2520,7 @@ PERSISTENT_NAT: 'persistent-nat';
 PFE: 'pfe';
 
 PGM: 'pgm';
-
+PIC: 'pic';
 PIM: 'pim';
 
 PING: 'ping';
@@ -5045,12 +5046,17 @@ M_Speed_DEC
 
 M_Speed_G
 :
-   'g' -> type ( G ) , popMode
+   [gG] -> type ( G ) , popMode
 ;
 
 M_Speed_M
 :
-   'm' -> type ( M ) , popMode
+   [mM] -> type ( M ) , popMode
+;
+
+M_Speed_NEWLINE
+:
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_Speed_WS

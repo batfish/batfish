@@ -195,7 +195,7 @@ s_null
          | VIRTUAL_CHASSIS
       ) null_filler
    )
-   | ri_chassis_null
+   | ri_chassis
    | ri_event_options_null
    | ri_provider_tunnel_null
    | ri_services_null

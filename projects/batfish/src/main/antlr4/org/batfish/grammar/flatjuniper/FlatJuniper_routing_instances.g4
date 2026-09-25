@@ -48,7 +48,7 @@ ri_named_routing_instance
    name = junos_name
    (
       apply
-      | ri_chassis_null
+      | ri_chassis
       | ri_event_options_null
       | ri_provider_tunnel_null
       | ri_services_null
@@ -72,9 +72,52 @@ ri_named_routing_instance
    )
 ;
 
-ri_chassis_null
+ri_chassis
 :
-   CHASSIS null_filler
+   CHASSIS
+   (
+      ric_aggregated_devices_null
+      | ric_fpc
+   )
+;
+
+ric_aggregated_devices_null
+:
+   AGGREGATED_DEVICES null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-chassis.html
+ric_fpc
+:
+   FPC fpc = dec
+   (
+      ricf_lite_mode_null
+      | ricf_pic
+   )
+;
+ricf_lite_mode_null
+:
+   LITE_MODE null_filler
+;
+ricf_pic
+:
+   PIC pic = dec
+   (
+      ricfp_interface_type_null
+      | ricfp_port
+   )
+;
+ricfp_interface_type_null
+:
+   INTERFACE_TYPE null_filler
+;
+ricfp_port
+:
+   PORT port_num = uint16 ricfpp_speed
+;
+ricfpp_speed
+:
+   SPEED value = dec unit = speed_abbreviation?
 ;
 ri_event_options_null
 :

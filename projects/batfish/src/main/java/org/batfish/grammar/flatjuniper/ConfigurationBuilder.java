@@ -843,6 +843,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_propagate_ttlCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_table_labelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_importContext;
@@ -8667,6 +8671,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
     _currentRoutingInstance.setMacVrfServiceType(serviceType);
     todo(ctx);
+  }
+
+  @Override
+  public void exitRic_fpc(Ric_fpcContext ctx) {
+    Ricf_picContext picContext = ctx.ricf_pic();
+    if (picContext == null || picContext.ricfp_port() == null) {
+      return;
+    }
+    Ricfp_portContext portContext = picContext.ricfp_port();
+    Ricfpp_speedContext speedContext = portContext.ricfpp_speed();
+    String portId =
+        String.format(
+            "%d/%d/%d", toInt(ctx.fpc), toInt(picContext.pic), toInteger(portContext.port_num));
+    double bandwidth = toInt(speedContext.value);
+    if (speedContext.unit == null || speedContext.unit.G() != null) {
+      bandwidth *= 1E9;
+    } else {
+      bandwidth *= 1E6;
+    }
+    _currentLogicalSystem.getChassisPortSpeeds().put(portId, bandwidth);
   }
 
   @Override
