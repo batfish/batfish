@@ -532,6 +532,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_multipointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_output_vlan_mapContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_speed_autoContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_speed_auto_10m_100mContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
@@ -1356,6 +1358,7 @@ import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.Interface.EthernetSegmentRedundancyMode;
+import org.batfish.representation.juniper.Interface.SpeedMode;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -6621,6 +6624,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitI_bandwidth(FlatJuniperParser.I_bandwidthContext ctx) {
     long bandwidth = toBandwidth(ctx.bandwidth());
     _currentInterfaceOrRange.setBandwidth((double) bandwidth);
+  }
+
+  @Override
+  public void exitI_speed_auto(I_speed_autoContext ctx) {
+    _currentInterfaceOrRange.setSpeedMode(SpeedMode.AUTO);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_speed_auto_10m_100m(I_speed_auto_10m_100mContext ctx) {
+    _currentInterfaceOrRange.setSpeedMode(SpeedMode.AUTO_10M_100M);
+    todo(ctx);
   }
 
   @Override

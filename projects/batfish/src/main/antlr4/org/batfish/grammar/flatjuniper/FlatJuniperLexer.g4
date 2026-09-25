@@ -362,6 +362,8 @@ AUTHORIZED_KEYS_COMMAND_USER: 'authorized-keys-command-user';
 
 AUTO: 'auto';
 
+AUTO_10M_100M: 'auto-10m-100m';
+
 AUTO_BANDWIDTH: 'auto-bandwidth';
 
 AUTO_EXPORT: 'auto-export';
@@ -5023,6 +5025,16 @@ M_Routing_Instances_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_A
 M_Routing_Instances_NAME: F_RoutingInstanceName -> type(NAME), popMode;
 
 mode M_Speed;
+
+M_Speed_AUTO_10M_100M
+:
+   'auto-10m-100m' -> type(AUTO_10M_100M), popMode
+;
+
+M_Speed_AUTO
+:
+   'auto' -> type(AUTO), popMode
+;
 
 M_Speed_DEC
 :
