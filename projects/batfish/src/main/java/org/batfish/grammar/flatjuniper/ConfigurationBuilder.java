@@ -502,6 +502,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_dhcp_relayContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_explicit_null_cosContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_vxlan_routingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
@@ -3536,6 +3537,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.fov_overlay_ecmp() != null) {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitFo_explicit_null_cos(Fo_explicit_null_cosContext ctx) {
+    Set<Family> families = _currentRoutingInstance.getExplicitNullCosFamilies();
+    if (ctx.INET() != null) {
+      families.add(Family.INET);
+    } else if (ctx.INET6() != null) {
+      families.add(Family.INET6);
+    } else {
+      families.add(Family.INET);
+      families.add(Family.INET6);
+    }
+    todo(ctx);
   }
 
   @Override

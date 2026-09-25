@@ -909,6 +909,7 @@ EXP
 ;
 EXPEDITED: 'expedited';
 EXPLICIT_NULL: 'explicit-null';
+EXPLICIT_NULL_COS: 'explicit-null-cos';
 EXPLICIT_PRIORITY: 'explicit-priority';
 EXPORT
 :

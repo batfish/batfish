@@ -46,6 +46,16 @@ foev_shared_tunnels_null
    SHARED_TUNNELS
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/explicit-null-cos-edit-forwarding-options.html
+fo_explicit_null_cos
+:
+   EXPLICIT_NULL_COS
+   (
+      INET
+      | INET6
+   )?
+;
+
 fo_family_null
 :
    FAMILY null_filler
@@ -227,6 +237,7 @@ s_forwarding_options
       | fo_dhcp_relay
       | fo_enhanced_hash_key_null
       | fo_evpn_vxlan
+      | fo_explicit_null_cos
       | fo_family_null
       | fo_hash_key_null
       | fo_helpers
