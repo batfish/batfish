@@ -11,8 +11,10 @@ fo_dhcp_relay
    DHCP_RELAY
    (
       fod_common
+      | fod_forward_only_replies_null
       | fod_forward_snooped_clients_null
       | fod_group
+      | fod_no_snoop_null
       | fod_overrides_null
       | fod_server_group
    )
@@ -103,6 +105,51 @@ fod_active_server_group
 fod_common
 :
    fod_active_server_group
+   | fod_forward_only_null
+   | fod_route_suppression_null
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/forward-only-edit-forwarding-options.html
+fod_forward_only_null
+:
+   FORWARD_ONLY
+   (
+      fodfo_logical_system_null
+      | fodfo_routing_instance_null
+   )
+;
+
+fodfo_logical_system_null
+:
+   LOGICAL_SYSTEM junos_name
+;
+
+fodfo_routing_instance_null
+:
+   ROUTING_INSTANCE junos_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/forward-only-replies-edit-forwarding-options.html
+fod_forward_only_replies_null
+:
+   FORWARD_ONLY_REPLIES
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-snoop-edit-dhcp.html
+fod_no_snoop_null
+:
+   NO_SNOOP
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/route-suppression-edit-dhcp.html
+fod_route_suppression_null
+:
+   ROUTE_SUPPRESSION
+   (
+      ACCESS
+      | ACCESS_INTERNAL
+      | DESTINATION
+   )
 ;
 
 fod_group

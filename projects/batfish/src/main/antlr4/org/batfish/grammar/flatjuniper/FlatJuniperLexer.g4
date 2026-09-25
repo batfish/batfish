@@ -1007,9 +1007,9 @@ FORCE_UP: 'force-up';
 FOREVER: 'forever';
 
 FORMAT: 'format';
-
+FORWARD_ONLY: 'forward-only';
+FORWARD_ONLY_REPLIES: 'forward-only-replies';
 FORWARD_SNOOPED_CLIENTS: 'forward-snooped-clients';
-
 FORWARDERS: 'forwarders';
 
 FORWARDING: 'forwarding';
@@ -2412,6 +2412,7 @@ NO_ROOT_PORT: 'no-root-port';
 NO_SCP_SERVER: 'no-scp-server';
 NO_SELF_PING: 'no-self-ping';
 NO_SFTP_SERVER: 'no-sftp-server';
+NO_SNOOP: 'no-snoop';
 NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
@@ -2902,11 +2903,9 @@ ROUTE_DISTINGUISHER_ID: 'route-distinguisher-id';
 ROUTE_FILTER: 'route-filter';
 
 ROUTE_MONITORING: 'route-monitoring';
-
 ROUTE_RECORD: 'route-record';
-
+ROUTE_SUPPRESSION: 'route-suppression';
 ROUTE_TARGET: 'route-target';
-
 ROUTE_TYPE: 'route-type';
 
 ROUTER_ADVERTISEMENT: 'router-advertisement';
