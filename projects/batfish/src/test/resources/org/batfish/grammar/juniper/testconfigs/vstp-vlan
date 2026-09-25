@@ -1,0 +1,7 @@
+set system host-name vstp-vlan
+set interfaces ge-0/0/0 unit 0 family ethernet-switching
+set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members BLUE
+set vlans BLUE vlan-id 200
+set protocols vstp vlan 100
+set protocols vstp vlan BLUE
+set protocols vstp vlan 200 interface ge-0/0/0

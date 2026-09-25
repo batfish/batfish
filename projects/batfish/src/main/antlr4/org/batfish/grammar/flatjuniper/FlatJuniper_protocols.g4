@@ -338,20 +338,24 @@ p_vstp
    )
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vlan-edit-protocols-vstp.html
 pvstp_vlan
 :
-   VLAN junos_name pvstpv_interface
+   VLAN junos_name pvstpv_interface?
 ;
 
 pvstpv_interface
 :
    INTERFACE (ALL | id = interface_id | wildcard)
-   (
-      pvstpvi_edge_null
-      | pvstpvi_mode_null
-      | pvstpvi_no_root_port_null
-      | pvstpvi_priority_null
-   )
+   pvstpvi_option?
+;
+
+pvstpvi_option
+:
+   pvstpvi_edge_null
+   | pvstpvi_mode_null
+   | pvstpvi_no_root_port_null
+   | pvstpvi_priority_null
 ;
 
 pvstpvi_edge_null

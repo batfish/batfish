@@ -153,6 +153,7 @@ public class LogicalSystem implements Serializable {
   private @Nullable SwitchOptions _switchOptions;
 
   private final Set<String> _xstpInterfaceNames;
+  private final Set<String> _vstpVlans;
 
   private final Map<String, Zone> _zones;
 
@@ -216,6 +217,7 @@ public class LogicalSystem implements Serializable {
     _vniOptions = new TreeMap<>();
     _switchOptions = new SwitchOptions();
     _xstpInterfaceNames = new TreeSet<>();
+    _vstpVlans = new TreeSet<>();
     _zones = new TreeMap<>();
   }
 
@@ -561,6 +563,10 @@ public class LogicalSystem implements Serializable {
 
   public @Nonnull Set<String> getXstpInterfaceNames() {
     return _xstpInterfaceNames;
+  }
+
+  public @Nonnull Set<String> getVstpVlans() {
+    return _vstpVlans;
   }
 
   public Map<String, Zone> getZones() {

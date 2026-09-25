@@ -261,6 +261,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_ISOLATED_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VSTP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VSTP_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
@@ -825,6 +826,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Prstp_bridge_priorityCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Prstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstp_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstp_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstpv_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_instance_typeContext;
@@ -8577,12 +8579,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.id != null) {
       recordXstpInterface(ctx.id, VSTP_INTERFACE);
     }
+    if (ctx.pvstpvi_option() == null) {
+      todo(ctx);
+    }
   }
 
   @Override
   public void exitPvstp_interface(Pvstp_interfaceContext ctx) {
     if (ctx.id != null) {
       recordXstpInterface(ctx.id, VSTP_INTERFACE);
+    }
+  }
+
+  @Override
+  public void exitPvstp_vlan(Pvstp_vlanContext ctx) {
+    String vlan = toString(ctx.junos_name());
+    _currentLogicalSystem.getVstpVlans().add(vlan);
+    if (Ints.tryParse(vlan) == null) {
+      _configuration.referenceStructure(
+          VLAN, vlan, VSTP_VLAN, getLine(ctx.junos_name().getStart()));
+    }
+    if (ctx.pvstpv_interface() == null) {
+      todo(ctx);
     }
   }
 
