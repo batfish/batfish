@@ -334,6 +334,7 @@ AS_PATH_PREPEND
    'as-path-prepend' -> pushMode ( M_AsPathPrepend )
 ;
 
+ASCII: 'ascii' -> pushMode(M_Name);
 ASCII_TEXT: 'ascii-text' -> pushMode(M_SecretString);
 
 ASDOT_NOTATION: 'asdot-notation';
@@ -454,6 +455,7 @@ CHARACTER_SETS: 'character-sets';
 CHASSIS: 'chassis';
 
 CIPHERS: 'ciphers';
+CIRCUIT_ID: 'circuit-id';
 
 CLASS
 :
@@ -592,6 +594,7 @@ DAMPING
 ;
 
 DATABASE_REPLICATION: 'database-replication';
+DEVICE: 'device';
 DEVICE_COUNT: 'device-count';
 DESTINATION_HEADER: 'destination-header';
 
@@ -873,6 +876,7 @@ ENHANCED_HASH_KEY: 'enhanced-hash-key';
 EQUAL_COST_PATHS: 'equal-cost-paths';
 
 EQUAL_EXTERNAL_INTERNAL: 'equal-external-internal';
+EQUALS: 'equals';
 
 ERROR: 'error';
 
@@ -1272,6 +1276,7 @@ INACTIVITY_TIMEOUT: 'inactivity-timeout';
 INCLUDE_ALL: 'include-all';
 
 INCLUDE_ANY: 'include-any';
+INCLUDE_IRB_AND_L2: 'include-irb-and-l2';
 
 INCLUDE_MP_NEXT_HOP: 'include-mp-next-hop';
 
@@ -1896,6 +1901,8 @@ JUNOS_YMSG: 'junos-ymsg';
 K: 'k';
 
 KEEP: 'keep';
+KEEP_INCOMING_CIRCUIT_ID: 'keep-incoming-circuit-id';
+KEEP_INCOMING_REMOTE_ID: 'keep-incoming-remote-id';
 
 KERBEROS_SEC: 'kerberos-sec';
 
@@ -1994,6 +2001,7 @@ LIFETIME_SECONDS: 'lifetime-seconds';
 LIMIT_SESSION: 'limit-session';
 
 LINK_PROTECTION: 'link-protection';
+LINK_SELECTION: 'link-selection';
 
 LLDP: 'lldp';
 
@@ -2024,6 +2032,7 @@ LOCAL_IDENTITY: 'local-identity';
 LOCAL_PORT: 'local-port';
 
 LOCAL_PREFERENCE: 'local-preference';
+LOCAL_SERVER_GROUP: 'local-server-group' -> pushMode(M_Name);
 
 LOCATION: 'location';
 
@@ -2035,6 +2044,7 @@ LOG_OUT_ON_DISCONNECT: 'log-out-on-disconnect';
 LOG_PREFIX: 'log-prefix';
 LOG_ROTATE_FREQUENCY: 'log-rotate-frequency';
 LOG_UPDOWN: 'log-updown';
+LOGICAL: 'logical';
 LOGICAL_INTERFACE_POLICER: 'logical-interface-policer';
 LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
 
@@ -2417,6 +2427,7 @@ NO_SUMMARIES: 'no-summaries';
 NO_TCP_FORWARDING: 'no-tcp-forwarding';
 NO_TRANSLATION: 'no-translation';
 NO_TRAPS: 'no-traps';
+NO_VLAN_INTERFACE_NAME: 'no-vlan-interface-name';
 NO_VRF_PROPAGATE_TTL: 'no-vrf-propagate-ttl';
 NO_WORLD_READABLE: 'no-world-readable';
 
@@ -2458,6 +2469,7 @@ OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
 OPTIMIZE_SWITCHOVER_DELAY: 'optimize-switchover-delay';
 OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
+OPTION_NUMBER: 'option-number';
 OPTIONS: 'options';
 ORIGIN: 'origin';
 ORHIGHER: 'orhigher';
@@ -2647,7 +2659,15 @@ PREFERENCE: 'preference';
 
 PREFERRED: 'preferred';
 
-PREFIX: 'prefix';
+PREFIX
+:
+  'prefix'
+  {
+    if (lastTokenType() == CIRCUIT_ID || lastTokenType() == REMOTE_ID) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 PREFIX_NAME: 'prefix-name' -> pushMode(M_PrefixName);
 
@@ -2804,9 +2824,15 @@ REKEY: 'rekey';
 
 RELAY_AGENT_OPTION: 'relay-agent-option';
 
+RELAY_OPTION: 'relay-option';
+
+RELAY_OPTION_82: 'relay-option-82';
+RELAY_SERVER_GROUP: 'relay-server-group' -> pushMode(M_Name);
+
 REMOTE: 'remote';
 
 REMOTE_END_POINT: 'remote-end-point';
+REMOTE_ID: 'remote-id';
 
 REMAINDER: 'remainder';
 
@@ -3052,6 +3078,7 @@ SEND_COUNT: 'send-count';
 SERVER: 'server' -> pushMode(M_NameOrIp);
 SERVER_FAIL: 'server-fail';
 SERVER_GROUP: 'server-group' -> pushMode(M_Name);
+SERVER_ID_OVERRIDE: 'server-id-override';
 SERVER_REJECT_VLAN: 'server-reject-vlan' -> pushMode(M_Name);
 SERVER_TIMEOUT: 'server-timeout';
 
@@ -3199,6 +3226,7 @@ STALE_LABELS_HOLDDOWN_PERIOD: 'stale-labels-holddown-period';
 STANDARD: 'standard';
 STANDBY: 'standby';
 START_TIME: 'start-time' -> pushMode(M_RestOfLine);
+STARTS_WITH: 'starts-with';
 STATE: 'state';
 STATIC: 'static';
 STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
@@ -3418,7 +3446,9 @@ UPTO: 'upto' -> pushMode(M_PrefixLength);
 URG: 'urg';
 
 URPF_LOGGING: 'urpf-logging';
+USE_INTERFACE_DESCRIPTION: 'use-interface-description';
 USE_RA_PREFIX: 'use-ra-prefix';
+USE_VLAN_ID: 'use-vlan-id';
 USER
 :
   'user'
@@ -3444,6 +3474,7 @@ VALUE: 'value' -> pushMode(M_SecretString);
 VALIDATION_DATABASE: 'validation-database';
 VALIDATION_STATE: 'validation-state';
 VENDOR_ID: 'vendor-id';
+VENDOR_SPECIFIC: 'vendor-specific';
 VERSION
 :
    'version' -> pushMode ( M_Version )

@@ -1,0 +1,28 @@
+set system host-name junos-dhcp-relay-options
+set forwarding-options dhcp-relay server-group FALLBACK 192.0.2.10
+set forwarding-options dhcp-relay relay-option option-number 60
+set forwarding-options dhcp-relay relay-option default-action relay-server-group FALLBACK
+set forwarding-options dhcp-relay relay-option default-action drop
+set forwarding-options dhcp-relay relay-option equals ascii product-class forward-only
+set forwarding-options dhcp-relay relay-option starts-with hexadecimal 0a0b local-server-group LOCAL
+set forwarding-options dhcp-relay relay-option starts-with ascii onie_vendor:PUBLIC relay-server-group VENDOR-MISSING
+set forwarding-options dhcp-relay relay-option-82 circuit-id include-irb-and-l2
+set forwarding-options dhcp-relay relay-option-82 circuit-id keep-incoming-circuit-id
+set forwarding-options dhcp-relay relay-option-82 circuit-id no-vlan-interface-name
+set forwarding-options dhcp-relay relay-option-82 circuit-id prefix circuit-prefix
+set forwarding-options dhcp-relay relay-option-82 circuit-id use-interface-description device
+set forwarding-options dhcp-relay relay-option-82 circuit-id use-interface-description logical
+set forwarding-options dhcp-relay relay-option-82 circuit-id use-vlan-id
+set forwarding-options dhcp-relay relay-option-82 link-selection
+set forwarding-options dhcp-relay relay-option-82 remote-id include-irb-and-l2
+set forwarding-options dhcp-relay relay-option-82 remote-id keep-incoming-remote-id
+set forwarding-options dhcp-relay relay-option-82 remote-id no-vlan-interface-name
+set forwarding-options dhcp-relay relay-option-82 remote-id prefix remote-prefix
+set forwarding-options dhcp-relay relay-option-82 remote-id use-interface-description device
+set forwarding-options dhcp-relay relay-option-82 remote-id use-interface-description logical
+set forwarding-options dhcp-relay relay-option-82 remote-id use-vlan-id
+set forwarding-options dhcp-relay relay-option-82 server-id-override
+set forwarding-options dhcp-relay relay-option-82 vendor-specific host-name
+set forwarding-options dhcp-relay relay-option-82 vendor-specific location
+set forwarding-options dhcp-relay group CLIENTS relay-option option-number 61
+set forwarding-options dhcp-relay group CLIENTS relay-option-82 link-selection
