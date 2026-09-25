@@ -1085,6 +1085,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_start_timeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Secret_stringContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sef_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_proposalContext;
@@ -1556,6 +1557,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.RoutingInstanceType;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
+import org.batfish.representation.juniper.SecurityForwardingOptions;
 import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StaticRouteV4;
@@ -4756,6 +4758,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSe_address_book(Se_address_bookContext ctx) {
     _currentAddressBook = null;
+  }
+
+  @Override
+  public void exitSef_family(Sef_familyContext ctx) {
+    SecurityForwardingOptions.Family family;
+    if (ctx.INET() != null) {
+      family = SecurityForwardingOptions.Family.INET;
+    } else if (ctx.INET6() != null) {
+      family = SecurityForwardingOptions.Family.INET6;
+    } else if (ctx.ISO() != null) {
+      family = SecurityForwardingOptions.Family.ISO;
+    } else {
+      family = SecurityForwardingOptions.Family.MPLS;
+    }
+
+    SecurityForwardingOptions.Mode mode;
+    if (ctx.DROP() != null) {
+      mode = SecurityForwardingOptions.Mode.DROP;
+    } else if (ctx.FLOW_BASED() != null) {
+      mode = SecurityForwardingOptions.Mode.FLOW_BASED;
+    } else {
+      mode = SecurityForwardingOptions.Mode.PACKET_BASED;
+    }
+    _currentLogicalSystem.getSecurityForwardingOptions().getFamilyModes().put(family, mode);
+
+    if ((family == SecurityForwardingOptions.Family.INET
+            || family == SecurityForwardingOptions.Family.INET6)
+        && mode != SecurityForwardingOptions.Mode.FLOW_BASED) {
+      todo(ctx);
+    }
   }
 
   @Override

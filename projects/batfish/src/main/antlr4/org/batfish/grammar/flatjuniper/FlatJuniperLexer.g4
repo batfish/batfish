@@ -1005,6 +1005,8 @@ FLOOD: 'flood';
 FLOOD_REFLECTOR: 'flood-reflector';
 FLOW: 'flow';
 
+FLOW_BASED: 'flow-based';
+
 FLOW_CONTROL: 'flow-control';
 
 FLOW_GATE: 'flow-gate';
@@ -2519,6 +2521,7 @@ P2MP: 'p2mp';
 P2MP_OVER_LAN: 'p2mp-over-lan';
 P2P: 'p2p';
 PACKET_ACTION: 'packet-action';
+PACKET_BASED: 'packet-based';
 PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 PACKET_LENGTH_EXCEPT: 'packet-length-except' -> pushMode(M_SubRange);
 
@@ -4669,6 +4672,11 @@ M_ISO_DESTINATION_UDP_PORT
 M_ISO_MTU
 :
    'mtu' -> type ( MTU ) , popMode
+;
+
+M_ISO_MODE
+:
+   'mode' -> type(MODE), popMode
 ;
 
 M_ISO_Newline
