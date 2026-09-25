@@ -1,0 +1,2 @@
+set system host-name forwarding-options-no-hierarchical-ecmp
+set forwarding-options no-hierarchical-ecmp

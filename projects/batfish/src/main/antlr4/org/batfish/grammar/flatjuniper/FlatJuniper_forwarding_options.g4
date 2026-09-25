@@ -74,6 +74,11 @@ fo_multicast_null
 :
    MULTICAST null_filler
 ;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-hierarhical-ecmp-edit-forwarding-options.html
+fo_no_hierarchical_ecmp_null
+:
+   NO_HIERARCHICAL_ECMP
+;
 fo_port_mirroring_null
 :
    PORT_MIRRORING null_filler
@@ -431,6 +436,7 @@ s_forwarding_options
       | fo_helpers
       | fo_load_balance_null
       | fo_multicast_null
+      | fo_no_hierarchical_ecmp_null
       | fo_port_mirroring_null
       | fo_sampling_null
       | fo_storm_control_profiles_null
