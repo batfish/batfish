@@ -3321,6 +3321,7 @@ TLSDETAILS: 'tlsdetails';
 TO: 'to';
 TO_ZONE: 'to-zone' -> pushMode(M_Zone);
 TOLERANCE: 'tolerance';
+TOPOLOGY: 'topology' -> pushMode(M_Name);
 TRACE: 'trace';
 TRACE_OPTIONS: 'trace-options';
 TRACEOPTIONS: 'traceoptions';

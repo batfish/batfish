@@ -653,6 +653,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_prefix_export_limitCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_rib_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_topologyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
@@ -663,6 +664,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_hello_intervalConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_topologyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext;
@@ -1498,6 +1500,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 255));
+  private static final IntegerSpace OSPF_TOPOLOGY_METRIC_RANGE =
+      IntegerSpace.of(new SubRange(1, 65535));
   private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 65535));
   private static final IntegerSpace TACPLUS_SERVER_TIMEOUT_RANGE =
@@ -7269,6 +7273,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitO_topology(O_topologyContext ctx) {
+    String name = toString(ctx.name);
+    _currentRoutingInstance.getOspfOverloadedTopologies().add(name);
+    if (!name.equals("default")) {
+      todo(ctx);
+    }
+  }
+
+  @Override
   public void exitOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
     if (_currentAreaRangePrefix != null) {
       OspfAreaSummary summary =
@@ -7342,6 +7355,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
     int ospfCost = toInt(ctx.dec());
     _currentOspfSettings.setOspfCost(ospfCost);
+  }
+
+  @Override
+  public void exitOai_topology(Oai_topologyContext ctx) {
+    String name = toString(ctx.name);
+    toIntegerInSpace(ctx, ctx.metric, OSPF_TOPOLOGY_METRIC_RANGE, "OSPF topology metric")
+        .ifPresent(
+            metric -> {
+              _currentOspfSettings.getOspfTopologyCosts().put(name, metric);
+              if (name.equals("default")) {
+                _currentOspfSettings.setOspfCost(metric);
+              } else {
+                todo(ctx);
+              }
+            });
   }
 
   @Override

@@ -4,7 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,10 +38,12 @@ public class OspfInterfaceSettings implements Serializable {
   private @Nullable OspfInterfaceType _ospfInterfaceType;
   private boolean _ospfPassive;
   private final @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
+  private final @Nonnull Map<String, Integer> _ospfTopologyCosts;
 
   public OspfInterfaceSettings(Ip ospfArea) {
     _ospfArea = ospfArea;
     _ospfNeighbors = new HashSet<>();
+    _ospfTopologyCosts = new TreeMap<>();
   }
 
   /** Returns the configured or vendor default {@link OspfInterfaceType}. */
@@ -79,6 +83,10 @@ public class OspfInterfaceSettings implements Serializable {
 
   public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
+  }
+
+  public @Nonnull Map<String, Integer> getOspfTopologyCosts() {
+    return _ospfTopologyCosts;
   }
 
   public void setOspfCost(int ospfCost) {

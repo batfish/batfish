@@ -1,0 +1,7 @@
+set system host-name junos-ospf-topology
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
+set protocols ospf topology default overload
+set protocols ospf topology voice overload
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0 topology default metric 100
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0 topology voice metric 200
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0 topology video metric 0
