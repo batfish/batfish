@@ -1,0 +1,4 @@
+set system host-name junos-vxlan-routing
+set routing-options rib :vxlan.inet.0 martians 240.0.0.0/4 orlonger allow
+set forwarding-options vxlan-routing next-hop 45056
+set forwarding-options vxlan-routing interface-num 8192

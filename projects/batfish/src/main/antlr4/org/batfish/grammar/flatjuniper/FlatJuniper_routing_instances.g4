@@ -360,6 +360,7 @@ ro_rib
       | ror_inet6
       | ror_iso
       | ror_mpls
+      | ror_vxlan
    )
 ;
 
@@ -390,6 +391,12 @@ ror_iso
 ror_mpls
 :
     name = mpls_rib_name ror_common
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rib-edit-routing-options.html
+ror_vxlan
+:
+    name = vxlan_rib_name ro_martians
 ;
 
 

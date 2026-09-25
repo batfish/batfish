@@ -1365,6 +1365,7 @@ INTERFACE_GROUP_EXCEPT: 'interface-group-except' -> pushMode(M_SubRange);
 
 INTERFACE_MAC_LIMIT: 'interface-mac-limit';
 INTERFACE_MODE: 'interface-mode';
+INTERFACE_NUM: 'interface-num';
 
 INTERFACE_RANGE: 'interface-range' -> pushMode(M_Name);
 
@@ -2323,6 +2324,7 @@ NEXT_HOP
        case EXACT:
        case LONGER:
        case ORLONGER:
+       case VXLAN_ROUTING:
          break;
        default:
          pushMode(M_Interface);
