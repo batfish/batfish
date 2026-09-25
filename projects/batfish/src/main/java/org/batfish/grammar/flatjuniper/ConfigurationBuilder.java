@@ -3770,9 +3770,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
         interfaces = nodeDevice.getInterfaces();
       }
-      currentInterface = interfaces.get(ifaceName);
+      String fullIfaceName = nodeDevicePrefix + ifaceName;
+      currentInterface = interfaces.get(fullIfaceName);
       if (currentInterface == null) {
-        String fullIfaceName = nodeDevicePrefix + ifaceName;
         currentInterface = new Interface(fullIfaceName);
         currentInterface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
         currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());

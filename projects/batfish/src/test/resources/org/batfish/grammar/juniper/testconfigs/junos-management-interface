@@ -1,0 +1,7 @@
+set system host-name junos-management-interface
+set firewall family inet filter CONTROL_PLANE term ACCEPT then accept
+set interfaces re0:mgmt-0 description "Out-of-band management interface"
+set interfaces re0:mgmt-0 unit 0 description "Management unit"
+set interfaces re0:mgmt-0 unit 0 family inet address 192.0.2.1/24
+set interfaces re0:mgmt-0 unit 0 family inet filter input CONTROL_PLANE
+set groups MANAGEMENT interfaces re1:mgmt-0 unit <*> family inet filter input CONTROL_PLANE
