@@ -42,22 +42,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -196,6 +194,7 @@ public class WorkMgr extends AbstractCoordinator {
     public void run() {
       Main.getWorkMgr().checkTasks();
       Main.getWorkMgr().assignWork();
+      Main.getWorkMgr().reapDeletedData();
     }
   }
 
@@ -210,7 +209,9 @@ public class WorkMgr extends AbstractCoordinator {
   private final SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
   private final StorageProvider _storage;
-  private final ExecutorService _gcExecutor;
+
+  /** Deletions waiting for in-flight work against the deleted data to finish. */
+  private final Queue<DataDeletion> _deferredDeletions = new ConcurrentLinkedQueue<>();
 
   public WorkMgr(
       Settings settings,
@@ -223,11 +224,6 @@ public class WorkMgr extends AbstractCoordinator {
     _snapshotMetadataManager = new SnapshotMetadataMgr(_storage);
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger, _snapshotMetadataManager);
-    // Can only run one GC task at a time, and only have one queued. If one is queued and another is
-    // submitted, the older one in the queue is discarded.
-    _gcExecutor =
-        new ThreadPoolExecutor(
-            0, 1, 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new DiscardOldestPolicy());
     _workExecutor = workExecutorCreator.apply(logger, settings);
   }
 
@@ -382,11 +378,12 @@ public class WorkMgr extends AbstractCoordinator {
    * false} if network does not exist.
    */
   public boolean delNetwork(@Nonnull String network) {
-    boolean result = _idManager.deleteNetwork(network);
-    if (result) {
-      triggerGarbageCollection();
+    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
+    if (!networkIdOpt.isPresent() || !_idManager.deleteNetwork(network)) {
+      return false;
     }
-    return result;
+    deleteData(new DataDeletion(networkIdOpt.get(), null));
+    return true;
   }
 
   /**
@@ -399,27 +396,63 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
     NetworkId networkId = networkIdOpt.get();
-    boolean result = _idManager.deleteSnapshot(snapshot, networkId);
-    if (result) {
-      triggerGarbageCollection();
+    Optional<SnapshotId> snapshotIdOpt = _idManager.getSnapshotId(snapshot, networkId);
+    if (!snapshotIdOpt.isPresent() || !_idManager.deleteSnapshot(snapshot, networkId)) {
+      return false;
     }
-    return result;
+    deleteData(new DataDeletion(networkId, snapshotIdOpt.get()));
+    return true;
   }
 
-  /** Queues garbage collection */
-  void triggerGarbageCollection() {
-    try {
-      _gcExecutor.submit(
-          () -> {
-            try {
-              _storage.runGarbageCollection();
-            } catch (Exception e) {
-              _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
-            }
-          });
-    } catch (RejectedExecutionException e) {
-      // can ignore, since handled by rejection policy
+  /** The stored data of a deleted network, or of a deleted snapshot within a live network. */
+  private record DataDeletion(NetworkId networkId, @Nullable SnapshotId snapshotId) {}
+
+  /**
+   * Tells storage to delete the data of a network or snapshot the user has deleted, or defers doing
+   * so while work against that data is still in flight. See {@link #reapDeletedData}.
+   */
+  private void deleteData(DataDeletion deletion) {
+    if (hasIncompleteWork(deletion)) {
+      _deferredDeletions.add(deletion);
+      return;
     }
+    try {
+      if (deletion.snapshotId() == null) {
+        _storage.deleteNetwork(deletion.networkId());
+      } else {
+        _storage.deleteSnapshot(new NetworkSnapshot(deletion.networkId(), deletion.snapshotId()));
+      }
+    } catch (IOException e) {
+      // Leaves the data behind for storage to recover as an orphan on the next startup.
+      LOGGER.error("Failed to delete data of {}", deletion, e);
+    }
+  }
+
+  private boolean hasIncompleteWork(DataDeletion deletion) {
+    return !_workQueueMgr
+        .listIncompleteWork(deletion.networkId(), deletion.snapshotId(), null)
+        .isEmpty();
+  }
+
+  /**
+   * Deletes the data of networks and snapshots whose deletion was deferred because work was running
+   * against them, and whose work has since finished.
+   */
+  @VisibleForTesting
+  void reapDeletedData() {
+    for (Iterator<DataDeletion> i = _deferredDeletions.iterator(); i.hasNext(); ) {
+      DataDeletion deletion = i.next();
+      if (hasIncompleteWork(deletion)) {
+        continue;
+      }
+      i.remove();
+      deleteData(deletion);
+    }
+  }
+
+  /** Starts background storage maintenance. Called once, at coordinator startup. */
+  public void startMaintenance() {
+    _storage.startMaintenance();
   }
 
   /**
@@ -851,78 +884,91 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = networkIdOpt.get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
 
-    // Now that the directory exists, we must also create the metadata.
     try {
-      _snapshotMetadataManager.writeMetadata(
-          new SnapshotMetadata(creationTime, parentSnapshotId), networkId, snapshotId);
-    } catch (Exception e) {
-      throw new BatfishException("Could not write testrigMetadata", e);
-    }
-
-    // things look ok, now make the move
-    boolean bgpTables = false;
-    boolean roleData = false;
-    boolean referenceLibraryData = false;
-    for (Path subFile : subFileList) {
-      String name = subFile.getFileName().toString();
-      if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
-        bgpTables = true;
-      } else if (isWellKnownNetworkFile(subFile)) {
-        if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
-          referenceLibraryData = true;
-          try {
-            ReferenceLibrary testrigData =
-                BatfishObjectMapper.mapper()
-                    .readValue(CommonUtil.readFile(subFile), ReferenceLibrary.class);
-            ReferenceLibrary mergedLibrary =
-                getReferenceLibrary(networkName)
-                    .mergeReferenceBooks(testrigData.getReferenceBooks());
-            _storage.storeReferenceLibrary(mergedLibrary, networkId);
-          } catch (IOException e) {
-            // lets not stop the upload because that file is busted.
-            // TODO: figure out a way to surface this error to the user
-            _logger.errorf("Could not process reference library data: %s", e);
-          }
-        }
-      }
-      // Copy everything over
+      // Now that the directory exists, we must also create the metadata.
       try {
-        if (Files.isDirectory(subFile)) {
-          // Materialized first: a directory walk's stream does not split well, and copying the
-          // files of a large snapshot in parallel is several times faster.
-          List<Path> deepFiles;
-          try (Stream<Path> walk = Files.walk(subFile)) {
-            deepFiles = walk.filter(Files::isRegularFile).collect(ImmutableList.toImmutableList());
-          }
-          deepFiles.parallelStream()
-              .forEach(
-                  deepFile -> {
-                    try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
-                      _storage.storeSnapshotInputObject(
-                          srcFileStream,
-                          subDir.relativize(deepFile).toString(),
-                          new NetworkSnapshot(networkId, snapshotId));
-                    } catch (IOException e) {
-                      throw new UncheckedIOException(
-                          String.format("Failed to copy: '%s'", subFile), e);
-                    }
-                  });
-        } else {
-          try (InputStream srcFileStream = Files.newInputStream(subFile)) {
-            _storage.storeSnapshotInputObject(
-                srcFileStream,
-                subFile.getFileName().toString(),
-                new NetworkSnapshot(networkId, snapshotId));
+        _snapshotMetadataManager.writeMetadata(
+            new SnapshotMetadata(creationTime, parentSnapshotId), networkId, snapshotId);
+      } catch (Exception e) {
+        throw new BatfishException("Could not write testrigMetadata", e);
+      }
+
+      // things look ok, now make the move
+      boolean bgpTables = false;
+      boolean roleData = false;
+      boolean referenceLibraryData = false;
+      for (Path subFile : subFileList) {
+        String name = subFile.getFileName().toString();
+        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
+          bgpTables = true;
+        } else if (isWellKnownNetworkFile(subFile)) {
+          if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
+            referenceLibraryData = true;
+            try {
+              ReferenceLibrary testrigData =
+                  BatfishObjectMapper.mapper()
+                      .readValue(CommonUtil.readFile(subFile), ReferenceLibrary.class);
+              ReferenceLibrary mergedLibrary =
+                  getReferenceLibrary(networkName)
+                      .mergeReferenceBooks(testrigData.getReferenceBooks());
+              _storage.storeReferenceLibrary(mergedLibrary, networkId);
+            } catch (IOException e) {
+              // lets not stop the upload because that file is busted.
+              // TODO: figure out a way to surface this error to the user
+              _logger.errorf("Could not process reference library data: %s", e);
+            }
           }
         }
-      } catch (IOException e) {
-        throw new UncheckedIOException(String.format("Failed to copy: '%s'", subFile), e);
+        // Copy everything over
+        try {
+          if (Files.isDirectory(subFile)) {
+            // Materialized first: a directory walk's stream does not split well, and copying the
+            // files of a large snapshot in parallel is several times faster.
+            List<Path> deepFiles;
+            try (Stream<Path> walk = Files.walk(subFile)) {
+              deepFiles =
+                  walk.filter(Files::isRegularFile).collect(ImmutableList.toImmutableList());
+            }
+            deepFiles.parallelStream()
+                .forEach(
+                    deepFile -> {
+                      try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
+                        _storage.storeSnapshotInputObject(
+                            srcFileStream,
+                            subDir.relativize(deepFile).toString(),
+                            new NetworkSnapshot(networkId, snapshotId));
+                      } catch (IOException e) {
+                        throw new UncheckedIOException(
+                            String.format("Failed to copy: '%s'", subFile), e);
+                      }
+                    });
+          } else {
+            try (InputStream srcFileStream = Files.newInputStream(subFile)) {
+              _storage.storeSnapshotInputObject(
+                  srcFileStream,
+                  subFile.getFileName().toString(),
+                  new NetworkSnapshot(networkId, snapshotId));
+            }
+          }
+        } catch (IOException e) {
+          throw new UncheckedIOException(String.format("Failed to copy: '%s'", subFile), e);
+        }
       }
+      _logger.infof(
+          "Environment data for snapshot:%s; bgpTables:%s, nodeRoles:%s referenceBooks:%s\n",
+          snapshotName, bgpTables, roleData, referenceLibraryData);
+      _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
+    } catch (RuntimeException e) {
+      // Nothing points at this snapshot's data, so delete it now rather than leaving it for
+      // storage to recover as an orphan at the next startup.
+      try {
+        _storage.deleteSnapshot(new NetworkSnapshot(networkId, snapshotId));
+      } catch (IOException inner) {
+        LOGGER.error(
+            "Failed to delete data of partially initialized snapshot {}", snapshotId, inner);
+      }
+      throw e;
     }
-    _logger.infof(
-        "Environment data for snapshot:%s; bgpTables:%s, nodeRoles:%s referenceBooks:%s\n",
-        snapshotName, bgpTables, roleData, referenceLibraryData);
-    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
   }
 
   /**
@@ -1510,8 +1556,6 @@ public class WorkMgr extends AbstractCoordinator {
         LOGGER.warn("Could not delete temporary upload {}", zipFile, e);
       }
     }
-    // Trigger GC since uploading initial snapshot can change expungeBeforeDate
-    triggerGarbageCollection();
     return true;
   }
 
@@ -1785,6 +1829,11 @@ public class WorkMgr extends AbstractCoordinator {
   @VisibleForTesting
   public SnapshotMetadataMgr getSnapshotMetadataManager() {
     return _snapshotMetadataManager;
+  }
+
+  @VisibleForTesting
+  WorkQueueMgr getWorkQueueMgr() {
+    return _workQueueMgr;
   }
 
   /** Fetch metadata for snapshot. Returns {@code null} if network or snapshot does not exist. */

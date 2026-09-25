@@ -942,13 +942,33 @@ public interface StorageProvider {
   Stream<String> listInputAzureSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
-   * Run implementation-specific garbage collection.
+   * Deletes the given network and everything stored under it.
    *
-   * <p>Expunge stored data for networks and snapshot that have been deleted by the users. An
-   * individual call to this function may not expunge all such data. Implementations need to only
-   * guarantee that data is eventually deleted.
+   * <p>Returns promptly: implementations must not take time proportional to the amount of data
+   * stored under the network. Once this returns, no read API observes the network's data. When, or
+   * whether, the underlying bytes are reclaimed is up to the implementation.
    *
    * @throws IOException if there is an error
    */
-  void runGarbageCollection() throws IOException;
+  void deleteNetwork(NetworkId network) throws IOException;
+
+  /**
+   * Deletes the given snapshot and everything stored under it, under the same terms as {@link
+   * #deleteNetwork}.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteSnapshot(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Starts implementation-specific background maintenance: reclaiming space held by deleted data,
+   * recovering data orphaned by an earlier crash, and evicting caches.
+   *
+   * <p>The coordinator calls this once at startup. Components that only read and write data, such
+   * as workers, must not call it.
+   */
+  void startMaintenance();
+
+  /** Stops maintenance started by {@link #startMaintenance}. Does nothing if it is not running. */
+  void stopMaintenance();
 }
