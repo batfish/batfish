@@ -1,0 +1,4 @@
+set system host-name junos-static-ndp
+set interfaces xe-0/0/0 unit 80 family inet6 address 2001:db8::1/64 ndp 2001:db8::2 mac 00:de:ad:be:ef:00
+set interfaces xe-0/0/0 unit 80 family inet6 address 2001:db8::1/64 ndp 2001:db8::3 l2-interface ae0.80 mac 00:de:ad:be:ef:01
+set interfaces ae0 unit 80 description static-ndp-segment

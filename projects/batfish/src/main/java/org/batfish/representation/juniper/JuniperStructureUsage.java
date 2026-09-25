@@ -202,6 +202,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   SNMP_COMMUNITY_LOGICAL_SYSTEM("snmp community logical-system"),
   SNMP_COMMUNITY_CLIENT_LIST_NAME("snmp community client-list-name"),
   SNMP_COMMUNITY_ROUTING_INSTANCE("snmp community routing-instance"),
+  STATIC_NDP_L2_INTERFACE("static NDP l2-interface"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
   SWITCH_OPTIONS_VRF_EXPORT("switch-options vrf-export"),
   SWITCH_OPTIONS_VRF_IMPORT("switch-options vrf-import"),
