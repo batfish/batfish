@@ -2119,7 +2119,7 @@ MAX_SUPPRESS: 'max-suppress';
 MAXIMUM: 'maximum';
 
 MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
-
+MAXIMUM_HOP_COUNT: 'maximum-hop-count';
 MAXIMUM_LABELS: 'maximum-labels';
 
 MAXIMUM_LENGTH: 'maximum-length';

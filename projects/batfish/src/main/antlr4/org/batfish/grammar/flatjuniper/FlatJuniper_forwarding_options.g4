@@ -172,8 +172,15 @@ foh_null
 fohb_common
 :
    fohb_description_null
+   | fohb_maximum_hop_count_null
    | fohb_relay_agent_option_null
    | fohb_server_null
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/maximum-hop-count-edit-forwarding-options.html
+fohb_maximum_hop_count_null
+:
+   MAXIMUM_HOP_COUNT uint8
 ;
 
 fohb_interface

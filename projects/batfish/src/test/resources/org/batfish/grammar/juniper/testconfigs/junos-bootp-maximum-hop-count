@@ -1,0 +1,3 @@
+set system host-name junos-bootp-maximum-hop-count
+set forwarding-options helpers bootp maximum-hop-count 16
+set forwarding-options helpers bootp interface ge-0/0/0 maximum-hop-count 4
