@@ -104,6 +104,8 @@ ADDRESS
   }
 ;
 
+ADDRESS_ASSIGNMENT: 'address-assignment';
+
 ADDRESS_BOOK
 :
   'address-book'
@@ -419,6 +421,7 @@ BIND_INTERFACE
 BLOCK_FRAG: 'block-frag';
 BMP: 'bmp';
 BMP_LOC_RIB_ADD_PATH: 'bmp-loc-rib-add-path';
+BOOT_FILE: 'boot-file' -> pushMode(M_Name);
 BOOT_SERVER: 'boot-server';
 BOOTP: 'bootp';
 BOOTP_SUPPORT: 'bootp-support';
@@ -745,6 +748,7 @@ DHCP: 'dhcp';
 DHCPV6: 'dhcpv6';
 DHCPV6_CLIENT: 'dhcpv6-client';
 
+DHCP_ATTRIBUTES: 'dhcp-attributes';
 DHCP_LOCAL_SERVER: 'dhcp-local-server';
 
 DHCP_RELAY: 'dhcp-relay';
@@ -1119,6 +1123,8 @@ GRPC_REPLAY: 'grpc-replay';
 
 HALF_LIFE: 'half-life';
 
+HARDWARE_ADDRESS: 'hardware-address' -> pushMode(M_MacAddress);
+
 HASH_KEY: 'hash-key';
 
 HELLO_AUTHENTICATION_KEY: 'hello-authentication-key' -> pushMode(M_SecretString);
@@ -1339,6 +1345,8 @@ INET_VPN: 'inet-vpn';
 
 INET6_VPN: 'inet6-vpn';
 
+INFINITE: 'infinite';
+
 INFO: 'info';
 
 INFO_REPLY: 'info-reply';
@@ -1427,6 +1435,7 @@ INVERT_MATCH: 'invert-match';
 INVALID: 'invalid';
 
 IP: 'ip';
+IP_ADDRESS_LITERAL: 'ip-address';
 
 IP_DESTINATION_ADDRESS: 'ip-destination-address';
 
@@ -2153,6 +2162,7 @@ MAXIMUM: 'maximum';
 MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
 MAXIMUM_HOP_COUNT: 'maximum-hop-count';
 MAXIMUM_LABELS: 'maximum-labels';
+MAXIMUM_LEASE_TIME: 'maximum-lease-time';
 
 MAXIMUM_LENGTH: 'maximum-length';
 
@@ -2336,6 +2346,7 @@ NETBIOS_SSN: 'netbios-ssn';
 
 NETCONF: 'netconf';
 
+NETWORK: 'network';
 NETWORK_DOMAIN: 'network-domain';
 
 NETWORK_SUMMARY_EXPORT: 'network-summary-export';
@@ -2496,6 +2507,7 @@ OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
 OPTIMIZE_SWITCHOVER_DELAY: 'optimize-switchover-delay';
 OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
+OPTION: 'option';
 OPTION_NUMBER: 'option-number';
 OPTIONS: 'options';
 ORIGIN: 'origin';
@@ -2743,6 +2755,8 @@ PROFILE: 'profile' -> pushMode(M_Name);
 PROFILE1: 'profile1';
 PROFILE2: 'profile2';
 
+PROPAGATE_SETTINGS: 'propagate-settings' -> pushMode(M_Interface);
+
 PROPOGATE_SETTING: 'propogate-setting';
 
 PROPOSAL: 'proposal' -> pushMode(M_Name);
@@ -2800,7 +2814,15 @@ RADIUS_OPTIONS: 'radius-options';
 
 RADIUS_SERVER: 'radius-server';
 
-RANGE: 'range';
+RANGE
+:
+  'range'
+  {
+    if (lastTokenType() == INET || lastTokenType() == INET6) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 RANGE_ADDRESS: 'range-address';
 
@@ -2963,6 +2985,7 @@ ROUTE_SUPPRESSION: 'route-suppression';
 ROUTE_TARGET: 'route-target';
 ROUTE_TYPE: 'route-type';
 
+ROUTER: 'router';
 ROUTER_ADVERTISEMENT: 'router-advertisement';
 
 ROUTER_ALERT: 'router-alert';
@@ -3109,6 +3132,7 @@ SERVER: 'server' -> pushMode(M_NameOrIp);
 SERVER_FAIL: 'server-fail';
 SERVER_GROUP: 'server-group' -> pushMode(M_Name);
 SERVER_ID_OVERRIDE: 'server-id-override';
+SERVER_IDENTIFIER: 'server-identifier';
 SERVER_REJECT_VLAN: 'server-reject-vlan' -> pushMode(M_Name);
 SERVER_TIMEOUT: 'server-timeout';
 
@@ -3280,6 +3304,7 @@ STRICT: 'strict';
 STRICT_HIGH: 'strict-high';
 STRICT_SOURCE_ROUTE: 'strict-source-route';
 STRICT_SOURCE_ROUTE_OPTION: 'strict-source-route-option';
+STRING: 'string' -> pushMode(M_Name);
 STRUCTURED_DATA: 'structured-data';
 
 STUB: 'stub';
