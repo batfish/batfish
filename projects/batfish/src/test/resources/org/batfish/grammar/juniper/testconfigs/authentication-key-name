@@ -1,0 +1,2 @@
+set system host-name authentication-key-name
+set security authentication-key-chains key-chain MACSEC-KEYS key 1 key-name 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff
