@@ -1,0 +1,2 @@
+set system host-name forwarding-table-krt-nexthop-ack-timeout
+set routing-options forwarding-table krt-nexthop-ack-timeout 100

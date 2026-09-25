@@ -286,9 +286,16 @@ ro_forwarding_table
       rof_export
       | rof_indirect_next_hop_change_acknowledgements_null
       | rof_indirect_next_hop_null
+      | rof_krt_nexthop_ack_timeout_null
       | rof_no_ecmp_fast_reroute
       | rof_traceoptions_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/krt-nexthop-ack-timeout-edit-routing-options-forwarding-options.html
+rof_krt_nexthop_ack_timeout_null
+:
+   KRT_NEXTHOP_ACK_TIMEOUT dec
 ;
 
 ro_generate
