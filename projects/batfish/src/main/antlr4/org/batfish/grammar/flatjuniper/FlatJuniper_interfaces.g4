@@ -526,7 +526,7 @@ if_inet
       | ifi_filter
       | ifi_mtu
       | ifi_no_redirects
-      | ifi_policer_null
+      | ifi_policer
       | ifi_rpf_check
       | ifi_sampling_null
       | ifi_service_null
@@ -547,6 +547,7 @@ if_inet6
       | ifi6_filter
       | ifi6_mtu
       | ifi6_rpf_check
+      | ifi6_policer
       | ifi6_sampling_null
    )
 ;
@@ -856,9 +857,43 @@ ifi_dhcp_null
 :
    DHCP null_filler
 ;
-ifi_policer_null
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/policer-edit-interfaces.html
+ifi_policer
 :
-   POLICER null_filler
+   POLICER
+   (
+      ifip_arp
+      | ifip_input
+      | ifip_output
+   )
+;
+ifip_arp
+:
+   ARP name = junos_name
+;
+ifip_input
+:
+   INPUT name = junos_name
+;
+ifip_output
+:
+   OUTPUT name = junos_name
+;
+ifi6_policer
+:
+   POLICER
+   (
+      ifi6p_input
+      | ifi6p_output
+   )
+;
+ifi6p_input
+:
+   INPUT name = junos_name
+;
+ifi6p_output
+:
+   OUTPUT name = junos_name
 ;
 ifi_service_null
 :

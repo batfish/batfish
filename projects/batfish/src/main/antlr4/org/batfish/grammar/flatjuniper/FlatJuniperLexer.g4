@@ -282,7 +282,15 @@ AREA: 'area';
 
 AREA_RANGE: 'area-range';
 
-ARP: 'arp';
+ARP
+:
+  'arp'
+  {
+    if (lastTokenType() == POLICER) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 ARP_RESP: 'arp-resp';
 
@@ -2534,7 +2542,15 @@ PLAIN_TEXT_PASSWORD: 'plain-text-password';
 POE: 'poe';
 
 POINT_TO_POINT: 'point-to-point';
-POLICER: 'policer' -> pushMode(M_Name);
+POLICER
+:
+  'policer'
+  {
+    if (lastTokenType() != INET && lastTokenType() != INET6) {
+      pushMode(M_Name);
+    }
+  }
+;
 POLICIES: 'policies';
 POLICING: 'policing';
 POLICY

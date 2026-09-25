@@ -167,12 +167,15 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ARP_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_DEMUX_UNDERLYING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INPUT_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTPUT_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_RPF_CHECK_FAIL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
@@ -559,6 +562,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_rpf_checkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_ndpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6p_inputContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6p_outputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
@@ -572,6 +577,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_no_preemptContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_preemptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifip_arpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifip_inputContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifip_outputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifm_destination_udp_portContext;
@@ -7075,6 +7083,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           getLine(ctx.ifirpf_fail_filter().name.getStart()));
     }
     todo(ctx);
+  }
+
+  @Override
+  public void exitIfip_arp(Ifip_arpContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setArpPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_ARP_POLICER);
+  }
+
+  @Override
+  public void exitIfip_input(Ifip_inputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setIncomingPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_INPUT_POLICER);
+  }
+
+  @Override
+  public void exitIfip_output(Ifip_outputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setOutgoingPolicer(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_OUTPUT_POLICER);
+  }
+
+  @Override
+  public void exitIfi6p_input(Ifi6p_inputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setIncomingPolicer6(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_INPUT_POLICER);
+  }
+
+  @Override
+  public void exitIfi6p_output(Ifi6p_outputContext ctx) {
+    String name = toString(ctx.name);
+    _currentInterfaceOrRange.setOutgoingPolicer6(name);
+    referenceInterfacePolicer(ctx, name, INTERFACE_OUTPUT_POLICER);
+  }
+
+  private void referenceInterfacePolicer(
+      ParserRuleContext ctx, String name, JuniperStructureUsage usage) {
+    _configuration.referenceStructure(FIREWALL_POLICER, name, usage, getLine(ctx.getStart()));
   }
 
   @Override
