@@ -1,0 +1,9 @@
+set system host-name junos-dynamic-tunnels
+set policy-options policy-statement IMPORT-POLICY then accept
+set routing-options dynamic-tunnels forwarding-rib inet.0 inet-import IMPORT-POLICY
+set routing-options dynamic-tunnels IP-TUNNEL bgp-signal
+set routing-options dynamic-tunnels IP-TUNNEL destination-networks 192.0.2.0/24
+set routing-options dynamic-tunnels IP-TUNNEL destination-networks 198.51.100.0/24 preference 5
+set routing-options dynamic-tunnels IP-TUNNEL ipip
+set routing-options dynamic-tunnels IP-TUNNEL source-address 192.0.2.1
+set routing-options dynamic-tunnels UDP-TUNNEL udp
