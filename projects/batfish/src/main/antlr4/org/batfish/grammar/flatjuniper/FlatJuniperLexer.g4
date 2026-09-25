@@ -146,7 +146,7 @@ ADVERTISE_HIGH_METRICS: 'advertise-high-metrics';
 ADVERTISE_INACTIVE: 'advertise-inactive';
 
 ADVERTISE_INTERVAL: 'advertise-interval';
-
+ADVERTISEMENTS_THRESHOLD: 'advertisements-threshold';
 ADVERTISE_PEER_AS: 'advertise-peer-as';
 
 AFS: 'afs';

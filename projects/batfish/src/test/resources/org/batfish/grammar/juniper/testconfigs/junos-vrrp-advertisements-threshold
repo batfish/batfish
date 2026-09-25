@@ -1,0 +1,3 @@
+set system host-name junos-vrrp-advertisements-threshold
+set interfaces irb unit 100 family inet address 192.0.2.2/29 vrrp-group 100 advertisements-threshold 2
+set interfaces irb unit 100 family inet address 192.0.2.2/29 vrrp-group 100 virtual-address 192.0.2.1

@@ -986,6 +986,7 @@ ifia_vrrp_group
       apply
       | ifiav_accept_data_null
       | ifiav_advertise_interval_null
+      | ifiav_advertisements_threshold_null
       | ifiav_authentication_key_null
       | ifiav_authentication_type_null
       | ifiav_fast_interval_null
@@ -1005,6 +1006,12 @@ ifiav_accept_data_null
 ifiav_advertise_interval_null
 :
    ADVERTISE_INTERVAL dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-interfaces-unit-family-inet-address-vrrp-group.html
+ifiav_advertisements_threshold_null
+:
+   ADVERTISEMENTS_THRESHOLD uint8
 ;
 
 ifiav_authentication_key_null
