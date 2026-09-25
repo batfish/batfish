@@ -62,6 +62,7 @@ ri_named_routing_instance
       | ri_route_distinguisher
       | ri_service_type
       | ri_snmp
+      | ri_system
       | ri_vlans
       | ri_vrf_export
       | ri_vrf_import
@@ -70,6 +71,32 @@ ri_named_routing_instance
       | ri_vrf_target
       | ri_vtep_source_interface
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dhcp-local-server-edit-system-services.html
+ri_system
+:
+   SYSTEM ris_services
+;
+
+ris_services
+:
+   SERVICES riss_dhcp_local_server
+;
+
+riss_dhcp_local_server
+:
+   DHCP_LOCAL_SERVER rissd_group
+;
+
+rissd_group
+:
+   GROUP name = junos_name rissdg_interface
+;
+
+rissdg_interface
+:
+   INTERFACE id = interface_id
 ;
 
 ri_chassis
