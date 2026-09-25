@@ -70,6 +70,11 @@ fo_load_balance_null
 :
    LOAD_BALANCE null_filler
 ;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/load-balance-label-capability-edit-forwarding-options.html
+fo_load_balance_label_capability_null
+:
+   LOAD_BALANCE_LABEL_CAPABILITY
+;
 fo_multicast_null
 :
    MULTICAST null_filler
@@ -78,6 +83,12 @@ fo_multicast_null
 fo_no_hierarchical_ecmp_null
 :
    NO_HIERARCHICAL_ECMP
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/no-load-balance-label-capability-edit-forwarding-options.html
+fo_no_load_balance_label_capability_null
+:
+   NO_LOAD_BALANCE_LABEL_CAPABILITY
 ;
 fo_port_mirroring_null
 :
@@ -435,8 +446,10 @@ s_forwarding_options
       | fo_hash_key_null
       | fo_helpers
       | fo_load_balance_null
+      | fo_load_balance_label_capability_null
       | fo_multicast_null
       | fo_no_hierarchical_ecmp_null
+      | fo_no_load_balance_label_capability_null
       | fo_port_mirroring_null
       | fo_sampling_null
       | fo_storm_control_profiles_null
