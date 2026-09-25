@@ -225,20 +225,29 @@ public class LogicalSystem implements Serializable {
   }
 
   private void expandInterfaceRange(InterfaceRange interfaceRange) {
-    interfaceRange.getAllMembers().stream()
-        .forEach(
-            iname -> {
-              Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
-              iface.inheritUnsetPhysicalFields(interfaceRange);
-              iface.setDefined(interfaceRange.isDefined());
-              iface.setRoutingInstance(interfaceRange.getRoutingInstance());
-              iface.setParent(interfaceRange.getParent());
-            });
+    for (String interfaceName : interfaceRange.getAllMembers()) {
+      Interface iface = _interfaces.computeIfAbsent(interfaceName, Interface::new);
+      iface.inheritUnsetPhysicalFields(interfaceRange);
+      iface.setDefined(interfaceRange.isDefined());
+      iface.setRoutingInstance(interfaceRange.getRoutingInstance());
+      iface.setParent(interfaceRange.getParent());
+      for (Interface rangeUnit : interfaceRange.getUnits().values()) {
+        String unitName =
+            interfaceName + rangeUnit.getName().substring(interfaceRange.getName().length());
+        Interface unit = iface.getUnits().computeIfAbsent(unitName, Interface::new);
+        unit.inheritUnsetUnitFields(rangeUnit);
+        unit.setDefined(rangeUnit.isDefined());
+        unit.setRoutingInstance(rangeUnit.getRoutingInstance());
+        unit.setParent(iface);
+      }
+    }
   }
 
   /** Inserts members of interface ranges into the interfaces */
   public void expandInterfaceRanges() {
-    _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
+    for (InterfaceRange interfaceRange : _interfaceRanges.values()) {
+      expandInterfaceRange(interfaceRange);
+    }
   }
 
   public Map<String, AddressBook> getAddressBooks() {
