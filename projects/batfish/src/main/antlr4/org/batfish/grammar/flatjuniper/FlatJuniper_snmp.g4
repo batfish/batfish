@@ -171,17 +171,20 @@ snmpcls_common
    | snmpclsri_common
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/routing-instance-edit-snmp.html
 snmpcls_routing_instance
 :
    ROUTING_INSTANCE name = junos_name
-   snmpclsri_common
+   snmpclsri_common?
 ;
 
 snmpclsri_common
 :
    snmpc_client_list_name
+   | snmpc_clients_null
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/clients-edit-snmp.html
 snmpc_clients_null
 :
    CLIENTS null_filler
