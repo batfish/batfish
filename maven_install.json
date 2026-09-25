@@ -39,8 +39,8 @@
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
     "jakarta.xml.bind:jakarta.xml.bind-api": 952929903,
     "junit:junit": -744267592,
-    "net.sourceforge.pmd:pmd-cli": 177620420,
-    "net.sourceforge.pmd:pmd-java": 1081253824,
+    "net.sourceforge.pmd:pmd-cli": -1619330939,
+    "net.sourceforge.pmd:pmd-java": -715697535,
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": -664587860,
@@ -168,22 +168,22 @@
     "javax.xml.bind:jaxb-api:jar:sources": 1110034202,
     "junit:junit": -149895345,
     "junit:junit:jar:sources": 940567721,
-    "me.tongfei:progressbar": -1960141036,
-    "me.tongfei:progressbar:jar:sources": -1730546526,
+    "me.tongfei:progressbar": 428617258,
+    "me.tongfei:progressbar:jar:sources": 1841204025,
     "net.bytebuddy:byte-buddy": -1278241167,
     "net.bytebuddy:byte-buddy-agent": 1099087346,
     "net.bytebuddy:byte-buddy-agent:jar:sources": 1414786109,
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": 1404898280,
     "net.sf.saxon:Saxon-HE:jar:sources": 37033699,
-    "net.sourceforge.pmd:pmd-cli": -1332868909,
-    "net.sourceforge.pmd:pmd-cli:jar:sources": 120823442,
-    "net.sourceforge.pmd:pmd-core": -829485191,
-    "net.sourceforge.pmd:pmd-core:jar:sources": 487128412,
+    "net.sourceforge.pmd:pmd-cli": -2106502430,
+    "net.sourceforge.pmd:pmd-cli:jar:sources": -313254172,
+    "net.sourceforge.pmd:pmd-core": -794674055,
+    "net.sourceforge.pmd:pmd-core:jar:sources": -415188564,
     "net.sourceforge.pmd:pmd-designer": 906775713,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
-    "net.sourceforge.pmd:pmd-java": 166231283,
-    "net.sourceforge.pmd:pmd-java:jar:sources": -2124760658,
+    "net.sourceforge.pmd:pmd-java": -1796094228,
+    "net.sourceforge.pmd:pmd-java:jar:sources": 258299743,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
     "org.antlr:antlr4:jar:complete": -609884220,
@@ -270,8 +270,10 @@
     "org.jgrapht:jgrapht-core:jar:sources": -261629558,
     "org.jheaps:jheaps": 487946236,
     "org.jheaps:jheaps:jar:sources": 1658788425,
-    "org.jline:jline": -1888912200,
-    "org.jline:jline:jar:sources": 717206858,
+    "org.jline:jline-native": 725915188,
+    "org.jline:jline-native:jar:sources": 321814502,
+    "org.jline:jline-terminal": 1498079606,
+    "org.jline:jline-terminal:jar:sources": -1538787944,
     "org.jspecify:jspecify": -109882726,
     "org.jspecify:jspecify:jar:sources": 345277939,
     "org.junit.jupiter:junit-jupiter": 1893116253,
@@ -672,10 +674,10 @@
     },
     "me.tongfei:progressbar": {
       "shasums": {
-        "jar": "a1a086fa66f85c49bb3ca701a78cebb33647f367d4a5be8588c784d56272cc6e",
-        "sources": "25017bc8a27758fce2ba43c4e5b63e59de3377656ffefc3f3b4070f262747030"
+        "jar": "9979afcfc1967bacd98b3afc74499501028d294aa65fb3f9139cd79742111e81",
+        "sources": "34482b082d0d133328468fa2db611bb67f721ecbec4ddd49fb7e68b640cbf6b0"
       },
-      "version": "0.9.5"
+      "version": "0.10.2"
     },
     "net.bytebuddy:byte-buddy": {
       "shasums": {
@@ -700,17 +702,17 @@
     },
     "net.sourceforge.pmd:pmd-cli": {
       "shasums": {
-        "jar": "b8f9395387c027e384d6a259a4ed486f71d0d4c1f1ceb43abbd88a751ed40293",
-        "sources": "fe58ab87a6a2b012f0623b3a7a854b6983fbc451d092951c306d5855ff14a303"
+        "jar": "fbcbb4984aaac8214a1cfa4492e0d81764ed15bf964a35c47b25ee484562b50a",
+        "sources": "e77e5b11d85942209817237dd4f9fb2d79c1033190735a79353f872480851230"
       },
-      "version": "7.27.0"
+      "version": "7.28.0"
     },
     "net.sourceforge.pmd:pmd-core": {
       "shasums": {
-        "jar": "e035c4e30ac9cabfb6e043ca5a399cb3a571ba22db6ea95ea847b2c288f6b8a4",
-        "sources": "84ff2ff58c46afa9f6707fdb17d6ec586e80d1cebc599bbaa8e7b98561b4a346"
+        "jar": "6bfcd22b89b85589ade100545202e2eaf881e1ce664e5c7c0c21d06d9c1dc673",
+        "sources": "cc075c0afb92498a571eb5b5487d8b17f65d2a7b75dc6999847caaba1ca0919b"
       },
-      "version": "7.27.0"
+      "version": "7.28.0"
     },
     "net.sourceforge.pmd:pmd-designer": {
       "shasums": {
@@ -721,10 +723,10 @@
     },
     "net.sourceforge.pmd:pmd-java": {
       "shasums": {
-        "jar": "6a809a0ac01f5cf3fdce1492450c5fe57ec8d4c368507684846830a143170f7d",
-        "sources": "8528ff0f0237654615ab700c046fb4520a9d8d338dcfbad672b96214b3547fba"
+        "jar": "a25a46e2b1ff7b3f6568a7bd429dd201f474482a4e023a636b45a6af667b2f51",
+        "sources": "f69a27940fa7e2d1fdce68a7da6782bc4a1af2ad0936aa5c61454be999d39fe1"
       },
-      "version": "7.27.0"
+      "version": "7.28.0"
     },
     "org.antlr:antlr4": {
       "shasums": {
@@ -1027,12 +1029,19 @@
       },
       "version": "0.14"
     },
-    "org.jline:jline": {
+    "org.jline:jline-native": {
       "shasums": {
-        "jar": "1e7d63a2bd1c26354ca1987e55469ea4327c4a3845c10d7a7790ca9729c49c02",
-        "sources": "9d1f5958a0cff8f0b1729cd10b3bbe71d2587a0ec9537ece87cca45d21ba3db3"
+        "jar": "19cfcc9d3c78a1c6cfe4c6c9599f16a657e4bf8da43940fc4b875373236dc258",
+        "sources": "6cdd8edf54142abc558916df1372a93b115b823df10ff5c05c11b988a66b2868"
       },
-      "version": "3.21.0"
+      "version": "3.29.0"
+    },
+    "org.jline:jline-terminal": {
+      "shasums": {
+        "jar": "fd68a98b32b1132035c62102e5df0b0fdc358e7c87a9f876ce7071450b4d10da",
+        "sources": "44899935c84500c3373db4f8870c7a40d2dc69515264f8362531fc8c060cea50"
+      },
+      "version": "3.29.0"
     },
     "org.jspecify:jspecify": {
       "shasums": {
@@ -1274,7 +1283,7 @@
       "jakarta.activation:jakarta.activation-api"
     ],
     "me.tongfei:progressbar": [
-      "org.jline:jline"
+      "org.jline:jline-terminal"
     ],
     "net.sf.saxon:Saxon-HE": [
       "org.xmlresolver:xmlresolver",
@@ -1444,6 +1453,9 @@
     "org.jgrapht:jgrapht-core": [
       "org.apfloat:apfloat",
       "org.jheaps:jheaps"
+    ],
+    "org.jline:jline-terminal": [
+      "org.jline:jline-native"
     ],
     "org.junit.jupiter:junit-jupiter": [
       "org.junit.jupiter:junit-jupiter-api",
@@ -2851,35 +2863,15 @@
       "org.jheaps.monotone",
       "org.jheaps.tree"
     ],
-    "org.jline:jline": [
-      "org.jline.builtins",
-      "org.jline.builtins.ssh",
-      "org.jline.builtins.telnet",
-      "org.jline.console",
-      "org.jline.console.impl",
-      "org.jline.keymap",
-      "org.jline.reader",
-      "org.jline.reader.impl",
-      "org.jline.reader.impl.completer",
-      "org.jline.reader.impl.history",
-      "org.jline.style",
+    "org.jline:jline-native": [
+      "org.jline.nativ"
+    ],
+    "org.jline:jline-terminal": [
       "org.jline.terminal",
       "org.jline.terminal.impl",
-      "org.jline.terminal.impl.jansi",
-      "org.jline.terminal.impl.jansi.freebsd",
-      "org.jline.terminal.impl.jansi.linux",
-      "org.jline.terminal.impl.jansi.osx",
-      "org.jline.terminal.impl.jansi.solaris",
-      "org.jline.terminal.impl.jansi.win",
-      "org.jline.terminal.impl.jna",
-      "org.jline.terminal.impl.jna.freebsd",
-      "org.jline.terminal.impl.jna.linux",
-      "org.jline.terminal.impl.jna.osx",
-      "org.jline.terminal.impl.jna.solaris",
-      "org.jline.terminal.impl.jna.win",
+      "org.jline.terminal.impl.exec",
       "org.jline.terminal.spi",
-      "org.jline.utils",
-      "org.jline.widget"
+      "org.jline.utils"
     ],
     "org.jspecify:jspecify": [
       "org.jspecify.annotations"
@@ -3307,8 +3299,10 @@
       "org.jgrapht:jgrapht-core:jar:sources",
       "org.jheaps:jheaps",
       "org.jheaps:jheaps:jar:sources",
-      "org.jline:jline",
-      "org.jline:jline:jar:sources",
+      "org.jline:jline-native",
+      "org.jline:jline-native:jar:sources",
+      "org.jline:jline-terminal",
+      "org.jline:jline-terminal:jar:sources",
       "org.jspecify:jspecify",
       "org.jspecify:jspecify:jar:sources",
       "org.junit.jupiter:junit-jupiter",
@@ -3672,20 +3666,22 @@
         "org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory"
       ]
     },
-    "org.jline:jline": {
-      "org.jline.terminal.spi.JansiSupport": [
-        "org.jline.terminal.impl.jansi.JansiSupportImpl"
-      ],
-      "org.jline.terminal.spi.JnaSupport": [
-        "org.jline.terminal.impl.jna.JnaSupportImpl"
+    "org.jline:jline-terminal": {
+      "org/": [],
+      "org/jline/": [],
+      "org/jline/terminal/": [],
+      "org/jline/terminal/provider/": [],
+      "org/jline/terminal/provider/exec": [
+        "class=org.jline.terminal.impl.exec.ExecTerminalProvider"
       ]
     },
-    "org.jline:jline:jar:sources": {
-      "org.jline.terminal.spi.JansiSupport": [
-        "org.jline.terminal.impl.jansi.JansiSupportImpl"
-      ],
-      "org.jline.terminal.spi.JnaSupport": [
-        "org.jline.terminal.impl.jna.JnaSupportImpl"
+    "org.jline:jline-terminal:jar:sources": {
+      "org/": [],
+      "org/jline/": [],
+      "org/jline/terminal/": [],
+      "org/jline/terminal/provider/": [],
+      "org/jline/terminal/provider/exec": [
+        "class=org.jline.terminal.impl.exec.ExecTerminalProvider"
       ]
     },
     "org.junit.jupiter:junit-jupiter-engine": {
