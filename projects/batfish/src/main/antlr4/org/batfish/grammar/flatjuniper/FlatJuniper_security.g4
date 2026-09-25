@@ -477,6 +477,7 @@ s_security
       | se_key_chain
       | se_log_null
       | se_nat
+      | se_pki
       | se_policies
       | se_screen
       | se_zones
@@ -523,6 +524,38 @@ se_certificates
    (
       sec_local
    )
+;
+
+se_pki
+:
+   PKI sep_ca_profile
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/ref/statement/security-edit-ca-profile.html
+sep_ca_profile
+:
+   CA_PROFILE name = junos_name
+   (
+      apply
+      | sepc_ca_identity
+      | sepc_revocation_check
+      | sepc_routing_instance
+   )
+;
+
+sepc_ca_identity
+:
+   CA_IDENTITY name = junos_name
+;
+
+sepc_revocation_check
+:
+   REVOCATION_CHECK DISABLE
+;
+
+sepc_routing_instance
+:
+   ROUTING_INSTANCE name = junos_name
 ;
 
 // Legacy form of "security authentication-key-chains key-chain". Mirrors
