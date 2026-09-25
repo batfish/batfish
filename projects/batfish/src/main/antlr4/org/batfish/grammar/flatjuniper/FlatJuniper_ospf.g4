@@ -190,6 +190,7 @@ oa_interface
       | oai_ldp_synchronization
       | oai_link_protection
       | oai_metric
+      | oai_mtu
       | oai_neighbor
       | oai_no_neighbor_down_notification_null
       | oai_passive
@@ -306,6 +307,12 @@ oai_ls_hold_time
 oai_metric
 :
    METRIC dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interface-type-edit-protocols-ospf.html
+oai_mtu
+:
+   MTU mtu = uint16
 ;
 
 oai_neighbor

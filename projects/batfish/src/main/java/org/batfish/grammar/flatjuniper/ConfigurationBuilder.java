@@ -663,6 +663,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_topologyContext;
@@ -1502,6 +1503,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 255));
+  private static final IntegerSpace OSPF_MTU_RANGE = IntegerSpace.of(new SubRange(128, 65535));
   private static final IntegerSpace OSPF_TOPOLOGY_METRIC_RANGE =
       IntegerSpace.of(new SubRange(1, 65535));
   private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
@@ -7369,6 +7371,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
     int ospfCost = toInt(ctx.dec());
     _currentOspfSettings.setOspfCost(ospfCost);
+  }
+
+  @Override
+  public void exitOai_mtu(Oai_mtuContext ctx) {
+    toIntegerInSpace(ctx, ctx.mtu, OSPF_MTU_RANGE, "OSPF MTU")
+        .ifPresent(
+            mtu -> {
+              _currentOspfSettings.setOspfMtu(mtu);
+              todo(ctx);
+            });
   }
 
   @Override
