@@ -22,6 +22,7 @@ import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.LogicalSystem.MANAGEMENT_ROUTING_INSTANCE_NAME;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -3623,6 +3624,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ls.getDefaultInboundAction() != null) {
       _masterLogicalSystem.setDefaultInboundAction(ls.getDefaultInboundAction());
     }
+    _masterLogicalSystem.setManagementInstance(ls.getManagementInstance());
     _masterLogicalSystem.setDefaultRoutingInstance(ls.getDefaultRoutingInstance());
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
@@ -3738,13 +3740,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setTacacsServers(tacacsServers.build());
     _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());
     _c.setDeviceModel(DeviceModel.JUNIPER_UNSPECIFIED);
+
+    // Process interface ranges before system-level interface assignments.
+    _masterLogicalSystem.expandInterfaceRanges();
+    applyChassisPortSpeeds();
+    applyManagementInstance();
+
     for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
-
-    // process interface ranges. this changes the _interfaces map
-    _masterLogicalSystem.expandInterfaceRanges();
-    applyChassisPortSpeeds();
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
@@ -4896,6 +4900,35 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       srcTransformation);
               newUnitInterface.setOutgoingTransformation(staticTransformation);
             });
+  }
+
+  /** Assigns management interfaces to the dedicated management routing instance. */
+  private void applyManagementInstance() {
+    if (!_masterLogicalSystem.getManagementInstance()) {
+      return;
+    }
+    RoutingInstance managementRoutingInstance =
+        _masterLogicalSystem
+            .getRoutingInstances()
+            .computeIfAbsent(MANAGEMENT_ROUTING_INSTANCE_NAME, RoutingInstance::new);
+    applyManagementInstance(
+        _masterLogicalSystem.getInterfaces().values(), managementRoutingInstance);
+    for (NodeDevice nodeDevice : _nodeDevices.values()) {
+      applyManagementInstance(nodeDevice.getInterfaces().values(), managementRoutingInstance);
+    }
+  }
+
+  private static void applyManagementInstance(
+      Iterable<Interface> interfaces, RoutingInstance managementRoutingInstance) {
+    for (Interface iface : interfaces) {
+      if (iface.getType() != Interface.InterfaceType.MANAGEMENT) {
+        continue;
+      }
+      iface.setRoutingInstance(managementRoutingInstance);
+      for (Interface unit : iface.getUnits().values()) {
+        unit.setRoutingInstance(managementRoutingInstance);
+      }
+    }
   }
 
   private @Nonnull Map<String, Integer> computeIrbVlanIds() {

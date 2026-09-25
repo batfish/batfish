@@ -2103,6 +2103,7 @@ MAIN: 'main';
 MAINTENANCE_DOMAIN: 'maintenance-domain' -> pushMode(M_Name);
 MALFORMED_ROUTE_LIMIT: 'malformed-route-limit';
 MALFORMED_UPDATE_LOG_INTERVAL: 'malformed-update-log-interval';
+MANAGEMENT_INSTANCE: 'management-instance';
 MAPPED_PORT: 'mapped-port';
 
 MARTIANS: 'martians';

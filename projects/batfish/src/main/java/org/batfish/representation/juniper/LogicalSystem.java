@@ -22,6 +22,7 @@ import org.batfish.representation.juniper.Nat.Type;
 public class LogicalSystem implements Serializable {
 
   public static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+  public static final String MANAGEMENT_ROUTING_INSTANCE_NAME = "mgmt_junos";
 
   private final Map<String, AddressBook> _addressBooks;
 
@@ -42,6 +43,8 @@ public class LogicalSystem implements Serializable {
   private final Map<String, Double> _chassisPortSpeeds;
 
   private final Login _login;
+
+  private boolean _managementInstance;
 
   private final Map<String, NamedCommunity> _namedCommunities;
 
@@ -292,6 +295,10 @@ public class LogicalSystem implements Serializable {
 
   public Login getLogin() {
     return _login;
+  }
+
+  public boolean getManagementInstance() {
+    return _managementInstance;
   }
 
   public Map<String, NamedCommunity> getNamedCommunities() {
@@ -599,6 +606,10 @@ public class LogicalSystem implements Serializable {
 
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
+  }
+
+  public void setManagementInstance(boolean managementInstance) {
+    _managementInstance = managementInstance;
   }
 
   public void setDefaultRoutingInstance(RoutingInstance defaultRoutingInstance) {
