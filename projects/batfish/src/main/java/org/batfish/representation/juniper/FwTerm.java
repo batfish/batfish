@@ -53,6 +53,8 @@ public final class FwTerm implements Serializable {
 
   private final String _name;
 
+  private @Nullable SecurityPolicyTcpOptions _securityPolicyTcpOptions;
+
   private final List<FwThen> _thens;
 
   public FwTerm(String name) {
@@ -101,6 +103,17 @@ public final class FwTerm implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  public @Nonnull SecurityPolicyTcpOptions getOrCreateSecurityPolicyTcpOptions() {
+    if (_securityPolicyTcpOptions == null) {
+      _securityPolicyTcpOptions = new SecurityPolicyTcpOptions();
+    }
+    return _securityPolicyTcpOptions;
+  }
+
+  public @Nullable SecurityPolicyTcpOptions getSecurityPolicyTcpOptions() {
+    return _securityPolicyTcpOptions;
   }
 
   public List<FwThen> getThens() {
