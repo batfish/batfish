@@ -29,6 +29,7 @@ public enum JuniperStructureType implements StructureType {
   CLASS_OF_SERVICE_DSCP_IPV6_CODE_POINT_ALIAS("class-of-service dscp-ipv6 code-point-alias"),
   CLASS_OF_SERVICE_EXP_CODE_POINT_ALIAS("class-of-service exp code-point-alias"),
   CLASS_OF_SERVICE_FORWARDING_CLASS("class-of-service forwarding-class"),
+  CLASS_OF_SERVICE_FORWARDING_CLASS_SET("class-of-service forwarding-class-set"),
   CLASS_OF_SERVICE_IEEE_802_1_CODE_POINT_ALIAS("class-of-service ieee-802.1 code-point-alias"),
   CLASS_OF_SERVICE_INET_PRECEDENCE_CODE_POINT_ALIAS(
       "class-of-service inet-precedence code-point-alias"),

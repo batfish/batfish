@@ -61,6 +61,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Integer> _expAliases;
 
+  private final Map<String, ForwardingClassSet> _forwardingClassSets;
+
   private @Nullable String _systemDefaultExpClassifier;
 
   private final Map<String, Integer> _ieee8021pAliases;
@@ -172,6 +174,7 @@ public class LogicalSystem implements Serializable {
     _dnsProxyInterfaces = new TreeSet<>();
     _dscpAliases = new TreeMap<>();
     _expAliases = new TreeMap<>();
+    _forwardingClassSets = new TreeMap<>();
     _ieee8021pAliases = new TreeMap<>();
     _inetPrecedenceAliases = new TreeMap<>();
     _filters = new TreeMap<>();
@@ -308,6 +311,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Integer> getExpAliases() {
     return _expAliases;
+  }
+
+  public Map<String, ForwardingClassSet> getForwardingClassSets() {
+    return _forwardingClassSets;
   }
 
   public @Nullable String getSystemDefaultExpClassifier() {

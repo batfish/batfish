@@ -12,6 +12,7 @@ s_class_of_service
        | scos_classifiers
        | scos_code_point_aliases
        | scos_drop_profiles_null
+       | scos_forwarding_class_sets
        | scos_forwarding_classes
        | scos_forwarding_policy_null
        | scos_fragmentation_maps_null
@@ -276,6 +277,17 @@ scoscpa_ieee_802_1
 scoscpa_inet_precedence
 :
     INET_PRECEDENCE name = junos_name code = inet_precedence_code_point
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/forwarding-class-sets-edit-class-of-service.html
+scos_forwarding_class_sets
+:
+    FORWARDING_CLASS_SETS name = junos_name scosfcs_class
+;
+
+scosfcs_class
+:
+    CLASS fc = junos_name
 ;
 
 scos_forwarding_classes

@@ -1,0 +1,5 @@
+set system host-name forwarding-class-sets
+set class-of-service forwarding-classes class HIGH queue-num 1
+set class-of-service forwarding-class-sets PRIORITY class HIGH
+set class-of-service forwarding-class-sets PRIORITY class network-control
+set class-of-service interfaces ae0 forwarding-class-set PRIORITY output-traffic-control-profile PROFILE
