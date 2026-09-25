@@ -1,0 +1,8 @@
+set system host-name ssh-hostkey-algorithm-list
+set system services ssh hostkey-algorithm-list ecdsa-sha2-nistp256
+set system services ssh hostkey-algorithm-list ecdsa-sha2-nistp384
+set system services ssh hostkey-algorithm-list ecdsa-sha2-nistp521
+set system services ssh hostkey-algorithm-list ed25519
+set system services ssh hostkey-algorithm-list rsa
+set system services ssh hostkey-algorithm-list rsa-sha2-256
+set system services ssh hostkey-algorithm-list rsa-sha2-512
