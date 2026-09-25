@@ -673,6 +673,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ot_ignore_lsp_metricsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospf3Context;
@@ -7286,6 +7287,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (!name.equals("default")) {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitOt_ignore_lsp_metrics(Ot_ignore_lsp_metricsContext ctx) {
+    _currentRoutingInstance.setOspfIgnoreLspMetrics(true);
+    todo(ctx);
   }
 
   @Override

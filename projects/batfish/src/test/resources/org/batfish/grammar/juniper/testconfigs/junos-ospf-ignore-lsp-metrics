@@ -1,0 +1,3 @@
+set system host-name junos-ospf-ignore-lsp-metrics
+set protocols ospf traffic-engineering ignore-lsp-metrics
+set protocols ospf traffic-engineering shortcuts ignore-lsp-metrics
