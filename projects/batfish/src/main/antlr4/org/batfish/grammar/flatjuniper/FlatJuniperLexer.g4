@@ -3967,6 +3967,8 @@ F_InterfaceMediaType
    'lsi' |
    'lt' |
    'me' |
+   // https://www.juniper.net/documentation/us/en/hardware/srx4300/topics/concept/srx4300-ports.html
+   'mge' |
    // https://www.juniper.net/documentation/us/en/software/junos/junos-getting-started/topics/concept/interfaces-understanding-management-ethernet-interfaces.html
    'mgmt' |
    'mo' |
