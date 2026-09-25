@@ -137,6 +137,7 @@ b_common
    | b_precision_timers_null
    | b_preference
    | b_remove_private
+   | b_stale_labels_holddown_period_null
    | b_tcp_mss
    | b_traceoptions_null
    | b_ttl
@@ -406,6 +407,12 @@ b_remove_private
      | REPLACE
      | NO_PEER_LOOP_CHECK
    )*
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/stale-labels-holddown-period-edit-protocols-bgp.html
+b_stale_labels_holddown_period_null
+:
+   STALE_LABELS_HOLDDOWN_PERIOD uint32
 ;
 
 b_tcp_mss

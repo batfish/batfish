@@ -3164,30 +3164,19 @@ SSH_ED25519: 'ssh-ed25519';
 
 SSH_RSA: 'ssh-rsa';
 
+STALE_LABELS_HOLDDOWN_PERIOD: 'stale-labels-holddown-period';
 STANDARD: 'standard';
-
 STANDBY: 'standby';
-
 START_TIME: 'start-time' -> pushMode(M_RestOfLine);
-
 STATE: 'state';
-
 STATIC: 'static';
-
 STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
-
 STATIC_NAT: 'static-nat';
-
 STATION: 'station' -> pushMode(M_Name);
-
 STATION_ADDRESS: 'station-address';
-
 STATION_PORT: 'station-port';
-
 STATISTICS: 'statistics';
-
 STATISTICS_TIMEOUT: 'statistics-timeout';
-
 STATS_CACHE_LIFETIME: 'stats-cache-lifetime';
 
 STORM_CONTROL: 'storm-control' -> pushMode(M_Name);
