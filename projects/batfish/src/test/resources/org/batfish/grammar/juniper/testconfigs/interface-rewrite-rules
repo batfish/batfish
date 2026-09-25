@@ -1,0 +1,13 @@
+set system host-name interface-rewrite-rules
+set class-of-service rewrite-rules dscp WRITE-DSCP forwarding-class best-effort loss-priority low code-point 000000
+set class-of-service rewrite-rules dscp-ipv6 WRITE-DSCP6 forwarding-class best-effort loss-priority low code-point 000000
+set class-of-service rewrite-rules exp WRITE-EXP forwarding-class best-effort loss-priority low code-point 000
+set class-of-service rewrite-rules ieee-802.1 WRITE-DOT1P forwarding-class best-effort loss-priority low code-point 000
+set class-of-service rewrite-rules inet-precedence WRITE-PRECEDENCE forwarding-class best-effort loss-priority low code-point 000
+set class-of-service interfaces all rewrite-rules dscp WRITE-DSCP
+set class-of-service interfaces all rewrite-rules dscp-ipv6 WRITE-DSCP6
+set class-of-service interfaces all rewrite-rules exp WRITE-EXP protocol mpls-inet-both
+set class-of-service interfaces all rewrite-rules ieee-802.1 WRITE-DOT1P
+set class-of-service interfaces all rewrite-rules inet-precedence WRITE-PRECEDENCE
+set class-of-service interfaces ae0 rewrite-rules dscp WRITE-DSCP
+set class-of-service interfaces et-* rewrite-rules exp WRITE-EXP
