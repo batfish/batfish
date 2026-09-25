@@ -25,12 +25,29 @@ s_class_of_service
        | scos_scheduler_maps
        | scos_schedulers
        | scos_shared_buffer_null
+       | scos_system_defaults
        | scos_trace_options_null
        | scos_traffic_control_profiles_null
        | scos_translation_table_null
        | scos_tri_color_null
        | scos_virtual_channel_null
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/system-defaults-edit-cos.html
+scos_system_defaults
+:
+    SYSTEM_DEFAULTS scossd_classifiers
+;
+
+scossd_classifiers
+:
+    CLASSIFIERS scossdc_exp
+;
+
+scossdc_exp
+:
+    EXP name = junos_name
 ;
 
 scos_classifiers
@@ -826,4 +843,3 @@ scos_virtual_channel_null
 :
    VIRTUAL_CHANNEL null_filler
 ;
-

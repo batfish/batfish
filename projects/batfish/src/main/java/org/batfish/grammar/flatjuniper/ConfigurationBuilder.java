@@ -134,6 +134,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DYNAMIC_TUNNELS_INET_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
@@ -1020,6 +1021,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrri_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrifc_loss_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrrip_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scosrripfc_loss_priorityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scossdc_expContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scossm_forwarding_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
@@ -9593,6 +9595,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitScoscl_inet_precedence(Scoscl_inet_precedenceContext ctx) {
     _configuration.defineFlattenedStructure(
         CLASS_OF_SERVICE_CLASSIFIER, toString(ctx.name), ctx, _parser);
+  }
+
+  @Override
+  public void exitScossdc_exp(Scossdc_expContext ctx) {
+    String name = toString(ctx.name);
+    _currentLogicalSystem.setSystemDefaultExpClassifier(name);
+    _configuration.referenceStructure(
+        CLASS_OF_SERVICE_CLASSIFIER,
+        name,
+        CLASS_OF_SERVICE_SYSTEM_DEFAULTS_CLASSIFIERS_EXP,
+        getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override

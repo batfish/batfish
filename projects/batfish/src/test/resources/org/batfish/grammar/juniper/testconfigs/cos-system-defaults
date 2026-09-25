@@ -1,0 +1,3 @@
+set system host-name cos-system-defaults
+set class-of-service classifiers exp EXP-DEFAULT import default
+set class-of-service system-defaults classifiers exp EXP-DEFAULT

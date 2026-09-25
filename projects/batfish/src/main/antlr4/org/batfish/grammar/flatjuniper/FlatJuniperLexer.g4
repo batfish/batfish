@@ -3238,9 +3238,8 @@ SYN_FLOOD: 'syn-flood';
 SYN_FRAG: 'syn-frag';
 
 SYSLOG: 'syslog';
-
 SYSTEM: 'system';
-
+SYSTEM_DEFAULTS: 'system-defaults';
 SYSTEM_SERVICES: 'system-services';
 
 TABLE: 'table' -> pushMode(M_Name);

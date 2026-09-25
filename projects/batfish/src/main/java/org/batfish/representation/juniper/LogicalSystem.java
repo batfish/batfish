@@ -61,6 +61,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Integer> _expAliases;
 
+  private @Nullable String _systemDefaultExpClassifier;
+
   private final Map<String, Integer> _ieee8021pAliases;
 
   private final Map<String, Integer> _inetPrecedenceAliases;
@@ -306,6 +308,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Integer> getExpAliases() {
     return _expAliases;
+  }
+
+  public @Nullable String getSystemDefaultExpClassifier() {
+    return _systemDefaultExpClassifier;
   }
 
   public Map<String, Integer> getIeee8021pAliases() {
@@ -577,6 +583,10 @@ public class LogicalSystem implements Serializable {
 
   public void setHostname(String hostname) {
     _defaultRoutingInstance.setHostname(hostname);
+  }
+
+  public void setSystemDefaultExpClassifier(@Nullable String systemDefaultExpClassifier) {
+    _systemDefaultExpClassifier = systemDefaultExpClassifier;
   }
 
   public void setNatDestination(Nat natDestination) {
