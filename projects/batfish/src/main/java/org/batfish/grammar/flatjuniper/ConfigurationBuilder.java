@@ -680,6 +680,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospf3Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospfContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_rstpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -797,6 +798,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Prstp_bridge_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Prstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pstp_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pvstp_interfaceContext;
@@ -8384,10 +8386,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitP_rstp(P_rstpContext ctx) {
+    if (ctx.prstp_bridge_priority() == null && ctx.prstp_interface() == null) {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitPrstp_bridge_priority(Prstp_bridge_priorityContext ctx) {
+    String priority = toString(ctx.priority);
+    int value =
+        priority.endsWith("k")
+            ? Integer.parseInt(priority.substring(0, priority.length() - 1)) * 1024
+            : Integer.parseInt(priority);
+    _currentLogicalSystem.setRstpBridgePriority(value);
+    todo(ctx);
+  }
+
+  @Override
   public void exitPrstp_interface(Prstp_interfaceContext ctx) {
     if (ctx.id != null) {
       recordXstpInterface(ctx.id, RSTP_INTERFACE);
     }
+    todo(ctx);
   }
 
   @Override

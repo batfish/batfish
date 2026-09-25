@@ -419,6 +419,7 @@ BOOTPS: 'bootps';
 BOTH: 'both';
 BRIDGE: 'bridge';
 BRIDGE_DOMAINS: 'bridge-domains' -> pushMode(M_Name);
+BRIDGE_PRIORITY: 'bridge-priority' -> pushMode(M_Name);
 BROADCAST: 'broadcast';
 BROADCAST_CLIENT: 'broadcast-client';
 BUFFER_DYNAMIC_THRESHOLD: 'buffer-dynamic-threshold';

@@ -157,11 +157,23 @@ p_vrrp_null
    VRRP null_filler
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/rstp-edit-protocols.html
 p_rstp
 :
-   RSTP prstp_interface
+   RSTP
+   (
+      prstp_bridge_priority
+      | prstp_interface
+   )?
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bridge-priority-edit-protocols-stp.html
+prstp_bridge_priority
+:
+   BRIDGE_PRIORITY priority = junos_name
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interface-edit-protocols-stp.html
 prstp_interface
 :
    INTERFACE (ALL | id = interface_id | wildcard)
@@ -170,7 +182,7 @@ prstp_interface
       | prstpi_mode_null
       | prstpi_no_root_port_null
       | prstpi_priority_null
-   )
+   )?
 ;
 
 prstpi_edge_null
