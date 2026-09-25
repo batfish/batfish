@@ -542,6 +542,7 @@ if_inet6
       apply
       | ifi_accounting_null
       | ifi6_address
+      | ifi6_dhcpv6_client
       | ifi6_destination_udp_port
       | ifi6_filter
       | ifi6_mtu
@@ -576,6 +577,81 @@ ifi6_address
    )?
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dhcpv6-client-edit-interfaces.html
+ifi6_dhcpv6_client
+:
+   DHCPV6_CLIENT
+   (
+      ifi6dc_client_ia_type_null
+      | ifi6dc_client_identifier_null
+      | ifi6dc_client_type_null
+      | ifi6dc_interface_identifier_null
+      | ifi6dc_rapid_commit_null
+      | ifi6dc_req_option_null
+      | ifi6dc_retransmission_attempt_null
+      | ifi6dc_update_router_advertisement_null
+      | ifi6dc_update_server_null
+      | ifi6dc_use_ra_prefix_null
+      | ifi6dc_vendor_id_null
+   )
+;
+
+ifi6dc_client_ia_type_null
+:
+   CLIENT_IA_TYPE null_filler
+;
+
+ifi6dc_client_identifier_null
+:
+   CLIENT_IDENTIFIER null_filler
+;
+
+ifi6dc_client_type_null
+:
+   CLIENT_TYPE null_filler
+;
+
+ifi6dc_interface_identifier_null
+:
+   INTERFACE_IDENTIFIER null_filler
+;
+
+ifi6dc_rapid_commit_null
+:
+   RAPID_COMMIT null_filler
+;
+
+ifi6dc_req_option_null
+:
+   REQ_OPTION null_filler
+;
+
+ifi6dc_retransmission_attempt_null
+:
+   RETRANSMISSION_ATTEMPT null_filler
+;
+
+ifi6dc_update_router_advertisement_null
+:
+   UPDATE_ROUTER_ADVERTISEMENT null_filler
+;
+
+ifi6dc_update_server_null
+:
+   UPDATE_SERVER null_filler
+;
+
+ifi6dc_use_ra_prefix_null
+:
+   USE_RA_PREFIX null_filler
+;
+
+ifi6dc_vendor_id_null
+:
+   VENDOR_ID null_filler
+;
+
+// Static NDP entry: ndp <ip> (mac | multicast-mac) <mac> [publish]. Mirrors v4 static arp.
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/dynamic-profiles-interfaces-unit-family-inet6-address-ndp.html
 ifi6a_ndp
 :

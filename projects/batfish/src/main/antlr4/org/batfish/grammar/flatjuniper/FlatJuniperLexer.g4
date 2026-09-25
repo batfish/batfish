@@ -473,11 +473,12 @@ CLIENT: 'client';
 CLIENT_ALIVE_COUNT_MAX: 'client-alive-count-max';
 
 CLIENT_ALIVE_INTERVAL: 'client-alive-interval';
-
+CLIENT_IA_TYPE: 'client-ia-type';
+CLIENT_IDENTIFIER: 'client-identifier';
 CLIENT_LIST: 'client-list' -> pushMode(M_Name);
 
 CLIENT_LIST_NAME: 'client-list-name' -> pushMode(M_Name);
-
+CLIENT_TYPE: 'client-type';
 CLIENTS: 'clients';
 
 CLUSTER: 'cluster';
@@ -729,6 +730,7 @@ DH_GROUP: 'dh-group';
 DHCP: 'dhcp';
 
 DHCPV6: 'dhcpv6';
+DHCPV6_CLIENT: 'dhcpv6-client';
 
 DHCP_LOCAL_SERVER: 'dhcp-local-server';
 
@@ -1363,7 +1365,7 @@ INTERFACE
 INTERFACE_GROUP: 'interface-group' -> pushMode(M_SubRange);
 
 INTERFACE_GROUP_EXCEPT: 'interface-group-except' -> pushMode(M_SubRange);
-
+INTERFACE_IDENTIFIER: 'interface-identifier';
 INTERFACE_MAC_LIMIT: 'interface-mac-limit';
 INTERFACE_MODE: 'interface-mode';
 INTERFACE_NUM: 'interface-num';
@@ -2737,7 +2739,7 @@ RANGE: 'range';
 RANGE_ADDRESS: 'range-address';
 
 RANDOM: 'random';
-
+RAPID_COMMIT: 'rapid-commit';
 RAS: 'ras';
 
 RATE_LIMIT: 'rate-limit';
@@ -2797,7 +2799,7 @@ REMOVE_PRIVATE: 'remove-private';
 
 REMOVED: 'Removed';
 REPLACE: 'replace';
-
+REQ_OPTION: 'req-option';
 REQUIRED_OPTION_MISSING: 'required-option-missing';
 
 RESOLUTION: 'resolution';
@@ -2815,6 +2817,7 @@ RESTRICT: 'restrict';
 RESTRICTED_QUEUES: 'restricted-queues';
 
 RETAIN: 'retain';
+RETRANSMISSION_ATTEMPT: 'retransmission-attempt';
 RETRANSMIT_INTERVAL: 'retransmit-interval';
 RETRY_OPTIONS: 'retry-options';
 RETRY_TIMER: 'retry-timer';
@@ -3391,7 +3394,8 @@ UNREACHABLE: 'unreachable';
 UNTRUST: 'untrust';
 
 UNTRUST_SCREEN: 'untrust-screen';
-
+UPDATE_ROUTER_ADVERTISEMENT: 'update-router-advertisement';
+UPDATE_SERVER: 'update-server';
 UPLINK_FAILURE_DETECTION: 'uplink-failure-detection';
 
 UPTO: 'upto' -> pushMode(M_PrefixLength);
@@ -3399,7 +3403,7 @@ UPTO: 'upto' -> pushMode(M_PrefixLength);
 URG: 'urg';
 
 URPF_LOGGING: 'urpf-logging';
-
+USE_RA_PREFIX: 'use-ra-prefix';
 USER
 :
   'user'
@@ -3424,7 +3428,7 @@ VALUE: 'value' -> pushMode(M_SecretString);
 
 VALIDATION_DATABASE: 'validation-database';
 VALIDATION_STATE: 'validation-state';
-
+VENDOR_ID: 'vendor-id';
 VERSION
 :
    'version' -> pushMode ( M_Version )
