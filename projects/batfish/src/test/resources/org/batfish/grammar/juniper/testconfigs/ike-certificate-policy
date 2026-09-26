@@ -1,0 +1,9 @@
+set system host-name ike-certificate-policy
+set security certificates local CERT-A <SCRUBBED>
+set security certificates local CERT-B <SCRUBBED>
+set security certificates local CERT-C <SCRUBBED>
+set security ike policy X509-POLICY certificate local-certificate CERT-A
+set security ike policy X509-POLICY certificate local-certificate CERT-B
+set security ike policy X509-POLICY certificate peer-certificate-type x509-signature
+set security ike policy PKCS7-POLICY certificate local-certificate CERT-C
+set security ike policy PKCS7-POLICY certificate peer-certificate-type pkcs7

@@ -59,6 +59,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.PKI_CA_PROFILE;
+import static org.batfish.representation.juniper.JuniperStructureType.PKI_LOCAL_CERTIFICATE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
@@ -170,6 +171,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_LOCAL_CERTIFICATE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ARP_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_DEMUX_UNDERLYING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
@@ -1087,6 +1089,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_key_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_start_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sec_localContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Secret_stringContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sef_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
@@ -1099,6 +1102,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_local_addressCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_pre_shared_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposal_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposalsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpc_local_certificateContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpc_peer_certificate_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_authentication_methodContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_dh_groupContext;
@@ -1386,6 +1391,7 @@ import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
+import org.batfish.representation.juniper.IkePolicy.PeerCertificateType;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.Interface.EthernetSegmentRedundancyMode;
@@ -5008,6 +5014,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
     _currentAuthenticationKeyChain = authenticationkeyChain;
     _configuration.defineFlattenedStructure(AUTHENTICATION_KEY_CHAIN, name, ctx, _parser);
+  }
+
+  @Override
+  public void enterSec_local(Sec_localContext ctx) {
+    _configuration.defineFlattenedStructure(
+        PKI_LOCAL_CERTIFICATE, toString(ctx.name), ctx, _parser);
   }
 
   @Override
@@ -10417,6 +10429,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSeikg_local_address(Seikg_local_addressContext ctx) {
     Ip ip = toIp(ctx.ip_address());
     _currentIkeGateway.setLocalAddress(ip);
+  }
+
+  @Override
+  public void exitSeikpc_local_certificate(Seikpc_local_certificateContext ctx) {
+    String name = toString(ctx.name);
+    _currentIkePolicy.getLocalCertificates().add(name);
+    _configuration.referenceStructure(
+        PKI_LOCAL_CERTIFICATE, name, IKE_POLICY_LOCAL_CERTIFICATE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitSeikpc_peer_certificate_type(Seikpc_peer_certificate_typeContext ctx) {
+    _currentIkePolicy.setPeerCertificateType(
+        ctx.PKCS7() != null ? PeerCertificateType.PKCS7 : PeerCertificateType.X509_SIGNATURE);
   }
 
   @Override

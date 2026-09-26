@@ -464,6 +464,8 @@ CATEGORIES: 'categories';
 
 CCC: 'ccc';
 
+CERTIFICATE: 'certificate';
+
 CERTIFICATES: 'certificates';
 
 CHAINED_COMPOSITE_NEXT_HOP: 'chained-composite-next-hop';
@@ -2078,6 +2080,8 @@ LOCAL_ADDRESS: 'local-address';
 
 LOCAL_AS: 'local-as' -> pushMode(M_BgpAsn);
 
+LOCAL_CERTIFICATE: 'local-certificate' -> pushMode(M_Name);
+
 LOCAL_IDENTITY: 'local-identity';
 
 LOCAL_PORT: 'local-port';
@@ -2599,6 +2603,7 @@ PE_PE_CONNECTION: 'pe-pe-connection';
 PEER: 'peer';
 PEER_ADDRESS: 'peer-address';
 PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
+PEER_CERTIFICATE_TYPE: 'peer-certificate-type';
 PEER_UNIT: 'peer-unit';
 PER_FLOW: 'per-flow';
 PER_PACKET: 'per-packet';
@@ -2622,6 +2627,8 @@ PIM: 'pim';
 PING: 'ping';
 
 PING_DEATH: 'ping-death';
+
+PKCS7: 'pkcs7';
 
 PKI: 'pki';
 
@@ -3693,6 +3700,8 @@ XDMCP: 'xdmcp';
 XNM_CLEAR_TEXT: 'xnm-clear-text';
 
 XNM_SSL: 'xnm-ssl';
+
+X509_SIGNATURE: 'x509-signature';
 
 ZONE: 'zone' -> pushMode(M_Name);
 
