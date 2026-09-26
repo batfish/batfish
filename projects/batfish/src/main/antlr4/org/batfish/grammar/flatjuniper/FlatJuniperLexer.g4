@@ -791,6 +791,8 @@ DISCARD: 'discard';
 
 DISTANCE_TO_PROTOCOL_NEXTHOP: 'distance-to-protocol-nexthop';
 
+DISTINGUISHED_NAME: 'distinguished-name';
+
 DIVIDE: 'divide';
 
 DNS: 'dns';
@@ -1100,6 +1102,8 @@ G: 'g';
 GATEWAY: 'gateway' -> pushMode(M_Name);
 
 GATEWAY_ADDRESS: 'gateway-address';
+
+GENERAL_IKEID: 'general-ikeid';
 
 GENERATE: 'generate';
 
@@ -1972,6 +1976,7 @@ KEY_CHAIN: 'key-chain' -> pushMode(M_Name);
 
 KEY_EXCHANGE: 'key-exchange';
 
+KEY_ID: 'key-id' -> pushMode(M_Name);
 KEY_NAME: 'key-name' -> pushMode(M_Name);
 
 KEYS: 'keys';
@@ -3566,6 +3571,8 @@ USER
   }
 ;
 
+USER_AT_HOSTNAME: 'user-at-hostname' -> pushMode(M_EmailAddress);
+
 USER_DEFINED_OPTION_TYPE: 'user-defined-option-type';
 
 UUID: 'uuid';
@@ -4858,6 +4865,12 @@ M_Name_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Name_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
 M_Name_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Name_NAME: F_Name -> type(NAME), popMode;
+
+mode M_EmailAddress;
+
+M_EmailAddress_WS: F_WhitespaceChar+ -> skip;
+M_EmailAddress_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_EmailAddress_NAME: F_NonWhitespaceChar+ -> type(NAME), popMode;
 
 mode M_SyslogFileName;
 
