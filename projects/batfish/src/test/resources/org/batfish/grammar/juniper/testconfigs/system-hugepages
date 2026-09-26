@@ -1,0 +1,3 @@
+set system host-name system-hugepages
+set system memory hugepages page-size 2 page-count 500
+set system memory hugepages page-size 1024 page-count 24
