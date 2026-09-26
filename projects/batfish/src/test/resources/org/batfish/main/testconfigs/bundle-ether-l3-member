@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname bundle-ether-l3-member
+!
+interface Bundle-Ether1
+  ipv4 address 10.0.0.1 255.255.255.254
+interface HundredGigE0/0/0/1
+  bundle id 1 mode active
+  ipv4 address 10.0.0.1 255.255.255.254
