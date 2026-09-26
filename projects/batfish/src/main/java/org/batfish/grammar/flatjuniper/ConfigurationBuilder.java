@@ -356,6 +356,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_applicationContext;
@@ -12178,6 +12179,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private @Nonnull String toString(Address_specifier_nameContext ctx) {
     return unquote(ctx.getText(), ctx);
+  }
+
+  private @Nonnull String toString(A_application_nameContext ctx) {
+    return ctx.ANY() != null ? ctx.ANY().getText() : toString(ctx.junos_name());
   }
 
   private @Nonnull String toString(Junos_nameContext ctx) {
