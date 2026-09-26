@@ -142,7 +142,8 @@ s_access
    (
       sa_address_assignment_null
       | sa_profile
-      | sa_radius_server_null
+      | sa_radius_server
+      | sa_radsec
    )
 ;
 
@@ -212,11 +213,6 @@ saaapfi_range_null
       HIGH
       | LOW
    ) ip_address
-;
-
-sa_radius_server_null
-:
-   RADIUS_SERVER null_filler
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/access-edit-profile.html
@@ -346,6 +342,68 @@ svnfvc_number
 svnfvcn_physical_cpu_null
 :
    PHYSICAL_CPU (junos_name | uint32)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/radius-server-edit-access-subscriber-management.html
+sa_radius_server
+:
+   RADIUS_SERVER address = ip_address
+   (
+      ACCOUNTING_PORT port_number
+      | ACCOUNTING_RETRY dec
+      | ACCOUNTING_TIMEOUT dec
+      | DEAD_TIME dec
+      | DYNAMIC_REQUEST_PORT port_number
+      | MAX_OUTSTANDING_REQUESTS dec
+      | MESSAGE_AUTHENTICATOR
+      | NO_MESSAGE_AUTHENTICATOR
+      | PORT port_number
+      | PREAUTHENTICATION_PORT port_number
+      | PREAUTHENTICATION_SECRET secret_string
+      | RADSEC_DESTINATION destination = uint16
+      | RETRY dec
+      | ROUTING_INSTANCE routing_instance = junos_name
+      | SECRET secret_string
+      | SOURCE_ADDRESS ip_address
+      | SOURCE_PORT port_number
+      | TIMEOUT dec
+   )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/radsec-edit-access.html
+sa_radsec
+:
+   RADSEC sard_destination
+;
+
+sard_destination
+:
+   DESTINATION id = uint16
+   (
+      ADDRESS ip_address
+      | DYNAMIC_REQUESTS sardd_dynamic_requests
+      | ID_REUSE_TIMEOUT dec
+      | LOGICAL_SYSTEM logical_system = junos_name
+        (ROUTING_INSTANCE logical_system_routing_instance = junos_name)?
+      | MAX_TX_BUFFERS dec
+      | PORT port_number
+      | ROUTING_INSTANCE routing_instance = junos_name
+      | SOURCE_ADDRESS ip_address
+      | TLS_CERTIFICATE junos_name
+      | TLS_FORCE_CIPHERS (LOW | MEDIUM)
+      | TLS_MIN_VERSION junos_name
+      | TLS_PEER_NAME junos_name
+      | TLS_TIMEOUT dec
+   )
+;
+
+sardd_dynamic_requests
+:
+   (
+      ROUTING_INSTANCE routing_instance = junos_name
+      | SOURCE_ADDRESS ip_address
+      | SOURCE_PORT port_number
+   )
 ;
 
 s_groups

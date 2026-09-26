@@ -1,0 +1,36 @@
+set system host-name access-radius-radsec
+set logical-systems TENANT system host-name tenant
+set routing-instances MGMT instance-type virtual-router
+set access radius-server 192.0.2.10 accounting-port 1813
+set access radius-server 192.0.2.10 accounting-retry 3
+set access radius-server 192.0.2.10 accounting-timeout 5
+set access radius-server 192.0.2.10 dead-time 15
+set access radius-server 192.0.2.10 dynamic-request-port 3799
+set access radius-server 192.0.2.10 max-outstanding-requests 64
+set access radius-server 192.0.2.10 message-authenticator
+set access radius-server 192.0.2.10 no-message-authenticator
+set access radius-server 192.0.2.10 port 1812
+set access radius-server 192.0.2.10 preauthentication-port 1814
+set access radius-server 192.0.2.10 preauthentication-secret "<SCRUBBED>"
+set access radius-server 192.0.2.10 secret "<SCRUBBED>"
+set access radius-server 192.0.2.10 source-address 192.0.2.1
+set access radius-server 192.0.2.10 source-port 49152
+set access radius-server 192.0.2.10 routing-instance MGMT
+set access radius-server 192.0.2.10 radsec-destination 1
+set access radius-server 192.0.2.10 retry 3
+set access radius-server 192.0.2.10 timeout 5
+set access radsec destination 1 address 192.0.2.10
+set access radsec destination 1 dynamic-requests routing-instance MGMT
+set access radsec destination 1 dynamic-requests source-address 192.0.2.1
+set access radsec destination 1 dynamic-requests source-port 3799
+set access radsec destination 1 id-reuse-timeout 60
+set access radsec destination 1 logical-system TENANT routing-instance MGMT
+set access radsec destination 1 max-tx-buffers 128
+set access radsec destination 1 port 2083
+set access radsec destination 1 routing-instance MGMT
+set access radsec destination 1 source-address 192.0.2.1
+set access radsec destination 1 tls-certificate CLIENT-CERT
+set access radsec destination 1 tls-force-ciphers medium
+set access radsec destination 1 tls-min-version v1.2
+set access radsec destination 1 tls-peer-name radius.example.com
+set access radsec destination 1 tls-timeout 30
