@@ -132,6 +132,7 @@ s_common
    | s_snmp
    | s_switch_options
    | s_system
+   | s_virtual_network_functions
    | s_vlans
 ;
 
@@ -222,6 +223,129 @@ sa_radius_server_null
 sa_profile
 :
    PROFILE name = junos_name null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/virtual-network-functions.html
+s_virtual_network_functions
+:
+   VIRTUAL_NETWORK_FUNCTIONS junos_name
+   (
+      svnf_config_data
+      | svnf_image_null
+      | svnf_interfaces
+      | svnf_memory
+      | svnf_virtual_cpu
+   )
+;
+
+svnf_config_data
+:
+   CONFIG_DATA
+   (
+      svnfcd_source_null
+      | svnfcd_target
+   )
+;
+
+svnfcd_source_null
+:
+   SOURCE FILE junos_name
+;
+
+svnfcd_target
+:
+   TARGET
+   (
+      svnfcdt_device_name_null
+      | svnfcdt_device_type_null
+   )
+;
+
+svnfcdt_device_name_null
+:
+   DEVICE_NAME junos_name
+;
+
+svnfcdt_device_type_null
+:
+   DEVICE_TYPE junos_name
+;
+
+svnf_image_null
+:
+   IMAGE junos_name
+;
+
+svnf_interfaces
+:
+   INTERFACES junos_name svnfint_mapping
+;
+
+svnfint_mapping
+:
+   MAPPING svnfintm_interface
+;
+
+svnfintm_interface
+:
+   INTERFACE
+   (
+      junos_name
+      | svnfintmi_virtual_function_null
+   )
+;
+
+svnfintmi_virtual_function_null
+:
+   VIRTUAL_FUNCTION (DISABLE_SPOOF_CHECK | TRUST)?
+;
+
+svnf_memory
+:
+   MEMORY
+   (
+      svnfmem_features
+      | svnfmem_size_null
+   )
+;
+
+svnfmem_features
+:
+   FEATURES svnfmemf_hugepages_null
+;
+
+svnfmemf_hugepages_null
+:
+   HUGEPAGES (PAGE_SIZE uint32)?
+;
+
+svnfmem_size_null
+:
+   SIZE uint32
+;
+
+svnf_virtual_cpu
+:
+   VIRTUAL_CPU
+   (
+      svnfvc_count_null
+      | svnfvc_number
+   )
+;
+
+svnfvc_count_null
+:
+   COUNT uint32
+;
+
+svnfvc_number
+:
+   uint32 svnfvcn_physical_cpu_null
+;
+
+svnfvcn_physical_cpu_null
+:
+   PHYSICAL_CPU (junos_name | uint32)
 ;
 
 s_groups

@@ -1,0 +1,15 @@
+set system host-name virtual-network-functions
+set virtual-network-functions ROUTER config-data source file /var/public/router.conf
+set virtual-network-functions ROUTER config-data target device-name hda
+set virtual-network-functions ROUTER config-data target device-type usb
+set virtual-network-functions ROUTER image /var/public/router.img
+set virtual-network-functions ROUTER interfaces eth0 mapping interface hsxe0
+set virtual-network-functions ROUTER interfaces eth1 mapping interface virtual-function
+set virtual-network-functions ROUTER interfaces eth2 mapping interface virtual-function disable-spoof-check
+set virtual-network-functions ROUTER interfaces eth3 mapping interface virtual-function trust
+set virtual-network-functions ROUTER memory features hugepages
+set virtual-network-functions ROUTER memory features hugepages page-size 1024
+set virtual-network-functions ROUTER memory size 4194304
+set virtual-network-functions ROUTER virtual-cpu 0 physical-cpu 2
+set virtual-network-functions ROUTER virtual-cpu 1 physical-cpu 3-4
+set virtual-network-functions ROUTER virtual-cpu count 2
