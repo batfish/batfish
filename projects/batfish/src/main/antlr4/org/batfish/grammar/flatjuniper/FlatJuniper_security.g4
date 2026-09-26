@@ -480,6 +480,7 @@ s_security
       | se_pki
       | se_policies
       | se_screen
+      | se_utm_null
       | se_zones
    )
 ;
@@ -494,6 +495,19 @@ sef_family
 :
    FAMILY family = (INET | INET6 | ISO | MPLS)
    MODE processing_mode = (DROP | FLOW_BASED | PACKET_BASED)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-mime-whitelist.html
+se_utm_null
+:
+   UTM FEATURE_PROFILE ANTI_VIRUS MIME_WHITELIST
+   (
+      EXCEPTION junos_name
+      | LIST junos_name
+      (
+         EXCEPTION junos_name
+      )?
+   )
 ;
 
 se_address_book
