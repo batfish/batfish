@@ -40,6 +40,7 @@ s_system
       | sy_no_redirects_ipv6_null
       | sy_no_redirects_null
       | sy_ntp
+      | sy_phone_home_null
       | sy_ports
       | sy_processes_null
       | sy_radius_options_null
@@ -62,6 +63,16 @@ s_system
 sy_management_instance
 :
    MANAGEMENT_INSTANCE
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/junos-install-upgrade/topics/concept/phone-home-client-understanding.html
+sy_phone_home_null
+:
+   PHONE_HOME
+   (
+      RFC_COMPLIANT
+      | SERVER junos_name
+   )
 ;
 
 sy_authentication_method
