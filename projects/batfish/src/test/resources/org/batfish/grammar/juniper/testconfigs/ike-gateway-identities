@@ -1,0 +1,8 @@
+set system host-name ike-gateway-identities
+set security ike gateway GENERAL dynamic general-ikeid
+set security ike gateway DN local-identity distinguished-name
+set security ike gateway HOST local-identity hostname vpn.example.com
+set security ike gateway V4 local-identity inet 192.0.2.1
+set security ike gateway V6 local-identity inet6 2001:db8::1
+set security ike gateway KEY local-identity key-id gateway-key-id
+set security ike gateway USER local-identity user-at-hostname user@example.com
