@@ -133,6 +133,7 @@ s_common
    | s_switch_options
    | s_system
    | s_virtual_network_functions
+   | s_vmhost
    | s_vlans
 ;
 
@@ -346,6 +347,50 @@ svnfvc_number
 svnfvcn_physical_cpu_null
 :
    PHYSICAL_CPU (junos_name | uint32)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vmhost-edit.html
+s_vmhost
+:
+   VMHOST
+   (
+      svmh_mode
+      | svmh_virtualization_options_null
+      | svmh_vlans_null
+   )
+;
+
+svmh_mode
+:
+   MODE CUSTOM FLEX
+   (
+      LAYER_3_INFRASTRUCTURE
+      | NFV_BACK_PLANE
+   )
+   (
+      svmhm_cpu_null
+      | svmhm_memory_null
+   )
+;
+
+svmhm_cpu_null
+:
+   CPU COUNT (junos_name | uint16)
+;
+
+svmhm_memory_null
+:
+   MEMORY SIZE (junos_name | uint16)
+;
+
+svmh_virtualization_options_null
+:
+   VIRTUALIZATION_OPTIONS INTERFACES interface_id
+;
+
+svmh_vlans_null
+:
+   VLANS junos_name VLAN_ID uint16
 ;
 
 s_groups
