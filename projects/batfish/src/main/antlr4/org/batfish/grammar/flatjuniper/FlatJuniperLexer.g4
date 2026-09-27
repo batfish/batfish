@@ -1225,6 +1225,8 @@ HTTP: 'http';
 
 HTTPS: 'https';
 
+HUGEPAGES: 'hugepages';
+
 ICCP: 'iccp';
 
 ICMP: 'icmp';
@@ -2260,6 +2262,7 @@ MEMBERS
 MEMBERSHIP_REPORT: 'membership-report';
 
 MEMBERSHIP_QUERY: 'membership-query';
+MEMORY: 'memory';
 
 MESSAGE: 'message';
 
@@ -2585,6 +2588,8 @@ PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 PACKET_LENGTH_EXCEPT: 'packet-length-except' -> pushMode(M_SubRange);
 
 PACKET_TOO_BIG: 'packet-too-big';
+PAGE_COUNT: 'page-count';
+PAGE_SIZE: 'page-size';
 PARAMETER_PROBLEM: 'parameter-problem';
 PAP: 'pap';
 PASSIVE: 'passive';

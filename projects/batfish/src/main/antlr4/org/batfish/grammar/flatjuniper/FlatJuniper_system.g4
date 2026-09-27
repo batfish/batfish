@@ -33,6 +33,7 @@ s_system
       | sy_management_instance
       | sy_max_configuration_rollbacks_null
       | sy_max_configurations_on_flash_null
+      | sy_memory_null
       | sy_name_resolution_null
       | sy_name_server
       | sy_no_ping_record_route_null
@@ -73,6 +74,12 @@ sy_phone_home_null
       RFC_COMPLIANT
       | SERVER junos_name
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/nfx250-jdm/topics/topic-map/nfx-enhanced-orchestration-hugepages.html
+sy_memory_null
+:
+   MEMORY HUGEPAGES PAGE_SIZE dec PAGE_COUNT dec
 ;
 
 sy_authentication_method
