@@ -3,7 +3,7 @@ name: Bazel Steward
 on:
   workflow_dispatch:
   schedule:
-    - cron: '07 12 * * 1-5' # runs every weekday at 1207 UTC which is sensible US/Pacific
+    - cron: '07 12 * * 1' # runs Mondays at 1207 UTC which is sensible US/Pacific
 
 jobs:
   bazel-steward:
@@ -12,6 +12,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: VirtusLab/bazel-steward@v1.8.0
+      - uses: VirtusLab/bazel-steward@21a745e047b04953192bdb2f590a1ef445732ad9
         with:
           configuration-path: "./.bazel-steward.yaml"
