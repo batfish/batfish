@@ -17,6 +17,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.SubRange;
 
 public class Interface implements Serializable {
@@ -240,6 +241,8 @@ public class Interface implements Serializable {
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
   private @Nullable Integer _vlanId;
   private @Nonnull VlanTaggingMode _vlanTagging;
+  private boolean _virtualGatewayAcceptData;
+  private @Nullable MacAddress _virtualGatewayV4Mac;
   private Integer _tcpMss;
 
   public Interface(String name) {
@@ -487,6 +490,14 @@ public class Interface implements Serializable {
 
   public @Nonnull VlanTaggingMode getVlanTagging() {
     return _vlanTagging;
+  }
+
+  public boolean getVirtualGatewayAcceptData() {
+    return _virtualGatewayAcceptData;
+  }
+
+  public @Nullable MacAddress getVirtualGatewayV4Mac() {
+    return _virtualGatewayV4Mac;
   }
 
   public void setVlanTagging(@Nonnull VlanTaggingMode vlanTagging) {
@@ -771,6 +782,14 @@ public class Interface implements Serializable {
 
   public void setRoutingInstance(RoutingInstance routingInstance) {
     _routingInstance = routingInstance;
+  }
+
+  public void setVirtualGatewayAcceptData(boolean virtualGatewayAcceptData) {
+    _virtualGatewayAcceptData = virtualGatewayAcceptData;
+  }
+
+  public void setVirtualGatewayV4Mac(@Nullable MacAddress virtualGatewayV4Mac) {
+    _virtualGatewayV4Mac = virtualGatewayV4Mac;
   }
 
   public void setTcpMss(@Nullable Integer tcpMss) {

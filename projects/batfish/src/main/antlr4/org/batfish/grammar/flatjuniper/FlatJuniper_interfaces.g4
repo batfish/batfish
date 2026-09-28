@@ -423,6 +423,8 @@ i_unit
       | i_multipoint
       | i_output_vlan_map
       | i_peer_unit
+      | i_virtual_gateway_accept_data
+      | i_virtual_gateway_v4_mac
       | i_vlan_tags
    )
 ;
@@ -462,6 +464,18 @@ i_vlan_id_list
 i_vlan_tagging
 :
    VLAN_TAGGING
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/virtual-gateway-address-edit-interfaces.html
+i_virtual_gateway_accept_data
+:
+   VIRTUAL_GATEWAY_ACCEPT_DATA
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/virtual-gateway-v4-mac-edit-interfaces.html
+i_virtual_gateway_v4_mac
+:
+   VIRTUAL_GATEWAY_V4_MAC mac = MAC_ADDRESS
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/vlan-tags-edit-interfaces.html

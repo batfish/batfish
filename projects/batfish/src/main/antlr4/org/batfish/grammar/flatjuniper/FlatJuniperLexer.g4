@@ -3653,6 +3653,10 @@ VIRTUAL_CHASSIS: 'virtual-chassis';
 
 VIRTUAL_GATEWAY_ADDRESS: 'virtual-gateway-address';
 
+VIRTUAL_GATEWAY_ACCEPT_DATA: 'virtual-gateway-accept-data';
+
+VIRTUAL_GATEWAY_V4_MAC: 'virtual-gateway-v4-mac' -> pushMode(M_MacAddress);
+
 VIRTUAL_INET6_ADDRESS: 'virtual-inet6-address';
 
 VIRTUAL_LINK_LOCAL_ADDRESS: 'virtual-link-local-address';
