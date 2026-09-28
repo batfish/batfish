@@ -781,7 +781,7 @@ roa_common
 
 roa_community
 :
-   COMMUNITY community = STANDARD_COMMUNITY
+   COMMUNITY route_community
 ;
 
 roa_defaults
@@ -1168,7 +1168,7 @@ rosr_common
 
 rosr_community
 :
-   COMMUNITY static_route_community
+   COMMUNITY route_community
 ;
 
 rosr_discard
@@ -1281,7 +1281,7 @@ rosr_tag2
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/community-edit-routing-options.html
-static_route_community
+route_community
 :
    large_community
    | standard_community

@@ -1,0 +1,3 @@
+set version 23.4R2
+set system host-name aggregate-route-large-community
+set routing-options aggregate route 192.0.2.0/24 community large:64512:1:2
