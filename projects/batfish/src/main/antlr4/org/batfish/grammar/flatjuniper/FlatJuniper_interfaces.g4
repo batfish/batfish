@@ -553,6 +553,7 @@ if_inet
       | ifi_service_null
       | ifi_targeted_broadcast_null
       | ifi_tcp_mss
+      | ifi_tunnel_termination
    )
 ;
 
@@ -980,6 +981,12 @@ ifirpf_mode
 ifi_tcp_mss
 :
   TCP_MSS size = dec
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interfaces-unit-tunnel-encapsulation-gre-tunnel-termination.html
+ifi_tunnel_termination
+:
+   TUNNEL_TERMINATION
 ;
 
 ifia_arp

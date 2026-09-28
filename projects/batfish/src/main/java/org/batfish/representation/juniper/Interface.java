@@ -245,6 +245,7 @@ public class Interface implements Serializable {
   private boolean _virtualGatewayAcceptData;
   private @Nullable MacAddress _virtualGatewayV4Mac;
   private Integer _tcpMss;
+  private boolean _tunnelTermination;
 
   public Interface(String name) {
     _active = true;
@@ -807,6 +808,14 @@ public class Interface implements Serializable {
 
   public @Nullable Integer getTcpMss() {
     return _tcpMss;
+  }
+
+  public boolean getTunnelTermination() {
+    return _tunnelTermination;
+  }
+
+  public void setTunnelTermination(boolean tunnelTermination) {
+    _tunnelTermination = tunnelTermination;
   }
 
   @Override

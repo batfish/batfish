@@ -593,6 +593,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_por
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_rpf_checkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tunnel_terminationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
@@ -7068,6 +7069,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitIfi_tcp_mss(Ifi_tcp_mssContext ctx) {
     int tcpMss = toInt(ctx.size);
     _currentInterfaceOrRange.setTcpMss(tcpMss);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIfi_tunnel_termination(Ifi_tunnel_terminationContext ctx) {
+    _currentInterfaceOrRange.setTunnelTermination(true);
     todo(ctx);
   }
 

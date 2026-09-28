@@ -1,0 +1,2 @@
+set system host-name junos-interface-tunnel-termination
+set interfaces fti0 unit 0 family inet tunnel-termination
