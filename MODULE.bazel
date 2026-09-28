@@ -74,7 +74,7 @@ BATFISH_MAVEN_ARTIFACTS = [
 ]
 
 BATFISH_MAVEN_BOMS = [
-    "com.fasterxml.jackson:jackson-bom:2.22.2",
+    "com.fasterxml.jackson:jackson-bom:2.22.3",
     "com.google.guava:guava-bom:33.7.1-jre",
 ]
 
