@@ -1,2 +1,3 @@
 set system host-name junos-bgp-stale-label-holddown
+set protocols bgp holddown-all-stale-labels
 set protocols bgp stale-labels-holddown-period 30
