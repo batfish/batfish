@@ -103,7 +103,7 @@ bazel_dep(name = "rules_java", version = "9.9.0")
 bazel_dep(name = "rules_jvm_external", version = "7.1")
 
 # Python rules
-bazel_dep(name = "rules_python", version = "2.3.3")
+bazel_dep(name = "rules_python", version = "2.3.4")
 
 # Development tools
 bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
