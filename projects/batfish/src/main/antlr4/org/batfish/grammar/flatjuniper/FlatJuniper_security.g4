@@ -488,7 +488,11 @@ s_security
 
 se_forwarding_options
 :
-   FORWARDING_OPTIONS sef_family
+   FORWARDING_OPTIONS
+   (
+      sef_family
+      | sef_services_offload_null
+   )
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-mode-forwarding-options.html
@@ -496,6 +500,12 @@ sef_family
 :
    FAMILY family = (INET | INET6 | ISO | MPLS)
    MODE processing_mode = (DROP | FLOW_BASED | PACKET_BASED)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/idp-policy/topics/topic-map/serv-offload-sec-exp-path.html
+sef_services_offload_null
+:
+   SERVICES_OFFLOAD DISABLE
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-traceoptions-security.html
