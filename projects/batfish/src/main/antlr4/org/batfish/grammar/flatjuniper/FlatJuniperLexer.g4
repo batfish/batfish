@@ -3228,6 +3228,8 @@ SELF_PING_DURATION: 'self-ping-duration';
 
 SEND: 'send';
 
+SEND_ADDPATH_OPTIMIZATION: 'send-addpath-optimization';
+
 SEND_COUNT: 'send-count';
 
 SERVER: 'server' -> pushMode(M_NameOrIp);
