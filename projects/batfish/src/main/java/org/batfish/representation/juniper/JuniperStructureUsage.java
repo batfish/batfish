@@ -3,6 +3,12 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureUsage;
 
 public enum JuniperStructureUsage implements StructureUsage {
+  ACCESS_RADIUS_SERVER_RADSEC_DESTINATION("access radius-server radsec-destination"),
+  ACCESS_RADIUS_SERVER_ROUTING_INSTANCE("access radius-server routing-instance"),
+  ACCESS_RADSEC_DYNAMIC_REQUESTS_ROUTING_INSTANCE(
+      "access radsec dynamic-requests routing-instance"),
+  ACCESS_RADSEC_LOGICAL_SYSTEM("access radsec logical-system"),
+  ACCESS_RADSEC_ROUTING_INSTANCE("access radsec routing-instance"),
   ADD_PATH_SEND_PREFIX_POLICY("add-path send prefix-policy"),
   ADDRESS_BOOK_ATTACH_ZONE("address-book attach zone"),
   AGGREGATE_ROUTE_POLICY("aggregate route policy"),
