@@ -119,6 +119,7 @@ b_common
    | b_forwarding_context
    | b_graceful_restart_null
    | b_hold_time_null
+   | b_holddown_all_stale_labels_null
    | b_import
    | b_keep
    | b_local_address
@@ -407,6 +408,12 @@ b_remove_private
      | REPLACE
      | NO_PEER_LOOP_CHECK
    )*
+;
+
+// https://github.com/Juniper/yang/blob/master/20.3/20.3R1/junos/conf-with-extensions/junos-conf-protocols%402019-01-01.yang
+b_holddown_all_stale_labels_null
+:
+   HOLDDOWN_ALL_STALE_LABELS
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/stale-labels-holddown-period-edit-protocols-bgp.html
