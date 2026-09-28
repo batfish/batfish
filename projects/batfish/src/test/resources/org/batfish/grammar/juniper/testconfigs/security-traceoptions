@@ -1,0 +1,45 @@
+set system host-name security-traceoptions
+set security traceoptions file security.log files 5 match "security" size 10m world-readable
+set security traceoptions flag all
+set security traceoptions flag certificates
+set security traceoptions flag database
+set security traceoptions flag general
+set security traceoptions flag ike
+set security traceoptions flag parse
+set security traceoptions flag policy-manager
+set security traceoptions flag routing-socket
+set security traceoptions flag timer
+set security traceoptions level all
+set security traceoptions level error
+set security traceoptions level info
+set security traceoptions level notice
+set security traceoptions level verbose
+set security traceoptions level warning
+set security traceoptions no-remote-trace
+set security traceoptions rate-limit 100
+set security ike traceoptions file ike.log files 3 size 10m no-world-readable
+set security ike traceoptions flag all
+set security ike traceoptions flag certificates
+set security ike traceoptions flag config
+set security ike traceoptions flag database
+set security ike traceoptions flag general
+set security ike traceoptions flag high-availability
+set security ike traceoptions flag ike
+set security ike traceoptions flag next-hop-tunnels
+set security ike traceoptions flag parse
+set security ike traceoptions flag policy-manager
+set security ike traceoptions flag routing-socket
+set security ike traceoptions flag thread
+set security ike traceoptions flag timer
+set security ike traceoptions level critical
+set security ike traceoptions level detail
+set security ike traceoptions level error
+set security ike traceoptions level terse
+set security ike traceoptions level warning
+set security ike traceoptions no-remote-trace
+set security ike traceoptions rate-limit 200
+set security ipsec traceoptions flag all
+set security ipsec traceoptions flag next-hop-tunnel-binding
+set security ipsec traceoptions flag packet-drops
+set security ipsec traceoptions flag packet-processing
+set security ipsec traceoptions flag security-associations
