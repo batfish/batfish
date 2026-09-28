@@ -1,0 +1,12 @@
+set version 25.4R1.12
+set system host-name route-large-community
+set routing-options aggregate defaults community 65001:50
+set routing-options aggregate defaults community large:65001:50:1
+set routing-options aggregate route 10.21.0.0/16 community 65001:21
+set routing-options aggregate route 10.21.0.0/16 community large:65001:21:1
+set routing-options aggregate route 10.50.0.0/16 active
+set routing-options generate defaults community 65001:60
+set routing-options generate defaults community large:65001:60:1
+set routing-options generate route 10.31.0.0/16 community 65001:31
+set routing-options generate route 10.31.0.0/16 community large:65001:31:1
+set routing-options generate route 10.60.0.0/16 active

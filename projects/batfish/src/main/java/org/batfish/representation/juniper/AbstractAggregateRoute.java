@@ -84,6 +84,9 @@ public abstract class AbstractAggregateRoute implements Serializable {
   protected final void inheritUnsetFieldsSuper(AbstractAggregateRoute parent) {
     _active = firstNonNull(_active, parent._active);
     _asPath = _asPath != null ? _asPath : parent._asPath;
+    if (_communities.isEmpty()) {
+      _communities.addAll(parent._communities);
+    }
     _metric = firstNonNull(_metric, parent._metric);
     _preference = firstNonNull(_preference, parent._preference);
   }
