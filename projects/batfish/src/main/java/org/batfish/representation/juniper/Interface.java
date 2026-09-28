@@ -15,6 +15,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
 
@@ -196,6 +197,8 @@ public class Interface implements Serializable {
   private String _description;
   private boolean _defined;
   private @Nullable BridgeSwitching _bridgeSwitching;
+  private @Nullable Ip _destinationAddress;
+  private @Nullable Ip6 _destinationAddress6;
   private @Nullable String _ethernetSegmentIdentifier;
   private @Nullable EthernetSegmentRedundancyMode _ethernetSegmentRedundancyMode;
   private @Nullable EthernetSwitching _ethernetSwitching;
@@ -314,6 +317,14 @@ public class Interface implements Serializable {
 
   public @Nullable String getDemuxUnderlyingInterface() {
     return _demuxUnderlyingInterface;
+  }
+
+  public @Nullable Ip getDestinationAddress() {
+    return _destinationAddress;
+  }
+
+  public @Nullable Ip6 getDestinationAddress6() {
+    return _destinationAddress6;
   }
 
   public @Nullable String getIncomingFilter() {
@@ -607,6 +618,14 @@ public class Interface implements Serializable {
 
   public void setDemuxUnderlyingInterface(@Nullable String demuxUnderlyingInterface) {
     _demuxUnderlyingInterface = demuxUnderlyingInterface;
+  }
+
+  public void setDestinationAddress(@Nullable Ip destinationAddress) {
+    _destinationAddress = destinationAddress;
+  }
+
+  public void setDestinationAddress6(@Nullable Ip6 destinationAddress6) {
+    _destinationAddress6 = destinationAddress6;
   }
 
   public void setEthernetSegmentIdentifier(String ethernetSegmentIdentifier) {

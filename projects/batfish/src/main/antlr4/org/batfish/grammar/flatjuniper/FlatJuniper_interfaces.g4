@@ -571,7 +571,8 @@ ifi6_address
       | wildcard
    )
    (
-      ifi6a_ndp
+      ifi6a_destination
+      | ifi6a_ndp
       | ifi6a_preferred
       | ifi6a_primary
       | ifi6a_vrrp_inet6_group
@@ -650,6 +651,12 @@ ifi6dc_use_ra_prefix_null
 ifi6dc_vendor_id_null
 :
    VENDOR_ID null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/destination-edit-interfaces-cs.html
+ifi6a_destination
+:
+   DESTINATION address = ipv6_address
 ;
 
 // Static NDP entry: ndp <ip> (mac | multicast-mac) <mac> [publish]. Mirrors v4 static arp.
@@ -828,12 +835,19 @@ ifi_address
    )
    (
       ifia_arp
+      | ifia_destination
       | ifia_master_only
       | ifia_preferred
       | ifia_primary
       | ifia_vrrp_group
       | ifia_virtual_gateway_address
    )?
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/destination-edit-interfaces-cs.html
+ifia_destination
+:
+   DESTINATION address = ip_address
 ;
 
 ifi_filter
