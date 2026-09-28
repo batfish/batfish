@@ -365,6 +365,7 @@ import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_application_setContext;
@@ -3255,7 +3256,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterA_application(A_applicationContext ctx) {
+  public void enterAa_named(Aa_namedContext ctx) {
     String name = toString(ctx.name);
     _currentApplication =
         _currentLogicalSystem
