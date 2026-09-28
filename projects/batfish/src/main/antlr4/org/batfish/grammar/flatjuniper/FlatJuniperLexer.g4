@@ -1216,6 +1216,8 @@ HMAC_SHA_256_128: 'hmac-sha-256-128';
 
 HOLD_DOWN: 'hold-down';
 
+HOLDDOWN_ALL_STALE_LABELS: 'holddown-all-stale-labels';
+
 HOLDDOWN_INTERVAL: 'holddown-interval';
 
 HOLD_TIME: 'hold-time';

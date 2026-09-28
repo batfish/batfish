@@ -409,10 +409,11 @@ b_remove_private
    )*
 ;
 
-// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/stale-labels-holddown-period-edit-protocols-bgp.html
+// https://github.com/Juniper/yang/blob/master/23.4/23.4R2/native/conf-and-rpcs/junos/conf-with-extensions/models/junos-conf-protocols%402023-01-01.yang
 b_stale_labels_holddown_period_null
 :
-   STALE_LABELS_HOLDDOWN_PERIOD uint32
+   HOLDDOWN_ALL_STALE_LABELS
+   | STALE_LABELS_HOLDDOWN_PERIOD uint32
 ;
 
 b_tcp_mss
