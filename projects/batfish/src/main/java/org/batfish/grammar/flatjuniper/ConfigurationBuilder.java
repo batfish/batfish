@@ -999,6 +999,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_multiplierC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfd_no_adaptationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfdt_minimum_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhcbfdt_thresholdContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Route_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
@@ -1232,7 +1233,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sovt_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_costContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Static_route_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_accountingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
@@ -2366,7 +2366,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return LargeCommunity.parse(ctx.LARGE_COMMUNITY().getText());
   }
 
-  private @Nonnull Community toStaticRouteCommunity(Static_route_communityContext ctx) {
+  private @Nonnull Community toRouteCommunity(Route_communityContext ctx) {
     if (ctx.large_community() != null) {
       return toLargeCommunity(ctx.large_community());
     }
@@ -9181,9 +9181,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRoa_community(Roa_communityContext ctx) {
-    // TODO: should this rule allow more than literal standard communities?
-    StandardCommunity community = StandardCommunity.parse(ctx.STANDARD_COMMUNITY().getText());
-    _currentAggregateRoute.getCommunities().add(community);
+    _currentAggregateRoute.getCommunities().add(toRouteCommunity(ctx.route_community()));
   }
 
   @Override
@@ -9314,7 +9312,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_community(Rosr_communityContext ctx) {
-    _currentStaticRoute.addCommunity(toStaticRouteCommunity(ctx.static_route_community()));
+    _currentStaticRoute.addCommunity(toRouteCommunity(ctx.route_community()));
   }
 
   @Override
