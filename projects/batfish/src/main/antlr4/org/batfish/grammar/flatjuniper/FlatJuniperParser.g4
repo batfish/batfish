@@ -119,6 +119,7 @@ s_common
    | apply_groups
    | s_bridge_domains
    | s_class_of_service
+   | s_connectivity_association
    | s_fabric
    | s_firewall
    | s_forwarding_options
@@ -449,6 +450,12 @@ sardd_dynamic_requests
       | SOURCE_ADDRESS ip_address
       | SOURCE_PORT port_number
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/connectivity-association-edit-security-macsec.html
+s_connectivity_association
+:
+   CONNECTIVITY_ASSOCIATION name = junos_name macsec_connectivity_association_setting
 ;
 
 s_groups

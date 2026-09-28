@@ -55,6 +55,7 @@ public enum JuniperStructureType implements StructureType {
   LOGICAL_SYSTEM("logical-system"),
   LOGIN_CLASS("login class"),
   MAC_VRF_VLAN("mac-vrf vlan"),
+  MACSEC_CONNECTIVITY_ASSOCIATION("macsec connectivity-association"),
   MPLS_PATH("mpls path"),
   NAT_POOL("nat pool"),
   NAT_RULE("nat rule"),
