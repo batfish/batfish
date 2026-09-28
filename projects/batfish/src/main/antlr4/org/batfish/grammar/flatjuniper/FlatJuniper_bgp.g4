@@ -843,11 +843,15 @@ p_bgp
       | b_group
       | b_neighbor
       | b_output_queue_priority
+      | b_send_addpath_optimization_null
    )
 ;
 
 // Protocol-wide config only
 b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
+
+// https://github.com/Juniper/yang/blob/master/21.4/21.4R1/junos/conf-with-extensions/junos-conf-protocols%402019-01-01.yang
+b_send_addpath_optimization_null: SEND_ADDPATH_OPTIMIZATION;
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bgp-error-tolerance.html
 b_bgp_error_tolerance
 :

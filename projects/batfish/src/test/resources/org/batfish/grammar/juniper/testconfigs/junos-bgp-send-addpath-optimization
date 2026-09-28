@@ -1,0 +1,2 @@
+set system host-name junos-bgp-send-addpath-optimization
+set protocols bgp send-addpath-optimization
