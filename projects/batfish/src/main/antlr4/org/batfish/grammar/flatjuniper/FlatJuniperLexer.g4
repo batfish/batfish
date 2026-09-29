@@ -810,6 +810,8 @@ DISABLE_ARP_POLICER: 'disable-arp-policer';
 
 DISABLE_ARP_POLICERS: 'disable-arp-policers';
 
+DISABLE_LINKLOCAL_ADDR: 'disable-linklocal-addr';
+
 DISCARD: 'discard';
 
 DISTANCE_TO_PROTOCOL_NEXTHOP: 'distance-to-protocol-nexthop';

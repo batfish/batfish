@@ -399,6 +399,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_bgp_error_toleranceCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_disable_linklocal_addrContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_drop_path_attributesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_dynamic_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enableContext;
@@ -5806,6 +5807,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_disable(B_disableContext ctx) {
     _currentBgpGroup.setDisable(true);
+  }
+
+  @Override
+  public void exitB_disable_linklocal_addr(B_disable_linklocal_addrContext ctx) {
+    _currentBgpGroup.setDisableLinkLocalAddress(true);
+    todo(ctx);
   }
 
   @Override

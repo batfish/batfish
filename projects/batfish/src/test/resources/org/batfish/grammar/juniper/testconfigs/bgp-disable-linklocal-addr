@@ -1,0 +1,15 @@
+set version 25.4R1.12
+set system host-name bgp-disable-linklocal-addr
+set routing-options autonomous-system 65000
+set protocols bgp disable-linklocal-addr
+set protocols bgp group INHERITED type external
+set protocols bgp group INHERITED neighbor 192.0.2.1 peer-as 65001
+set protocols bgp group DIRECT type internal
+set protocols bgp group DIRECT disable-linklocal-addr
+set protocols bgp group DIRECT neighbor 192.0.2.2 disable-linklocal-addr
+set protocols bgp group DIRECT neighbor 192.0.2.2 peer-as 65000
+set routing-instances RI instance-type virtual-router
+set routing-instances RI routing-options autonomous-system 65002
+set routing-instances RI protocols bgp disable-linklocal-addr
+set routing-instances RI protocols bgp group RI-GROUP type external
+set routing-instances RI protocols bgp group RI-GROUP neighbor 192.0.2.3 peer-as 65003
