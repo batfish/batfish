@@ -38,6 +38,7 @@ p_mpls
        | mpls_icmp_tunneling_null
        | mpls_interface
        | mpls_ipv6_tunneling_null
+       | mpls_label_space
        | mpls_label_switched_path
        | mpls_log_lsp_history_null
        | mpls_log_updown_null
@@ -67,6 +68,23 @@ mpls_disable
 mpls_no_propagate_ttl
 :
    NO_PROPAGATE_TTL
+;
+
+// https://apps.juniper.net/feature-explorer/feature/3866
+mpls_label_space
+:
+   LABEL_SPACE mpls_label_space_option_null
+;
+
+mpls_label_space_option_null
+:
+   (
+      DYNAMIC_END_LABEL
+      | DYNAMIC_START_LABEL
+      | LABEL_LIMIT
+      | STATIC_END_LABEL
+      | STATIC_START_LABEL
+   ) dec
 ;
 
 mpls_admin_groups

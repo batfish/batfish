@@ -882,9 +882,12 @@ DYNAMIC: 'dynamic';
 
 DYNAMIC_DNS: 'dynamic-dns';
 
+DYNAMIC_END_LABEL: 'dynamic-end-label';
+
 DYNAMIC_NEIGHBOR: 'dynamic-neighbor' -> pushMode(M_Name);
 DYNAMIC_REQUEST_PORT: 'dynamic-request-port';
 DYNAMIC_REQUESTS: 'dynamic-requests';
+DYNAMIC_START_LABEL: 'dynamic-start-label';
 DYNAMIC_TUNNELS: 'dynamic-tunnels' -> pushMode(M_DynamicTunnels);
 
 ECDSA_SHA2_NISTP256: 'ecdsa-sha2-nistp256';
@@ -2048,6 +2051,10 @@ L3_INTERFACE
 ;
 
 LABEL_SWITCHED_PATH: 'label-switched-path' -> pushMode(M_Name);
+
+LABEL_LIMIT: 'label-limit';
+
+LABEL_SPACE: 'label-space';
 
 LABELED_BGP: 'labeled-bgp';
 
@@ -3392,8 +3399,11 @@ STATE: 'state';
 STATIC: 'static';
 STATIC_CAK: 'static-cak';
 
+STATIC_END_LABEL: 'static-end-label';
+
 STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
 STATIC_NAT: 'static-nat';
+STATIC_START_LABEL: 'static-start-label';
 STATION: 'station' -> pushMode(M_Name);
 STATION_ADDRESS: 'station-address';
 STATION_PORT: 'station-port';
