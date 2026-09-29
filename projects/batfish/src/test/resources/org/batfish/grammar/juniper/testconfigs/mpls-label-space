@@ -1,0 +1,7 @@
+set version 21.4R3-S10.13
+set system host-name mpls-label-space
+set protocols mpls label-space dynamic-start-label 300000
+set protocols mpls label-space dynamic-end-label 312000
+set protocols mpls label-space label-limit 12000
+set protocols mpls label-space static-start-label 1000000
+set protocols mpls label-space static-end-label 1048575
