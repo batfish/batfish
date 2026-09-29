@@ -112,6 +112,7 @@ b_common
    | b_damping
    | b_description
    | b_disable_4byte_as
+   | b_disable_linklocal_addr
    | b_domain_path_id
    | b_enforce_first_as
    | b_export
@@ -178,6 +179,12 @@ b_disable
 b_disable_4byte_as
 :
    DISABLE_4BYTE_AS
+;
+
+// https://github.com/batfish/lab-validation/tree/main/snapshots/junos_bgp_disable_linklocal_addr
+b_disable_linklocal_addr
+:
+   DISABLE_LINKLOCAL_ADDR
 ;
 
 b_drop_path_attributes

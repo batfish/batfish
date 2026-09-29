@@ -32,6 +32,7 @@ public class BgpGroup implements Serializable {
   private Ip _clusterId;
   private String _description;
   private @Nullable Boolean _disable;
+  private @Nullable Boolean _disableLinkLocalAddress;
   private @Nonnull IntegerSpace _dropPathAttributes;
   private boolean _dynamic;
   private Boolean _ebgpMultihop;
@@ -112,6 +113,9 @@ public class BgpGroup implements Serializable {
       // Deliberately do not inherit description
       if (_disable == null) {
         _disable = _parent._disable;
+      }
+      if (_disableLinkLocalAddress == null) {
+        _disableLinkLocalAddress = _parent._disableLinkLocalAddress;
       }
       // Deliberately do not inherit drop-path-attributes (protocol-level only)
       if (_enforceFirstAs == null) {
@@ -250,6 +254,10 @@ public class BgpGroup implements Serializable {
 
   public @Nullable Boolean getDisable() {
     return _disable;
+  }
+
+  public @Nullable Boolean getDisableLinkLocalAddress() {
+    return _disableLinkLocalAddress;
   }
 
   public @Nonnull IntegerSpace getDropPathAttributes() {
@@ -458,6 +466,10 @@ public class BgpGroup implements Serializable {
 
   public void setDisable(boolean disable) {
     _disable = disable;
+  }
+
+  public void setDisableLinkLocalAddress(boolean disableLinkLocalAddress) {
+    _disableLinkLocalAddress = disableLinkLocalAddress;
   }
 
   public void setDropPathAttributes(@Nonnull IntegerSpace dropPathAttributes) {
