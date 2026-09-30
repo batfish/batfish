@@ -12,14 +12,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -222,6 +227,64 @@ public class NodeColoredScheduleTest {
         ImmutableList.copyOf(schedule.getAllRemaining());
     // 2 colors because of edge in the OSPF topology
     assertThat(coloredNodes, hasSize(2));
+  }
+
+  @Test
+  public void testSaturationColoringCanonical() {
+    Node a = TestUtils.makeIosRouter("a");
+    Node b = TestUtils.makeIosRouter("b");
+    Node c = TestUtils.makeIosRouter("c");
+    Map<String, Node> forwardNodes = ImmutableMap.of("a", a, "b", b, "c", c);
+    Map<String, Node> reverseNodes = ImmutableMap.of("c", c, "b", b, "a", a);
+    BgpTopology forwardTopology =
+        bgpTopology(
+            ImmutableList.of(Map.entry("a", "b"), Map.entry("b", "c"), Map.entry("a", "c")));
+    BgpTopology reverseTopology =
+        bgpTopology(
+            ImmutableList.of(
+                Map.entry("c", "a"),
+                Map.entry("c", "b"),
+                Map.entry("b", "a"),
+                Map.entry("a", "b"),
+                Map.entry("b", "a")));
+
+    List<Map<String, Node>> forwardSchedule =
+        new NodeColoredSchedule(
+                forwardNodes,
+                Coloring.SATURATION,
+                TopologyContext.builder().setBgpTopology(forwardTopology).build())
+            .getAllRemaining();
+    List<Map<String, Node>> reverseSchedule =
+        new NodeColoredSchedule(
+                reverseNodes,
+                Coloring.SATURATION,
+                TopologyContext.builder().setBgpTopology(reverseTopology).build())
+            .getAllRemaining();
+
+    assertThat(reverseSchedule, equalTo(forwardSchedule));
+  }
+
+  private static BgpTopology bgpTopology(List<Entry<String, String>> hostnameEdges) {
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
+        ValueGraphBuilder.directed().build();
+    int index = 0;
+    for (Entry<String, String> edge : hostnameEdges) {
+      BgpPeerConfigId source =
+          new BgpPeerConfigId(edge.getKey(), "vrf", String.format("source-%d", index));
+      BgpPeerConfigId target =
+          new BgpPeerConfigId(edge.getValue(), "vrf", String.format("target-%d", index));
+      graph.putEdgeValue(
+          source,
+          target,
+          BgpSessionProperties.builder()
+              .setLocalAs(1L)
+              .setRemoteAs(2L)
+              .setLocalIp(Ip.ZERO)
+              .setRemoteIp(Ip.parse("0.0.0.1"))
+              .build());
+      index++;
+    }
+    return new BgpTopology(graph);
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {
