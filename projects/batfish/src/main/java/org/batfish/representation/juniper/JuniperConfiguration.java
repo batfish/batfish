@@ -510,7 +510,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setEbgpAdminCost(bgpAdmin)
             .setIbgpAdminCost(bgpAdmin)
             .build();
-    if (routingInstance.getBgpExternalRouterId()) {
+    if (routingInstance.getBgpCompareClusterLengthBeforeOriginatorId()) {
+      proc.setTieBreaker(BgpTieBreaker.CLUSTER_LIST_LENGTH);
+    } else if (routingInstance.getBgpExternalRouterId()) {
       proc.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     }
 

@@ -386,6 +386,7 @@ b_path_selection
    PATH_SELECTION
    (
       bps_always_compare_med
+      | bps_compare_cluster_length_before_originator_id
       | bps_external_router_id
       | bps_med_plus_igp
    )
@@ -828,6 +829,12 @@ bpa_as
 bps_always_compare_med
 :
    ALWAYS_COMPARE_MED
+;
+
+// https://github.com/batfish/lab-validation/pull/238
+bps_compare_cluster_length_before_originator_id
+:
+   COMPARE_CLUSTER_LENGTH_BEFORE_ORIGINATOR_ID
 ;
 
 bps_external_router_id

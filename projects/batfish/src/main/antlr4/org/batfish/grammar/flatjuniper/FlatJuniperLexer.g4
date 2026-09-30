@@ -570,6 +570,9 @@ COMMUNITY
 
 COMMUNITY_COUNT: 'community-count';
 
+COMPARE_CLUSTER_LENGTH_BEFORE_ORIGINATOR_ID:
+  'compare-cluster-length-before-originator-id';
+
 COMPATIBLE: 'compatible';
 
 COMPRESS_CONFIGURATION_FILES: 'compress-configuration-files';

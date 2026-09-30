@@ -32,6 +32,7 @@ public class RoutingInstance implements Serializable {
   private AggregateRoute _aggregateRouteDefaults;
   private @Nonnull Map<RoutingProtocol, String> _appliedRibGroups;
   private boolean _bgpAlwaysCompareMed;
+  private boolean _bgpCompareClusterLengthBeforeOriginatorId;
   private boolean _bgpExternalRouterId;
   private boolean _bgpMedPlusIgp;
   private @Nullable Integer _bgpMedPlusIgpIgpMultiplier;
@@ -159,6 +160,10 @@ public class RoutingInstance implements Serializable {
 
   public boolean getBgpAlwaysCompareMed() {
     return _bgpAlwaysCompareMed;
+  }
+
+  public boolean getBgpCompareClusterLengthBeforeOriginatorId() {
+    return _bgpCompareClusterLengthBeforeOriginatorId;
   }
 
   public boolean getBgpExternalRouterId() {
@@ -405,6 +410,11 @@ public class RoutingInstance implements Serializable {
 
   public void setBgpAlwaysCompareMed(boolean bgpAlwaysCompareMed) {
     _bgpAlwaysCompareMed = bgpAlwaysCompareMed;
+  }
+
+  public void setBgpCompareClusterLengthBeforeOriginatorId(
+      boolean bgpCompareClusterLengthBeforeOriginatorId) {
+    _bgpCompareClusterLengthBeforeOriginatorId = bgpCompareClusterLengthBeforeOriginatorId;
   }
 
   public void setBgpExternalRouterId(boolean bgpExternalRouterId) {
