@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.dataplane.ibdp.Node;
@@ -16,9 +17,8 @@ import org.jgrapht.alg.color.GreedyColoring;
 import org.jgrapht.alg.color.RandomGreedyColoring;
 import org.jgrapht.alg.color.SaturationDegreeColoring;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
-import org.jgrapht.graph.AsUndirectedGraph;
-import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 
 /**
  * Allows nodes to process/exchange routes only if they are of the same "graph color" (i.e., do not
@@ -44,7 +44,7 @@ public final class NodeColoredSchedule extends IbdpSchedule {
   public NodeColoredSchedule(
       Map<String, Node> nodes, Coloring algorithm, TopologyContext topologyContext) {
     super(nodes);
-    makeGraph(nodes, topologyContext);
+    _graph = makeGraph(nodes, topologyContext);
 
     // Color the graph
     VertexColoringAlgorithm<String> coloringAlg = getColoringAlgorithmInstance(algorithm, _graph);
@@ -62,11 +62,10 @@ public final class NodeColoredSchedule extends IbdpSchedule {
    */
   private static VertexColoringAlgorithm<String> getColoringAlgorithmInstance(
       Coloring type, Graph<String, DefaultEdge> graph) {
-    AsUndirectedGraph<String, DefaultEdge> g = new AsUndirectedGraph<>(graph);
     return switch (type) {
-      case GREEDY -> new GreedyColoring<>(g);
-      case RANDOM -> new RandomGreedyColoring<>(g);
-      case SATURATION -> new SaturationDegreeColoring<>(g);
+      case GREEDY -> new GreedyColoring<>(graph);
+      case RANDOM -> new RandomGreedyColoring<>(graph);
+      case SATURATION -> new SaturationDegreeColoring<>(graph);
     };
   }
 
@@ -77,24 +76,43 @@ public final class NodeColoredSchedule extends IbdpSchedule {
    * @param topologyContext the various network topologies
    */
   @SuppressWarnings("deprecation")
-  private void makeGraph(Map<String, Node> nodes, TopologyContext topologyContext) {
+  private static Graph<String, DefaultEdge> makeGraph(
+      Map<String, Node> nodes, TopologyContext topologyContext) {
     /*
      * For the purposes of coloring, two nodes are adjacent if:
      * - They have established a BGP session
      * - They have an OSPF adjacency
      */
 
-    // Add all nodes first
-    _graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-    nodes.keySet().forEach(n -> _graph.addVertex(n));
+    Graph<String, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+    nodes.keySet().stream().sorted().forEach(graph::addVertex);
 
-    // Process BGP connections
+    Set<NodePair> edges = new TreeSet<>();
     for (EndpointPair<BgpPeerConfigId> edge : topologyContext.getBgpTopology().getGraph().edges()) {
-      _graph.addEdge(edge.source().getHostname(), edge.target().getHostname());
+      addEdge(edges, edge.source().getHostname(), edge.target().getHostname());
     }
-    // Process OSPF edges
     for (EdgeId edge : topologyContext.getOspfTopology().edges()) {
-      _graph.addEdge(edge.getTail().getHostname(), edge.getHead().getHostname());
+      addEdge(edges, edge.getTail().getHostname(), edge.getHead().getHostname());
+    }
+    edges.forEach(edge -> graph.addEdge(edge.first(), edge.second()));
+    return graph;
+  }
+
+  private static void addEdge(Set<NodePair> edges, String node1, String node2) {
+    if (!node1.equals(node2)) {
+      edges.add(NodePair.of(node1, node2));
+    }
+  }
+
+  private record NodePair(String first, String second) implements Comparable<NodePair> {
+    private static NodePair of(String node1, String node2) {
+      return node1.compareTo(node2) < 0 ? new NodePair(node1, node2) : new NodePair(node2, node1);
+    }
+
+    @Override
+    public int compareTo(NodePair other) {
+      int firstComparison = first.compareTo(other.first);
+      return firstComparison != 0 ? firstComparison : second.compareTo(other.second);
     }
   }
 
