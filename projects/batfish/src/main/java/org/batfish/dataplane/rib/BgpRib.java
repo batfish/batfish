@@ -242,8 +242,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
 
     RibDelta<R> delta = actionRouteGetDelta(route, super::mergeRouteGetDelta);
-    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
-      _logicalArrivalTime.put(route, _logicalClock);
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER
+        && _logicalArrivalTime.putIfAbsent(route, _logicalClock) == null) {
       _logicalClock++;
     }
     if (!delta.isEmpty()) {
