@@ -758,6 +758,41 @@ public class Bgpv4RibTest {
   }
 
   @Test
+  public void testBestPathSelectionArrivalOrderUnchangedByDuplicateMerge() {
+    _bestPathRib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ARRIVAL_ORDER,
+            null,
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
+    Bgpv4Route oldest =
+        _rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .build();
+    Bgpv4Route secondOldest =
+        _rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
+            .build();
+    Bgpv4Route newest =
+        _rb.setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
+            .build();
+
+    _bestPathRib.mergeRoute(oldest);
+    _bestPathRib.mergeRoute(secondOldest);
+    assertThat(_bestPathRib.mergeRouteGetDelta(oldest), equalTo(RibDelta.empty()));
+    // A later change recomputes the best path and exposes any corruption of oldest's arrival time.
+    _bestPathRib.mergeRoute(newest);
+
+    assertThat(_bestPathRib.getBestPathRoutes(), contains(oldest));
+  }
+
+  @Test
   public void testBestPathSelectionTieBreakingEbgpOnly() {
     _bestPathRib =
         new Bgpv4Rib(
