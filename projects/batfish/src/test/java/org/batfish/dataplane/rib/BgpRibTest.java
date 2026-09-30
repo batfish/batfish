@@ -398,6 +398,39 @@ public class BgpRibTest {
   }
 
   @Test
+  public void testBestPathComparatorClusterListLength() {
+    BgpRib<Bgpv4Route> rib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.CLUSTER_LIST_LENGTH,
+            1,
+            null,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
+    Bgpv4Route.Builder rb =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP);
+    Bgpv4Route shorterClusterList =
+        rb.setClusterList(ImmutableSet.of(1L))
+            .setOriginatorIp(Ip.parse("10.255.0.9"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.2.1")))
+            .build();
+    Bgpv4Route lowerOriginatorId =
+        rb.setClusterList(ImmutableSet.of(1L, 2L))
+            .setOriginatorIp(Ip.parse("10.255.0.1"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.1.1")))
+            .build();
+
+    assertThat(rib.bestPathComparator(shorterClusterList, lowerOriginatorId), equalTo(1));
+  }
+
+  @Test
   public void testCompareReceivedFrom() {
     // Preference order:
     //  1. Lowest receivedFromIp

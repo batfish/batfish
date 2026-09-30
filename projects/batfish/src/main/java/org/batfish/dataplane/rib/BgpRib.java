@@ -530,16 +530,26 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       }
     }
 
+    if (_tieBreaker == BgpTieBreaker.CLUSTER_LIST_LENGTH) {
+      // Prefer lower cluster list length before originator ID (lower is better)
+      result = Integer.compare(lhs.getClusterList().size(), rhs.getClusterList().size());
+      if (result != 0) {
+        return -result;
+      }
+    }
+
     // Prefer lower originator router ID (lower is better)
     result = lhs.getOriginatorIp().compareTo(rhs.getOriginatorIp());
     if (result != 0) {
       return -result;
     }
 
-    // Prefer lower cluster list length. Only applicable to iBGP (lower is better)
-    result = Integer.compare(lhs.getClusterList().size(), rhs.getClusterList().size());
-    if (result != 0) {
-      return -result;
+    if (_tieBreaker != BgpTieBreaker.CLUSTER_LIST_LENGTH) {
+      // Prefer lower cluster list length after originator ID (lower is better)
+      result = Integer.compare(lhs.getClusterList().size(), rhs.getClusterList().size());
+      if (result != 0) {
+        return -result;
+      }
     }
 
     // Compare ReceivedFrom

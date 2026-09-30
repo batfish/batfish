@@ -10,3 +10,10 @@ set protocols bgp path-selection med-plus-igp igp-multiplier 0
 set protocols bgp group PEERS type external
 set protocols bgp group PEERS peer-as 65100
 set protocols bgp group PEERS neighbor 198.51.100.2
+set routing-instances KNOB instance-type virtual-router
+set routing-instances KNOB routing-options autonomous-system 65001
+set routing-instances KNOB routing-options router-id 192.0.2.2
+set routing-instances KNOB protocols bgp path-selection compare-cluster-length-before-originator-id
+set routing-instances KNOB protocols bgp group PEERS type external
+set routing-instances KNOB protocols bgp group PEERS peer-as 65101
+set routing-instances KNOB protocols bgp group PEERS neighbor 198.51.100.6

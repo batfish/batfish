@@ -447,6 +447,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bm_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_always_compare_medContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_compare_cluster_length_before_originator_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_external_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_med_plus_igpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bridge_domain_nameContext;
@@ -6025,6 +6026,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     // always-compare-med matches the current VI behavior. Its absence is not modeled; see
     // https://github.com/batfish/batfish/issues/10260.
     _currentRoutingInstance.setBgpAlwaysCompareMed(true);
+  }
+
+  @Override
+  public void exitBps_compare_cluster_length_before_originator_id(
+      Bps_compare_cluster_length_before_originator_idContext ctx) {
+    _currentRoutingInstance.setBgpCompareClusterLengthBeforeOriginatorId(true);
   }
 
   @Override
