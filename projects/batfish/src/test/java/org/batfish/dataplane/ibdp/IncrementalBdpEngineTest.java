@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -51,6 +52,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -80,6 +82,50 @@ import org.junit.Test;
 /** Test of {@link IncrementalBdpEngine}. */
 @ParametersAreNonnullByDefault
 public final class IncrementalBdpEngineTest {
+  @Test
+  public void testTopologyContextModifierLifecycle() {
+    Configuration configuration =
+        Configuration.builder().setHostname("node").setConfigurationFormat(CISCO_IOS).build();
+    Vrf.builder().setOwner(configuration).setName(DEFAULT_VRF_NAME).build();
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(configuration.getHostname(), configuration);
+    RecordingTopologyContextModifier modifier = new RecordingTopologyContextModifier(0);
+
+    new IncrementalBdpEngine(new IncrementalDataPlaneSettings())
+        .computeDataPlane(
+            configurations,
+            TopologyContext.builder().build(),
+            ImmutableSet.of(),
+            new TestIpOwners(configurations),
+            false,
+            modifier);
+
+    assertThat(modifier._initializeCalls, equalTo(1));
+    assertThat(modifier._configurations, equalTo(configurations));
+    assertThat(modifier._updateCalls, greaterThan(1));
+  }
+
+  @Test
+  public void testTopologyContextModifierDelaysConvergenceUntilDone() {
+    Configuration configuration =
+        Configuration.builder().setHostname("node").setConfigurationFormat(CISCO_IOS).build();
+    Vrf.builder().setOwner(configuration).setName(DEFAULT_VRF_NAME).build();
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(configuration.getHostname(), configuration);
+    RecordingTopologyContextModifier modifier = new RecordingTopologyContextModifier(3);
+
+    new IncrementalBdpEngine(new IncrementalDataPlaneSettings())
+        .computeDataPlane(
+            configurations,
+            TopologyContext.builder().build(),
+            ImmutableSet.of(),
+            new TestIpOwners(configurations),
+            false,
+            modifier);
+
+    assertThat(modifier._updateCalls, equalTo(3));
+  }
+
   @Test
   public void testCompareTracksAndLogDifference() {
     Table<String, Integer, Boolean> hasA =
@@ -715,6 +761,34 @@ public final class IncrementalBdpEngineTest {
           GlobalBroadcastNoPointToPoint.instance(),
           PreDataPlaneTrackMethodEvaluator::new,
           false);
+    }
+  }
+
+  private static final class RecordingTopologyContextModifier implements TopologyContextModifier {
+    private Map<String, Configuration> _configurations = ImmutableMap.of();
+    private final int _doneAfterUpdates;
+    private int _initializeCalls;
+    private int _updateCalls;
+
+    private RecordingTopologyContextModifier(int doneAfterUpdates) {
+      _doneAfterUpdates = doneAfterUpdates;
+    }
+
+    @Override
+    public void initialize(NetworkConfigurations configurations) {
+      _initializeCalls++;
+      _configurations = configurations.getMap();
+    }
+
+    @Override
+    public TopologyContext updateTopologyContext(TopologyContext context) {
+      _updateCalls++;
+      return context;
+    }
+
+    @Override
+    public boolean isDone() {
+      return _updateCalls >= _doneAfterUpdates;
     }
   }
 }

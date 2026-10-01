@@ -433,7 +433,7 @@ final class IncrementalBdpEngine {
       Set<BgpAdvertisement> externalAdverts,
       IpOwners initialIpOwners) {
     return computeDataPlane(
-        configurations, initialTopologyContext, externalAdverts, initialIpOwners, false);
+        configurations, initialTopologyContext, externalAdverts, initialIpOwners, false, null);
   }
 
   ComputeDataPlaneResult computeDataPlane(
@@ -442,6 +442,22 @@ final class IncrementalBdpEngine {
       Set<BgpAdvertisement> externalAdverts,
       IpOwners initialIpOwners,
       boolean retainAnnotatedRibs) {
+    return computeDataPlane(
+        configurations,
+        initialTopologyContext,
+        externalAdverts,
+        initialIpOwners,
+        retainAnnotatedRibs,
+        null);
+  }
+
+  ComputeDataPlaneResult computeDataPlane(
+      Map<String, Configuration> configurations,
+      TopologyContext initialTopologyContext,
+      Set<BgpAdvertisement> externalAdverts,
+      IpOwners initialIpOwners,
+      boolean retainAnnotatedRibs,
+      @Nullable TopologyContextModifier topologyContextModifier) {
     LOGGER.info("Computing Data Plane using iBDP");
 
     Map<Ip, Map<String, Set<String>>> initialIpVrfOwners = initialIpOwners.getIpVrfOwners();
@@ -456,6 +472,9 @@ final class IncrementalBdpEngine {
     List<VirtualRouter> vrs =
         toListInRandomOrder(nodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
+    if (topologyContextModifier != null) {
+      topologyContextModifier.initialize(networkConfigurations);
+    }
 
     /*
      * Run the data plane computation here:
@@ -495,6 +514,16 @@ final class IncrementalBdpEngine {
             initialTopologyContext,
             networkConfigurations,
             initialIpVrfOwners);
+    if (topologyContextModifier != null) {
+      TopologyContext updatedTopologyContext =
+          topologyContextModifier.updateTopologyContext(currentTopologyContext);
+      LOGGER.info(
+          "TopologyContextModifier is {}", topologyContextModifier.isDone() ? "done" : "not done");
+      LOGGER.info(
+          "TopologyContextModifier {} the TopologyContext in this iteration",
+          updatedTopologyContext.equals(currentTopologyContext) ? "did not modify" : "modified");
+      currentTopologyContext = updatedTopologyContext;
+    }
     Map<String, Collection<TrackRoute>> trackRoutesByHostname = collectTrackRoutes(configurations);
     Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname =
         collectTrackReachabilities(configurations);
@@ -573,6 +602,19 @@ final class IncrementalBdpEngine {
               nextTopologyContext.getL3Adjacencies(),
               currentTrackMethodEvaluatorProvider);
       converged = true;
+      if (topologyContextModifier != null) {
+        TopologyContext updatedTopologyContext =
+            topologyContextModifier.updateTopologyContext(nextTopologyContext);
+        boolean isDone = topologyContextModifier.isDone();
+        if (!isDone) {
+          converged = false;
+        }
+        LOGGER.info("TopologyContextModifier is {}", isDone ? "done" : "not done");
+        LOGGER.info(
+            "TopologyContextModifier {} the TopologyContext in this iteration",
+            updatedTopologyContext.equals(nextTopologyContext) ? "did not modify" : "modified");
+        nextTopologyContext = updatedTopologyContext;
+      }
       if (!currentTopologyContext.equals(nextTopologyContext)) {
         converged = false;
         LOGGER.info("Topologies changed in this iteration");
