@@ -2978,6 +2978,7 @@ REDIRECT_FOR_TOS_AND_HOST: 'redirect-for-tos-and-host';
 
 REDIRECT_FOR_TOS_AND_NET: 'redirect-for-tos-and-net';
 
+REDUNDANCY: 'redundancy';
 // TODO: should this just allow a number afterward?
 REDUNDANCY_GROUP: 'redundancy-group' -> pushMode(M_Name);
 
