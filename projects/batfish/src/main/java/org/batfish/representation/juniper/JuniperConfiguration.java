@@ -3624,6 +3624,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem
         .getChassisFpcAutoSpeedDetection()
         .putAll(ls.getChassisFpcAutoSpeedDetection());
+    _masterLogicalSystem.getChassisPortSubPortCounts().putAll(ls.getChassisPortSubPortCounts());
     _masterLogicalSystem.getChassisPortSpeeds().putAll(ls.getChassisPortSpeeds());
     _masterLogicalSystem.getNamedCommunities().putAll(ls.getNamedCommunities());
     _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
@@ -4678,15 +4679,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private void applyChassisPortSpeeds() {
     for (Entry<String, Double> portSpeed : _masterLogicalSystem.getChassisPortSpeeds().entrySet()) {
-      String interfaceSuffix = "-" + portSpeed.getKey();
-      for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
-        if (!iface.getName().endsWith(interfaceSuffix)) {
-          continue;
-        }
-        iface.setBandwidth(portSpeed.getValue());
-        for (Interface unit : iface.getUnits().values()) {
-          unit.setBandwidth(portSpeed.getValue());
-        }
+      String portId = portSpeed.getKey();
+      applyChassisPortSpeed("-" + portId, portSpeed.getValue());
+      Integer subPortCount = _masterLogicalSystem.getChassisPortSubPortCounts().get(portId);
+      if (subPortCount == null) {
+        continue;
+      }
+      for (int subPort = 0; subPort < subPortCount; subPort++) {
+        applyChassisPortSpeed("-" + portId + ":" + subPort, portSpeed.getValue());
+      }
+    }
+  }
+
+  private void applyChassisPortSpeed(String interfaceSuffix, double bandwidth) {
+    for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
+      if (!iface.getName().endsWith(interfaceSuffix)) {
+        continue;
+      }
+      iface.setBandwidth(bandwidth);
+      for (Interface unit : iface.getUnits().values()) {
+        unit.setBandwidth(bandwidth);
       }
     }
   }

@@ -178,6 +178,7 @@ ricfp_port
    PORT port_num = uint16
    (
       ricfpp_channel_speed
+      | ricfpp_number_of_sub_ports
       | ricfpp_speed
    )
 ;
@@ -193,6 +194,11 @@ ricfpp_channel_speed
       DISABLE_AUTO_SPEED_DETECTION
       | value = uint16 unit = speed_abbreviation
    )
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/port-edit-chassis-fpc-pic.html
+ricfpp_number_of_sub_ports
+:
+   NUMBER_OF_SUB_PORTS number = uint8
 ;
 ricfpp_speed
 :
