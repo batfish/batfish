@@ -1,0 +1,5 @@
+set system host-name chassis-number-of-sub-ports
+set chassis fpc 0 pic 0 port 8 number-of-sub-ports 4
+set chassis fpc 0 pic 0 port 8 speed 25g
+set interfaces et-0/0/8:0 unit 0 family inet address 192.0.2.1/31
+set interfaces et-0/0/8:3 unit 0 family inet address 192.0.2.3/31
