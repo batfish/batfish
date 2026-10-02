@@ -47,6 +47,8 @@ public class LogicalSystem implements Serializable {
   private boolean _managementInstance;
   private final Map<String, MacsecConnectivityAssociation> _macsecConnectivityAssociations;
 
+  private @Nullable Integer _maximumEcmp;
+
   private final Map<String, NamedCommunity> _namedCommunities;
 
   private final Map<String, ClassOfServiceInterface> _classOfServiceInterfaces;
@@ -307,6 +309,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, MacsecConnectivityAssociation> getMacsecConnectivityAssociations() {
     return _macsecConnectivityAssociations;
+  }
+
+  public @Nullable Integer getMaximumEcmp() {
+    return _maximumEcmp;
   }
 
   public boolean getManagementInstance() {
@@ -630,6 +636,10 @@ public class LogicalSystem implements Serializable {
 
   public void setManagementInstance(boolean managementInstance) {
     _managementInstance = managementInstance;
+  }
+
+  public void setMaximumEcmp(@Nullable Integer maximumEcmp) {
+    _maximumEcmp = maximumEcmp;
   }
 
   public void setDefaultRoutingInstance(RoutingInstance defaultRoutingInstance) {
