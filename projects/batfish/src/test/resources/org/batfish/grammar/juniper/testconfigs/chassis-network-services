@@ -1,0 +1,3 @@
+set system host-name chassis-network-services
+set chassis network-services enhanced-ip
+set chassis network-services enhanced-mode

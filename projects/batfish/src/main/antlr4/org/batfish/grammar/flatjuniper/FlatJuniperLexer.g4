@@ -942,6 +942,8 @@ ENGINE_ID: 'engine-id';
 ENHANCED_AVS_MAX: 'enhanced-avs-max';
 
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
+ENHANCED_IP: 'enhanced-ip';
+ENHANCED_MODE: 'enhanced-mode';
 
 EQUAL_COST_PATHS: 'equal-cost-paths';
 
@@ -2447,6 +2449,7 @@ NETCONF: 'netconf';
 
 NETWORK: 'network';
 NETWORK_DOMAIN: 'network-domain';
+NETWORK_SERVICES: 'network-services';
 
 NETWORK_SUMMARY_EXPORT: 'network-summary-export';
 

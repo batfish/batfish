@@ -115,6 +115,7 @@ ri_chassis
       | ric_fpc
       | ric_forwarding_options_null
       | ric_maximum_ecmp
+      | ric_network_services_null
    )
 ;
 
@@ -139,6 +140,13 @@ ric_forwarding_options_null
 ric_maximum_ecmp
 :
    MAXIMUM_ECMP maximum_ecmp = uint8
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/network-services-edit-chassis.html
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/enhanced-mode-edit-chassis-network-services.html
+ric_network_services_null
+:
+   NETWORK_SERVICES (ENHANCED_IP | ENHANCED_MODE)
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-chassis.html
