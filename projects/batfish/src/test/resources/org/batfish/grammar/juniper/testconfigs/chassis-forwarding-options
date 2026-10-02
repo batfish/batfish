@@ -1,0 +1,7 @@
+set system host-name chassis-forwarding-options
+set chassis forwarding-options lpm-profile
+set chassis forwarding-options lpm-profile unicast-in-lpm
+set chassis forwarding-options l3-profile
+set chassis forwarding-options custom-profile l2-entries num-banks 0
+set chassis forwarding-options custom-profile l3-entries num-banks 2
+set chassis forwarding-options custom-profile lpm-entries num-banks 2
