@@ -1,0 +1,6 @@
+set system host-name chassis-redundancy
+set chassis redundancy failover on-disk-failure
+set chassis redundancy failover on-loss-of-keepalives
+set chassis redundancy graceful-switchover
+set chassis redundancy routing-engine 0 master
+set chassis redundancy routing-engine 1 disabled

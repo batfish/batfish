@@ -117,6 +117,7 @@ ri_chassis
       | ric_forwarding_options_null
       | ric_maximum_ecmp
       | ric_network_services_null
+      | ric_redundancy_null
    )
 ;
 
@@ -154,6 +155,12 @@ ric_maximum_ecmp
 ric_network_services_null
 :
    NETWORK_SERVICES (ENHANCED_IP | ENHANCED_MODE)
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/redundancy-edit-chassis.html
+ric_redundancy_null
+:
+   REDUNDANCY null_filler
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-chassis.html
