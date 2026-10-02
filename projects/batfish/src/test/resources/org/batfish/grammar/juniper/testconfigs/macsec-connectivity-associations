@@ -1,4 +1,5 @@
 set system host-name macsec-connectivity-associations
+set security macsec interfaces et-0/0/0 connectivity-association MODERN
 set interfaces et-0/0/0 disable
 set interfaces et-0/0/1 disable
 set interfaces et-0/0/2 disable
@@ -13,7 +14,6 @@ set security macsec connectivity-association MODERN pre-shared-key cak <SCRUBBED
 set security macsec connectivity-association MODERN pre-shared-key ckn 99887766554433221100
 set security macsec connectivity-association MODERN pre-shared-key-chain MACSEC-KEYS
 set security macsec connectivity-association MODERN security-mode static-cak
-set security macsec interfaces et-0/0/0 connectivity-association MODERN
 set connectivity-association LEGACY cipher-suite gcm-aes-128
 set connectivity-association LEGACY mka should-secure
 set connectivity-association LEGACY security-mode dynamic

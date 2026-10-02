@@ -21,7 +21,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Interface;
+import org.batfish.representation.juniper.LogicalSystem;
 import org.batfish.representation.juniper.MacsecConnectivityAssociation;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,10 +46,10 @@ public final class JunosMacsecConnectivityAssociationTest {
   @Test
   public void testExtractionAndWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, CONFIG_NAME);
+    LogicalSystem logicalSystem =
+        getVendorConfiguration(batfish, CONFIG_NAME).getMasterLogicalSystem();
     Map<String, MacsecConnectivityAssociation> associations =
-        getVendorConfiguration(batfish, CONFIG_NAME)
-            .getMasterLogicalSystem()
-            .getMacsecConnectivityAssociations();
+        logicalSystem.getMacsecConnectivityAssociations();
 
     assertThat(
         associations.keySet(), containsInAnyOrder("MODERN", "LEGACY", "SECURITY-LEGACY", "XPN"));
@@ -68,9 +71,10 @@ public final class JunosMacsecConnectivityAssociationTest {
     assertThat(associations.get("SECURITY-LEGACY").getCakHash(), matchesPattern("[0-9a-f]{64}"));
     assertThat(associations.get("XPN").getCipherSuite(), equalTo("gcm-aes-xpn-256"));
 
-    Map<String, Interface> interfaces =
-        getVendorConfiguration(batfish, CONFIG_NAME).getMasterLogicalSystem().getInterfaces();
-    assertThat(interfaces.get("et-0/0/0").getMacsecConnectivityAssociation(), equalTo("MODERN"));
+    Map<String, Interface> interfaces = logicalSystem.getInterfaces();
+    assertThat(
+        logicalSystem.getMacsecInterfaceConnectivityAssociations(), hasEntry("et-0/0/0", "MODERN"));
+    assertThat(interfaces.get("et-0/0/0").getMacsecConnectivityAssociation(), nullValue());
     assertThat(interfaces.get("et-0/0/1").getMacsecConnectivityAssociation(), equalTo("LEGACY"));
     assertThat(
         interfaces.get("et-0/0/2").getMacsecConnectivityAssociation(), equalTo("SECURITY-LEGACY"));

@@ -10730,9 +10730,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String interfaceName = getInterfaceFullName(ctx.iface);
     String associationName = toString(ctx.name);
     _currentLogicalSystem
-        .getInterfaces()
-        .computeIfAbsent(interfaceName, Interface::new)
-        .setMacsecConnectivityAssociation(associationName);
+        .getMacsecInterfaceConnectivityAssociations()
+        .put(interfaceName, associationName);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, MACSEC_INTERFACE, getLine(ctx.iface.getStart()));
     referenceMacsecConnectivityAssociation(
