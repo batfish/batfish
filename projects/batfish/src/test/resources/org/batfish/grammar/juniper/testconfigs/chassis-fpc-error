@@ -1,0 +1,12 @@
+set system host-name chassis-fpc-error
+set chassis fpc 0 error fatal threshold 1
+set chassis fpc 0 error fatal action alarm
+set chassis fpc 0 error fatal action log
+set chassis fpc 0 error major threshold 10
+set chassis fpc 0 error major action alarm
+set chassis fpc 0 error major action get-state
+set chassis fpc 0 error major action log
+set chassis fpc 0 error minor threshold 100
+set chassis fpc 0 error minor action alarm
+set chassis fpc 0 error minor action get-state
+set chassis fpc 0 error minor action log
