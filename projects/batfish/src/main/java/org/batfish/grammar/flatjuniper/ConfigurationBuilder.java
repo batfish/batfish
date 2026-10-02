@@ -883,6 +883,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_table_labelConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_maximum_ecmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
@@ -9011,6 +9012,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       bandwidth *= 1E6;
     }
     _currentLogicalSystem.getChassisPortSpeeds().put(portId, bandwidth);
+  }
+
+  @Override
+  public void exitRic_maximum_ecmp(Ric_maximum_ecmpContext ctx) {
+    todo(ctx);
   }
 
   @Override

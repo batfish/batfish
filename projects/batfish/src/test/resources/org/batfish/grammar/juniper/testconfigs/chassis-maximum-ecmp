@@ -1,0 +1,2 @@
+set system host-name chassis-maximum-ecmp
+set chassis maximum-ecmp 64

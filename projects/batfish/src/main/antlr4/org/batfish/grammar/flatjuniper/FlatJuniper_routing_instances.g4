@@ -113,6 +113,7 @@ ri_chassis
       ric_alarm_null
       | ric_aggregated_devices_null
       | ric_fpc
+      | ric_maximum_ecmp
    )
 ;
 
@@ -125,6 +126,12 @@ ric_alarm_null
 ric_aggregated_devices_null
 :
    AGGREGATED_DEVICES null_filler
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/maximum-ecmp-edit-chassis.html
+ric_maximum_ecmp
+:
+   MAXIMUM_ECMP dec
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/speed-edit-chassis.html

@@ -2249,6 +2249,7 @@ MAX_TX_BUFFERS: 'max-tx-buffers';
 MAXIMUM: 'maximum';
 
 MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
+MAXIMUM_ECMP: 'maximum-ecmp';
 MAXIMUM_HOP_COUNT: 'maximum-hop-count';
 MAXIMUM_LABELS: 'maximum-labels';
 MAXIMUM_LEASE_TIME: 'maximum-lease-time';
