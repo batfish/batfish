@@ -59,6 +59,7 @@ public class BgpGroup implements Serializable {
   private BgpGroup _parent;
   private Long _peerAs;
   private @Nullable Integer _preference;
+  private @Nullable Long _receiveBufferBytes;
   private Boolean _removePrivate;
   private boolean _removePrivateAll;
   private boolean _removePrivateNearest;
@@ -66,6 +67,7 @@ public class BgpGroup implements Serializable {
   private boolean _removePrivateReplace;
   private @Nullable String _ribGroup;
   private @Nullable String _ribGroup6;
+  private @Nullable Long _sendBufferBytes;
   private @Nullable Integer _ttl;
   private BgpGroupType _type;
   private @Nullable Boolean _vpnApplyExport;
@@ -179,6 +181,9 @@ public class BgpGroup implements Serializable {
       if (_preference == null) {
         _preference = _parent._preference;
       }
+      if (_receiveBufferBytes == null) {
+        _receiveBufferBytes = _parent._receiveBufferBytes;
+      }
       if (_removePrivate == null) {
         _removePrivate = _parent._removePrivate;
         _removePrivateAll = _parent._removePrivateAll;
@@ -191,6 +196,9 @@ public class BgpGroup implements Serializable {
       }
       if (_ribGroup6 == null) {
         _ribGroup6 = _parent._ribGroup6;
+      }
+      if (_sendBufferBytes == null) {
+        _sendBufferBytes = _parent._sendBufferBytes;
       }
       if (_ttl == null) {
         _ttl = _parent._ttl;
@@ -364,6 +372,10 @@ public class BgpGroup implements Serializable {
     _preference = preference;
   }
 
+  public @Nullable Long getReceiveBufferBytes() {
+    return _receiveBufferBytes;
+  }
+
   /**
    * Local preference value to set on routes advertised to this group/neighbor. Distinct from
    * preference (admin distance) and from local-preference manipulated via routing policy.
@@ -414,6 +426,10 @@ public class BgpGroup implements Serializable {
 
   public @Nullable String getRibGroup6() {
     return _ribGroup6;
+  }
+
+  public @Nullable Long getSendBufferBytes() {
+    return _sendBufferBytes;
   }
 
   public @Nullable Integer getTtl() {
@@ -550,6 +566,10 @@ public class BgpGroup implements Serializable {
     _peerAs = peerAs;
   }
 
+  public void setReceiveBufferBytes(long receiveBufferBytes) {
+    _receiveBufferBytes = receiveBufferBytes;
+  }
+
   public void setRemovePrivate(boolean removePrivate) {
     _removePrivate = removePrivate;
   }
@@ -576,6 +596,10 @@ public class BgpGroup implements Serializable {
 
   public void setRibGroup6(@Nullable String ribGroup6) {
     _ribGroup6 = ribGroup6;
+  }
+
+  public void setSendBufferBytes(long sendBufferBytes) {
+    _sendBufferBytes = sendBufferBytes;
   }
 
   public void setTtl(@Nullable Integer ttl) {
