@@ -889,6 +889,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_number_of_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_port_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_tunnel_servicesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_channel_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_number_of_sub_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
@@ -9019,6 +9020,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           .getChassisPicPortCounts()
           .put(toChassisPicId(ctx.fpc, picContext.pic), toInteger(numberOfPortsContext.number));
       todo(numberOfPortsContext);
+      return;
+    }
+    Ricfp_tunnel_servicesContext tunnelServicesContext = picContext.ricfp_tunnel_services();
+    if (tunnelServicesContext != null) {
+      if (tunnelServicesContext.bandwidth() != null) {
+        _currentLogicalSystem
+            .getChassisPicTunnelServiceBandwidths()
+            .put(
+                toChassisPicId(ctx.fpc, picContext.pic),
+                (double) toBandwidth(tunnelServicesContext.bandwidth()));
+      }
+      todo(tunnelServicesContext);
       return;
     }
     Ricfp_portContext portContext = picContext.ricfp_port();

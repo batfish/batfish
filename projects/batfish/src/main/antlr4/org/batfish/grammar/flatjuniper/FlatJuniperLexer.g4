@@ -3626,7 +3626,7 @@ TUNNEL_ATTRIBUTE
 ;
 
 TUNNEL_ENCAPSULATION_LIMIT_OPTION: 'tunnel-encapsulation-limit-option';
-
+TUNNEL_SERVICES: 'tunnel-services';
 TUNNEL_TERMINATION: 'tunnel-termination';
 
 TUNNEL_TYPE: 'tunnel-type';
