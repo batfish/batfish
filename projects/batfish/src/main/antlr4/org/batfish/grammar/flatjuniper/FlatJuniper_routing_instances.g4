@@ -194,6 +194,7 @@ ricf_pic
       | ricfp_number_of_ports
       | ricfp_port
       | ricfp_port_range
+      | ricfp_tunnel_services
    )
 ;
 ricfp_interface_type_null
@@ -217,6 +218,11 @@ ricfp_port
 ricfp_port_range
 :
    PORT_RANGE low = uint16 high = uint16 ricfpp_channel_speed
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/tunnel-services-edit-chassis.html
+ricfp_tunnel_services
+:
+   TUNNEL_SERVICES (BANDWIDTH bandwidth)?
 ;
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/channel-speed-edit-chassis.html
 ricfpp_channel_speed
