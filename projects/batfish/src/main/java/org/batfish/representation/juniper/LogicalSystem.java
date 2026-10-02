@@ -44,6 +44,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Integer> _chassisPicPortCounts;
 
+  private final Map<String, Double> _chassisPicSpeeds;
+
   private final Map<String, Double> _chassisPicTunnelServiceBandwidths;
 
   private final Map<String, Integer> _chassisPortSubPortCounts;
@@ -190,6 +192,7 @@ public class LogicalSystem implements Serializable {
     _authenticationKeyChains = new TreeMap<>();
     _chassisFpcAutoSpeedDetection = new TreeMap<>();
     _chassisPicPortCounts = new TreeMap<>();
+    _chassisPicSpeeds = new TreeMap<>();
     _chassisPicTunnelServiceBandwidths = new TreeMap<>();
     _chassisPortSubPortCounts = new TreeMap<>();
     _chassisPortSpeeds = new TreeMap<>();
@@ -317,6 +320,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Integer> getChassisPicPortCounts() {
     return _chassisPicPortCounts;
+  }
+
+  public Map<String, Double> getChassisPicSpeeds() {
+    return _chassisPicSpeeds;
   }
 
   public Map<String, Double> getChassisPicTunnelServiceBandwidths() {

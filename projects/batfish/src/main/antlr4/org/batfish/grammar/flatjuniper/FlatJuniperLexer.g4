@@ -2697,6 +2697,7 @@ PFE: 'pfe';
 PGM: 'pgm';
 PHONE_HOME: 'phone-home';
 PIC: 'pic';
+PIC_MODE: 'pic-mode' -> pushMode(M_ChannelSpeed);
 PIM: 'pim';
 
 PING: 'ping';
