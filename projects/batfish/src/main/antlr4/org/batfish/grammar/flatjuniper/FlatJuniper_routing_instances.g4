@@ -147,6 +147,7 @@ ric_fpc
    FPC fpc = dec
    (
       ricf_auto_speed_detection
+      | ricf_inline_services_null
       | ricf_lite_mode_null
       | ricf_pic
       | ricf_sampling_instance_null
@@ -156,6 +157,11 @@ ric_fpc
 ricf_auto_speed_detection
 :
    AUTO_SPEED_DETECTION (DISABLE | ENABLE)
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/flow-table-size-edit-services.html
+ricf_inline_services_null
+:
+   INLINE_SERVICES null_filler
 ;
 ricf_lite_mode_null
 :

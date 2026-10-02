@@ -1,0 +1,4 @@
+set system host-name chassis-fpc-inline-services
+set chassis fpc 0 inline-services flow-table-size ipv4-flow-table-size 11
+set chassis fpc 0 inline-services flow-table-size ipv6-flow-table-size 4
+set chassis fpc 0 inline-services flow-table-size mpls-flow-table-size 5
