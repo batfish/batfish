@@ -40,6 +40,8 @@ public class LogicalSystem implements Serializable {
 
   private @Nullable Accounting _accounting;
 
+  private final Map<Integer, Boolean> _chassisFpcAutoSpeedDetection;
+
   private final Map<String, Double> _chassisPortSpeeds;
 
   private final Login _login;
@@ -180,6 +182,7 @@ public class LogicalSystem implements Serializable {
     _asPaths = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
+    _chassisFpcAutoSpeedDetection = new TreeMap<>();
     _chassisPortSpeeds = new TreeMap<>();
     _login = new Login();
     _macsecConnectivityAssociations = new TreeMap<>();
@@ -297,6 +300,10 @@ public class LogicalSystem implements Serializable {
 
   public void setAccounting(@Nullable Accounting accounting) {
     _accounting = accounting;
+  }
+
+  public Map<Integer, Boolean> getChassisFpcAutoSpeedDetection() {
+    return _chassisFpcAutoSpeedDetection;
   }
 
   public Map<String, Double> getChassisPortSpeeds() {

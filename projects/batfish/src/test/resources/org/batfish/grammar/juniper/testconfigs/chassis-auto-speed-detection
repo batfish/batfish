@@ -1,0 +1,3 @@
+set system host-name chassis-auto-speed-detection
+set chassis fpc 0 auto-speed-detection disable
+set chassis fpc 1 auto-speed-detection enable

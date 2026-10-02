@@ -884,6 +884,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfac
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_maximum_ecmpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_auto_speed_detectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_port_rangeContext;
@@ -8998,6 +8999,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRic_fpc(Ric_fpcContext ctx) {
+    Ricf_auto_speed_detectionContext autoSpeedDetectionContext = ctx.ricf_auto_speed_detection();
+    if (autoSpeedDetectionContext != null) {
+      _currentLogicalSystem
+          .getChassisFpcAutoSpeedDetection()
+          .put(toInt(ctx.fpc), autoSpeedDetectionContext.ENABLE() != null);
+      todo(autoSpeedDetectionContext);
+      return;
+    }
     Ricf_picContext picContext = ctx.ricf_pic();
     if (picContext == null) {
       return;

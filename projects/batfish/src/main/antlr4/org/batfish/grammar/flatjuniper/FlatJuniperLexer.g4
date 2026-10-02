@@ -412,8 +412,8 @@ AUTO_BANDWIDTH: 'auto-bandwidth';
 AUTO_EXPORT: 'auto-export';
 
 AUTO_NEGOTIATION: 'auto-negotiation';
-
 AUTO_SNAPSHOT: 'auto-snapshot';
+AUTO_SPEED_DETECTION: 'auto-speed-detection';
 
 AUTONOMOUS_SYSTEM: 'autonomous-system' -> pushMode(M_BgpAsn);
 
