@@ -2447,6 +2447,7 @@ NETCONF: 'netconf';
 
 NETWORK: 'network';
 NETWORK_DOMAIN: 'network-domain';
+NETWORK_SERVICES: 'network-services';
 
 NETWORK_SUMMARY_EXPORT: 'network-summary-export';
 
