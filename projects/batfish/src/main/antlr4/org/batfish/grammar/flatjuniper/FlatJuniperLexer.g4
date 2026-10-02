@@ -3170,6 +3170,7 @@ RULE_SET: 'rule-set' -> pushMode(M_Name);
 SAMPLE: 'sample';
 
 SAMPLING: 'sampling';
+SAMPLING_INSTANCE: 'sampling-instance';
 
 SAP: 'sap';
 

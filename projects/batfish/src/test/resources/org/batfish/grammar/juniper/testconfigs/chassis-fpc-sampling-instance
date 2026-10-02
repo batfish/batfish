@@ -1,0 +1,2 @@
+set system host-name chassis-fpc-sampling-instance
+set chassis fpc 0 sampling-instance FLOW-SAMPLE
