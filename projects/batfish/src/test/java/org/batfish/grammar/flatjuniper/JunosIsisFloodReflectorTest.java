@@ -55,10 +55,28 @@ public final class JunosIsisFloodReflectorTest {
             .getIsisSettings()
             .getLevel2Settings()
             .getFloodReflector();
+    IsisFloodReflector interfaceReflectorWithoutClusterId =
+        jc.getMasterLogicalSystem()
+            .getInterfaces()
+            .get("fti0")
+            .getUnits()
+            .get("fti0.2")
+            .getIsisSettings()
+            .getLevel2Settings()
+            .getFloodReflector();
     IsisFloodReflector invalid =
         jc.getMasterLogicalSystem()
             .getRoutingInstances()
             .get("invalid")
+            .getIsisSettings()
+            .getLevel2Settings()
+            .getFloodReflector();
+    IsisFloodReflector invalidInterface =
+        jc.getMasterLogicalSystem()
+            .getInterfaces()
+            .get("fti0")
+            .getUnits()
+            .get("fti0.3")
             .getIsisSettings()
             .getLevel2Settings()
             .getFloodReflector();
@@ -69,12 +87,16 @@ public final class JunosIsisFloodReflectorTest {
     assertThat(reflector.getClusterId(), equalTo(200L));
     assertThat(interfaceReflector.getRole(), nullValue());
     assertThat(interfaceReflector.getClusterId(), equalTo(100L));
+    assertThat(interfaceReflectorWithoutClusterId.getRole(), nullValue());
+    assertThat(interfaceReflectorWithoutClusterId.getClusterId(), nullValue());
     assertThat(invalid, nullValue());
-    assertThat(getParseWarnings(batfish, HOSTNAME), hasSize(4));
+    assertThat(invalidInterface, nullValue());
+    assertThat(getParseWarnings(batfish, HOSTNAME), hasSize(6));
     assertThat(
         getParseWarnings(batfish, HOSTNAME),
         hasItems(
             isTodo("flood-reflector client"),
+            isTodo("flood-reflector"),
             isTodo("flood-reflector cluster-id 100"),
             isTodo("flood-reflector reflector cluster-id 200"),
             hasComment("Expected IS-IS cluster ID in range 1-4294967295, but got '0'")));

@@ -199,9 +199,12 @@ islfr_reflector
 
 isil_flood_reflector
 :
-  FLOOD_REFLECTOR REFLECTOR? CLUSTER_ID
-  // 1-4294967295
-  id = uint32
+  FLOOD_REFLECTOR
+  (
+    REFLECTOR? CLUSTER_ID
+    // 1-4294967295
+    id = uint32
+  )?
 ;
 
 isi_hello_padding_null
