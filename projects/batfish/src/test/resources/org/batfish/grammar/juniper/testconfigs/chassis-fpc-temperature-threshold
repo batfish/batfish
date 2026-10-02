@@ -1,0 +1,6 @@
+set system host-name chassis-fpc-temperature-threshold
+set chassis fpc 0 temperature-threshold fans-to-normal-speed 43
+set chassis fpc 0 temperature-threshold fans-on-intermediate-speed 45
+set chassis fpc 0 temperature-threshold fans-on-full-speed 48
+set chassis fpc 0 temperature-threshold yellow-alarm 75
+set chassis fpc 0 temperature-threshold yellow-alarm-if-failed-fan 65
