@@ -1,0 +1,3 @@
+set system host-name chassis-fabric-redundancy-mode
+set chassis fabric redundancy-mode increased-bandwidth
+set chassis fabric redundancy-mode redundant
