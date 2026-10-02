@@ -106,11 +106,13 @@ rissdg_interface
    INTERFACE id = interface_id
 ;
 
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/apply-groups.html
 ri_chassis
 :
    CHASSIS
    (
-      ric_alarm_null
+      apply
+      | ric_alarm_null
       | ric_aggregated_devices_null
       | ric_enhanced_policer_null
       | ric_fabric_null
