@@ -106,7 +106,10 @@ o_spf_options_null
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/overload-edit-protocols-ospf.html
 o_topology
 :
-   TOPOLOGY name = junos_name OVERLOAD
+   TOPOLOGY name = junos_name
+   (
+      ot_overload
+   )?
 ;
 
 o_traceoptions_null
@@ -440,6 +443,11 @@ ot_credibility_protocol_preference
 ot_ignore_lsp_metrics
 :
    IGNORE_LSP_METRICS
+;
+
+ot_overload
+:
+   OVERLOAD
 ;
 
 ot_shortcuts

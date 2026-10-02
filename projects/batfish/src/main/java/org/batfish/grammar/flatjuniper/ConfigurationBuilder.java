@@ -739,6 +739,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ot_ignore_lsp_metricsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ot_overloadContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_ospf3Context;
@@ -3128,6 +3129,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private Interface _currentMasterInterface;
 
   private OspfInterfaceSettings _currentOspfSettings;
+
+  private @Nullable String _currentOspfTopology;
 
   private Nat _currentNat;
 
@@ -7788,11 +7791,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterO_topology(O_topologyContext ctx) {
+    _currentOspfTopology = toString(ctx.name);
+  }
+
+  @Override
   public void exitO_topology(O_topologyContext ctx) {
-    String name = toString(ctx.name);
-    _currentRoutingInstance.getOspfOverloadedTopologies().add(name);
-    if (!name.equals("default")) {
-      todo(ctx);
+    _currentOspfTopology = null;
+  }
+
+  @Override
+  public void exitOt_overload(Ot_overloadContext ctx) {
+    assert _currentOspfTopology != null;
+    _currentRoutingInstance.getOspfOverloadedTopologies().add(_currentOspfTopology);
+    if (!_currentOspfTopology.equals("default")) {
+      todo(ctx.getParent());
     }
   }
 
