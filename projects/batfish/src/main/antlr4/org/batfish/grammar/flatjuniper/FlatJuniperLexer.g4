@@ -944,6 +944,7 @@ ENHANCED_AVS_MAX: 'enhanced-avs-max';
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
 ENHANCED_IP: 'enhanced-ip';
 ENHANCED_MODE: 'enhanced-mode';
+ENHANCED_POLICER: 'enhanced-policer';
 
 EQUAL_COST_PATHS: 'equal-cost-paths';
 
