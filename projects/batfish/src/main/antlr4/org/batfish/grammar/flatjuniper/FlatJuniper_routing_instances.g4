@@ -183,6 +183,7 @@ ricf_pic
    PIC pic = dec
    (
       ricfp_interface_type_null
+      | ricfp_number_of_ports
       | ricfp_port
       | ricfp_port_range
    )
@@ -190,6 +191,11 @@ ricf_pic
 ricfp_interface_type_null
 :
    INTERFACE_TYPE null_filler
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/number-of-ports-edit-chassis.html
+ricfp_number_of_ports
+:
+   NUMBER_OF_PORTS number = uint8
 ;
 ricfp_port
 :

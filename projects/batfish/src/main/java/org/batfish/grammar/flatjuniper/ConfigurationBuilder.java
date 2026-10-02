@@ -886,6 +886,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_maximum_ecmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_auto_speed_detectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_number_of_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_channel_speedContext;
@@ -9012,6 +9013,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (picContext == null) {
       return;
     }
+    Ricfp_number_of_portsContext numberOfPortsContext = picContext.ricfp_number_of_ports();
+    if (numberOfPortsContext != null) {
+      _currentLogicalSystem
+          .getChassisPicPortCounts()
+          .put(toChassisPicId(ctx.fpc, picContext.pic), toInteger(numberOfPortsContext.number));
+      todo(numberOfPortsContext);
+      return;
+    }
     Ricfp_portContext portContext = picContext.ricfp_port();
     if (portContext != null) {
       Ricfpp_speedContext speedContext = portContext.ricfpp_speed();
@@ -9085,6 +9094,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static String toChassisPortId(DecContext fpc, DecContext pic, int port) {
     return String.format("%d/%d/%d", toInt(fpc), toInt(pic), port);
+  }
+
+  private static String toChassisPicId(DecContext fpc, DecContext pic) {
+    return String.format("%d/%d", toInt(fpc), toInt(pic));
   }
 
   @Override
