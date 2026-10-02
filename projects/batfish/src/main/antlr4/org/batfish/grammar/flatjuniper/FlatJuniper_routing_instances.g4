@@ -212,6 +212,7 @@ ricf_pic
    (
       ricfp_interface_type_null
       | ricfp_number_of_ports
+      | ricfp_pic_mode
       | ricfp_port
       | ricfp_port_range
       | ricfp_tunnel_services
@@ -225,6 +226,11 @@ ricfp_interface_type_null
 ricfp_number_of_ports
 :
    NUMBER_OF_PORTS number = uint8
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/pic-mode-edit-chassis-mx-series.html
+ricfp_pic_mode
+:
+   PIC_MODE value = uint16 G
 ;
 ricfp_port
 :
