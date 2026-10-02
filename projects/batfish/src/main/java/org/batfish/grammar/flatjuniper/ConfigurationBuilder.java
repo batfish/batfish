@@ -7440,13 +7440,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsil_flood_reflector(Isil_flood_reflectorContext ctx) {
-    Optional<Long> clusterId =
-        toLongInSpace(ctx, ctx.id, ISIS_FLOOD_REFLECTOR_CLUSTER_ID_RANGE, "IS-IS cluster ID");
-    if (!clusterId.isPresent()) {
-      return;
-    }
     IsisFloodReflector floodReflector = new IsisFloodReflector();
-    floodReflector.setClusterId(clusterId.get());
+    if (ctx.id != null) {
+      Optional<Long> clusterId =
+          toLongInSpace(ctx, ctx.id, ISIS_FLOOD_REFLECTOR_CLUSTER_ID_RANGE, "IS-IS cluster ID");
+      if (!clusterId.isPresent()) {
+        return;
+      }
+      floodReflector.setClusterId(clusterId.get());
+    }
     _currentIsisInterfaceLevelSettings.setFloodReflector(floodReflector);
     todo(ctx);
   }

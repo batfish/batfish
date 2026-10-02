@@ -1,5 +1,7 @@
 set system host-name junos-isis-flood-reflector
 set protocols isis level 2 flood-reflector client
 set protocols isis interface fti0.1 level 2 flood-reflector cluster-id 100
+set protocols isis interface fti0.2 level 2 flood-reflector
+set protocols isis interface fti0.3 level 2 flood-reflector cluster-id 0
 set routing-instances reflector protocols isis level 2 flood-reflector reflector cluster-id 200
 set routing-instances invalid protocols isis level 2 flood-reflector reflector cluster-id 0
