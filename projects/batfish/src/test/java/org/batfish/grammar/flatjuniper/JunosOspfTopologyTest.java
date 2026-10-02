@@ -5,10 +5,12 @@ import static org.batfish.common.matchers.ParseWarningMatchers.isTodo;
 import static org.batfish.grammar.JunosGrammarTestUtils.getBatfish;
 import static org.batfish.grammar.JunosGrammarTestUtils.getParseWarnings;
 import static org.batfish.grammar.JunosGrammarTestUtils.getVendorConfiguration;
+import static org.batfish.grammar.JunosGrammarTestUtils.parseJuniperConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ import org.junit.rules.TemporaryFolder;
 public final class JunosOspfTopologyTest {
 
   private static final String HOSTNAME = "junos-ospf-topology";
+  private static final String INVALID_HOSTNAME = "junos-ospf-invalid-topology";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -35,6 +38,9 @@ public final class JunosOspfTopologyTest {
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInstance ri = jc.getMasterLogicalSystem().getDefaultRoutingInstance();
     assertThat(ri.getOspfOverloadedTopologies(), contains("default", "voice"));
+    assertThat(
+        jc.getMasterLogicalSystem().getRoutingInstances().get("VR").getOspfOverloadedTopologies(),
+        empty());
     OspfInterfaceSettings settings =
         jc.getMasterLogicalSystem()
             .getInterfaces()
@@ -61,5 +67,11 @@ public final class JunosOspfTopologyTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
         ccae.getWarnings().getOrDefault(HOSTNAME, new Warnings()).getRedFlagWarnings(), empty());
+  }
+
+  @Test
+  public void testProcessTopologyMetricIsUnrecognized() {
+    JuniperConfiguration jc = parseJuniperConfig(_folder, INVALID_HOSTNAME, true);
+    assertThat(jc.getWarnings().getParseWarnings(), hasSize(1));
   }
 }

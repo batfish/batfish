@@ -1,0 +1,2 @@
+set system host-name junos-ospf-invalid-topology
+set protocols ospf topology default metric 65450
