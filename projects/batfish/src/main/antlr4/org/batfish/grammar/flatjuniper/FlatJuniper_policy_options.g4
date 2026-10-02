@@ -616,7 +616,8 @@ popst_as_path_prepend
    AS_PATH_PREPEND bgp_asn+
 ;
 
-popst_bgp_output_queue_priority
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/bgp-output-queue-priority.html
+popst_bgp_output_queue_priority_null
 :
   BGP_OUTPUT_QUEUE_PRIORITY bgp_priority_queue_id
 ;
@@ -647,7 +648,7 @@ popst_common
    | popst_aigp_originate
    | popst_as_path_expand
    | popst_as_path_prepend
-   | popst_bgp_output_queue_priority
+   | popst_bgp_output_queue_priority_null
    | popst_color
    | popst_color2
    | popst_community_add

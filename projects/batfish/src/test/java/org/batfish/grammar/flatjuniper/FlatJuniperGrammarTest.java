@@ -1841,8 +1841,8 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testBgpPriority() {
-    // Just don't crash.
-    parseJuniperConfig("bgp-output-queue-priority");
+    assertThat(
+        parseJuniperConfig("bgp-output-queue-priority").getWarnings().getParseWarnings(), empty());
   }
 
   @Test
