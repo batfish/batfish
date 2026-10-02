@@ -1,0 +1,4 @@
+set system host-name chassis-apply-groups
+set groups CHASSIS chassis fpc 0 pic 0 port 8 speed 1G
+set chassis apply-groups CHASSIS
+set interfaces ge-0/0/8 unit 0 family ethernet-switching
