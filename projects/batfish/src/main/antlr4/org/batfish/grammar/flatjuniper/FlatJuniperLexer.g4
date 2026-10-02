@@ -214,6 +214,7 @@ AH_HEADER: 'AH-header';
 AGING_TIMER: 'aging-timer';
 AIGP_ADJUST: 'aigp-adjust';
 AIGP_ORIGINATE: 'aigp-originate';
+ALARM: 'alarm';
 ALARM_WITHOUT_DROP: 'alarm-without-drop';
 
 ALARM_THRESHOLD: 'alarm-threshold';

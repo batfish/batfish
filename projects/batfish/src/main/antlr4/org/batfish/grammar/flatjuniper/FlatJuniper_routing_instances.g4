@@ -110,9 +110,16 @@ ri_chassis
 :
    CHASSIS
    (
-      ric_aggregated_devices_null
+      ric_alarm_null
+      | ric_aggregated_devices_null
       | ric_fpc
    )
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/management-ethernet-edit-chassis.html
+ric_alarm_null
+:
+   ALARM null_filler
 ;
 
 ric_aggregated_devices_null
