@@ -489,6 +489,7 @@ CERTIFICATE: 'certificate';
 CERTIFICATES: 'certificates';
 
 CHAINED_COMPOSITE_NEXT_HOP: 'chained-composite-next-hop';
+CHANNEL_SPEED: 'channel-speed' -> pushMode(M_ChannelSpeed);
 
 CHANGE_LOG: 'change-log';
 
@@ -813,6 +814,8 @@ DISABLE_4BYTE_AS: 'disable-4byte-as';
 DISABLE_ARP_POLICER: 'disable-arp-policer';
 
 DISABLE_ARP_POLICERS: 'disable-arp-policers';
+
+DISABLE_AUTO_SPEED_DETECTION: 'disable-auto-speed-detection';
 
 DISABLE_LINKLOCAL_ADDR: 'disable-linklocal-addr';
 
@@ -2771,6 +2774,8 @@ PORT_MODE: 'port-mode';
 PORT_OVERLOADING: 'port-overloading';
 
 PORT_OVERLOADING_FACTOR: 'port-overloading-factor';
+
+PORT_RANGE: 'port-range';
 
 PORT_RANDOMIZATION: 'port-randomization';
 
@@ -5338,6 +5343,38 @@ M_Routing_Instances_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
 M_Routing_Instances_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Routing_Instances_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
 M_Routing_Instances_NAME: F_RoutingInstanceName -> type(NAME), popMode;
+
+mode M_ChannelSpeed;
+
+M_ChannelSpeed_DISABLE_AUTO_SPEED_DETECTION
+:
+   'disable-auto-speed-detection' -> type(DISABLE_AUTO_SPEED_DETECTION), popMode
+;
+
+M_ChannelSpeed_UINT16
+:
+   F_Uint16 -> type(UINT16)
+;
+
+M_ChannelSpeed_G
+:
+   [gG] -> type(G), popMode
+;
+
+M_ChannelSpeed_M
+:
+   [mM] -> type(M), popMode
+;
+
+M_ChannelSpeed_NEWLINE
+:
+   F_Newline -> type(NEWLINE), popMode
+;
+
+M_ChannelSpeed_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
 
 mode M_Speed;
 

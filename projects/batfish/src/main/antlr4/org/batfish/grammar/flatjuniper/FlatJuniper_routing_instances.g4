@@ -160,6 +160,7 @@ ricf_pic
    (
       ricfp_interface_type_null
       | ricfp_port
+      | ricfp_port_range
    )
 ;
 ricfp_interface_type_null
@@ -168,7 +169,24 @@ ricfp_interface_type_null
 ;
 ricfp_port
 :
-   PORT port_num = uint16 ricfpp_speed
+   PORT port_num = uint16
+   (
+      ricfpp_channel_speed
+      | ricfpp_speed
+   )
+;
+ricfp_port_range
+:
+   PORT_RANGE low = uint16 high = uint16 ricfpp_channel_speed
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/channel-speed-edit-chassis.html
+ricfpp_channel_speed
+:
+   CHANNEL_SPEED
+   (
+      DISABLE_AUTO_SPEED_DETECTION
+      | value = uint16 unit = speed_abbreviation
+   )
 ;
 ricfpp_speed
 :

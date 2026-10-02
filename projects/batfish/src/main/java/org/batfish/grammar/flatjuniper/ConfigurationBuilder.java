@@ -886,6 +886,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_fpcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ric_maximum_ecmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_port_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_channel_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rissdg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
@@ -8997,27 +8999,70 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitRic_fpc(Ric_fpcContext ctx) {
     Ricf_picContext picContext = ctx.ricf_pic();
-    if (picContext == null || picContext.ricfp_port() == null) {
+    if (picContext == null) {
       return;
     }
     Ricfp_portContext portContext = picContext.ricfp_port();
-    Ricfpp_speedContext speedContext = portContext.ricfpp_speed();
-    String portId =
-        String.format(
-            "%d/%d/%d", toInt(ctx.fpc), toInt(picContext.pic), toInteger(portContext.port_num));
-    double bandwidth = toInt(speedContext.value);
-    if (speedContext.unit == null || speedContext.unit.G() != null) {
-      bandwidth *= 1E9;
-    } else {
-      bandwidth *= 1E6;
+    if (portContext != null) {
+      Ricfpp_speedContext speedContext = portContext.ricfpp_speed();
+      if (speedContext != null) {
+        setChassisPortSpeed(
+            ctx.fpc,
+            picContext.pic,
+            portContext.port_num,
+            toChassisPortBandwidth(toInt(speedContext.value), speedContext.unit));
+        return;
+      }
+      Ricfpp_channel_speedContext channelSpeedContext = portContext.ricfpp_channel_speed();
+      if (channelSpeedContext.DISABLE_AUTO_SPEED_DETECTION() != null) {
+        todo(channelSpeedContext);
+        return;
+      }
+      setChassisPortSpeed(
+          ctx.fpc,
+          picContext.pic,
+          portContext.port_num,
+          toChassisPortBandwidth(toInteger(channelSpeedContext.value), channelSpeedContext.unit));
+      return;
     }
-    _currentLogicalSystem.getChassisPortSpeeds().put(portId, bandwidth);
+    Ricfp_port_rangeContext portRangeContext = picContext.ricfp_port_range();
+    if (portRangeContext == null) {
+      return;
+    }
+    Ricfpp_channel_speedContext channelSpeedContext = portRangeContext.ricfpp_channel_speed();
+    if (channelSpeedContext.DISABLE_AUTO_SPEED_DETECTION() != null) {
+      todo(channelSpeedContext);
+      return;
+    }
+    double bandwidth =
+        toChassisPortBandwidth(toInteger(channelSpeedContext.value), channelSpeedContext.unit);
+    for (int port = toInteger(portRangeContext.low);
+        port <= toInteger(portRangeContext.high);
+        port++) {
+      setChassisPortSpeed(ctx.fpc, picContext.pic, port, bandwidth);
+    }
   }
 
   @Override
   public void exitRic_maximum_ecmp(Ric_maximum_ecmpContext ctx) {
     _currentLogicalSystem.setMaximumEcmp(toInteger(ctx.maximum_ecmp));
     todo(ctx);
+  }
+
+  private void setChassisPortSpeed(DecContext fpc, DecContext pic, int port, double bandwidth) {
+    _currentLogicalSystem
+        .getChassisPortSpeeds()
+        .put(String.format("%d/%d/%d", toInt(fpc), toInt(pic), port), bandwidth);
+  }
+
+  private void setChassisPortSpeed(
+      DecContext fpc, DecContext pic, Uint16Context port, double bandwidth) {
+    setChassisPortSpeed(fpc, pic, toInteger(port), bandwidth);
+  }
+
+  private static double toChassisPortBandwidth(
+      int value, @Nullable FlatJuniperParser.Speed_abbreviationContext unit) {
+    return value * (unit == null || unit.G() != null ? 1E9 : 1E6);
   }
 
   @Override

@@ -1,0 +1,8 @@
+set system host-name chassis-channel-speed
+set chassis fpc 0 pic 0 port 8 channel-speed 10g
+set chassis fpc 0 pic 0 port 47 channel-speed disable-auto-speed-detection
+set chassis fpc 0 pic 0 port-range 40 41 channel-speed 25g
+set chassis fpc 0 pic 0 port-range 48 51 channel-speed disable-auto-speed-detection
+set interfaces xe-0/0/8 unit 0 family inet address 192.0.2.1/31
+set interfaces et-0/0/40 unit 0 family ethernet-switching
+set interfaces et-0/0/41 unit 0 family ethernet-switching
