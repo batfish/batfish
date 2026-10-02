@@ -134,7 +134,7 @@ fod_forward_only_null
    (
       fodfo_logical_system_null
       | fodfo_routing_instance_null
-   )
+   )?
 ;
 
 fodfo_logical_system_null
@@ -179,7 +179,7 @@ fod_relay_option
       | fodro_equals
       | fodro_option_number_null
       | fodro_starts_with
-   )
+   )?
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/relay-option-82-edit-forwarding-options.html
@@ -192,7 +192,7 @@ fod_relay_option_82_null
       | fodro82_remote_id_null
       | fodro82_server_id_override_null
       | fodro82_vendor_specific_null
-   )
+   )?
 ;
 
 fodro_action
@@ -263,7 +263,7 @@ fodro82_circuit_id_null
            | LOGICAL
         )
       | USE_VLAN_ID
-   )
+   )?
 ;
 
 fodro82_link_selection_null
@@ -285,7 +285,7 @@ fodro82_remote_id_null
            | LOGICAL
         )
       | USE_VLAN_ID
-   )
+   )?
 ;
 
 fodro82_server_id_override_null
