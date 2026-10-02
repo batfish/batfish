@@ -1,0 +1,5 @@
+set system host-name junos-channelized-interface
+set interfaces et-0/0/0:0 vlan-tagging
+set interfaces et-0/0/0:0 unit 100 vlan-id 100
+set interfaces et-0/0/0:1 flexible-vlan-tagging
+set interfaces et-0/0/0:1 unit 200 vlan-id 200
