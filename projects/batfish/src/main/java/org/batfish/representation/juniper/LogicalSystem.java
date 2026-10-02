@@ -56,6 +56,7 @@ public class LogicalSystem implements Serializable {
 
   private boolean _managementInstance;
   private final Map<String, MacsecConnectivityAssociation> _macsecConnectivityAssociations;
+  private final Map<String, String> _macsecInterfaceConnectivityAssociations;
 
   private @Nullable Integer _maximumEcmp;
 
@@ -198,6 +199,7 @@ public class LogicalSystem implements Serializable {
     _chassisPortSpeeds = new TreeMap<>();
     _login = new Login();
     _macsecConnectivityAssociations = new TreeMap<>();
+    _macsecInterfaceConnectivityAssociations = new TreeMap<>();
     _namedCommunities = new TreeMap<>();
     _classOfServiceInterfaces = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
@@ -344,6 +346,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, MacsecConnectivityAssociation> getMacsecConnectivityAssociations() {
     return _macsecConnectivityAssociations;
+  }
+
+  public Map<String, String> getMacsecInterfaceConnectivityAssociations() {
+    return _macsecInterfaceConnectivityAssociations;
   }
 
   public @Nullable Integer getMaximumEcmp() {
