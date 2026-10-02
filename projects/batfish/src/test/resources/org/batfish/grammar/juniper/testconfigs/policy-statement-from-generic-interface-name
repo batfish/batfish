@@ -1,4 +1,7 @@
 set system host-name policy-statement-from-generic-interface-name
+set interfaces ge-0/0/0 unit 0
 set policy-options policy-statement INTERFACE-POLICY term GENERIC from interface primary
 set policy-options policy-statement INTERFACE-POLICY term GENERIC from interface eth-example-vrf
 set policy-options policy-statement INTERFACE-POLICY term GENERIC then accept
+set policy-options policy-statement INTERFACE-POLICY term JUNOS from interface ge-0/0/0.0
+set policy-options policy-statement INTERFACE-POLICY term JUNOS then accept
