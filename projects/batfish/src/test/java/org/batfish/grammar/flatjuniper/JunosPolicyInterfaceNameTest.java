@@ -1,12 +1,15 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.hasReferencedStructure;
 import static org.batfish.grammar.JunosGrammarTestUtils.getBatfish;
 import static org.batfish.grammar.JunosGrammarTestUtils.getParseWarnings;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 
 import java.io.IOException;
@@ -35,12 +38,10 @@ public final class JunosPolicyInterfaceNameTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
         ccae,
-        hasUndefinedReference(
-            "configs/" + HOSTNAME, INTERFACE, "primary", POLICY_STATEMENT_FROM_INTERFACE));
+        hasReferencedStructure(
+            "configs/" + HOSTNAME, INTERFACE, "ge-0/0/0.0", POLICY_STATEMENT_FROM_INTERFACE));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            "configs/" + HOSTNAME, INTERFACE, "eth-example-vrf", POLICY_STATEMENT_FROM_INTERFACE));
+        ccae.getUndefinedReferences(), hasEntry(equalTo("configs/" + HOSTNAME), anEmptyMap()));
     assertThat(
         ccae.getWarnings().getOrDefault(HOSTNAME, new Warnings()).getRedFlagWarnings(), empty());
   }

@@ -178,7 +178,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
-import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_LOCAL_CERTIFICATE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ARP_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_DEMUX_UNDERLYING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
@@ -8071,8 +8070,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
     String ifaceName = ctx.id != null ? getInterfaceFullName(ctx.id) : toString(ctx.name);
     _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(ifaceName));
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.getStop()));
+    if (ctx.id != null) {
+      _configuration.referenceStructure(
+          INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.getStop()));
+    }
   }
 
   @Override
@@ -10740,8 +10741,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSeikpc_local_certificate(Seikpc_local_certificateContext ctx) {
     String name = toString(ctx.name);
     _currentIkePolicy.getLocalCertificates().add(name);
-    _configuration.referenceStructure(
-        PKI_LOCAL_CERTIFICATE, name, IKE_POLICY_LOCAL_CERTIFICATE, getLine(ctx.name.getStart()));
   }
 
   @Override
