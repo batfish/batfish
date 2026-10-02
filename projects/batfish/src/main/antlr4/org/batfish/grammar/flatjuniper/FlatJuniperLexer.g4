@@ -1432,7 +1432,7 @@ INGRESS: 'ingress';
 
 INGRESS_REPLICATION: 'ingress-replication';
 INITIAL_TCP_MSS: 'initial-tcp-mss';
-
+INLINE_SERVICES: 'inline-services';
 INNER: 'inner';
 
 INPUT: 'input' -> pushMode(M_Name);
