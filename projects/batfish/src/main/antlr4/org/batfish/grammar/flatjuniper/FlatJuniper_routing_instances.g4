@@ -149,6 +149,7 @@ ric_fpc
       ricf_auto_speed_detection
       | ricf_lite_mode_null
       | ricf_pic
+      | ricf_sampling_instance_null
    )
 ;
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/fpc-edit-chassis.html
@@ -159,6 +160,11 @@ ricf_auto_speed_detection
 ricf_lite_mode_null
 :
    LITE_MODE null_filler
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/sampling-instance-edit-chassis.html
+ricf_sampling_instance_null
+:
+   SAMPLING_INSTANCE null_filler
 ;
 ricf_pic
 :
