@@ -7789,6 +7789,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitO_topology(O_topologyContext ctx) {
+    if (ctx.OVERLOAD() == null) {
+      return;
+    }
     String name = toString(ctx.name);
     _currentRoutingInstance.getOspfOverloadedTopologies().add(name);
     if (!name.equals("default")) {

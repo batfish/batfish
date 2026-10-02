@@ -6,7 +6,7 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-o_area
+o_area[boolean ospf3]
 :
    AREA
    (
@@ -17,7 +17,7 @@ o_area
    (
       apply
       | oa_area_range
-      | oa_interface
+      | oa_interface[$ospf3]
       | oa_label_switched_path
       | oa_nssa
       | oa_null
@@ -25,10 +25,10 @@ o_area
    )
 ;
 
-o_common
+o_common[boolean ospf3]
 :
    apply
-   | o_area
+   | o_area[$ospf3]
    | o_disable
    | o_domain_vpn_tag
    | o_enable
@@ -45,7 +45,7 @@ o_common
    | o_rib_group
    | o_rib_groups
    | o_spf_options_null
-   | o_topology
+   | {!$ospf3}? o_topology
    | o_traceoptions_null
    | o_traffic_engineering
 ;
@@ -106,7 +106,7 @@ o_spf_options_null
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/overload-edit-protocols-ospf.html
 o_topology
 :
-   TOPOLOGY name = junos_name OVERLOAD
+   TOPOLOGY name = junos_name OVERLOAD?
 ;
 
 o_traceoptions_null
@@ -169,7 +169,7 @@ oa_area_range
    )
 ;
 
-oa_interface
+oa_interface[boolean ospf3]
 :
    INTERFACE
    (
@@ -198,7 +198,7 @@ oa_interface
       | oai_priority
       | oai_retransmit_interval_null
       | oai_te_metric
-      | oai_topology
+      | {!$ospf3}? oai_topology
    )
 ;
 
@@ -449,10 +449,10 @@ ot_shortcuts
 
 p_ospf
 :
-   OSPF o_common
+   OSPF o_common[false]
 ;
 
 p_ospf3
 :
-   OSPF3 o_common
+   OSPF3 o_common[true]
 ;
