@@ -2581,6 +2581,8 @@ NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
 NOTICE: 'notice';
 NOTIFICATION_RIB: 'notification-rib' -> pushMode(M_Name);
 
+NUMBER_OF_SUB_PORTS: 'number-of-sub-ports';
+
 NSSA: 'nssa';
 
 NTP: 'ntp';

@@ -3624,6 +3624,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem
         .getChassisFpcAutoSpeedDetection()
         .putAll(ls.getChassisFpcAutoSpeedDetection());
+    _masterLogicalSystem.getChassisPortSubPortCounts().putAll(ls.getChassisPortSubPortCounts());
     _masterLogicalSystem.getChassisPortSpeeds().putAll(ls.getChassisPortSpeeds());
     _masterLogicalSystem.getNamedCommunities().putAll(ls.getNamedCommunities());
     _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());

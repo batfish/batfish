@@ -889,6 +889,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricf_picContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfp_port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_channel_speedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_number_of_sub_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ricfpp_speedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rissdg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Riv_communityContext;
@@ -9022,6 +9023,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             toChassisPortBandwidth(toInt(speedContext.value), speedContext.unit));
         return;
       }
+      Ricfpp_number_of_sub_portsContext numberOfSubPortsContext =
+          portContext.ricfpp_number_of_sub_ports();
+      if (numberOfSubPortsContext != null) {
+        _currentLogicalSystem
+            .getChassisPortSubPortCounts()
+            .put(
+                toChassisPortId(ctx.fpc, picContext.pic, toInteger(portContext.port_num)),
+                toInteger(numberOfSubPortsContext.number));
+        todo(numberOfSubPortsContext);
+        return;
+      }
       Ricfpp_channel_speedContext channelSpeedContext = portContext.ricfpp_channel_speed();
       if (channelSpeedContext.DISABLE_AUTO_SPEED_DETECTION() != null) {
         todo(channelSpeedContext);
@@ -9059,9 +9071,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private void setChassisPortSpeed(DecContext fpc, DecContext pic, int port, double bandwidth) {
-    _currentLogicalSystem
-        .getChassisPortSpeeds()
-        .put(String.format("%d/%d/%d", toInt(fpc), toInt(pic), port), bandwidth);
+    _currentLogicalSystem.getChassisPortSpeeds().put(toChassisPortId(fpc, pic, port), bandwidth);
   }
 
   private void setChassisPortSpeed(
@@ -9072,6 +9082,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static double toChassisPortBandwidth(
       int value, @Nullable FlatJuniperParser.Speed_abbreviationContext unit) {
     return value * (unit == null || unit.G() != null ? 1E9 : 1E6);
+  }
+
+  private static String toChassisPortId(DecContext fpc, DecContext pic, int port) {
+    return String.format("%d/%d/%d", toInt(fpc), toInt(pic), port);
   }
 
   @Override
