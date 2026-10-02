@@ -146,9 +146,15 @@ ric_fpc
 :
    FPC fpc = dec
    (
-      ricf_lite_mode_null
+      ricf_auto_speed_detection
+      | ricf_lite_mode_null
       | ricf_pic
    )
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/auto-speed-detection-edit-chassis.html
+ricf_auto_speed_detection
+:
+   AUTO_SPEED_DETECTION (DISABLE | ENABLE)
 ;
 ricf_lite_mode_null
 :

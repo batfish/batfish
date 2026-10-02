@@ -413,6 +413,8 @@ AUTO_EXPORT: 'auto-export';
 
 AUTO_NEGOTIATION: 'auto-negotiation';
 
+AUTO_SPEED_DETECTION: 'auto-speed-detection';
+
 AUTO_SNAPSHOT: 'auto-snapshot';
 
 AUTONOMOUS_SYSTEM: 'autonomous-system' -> pushMode(M_BgpAsn);

@@ -3621,6 +3621,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getAsPathGroups().putAll(ls.getAsPathGroups());
     // inherited?
     _masterLogicalSystem.getAuthenticationKeyChains().putAll(ls.getAuthenticationKeyChains());
+    _masterLogicalSystem
+        .getChassisFpcAutoSpeedDetection()
+        .putAll(ls.getChassisFpcAutoSpeedDetection());
     _masterLogicalSystem.getChassisPortSpeeds().putAll(ls.getChassisPortSpeeds());
     _masterLogicalSystem.getNamedCommunities().putAll(ls.getNamedCommunities());
     _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
