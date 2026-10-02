@@ -637,5 +637,18 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void runGarbageCollection() {}
+  public void deleteNetwork(NetworkId network) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteSnapshot(NetworkSnapshot snapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void startMaintenance() {}
+
+  @Override
+  public void stopMaintenance() {}
 }
