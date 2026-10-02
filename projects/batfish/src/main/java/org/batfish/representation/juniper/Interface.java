@@ -135,7 +135,11 @@ public class Interface implements Serializable {
   }
 
   public static InterfaceType getInterfaceTypeByName(String name) {
-    String unqualifiedName = name.substring(name.indexOf(':') + 1);
+    int colonIndex = name.indexOf(':');
+    String unqualifiedName =
+        colonIndex < 0 || Character.isDigit(name.charAt(colonIndex + 1))
+            ? name
+            : name.substring(colonIndex + 1);
     if (unqualifiedName.startsWith("et")
         || unqualifiedName.startsWith("fe")
         || unqualifiedName.startsWith("ge")
