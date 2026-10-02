@@ -1,0 +1,2 @@
+set system host-name chassis-alarm
+set chassis alarm management-ethernet link-down ignore
