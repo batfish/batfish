@@ -2946,6 +2946,7 @@ READ_WRITE: 'read-write';
 READVERTISE: 'readvertise';
 REAUTHENTICATION: 'reauthentication';
 RECEIVE: 'receive';
+RECEIVE_BUFFER: 'receive-buffer' -> pushMode(M_Bandwidth);
 RECORD: 'record';
 
 RECORD_LIFETIME: 'record-lifetime';
@@ -3243,6 +3244,8 @@ SELF_PING_DURATION: 'self-ping-duration';
 SEND: 'send';
 
 SEND_ADDPATH_OPTIMIZATION: 'send-addpath-optimization';
+
+SEND_BUFFER: 'send-buffer' -> pushMode(M_Bandwidth);
 
 SEND_COUNT: 'send-count';
 

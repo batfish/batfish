@@ -415,7 +415,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_receive_bufferContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_send_bufferContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_ttlContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_vpn_apply_exportContext;
@@ -1912,6 +1914,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return base * 1000000L;
     } else if (ctx.G() != null) {
       return base * 1000000000L;
+    } else {
+      return base;
+    }
+  }
+
+  private static long toBinaryByteCount(BandwidthContext ctx) {
+    long base = toLong(ctx.base);
+    if (ctx.K() != null) {
+      return base * 1024L;
+    } else if (ctx.M() != null) {
+      return base * 1024L * 1024;
+    } else if (ctx.G() != null) {
+      return base * 1024L * 1024 * 1024;
     } else {
       return base;
     }
@@ -5900,6 +5915,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitB_receive_buffer(B_receive_bufferContext ctx) {
+    _currentBgpGroup.setReceiveBufferBytes(toBinaryByteCount(ctx.size));
+  }
+
+  @Override
   public void exitB_local_preference(B_local_preferenceContext ctx) {
     long localPreference = toLong(ctx.localpref);
     _currentBgpGroup.setLocalPreference(localPreference);
@@ -5927,6 +5947,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (nearest || replace || !(all || noPeerLoopCheck)) {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitB_send_buffer(B_send_bufferContext ctx) {
+    _currentBgpGroup.setSendBufferBytes(toBinaryByteCount(ctx.size));
   }
 
   @Override

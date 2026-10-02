@@ -1,0 +1,12 @@
+set version 25.4R1.12
+set system host-name junos-bgp-socket-buffers
+set interfaces lo0 unit 0 family inet address 192.0.2.1/32
+set routing-options autonomous-system 65001
+set protocols bgp local-address 192.0.2.1
+set protocols bgp receive-buffer 65536
+set protocols bgp send-buffer 64k
+set protocols bgp group TEST type external
+set protocols bgp group TEST peer-as 65002
+set protocols bgp group TEST receive-buffer 1m
+set protocols bgp group TEST neighbor 192.0.2.2 receive-buffer 256k
+set protocols bgp group TEST neighbor 192.0.2.3 send-buffer 1g

@@ -138,13 +138,26 @@ b_common
    | b_peer_as
    | b_precision_timers_null
    | b_preference
+   | b_receive_buffer
    | b_remove_private
+   | b_send_buffer
    | b_stale_labels_holddown_period_null
    | b_tcp_mss
    | b_traceoptions_null
    | b_ttl
    | b_type
    | b_vpn_apply_export
+;
+
+// Undocumented Junos statements validated by batfish/lab-validation#242.
+b_receive_buffer
+:
+   RECEIVE_BUFFER size = bandwidth
+;
+
+b_send_buffer
+:
+   SEND_BUFFER size = bandwidth
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/accept-remote-nexthop-edit-protocols-bgp.html
