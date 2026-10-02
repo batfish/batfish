@@ -151,6 +151,7 @@ ric_fpc
       | ricf_lite_mode_null
       | ricf_pic
       | ricf_sampling_instance_null
+      | ricf_temperature_threshold_null
    )
 ;
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/fpc-edit-chassis.html
@@ -171,6 +172,11 @@ ricf_lite_mode_null
 ricf_sampling_instance_null
 :
    SAMPLING_INSTANCE null_filler
+;
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/chassis-adc-temperature-sensor.html
+ricf_temperature_threshold_null
+:
+   TEMPERATURE_THRESHOLD null_filler
 ;
 ricf_pic
 :

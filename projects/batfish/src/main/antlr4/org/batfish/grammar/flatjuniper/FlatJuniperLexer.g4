@@ -3526,6 +3526,7 @@ TEAR_DROP: 'tear-drop';
 TEARDOWN: 'teardown';
 TELNET: 'telnet';
 TEMPORAL: 'temporal' -> pushMode(M_Bandwidth);
+TEMPERATURE_THRESHOLD: 'temperature-threshold';
 TENANT: 'tenant';
 TEREDO: 'teredo';
 TERM: 'term' -> pushMode(M_Name);
