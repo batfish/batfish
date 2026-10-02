@@ -113,6 +113,7 @@ ri_chassis
       ric_alarm_null
       | ric_aggregated_devices_null
       | ric_enhanced_policer_null
+      | ric_fabric_null
       | ric_fpc
       | ric_forwarding_options_null
       | ric_maximum_ecmp
@@ -136,6 +137,12 @@ ric_aggregated_devices_null
 ric_enhanced_policer_null
 :
    ENHANCED_POLICER
+;
+
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/redundancy-mode-redundant.html
+ric_fabric_null
+:
+   FABRIC REDUNDANCY_MODE (INCREASED_BANDWIDTH | REDUNDANT)
 ;
 
 // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/forwarding-options-edit-chassis.html

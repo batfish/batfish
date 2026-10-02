@@ -1434,6 +1434,7 @@ INFO_REQUEST: 'info-request';
 INGRESS: 'ingress';
 
 INGRESS_REPLICATION: 'ingress-replication';
+INCREASED_BANDWIDTH: 'increased-bandwidth';
 INITIAL_TCP_MSS: 'initial-tcp-mss';
 INLINE_SERVICES: 'inline-services';
 INNER: 'inner';
@@ -2981,7 +2982,9 @@ REDIRECT_FOR_TOS_AND_NET: 'redirect-for-tos-and-net';
 REDUNDANCY: 'redundancy';
 // TODO: should this just allow a number afterward?
 REDUNDANCY_GROUP: 'redundancy-group' -> pushMode(M_Name);
+REDUNDANCY_MODE: 'redundancy-mode';
 
+REDUNDANT: 'redundant';
 REDUNDANT_ETHER_OPTIONS: 'redundant-ether-options';
 
 REDUNDANT_PARENT: 'redundant-parent' -> pushMode(M_Interface);
