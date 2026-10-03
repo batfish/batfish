@@ -9828,6 +9828,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testVxlanL2vniConversionMissingSourceAddress() throws IOException {
+    String hostname = "juniper-vxlan-l2vni-missing-source-address";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(c.getDefaultVrf().getLayer2Vnis(), anEmptyMap());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            equalTo(
+                "Cannot create VXLAN VNIs because VTEP source interface 'lo0.1' has no primary"
+                    + " address")));
+  }
+
+  @Test
   public void testVxlanL3vniConversion() {
     Configuration c = parseConfig("juniper-evpn-vxlan");
     Layer3Vni vrf10 = c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(50010);

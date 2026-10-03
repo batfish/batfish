@@ -1,0 +1,5 @@
+set system host-name juniper-vxlan-l2vni-missing-source-address
+set interfaces lo0 unit 1 description VTEP_SOURCE
+set switch-options vtep-source-interface lo0.1
+set vlans v10 vlan-id 10
+set vlans v10 vxlan vni 5010

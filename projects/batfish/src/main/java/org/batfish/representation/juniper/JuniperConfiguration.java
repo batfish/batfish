@@ -2245,6 +2245,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (iface == null) {
         continue;
       }
+      ConcreteInterfaceAddress sourceAddress = iface.getPrimaryAddress();
+      if (sourceAddress == null) {
+        _w.redFlagf(
+            "Cannot create VXLAN VNIs because VTEP source interface '%s' has no primary address",
+            vtepSource);
+        return;
+      }
 
       // Should be a l2vni
       Layer2Vni vniSettings =
@@ -2254,7 +2261,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .setUdpPort(Vni.DEFAULT_UDP_PORT)
               .setBumTransportMethod(UNICAST_FLOOD_GROUP)
               .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
-              .setSourceAddress(iface.getPrimaryAddress().getIp())
+              .setSourceAddress(sourceAddress.getIp())
               .build();
       _c.getDefaultVrf().addLayer2Vni(vniSettings);
     }
