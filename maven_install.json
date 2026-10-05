@@ -21,7 +21,7 @@
     "com.google.code.findbugs:jsr305": 495355163,
     "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 911823543,
-    "com.google.googlejavaformat:google-java-format": -313114649,
+    "com.google.googlejavaformat:google-java-format": -302611545,
     "com.google.guava:guava": -692456693,
     "com.google.guava:guava-bom": -231672499,
     "com.google.guava:guava-testlib": 279911981,
@@ -115,8 +115,8 @@
     "com.google.code.gson:gson:jar:sources": 935710753,
     "com.google.errorprone:error_prone_annotations": 652227016,
     "com.google.errorprone:error_prone_annotations:jar:sources": -507624312,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": -242194945,
-    "com.google.googlejavaformat:google-java-format:jar:sources": 198234778,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": 1369900008,
+    "com.google.googlejavaformat:google-java-format:jar:sources": 2122047025,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
     "com.google.guava:guava": 311464563,
@@ -212,10 +212,10 @@
     "org.apiguardian:apiguardian-api:jar:sources": 729595858,
     "org.checkerframework:checker-qual": 1035058555,
     "org.checkerframework:checker-qual:jar:sources": -434493987,
-    "org.commonmark:commonmark": 1195553091,
-    "org.commonmark:commonmark-ext-gfm-tables": -558121472,
-    "org.commonmark:commonmark-ext-gfm-tables:jar:sources": 1593227191,
-    "org.commonmark:commonmark:jar:sources": 141052253,
+    "org.commonmark:commonmark": 1007679894,
+    "org.commonmark:commonmark-ext-gfm-tables": 906481356,
+    "org.commonmark:commonmark-ext-gfm-tables:jar:sources": 1402309037,
+    "org.commonmark:commonmark:jar:sources": 134511725,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
     "org.glassfish.grizzly:grizzly-framework:jar:sources": -1312844390,
     "org.glassfish.grizzly:grizzly-http": -1102587462,
@@ -486,10 +486,10 @@
     },
     "com.google.googlejavaformat:google-java-format": {
       "shasums": {
-        "all-deps": "25b400f003089d23cc5320cdaf1a16cabee19b8aa3434d0ff021b3d9f42154b4",
-        "sources": "b20f9812c27ed700df6d3c43e835efaa1cea129017ce7e7645b52292b66ac8e0"
+        "all-deps": "834b2a0c38cb774953322a84b5ca3f2f40dd3156650b3cd44d3b744345962f7a",
+        "sources": "80fe8e64fde9ed05dc265ca10c489fba5ee5572da7271705fa8b32945e486325"
       },
-      "version": "1.36.1"
+      "version": "1.37.0"
     },
     "com.google.guava:failureaccess": {
       "shasums": {
@@ -828,17 +828,17 @@
     },
     "org.commonmark:commonmark": {
       "shasums": {
-        "jar": "f8b28e00f97c568329ee1b2496cfec5c3ef8664b565ea09cf8988894183b956d",
-        "sources": "c1296ec293232548329d9051e5fc49b1ecec1a3440db7d3ce36f193feb972757"
+        "jar": "4c9b0fa481e36d7176f38e572c134656424cf9601bc190855d0f89478df901c6",
+        "sources": "cfcd4db6b4502fd995ab681bdf8500c968fc6ee9c56380cf6ebdb11852c484bc"
       },
-      "version": "0.28.0"
+      "version": "0.29.0"
     },
     "org.commonmark:commonmark-ext-gfm-tables": {
       "shasums": {
-        "jar": "80439c7c4809daa6c35ccb260f48f8b71cda30e8cc923dbd68bb3be049359ecb",
-        "sources": "e1fd6175ae9eff2ec0317309f421a8ee1a3090b61030746d824381beb6a61fdd"
+        "jar": "f263d284c0795b0ddd6071d4fa969f67d460644c20828e51957ad5aec0d75612",
+        "sources": "4e08e7742edd4785abdba2e7a81ef668d186ebeb1d7d53c47fc89f4565bf3133"
       },
-      "version": "0.28.0"
+      "version": "0.29.0"
     },
     "org.glassfish.grizzly:grizzly-framework": {
       "shasums": {
@@ -1709,39 +1709,6 @@
       "com.google.googlejavaformat.java.javadoc",
       "com.google.j2objc.annotations",
       "com.google.thirdparty.publicsuffix",
-      "javax.annotation",
-      "javax.annotation.concurrent",
-      "javax.annotation.meta",
-      "org.checkerframework.checker.builder.qual",
-      "org.checkerframework.checker.calledmethods.qual",
-      "org.checkerframework.checker.compilermsgs.qual",
-      "org.checkerframework.checker.fenum.qual",
-      "org.checkerframework.checker.formatter.qual",
-      "org.checkerframework.checker.guieffect.qual",
-      "org.checkerframework.checker.i18n.qual",
-      "org.checkerframework.checker.i18nformatter.qual",
-      "org.checkerframework.checker.index.qual",
-      "org.checkerframework.checker.initialization.qual",
-      "org.checkerframework.checker.interning.qual",
-      "org.checkerframework.checker.lock.qual",
-      "org.checkerframework.checker.mustcall.qual",
-      "org.checkerframework.checker.nullness.qual",
-      "org.checkerframework.checker.optional.qual",
-      "org.checkerframework.checker.propkey.qual",
-      "org.checkerframework.checker.regex.qual",
-      "org.checkerframework.checker.signature.qual",
-      "org.checkerframework.checker.signedness.qual",
-      "org.checkerframework.checker.tainting.qual",
-      "org.checkerframework.checker.units.qual",
-      "org.checkerframework.common.aliasing.qual",
-      "org.checkerframework.common.initializedfields.qual",
-      "org.checkerframework.common.reflection.qual",
-      "org.checkerframework.common.returnsreceiver.qual",
-      "org.checkerframework.common.subtyping.qual",
-      "org.checkerframework.common.util.report.qual",
-      "org.checkerframework.common.value.qual",
-      "org.checkerframework.dataflow.qual",
-      "org.checkerframework.framework.qual",
       "org.commonmark",
       "org.commonmark.ext.gfm.tables",
       "org.commonmark.ext.gfm.tables.internal",
