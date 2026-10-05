@@ -45,7 +45,7 @@
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": -664587860,
     "org.apache.commons:commons-configuration2": 733747734,
-    "org.apache.commons:commons-lang3": -278168457,
+    "org.apache.commons:commons-lang3": -2075119816,
     "org.apache.commons:commons-text": -1886494041,
     "org.apache.httpcomponents:httpclient": 1643860045,
     "org.apache.httpcomponents:httpcore": -1696303652,
@@ -176,13 +176,13 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": 1404898280,
     "net.sf.saxon:Saxon-HE:jar:sources": 37033699,
-    "net.sourceforge.pmd:pmd-cli": -2106502430,
+    "net.sourceforge.pmd:pmd-cli": 41741732,
     "net.sourceforge.pmd:pmd-cli:jar:sources": -313254172,
-    "net.sourceforge.pmd:pmd-core": -794674055,
+    "net.sourceforge.pmd:pmd-core": 1179979713,
     "net.sourceforge.pmd:pmd-core:jar:sources": -415188564,
     "net.sourceforge.pmd:pmd-designer": 906775713,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
-    "net.sourceforge.pmd:pmd-java": -1796094228,
+    "net.sourceforge.pmd:pmd-java": -1750530546,
     "net.sourceforge.pmd:pmd-java:jar:sources": 258299743,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
@@ -190,11 +190,11 @@
     "org.antlr:antlr4:jar:sources": 160843354,
     "org.apache.commons:commons-collections4": 1249889217,
     "org.apache.commons:commons-collections4:jar:sources": -280062290,
-    "org.apache.commons:commons-configuration2": -600946961,
+    "org.apache.commons:commons-configuration2": 1510242723,
     "org.apache.commons:commons-configuration2:jar:sources": 2125754593,
-    "org.apache.commons:commons-lang3": 1841935436,
-    "org.apache.commons:commons-lang3:jar:sources": -982252396,
-    "org.apache.commons:commons-text": 869132518,
+    "org.apache.commons:commons-lang3": 348552720,
+    "org.apache.commons:commons-lang3:jar:sources": -190929117,
+    "org.apache.commons:commons-text": 35026164,
     "org.apache.commons:commons-text:jar:sources": 400790036,
     "org.apache.httpcomponents:httpclient": -584254446,
     "org.apache.httpcomponents:httpclient:jar:sources": -779528763,
@@ -758,10 +758,10 @@
     },
     "org.apache.commons:commons-lang3": {
       "shasums": {
-        "jar": "69e5c9fa35da7a51a5fd2099dfe56a2d8d32cf233e2f6d770e796146440263f4",
-        "sources": "eec245e820ec2800a1780cf756aefb427c1c6170e06902e67ac15b6910ce6335"
+        "jar": "a2af247ec4db6eb8947e18e23e0433e4871a7c5d0a40e1f92e46ede54ae1defe",
+        "sources": "e0467ff7412bbedf5f120e78de484cddc0afcf995b8ef3e7cd132ef4bd101d01"
       },
-      "version": "3.20.0"
+      "version": "3.21.0"
     },
     "org.apache.commons:commons-text": {
       "shasums": {
