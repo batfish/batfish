@@ -230,6 +230,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   // note that we only populate the full Prev (not PrevBestPath) versions when
   // some session has additional paths and we need to be able to send them.
   private boolean _anySessionHasAdditionalPaths = true;
+  private boolean _pathIdsInitializedForAdditionalPaths;
   private @Nonnull Set<Bgpv4Route> _ebgpv4Prev;
   private @Nonnull Set<Bgpv4Route> _ebgpv4PrevBestPath;
   private @Nonnull Set<Bgpv4Route> _bgpv4Prev;
@@ -364,6 +365,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private boolean _successfulWatchedTracksChanged;
 
   private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
+
+  private static final Comparator<AbstractRouteDecorator> PATH_ID_ROUTE_COMPARATOR =
+      Comparator.comparingInt(AbstractRouteDecorator::hashCode)
+          .thenComparing(AbstractRouteDecorator::toString);
 
   /**
    * Create a new BGP process
@@ -610,6 +615,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpTopology oldTopology = _topology;
     _topology = topology;
     initBgpQueues(_topology);
+    updateAdditionalPathsPathIdState();
     // New sessions got established
     _unicastEdgesWentUp =
         Sets.difference(
@@ -764,6 +770,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               _bgpv4DeltaBuilder.build());
         }
       }
+    }
+    if (!_exportFromBgpRib && _anySessionHasAdditionalPaths) {
+      preallocatePathIds(
+          mainRibDelta.stream()
+              .filter(advertisement -> !advertisement.isWithdrawn())
+              .map(RouteAdvertisement::getRoute)
+              .filter(route -> !(route.getRoute() instanceof BgpRoute)),
+          _pathIdGenerators,
+          _routesToPathIds);
     }
   }
 
@@ -2542,6 +2557,50 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return false;
   }
 
+  @VisibleForTesting
+  static void preallocatePathIds(
+      Stream<? extends AbstractRouteDecorator> routes,
+      Map<Prefix, Integer> pathIdGenerators,
+      Map<AbstractRouteDecorator, Integer> routesToPathIds) {
+    routes
+        .filter(route -> !routesToPathIds.containsKey(route))
+        .sorted(PATH_ID_ROUTE_COMPARATOR)
+        .forEach(
+            route -> {
+              if (routesToPathIds.containsKey(route)) {
+                return;
+              }
+              int pathId =
+                  pathIdGenerators.compute(
+                      route.getNetwork(), (prefix, lastId) -> lastId == null ? 1 : lastId + 1);
+              routesToPathIds.put(route, pathId);
+            });
+  }
+
+  private void preallocatePathIdsForCurrentRoutes() {
+    Stream<? extends AbstractRouteDecorator> candidates = _bgpv4Rib.getRoutes().stream();
+    if (!_exportFromBgpRib) {
+      candidates =
+          Stream.concat(
+              candidates,
+              _mainRib.getRoutes().stream()
+                  .filter(route -> !(route.getRoute() instanceof BgpRoute)));
+    }
+    preallocatePathIds(candidates, _pathIdGenerators, _routesToPathIds);
+  }
+
+  private void updateAdditionalPathsPathIdState() {
+    _anySessionHasAdditionalPaths = computeAnySessionHasAdditionalPaths();
+    if (_anySessionHasAdditionalPaths) {
+      if (!_pathIdsInitializedForAdditionalPaths) {
+        preallocatePathIdsForCurrentRoutes();
+        _pathIdsInitializedForAdditionalPaths = true;
+      }
+    } else {
+      _pathIdsInitializedForAdditionalPaths = false;
+    }
+  }
+
   /** Record state at beginning of round prior to pulling from neighbors. */
   public void startOfInnerRound() {
     // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
@@ -2606,6 +2665,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
     _evpnType3DeltaPrev = _evpnType3DeltaBuilder.build();
     _evpnType5DeltaPrev = _evpnType5DeltaBuilder.build();
+    if (_anySessionHasAdditionalPaths) {
+      preallocatePathIds(
+          _bgpv4DeltaPrev.stream()
+              .filter(advertisement -> !advertisement.isWithdrawn())
+              .map(RouteAdvertisement::getRoute),
+          _pathIdGenerators,
+          _routesToPathIds);
+    }
     // Take a snapshot of this round's best path deltas to send to non-add-path sessions.
     _bgpv4DeltaPrevBestPath = _bgpv4DeltaBestPathBuilder.build();
     _ebgpv4DeltaPrevBestPath = _ebgpv4DeltaBestPathBuilder.build();

@@ -38,12 +38,14 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -145,6 +147,43 @@ public class BgpRoutingProcessTest {
     assertThat(_routingProcess._ebgpv4Rib.getUnannotatedRoutes(), empty());
     // Combined bgp
     assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
+  }
+
+  @Test
+  public void testPreallocatePathIdsDeterministic() {
+    Prefix prefix = Prefix.parse("10.0.0.0/24");
+    Bgpv4Route route1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(prefix)
+            .setNextHop(NextHopInterface.of("Ethernet1"))
+            .build();
+    Bgpv4Route route2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(prefix)
+            .setNextHop(NextHopInterface.of("Ethernet2"))
+            .build();
+    Map<Prefix, Integer> forwardGenerators = new HashMap<>();
+    Map<AbstractRouteDecorator, Integer> forwardAssignments = new HashMap<>();
+    Map<Prefix, Integer> reverseGenerators = new HashMap<>();
+    Map<AbstractRouteDecorator, Integer> reverseAssignments = new HashMap<>();
+
+    BgpRoutingProcess.preallocatePathIds(
+        Stream.of(route1, route2), forwardGenerators, forwardAssignments);
+    BgpRoutingProcess.preallocatePathIds(
+        Stream.of(route2, route1), reverseGenerators, reverseAssignments);
+
+    assertThat(reverseGenerators, equalTo(forwardGenerators));
+    assertThat(reverseAssignments, equalTo(forwardAssignments));
+
+    Map<Prefix, Integer> existingGenerators = new HashMap<>();
+    existingGenerators.put(prefix, 1);
+    Map<AbstractRouteDecorator, Integer> existingAssignments = new HashMap<>();
+    existingAssignments.put(route1, 1);
+
+    BgpRoutingProcess.preallocatePathIds(
+        Stream.of(route2, route1), existingGenerators, existingAssignments);
+
+    assertThat(existingAssignments, equalTo(ImmutableMap.of(route1, 1, route2, 2)));
   }
 
   @Test
