@@ -20,6 +20,7 @@ import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRout
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -27,14 +28,15 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -267,7 +269,32 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Keep track of routes we had imported from other VRF during leaking, to avoid exporting them
    * again (chain leaking).
    */
-  private final @Nonnull Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
+  private final @Nonnull Multiset<Bgpv4Route> _importedFromOtherVrfs = HashMultiset.create(0);
+
+  /**
+   * {@link #_importedFromOtherVrfs} and the BGP RIB's routes as of the end of the previous inner
+   * round, which is what other VRFs leaking from this one read. Every VRF runs its iteration, leaks
+   * included, in one parallel step, so reading the live state raced with this VRF's own iteration
+   * and made what a leak saw depend on thread timing.
+   */
+  private @Nonnull Set<Bgpv4Route> _importedFromOtherVrfsPrev = ImmutableSet.of();
+
+  private @Nonnull Set<Bgpv4Route> _bgpv4RoutesPrev = ImmutableSet.of();
+
+  /**
+   * What each BGP leak has imported: the route as the source holds it, mapped to the route as this
+   * VRF imported it. Per leak rather than per source VRF, since two leaks from one VRF apply their
+   * own policies. Lets a leak withdraw what it imported, and be re-run in full when the watched
+   * tracks its import policy may read change; see {@link #reimportCrossVrfV4Routes}.
+   */
+  private final @Nonnull Map<BgpVrfLeakConfig, Map<Bgpv4Route, Bgpv4Route>> _leakedByConfig =
+      new LinkedHashMap<>(0);
+
+  /**
+   * Whether this process's BGP leaks must be re-run in full this topology iteration, because the
+   * watched tracks changed. Consumed by the first leak pass that sees it.
+   */
+  private boolean _leakReevaluationPending;
 
   /** eBGP RIB for EVPN type 3 routes */
   private @Nonnull EvpnMasterRib<EvpnType3Route> _ebgpType3EvpnRib;
@@ -2318,10 +2345,23 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     @Nullable
     RoutingPolicy policy =
         Optional.ofNullable(bgpConfig.getImportPolicy()).flatMap(_policies::get).orElse(null);
+    Map<Bgpv4Route, Bgpv4Route> leaked =
+        _leakedByConfig.computeIfAbsent(bgpConfig, k -> new LinkedHashMap<>());
     routesToLeak.forEach(
         ra -> {
           Bgpv4Route route = ra.getRoute();
           LOGGER.trace("Node {}, VRF {}, Leaking bgpv4 route {}", _hostname, _vrfName, route);
+
+          // Withdraw what this leak imported for the route, which is not the route itself: the
+          // leak rewrote its next hop and the import policy may have changed it. Not decided by
+          // re-running the policy either, which may now read different tracks.
+          Bgpv4Route previous = leaked.remove(route);
+          if (previous != null) {
+            removeLeakedV4Route(previous);
+          }
+          if (ra.isWithdrawn()) {
+            return;
+          }
 
           /*
            Once the route is leaked to a new VRF it can become routing again (it could have been
@@ -2351,17 +2391,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           }
           if (accept) {
             Bgpv4Route transformedRoute = builder.build();
-            if (ra.isWithdrawn()) {
-              processRemoveInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
-              processRemoveInBgpRib(route);
-              _importedFromOtherVrfs.remove(transformedRoute);
-            } else {
-              RibDelta<Bgpv4Route> d =
-                  processMergeInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
-              LOGGER.debug("Node {}, VRF {}, route {} leaked", _hostname, _vrfName, d);
-              processMergeInBgpRib(transformedRoute);
-              _importedFromOtherVrfs.add(transformedRoute);
-            }
+            LOGGER.debug("Node {}, VRF {}, route {} leaked", _hostname, _vrfName, transformedRoute);
+            addLeakedV4Route(transformedRoute);
+            leaked.put(route, transformedRoute);
           } else {
             LOGGER.trace(
                 "Node {}, VRF {}, route {} not leaked because policy denied",
@@ -2370,7 +2402,61 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 route);
           }
         });
+  }
+
+  /**
+   * Adds a route a leak imported. Two leaks may import the same route, so it enters the RIBs with
+   * the first and leaves them with the last.
+   */
+  private void addLeakedV4Route(Bgpv4Route route) {
+    if (_importedFromOtherVrfs.add(route, 1) == 0) {
+      processMergeInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
+      processMergeInBgpRib(route);
+    }
+  }
+
+  /** Removes a route a leak imported; see {@link #addLeakedV4Route}. */
+  private void removeLeakedV4Route(Bgpv4Route route) {
+    if (_importedFromOtherVrfs.remove(route, 1) == 1) {
+      processRemoveInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
+      processRemoveInBgpRib(route);
+    }
+  }
+
+  /**
+   * Re-runs one BGP leak over everything the source VRF holds: withdraws what it previously
+   * imported, then imports {@code allSourceRoutes} afresh under the import policy.
+   *
+   * <p>For when the watched tracks changed. The import policy may read them, so what it rejected
+   * before may now be accepted and what it accepted may now be rejected, and the source's deltas
+   * alone would offer neither again.
+   */
+  public void reimportCrossVrfV4Routes(
+      Stream<Bgpv4Route> allSourceRoutes, BgpVrfLeakConfig bgpConfig) {
+    Map<Bgpv4Route, Bgpv4Route> previous = _leakedByConfig.remove(bgpConfig);
+    if (previous != null) {
+      previous.values().forEach(this::removeLeakedV4Route);
+    }
+    importCrossVrfV4Routes(allSourceRoutes.map(RouteAdvertisement::adding), bgpConfig);
+  }
+
+  /**
+   * Stages for the main RIB what this round's cross-VRF imports changed in the BGP RIB. Called once
+   * after every leak of the round rather than after each, since staging hands the main RIB each
+   * intermediate state, and a later leak's net cancellation of it would not retract it.
+   */
+  void stageCrossVrfImports() {
     unstage();
+  }
+
+  /**
+   * Whether this process's BGP leaks must be re-run in full, clearing the request. True once per
+   * change of the watched tracks.
+   */
+  boolean consumeLeakReevaluation() {
+    boolean pending = _leakReevaluationPending;
+    _leakReevaluationPending = false;
+    return pending;
   }
 
   /**
@@ -2484,7 +2570,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 route);
           }
         });
-    unstage();
   }
 
   /** Convert an EVPN route to a BGPv4 route. */
@@ -2629,6 +2714,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _successfulWatchedTracks = computeSuccessfulWatchedTracks(trackMethodEvaluatorProvider);
     _successfulWatchedTracksChanged =
         !_successfulWatchedTracks.equals(_successfulWatchedTracksPrev);
+    // A leak's import policy may read a watched track, and leaks are otherwise driven only by the
+    // source VRF's deltas, so a route rejected while a track failed would never be offered again.
+    _leakReevaluationPending |= _successfulWatchedTracksChanged;
     if (_successfulWatchedTracksChanged && !_exportFromBgpRib) {
       // Sanity check that we are calling this method prior to its own execution schedule in the
       // iteration, and prior to any other node's execution schedule that touches this node.
@@ -2658,6 +2746,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   public void endOfInnerRound() {
     // Take a snapshot of this round's deltas to [additionally] send to add-path sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
+    // And of what other VRFs leaking from this one read.
+    _importedFromOtherVrfsPrev = ImmutableSet.copyOf(_importedFromOtherVrfs.elementSet());
+    _bgpv4RoutesPrev = _bgpv4Rib.getRoutes();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
     _evpnType3DeltaPrev = _evpnType3DeltaBuilder.build();
     _evpnType5DeltaPrev = _evpnType5DeltaBuilder.build();
@@ -2767,7 +2858,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
+    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfsPrev.contains(r.getRoute()));
+  }
+
+  /** Every route this VRF would leak, for re-running a leak in full. */
+  @Nonnull
+  Stream<Bgpv4Route> getAllRoutesToLeak() {
+    return _bgpv4RoutesPrev.stream().filter(r -> !_importedFromOtherVrfsPrev.contains(r));
   }
 
   /** Return a stream of EVPN route advertisements to leak to other VRFs. */

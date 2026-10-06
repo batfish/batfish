@@ -1762,6 +1762,7 @@ public final class VirtualRouter {
     if (_vrf.getVrfLeakConfig() != null) {
       bgpVrfLeak();
       evpnVrfLeak(allNodes);
+      _bgpRoutingProcess.stageCrossVrfImports();
     }
     updateFloodLists();
   }
@@ -1770,13 +1771,17 @@ public final class VirtualRouter {
   private void bgpVrfLeak() {
     // invariants of being called from bgpIteration
     assert _bgpRoutingProcess != null && _vrf.getVrfLeakConfig() != null;
+    boolean reevaluate = _bgpRoutingProcess.consumeLeakReevaluation();
     for (BgpVrfLeakConfig vrfLeakConfig : _vrf.getVrfLeakConfig().getBgpVrfLeakConfigs()) {
       LOGGER.debug("Leaking BGP routes from {} to {}", vrfLeakConfig.getImportFromVrf(), _name);
       Optional<BgpRoutingProcess> exportingBgpProc =
           _node
               .getVirtualRouter(vrfLeakConfig.getImportFromVrf())
               .map(VirtualRouter::getBgpRoutingProcess);
-      if (exportingBgpProc.isPresent()) {
+      if (exportingBgpProc.isPresent() && reevaluate) {
+        _bgpRoutingProcess.reimportCrossVrfV4Routes(
+            exportingBgpProc.get().getAllRoutesToLeak(), vrfLeakConfig);
+      } else if (exportingBgpProc.isPresent()) {
         _bgpRoutingProcess.importCrossVrfV4Routes(
             exportingBgpProc.get().getRoutesToLeak(), vrfLeakConfig);
       } else {
