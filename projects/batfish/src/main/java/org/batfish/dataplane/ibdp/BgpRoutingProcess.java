@@ -1320,13 +1320,28 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       }
       importDeltaToBuilder(bgpRibExports, ebgpv4DeltaPrev, _vrfName);
     }
+    // A route leaving the overall best paths is still advertised where advertise-external keeps
+    // it: the best eBGP path, which the overall delta would otherwise withdraw.
+    Set<Bgpv4Route> keptByAdvertiseExternal =
+        ourSession.getAdvertiseExternal() ? ebgpv4Prev : ImmutableSet.of();
+    RibDelta<Bgpv4Route> overallDelta =
+        keptByAdvertiseExternal.isEmpty()
+            ? bgpv4DeltaPrev
+            : RibDelta.<Bgpv4Route>builder()
+                .from(
+                    bgpv4DeltaPrev.stream()
+                        .filter(
+                            r ->
+                                !(r.isWithdrawn()
+                                    && keptByAdvertiseExternal.contains(r.getRoute()))))
+                .build();
 
     if (ourSession.getAdvertiseInactive()) {
       if (sendFullAdvertisementSet) {
         bgpRibExports.from(
             bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       }
-      importDeltaToBuilder(bgpRibExports, bgpv4DeltaPrev, _vrfName);
+      importDeltaToBuilder(bgpRibExports, overallDelta, _vrfName);
 
     } else {
       // Default behavior
@@ -1335,7 +1350,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   sendFullAdvertisementSet
                       ? bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new)
                       : Stream.of(),
-                  bgpv4DeltaPrev.stream()
+                  overallDelta.stream()
                       .map(
                           r ->
                               RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
