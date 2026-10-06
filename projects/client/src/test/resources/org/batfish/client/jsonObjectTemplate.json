@@ -1,0 +1,15 @@
+{
+  "class": "org.batfish.client.QuestionHelperTestQuestion",
+  "parameterJsonObject": "${parameterJsonObject}",
+  "parameterMandatory": 1,
+  "instance": {
+    "description": "Question with a JSON object parameter.",
+    "instanceName": "questionHelperJsonObjectTestQuestion",
+    "variables": {
+      "parameterJsonObject": {
+        "description": "JSON object parameter",
+        "type": "jsonObject"
+      }
+    }
+  }
+}

@@ -63,6 +63,7 @@ public class Variable {
     IP_WILDCARD("ipWildcard", true),
     IPSEC_SESSION_STATUS_SPEC("ipsecSessionStatusSpec", true),
     JAVA_REGEX("javaRegex", true),
+    JSON_OBJECT("jsonObject", false),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),
     LOCATION_SPEC("locationSpec", true),

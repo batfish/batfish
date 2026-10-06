@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSortedMap;
@@ -35,6 +36,25 @@ public class QuestionHelperTest {
     // the mandatory parameter should get the value we gave, and the optional one should get default
     assertThat(question.getParameterMandatory(), equalTo(2));
     assertThat(question.getParameterOptional(), equalTo(QuestionHelperTestQuestion.DEFAULT_VALUE));
+  }
+
+  @Test
+  public void fillTemplateJsonObject() throws IOException {
+    ObjectNode template =
+        (ObjectNode)
+            BatfishObjectMapper.mapper()
+                .readTree(readResource("org/batfish/client/jsonObjectTemplate.json", UTF_8));
+    ObjectNode jsonObject = BatfishObjectMapper.mapper().createObjectNode();
+    ArrayNode array = jsonObject.put("string", "value").putObject("nested").putArray("array");
+    array.add(1).add(true).addNull();
+
+    ObjectNode filledTemplate =
+        QuestionHelper.fillTemplate(
+            template, ImmutableSortedMap.of("parameterJsonObject", jsonObject), "qname");
+    QuestionHelperTestQuestion question =
+        (QuestionHelperTestQuestion) Question.parseQuestion(filledTemplate.toString());
+
+    assertThat(question.getParameterJsonObject(), equalTo(jsonObject));
   }
 
   @Test
