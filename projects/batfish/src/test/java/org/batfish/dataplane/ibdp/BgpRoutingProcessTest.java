@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
@@ -39,8 +40,10 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -54,6 +57,7 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -94,10 +98,12 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -851,6 +857,174 @@ public class BgpRoutingProcessTest {
     // Fake up end of round
     _routingProcess.endOfRound();
     assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
+  }
+
+  @Test
+  public void testCrossVrfWithdrawRemovesTheLeakedRoute() {
+    // A leak rewrites the next hop to the source VRF, so what it merged is not the route the
+    // source withdraws, and removing the source's route left the leaked one in place.
+    BgpVrfLeakConfig leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0).build();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), leak);
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.withdrawing(route)), leak);
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
+  }
+
+  private RoutingPolicy leakPolicy(String name, boolean accept) {
+    return RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(name)
+        .addStatement(
+            accept
+                ? Statements.ExitAccept.toStaticStatement()
+                : Statements.ExitReject.toStaticStatement())
+        .build();
+  }
+
+  /** A BGP process over the current configuration, so that it sees the policies defined on it. */
+  private BgpRoutingProcess newRoutingProcess() {
+    return new BgpRoutingProcess(
+        _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+  }
+
+  @Test
+  public void testCrossVrfLeaksFromOneSourceKeepTheirImportsApart() {
+    // Two leaks from one VRF: one rule's rejection must not take back what the other imported.
+    leakPolicy("accept", true);
+    leakPolicy("reject", false);
+    _routingProcess = newRoutingProcess();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpVrfLeakConfig.Builder leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0);
+
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.adding(route)), leak.setImportPolicy("accept").build());
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.adding(route)), leak.setImportPolicy("reject").build());
+
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+  }
+
+  @Test
+  public void testCrossVrfLeaksStageOnlyTheirNetChange() {
+    // Equal routes for one prefix leaked from two VRFs, so arrival order picks between them.
+    // Withdrawing and re-adding each in turn moves the best path away and back, and the main RIB
+    // must not be left holding the step in between.
+    leakPolicy("accept", true);
+    _routingProcess = newRoutingProcess();
+    Prefix prefix = Prefix.parse("1.1.1.0/24");
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder().setNetwork(prefix).setSrcProtocol(RoutingProtocol.BGP).build();
+    BgpVrfLeakConfig fromA =
+        BgpVrfLeakConfig.builder()
+            .setImportFromVrf("vrfA")
+            .setImportPolicy("accept")
+            .setAdmin(0)
+            .setWeight(0)
+            .build();
+    BgpVrfLeakConfig fromB =
+        BgpVrfLeakConfig.builder()
+            .setImportFromVrf("vrfB")
+            .setImportPolicy("accept")
+            .setAdmin(0)
+            .setWeight(0)
+            .build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), fromA);
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), fromB);
+    _routingProcess.stageCrossVrfImports();
+    Set<BgpRoute<?, ?>> mainRib = new HashSet<>();
+    applyTo(mainRib, _routingProcess.getUpdatesForMainRib());
+
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.withdrawing(route), RouteAdvertisement.adding(route)), fromA);
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.withdrawing(route), RouteAdvertisement.adding(route)), fromB);
+    _routingProcess.stageCrossVrfImports();
+    applyTo(mainRib, _routingProcess.getUpdatesForMainRib());
+
+    assertThat(
+        mainRib, equalTo(ImmutableSet.copyOf(_routingProcess._bgpv4Rib.getUnannotatedRoutes())));
+  }
+
+  @Test
+  public void testALaterStagingReplacesWhatAnEarlierOneStaged() {
+    // Peer processing stages before the leaks run, and a leak can then displace what it staged: a
+    // route at local preference 100, then a better one at 200, with only the second selected.
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName("lp100")
+        .addStatement(new SetLocalPreference(new LiteralLong(100)))
+        .addStatement(Statements.ExitAccept.toStaticStatement())
+        .build();
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName("lp200")
+        .addStatement(new SetLocalPreference(new LiteralLong(200)))
+        .addStatement(Statements.ExitAccept.toStaticStatement())
+        .build();
+    _routingProcess = newRoutingProcess();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpVrfLeakConfig.Builder leak = BgpVrfLeakConfig.builder().setAdmin(0).setWeight(0);
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.adding(route)),
+        leak.setImportFromVrf("vrfA").setImportPolicy("lp100").build());
+    _routingProcess.stageCrossVrfImports();
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(RouteAdvertisement.adding(route)),
+        leak.setImportFromVrf("vrfB").setImportPolicy("lp200").build());
+    _routingProcess.stageCrossVrfImports();
+
+    Set<BgpRoute<?, ?>> mainRib = new HashSet<>();
+    applyTo(mainRib, _routingProcess.getUpdatesForMainRib());
+    assertThat(
+        mainRib, equalTo(ImmutableSet.copyOf(_routingProcess._bgpv4Rib.getUnannotatedRoutes())));
+  }
+
+  @Test
+  public void testACrossVrfLeakReofferedUnchangedLeavesTheRibAlone() {
+    // Re-offering a route the leak already imported as is must not withdraw and re-add it, which
+    // costs as much as the import and resets its arrival order.
+    _routingProcess = newRoutingProcess();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpVrfLeakConfig leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0).build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), leak);
+    _routingProcess.endOfInnerRound();
+
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), leak);
+    _routingProcess.reevaluateCrossVrfV4Routes(leak);
+
+    assertThat(_routingProcess.getBgpv4DeltaBuilder().build().getActions(), empty());
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+  }
+
+  private static void applyTo(Set<BgpRoute<?, ?>> rib, RibDelta<BgpRoute<?, ?>> delta) {
+    for (RouteAdvertisement<BgpRoute<?, ?>> a : delta.getActions()) {
+      if (a.isWithdrawn()) {
+        rib.remove(a.getRoute());
+      } else {
+        rib.add(a.getRoute());
+      }
+    }
   }
 
   /**
