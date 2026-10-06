@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
@@ -851,6 +852,24 @@ public class BgpRoutingProcessTest {
     // Fake up end of round
     _routingProcess.endOfRound();
     assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
+  }
+
+  @Test
+  public void testCrossVrfWithdrawRemovesTheLeakedRoute() {
+    // A leak rewrites the next hop to the source VRF, so what it merged is not the route the
+    // source withdraws, and removing the source's route left the leaked one in place.
+    BgpVrfLeakConfig leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0).build();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), leak);
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.withdrawing(route)), leak);
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
   }
 
   /**
