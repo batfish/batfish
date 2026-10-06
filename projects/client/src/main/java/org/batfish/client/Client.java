@@ -521,6 +521,12 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException("It is not a valid Java regular " + "expression", e);
         }
         break;
+      case JSON_OBJECT:
+        if (!value.isObject()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON object", expectedType.getName()));
+        }
+        break;
       case JSON_PATH_REGEX:
         if (!value.isTextual()) {
           throw new BatfishException(

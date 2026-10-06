@@ -51,6 +51,7 @@ import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
 import static org.batfish.datamodel.questions.Variable.Type.IP_SPACE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
+import static org.batfish.datamodel.questions.Variable.Type.JSON_OBJECT;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.LOCATION_SPEC;
@@ -593,6 +594,14 @@ public final class ClientTest {
     Type expectedType = JAVA_REGEX;
     String expectedMessage = "It is not a valid Java regular expression";
     validateTypeWithInvalidInput(invalidJavaRegex, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidJsonObjectValue() throws IOException {
+    String input = "[{\"key\": \"value\"}]";
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON object", JSON_OBJECT.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, JSON_OBJECT);
   }
 
   @Test
@@ -1581,6 +1590,14 @@ public final class ClientTest {
     JsonNode inputNode = _mapper.readTree("\".*\"");
     Variable variable = new Variable();
     variable.setType(JAVA_REGEX);
+    Client.validateType(inputNode, variable);
+  }
+
+  @Test
+  public void testValidJsonObjectValue() throws IOException {
+    JsonNode inputNode = _mapper.readTree("{\"key\": [1, true, null, {\"nested\": \"value\"}]}");
+    Variable variable = new Variable();
+    variable.setType(JSON_OBJECT);
     Client.validateType(inputNode, variable);
   }
 
