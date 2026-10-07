@@ -1388,7 +1388,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 r -> {
                   // Activate route and convert to BGP if activated
                   Bgpv4Route bgpv4Route =
-                      processNeighborSpecificGeneratedRoute(r, ourSession.getLocalIp());
+                      processNeighborSpecificGeneratedRoute(
+                          r, ourSession.getLocalIp(), _successfulWatchedTracks::contains);
                   if (bgpv4Route == null) {
                     // Route was not activated
                     return Optional.<Bgpv4Route>empty();
@@ -1439,8 +1440,112 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .filter(Objects::nonNull)
             .distinct();
 
+    // The neighbor holds what it was sent under the previous track states, and the full set above
+    // only adds: a route the export policy now rejects, or exports differently, would otherwise
+    // stay there as it was.
+    Stream<RouteAdvertisement<Bgpv4Route>> previousTrackWithdrawals =
+        _successfulWatchedTracksChanged && !isNewSession
+            ? withdrawalsUnderPreviousTracks(
+                ourConfigId,
+                remoteConfigId,
+                ourConfig,
+                remoteConfig,
+                remoteBgpRoutingProcess,
+                ourSession,
+                Stream.concat(
+                    Stream.concat(
+                        bgpv4Prev.stream(),
+                        ourSession.getAdvertiseExternal() ? ebgpv4Prev.stream() : Stream.of()),
+                    Stream.concat(bgpv4DeltaPrev.stream(), ebgpv4DeltaPrev.stream())
+                        .filter(RouteAdvertisement::isWithdrawn)
+                        .map(RouteAdvertisement::getRoute)))
+            : Stream.of();
+
     // Return all advertisements to queue on the remote VR's BGP process
-    return Streams.concat(bgpRibRoutesToExport, mainRibExports, neighborGeneratedRoutes);
+    return Streams.concat(
+        previousTrackWithdrawals, bgpRibRoutesToExport, mainRibExports, neighborGeneratedRoutes);
+  }
+
+  /**
+   * Withdrawals of what this session carried before the watched tracks changed: {@code bgpRoutes},
+   * this process's main RIB routes if it exports them, and the session's generated routes, each as
+   * the export policy produced it under {@link #_successfulWatchedTracksPrev}.
+   *
+   * <p>Sent ahead of the full set re-exported under the current track states. The neighbor applies
+   * withdrawals first, so a route exported the same either way is withdrawn and added back, and a
+   * route the policy now rejects or rewrites does not stay as it was sent. A withdrawal of a route
+   * the neighbor does not hold changes nothing.
+   */
+  private Stream<RouteAdvertisement<Bgpv4Route>> withdrawalsUnderPreviousTracks(
+      BgpPeerConfigId ourConfigId,
+      BgpPeerConfigId remoteConfigId,
+      BgpPeerConfig ourConfig,
+      BgpPeerConfig remoteConfig,
+      BgpRoutingProcess remoteBgpRoutingProcess,
+      BgpSessionProperties ourSession,
+      Stream<Bgpv4Route> bgpRoutes) {
+    Predicate<String> previousTracks = _successfulWatchedTracksPrev::contains;
+    Stream<Bgpv4Route> fromBgpRib =
+        bgpRoutes
+            .distinct()
+            .map(
+                route ->
+                    transformBgpRouteOnExport(
+                        route,
+                        ourConfigId,
+                        remoteConfigId,
+                        ourConfig,
+                        remoteConfig,
+                        remoteBgpRoutingProcess,
+                        ourSession,
+                        Type.IPV4_UNICAST,
+                        previousTracks,
+                        false))
+            .flatMap(Optional::stream);
+    Stream<Bgpv4Route> fromMainRib =
+        _exportFromBgpRib
+            ? Stream.of()
+            : Stream.concat(
+                    _mainRibPrev.stream(),
+                    _mainRibDelta.stream()
+                        .filter(RouteAdvertisement::isWithdrawn)
+                        .map(RouteAdvertisement::getRoute))
+                .filter(route -> !(route.getRoute() instanceof BgpRoute))
+                .distinct()
+                .map(
+                    route ->
+                        exportNonBgpRouteToBgp(
+                            route, remoteConfigId, ourConfig, ourSession, previousTracks, false))
+                .filter(Objects::nonNull);
+    Stream<Bgpv4Route> generated =
+        ourConfig.getGeneratedRoutes().stream()
+            .map(
+                r ->
+                    processNeighborSpecificGeneratedRoute(
+                        r, ourSession.getLocalIp(), previousTracks))
+            .filter(Objects::nonNull)
+            .map(
+                route ->
+                    transformBgpRouteOnExport(
+                        route,
+                        ourConfigId,
+                        remoteConfigId,
+                        ourConfig,
+                        remoteConfig,
+                        remoteBgpRoutingProcess,
+                        ourSession,
+                        Type.IPV4_UNICAST,
+                        previousTracks,
+                        false))
+            .flatMap(Optional::stream);
+    return Streams.concat(fromBgpRib, fromMainRib, generated)
+        .distinct()
+        .map(
+            route ->
+                RouteAdvertisement.<Bgpv4Route>builder()
+                    .setRoute(route)
+                    .setReason(Reason.WITHDRAW)
+                    .build());
   }
 
   /**
@@ -1449,10 +1554,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * export policy computation is performed.
    *
    * @param generatedRoute route to process
+   * @param successfulTracks the tracks that hold, for a generation policy that reads tracks
    * @return a new {@link Bgpv4Route} if the {@code generatedRoute} was activated.
    */
   private @Nullable Bgpv4Route processNeighborSpecificGeneratedRoute(
-      @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
+      @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp, Predicate<String> successfulTracks) {
     String policyName = generatedRoute.getGenerationPolicy();
     RoutingPolicy policy = policyName != null ? _policies.get(policyName).orElse(null) : null;
     @Nullable
@@ -1463,7 +1569,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getRoutes(), _successfulWatchedTracks::contains);
+            generatedRoute, policy, _mainRib.getRoutes(), successfulTracks);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), attrPolicy, _process.getRouterId(), NextHopIp.of(nextHopIp), false)
@@ -1903,6 +2009,37 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpRoutingProcess remoteBgpRoutingProcess,
           BgpSessionProperties ourSessionProperties,
           AddressFamily.Type afType) {
+    return transformBgpRouteOnExport(
+        exportCandidate,
+        ourConfigId,
+        remoteConfigId,
+        ourConfig,
+        remoteConfig,
+        remoteBgpRoutingProcess,
+        ourSessionProperties,
+        afType,
+        _successfulWatchedTracks::contains,
+        true);
+  }
+
+  /**
+   * As {@link #transformBgpRouteOnExport(BgpRoute, BgpPeerConfigId, BgpPeerConfigId, BgpPeerConfig,
+   * BgpPeerConfig, BgpRoutingProcess, BgpSessionProperties, AddressFamily.Type)}, with the export
+   * policy reading {@code successfulTracks}, and recording the outcome in the prefix tracer only
+   * where {@code trace}.
+   */
+  private <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>>
+      Optional<R> transformBgpRouteOnExport(
+          BgpRoute<B, R> exportCandidate,
+          BgpPeerConfigId ourConfigId,
+          BgpPeerConfigId remoteConfigId,
+          BgpPeerConfig ourConfig,
+          BgpPeerConfig remoteConfig,
+          BgpRoutingProcess remoteBgpRoutingProcess,
+          BgpSessionProperties ourSessionProperties,
+          AddressFamily.Type afType,
+          Predicate<String> successfulTracks,
+          boolean trace) {
     // Verify that our means this routing process
     assert ourConfigId.getHostname().equals(_hostname);
 
@@ -1940,17 +2077,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            _successfulWatchedTracks::contains);
+            successfulTracks);
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
-      _prefixTracer.filtered(
-          exportCandidate.getNetwork(),
-          remoteConfigId.getHostname(),
-          ourSessionProperties.getRemoteIp(),
-          remoteConfigId.getVrfName(),
-          exportPolicyName,
-          Direction.OUT);
+      if (trace) {
+        _prefixTracer.filtered(
+            exportCandidate.getNetwork(),
+            remoteConfigId.getHostname(),
+            ourSessionProperties.getRemoteIp(),
+            remoteConfigId.getVrfName(),
+            exportPolicyName,
+            Direction.OUT);
+      }
       return Optional.empty();
     }
     if (exportCandidate instanceof EvpnType5Route) {
@@ -1979,12 +2118,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
 
-    _prefixTracer.sentTo(
-        transformedOutgoingRoute.getNetwork(),
-        remoteConfigId.getHostname(),
-        ourSessionProperties.getRemoteIp(),
-        remoteConfigId.getVrfName(),
-        exportPolicyName);
+    if (trace) {
+      _prefixTracer.sentTo(
+          transformedOutgoingRoute.getNetwork(),
+          remoteConfigId.getHostname(),
+          ourSessionProperties.getRemoteIp(),
+          remoteConfigId.getVrfName(),
+          exportPolicyName);
+    }
 
     return Optional.of(transformedOutgoingRoute);
   }
@@ -2011,6 +2152,27 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpSessionProperties ourSessionProperties) {
+    return exportNonBgpRouteToBgp(
+        exportCandidate,
+        remoteConfigId,
+        ourConfig,
+        ourSessionProperties,
+        _successfulWatchedTracks::contains,
+        true);
+  }
+
+  /**
+   * As {@link #exportNonBgpRouteToBgp(AnnotatedRoute, BgpPeerConfigId, BgpPeerConfig,
+   * BgpSessionProperties)}, with the export policy reading {@code successfulTracks}, and recording
+   * the outcome in the prefix tracer only where {@code trace}.
+   */
+  private @Nullable Bgpv4Route exportNonBgpRouteToBgp(
+      @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
+      @Nonnull BgpPeerConfigId remoteConfigId,
+      @Nonnull BgpPeerConfig ourConfig,
+      @Nonnull BgpSessionProperties ourSessionProperties,
+      Predicate<String> successfulTracks,
+      boolean trace) {
     @Nullable AddressFamily v4Family = ourConfig.getIpv4UnicastAddressFamily();
     if (v4Family == null) {
       return null;
@@ -2048,17 +2210,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            _successfulWatchedTracks::contains);
+            successfulTracks);
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
-      _prefixTracer.filtered(
-          exportCandidate.getNetwork(),
-          remoteConfigId.getHostname(),
-          ourSessionProperties.getRemoteIp(),
-          remoteConfigId.getVrfName(),
-          exportPolicyName,
-          Direction.OUT);
+      if (trace) {
+        _prefixTracer.filtered(
+            exportCandidate.getNetwork(),
+            remoteConfigId.getHostname(),
+            ourSessionProperties.getRemoteIp(),
+            remoteConfigId.getVrfName(),
+            exportPolicyName,
+            Direction.OUT);
+      }
       return null;
     }
 
@@ -2074,12 +2238,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
-    _prefixTracer.sentTo(
-        transformedOutgoingRoute.getNetwork(),
-        remoteConfigId.getHostname(),
-        ourSessionProperties.getRemoteIp(),
-        remoteConfigId.getVrfName(),
-        exportPolicyName);
+    if (trace) {
+      _prefixTracer.sentTo(
+          transformedOutgoingRoute.getNetwork(),
+          remoteConfigId.getHostname(),
+          ourSessionProperties.getRemoteIp(),
+          remoteConfigId.getVrfName(),
+          exportPolicyName);
+    }
 
     return transformedOutgoingRoute;
   }
