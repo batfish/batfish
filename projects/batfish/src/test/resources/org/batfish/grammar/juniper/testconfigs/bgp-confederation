@@ -8,3 +8,12 @@ set routing-options confederation 5 members 65002
 set routing-options confederation 7 members 65003
 # Need at least one valid peer for converions to kick in
 set protocols bgp group GROUP neighbor 1.1.1.1 peer-as 2
+#
+# local-as outside the confederation: a plain eBGP session, even though the peer-as is the
+# confederation AS.
+set protocols bgp group EXTERNAL neighbor 2.2.2.2 peer-as 7
+set protocols bgp group EXTERNAL local-as 65100 private no-prepend-global-as
+#
+# local-as equal to a member AS stays in the confederation.
+set protocols bgp group MEMBER neighbor 3.3.3.3 peer-as 7
+set protocols bgp group MEMBER local-as 65002
