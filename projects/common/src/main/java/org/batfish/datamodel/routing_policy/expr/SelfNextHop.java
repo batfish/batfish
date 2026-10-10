@@ -20,7 +20,7 @@ public class SelfNextHop extends NextHopExpr {
 
   @Override
   public boolean equals(Object obj) {
-    return this == obj || obj instanceof NextHopExpr;
+    return this == obj || obj instanceof SelfNextHop;
   }
 
   @Override
