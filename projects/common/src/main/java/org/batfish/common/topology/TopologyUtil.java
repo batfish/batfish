@@ -43,6 +43,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -475,7 +476,7 @@ public final class TopologyUtil {
             edge ->
                 adjacencies.inSameBroadcastDomain(edge.getHead(), edge.getTail())
                     // Keep if virtual wire
-                    || isVirtualWireSameDevice(edge))
+                    || isVirtualWireSameDevice(edge, configurations))
             .stream();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // For point-to-point interfaces that don't participate in subnet-based L3 synthesis (link-local
@@ -722,14 +723,42 @@ public final class TopologyUtil {
    * wires could be physical, etc.) This method employs some (questionable) heuristics to determine
    * if a pair of interfaces constitutes a virtual wire.
    *
+   * <p>Two cases are recognized: Cisco {@code vasi} pairs, by name; and a hairpin, two
+   * subinterfaces of the same parent interface in different VRFs that share a subnet. A device
+   * never bridges its own VLANs, so those two can only be in one subnet because something outside
+   * the device joins them (a scrubber appliance, for instance: the clean VRF's {@code bondN.192}
+   * and the dirty VRF's {@code bondN.128} on the same bond).
+   *
    * @param edge a valid (i.e., subnets match up) L3 edge.
    */
   @VisibleForTesting
-  static boolean isVirtualWireSameDevice(Edge edge) {
-    return edge.getTail().getHostname().equals(edge.getHead().getHostname())
-        // Cisco's cross-VRF NAT interfaces.
-        && edge.getInt1().startsWith("vasi")
-        && edge.getInt2().startsWith("vasi");
+  static boolean isVirtualWireSameDevice(Edge edge, Map<String, Configuration> configurations) {
+    if (!edge.getTail().getHostname().equals(edge.getHead().getHostname())) {
+      return false;
+    }
+    // Cisco's cross-VRF NAT interfaces.
+    if (edge.getInt1().startsWith("vasi") && edge.getInt2().startsWith("vasi")) {
+      return true;
+    }
+    Configuration c = configurations.get(edge.getTail().getHostname());
+    if (c == null) {
+      return false;
+    }
+    Interface i1 = c.getAllInterfaces().get(edge.getInt1());
+    Interface i2 = c.getAllInterfaces().get(edge.getInt2());
+    if (i1 == null || i2 == null || i1 == i2 || i1.getVrfName().equals(i2.getVrfName())) {
+      return false;
+    }
+    Optional<String> parent1 = boundParent(i1);
+    return parent1.isPresent() && parent1.equals(boundParent(i2));
+  }
+
+  /** The interface {@code iface} is a subinterface of, if it is one. */
+  private static Optional<String> boundParent(Interface iface) {
+    return iface.getDependencies().stream()
+        .filter(d -> d.getType() == DependencyType.BIND)
+        .map(Dependency::getInterfaceName)
+        .findFirst();
   }
 
   /**

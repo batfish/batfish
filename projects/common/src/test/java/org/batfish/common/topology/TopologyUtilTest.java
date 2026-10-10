@@ -1852,25 +1852,87 @@ public final class TopologyUtilTest {
 
   @Test
   public void testIsVirtualWire() {
+    Map<String, Configuration> none = ImmutableMap.of();
     // Not the same device
     assertFalse(
         isVirtualWireSameDevice(
             new Edge(
-                NodeInterfacePair.of("h1", "vasileft1"),
-                NodeInterfacePair.of("h2", "vasiright1"))));
+                NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h2", "vasiright1")),
+            none));
     // same device, not virtual wire
     assertFalse(
         isVirtualWireSameDevice(
-            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0"))));
+            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0")),
+            none));
     assertFalse(
         isVirtualWireSameDevice(
-            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0"))));
+            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0")),
+            none));
     // same device, virtual wire
     assertTrue(
         isVirtualWireSameDevice(
             new Edge(
-                NodeInterfacePair.of("h1", "vasileft1"),
-                NodeInterfacePair.of("h1", "vasiright1"))));
+                NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "vasiright1")),
+            none));
+  }
+
+  /**
+   * Two subinterfaces of one parent in different VRFs that share a subnet are a hairpin through
+   * something outside the device; the same two in one VRF, or on different parents, are not.
+   */
+  @Test
+  public void testIsVirtualWireHairpin() {
+    Configuration c = _cb.setHostname("dos").build();
+    Vrf clean = _vb.setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf dirty = _nf.vrfBuilder().setOwner(c).setName("DIRTY").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond9").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond13").build();
+    Interface.Builder sub = _nf.interfaceBuilder().setOwner(c);
+    sub.setName("bond9.192")
+        .setVrf(clean)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.1/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond9.128")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond9.200")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.2/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond13.128")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond13", DependencyType.BIND)))
+        .build();
+    Map<String, Configuration> configs = ImmutableMap.of("dos", c);
+    // same parent, different VRFs
+    assertTrue(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.192"), NodeInterfacePair.of("dos", "bond9.128")),
+            configs));
+    // same parent, same VRF
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.128"), NodeInterfacePair.of("dos", "bond9.200")),
+            configs));
+    // different parents
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.192"),
+                NodeInterfacePair.of("dos", "bond13.128")),
+            configs));
+    // parents themselves (no BIND dependency)
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("dos", "bond9"), NodeInterfacePair.of("dos", "bond13")),
+            configs));
   }
 
   @Test
