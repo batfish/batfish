@@ -366,6 +366,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private Set<EdgeId> _unicastEdgesWentUp = ImmutableSet.of();
 
   /**
+   * The neighbor-specific generated routes each IPv4 unicast session last pulled from this process,
+   * after export processing. Neighbors pull every round; this is what lets a round send only the
+   * routes whose activation changed. Written concurrently by neighbors pulling distinct edges.
+   */
+  private final Map<EdgeId, Set<Bgpv4Route>> _generatedRoutesSentByEdge = new ConcurrentHashMap<>();
+
+  /**
    * Type 3 routes that were created locally (across all VRFs). Save them so that if new sessions
    * come up, we can easily send out the updates
    */
@@ -671,18 +678,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     initBgpQueues(_topology);
     updateAdditionalPathsPathIdState();
     // New sessions got established
+    Set<EdgeId> unicastEdges =
+        getEdgeIdStream(
+                topology.getGraph(), BgpPeerConfig::getIpv4UnicastAddressFamily, Type.IPV4_UNICAST)
+            .collect(ImmutableSet.toImmutableSet());
     _unicastEdgesWentUp =
         Sets.difference(
-            getEdgeIdStream(
-                    topology.getGraph(),
-                    BgpPeerConfig::getIpv4UnicastAddressFamily,
-                    Type.IPV4_UNICAST)
-                .collect(ImmutableSet.toImmutableSet()),
+            unicastEdges,
             getEdgeIdStream(
                     oldTopology.getGraph(),
                     BgpPeerConfig::getIpv4UnicastAddressFamily,
                     Type.IPV4_UNICAST)
                 .collect(ImmutableSet.toImmutableSet()));
+    // Sessions that went down hold nothing from us any more.
+    _generatedRoutesSentByEdge.keySet().retainAll(unicastEdges);
     _evpnEdgesWentUp =
         Sets.difference(
             getEdgeIdStream(topology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
@@ -1233,7 +1242,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *     The {@link EdgeId#head() head} is the remote {@link BgpPeerConfigId} and the {@link
    *     EdgeId#tail() tail} is our {@link BgpPeerConfigId}.
    */
-  private Stream<RouteAdvertisement<Bgpv4Route>> getOutgoingRoutesForEdge(
+  @VisibleForTesting
+  Stream<RouteAdvertisement<Bgpv4Route>> getOutgoingRoutesForEdge(
       EdgeId edge,
       Map<String, Node> allNodes,
       BgpTopology bgpTopology,
@@ -1379,10 +1389,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     /*
      * Export neighbor-specific generated routes.
-     * These skip peer export policy, so do not merge them into bgpRoutesToExport
+     * These skip peer export policy, so do not merge them into bgpRoutesToExport.
+     *
+     * The neighbor pulls from us every round, so send only what changed since the previous pull:
+     * newly activated routes as advertisements and deactivated ones as withdrawals. On a new
+     * session (or after the watched tracks changed, which re-sends everything) the neighbor holds
+     * nothing from us, so everything active is new.
      */
     BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
-    Stream<RouteAdvertisement<Bgpv4Route>> neighborGeneratedRoutes =
+    Set<Bgpv4Route> activeGeneratedRoutes =
         ourConfig.getGeneratedRoutes().stream()
             .map(
                 r -> {
@@ -1407,7 +1422,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 })
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .map(RouteAdvertisement::new);
+            .collect(ImmutableSet.toImmutableSet());
+    Set<Bgpv4Route> previouslySentGeneratedRoutes =
+        sendFullAdvertisementSet
+            ? ImmutableSet.of()
+            : _generatedRoutesSentByEdge.getOrDefault(edge, ImmutableSet.of());
+    _generatedRoutesSentByEdge.put(edge, activeGeneratedRoutes);
+    Stream<RouteAdvertisement<Bgpv4Route>> neighborGeneratedRoutes =
+        Stream.concat(
+            Sets.difference(previouslySentGeneratedRoutes, activeGeneratedRoutes).stream()
+                .map(RouteAdvertisement::withdrawing),
+            Sets.difference(activeGeneratedRoutes, previouslySentGeneratedRoutes).stream()
+                .map(RouteAdvertisement::adding));
 
     // Transform and apply export policy to exportable BGP RIB routes
     Stream<RouteAdvertisement<Bgpv4Route>> bgpRibRoutesToExport =
