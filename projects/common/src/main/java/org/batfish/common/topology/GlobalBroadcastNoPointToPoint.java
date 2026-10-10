@@ -23,6 +23,12 @@ public final class GlobalBroadcastNoPointToPoint implements L3Adjacencies {
   }
 
   @Override
+  public boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2) {
+    // No layer-1 information at all.
+    return false;
+  }
+
+  @Override
   public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
       NodeInterfacePair iface) {
     return Optional.empty();

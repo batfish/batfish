@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -41,8 +42,10 @@ import com.google.common.graph.MutableGraph;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.BgpProcess;
@@ -1871,6 +1874,79 @@ public final class TopologyUtilTest {
             new Edge(
                 NodeInterfacePair.of("h1", "vasileft1"),
                 NodeInterfacePair.of("h1", "vasiright1"))));
+  }
+
+  /**
+   * A user layer-1 edge between two interfaces of one device, or between their parents, keeps the
+   * L3 edge between them whatever their VRFs, parents, and VLAN tags.
+   */
+  @Test
+  public void testSameDeviceWiredInLayer1() {
+    Configuration c = _cb.setHostname("r1").build();
+    Configuration peer = _cb.setHostname("peer").build();
+    Vrf vrf1 = _vb.setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf vrf2 = _nf.vrfBuilder().setOwner(c).setName("VRF2").build();
+    Vrf pv = _vb.setOwner(peer).build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(vrf1).setName("bond9").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(vrf1).setName("bond13").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(vrf1).setName("bond1").build();
+    _nf.interfaceBuilder().setOwner(peer).setVrf(pv).setName("eth0").build();
+    Interface.Builder sub = _nf.interfaceBuilder().setOwner(c);
+    sub.setName("bond9.192")
+        .setVrf(vrf1)
+        .setEncapsulationVlan(192)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.1/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond13.128")
+        .setVrf(vrf2)
+        .setEncapsulationVlan(128)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond13", DependencyType.BIND)))
+        .build();
+    Map<String, Configuration> configs = ImmutableMap.of("r1", c, "peer", peer);
+    Edge hairpin =
+        new Edge(NodeInterfacePair.of("r1", "bond9.192"), NodeInterfacePair.of("r1", "bond13.128"));
+    BiFunction<Layer1Topology, Map<String, Configuration>, L3Adjacencies> hybrid =
+        (l1, cs) ->
+            HybridL3Adjacencies.create(
+                Layer1TopologiesFactory.create(l1, Layer1Topology.EMPTY, cs),
+                computeLayer2Topology(l1, VxlanTopology.EMPTY, cs),
+                cs);
+    BiFunction<Layer1Topology, Map<String, Configuration>, L3Adjacencies> broadcast =
+        (l1, cs) ->
+            BroadcastL3Adjacencies.create(
+                Layer1TopologiesFactory.create(l1, Layer1Topology.EMPTY, cs),
+                VxlanTopology.EMPTY,
+                cs);
+    for (BiFunction<Layer1Topology, Map<String, Configuration>, L3Adjacencies> adjacencies :
+        ImmutableList.of(hybrid, broadcast)) {
+      // The device has L1, and the two subinterfaces have different parents and tags: filtered.
+      assertThat(
+          rawLayer3Edges(adjacencies, layer1Topology("r1", "bond1", "peer", "eth0"), configs),
+          not(hasItem(hairpin)));
+      // Wired to itself between the parents: kept.
+      assertThat(
+          rawLayer3Edges(
+              adjacencies,
+              layer1Topology("r1", "bond1", "peer", "eth0", "r1", "bond9", "r1", "bond13"),
+              configs),
+          hasItem(hairpin));
+      // Wired to itself between the subinterfaces: kept.
+      assertThat(
+          rawLayer3Edges(
+              adjacencies,
+              layer1Topology("r1", "bond1", "peer", "eth0", "r1", "bond9.192", "r1", "bond13.128"),
+              configs),
+          hasItem(hairpin));
+    }
+  }
+
+  private static Set<Edge> rawLayer3Edges(
+      BiFunction<Layer1Topology, Map<String, Configuration>, L3Adjacencies> adjacencies,
+      Layer1Topology l1,
+      Map<String, Configuration> configs) {
+    return computeRawLayer3Topology(adjacencies.apply(l1, configs), configs).getEdges();
   }
 
   @Test

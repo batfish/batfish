@@ -780,6 +780,11 @@ public class IpOwnersBaseImplTest {
       }
 
       @Override
+      public boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
       public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
         throw new UnsupportedOperationException();
       }

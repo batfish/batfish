@@ -56,7 +56,16 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
             .collect(ImmutableSet.toImmutableSet());
     PointToPointInterfaces pointToPointInterfaces =
         PointToPointComputer.compute(layer1Topologies.getLogicalL1(), configurations);
-    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
+    return new HybridL3Adjacencies(
+        nodesWithL1Topology,
+        layer2Topology,
+        pointToPointInterfaces,
+        SameDeviceWires.create(layer1Topologies.getUserProvidedL1(), configurations));
+  }
+
+  @Override
+  public boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2) {
+    return _sameDeviceWires.isWired(i1, i2);
   }
 
   @Override
@@ -94,12 +103,14 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
     HybridL3Adjacencies that = (HybridL3Adjacencies) o;
     return _layer2Topology.equals(that._layer2Topology)
         && _nodesWithL1Topology.equals(that._nodesWithL1Topology)
-        && _pointToPointInterfaces.equals(that._pointToPointInterfaces);
+        && _pointToPointInterfaces.equals(that._pointToPointInterfaces)
+        && _sameDeviceWires.equals(that._sameDeviceWires);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodesWithL1Topology, _layer2Topology, _pointToPointInterfaces);
+    return Objects.hash(
+        _nodesWithL1Topology, _layer2Topology, _pointToPointInterfaces, _sameDeviceWires);
   }
 
   @VisibleForTesting
@@ -107,19 +118,23 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
       PointToPointInterfaces pointToPointInterfaces) {
-    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
+    return new HybridL3Adjacencies(
+        nodesWithL1Topology, layer2Topology, pointToPointInterfaces, SameDeviceWires.EMPTY);
   }
 
   private HybridL3Adjacencies(
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
-      PointToPointInterfaces pointToPointInterfaces) {
+      PointToPointInterfaces pointToPointInterfaces,
+      SameDeviceWires sameDeviceWires) {
     _nodesWithL1Topology = nodesWithL1Topology;
     _layer2Topology = layer2Topology;
     _pointToPointInterfaces = pointToPointInterfaces;
+    _sameDeviceWires = sameDeviceWires;
   }
 
   private final Set<String> _nodesWithL1Topology;
   private final Layer2Topology _layer2Topology;
   private final PointToPointInterfaces _pointToPointInterfaces;
+  private final SameDeviceWires _sameDeviceWires;
 }

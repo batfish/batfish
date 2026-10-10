@@ -19,6 +19,14 @@ public interface L3Adjacencies extends Serializable {
   boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2);
 
   /**
+   * Return whether the user's layer-1 topology wires the two interfaces of one device to each
+   * other: an edge between them or between their parent interfaces. Such an edge says the device is
+   * joined to itself through that link, so an L3 edge between them is kept whatever the interfaces'
+   * VRFs and VLAN tags.
+   */
+  boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2);
+
+  /**
    * Return whether the two interfaces are in the same broadcast domain, and they are physically on
    * a point-to-point link.
    *

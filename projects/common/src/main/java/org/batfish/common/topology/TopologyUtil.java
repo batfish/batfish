@@ -475,7 +475,9 @@ public final class TopologyUtil {
             edge ->
                 adjacencies.inSameBroadcastDomain(edge.getHead(), edge.getTail())
                     // Keep if virtual wire
-                    || isVirtualWireSameDevice(edge))
+                    || isVirtualWireSameDevice(edge)
+                    // Keep if the user's L1 wires the device to itself here
+                    || adjacencies.isWiredOnSameDevice(edge.getHead(), edge.getTail()))
             .stream();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // For point-to-point interfaces that don't participate in subnet-based L3 synthesis (link-local
@@ -721,6 +723,10 @@ public final class TopologyUtil {
    * <p><b>Note</b> not every self-edge is a valid virtual wire (e.g., VRFs could have IP reuse,
    * wires could be physical, etc.) This method employs some (questionable) heuristics to determine
    * if a pair of interfaces constitutes a virtual wire.
+   *
+   * <p>Only Cisco {@code vasi} pairs are recognized by name. Any other two interfaces of a device
+   * that are joined through something outside it (a one-armed appliance, a loop cable) must be
+   * wired together in the user's layer-1 topology; see {@link L3Adjacencies#isWiredOnSameDevice}.
    *
    * @param edge a valid (i.e., subnets match up) L3 edge.
    */

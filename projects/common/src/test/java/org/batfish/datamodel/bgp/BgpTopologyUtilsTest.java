@@ -483,6 +483,11 @@ public class BgpTopologyUtilsTest {
     }
 
     @Override
+    public boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
         NodeInterfacePair iface) {
       throw new UnsupportedOperationException();
