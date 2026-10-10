@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1112,6 +1114,7 @@ final class IncrementalBdpEngine {
               _numIterations);
           currentSchedule = Schedule.NODE_SERIALIZED;
         } else {
+          logOscillatingVrs(vrs);
           return true; // Found an oscillation
         }
       }
@@ -1124,8 +1127,62 @@ final class IncrementalBdpEngine {
   /** Check if we have reached a routing fixed point */
   private boolean hasNotReachedRoutingFixedPoint(List<VirtualRouter> vrs) {
     LOGGER.info("Iteration {}: Check if fixed point reached", _numIterations);
-    return vrs.parallelStream().anyMatch(VirtualRouter::isDirty);
+    if (!LOGGER.isDebugEnabled()) {
+      return vrs.parallelStream().anyMatch(VirtualRouter::isDirty);
+    }
+    List<String> dirty =
+        vrs.parallelStream()
+            .filter(VirtualRouter::isDirty)
+            .map(IncrementalBdpEngine::vrName)
+            .sorted()
+            .collect(Collectors.toList());
+    LOGGER.debug(
+        "Iteration {}: {} dirty VRs: {}",
+        _numIterations,
+        dirty.size(),
+        dirty.stream().limit(DEBUG_MAX_LISTED_VRS).collect(Collectors.joining(", ")));
+    return !dirty.isEmpty();
   }
+
+  /** How many VRs the per-iteration debug logs and the oscillation report name. */
+  private static final int DEBUG_MAX_LISTED_VRS = 40;
+
+  /** How many pending routes the oscillation report prints per VR. */
+  private static final int DEBUG_MAX_ROUTES_PER_VR = 60;
+
+  private static String vrName(VirtualRouter vr) {
+    return vr.getHostname() + ":" + vr.getName();
+  }
+
+  /**
+   * Report which VRs are still dirty when the computation is declared oscillating, and what each
+   * one is waiting to do. Nothing else about an oscillation is otherwise recorded.
+   */
+  private static void logOscillatingVrs(List<VirtualRouter> vrs) {
+    List<VirtualRouter> dirty =
+        vrs.stream()
+            .filter(VirtualRouter::isDirty)
+            .sorted(Comparator.comparing(IncrementalBdpEngine::vrName))
+            .collect(Collectors.toList());
+    LOGGER.error(
+        "Oscillation detected with {} dirty VRs: {}",
+        dirty.size(),
+        dirty.stream()
+            .map(IncrementalBdpEngine::vrName)
+            .limit(DEBUG_MAX_LISTED_VRS)
+            .collect(Collectors.joining(", ")));
+    dirty.stream()
+        .limit(DEBUG_MAX_LISTED_VRS)
+        .forEach(
+            vr ->
+                LOGGER.error(
+                    "Dirty VR {}:\n{}",
+                    vrName(vr),
+                    vr.describeDirtyState(DEBUG_MAX_ROUTES_PER_VR)));
+  }
+
+  /** Per-VR iteration hash codes from the previous iteration; only kept when debug logging. */
+  private final Map<String, Integer> _previousVrHashCodes = new HashMap<>();
 
   /**
    * Compute the hashcode that uniquely identifies the state of the network at a given iteration
@@ -1135,7 +1192,31 @@ final class IncrementalBdpEngine {
    */
   private int computeIterationHashCode(List<VirtualRouter> vrs) {
     LOGGER.info("Iteration {}: Compute hashCode", _numIterations);
-    return vrs.parallelStream().mapToInt(VirtualRouter::computeIterationHashCode).sum();
+    if (!LOGGER.isDebugEnabled()) {
+      return vrs.parallelStream().mapToInt(VirtualRouter::computeIterationHashCode).sum();
+    }
+    // Also name the VRs whose state changed since the previous iteration. An iteration in which
+    // nothing changed but some VR is still dirty is an engine bug rather than a network
+    // oscillation.
+    Map<String, Integer> hashes =
+        vrs.parallelStream()
+            .collect(
+                Collectors.toConcurrentMap(
+                    IncrementalBdpEngine::vrName, VirtualRouter::computeIterationHashCode));
+    List<String> changed =
+        hashes.entrySet().stream()
+            .filter(e -> !e.getValue().equals(_previousVrHashCodes.get(e.getKey())))
+            .map(Map.Entry::getKey)
+            .sorted()
+            .collect(Collectors.toList());
+    LOGGER.debug(
+        "Iteration {}: {} VRs changed state: {}",
+        _numIterations,
+        changed.size(),
+        changed.stream().limit(DEBUG_MAX_LISTED_VRS).collect(Collectors.joining(", ")));
+    _previousVrHashCodes.clear();
+    _previousVrHashCodes.putAll(hashes);
+    return hashes.values().stream().mapToInt(Integer::intValue).sum();
   }
 
   private static void computeIterationStatistics(

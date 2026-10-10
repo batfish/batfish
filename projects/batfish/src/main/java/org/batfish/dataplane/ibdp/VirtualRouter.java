@@ -1728,6 +1728,46 @@ public final class VirtualRouter {
   }
 
   /** Check whether this virtual router has any remaining computation to do */
+  /** Describes what keeps this VR {@link #isDirty() dirty}: pending deltas and queued messages. */
+  String describeDirtyState(int max) {
+    StringBuilder sb = new StringBuilder();
+    if (!_mainRibDeltaPrevRound.isEmpty()) {
+      sb.append("  mainRibDeltaPrevRound (")
+          .append(_mainRibDeltaPrevRound.getActions().size())
+          .append("):\n");
+      _mainRibDeltaPrevRound.stream()
+          .limit(max)
+          .forEach(
+              a ->
+                  sb.append("    ")
+                      .append(a.isWithdrawn() ? "DEL " : "ADD ")
+                      .append(a.getRoute())
+                      .append('\n'));
+    }
+    // The queues are allocated with the first topology; before that there is nothing queued.
+    if (_isisIncomingRoutes != null
+        && !_isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty)) {
+      sb.append("  isis incoming queue non-empty\n");
+    }
+    if (!_routesForIsisRedistribution.isEmpty()) {
+      sb.append("  routesForIsisRedistribution non-empty\n");
+    }
+    if (_crossVrfIncomingRoutes != null
+        && !_crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty)) {
+      sb.append("  crossVrfIncomingRoutes non-empty\n");
+    }
+    _ospfProcesses.values().stream()
+        .filter(OspfRoutingProcess::isDirty)
+        .forEach(p -> sb.append("  ospf process dirty\n"));
+    _eigrpProcesses.values().stream()
+        .filter(EigrpRoutingProcess::isDirty)
+        .forEach(p -> sb.append("  eigrp process dirty\n"));
+    if (_bgpRoutingProcess != null && _bgpRoutingProcess.isDirty()) {
+      sb.append(_bgpRoutingProcess.describeDirtyState(max));
+    }
+    return sb.toString();
+  }
+
   boolean isDirty() {
     return
     // Route Deltas

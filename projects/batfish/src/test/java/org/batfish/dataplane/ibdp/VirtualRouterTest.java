@@ -13,6 +13,7 @@ import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -120,6 +121,19 @@ public class VirtualRouterTest {
     interfaceAddresses.forEach(
         (ifaceName, address) ->
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+  }
+
+  /** The dirty-state description names the pending main RIB delta that makes a VR dirty. */
+  @Test
+  public void testDescribeDirtyState() {
+    VirtualRouter vr = makeIosVirtualRouter("r1");
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.initForIgpComputation(TopologyContext.builder().build());
+    assertThat(vr.describeDirtyState(10), equalTo(""));
+    vr.initForEgpComputationBeforeTopologyLoop(ImmutableSet.of(), ImmutableMap.of());
+    assertTrue(vr.isDirty());
+    assertThat(vr.describeDirtyState(10), containsString("mainRibDeltaPrevRound"));
+    assertThat(vr.describeDirtyState(10), containsString("ADD "));
   }
 
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
