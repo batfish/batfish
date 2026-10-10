@@ -2077,7 +2077,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            successfulTracks);
+            successfulTracks,
+            () -> igpCostToNextHop(exportCandidate.getAbstractRoute()));
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -2210,7 +2211,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            successfulTracks);
+            successfulTracks,
+            () -> igpCostToNextHop(exportCandidate.getAbstractRoute()));
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -3093,6 +3095,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .getBgpRoutingProcess();
     assert proc != null; // Otherwise our computation is really wrong
     return proc;
+  }
+
+  /**
+   * The IGP cost to {@code route}'s next hop as this VRF's main RIB resolves it, for export
+   * policies that add it to the MED; null when the next hop does not resolve.
+   */
+  private @Nullable Long igpCostToNextHop(AbstractRoute route) {
+    long cost = BgpRib.igpCostToNextHop(_mainRib, route);
+    return cost == Long.MAX_VALUE ? null : cost;
   }
 
   /** Return a BGP routing process for a sibling VRF on our node */

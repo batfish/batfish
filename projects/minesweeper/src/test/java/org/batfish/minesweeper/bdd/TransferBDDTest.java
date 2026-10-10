@@ -102,6 +102,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetricByIgpCost;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -1054,6 +1055,26 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testIncrementMetricByIgpCostLeavesMetricUnchanged() {
+    // The symbolic route has no IGP cost; the metric is left as it is.
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetMetric(IncrementMetricByIgpCost.instance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
     assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
