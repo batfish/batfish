@@ -1,7 +1,6 @@
 package org.batfish.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.storage.FileBasedStorage.GC_SKEW_ALLOWANCE;
 import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.keyInDir;
@@ -10,9 +9,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -43,13 +45,18 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
@@ -95,6 +102,7 @@ import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
@@ -703,187 +711,516 @@ public final class FileBasedStorageTest {
         containsInAnyOrder("snapshot1", "snapshot2"));
   }
 
-  /** Check that extant networks are not expunged even if their content is old */
+  /** Deleting a network puts its data out of reach at once; the trash reclaims it later. */
   @Test
-  public void testRunGarbageCollection_extantNetwork() throws IOException {
+  public void testDeleteNetwork() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
-    _storage.writeId(networkId, "network"); // make the network extant
-
-    // write an "old" blob
-    Path blobPath = _storage.getNetworkBlobPath(networkId, "key");
+    NetworkId otherNetworkId = new NetworkId("other-network-id");
     _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
-    Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(oldTime));
+    _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), otherNetworkId, "key");
 
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(_storage.getNetworkDir(networkId)));
-  }
+    _storage.deleteNetwork(networkId);
 
-  /** Check that orphaned networks are expunged under the right conditions */
-  @Test
-  public void testRunGarbageCollection_orphanedNetwork() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
-    Path networkDir = _storage.getNetworkDir(networkId);
-
-    // write a new blob
-    Path blobPath = _storage.getNetworkBlobPath(networkId, "key");
-    _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
-
-    // should not be expunged since we have new data
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(networkDir));
-
-    // make the blob old
-    Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(oldTime));
-
-    // should not be expunged since network dir is not old enough
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(networkDir));
-
-    // make the network dir old
-    Files.setLastModifiedTime(networkDir, FileTime.from(oldTime));
-
-    _storage.runGarbageCollection();
+    // unreachable before anything has been deleted
     assertFalse(Files.exists(_storage.getNetworkDir(networkId)));
+    assertThat(listTrash(), hasSize(1));
+
+    assertThat(_storage.drainTrash(), equalTo(0));
+    assertThat(listTrash(), empty());
+    assertTrue(Files.exists(_storage.getNetworkDir(otherNetworkId)));
   }
 
   @Test
-  public void testCanExpungeNetwork() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
-    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+  public void testDeleteNetworkAbsent() throws IOException {
+    _storage.deleteNetwork(new NetworkId("network-id"));
 
-    Instant expungeTime = Instant.now();
-    FileTime oldFileTime = FileTime.from(expungeTime.minus(1, ChronoUnit.MINUTES));
-    FileTime newFileTime = FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES));
-
-    // confirm behavior for blob
-    _storage.mkdirs(_storage.getNetworkBlobsDir(networkId));
-    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
-    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), newFileTime);
-    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
-
-    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), oldFileTime);
-    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
-
-    // confirm behavior for snapshots
-    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
-    // mkdirs creates snapshots dir, which modifies network dir time
-    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
-    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), oldFileTime);
-    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), newFileTime);
-    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
-
-    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), oldFileTime);
-    setSnapshotLastModifiedTime(networkId, snapshotId, oldFileTime);
-    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
-
-    // confirm behavior for network dir
-    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), newFileTime);
-    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
-    // final sanity check
-    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
-    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
+    assertThat(listTrash(), empty());
   }
 
-  private void setSnapshotLastModifiedTime(
-      NetworkId networkId, SnapshotId snapshotId, FileTime time) throws IOException {
-    Stream.of(
-            _storage.getSnapshotDir(networkId, snapshotId),
-            _storage.getSnapshotInputObjectsDir(networkId, snapshotId),
-            _storage.getSnapshotOutputDir(networkId, snapshotId),
-            _storage.getAnswersDir(networkId, snapshotId))
-        .forEach(
-            dir -> {
-              if (Files.exists(dir)) {
-                try {
-                  Files.setLastModifiedTime(dir, time);
-                } catch (IOException e) {
-                  throw new RuntimeException(e.getMessage());
-                }
-              }
-            });
-  }
-
-  /** Check that extant snapshots are not expunged even if their content is old */
   @Test
-  public void testRunGarbageCollection_extantSnapshot() throws IOException {
+  public void testDeleteSnapshot() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
-    AnswerId answerId = new AnswerId("answer-id");
+    SnapshotId otherSnapshotId = new SnapshotId("other-snapshot-id");
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(Instant.now(), null), networkId, snapshotId);
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(Instant.now(), null), networkId, otherSnapshotId);
+
+    _storage.deleteSnapshot(new NetworkSnapshot(networkId, snapshotId));
+
+    assertFalse(Files.exists(_storage.getSnapshotDir(networkId, snapshotId)));
+    assertThat(_storage.drainTrash(), equalTo(0));
+    assertThat(listTrash(), empty());
+    assertTrue(Files.exists(_storage.getSnapshotDir(networkId, otherSnapshotId)));
+  }
+
+  /** Data that could not be moved into the trash is named by a tombstone and deleted in place. */
+  @Test
+  public void testDrainTrashTombstone() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
+    Path tombstone = _storage.getTrashDir().resolve("entry.path");
+    _storage.mkdirs(_storage.getTrashDir());
+    _storage.writeStringToFile(tombstone, _storage.getNetworkDir(networkId).toString(), UTF_8);
+
+    assertThat(_storage.drainTrash(), equalTo(0));
+    assertFalse(Files.exists(_storage.getNetworkDir(networkId)));
+    assertFalse(Files.exists(tombstone));
+  }
+
+  /** A stray file in the trash is deleted rather than retried forever. */
+  @Test
+  public void testDrainTrashStrayFile() throws IOException {
+    Path stray = _storage.getTrashDir().resolve("stray");
+    _storage.mkdirs(_storage.getTrashDir());
+    _storage.writeStringToFile(stray, "stray", UTF_8);
+
+    assertThat(_storage.drainTrash(), equalTo(0));
+    assertFalse(Files.exists(stray));
+  }
+
+  /** An entry that cannot be deleted is counted and left for the next pass. */
+  @Test
+  public void testDrainTrashKeepsFailures() throws IOException {
+    Path tombstone = _storage.getTrashDir().resolve("entry.path");
+    _storage.mkdirs(_storage.getTrashDir());
+    // outside the base dir: refused rather than deleted
+    _storage.writeStringToFile(tombstone, "/not-under-the-batfish-base-dir", UTF_8);
+
+    assertThat(_storage.drainTrash(), equalTo(1));
+    assertTrue(Files.exists(tombstone));
+  }
+
+  @Test
+  public void testRecoverOrphansNetwork() throws IOException {
+    NetworkId extantNetworkId = new NetworkId("network-id");
+    NetworkId orphanedNetworkId = new NetworkId("orphaned-network-id");
+    _storage.writeId(extantNetworkId, "network"); // make the network extant
+    _storage.initNetwork(extantNetworkId);
+    _storage.initNetwork(orphanedNetworkId);
+
+    _storage.recoverOrphans();
+    assertThat(_storage.drainTrash(), equalTo(0));
+
+    assertTrue(Files.exists(_storage.getNetworkDir(extantNetworkId)));
+    assertFalse(Files.exists(_storage.getNetworkDir(orphanedNetworkId)));
+  }
+
+  @Test
+  public void testRecoverOrphansSnapshot() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
+    SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
+    _storage.writeId(networkId, "network"); // make the network extant
+    _storage.writeId(extantSnapshotId, "snapshot", networkId); // only for the extant snapshot
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(Instant.now(), null), networkId, extantSnapshotId);
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(Instant.now(), null), networkId, orphanedSnapshotId);
+
+    _storage.recoverOrphans();
+    assertThat(_storage.drainTrash(), equalTo(0));
+
+    assertTrue(Files.exists(_storage.getSnapshotDir(networkId, extantSnapshotId)));
+    assertFalse(Files.exists(_storage.getSnapshotDir(networkId, orphanedSnapshotId)));
+  }
+
+  @Test
+  public void testRecoverOrphansQuestion() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    QuestionId extantQuestionId = new QuestionId("question-id");
+    QuestionId orphanedQuestionId = new QuestionId("orphaned-question-id");
+    _storage.writeId(networkId, "network"); // make the network extant
+    _storage.writeId(extantQuestionId, "question", networkId); // only for the extant question
+    _storage.storeQuestion("{}", networkId, extantQuestionId);
+    _storage.storeQuestion("{}", networkId, orphanedQuestionId);
+
+    _storage.recoverOrphans();
+    assertThat(_storage.drainTrash(), equalTo(0));
+
+    assertTrue(_storage.checkQuestionExists(networkId, extantQuestionId));
+    assertFalse(_storage.checkQuestionExists(networkId, orphanedQuestionId));
+  }
+
+  @Test
+  public void testRecoverOrphansFreshStartup() throws IOException {
+    // Should not throw
+    _storage.recoverOrphans();
+  }
+
+  /** Maintenance reclaims deleted data without anything else prompting it. */
+  @Test
+  public void testMaintenanceReclaimsDeletedData() throws IOException, InterruptedException {
+    NetworkId networkId = new NetworkId("network-id");
+    _storage.writeId(networkId, "network"); // extant, so startup recovery leaves it alone
+    _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
+
+    _storage.startMaintenance();
+    try {
+      _storage.deleteNetwork(networkId);
+      Instant deadline = Instant.now().plus(30, ChronoUnit.SECONDS);
+      while (!listTrash().isEmpty() && Instant.now().isBefore(deadline)) {
+        Thread.sleep(10);
+      }
+    } finally {
+      _storage.stopMaintenance();
+    }
+
+    assertThat(listTrash(), empty());
+  }
+
+  /** Check that stale parse cache entries are evicted */
+  @Test
+  public void testEvictStaleBlobs() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
     _storage.writeId(networkId, "network"); // make the network extant
     _storage.writeId(snapshotId, "snapshot", networkId); // make the snapshot extant
-
-    // write an answer and make the snapshot old
-    Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
-    _storage.mkdirs(answerDir);
-    _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
-
-    Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(_storage.getSnapshotDir(networkId, snapshotId)));
-  }
-
-  /** Check that orphaned snapshots are expunged under the right conditions */
-  @Test
-  public void testRunGarbageCollection_orphanedSnapshots() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
-    SnapshotId snapshotId = new SnapshotId("snapshot-id");
-    AnswerId answerId = new AnswerId("answer-id");
-    Path snapshotDir = _storage.getSnapshotDir(networkId, snapshotId);
-
-    _storage.writeId(networkId, "network"); // make the network extant
-
-    // create a new answer object for the snapshot
-    Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
-    _storage.mkdirs(answerDir);
-    _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
-
-    // should not be expunged since we have new data
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(snapshotDir));
-
-    // should be expunged if we make things old
-    Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-    _storage.runGarbageCollection();
-    assertFalse(Files.exists(snapshotDir));
-  }
-
-  /** Check that network blobs are expunged under the right conditions */
-  @Test
-  public void testRunGarbageCollection_blobs() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
-    SnapshotId snapshotId = new SnapshotId("snapshot-id");
-    AnswerId answerId = new AnswerId("answer-id");
-
-    _storage.writeId(networkId, "network"); // make the network extant
-    _storage.writeId(snapshotId, "snapshot", networkId); // make the snapshot extant
-
-    // write an answer and make the snapshot too new to expunge
-    Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
-    _storage.mkdirs(answerDir);
-    _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
     Instant snapshotTime = Instant.now();
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(snapshotTime));
     _storage.storeSnapshotMetadata(new SnapshotMetadata(snapshotTime, null), networkId, snapshotId);
 
     // create blobs newer and older than the oldest snapshot
     _storage.storeNetworkBlob(new ByteArrayInputStream(new byte[] {}), networkId, "older");
     Files.setLastModifiedTime(
         _storage.getNetworkBlobPath(networkId, "older"),
-        FileTime.from(snapshotTime.minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES)));
+        FileTime.from(snapshotTime.minus(1, ChronoUnit.MINUTES)));
     _storage.storeNetworkBlob(new ByteArrayInputStream(new byte[] {}), networkId, "newer");
     Files.setLastModifiedTime(
         _storage.getNetworkBlobPath(networkId, "newer"),
         FileTime.from(snapshotTime.plus(1, ChronoUnit.MINUTES)));
 
-    _storage.runGarbageCollection();
+    _storage.evictStaleBlobs();
+
     assertFalse(Files.exists(_storage.getNetworkBlobPath(networkId, "older")));
     assertTrue(Files.exists(_storage.getNetworkBlobPath(networkId, "newer")));
+  }
+
+  /**
+   * Deleting a network takes the mappings of everything inside it, which nothing else can reach.
+   */
+  @Test
+  public void testDeleteNetworkDeletesItsIdMappings() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+    _storage.writeId(networkId, "network");
+    _storage.writeId(snapshotId, "snapshot", networkId);
+    _storage.initNetwork(networkId);
+    assertTrue(Files.exists(_storage.getNetworkIdsDir(networkId)));
+
+    _storage.deleteNameIdMapping(NetworkId.class, "network");
+    _storage.deleteNetwork(networkId);
+    assertThat(_storage.drainTrash(), equalTo(0));
+
+    assertFalse(Files.exists(_storage.getNetworkIdsDir(networkId)));
+  }
+
+  @Test
+  public void testRecoverOrphansIdMappings() throws IOException {
+    NetworkId extantNetworkId = new NetworkId("network-id");
+    NetworkId orphanedNetworkId = new NetworkId("orphaned-network-id");
+    _storage.writeId(extantNetworkId, "network"); // make the network extant
+    _storage.writeId(new SnapshotId("snapshot-id"), "snapshot", extantNetworkId);
+    _storage.writeId(new SnapshotId("orphaned-snapshot-id"), "snapshot", orphanedNetworkId);
+
+    _storage.recoverOrphans();
+    assertThat(_storage.drainTrash(), equalTo(0));
+
+    assertTrue(Files.exists(_storage.getNetworkIdsDir(extantNetworkId)));
+    assertFalse(Files.exists(_storage.getNetworkIdsDir(orphanedNetworkId)));
+    // the extant network's own mapping is a sibling of those directories
+    assertThat(_storage.readId(NetworkId.class, "network"), equalTo(Optional.of("network-id")));
+  }
+
+  /**
+   * Dying between deleting a name-to-ID mapping and deleting the data it pointed at leaves data
+   * that nothing can reach, which the next startup reclaims.
+   */
+  @Test
+  public void testRecoverAfterCrashBeforeDeletingData() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId deletedSnapshotId = new SnapshotId("deleted-snapshot-id");
+    SnapshotId liveSnapshotId = new SnapshotId("live-snapshot-id");
+    _storage.writeId(networkId, "network");
+    _storage.writeId(liveSnapshotId, "live", networkId);
+    _storage.writeId(deletedSnapshotId, "deleted", networkId);
+    storeSnapshot(networkId, liveSnapshotId);
+    storeSnapshot(networkId, deletedSnapshotId);
+
+    // the delete got as far as the mapping, and no further
+    _storage.deleteNameIdMapping(SnapshotId.class, "deleted", networkId);
+    assertTrue(Files.exists(_storage.getSnapshotDir(networkId, deletedSnapshotId)));
+
+    restartStorage();
+
+    assertFalse(Files.exists(_storage.getSnapshotDir(networkId, deletedSnapshotId)));
+    assertThat(loadSnapshotInput(networkId, liveSnapshotId), equalTo("configs"));
+  }
+
+  /**
+   * Dying part way through creating a snapshot leaves data that no mapping points at, even though
+   * the snapshot never existed as far as any client saw.
+   */
+  @Test
+  public void testRecoverAfterCrashDuringCreate() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+    _storage.writeId(networkId, "network");
+    // inputs copied, but neither the metadata nor the mapping written yet
+    _storage.storeSnapshotInputObject(
+        new ByteArrayInputStream("configs".getBytes(UTF_8)),
+        "configs/c.cfg",
+        new NetworkSnapshot(networkId, snapshotId));
+
+    restartStorage();
+
+    assertFalse(Files.exists(_storage.getSnapshotDir(networkId, snapshotId)));
+    assertTrue(Files.exists(_storage.getNetworkDir(networkId)));
+  }
+
+  /** Data already in the trash when the process died is reclaimed by the next startup. */
+  @Test
+  public void testRecoverDrainsTrashLeftByCrash() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    storeSnapshot(networkId, new SnapshotId("snapshot-id"));
+
+    // deleted, but the process died before the maintenance thread emptied the trash
+    _storage.deleteNetwork(networkId);
+    assertThat(listTrash(), hasSize(1));
+
+    restartStorage();
+
+    assertThat(listTrash(), empty());
+  }
+
+  /**
+   * Creation and deletion race each other and the maintenance thread. Data reachable through a
+   * name-to-ID mapping must survive, and everything else must be reclaimed.
+   */
+  @Test
+  public void testConcurrentCreateAndDeleteWithMaintenance() throws Exception {
+    int numThreads = 4;
+    int numOpsPerThread = 150;
+
+    List<Thread> threads = new ArrayList<>();
+    List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+    // Every network and snapshot that is currently reachable, by ID, with the name it is reachable
+    // under. Threads share the map but only touch their own networks.
+    Map<NetworkId, Map<SnapshotId, String>> live = new ConcurrentHashMap<>();
+    CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    AtomicInteger networksCreated = new AtomicInteger();
+    AtomicInteger networksDeleted = new AtomicInteger();
+    AtomicInteger snapshotsDeleted = new AtomicInteger();
+
+    _storage.startMaintenance();
+    try {
+      for (int t = 0; t < numThreads; t++) {
+        String prefix = "t" + t;
+        // Seeded, so that a failing interleaving has a chance of repeating.
+        Random random = new Random(t);
+        Thread thread =
+            new Thread(
+                () -> {
+                  try {
+                    List<String> mine = new ArrayList<>();
+                    barrier.await();
+                    for (int i = 0; i < numOpsPerThread; i++) {
+                      switch (random.nextInt(4)) {
+                        case 0 -> {
+                          mine.add(createNetwork(prefix + "-" + i, live));
+                          networksCreated.incrementAndGet();
+                        }
+                        case 1 ->
+                            snapshotsDeleted.addAndGet(deleteSomeSnapshot(random, mine, live));
+                        case 2 -> networksDeleted.addAndGet(deleteSomeNetwork(random, mine, live));
+                        // Deleting data that is already gone must be harmless: two clients can
+                        // delete the same network, and one of them loses the race.
+                        default -> _storage.deleteNetwork(new NetworkId("never-existed"));
+                      }
+                    }
+                  } catch (Throwable e) {
+                    failures.add(e);
+                  }
+                });
+        threads.add(thread);
+        thread.start();
+      }
+      for (Thread thread : threads) {
+        thread.join();
+      }
+    } finally {
+      _storage.stopMaintenance();
+    }
+    assertThat(failures, empty());
+    // The interleaving must have done all three things, or the invariants below are vacuous.
+    assertThat(networksCreated.get(), greaterThan(0));
+    assertThat(networksDeleted.get(), greaterThan(0));
+    assertThat(snapshotsDeleted.get(), greaterThan(0));
+
+    // Everything still reachable is intact, by name rather than by ID ...
+    for (String network : _storage.listResolvableNames(NetworkId.class)) {
+      NetworkId networkId = new NetworkId(_storage.readId(NetworkId.class, network).get());
+      assertThat(live, hasKey(networkId));
+      for (String snapshot : _storage.listResolvableNames(SnapshotId.class, networkId)) {
+        SnapshotId snapshotId =
+            new SnapshotId(_storage.readId(SnapshotId.class, snapshot, networkId).get());
+        assertThat(live.get(networkId), hasKey(snapshotId));
+        assertThat(loadSnapshotInput(networkId, snapshotId), equalTo("configs"));
+      }
+    }
+    // ... nothing reachable was missed ...
+    assertThat(_storage.listResolvableNames(NetworkId.class), hasSize(live.size()));
+    // ... and nothing unreachable is left behind.
+    assertThat(_storage.drainTrash(), equalTo(0));
+    assertThat(listTrash(), empty());
+    assertThat(unreferencedDirs(), empty());
+  }
+
+  /**
+   * Creates a network with two snapshots, writing data before the mapping that makes it reachable,
+   * as the coordinator does. Returns the network's name.
+   */
+  private String createNetwork(String name, Map<NetworkId, Map<SnapshotId, String>> live)
+      throws IOException {
+    NetworkId networkId = new NetworkId(name + "-id");
+    _storage.initNetwork(networkId);
+    Map<SnapshotId, String> snapshots = new ConcurrentHashMap<>();
+    live.put(networkId, snapshots);
+    _storage.writeId(networkId, name);
+    for (int i = 0; i < 2; i++) {
+      String snapshot = name + "-snapshot-" + i;
+      SnapshotId snapshotId = new SnapshotId(snapshot + "-id");
+      storeSnapshot(networkId, snapshotId);
+      // give cache eviction something to walk
+      _storage.storeNetworkBlob(
+          new ByteArrayInputStream("blob".getBytes(UTF_8)), networkId, snapshotId.getId());
+      snapshots.put(snapshotId, snapshot);
+      _storage.writeId(snapshotId, snapshot, networkId);
+    }
+    return name;
+  }
+
+  /** Returns the number of snapshots deleted, which is zero if there was nothing to delete. */
+  private int deleteSomeSnapshot(
+      Random random, List<String> mine, Map<NetworkId, Map<SnapshotId, String>> live)
+      throws IOException {
+    String network = pick(random, mine);
+    if (network == null) {
+      return 0;
+    }
+    NetworkId networkId = new NetworkId(network + "-id");
+    Map<SnapshotId, String> snapshots = live.get(networkId);
+    if (snapshots == null) {
+      return 0;
+    }
+    SnapshotId snapshotId = pick(random, ImmutableList.copyOf(snapshots.keySet()));
+    if (snapshotId == null) {
+      return 0;
+    }
+    String snapshot = snapshots.remove(snapshotId);
+    if (snapshot == null) {
+      return 0;
+    }
+    _storage.deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
+    _storage.deleteSnapshot(new NetworkSnapshot(networkId, snapshotId));
+    return 1;
+  }
+
+  /** Returns the number of networks deleted, which is zero if there was nothing to delete. */
+  private int deleteSomeNetwork(
+      Random random, List<String> mine, Map<NetworkId, Map<SnapshotId, String>> live)
+      throws IOException {
+    String network = pick(random, mine);
+    if (network == null) {
+      return 0;
+    }
+    NetworkId networkId = new NetworkId(network + "-id");
+    if (live.remove(networkId) == null) {
+      return 0;
+    }
+    mine.remove(network);
+    _storage.deleteNameIdMapping(NetworkId.class, network);
+    _storage.deleteNetwork(networkId);
+    return 1;
+  }
+
+  private static <T> @Nullable T pick(Random random, List<T> items) {
+    return items.isEmpty() ? null : items.get(random.nextInt(items.size()));
+  }
+
+  /** Directories holding data or mappings that no name-to-ID mapping can reach. */
+  private List<Path> unreferencedDirs() throws IOException {
+    ImmutableList.Builder<Path> unreferenced = ImmutableList.builder();
+    Set<String> extantNetworkIds = extantIds(NetworkId.class);
+    for (Path networkDir : listDir(_storage.getNetworksDir())) {
+      NetworkId networkId = new NetworkId(networkDir.getFileName().toString());
+      if (!extantNetworkIds.contains(networkId.getId())) {
+        unreferenced.add(networkDir);
+        continue;
+      }
+      Set<String> extantSnapshotIds = extantIds(SnapshotId.class, networkId);
+      listDir(_storage.getSnapshotsDir(networkId)).stream()
+          .filter(dir -> !extantSnapshotIds.contains(dir.getFileName().toString()))
+          .forEach(unreferenced::add);
+    }
+    // The per-network mapping directories live alongside the network name mappings.
+    Path networkIdsDir = _storage.getNetworkIdsDir(new NetworkId("any")).getParent();
+    listDir(networkIdsDir).stream()
+        .filter(Files::isDirectory)
+        .filter(dir -> !extantNetworkIds.contains(dir.getFileName().toString()))
+        .forEach(unreferenced::add);
+    return unreferenced.build();
+  }
+
+  private Set<String> extantIds(Class<? extends Id> type, Id... ancestors) throws IOException {
+    ImmutableSet.Builder<String> ids = ImmutableSet.builder();
+    for (String name : _storage.listResolvableNames(type, ancestors)) {
+      _storage.readId(type, name, ancestors).ifPresent(ids::add);
+    }
+    return ids.build();
+  }
+
+  private static List<Path> listDir(Path dir) throws IOException {
+    if (!Files.exists(dir)) {
+      return ImmutableList.of();
+    }
+    try (Stream<Path> children = Files.list(dir)) {
+      return children.collect(ImmutableList.toImmutableList());
+    }
+  }
+
+  private void storeSnapshot(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    _storage.storeSnapshotInputObject(
+        new ByteArrayInputStream("configs".getBytes(UTF_8)),
+        "configs/c.cfg",
+        new NetworkSnapshot(networkId, snapshotId));
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(Instant.now(), null), networkId, snapshotId);
+  }
+
+  private String loadSnapshotInput(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    try (InputStream in =
+        _storage.loadSnapshotInputObject(networkId, snapshotId, "configs/c.cfg")) {
+      return new String(ByteStreams.toByteArray(in), UTF_8);
+    }
+  }
+
+  /** Replaces the storage with a new one on the same data, and runs its startup recovery. */
+  private void restartStorage() throws IOException {
+    _storage =
+        new FileBasedStorage(_containerDir.getParent(), _logger, (m, n) -> new AtomicInteger());
+    _storage.recoverOrphans();
+    assertThat(_storage.drainTrash(), equalTo(0));
+  }
+
+  private List<Path> listTrash() throws IOException {
+    if (!Files.exists(_storage.getTrashDir())) {
+      return ImmutableList.of();
+    }
+    try (Stream<Path> entries = Files.list(_storage.getTrashDir())) {
+      return entries.collect(ImmutableList.toImmutableList());
+    }
   }
 
   @Test
@@ -891,24 +1228,16 @@ public final class FileBasedStorageTest {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
     SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
-    AnswerId answerId = new AnswerId("answer-id");
 
     _storage.writeId(networkId, "network"); // make the network extant
     _storage.writeId(extantSnapshotId, "snapshot", networkId); // only for the extant snapshot
 
-    // write an answer dir and date the extant snapshot
-    Path extantAnswerDir = _storage.getAnswerDir(networkId, extantSnapshotId, answerId);
-    _storage.mkdirs(extantAnswerDir);
     Instant extantSnapshotTime = Instant.now();
-    setSnapshotLastModifiedTime(networkId, extantSnapshotId, FileTime.from(extantSnapshotTime));
     _storage.storeSnapshotMetadata(
         new SnapshotMetadata(extantSnapshotTime, null), networkId, extantSnapshotId);
 
-    // write an answer dir and date the orphaned snapshot older than the extant snapshot
-    Path orphanedAnswerDir = _storage.getAnswerDir(networkId, orphanedSnapshotId, answerId);
-    _storage.mkdirs(orphanedAnswerDir);
+    // date the orphaned snapshot older than the extant snapshot
     Instant orphanedSnapshotTime = extantSnapshotTime.minus(10, ChronoUnit.MINUTES);
-    setSnapshotLastModifiedTime(networkId, orphanedSnapshotId, FileTime.from(orphanedSnapshotTime));
     _storage.storeSnapshotMetadata(
         new SnapshotMetadata(orphanedSnapshotTime, null), networkId, orphanedSnapshotId);
 
@@ -916,53 +1245,6 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.getOldestSnapshotCreationTime(networkId),
         equalTo(Optional.of(extantSnapshotTime)));
-  }
-
-  @Test
-  public void testCanExpungeSnapshot() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
-    SnapshotId snapshotId = new SnapshotId("snapshot-id");
-
-    Instant expungeTime = Instant.now();
-    FileTime oldFileTime = FileTime.from(expungeTime.minus(1, ChronoUnit.MINUTES));
-    FileTime newFileTime = FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES));
-
-    _storage.mkdirs(_storage.getSnapshotDir(networkId, snapshotId));
-    _storage.mkdirs(_storage.getSnapshotInputObjectsDir(networkId, snapshotId));
-    _storage.mkdirs(_storage.getSnapshotOutputDir(networkId, snapshotId));
-    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
-
-    // when everything is old
-    setSnapshotLastModifiedTime(networkId, snapshotId, oldFileTime);
-    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-
-    // confirm behavior for snapshot dir itself
-    Files.setLastModifiedTime(_storage.getSnapshotDir(networkId, snapshotId), newFileTime);
-    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-    Files.setLastModifiedTime(_storage.getSnapshotDir(networkId, snapshotId), oldFileTime);
-
-    // confirm behavior for input dir
-    Files.setLastModifiedTime(
-        _storage.getSnapshotInputObjectsDir(networkId, snapshotId), newFileTime);
-    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-    Files.setLastModifiedTime(
-        _storage.getSnapshotInputObjectsDir(networkId, snapshotId), oldFileTime);
-
-    // confirm behavior for output dir
-    Files.setLastModifiedTime(_storage.getSnapshotOutputDir(networkId, snapshotId), newFileTime);
-    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-    Files.setLastModifiedTime(_storage.getSnapshotOutputDir(networkId, snapshotId), oldFileTime);
-
-    // confirm behavior for answer dir
-    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), newFileTime);
-    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), oldFileTime);
-  }
-
-  @Test
-  public void testRunGarbageCollectionFreshStartup() throws IOException {
-    // Should not throw
-    _storage.runGarbageCollection();
   }
 
   @Test
