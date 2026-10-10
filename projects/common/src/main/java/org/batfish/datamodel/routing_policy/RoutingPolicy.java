@@ -197,8 +197,19 @@ public class RoutingPolicy implements Serializable {
    *     transformations are not needed.
    */
   public boolean processReadOnly(AbstractRouteDecorator inputRoute) {
-    // arbitrarily choose OUT direction, BGP route builder.
-    return processBgpRoute(inputRoute, Bgpv4Route.builder(), null, Direction.OUT, null);
+    checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
+    // There is no output route to read here, so match against the input route's attributes even
+    // for vendors whose policies otherwise read the output route (Junos); those would see an
+    // unset tag, metric, and community set and silently miss. Direction is arbitrary.
+    Environment environment =
+        Environment.builder(_owner)
+            .setOriginalRoute(inputRoute)
+            .setOutputRoute(Bgpv4Route.builder())
+            .setDirection(Direction.OUT)
+            .setUseOutputAttributes(false)
+            .build();
+    Result result = call(environment);
+    return result.getBooleanValue() && !Boolean.TRUE.equals(environment.getSuppressed());
   }
 
   /**
