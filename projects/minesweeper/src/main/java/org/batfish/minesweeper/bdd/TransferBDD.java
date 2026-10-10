@@ -72,6 +72,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetricByIgpCost;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -270,6 +271,11 @@ public class TransferBDD {
       IncrementMetric z = (IncrementMetric) e;
       p.debug("IncrementMetric: %s", z.getAddend());
       return x.addClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    } else if (e instanceof IncrementMetricByIgpCost) {
+      // The symbolic route has no IGP cost to add; leave the metric as it is, which is also what
+      // the concrete evaluation does when no cost is available.
+      p.debug("IncrementMetricByIgpCost: metric unchanged");
+      return x;
     } else if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("DecrementMetric: %s", z.getSubtrahend());

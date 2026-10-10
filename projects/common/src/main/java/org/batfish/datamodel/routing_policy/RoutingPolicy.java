@@ -219,7 +219,7 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction) {
-    return process(inputRoute, outputRoute, null, null, direction, null, null);
+    return process(inputRoute, outputRoute, null, null, direction, null, null, null);
   }
 
   /**
@@ -230,7 +230,7 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction,
       Tracer tracer) {
-    return process(inputRoute, outputRoute, null, null, direction, null, tracer);
+    return process(inputRoute, outputRoute, null, null, direction, null, null, tracer);
   }
 
   /**
@@ -241,7 +241,7 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction,
       Predicate<String> successfulTrack) {
-    return process(inputRoute, outputRoute, null, null, direction, successfulTrack, null);
+    return process(inputRoute, outputRoute, null, null, direction, successfulTrack, null, null);
   }
 
   /**
@@ -254,7 +254,8 @@ public class RoutingPolicy implements Serializable {
       Direction direction,
       Predicate<String> successfulTrack,
       Tracer tracer) {
-    return process(inputRoute, outputRoute, properties, null, direction, successfulTrack, tracer);
+    return process(
+        inputRoute, outputRoute, properties, null, direction, successfulTrack, null, tracer);
   }
 
   public boolean process(
@@ -262,7 +263,7 @@ public class RoutingPolicy implements Serializable {
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction) {
-    return process(inputRoute, outputRoute, null, eigrpProcess, direction, null, null);
+    return process(inputRoute, outputRoute, null, eigrpProcess, direction, null, null, null);
   }
 
   public boolean process(
@@ -271,7 +272,8 @@ public class RoutingPolicy implements Serializable {
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction,
       Predicate<String> successfulTrack) {
-    return process(inputRoute, outputRoute, null, eigrpProcess, direction, successfulTrack, null);
+    return process(
+        inputRoute, outputRoute, null, eigrpProcess, direction, successfulTrack, null, null);
   }
 
   /**
@@ -291,9 +293,33 @@ public class RoutingPolicy implements Serializable {
       @Nullable BgpSessionProperties sessionProperties,
       Direction direction,
       @Nullable Predicate<String> successfulTrack) {
+    return processBgpRoute(
+        inputRoute, outputRoute, sessionProperties, direction, successfulTrack, null);
+  }
+
+  /**
+   * As {@link #processBgpRoute(AbstractRouteDecorator, BgpRoute.Builder, BgpSessionProperties,
+   * Direction, Predicate)}, also supplying the IGP cost to {@code inputRoute}'s next hop for
+   * statements that read it (see {@link
+   * org.batfish.datamodel.routing_policy.expr.IncrementMetricByIgpCost}).
+   */
+  public boolean processBgpRoute(
+      AbstractRouteDecorator inputRoute,
+      BgpRoute.Builder<?, ?> outputRoute,
+      @Nullable BgpSessionProperties sessionProperties,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable Supplier<Long> igpCostToNextHop) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     return process(
-        inputRoute, outputRoute, sessionProperties, null, direction, successfulTrack, null);
+        inputRoute,
+        outputRoute,
+        sessionProperties,
+        null,
+        direction,
+        successfulTrack,
+        igpCostToNextHop,
+        null);
   }
 
   private boolean process(
@@ -303,6 +329,7 @@ public class RoutingPolicy implements Serializable {
       @Nullable EigrpProcess eigrpProcess,
       Direction direction,
       @Nullable Predicate<String> successfulTrack,
+      @Nullable Supplier<Long> igpCostToNextHop,
       @Nullable Tracer tracer) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
@@ -313,6 +340,7 @@ public class RoutingPolicy implements Serializable {
             .setDirection(direction)
             .setEigrpProcess(eigrpProcess)
             .setSuccessfulTrack(successfulTrack)
+            .setIgpCostToNextHop(igpCostToNextHop)
             .setTracer(tracer)
             .build();
     Result result = call(environment);

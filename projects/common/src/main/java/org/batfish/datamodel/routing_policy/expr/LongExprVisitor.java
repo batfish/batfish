@@ -15,6 +15,8 @@ public interface LongExprVisitor<T, U> {
 
   T visitIncrementMetric(IncrementMetric incrementMetric, U arg);
 
+  T visitIncrementMetricByIgpCost(IncrementMetricByIgpCost incrementMetricByIgpCost, U arg);
+
   T visitLiteralLong(LiteralLong literalLong, U arg);
 
   T visitUint32HighLowExpr(Uint32HighLowExpr uint32HighLowExpr);
