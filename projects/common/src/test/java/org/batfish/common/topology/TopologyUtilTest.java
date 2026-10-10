@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -1852,25 +1853,149 @@ public final class TopologyUtilTest {
 
   @Test
   public void testIsVirtualWire() {
+    Map<String, Configuration> none = ImmutableMap.of();
     // Not the same device
     assertFalse(
         isVirtualWireSameDevice(
             new Edge(
-                NodeInterfacePair.of("h1", "vasileft1"),
-                NodeInterfacePair.of("h2", "vasiright1"))));
+                NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h2", "vasiright1")),
+            none));
     // same device, not virtual wire
     assertFalse(
         isVirtualWireSameDevice(
-            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0"))));
+            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0")),
+            none));
     assertFalse(
         isVirtualWireSameDevice(
-            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0"))));
+            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0")),
+            none));
     // same device, virtual wire
     assertTrue(
         isVirtualWireSameDevice(
             new Edge(
-                NodeInterfacePair.of("h1", "vasileft1"),
-                NodeInterfacePair.of("h1", "vasiright1"))));
+                NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "vasiright1")),
+            none));
+  }
+
+  /**
+   * Two subinterfaces of one parent in different VRFs that share a subnet are a hairpin through
+   * something outside the device; the same two in one VRF, or on different parents, are not (unless
+   * the user's layer-1 topology says so; see {@link #testHairpinWiredInLayer1}).
+   */
+  @Test
+  public void testIsVirtualWireHairpin() {
+    Configuration c = _cb.setHostname("dos").build();
+    Vrf clean = _vb.setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf dirty = _nf.vrfBuilder().setOwner(c).setName("DIRTY").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond9").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond13").build();
+    Interface.Builder sub = _nf.interfaceBuilder().setOwner(c);
+    sub.setName("bond9.192")
+        .setVrf(clean)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.1/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond9.128")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond9.200")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.2/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond13.128")
+        .setVrf(dirty)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond13", DependencyType.BIND)))
+        .build();
+    Map<String, Configuration> configs = ImmutableMap.of("dos", c);
+    // same parent, different VRFs
+    assertTrue(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.192"), NodeInterfacePair.of("dos", "bond9.128")),
+            configs));
+    // same parent, same VRF
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.128"), NodeInterfacePair.of("dos", "bond9.200")),
+            configs));
+    // different parents
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("dos", "bond9.192"),
+                NodeInterfacePair.of("dos", "bond13.128")),
+            configs));
+    // parents themselves (no BIND dependency)
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("dos", "bond9"), NodeInterfacePair.of("dos", "bond13")),
+            configs));
+  }
+
+  /**
+   * The same-parent heuristic yields to the user's layer-1 topology: a self-edge between two
+   * interfaces of a device, or between their parents, keeps their L3 edge whatever their parents
+   * and VLAN tags.
+   */
+  @Test
+  public void testHairpinWiredInLayer1() {
+    Configuration c = _cb.setHostname("dos").build();
+    Configuration peer = _cb.setHostname("peer").build();
+    Vrf clean = _vb.setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf dirty = _nf.vrfBuilder().setOwner(c).setName("DIRTY").build();
+    Vrf pv = _vb.setOwner(peer).build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond9").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond13").build();
+    _nf.interfaceBuilder().setOwner(c).setVrf(clean).setName("bond1").build();
+    _nf.interfaceBuilder().setOwner(peer).setVrf(pv).setName("eth0").build();
+    Interface.Builder sub = _nf.interfaceBuilder().setOwner(c);
+    sub.setName("bond9.192")
+        .setVrf(clean)
+        .setEncapsulationVlan(192)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.1/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond9", DependencyType.BIND)))
+        .build();
+    sub.setName("bond13.128")
+        .setVrf(dirty)
+        .setEncapsulationVlan(128)
+        .setAddress(ConcreteInterfaceAddress.parse("100.64.50.0/31"))
+        .setDependencies(ImmutableSet.of(new Dependency("bond13", DependencyType.BIND)))
+        .build();
+    Map<String, Configuration> configs = ImmutableMap.of("dos", c, "peer", peer);
+    Edge hairpin =
+        new Edge(
+            NodeInterfacePair.of("dos", "bond9.192"), NodeInterfacePair.of("dos", "bond13.128"));
+
+    // The device has L1, and the two subinterfaces are on different parents: filtered.
+    assertThat(
+        rawLayer3Edges(layer1Topology("dos", "bond1", "peer", "eth0"), configs),
+        not(hasItem(hairpin)));
+    // Wired to itself between the parents: kept.
+    assertThat(
+        rawLayer3Edges(
+            layer1Topology("dos", "bond1", "peer", "eth0", "dos", "bond9", "dos", "bond13"),
+            configs),
+        hasItem(hairpin));
+    // Wired to itself between the subinterfaces: kept.
+    assertThat(
+        rawLayer3Edges(
+            layer1Topology("dos", "bond1", "peer", "eth0", "dos", "bond9.192", "dos", "bond13.128"),
+            configs),
+        hasItem(hairpin));
+  }
+
+  private static Set<Edge> rawLayer3Edges(Layer1Topology l1, Map<String, Configuration> configs) {
+    Layer2Topology l2 = computeLayer2Topology(l1, VxlanTopology.EMPTY, configs);
+    return computeRawLayer3Topology(
+            HybridL3Adjacencies.create(
+                Layer1TopologiesFactory.create(l1, Layer1Topology.EMPTY, configs), l2, configs),
+            configs)
+        .getEdges();
   }
 
   @Test

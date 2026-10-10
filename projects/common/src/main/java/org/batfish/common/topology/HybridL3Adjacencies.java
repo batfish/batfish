@@ -3,7 +3,10 @@ package org.batfish.common.topology;
 import static org.batfish.common.topology.TopologyUtil.isBorderToIspEdge;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,6 +15,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
@@ -56,7 +61,62 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
             .collect(ImmutableSet.toImmutableSet());
     PointToPointInterfaces pointToPointInterfaces =
         PointToPointComputer.compute(layer1Topologies.getLogicalL1(), configurations);
-    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
+    // Subinterface -> the interface it is bound to, for matching user L1 edges on parents.
+    ImmutableMap.Builder<NodeInterfacePair, NodeInterfacePair> boundParents =
+        ImmutableMap.builder();
+    for (Configuration c : configurations.values()) {
+      for (Interface i : c.getAllInterfaces().values()) {
+        i.getDependencies().stream()
+            .filter(d -> d.getType() == DependencyType.BIND)
+            .findFirst()
+            .ifPresent(
+                d ->
+                    boundParents.put(
+                        NodeInterfacePair.of(i),
+                        NodeInterfacePair.of(c.getHostname(), d.getInterfaceName())));
+      }
+    }
+    // The user's self-edges: layer-1 edges between two interfaces of one device, both ways.
+    ImmutableSetMultimap.Builder<NodeInterfacePair, NodeInterfacePair> selfWires =
+        ImmutableSetMultimap.builder();
+    layer1Topologies
+        .getUserProvidedL1()
+        .edgeStream()
+        .filter(e -> e.getNode1().getHostname().equals(e.getNode2().getHostname()))
+        .forEach(
+            e -> {
+              NodeInterfacePair a = e.getNode1().asNodeInterfacePair();
+              NodeInterfacePair b = e.getNode2().asNodeInterfacePair();
+              selfWires.put(a, b);
+              selfWires.put(b, a);
+            });
+    return new HybridL3Adjacencies(
+        nodesWithL1Topology,
+        layer2Topology,
+        pointToPointInterfaces,
+        selfWires.build(),
+        boundParents.build());
+  }
+
+  @Override
+  public boolean isWiredOnSameDevice(NodeInterfacePair i1, NodeInterfacePair i2) {
+    if (!i1.getHostname().equals(i2.getHostname())) {
+      return false;
+    }
+    for (NodeInterfacePair a : selfAndParent(i1)) {
+      Set<NodeInterfacePair> wired = _selfWires.get(a);
+      for (NodeInterfacePair b : selfAndParent(i2)) {
+        if (wired.contains(b)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private Set<NodeInterfacePair> selfAndParent(NodeInterfacePair i) {
+    NodeInterfacePair parent = _boundParents.get(i);
+    return parent == null ? ImmutableSet.of(i) : ImmutableSet.of(i, parent);
   }
 
   @Override
@@ -94,12 +154,15 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
     HybridL3Adjacencies that = (HybridL3Adjacencies) o;
     return _layer2Topology.equals(that._layer2Topology)
         && _nodesWithL1Topology.equals(that._nodesWithL1Topology)
-        && _pointToPointInterfaces.equals(that._pointToPointInterfaces);
+        && _pointToPointInterfaces.equals(that._pointToPointInterfaces)
+        && _selfWires.equals(that._selfWires)
+        && _boundParents.equals(that._boundParents);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodesWithL1Topology, _layer2Topology, _pointToPointInterfaces);
+    return Objects.hash(
+        _nodesWithL1Topology, _layer2Topology, _pointToPointInterfaces, _selfWires, _boundParents);
   }
 
   @VisibleForTesting
@@ -107,19 +170,30 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
       PointToPointInterfaces pointToPointInterfaces) {
-    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
+    return new HybridL3Adjacencies(
+        nodesWithL1Topology,
+        layer2Topology,
+        pointToPointInterfaces,
+        ImmutableSetMultimap.of(),
+        ImmutableMap.of());
   }
 
   private HybridL3Adjacencies(
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
-      PointToPointInterfaces pointToPointInterfaces) {
+      PointToPointInterfaces pointToPointInterfaces,
+      SetMultimap<NodeInterfacePair, NodeInterfacePair> selfWires,
+      Map<NodeInterfacePair, NodeInterfacePair> boundParents) {
     _nodesWithL1Topology = nodesWithL1Topology;
     _layer2Topology = layer2Topology;
     _pointToPointInterfaces = pointToPointInterfaces;
+    _selfWires = selfWires;
+    _boundParents = boundParents;
   }
 
   private final Set<String> _nodesWithL1Topology;
   private final Layer2Topology _layer2Topology;
   private final PointToPointInterfaces _pointToPointInterfaces;
+  private final SetMultimap<NodeInterfacePair, NodeInterfacePair> _selfWires;
+  private final Map<NodeInterfacePair, NodeInterfacePair> _boundParents;
 }
