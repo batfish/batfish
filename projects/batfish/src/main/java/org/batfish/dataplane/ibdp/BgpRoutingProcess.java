@@ -879,6 +879,43 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     processMergeOrRemoveInBgpRib(builtBgpRoute, !routeAdv.isWithdrawn());
   }
 
+  /** Describes what keeps this process {@link #isDirty() dirty}: its pending outgoing deltas. */
+  String describeDirtyState(int max) {
+    StringBuilder sb = new StringBuilder();
+    java.util.function.BiConsumer<String, RibDelta<?>> dump =
+        (name, delta) -> {
+          if (delta.isEmpty()) {
+            return;
+          }
+          sb.append("  bgp ")
+              .append(name)
+              .append(" (")
+              .append(delta.getActions().size())
+              .append("):\n");
+          delta.stream()
+              .limit(max)
+              .forEach(
+                  a ->
+                      sb.append("    ")
+                          .append(a.isWithdrawn() ? "DEL " : "ADD ")
+                          .append(a.getRoute())
+                          .append('\n'));
+        };
+    dump.accept("ebgpv4DeltaPrev", _ebgpv4DeltaPrev);
+    dump.accept("ebgpv4DeltaPrevBestPath", _ebgpv4DeltaPrevBestPath);
+    dump.accept("bgpv4DeltaPrev", _bgpv4DeltaPrev);
+    dump.accept("bgpv4DeltaPrevBestPath", _bgpv4DeltaPrevBestPath);
+    dump.accept("evpnType3DeltaPrev", _evpnType3DeltaPrev);
+    dump.accept("evpnType5DeltaPrev", _evpnType5DeltaPrev);
+    dump.accept("mainRibDelta", _mainRibDelta);
+    dump.accept("evpnInitializationDelta", _evpnInitializationDelta);
+    if (!_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_evpnType5IncomingRoutes.values().stream().allMatch(Queue::isEmpty)) {
+      sb.append("  bgp evpn incoming queues non-empty\n");
+    }
+    return sb.toString();
+  }
+
   @Override
   public boolean isDirty() {
     // endOfRound gets called before the isDirty check, so delta builders should be empty.
