@@ -67,6 +67,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
@@ -1384,5 +1385,136 @@ public class BgpRoutingProcessTest {
             .setNextHop(NextHopDiscard.instance())
             .build();
     assertThat(evpnRouteToBgpv4Route(inputRoute, 1).build(), hasTag(5L));
+  }
+
+  /**
+   * A neighbor-specific generated route (e.g. default-originate) is advertised when the session
+   * comes up and withdrawn when it deactivates, not re-advertised on every pull. Re-advertising
+   * every round keeps the receiver dirty forever when several senders share a peer IP.
+   */
+  @Test
+  public void testNeighborGeneratedRouteAdvertisedOnceAndWithdrawnOnDeactivation() {
+    Ip localIp = Ip.parse("1.1.1.1");
+    Ip peerIp = Ip.parse("1.1.1.2");
+    Prefix condition = Prefix.parse("10.0.0.0/24");
+    // Generate the default route only while the main RIB has a route to the condition prefix.
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName("gen")
+        .addStatement(
+            new If(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(condition)))),
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
+        .build();
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName("export")
+        .addStatement(Statements.ExitAccept.toStaticStatement())
+        .build();
+    GeneratedRoute defaultRoute =
+        GeneratedRoute.builder().setNetwork(Prefix.ZERO).setGenerationPolicy("gen").build();
+    BgpActivePeerConfig ourPeer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(peerIp)
+            .setLocalIp(localIp)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setGeneratedRoutes(ImmutableSet.of(defaultRoute))
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder().setExportPolicy("export").build())
+            .build();
+    _bgpProcess.getActiveNeighbors().put(peerIp, ourPeer);
+    Rib mainRib = new Rib();
+    Node node1 = new Node(_c);
+    BgpRoutingProcess proc =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    Configuration c2 =
+        _nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c2")
+            .build();
+    Vrf vrf2 = _nf.vrfBuilder().setOwner(c2).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgp2 = BgpProcess.testBgpProcess(peerIp);
+    vrf2.setBgpProcess(bgp2);
+    BgpActivePeerConfig remotePeer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(localIp)
+            .setLocalIp(peerIp)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    bgp2.getActiveNeighbors().put(localIp, remotePeer);
+    Node node2 = new Node(c2);
+
+    BgpPeerConfigId ourId =
+        new BgpPeerConfigId(_c.getHostname(), DEFAULT_VRF_NAME, peerIp.toPrefix(), false);
+    BgpPeerConfigId remoteId =
+        new BgpPeerConfigId("c2", DEFAULT_VRF_NAME, localIp.toPrefix(), false);
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
+        ValueGraphBuilder.directed().build();
+    graph.putEdgeValue(
+        ourId,
+        remoteId,
+        BgpSessionProperties.builder()
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setLocalIp(localIp)
+            .setRemoteIp(peerIp)
+            .setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST))
+            .build());
+    graph.putEdgeValue(
+        remoteId,
+        ourId,
+        BgpSessionProperties.builder()
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setLocalIp(peerIp)
+            .setRemoteIp(localIp)
+            .setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST))
+            .build());
+    BgpTopology topology = new BgpTopology(graph);
+    Map<String, Node> nodes = ImmutableMap.of("c1", node1, "c2", node2);
+    NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of("c1", _c, "c2", c2));
+    proc.initialize(node1);
+    proc.updateTopology(topology);
+    BgpTopology.EdgeId edge = new BgpTopology.EdgeId(ourId, remoteId);
+
+    // Condition holds: the new session gets the default route.
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(condition).setAdmin(1).build(), DEFAULT_VRF_NAME));
+    List<RouteAdvertisement<Bgpv4Route>> first =
+        proc.getOutgoingRoutesForEdge(edge, nodes, topology, nc, true)
+            .collect(ImmutableList.toImmutableList());
+    assertThat(first, hasSize(1));
+    assertThat(first.get(0).getRoute().getNetwork(), equalTo(Prefix.ZERO));
+    assertThat(first.get(0).isWithdrawn(), equalTo(false));
+
+    // Nothing changed: nothing to send.
+    assertThat(
+        proc.getOutgoingRoutesForEdge(edge, nodes, topology, nc, false)
+            .collect(ImmutableList.toImmutableList()),
+        empty());
+
+    // Condition no longer holds: the default route is withdrawn, once.
+    mainRib.removeRoute(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(condition).setAdmin(1).build(), DEFAULT_VRF_NAME));
+    List<RouteAdvertisement<Bgpv4Route>> third =
+        proc.getOutgoingRoutesForEdge(edge, nodes, topology, nc, false)
+            .collect(ImmutableList.toImmutableList());
+    assertThat(third, hasSize(1));
+    assertThat(third.get(0).getRoute().getNetwork(), equalTo(Prefix.ZERO));
+    assertThat(third.get(0).isWithdrawn(), equalTo(true));
+    assertThat(
+        proc.getOutgoingRoutesForEdge(edge, nodes, topology, nc, false)
+            .collect(ImmutableList.toImmutableList()),
+        empty());
   }
 }
