@@ -280,6 +280,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1586,6 +1587,15 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         bgpProcess.getActiveNeighbors().get(Ip.parse("1.1.1.1")).getConfederationAsn(),
         equalTo(7L));
+    // A group local-as outside the confederation leaves it: eBGP to the confederation AS.
+    BgpActivePeerConfig external = bgpProcess.getActiveNeighbors().get(Ip.parse("2.2.2.2"));
+    assertThat(external.getConfederationAsn(), nullValue());
+    assertThat(external.getLocalAs(), equalTo(65100L));
+    assertThat(BgpSessionProperties.getSessionType(external), equalTo(SessionType.EBGP_SINGLEHOP));
+    // A member AS as local-as stays in it: iBGP across the confederation boundary.
+    BgpActivePeerConfig member = bgpProcess.getActiveNeighbors().get(Ip.parse("3.3.3.3"));
+    assertThat(member.getConfederationAsn(), equalTo(7L));
+    assertThat(BgpSessionProperties.getSessionType(member), equalTo(SessionType.IBGP));
   }
 
   @Test

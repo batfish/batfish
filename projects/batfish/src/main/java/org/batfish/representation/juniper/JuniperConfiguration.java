@@ -851,6 +851,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress());
         continue;
       }
+      // A group's own local-as that is neither the instance's AS, a member AS, nor the
+      // confederation AS takes the session out of the confederation: it is a plain eBGP session
+      // from that AS, so a peer-as equal to the confederation AS must not read as iBGP across the
+      // boundary.
+      Long confederationAsn = routingInstance.getConfederation();
+      Long instanceAs =
+          routingInstance.getAs() != null
+              ? routingInstance.getAs()
+              : _masterLogicalSystem.getDefaultRoutingInstance().getAs();
+      if (confederationAsn != null
+          && !Objects.equals(ig.getLocalAs(), instanceAs)
+          && !ig.getLocalAs().equals(confederationAsn)
+          && !routingInstance.getConfederationMembers().contains(ig.getLocalAs())) {
+        neighbor.setConfederation(null);
+      }
 
       // Warn if configured to prepend global-as, plus global-as and local-as both exist
       boolean prependGlobalAs = !ibgp && !firstNonNull(ig.getNoPrependGlobalAs(), Boolean.FALSE);
