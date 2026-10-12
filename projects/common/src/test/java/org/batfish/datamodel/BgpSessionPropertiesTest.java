@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.EnumSet;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.BgpSessionProperties.Builder;
 import org.batfish.datamodel.BgpSessionProperties.RouteExchange;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -25,6 +24,10 @@ import org.junit.Test;
 
 /** Tests of {@link BgpSessionProperties} */
 public class BgpSessionPropertiesTest {
+  private static Object[] withToBuilder(BgpSessionProperties properties) {
+    return new Object[] {properties, properties.toBuilder().build()};
+  }
+
   @Test
   public void testSessionCreationEbgp() {
     Ip ip1 = Ip.parse("1.1.1.1");
@@ -273,33 +276,42 @@ public class BgpSessionPropertiesTest {
 
   @Test
   public void testEquals() {
-    Builder builder = BgpSessionProperties.builder();
     long headAs = 1;
     long tailAs = 3;
     Ip headIp = Ip.parse("1.1.1.1");
     Ip tailIp = Ip.parse("2.2.2.2");
     BgpSessionProperties bsp =
-        builder
+        BgpSessionProperties.builder()
+            .setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST, Type.EVPN))
+            .setConfedSessionType(ConfedSessionType.ACROSS_CONFED_BORDER)
             .setLocalAs(tailAs)
             .setRemoteAs(headAs)
             .setLocalIp(tailIp)
             .setRemoteIp(headIp)
+            .setReplaceNonLocalAsesOnExport(true)
+            .setRouteExchangeSettings(
+                ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
+            .setSessionType(SessionType.EBGP_MULTIHOP)
             .build();
     new EqualsTester()
-        .addEqualityGroup(bsp, bsp, builder.build())
+        .addEqualityGroup(withToBuilder(bsp))
         .addEqualityGroup(
-            builder
-                .setRouteExchangeSettings(
-                    ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
-                .build())
-        .addEqualityGroup(builder.setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST)).build())
-        .addEqualityGroup(builder.setRemoteAs(headAs + 1).build())
-        .addEqualityGroup(builder.setLocalAs(tailAs + 1).build())
+            withToBuilder(bsp.toBuilder().setRouteExchangeSettings(ImmutableMap.of()).build()))
+        .addEqualityGroup(
+            withToBuilder(
+                bsp.toBuilder().setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST)).build()))
+        .addEqualityGroup(withToBuilder(bsp.toBuilder().setRemoteAs(headAs + 1).build()))
+        .addEqualityGroup(withToBuilder(bsp.toBuilder().setLocalAs(tailAs + 1).build()))
         // note the head/tail swap
-        .addEqualityGroup(builder.setRemoteIp(tailIp).build())
-        .addEqualityGroup(builder.setLocalIp(headIp).build())
-        .addEqualityGroup(builder.setSessionType(SessionType.EBGP_SINGLEHOP).build())
-        .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
+        .addEqualityGroup(withToBuilder(bsp.toBuilder().setRemoteIp(tailIp).build()))
+        .addEqualityGroup(withToBuilder(bsp.toBuilder().setLocalIp(headIp).build()))
+        .addEqualityGroup(
+            withToBuilder(bsp.toBuilder().setSessionType(SessionType.EBGP_SINGLEHOP).build()))
+        .addEqualityGroup(
+            withToBuilder(
+                bsp.toBuilder().setConfedSessionType(ConfedSessionType.NO_CONFED).build()))
+        .addEqualityGroup(
+            withToBuilder(bsp.toBuilder().setReplaceNonLocalAsesOnExport(false).build()))
         .addEqualityGroup(new Object())
         .testEquals();
   }

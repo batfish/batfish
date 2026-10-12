@@ -97,6 +97,15 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
+    private Builder(Ipv4UnicastAddressFamily addressFamily) {
+      _addressFamilyCapabilities = addressFamily.getAddressFamilyCapabilities();
+      _exportPolicy = addressFamily.getExportPolicy();
+      _exportPolicySources = addressFamily.getExportPolicySources();
+      _importPolicy = addressFamily.getImportPolicy();
+      _importPolicySources = addressFamily.getImportPolicySources();
+      _routeReflectorClient = addressFamily.getRouteReflectorClient();
+    }
+
     @Override
     public @Nonnull Builder getThis() {
       return this;
@@ -114,5 +123,9 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
           _importPolicySources,
           _routeReflectorClient);
     }
+  }
+
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 }
