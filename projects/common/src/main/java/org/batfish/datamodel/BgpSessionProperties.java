@@ -110,6 +110,18 @@ public final class BgpSessionProperties {
       _sessionType = SessionType.UNSET;
     }
 
+    private Builder(BgpSessionProperties properties) {
+      _addressFamilies = properties._addressFamilies;
+      _localAs = properties._localAs;
+      _remoteAs = properties._remoteAs;
+      _localIp = properties._localIp;
+      _remoteIp = properties._remoteIp;
+      _routeExchangeSettings = properties._routeExchangeSettings;
+      _sessionType = properties._sessionType;
+      _confedSessionType = properties._confedSessionType;
+      _replaceNonLocalAsesOnExport = properties._replaceNonLocalAsesOnExport;
+    }
+
     public @Nonnull BgpSessionProperties build() {
       checkArgument(_remoteIp != null, "Missing %s", PROP_HEAD_IP);
       checkArgument(_localIp != null, "Missing %s", PROP_TAIL_IP);
@@ -175,6 +187,11 @@ public final class BgpSessionProperties {
 
   public static @Nonnull Builder builder() {
     return new Builder();
+  }
+
+  /** Return a builder initialized with this session's properties. */
+  public @Nonnull Builder toBuilder() {
+    return new Builder(this);
   }
 
   private final @Nonnull Set<AddressFamily.Type> _addressFamilies;

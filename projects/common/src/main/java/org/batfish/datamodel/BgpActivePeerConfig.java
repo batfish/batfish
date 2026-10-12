@@ -148,6 +148,11 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       super();
     }
 
+    private Builder(BgpActivePeerConfig peer) {
+      super(peer);
+      _peerAddress = peer._peerAddress;
+    }
+
     @Override
     protected Builder getThis() {
       return this;
@@ -190,5 +195,10 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 }
