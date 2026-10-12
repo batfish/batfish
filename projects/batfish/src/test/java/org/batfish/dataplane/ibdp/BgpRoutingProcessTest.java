@@ -1502,6 +1502,13 @@ public class BgpRoutingProcessTest {
             .collect(ImmutableList.toImmutableList()),
         empty());
 
+    // The session survives a topology update: what it already holds is still remembered.
+    proc.updateTopology(topology);
+    assertThat(
+        proc.getOutgoingRoutesForEdge(edge, nodes, topology, nc, false)
+            .collect(ImmutableList.toImmutableList()),
+        empty());
+
     // Condition no longer holds: the default route is withdrawn, once.
     mainRib.removeRoute(
         new AnnotatedRoute<>(
