@@ -29,6 +29,12 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       super();
     }
 
+    private Builder(BgpUnnumberedPeerConfig peer) {
+      super(peer);
+      _checkLocalIpOnAccept = null;
+      _peerInterface = peer._peerInterface;
+    }
+
     @Override
     public @Nonnull BgpUnnumberedPeerConfig build() {
       checkArgument(_peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
@@ -74,6 +80,11 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 
   @JsonCreator

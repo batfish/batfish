@@ -305,6 +305,25 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
+  public void testToBuilder() {
+    BgpSessionProperties properties =
+        BgpSessionProperties.builder()
+            .setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST, Type.EVPN))
+            .setConfedSessionType(ConfedSessionType.ACROSS_CONFED_BORDER)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setLocalIp(Ip.parse("192.0.2.1"))
+            .setRemoteIp(Ip.parse("192.0.2.2"))
+            .setReplaceNonLocalAsesOnExport(true)
+            .setRouteExchangeSettings(
+                ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, true, true)))
+            .setSessionType(SessionType.EBGP_MULTIHOP)
+            .build();
+
+    assertThat(properties.toBuilder().build(), equalTo(properties));
+  }
+
+  @Test
   public void testJsonSerialization() {
     Ip headIp = Ip.parse("1.1.1.1");
     Ip tailIp = Ip.parse("2.2.2.2");
