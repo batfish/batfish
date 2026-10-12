@@ -690,8 +690,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     BgpPeerConfig::getIpv4UnicastAddressFamily,
                     Type.IPV4_UNICAST)
                 .collect(ImmutableSet.toImmutableSet()));
-    // Sessions that went down hold nothing from us any more.
-    _generatedRoutesSentByEdge.keySet().retainAll(unicastEdges);
+    // Sessions that went down hold nothing from us any more. The map is keyed by the edge as
+    // getOutgoingRoutesForEdge sees it, with this process at the tail; unicastEdges have it at the
+    // head.
+    _generatedRoutesSentByEdge
+        .keySet()
+        .retainAll(
+            unicastEdges.stream().map(EdgeId::reverse).collect(ImmutableSet.toImmutableSet()));
     _evpnEdgesWentUp =
         Sets.difference(
             getEdgeIdStream(topology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
