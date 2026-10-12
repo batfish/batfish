@@ -387,6 +387,9 @@ public abstract class BgpPeerConfig implements Serializable {
         .toString();
   }
 
+  /** Return a builder initialized with this peer's properties. */
+  public abstract Builder<?, ?> toBuilder();
+
   public abstract static class Builder<S extends Builder<S, T>, T extends BgpPeerConfig> {
     protected @Nullable RibGroup _appliedRibGroup;
     protected @Nullable BgpAuthenticationSettings _authenticationSettings;
@@ -395,7 +398,7 @@ public abstract class BgpPeerConfig implements Serializable {
     protected @Nullable Long _clusterId;
     protected @Nullable Long _confederation;
     protected int _defaultMetric;
-    protected String _description;
+    protected @Nullable String _description;
     protected boolean _ebgpMultihop;
     protected boolean _enforceFirstAs;
     protected @Nullable Set<GeneratedRoute> _generatedRoutes;
@@ -414,6 +417,27 @@ public abstract class BgpPeerConfig implements Serializable {
 
     protected Builder() {
       _remoteAsns = LongSpace.EMPTY;
+    }
+
+    protected Builder(BgpPeerConfig peer) {
+      _appliedRibGroup = peer._appliedRibGroup;
+      _authenticationSettings = peer._authenticationSettings;
+      _checkLocalIpOnAccept = peer._checkLocalIpOnAccept;
+      _clusterId = peer._clusterId;
+      _confederation = peer._confederationAsn;
+      _defaultMetric = peer._defaultMetric;
+      _description = peer._description;
+      _ebgpMultihop = peer._ebgpMultihop;
+      _enforceFirstAs = peer._enforceFirstAs;
+      _generatedRoutes = peer._generatedRoutes;
+      _group = peer._group;
+      _localAs = peer._localAs;
+      _localIp = peer._localIp;
+      _remoteAsns = peer._remoteAsns;
+      _ipv4UnicastAddressFamily = peer._ipv4UnicastAddressFamily;
+      _evpnAddressFamily = peer._evpnAddressFamily;
+      _replaceNonLocalAsesOnExport = peer._replaceNonLocalAsesOnExport;
+      _sessionVrf = peer._sessionVrf;
     }
 
     public abstract T build();
@@ -459,7 +483,7 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setDescription(String description) {
+    public S setDescription(@Nullable String description) {
       _description = description;
       return getThis();
     }

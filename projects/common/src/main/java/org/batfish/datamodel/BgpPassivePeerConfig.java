@@ -145,6 +145,11 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       super();
     }
 
+    private Builder(BgpPassivePeerConfig peer) {
+      super(peer);
+      _peerPrefix = peer._peerPrefix;
+    }
+
     @Override
     public @Nonnull BgpPassivePeerConfig build() {
       BgpPassivePeerConfig bgpPeerConfig =
@@ -187,5 +192,10 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 }

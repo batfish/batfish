@@ -33,6 +33,10 @@ public final class BgpUnnumberedPeerConfigTest {
     return bgpAuthenticationSettings;
   }
 
+  private static Object[] withToBuilder(BgpUnnumberedPeerConfig peer) {
+    return new Object[] {peer, peer.toBuilder().build()};
+  }
+
   @Test
   public void testEquals() {
     BgpUnnumberedPeerConfig.Builder builder =
@@ -42,56 +46,69 @@ public final class BgpUnnumberedPeerConfigTest {
     BgpUnnumberedPeerConfig c = builder.build();
     new EqualsTester()
         .addEqualityGroup(new Object())
-        .addEqualityGroup(c, c, builder.build())
+        .addEqualityGroup(withToBuilder(c))
         .addEqualityGroup(
-            builder
-                .setIpv4UnicastAddressFamily(
-                    Ipv4UnicastAddressFamily.builder()
-                        .setAddressFamilyCapabilities(
-                            AddressFamilyCapabilities.builder().setSendCommunity(true).build())
-                        .build())
-                .build())
+            withToBuilder(
+                builder
+                    .setIpv4UnicastAddressFamily(
+                        Ipv4UnicastAddressFamily.builder()
+                            .setAddressFamilyCapabilities(
+                                AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                            .build())
+                    .build()))
         .addEqualityGroup(
-            builder
-                .setAppliedRibGroup(
-                    new RibGroup(
-                        "blah",
-                        ImmutableList.of(new RibId("d", "e", "f")),
-                        "blah1",
-                        new RibId("a", "b", "c")))
-                .build())
-        .addEqualityGroup(builder.setAuthenticationSettings(BGP_AUTHENTICATION_SETTINGS).build())
-        .addEqualityGroup(builder.setClusterId(5L).build())
-        .addEqualityGroup(builder.setDefaultMetric(5).build())
-        .addEqualityGroup(builder.setDescription("foo").build())
-        .addEqualityGroup(builder.setEbgpMultihop(true).build())
-        .addEqualityGroup(builder.setEnforceFirstAs(true).build())
+            withToBuilder(
+                builder
+                    .setAppliedRibGroup(
+                        new RibGroup(
+                            "blah",
+                            ImmutableList.of(new RibId("d", "e", "f")),
+                            "blah1",
+                            new RibId("a", "b", "c")))
+                    .build()))
         .addEqualityGroup(
-            builder
-                .setIpv4UnicastAddressFamily(
-                    Ipv4UnicastAddressFamily.builder().setExportPolicy("bar").build())
-                .build())
+            withToBuilder(builder.setAuthenticationSettings(BGP_AUTHENTICATION_SETTINGS).build()))
+        .addEqualityGroup(withToBuilder(builder.setClusterId(5L).build()))
+        .addEqualityGroup(withToBuilder(builder.setDefaultMetric(5).build()))
+        .addEqualityGroup(withToBuilder(builder.setDescription("foo").build()))
+        .addEqualityGroup(withToBuilder(builder.setEbgpMultihop(true).build()))
+        .addEqualityGroup(withToBuilder(builder.setEnforceFirstAs(true).build()))
         .addEqualityGroup(
-            builder
-                .setGeneratedRoutes(
-                    ImmutableSet.of(
-                        GeneratedRoute.builder().setNetwork(Prefix.ZERO).setDiscard(true).build()))
-                .build())
-        .addEqualityGroup(builder.setGroup("g1").build())
+            withToBuilder(
+                builder
+                    .setIpv4UnicastAddressFamily(
+                        Ipv4UnicastAddressFamily.builder().setExportPolicy("bar").build())
+                    .build()))
         .addEqualityGroup(
-            builder
-                .setIpv4UnicastAddressFamily(
-                    Ipv4UnicastAddressFamily.builder().setExportPolicy("boo").build())
-                .build())
-        .addEqualityGroup(builder.setLocalAs(10L).build())
-        .addEqualityGroup(builder.setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP).build())
-        .addEqualityGroup(builder.setPeerInterface("eth0").build())
-        .addEqualityGroup(builder.setRemoteAsns(LongSpace.of(11L)).build())
+            withToBuilder(
+                builder
+                    .setGeneratedRoutes(
+                        ImmutableSet.of(
+                            GeneratedRoute.builder()
+                                .setNetwork(Prefix.ZERO)
+                                .setDiscard(true)
+                                .build()))
+                    .build()))
+        .addEqualityGroup(withToBuilder(builder.setGroup("g1").build()))
         .addEqualityGroup(
-            builder.setEvpnAddressFamily(
-                EvpnAddressFamily.builder().setPropagateUnmatched(true).build()))
-        .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
-        .addEqualityGroup(builder.setSessionVrfScope(new SpecificVrf("default")).build())
+            withToBuilder(
+                builder
+                    .setIpv4UnicastAddressFamily(
+                        Ipv4UnicastAddressFamily.builder().setExportPolicy("boo").build())
+                    .build()))
+        .addEqualityGroup(withToBuilder(builder.setLocalAs(10L).build()))
+        .addEqualityGroup(withToBuilder(builder.setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP).build()))
+        .addEqualityGroup(withToBuilder(builder.setPeerInterface("eth0").build()))
+        .addEqualityGroup(withToBuilder(builder.setRemoteAsns(LongSpace.of(11L)).build()))
+        .addEqualityGroup(
+            withToBuilder(
+                builder
+                    .setEvpnAddressFamily(
+                        EvpnAddressFamily.builder().setPropagateUnmatched(true).build())
+                    .build()))
+        .addEqualityGroup(withToBuilder(builder.setReplaceNonLocalAsesOnExport(true).build()))
+        .addEqualityGroup(
+            withToBuilder(builder.setSessionVrfScope(new SpecificVrf("default")).build()))
         .testEquals();
   }
 
