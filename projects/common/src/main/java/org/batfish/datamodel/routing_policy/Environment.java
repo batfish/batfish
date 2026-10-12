@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -96,6 +97,12 @@ public class Environment {
 
   private final @Nonnull Predicate<String> _successfulTrack;
 
+  /**
+   * Supplies the IGP cost to the original route's next hop, as the exporting VRF resolves it, when
+   * this environment is a BGP export. Null otherwise, or when the next hop does not resolve.
+   */
+  private final @Nullable Supplier<Long> _igpCostToNextHop;
+
   private final AbstractRoute _originalRoute;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
@@ -128,6 +135,7 @@ public class Environment {
       boolean localDefaultAction,
       Map<String, RoutingPolicy> routingPolicies,
       @Nonnull Predicate<String> successfulTrack,
+      @Nullable Supplier<Long> igpCostToNextHop,
       AbstractRouteDecorator originalRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       boolean readFromIntermediateBgpAttributes,
@@ -154,6 +162,7 @@ public class Environment {
     _ipAccessLists = ipAccessLists;
     _localDefaultAction = localDefaultAction;
     _successfulTrack = successfulTrack;
+    _igpCostToNextHop = igpCostToNextHop;
     _routingPolicies = routingPolicies;
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
     _outputRoute = outputRoute;
@@ -293,6 +302,11 @@ public class Environment {
     return _successfulTrack.test(trackName);
   }
 
+  /** The IGP cost to the original route's next hop, or null when unknown or unresolvable. */
+  public @Nullable Long getIgpCostToNextHop() {
+    return _igpCostToNextHop == null ? null : _igpCostToNextHop.get();
+  }
+
   public AbstractRoute getOriginalRoute() {
     return _originalRoute;
   }
@@ -386,6 +400,7 @@ public class Environment {
     private boolean _localDefaultAction;
     private Map<String, RoutingPolicy> _routingPolicies;
     private @Nullable Predicate<String> _successfulTrack;
+    private @Nullable Supplier<Long> _igpCostToNextHop;
     private AbstractRouteDecorator _originalRoute;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     private boolean _readFromIntermediateBgpAttributes;
@@ -501,6 +516,11 @@ public class Environment {
       return this;
     }
 
+    public Builder setIgpCostToNextHop(@Nullable Supplier<Long> igpCostToNextHop) {
+      _igpCostToNextHop = igpCostToNextHop;
+      return this;
+    }
+
     public Builder setOriginalRoute(AbstractRouteDecorator originalRoute) {
       _originalRoute = originalRoute;
       return this;
@@ -553,6 +573,7 @@ public class Environment {
           _localDefaultAction,
           firstNonNull(_routingPolicies, ImmutableMap.of()),
           firstNonNull(_successfulTrack, alwaysFalse()),
+          _igpCostToNextHop,
           _originalRoute,
           _outputRoute,
           _readFromIntermediateBgpAttributes,

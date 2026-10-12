@@ -670,14 +670,24 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (_mainRib == null) {
       return Long.MAX_VALUE;
     }
-    return getIgpCostToNextHopIpHelper(route, 0);
+    return igpCostToNextHop(_mainRib, route);
   }
 
-  private long getIgpCostToNextHopIpHelper(AbstractRoute route, int depth) {
+  /**
+   * The IGP cost to reach {@code route}'s next hop through {@code mainRib}: the metric of the route
+   * that finally resolves it, following next hop IPs recursively. {@link Long#MAX_VALUE} when the
+   * next hop does not resolve, or resolves to a discard or to another VRF.
+   */
+  public static long igpCostToNextHop(
+      GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib, AbstractRoute route) {
+    return getIgpCostToNextHopIpHelper(mainRib, route, 0);
+  }
+
+  private static long getIgpCostToNextHopIpHelper(
+      GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib, AbstractRoute route, int depth) {
     if (depth > MAX_RESOLUTION_DEPTH) {
       return Long.MAX_VALUE;
     }
-    assert _mainRib != null;
     return route
         .getNextHop()
         .accept(
@@ -686,11 +696,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
               public Long visitNextHopIp(NextHopIp nextHopIp) {
                 // TODO: implement resolution restriction
                 Set<AnnotatedRoute<AbstractRoute>> s =
-                    _mainRib.longestPrefixMatch(nextHopIp.getIp(), alwaysTrue());
+                    mainRib.longestPrefixMatch(nextHopIp.getIp(), alwaysTrue());
                 return s.isEmpty()
                     ? Long.MAX_VALUE
                     : getIgpCostToNextHopIpHelper(
-                        s.iterator().next().getAbstractRoute(), depth + 1);
+                        mainRib, s.iterator().next().getAbstractRoute(), depth + 1);
               }
 
               @Override

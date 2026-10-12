@@ -14,9 +14,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginMechanism;
@@ -28,10 +30,12 @@ import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -603,5 +607,55 @@ public class BgpRibTest {
     assertThat(bestPathRib.getRoutes(), contains(best));
     assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
     assertThat(bestPathRib.getArrivalTimeForTesting(), hasKey(best));
+  }
+
+  @Test
+  public void testIgpCostToNextHop() {
+    Rib mainRib = new Rib();
+    // 10.0.0.0/24 is reached through a route out an interface, at metric 30.
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.parse("10.0.0.0/24"))
+                .setNextHop(NextHopInterface.of("eth0"))
+                .setAdministrativeCost(1)
+                .setMetric(30L)
+                .build(),
+            Configuration.DEFAULT_VRF_NAME));
+    // 10.1.0.0/24 is reached through a static route whose next hop is in 10.0.0.0/24, so the
+    // cost is that of the route that finally resolves it.
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.parse("10.1.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.0.0.1")))
+                .setAdministrativeCost(1)
+                .setMetric(7L)
+                .build(),
+            Configuration.DEFAULT_VRF_NAME));
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.parse("10.2.0.0/24"))
+                .setNextHop(NextHopDiscard.instance())
+                .setAdministrativeCost(1)
+                .build(),
+            Configuration.DEFAULT_VRF_NAME));
+
+    Bgpv4Route.Builder bgp =
+        Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.0.0.0/8")).setAdmin(20);
+    assertThat(
+        BgpRib.igpCostToNextHop(mainRib, bgp.setNextHopIp(Ip.parse("10.0.0.1")).build()),
+        equalTo(30L));
+    assertThat(
+        BgpRib.igpCostToNextHop(mainRib, bgp.setNextHopIp(Ip.parse("10.1.0.1")).build()),
+        equalTo(30L));
+    // Discard, and no route at all, are unreachable.
+    assertThat(
+        BgpRib.igpCostToNextHop(mainRib, bgp.setNextHopIp(Ip.parse("10.2.0.1")).build()),
+        equalTo(Long.MAX_VALUE));
+    assertThat(
+        BgpRib.igpCostToNextHop(mainRib, bgp.setNextHopIp(Ip.parse("10.3.0.1")).build()),
+        equalTo(Long.MAX_VALUE));
   }
 }

@@ -42,6 +42,12 @@ public final class LongExprEvaluator implements LongExprVisitor<Long, Void> {
   }
 
   @Override
+  public Long visitIncrementMetricByIgpCost(
+      IncrementMetricByIgpCost incrementMetricByIgpCost, Void arg) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Long visitLiteralLong(LiteralLong literalLong, Void arg) {
     return literalLong.getValue();
   }
