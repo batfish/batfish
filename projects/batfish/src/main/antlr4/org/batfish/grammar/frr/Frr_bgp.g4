@@ -267,7 +267,7 @@ rbafi_maximum_paths
 
 rbafi_network
 :
-  NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
+  NO? NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
 rbafi_redistribute

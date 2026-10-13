@@ -1,0 +1,255 @@
+{
+  "r1" : {
+    "format" : "CUMULUS_CONCATENATED",
+    "interfaces" : [
+      {
+        "active" : true,
+        "addresses" : [
+          "10.1.0.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E10,
+        "mtu" : 1500,
+        "name" : "eth1",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.0.0.1/30"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E10,
+        "mtu" : 1500,
+        "name" : "eth2",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "passive" : false,
+          "process" : "default"
+        },
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "1.1.1.1/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 8.0E9,
+        "mtu" : 65536,
+        "name" : "lo",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 0,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "passive" : false,
+          "process" : "default"
+        },
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      }
+    ],
+    "node" : "r1",
+    "policies" : [
+      {
+        "clauses" : [
+          {
+            "lines" : [
+              "route-map EXPORT-SITE permit 10",
+              " match ip address prefix-list SITE-A",
+              " set community 65001:100"
+            ],
+            "name" : "EXPORT-SITE 10",
+            "references" : [
+              {
+                "name" : "SITE-A",
+                "type" : "ip prefix-list"
+              }
+            ]
+          },
+          {
+            "lines" : [
+              "route-map EXPORT-SITE deny 20"
+            ],
+            "name" : "EXPORT-SITE 20"
+          }
+        ],
+        "compiled" : true,
+        "lines" : [
+          "route-map EXPORT-SITE permit 10",
+          " match ip address prefix-list SITE-A",
+          " set community 65001:100",
+          "route-map EXPORT-SITE deny 20"
+        ],
+        "name" : "EXPORT-SITE",
+        "type" : "route-map",
+        "usedBy" : [
+          "bgp ipv4 unicast neighbor route-map out"
+        ]
+      }
+    ],
+    "sets" : [
+      {
+        "lines" : [
+          "ip prefix-list SITE-A seq 5 permit 10.1.0.0/24"
+        ],
+        "name" : "SITE-A",
+        "type" : "ip prefix-list"
+      }
+    ],
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "bgp" : {
+          "peers" : [
+            {
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.2~",
+              "families" : [
+                "ipv4-unicast"
+              ],
+              "kind" : "address",
+              "localAs" : 65001,
+              "localIp" : "10.0.0.1",
+              "peer" : "10.0.0.2",
+              "remoteAsns" : "65002"
+            }
+          ],
+          "routerId" : "1.1.1.1"
+        },
+        "name" : "default",
+        "ospf" : [
+          {
+            "areas" : [
+              {
+                "area" : 0,
+                "interfaces" : [
+                  "eth2",
+                  "lo"
+                ],
+                "type" : "NONE"
+              }
+            ],
+            "processId" : "default",
+            "referenceBandwidth" : 1.0E11,
+            "routerId" : "1.1.1.1"
+          }
+        ]
+      }
+    ]
+  },
+  "r2" : {
+    "format" : "CUMULUS_CONCATENATED",
+    "interfaces" : [
+      {
+        "active" : true,
+        "addresses" : [
+          "10.0.0.2/30"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E10,
+        "mtu" : 1500,
+        "name" : "eth1",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "passive" : false,
+          "process" : "default"
+        },
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.2.0.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E10,
+        "mtu" : 1500,
+        "name" : "eth2",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "2.2.2.2/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 8.0E9,
+        "mtu" : 65536,
+        "name" : "lo",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 0,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "passive" : false,
+          "process" : "default"
+        },
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      }
+    ],
+    "node" : "r2",
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "bgp" : {
+          "peers" : [
+            {
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.1~",
+              "families" : [
+                "ipv4-unicast"
+              ],
+              "kind" : "address",
+              "localAs" : 65002,
+              "localIp" : "10.0.0.2",
+              "peer" : "10.0.0.1",
+              "remoteAsns" : "65001"
+            }
+          ],
+          "routerId" : "2.2.2.2"
+        },
+        "name" : "default",
+        "ospf" : [
+          {
+            "areas" : [
+              {
+                "area" : 0,
+                "interfaces" : [
+                  "eth1",
+                  "lo"
+                ],
+                "type" : "NONE"
+              }
+            ],
+            "processId" : "default",
+            "referenceBandwidth" : 1.0E11,
+            "routerId" : "2.2.2.2"
+          }
+        ]
+      }
+    ]
+  }
+}

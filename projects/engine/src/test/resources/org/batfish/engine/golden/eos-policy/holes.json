@@ -1,0 +1,9 @@
+[
+  {
+    "family" : "bgp",
+    "kind" : "unimplemented",
+    "line" : 30,
+    "node" : "edge1",
+    "text" : "always-compare-med"
+  }
+]

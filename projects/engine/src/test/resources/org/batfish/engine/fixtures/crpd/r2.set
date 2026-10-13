@@ -1,0 +1,13 @@
+set system host-name r2
+set interfaces eth1 unit 0 family inet address 10.0.0.2/30
+set interfaces eth2 unit 0 family inet address 10.2.0.1/24
+set interfaces lo0 unit 0 family inet address 2.2.2.2/32
+set routing-options router-id 2.2.2.2
+set routing-options autonomous-system 65002
+set policy-options policy-statement export-site term site-b from protocol direct
+set policy-options policy-statement export-site term site-b from route-filter 10.2.0.0/24 exact
+set policy-options policy-statement export-site term site-b then accept
+set protocols bgp group ebgp type external
+set protocols bgp group ebgp peer-as 65001
+set protocols bgp group ebgp export export-site
+set protocols bgp group ebgp neighbor 10.0.0.1

@@ -1,0 +1,16 @@
+core1 default 1.1.1.1/32 connected NextHopInterface{interfaceName=Loopback0} 0 0
+core1 default 10.10.10.0/24 connected NextHopInterface{interfaceName=Vlan10} 0 0
+core1 default 10.10.20.0/24 connected NextHopInterface{interfaceName=Vlan20} 0 0
+core1 default 10.10.30.0/24 connected NextHopInterface{interfaceName=Vlan30} 0 0
+core1 default 10.10.40.0/24 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.1} 110 20
+core1 default 10.10.50.0/24 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.1} 110 20
+core1 default 10.255.0.0/31 connected NextHopInterface{interfaceName=Ethernet48} 0 0
+core1 default 2.2.2.2/32 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.1} 110 20
+core2 default 1.1.1.1/32 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.0} 110 20
+core2 default 10.10.10.0/24 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.0} 110 20
+core2 default 10.10.20.0/24 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.0} 110 20
+core2 default 10.10.30.0/24 ospf NextHopInterface{interfaceName=Ethernet48, ip=10.255.0.0} 110 20
+core2 default 10.10.40.0/24 connected NextHopInterface{interfaceName=Vlan40} 0 0
+core2 default 10.10.50.0/24 connected NextHopInterface{interfaceName=Vlan50} 0 0
+core2 default 10.255.0.0/31 connected NextHopInterface{interfaceName=Ethernet48} 0 0
+core2 default 2.2.2.2/32 connected NextHopInterface{interfaceName=Loopback0} 0 0

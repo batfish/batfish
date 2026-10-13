@@ -1,0 +1,43 @@
+Building configuration...
+
+Current configuration:
+!
+frr version 9.1
+frr defaults traditional
+hostname r1
+no ipv6 forwarding
+!
+ip prefix-list SITE-A seq 5 permit 10.1.0.0/24
+!
+route-map EXPORT-SITE permit 10
+ match ip address prefix-list SITE-A
+ set community 65001:100
+exit
+!
+route-map EXPORT-SITE deny 20
+exit
+!
+router bgp 65001
+ bgp router-id 1.1.1.1
+ no bgp ebgp-requires-policy
+ neighbor 10.0.0.2 password NOCFLOW-REDACTED-ec14d05b261d
+ neighbor 10.0.0.2 remote-as 65002
+ !
+ address-family ipv4 unicast
+  network 10.1.0.0/24
+  neighbor 10.0.0.2 route-map EXPORT-SITE out
+ exit-address-family
+exit
+!
+interface eth2
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 NOCFLOW-REDACTED-ee594aa4700e
+exit
+!
+router ospf
+ ospf router-id 1.1.1.1
+ network 1.1.1.1/32 area 0
+ network 10.0.0.0/30 area 0
+exit
+!
+end

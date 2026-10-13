@@ -1,0 +1,53 @@
+! core2.cfg — L3 core. Gateways for VLAN 40/50, OSPF transit to core1.
+hostname core2
+!
+vlan 40
+   name guest
+vlan 50
+   name iot
+!
+interface Ethernet1
+   description trunk -> acc3
+   switchport mode trunk
+   switchport trunk allowed vlan 40
+!
+interface Ethernet2
+   description trunk -> acc4
+   switchport mode trunk
+   switchport trunk allowed vlan 50
+!
+interface Ethernet48
+   description transit -> core1
+   no switchport
+   ip address 10.255.0.1/31
+   ip ospf network point-to-point
+!
+interface Loopback0
+   ip address 2.2.2.2/32
+!
+interface Vlan40
+   ip address 10.10.40.1/24
+interface Vlan50
+   ip address 10.10.50.1/24
+!
+ip routing
+!
+router ospf 1
+   router-id 2.2.2.2
+   network 2.2.2.2/32 area 0
+   network 10.10.0.0/16 area 0
+   network 10.255.0.0/31 area 0
+   max-lsa 12000
+!
+lldp run
+!
+snmp-server community NOCFLOW-REDACTED-810176965717 ro
+!
+management api http-commands
+   no shutdown
+   protocol http
+   protocol https
+!
+username admin privilege 15 role network-admin secret NOCFLOW-REDACTED-3f99ba02ea08
+!
+end

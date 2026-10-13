@@ -1,0 +1,72 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# NOCFlow's embedded engine: Batfish as a library behind a per-tenant HTTP service.
+java_library(
+    name = "engine",
+    srcs = glob(["src/main/java/**/*.java"]),
+    runtime_deps = [
+        # Question answerers are plugins found through ServiceLoader.
+        "//projects/question",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/common",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_github_ben_manes_caffeine_caffeine",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_collections4",
+        "@maven//:org_apache_logging_log4j_log4j_api",
+    ],
+)
+
+java_binary(
+    name = "engine_main",
+    main_class = "org.batfish.engine.Main",
+    runtime_deps = [
+        ":engine",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+)
+
+exports_files(["openapi.yaml"])
+
+junit_tests(
+    name = "engine_tests",
+    size = "medium",
+    srcs = glob(["src/test/java/**/*.java"]),
+    data = ["openapi.yaml"],
+    resource_strip_prefix = "projects/engine/src/test/resources",
+    resources = glob(["src/test/resources/**"]),
+    deps = [
+        ":engine",
+        "//projects/batfish",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_yaml",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
+
+# Rewrites the golden files under src/test/resources from the current engine.
+java_binary(
+    name = "update_goldens",
+    testonly = True,
+    main_class = "org.batfish.engine.Goldens",
+    runtime_deps = [
+        ":engine_tests_testlib",
+        "//projects/question",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+    ],
+)

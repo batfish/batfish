@@ -1,0 +1,10 @@
+r1 default 1.1.1.1/32 connected NextHopInterface{interfaceName=lo} 0 0
+r1 default 10.0.0.0/30 connected NextHopInterface{interfaceName=eth2} 0 0
+r1 default 10.1.0.0/24 connected NextHopInterface{interfaceName=eth1} 0 0
+r1 default 10.2.0.0/24 bgp NextHop{ip=10.0.0.2} 20 0
+r1 default 2.2.2.2/32 ospf NextHopInterface{interfaceName=eth2, ip=10.0.0.2} 110 10
+r2 default 1.1.1.1/32 ospf NextHopInterface{interfaceName=eth1, ip=10.0.0.1} 110 10
+r2 default 10.0.0.0/30 connected NextHopInterface{interfaceName=eth1} 0 0
+r2 default 10.1.0.0/24 bgp NextHop{ip=10.0.0.1} 20 0
+r2 default 10.2.0.0/24 connected NextHopInterface{interfaceName=eth2} 0 0
+r2 default 2.2.2.2/32 connected NextHopInterface{interfaceName=lo} 0 0

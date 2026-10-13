@@ -1,0 +1,32 @@
+Building configuration...
+
+Current configuration:
+!
+frr version 9.1
+frr defaults traditional
+hostname r2
+no ipv6 forwarding
+!
+router bgp 65002
+ bgp router-id 2.2.2.2
+ no bgp ebgp-requires-policy
+ neighbor 10.0.0.1 password Wan-Peering-Key-2026
+ neighbor 10.0.0.1 remote-as 65001
+ !
+ address-family ipv4 unicast
+  network 10.2.0.0/24
+ exit-address-family
+exit
+!
+interface eth1
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 Ospf-Md5-Key
+exit
+!
+router ospf
+ ospf router-id 2.2.2.2
+ network 2.2.2.2/32 area 0
+ network 10.0.0.0/30 area 0
+exit
+!
+end

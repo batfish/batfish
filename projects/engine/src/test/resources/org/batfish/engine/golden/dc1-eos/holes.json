@@ -1,0 +1,30 @@
+[
+  {
+    "family" : "management",
+    "kind" : "unrecognized",
+    "line" : 47,
+    "node" : "core1",
+    "text" : "lldp run"
+  },
+  {
+    "family" : "management",
+    "kind" : "unrecognized",
+    "line" : 56,
+    "node" : "core1",
+    "text" : "username admin privilege 15 role network-admin secret admin"
+  },
+  {
+    "family" : "management",
+    "kind" : "unrecognized",
+    "line" : 43,
+    "node" : "core2",
+    "text" : "lldp run"
+  },
+  {
+    "family" : "management",
+    "kind" : "unrecognized",
+    "line" : 52,
+    "node" : "core2",
+    "text" : "username admin privilege 15 role network-admin secret admin"
+  }
+]

@@ -1,0 +1,34 @@
+! edge1 — ceos-bgp's edge1 with an outbound route-map, and one BGP knob Batfish does not model.
+hostname edge1
+!
+ip routing
+!
+interface Ethernet1
+   description site-a -> h1
+   no switchport
+   ip address 10.1.0.1/24
+!
+interface Ethernet2
+   description ebgp -> r2
+   no switchport
+   ip address 10.0.0.1/30
+!
+interface Loopback0
+   ip address 1.1.1.1/32
+!
+ip prefix-list SITE-A seq 10 permit 10.1.0.0/24
+!
+route-map EXPORT-SITE permit 10
+   match ip address prefix-list SITE-A
+   set community 65001:100
+!
+route-map EXPORT-SITE deny 20
+!
+router bgp 65001
+   router-id 1.1.1.1
+   bgp always-compare-med
+   neighbor 10.0.0.2 remote-as 65002
+   neighbor 10.0.0.2 route-map EXPORT-SITE out
+   network 10.1.0.0/24
+!
+end

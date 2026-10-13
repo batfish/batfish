@@ -1,0 +1,329 @@
+{
+  "core1" : {
+    "format" : "ARISTA",
+    "interfaces" : [
+      {
+        "active" : true,
+        "adminUp" : true,
+        "allowedVlans" : "10",
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet1",
+        "nat" : false,
+        "nativeVlan" : 1,
+        "switchportMode" : "TRUNK",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "allowedVlans" : "20,30",
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet2",
+        "nat" : false,
+        "nativeVlan" : 1,
+        "switchportMode" : "TRUNK",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.255.0.0/31"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet48",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "POINT_TO_POINT",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "1.1.1.1/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 8.0E9,
+        "mtu" : 1500,
+        "name" : "Loopback0",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.10.10.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Vlan10",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "VLAN",
+        "vlan" : 10,
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.10.20.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Vlan20",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "VLAN",
+        "vlan" : 20,
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.10.30.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Vlan30",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "VLAN",
+        "vlan" : 30,
+        "vrf" : "default"
+      }
+    ],
+    "node" : "core1",
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "name" : "default",
+        "ospf" : [
+          {
+            "areas" : [
+              {
+                "area" : 0,
+                "interfaces" : [
+                  "Ethernet48",
+                  "Loopback0",
+                  "Vlan10",
+                  "Vlan20",
+                  "Vlan30"
+                ],
+                "type" : "NONE"
+              }
+            ],
+            "processId" : "1",
+            "referenceBandwidth" : 1.0E8,
+            "routerId" : "1.1.1.1"
+          }
+        ]
+      }
+    ]
+  },
+  "core2" : {
+    "format" : "ARISTA",
+    "interfaces" : [
+      {
+        "active" : true,
+        "adminUp" : true,
+        "allowedVlans" : "40",
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet1",
+        "nat" : false,
+        "nativeVlan" : 1,
+        "switchportMode" : "TRUNK",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "allowedVlans" : "50",
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet2",
+        "nat" : false,
+        "nativeVlan" : 1,
+        "switchportMode" : "TRUNK",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.255.0.1/31"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet48",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "POINT_TO_POINT",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "2.2.2.2/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 8.0E9,
+        "mtu" : 1500,
+        "name" : "Loopback0",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.10.40.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Vlan40",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "VLAN",
+        "vlan" : 40,
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.10.50.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Vlan50",
+        "nat" : false,
+        "ospf" : {
+          "area" : 0,
+          "cost" : 10,
+          "deadInterval" : 40,
+          "helloInterval" : 10,
+          "networkType" : "BROADCAST",
+          "passive" : false,
+          "process" : "1"
+        },
+        "switchportMode" : "NONE",
+        "type" : "VLAN",
+        "vlan" : 50,
+        "vrf" : "default"
+      }
+    ],
+    "node" : "core2",
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "name" : "default",
+        "ospf" : [
+          {
+            "areas" : [
+              {
+                "area" : 0,
+                "interfaces" : [
+                  "Ethernet48",
+                  "Loopback0",
+                  "Vlan40",
+                  "Vlan50"
+                ],
+                "type" : "NONE"
+              }
+            ],
+            "processId" : "1",
+            "referenceBandwidth" : 1.0E8,
+            "routerId" : "2.2.2.2"
+          }
+        ]
+      }
+    ]
+  }
+}

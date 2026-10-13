@@ -1,0 +1,397 @@
+openapi: 3.0.3
+info:
+  title: NOCFlow Batfish engine
+  version: 1.6.0
+  description: >
+    One tenant's what-if engine. NOCFlow puts a snapshot of the tenant's network
+    (each device's redacted config text, the physical links, and the observed
+    environment), derives proposed snapshots from config lines, and asks
+    questions of either, or of the difference between them.
+
+    Completed snapshots and their jobs have bounded LRU retention. Evicted IDs
+    return 404 and can be rebuilt from the caller's retained inputs. Creation
+    returns 429 if capacity is occupied by running work or a protected base.
+    Snapshots are immutable. A snapshot id is the caller's (NOCFlow's revision
+    id); putting the same id with the same content again is a no-op, and with
+    different content is a conflict. Building and computing run as jobs, one at a
+    time per engine.
+
+    Coverage holes are the engine's open-world contract: anything Batfish did
+    not fully model is listed per device and fact family, and answers that
+    touch it must not be trusted as present or absent.
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: The engine is up.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+  /snapshots/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SnapshotId"
+    put:
+      operationId: putSnapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SnapshotRequest" }
+      responses:
+        "202":
+          description: Accepted; poll the job.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobRef" }
+        "400": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+    get:
+      operationId: getSnapshot
+      responses:
+        "200":
+          description: The snapshot's status and coverage.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Snapshot" }
+        "404": { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: deleteSnapshot
+      responses:
+        "204": { description: Deleted. }
+        "404": { $ref: "#/components/responses/Error" }
+  /snapshots/{id}/export:
+    parameters:
+      - $ref: "#/components/parameters/SnapshotId"
+    get:
+      operationId: exportSnapshot
+      responses:
+        "200":
+          description: Exact analyzed inputs in a standard Batfish snapshot ZIP; retain before deleting the snapshot.
+          headers:
+            X-Snapshot-SHA256:
+              description: SHA-256 of the returned ZIP bytes.
+              schema: { type: string }
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /snapshots/{id}/facts:
+    parameters:
+      - $ref: "#/components/parameters/SnapshotId"
+    get:
+      operationId: getFacts
+      responses:
+        "200":
+          description: Each device's neutral configured facts, and the coverage holes.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Facts" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /snapshots/{id}/derive:
+    parameters:
+      - $ref: "#/components/parameters/SnapshotId"
+    post:
+      operationId: deriveSnapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeriveRequest" }
+      responses:
+        "202":
+          description: Accepted; poll the job. The derived snapshot is `id` in the request.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobRef" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /snapshots/{id}/questions/{question}:
+    parameters:
+      - $ref: "#/components/parameters/SnapshotId"
+      - $ref: "#/components/parameters/QuestionName"
+    post:
+      operationId: ask
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuestionParameters" }
+      responses:
+        "200":
+          description: Batfish's answer, as a table.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Answer" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /diff:
+    post:
+      operationId: diff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DiffRequest" }
+      responses:
+        "200":
+          description: Batfish's differential answer, as a table.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Answer" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /jobs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getJob
+      responses:
+        "200":
+          description: The job's status.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Job" }
+        "404": { $ref: "#/components/responses/Error" }
+components:
+  parameters:
+    SnapshotId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, pattern: "^[A-Za-z0-9._-]{1,128}$" }
+    QuestionName:
+      name: question
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/QuestionName" }
+  responses:
+    Error:
+      description: The request could not be served.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Health:
+      type: object
+      required: [status, batfishVersion, engineVersion]
+      properties:
+        status: { type: string, enum: [ok] }
+        batfishVersion: { type: string }
+        engineVersion: { type: string }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    Dialect:
+      type: string
+      enum: [ARISTA_EOS, CISCO_IOS, CISCO_NXOS, JUNOS, FRR_LINUX]
+    SnapshotRequest:
+      type: object
+      required: [devices]
+      additionalProperties: false
+      properties:
+        devices:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/Device" }
+        layer1:
+          type: array
+          items: { $ref: "#/components/schemas/Link" }
+        environment: { $ref: "#/components/schemas/Environment" }
+    Device:
+      type: object
+      required: [name, dialect, configText]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          description: Tenant-unique name using safe filename characters; the engine sets the config hostname to its lowercase form.
+        dialect: { $ref: "#/components/schemas/Dialect" }
+        configText:
+          type: string
+          description: Redacted running config. FRR_LINUX takes `vtysh -c "show running-config"` output.
+        linuxInterfaces:
+          type: array
+          description: FRR_LINUX only; the kernel's interfaces and addresses.
+          items: { $ref: "#/components/schemas/LinuxInterface" }
+    LinuxInterface:
+      type: object
+      required: [name, addresses, up]
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        addresses: { type: array, items: { type: string } }
+        up: { type: boolean }
+    Link:
+      type: object
+      required: [node1, interface1, node2, interface2]
+      additionalProperties: false
+      properties:
+        node1: { type: string }
+        interface1: { type: string }
+        node2: { type: string }
+        interface2: { type: string }
+    NodeInterface:
+      type: object
+      required: [node, iface]
+      additionalProperties: false
+      properties:
+        node: { type: string }
+        iface: { type: string }
+    Environment:
+      type: object
+      additionalProperties: false
+      properties:
+        interfacesDown:
+          type: array
+          items: { $ref: "#/components/schemas/NodeInterface" }
+        nodesDown:
+          type: array
+          items: { type: string }
+    DeriveRequest:
+      type: object
+      required: [id, changes]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          pattern: "^[A-Za-z0-9._-]{1,128}$"
+          description: The derived snapshot's id.
+        changes:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/Change" }
+    Change:
+      type: object
+      required: [device]
+      description: Provide exactly one of configText (complete candidate configuration) or lines (legacy commands for validated operations).
+      oneOf:
+        - required: [configText]
+        - required: [lines]
+      additionalProperties: false
+      properties:
+        device: { type: string }
+        configText:
+          type: string
+          minLength: 1
+          description: Complete native candidate configuration replacing this device's baseline text. Other devices and the environment are preserved.
+        lines:
+          type: array
+          minItems: 1
+          items: { type: string }
+          description: Config lines in the device's own CLI syntax, as a change request would push them.
+    JobRef:
+      type: object
+      required: [jobId, snapshot]
+      properties:
+        jobId: { type: string }
+        snapshot: { type: string }
+    Job:
+      type: object
+      required: [id, kind, snapshot, status]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [build, derive] }
+        snapshot: { type: string }
+        status: { type: string, enum: [pending, running, done, failed] }
+        error: { type: string }
+    Snapshot:
+      type: object
+      required: [id, status, holes, introduced]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, running, done, failed] }
+        base:
+          type: string
+          description: For a derived snapshot, the snapshot it was derived from.
+        holes:
+          type: array
+          items: { $ref: "#/components/schemas/CoverageHole" }
+        introduced:
+          type: array
+          description: >
+            For a derived snapshot, the holes its changes introduced. Non-empty
+            means the change's effect is unknown.
+          items: { $ref: "#/components/schemas/CoverageHole" }
+        error: { type: string }
+    CoverageHole:
+      type: object
+      required: [node, family, kind, text]
+      properties:
+        node: { type: string }
+        family:
+          type: string
+          enum: [interfaces, bgp, ospf, static, policy, acl, nat, management, unclassified]
+        kind:
+          type: string
+          enum:
+            [unparsed, unrecognized, unimplemented, redflag, undefined-reference, agreement,
+             dialect-gap, redeclared-clause, redacted-line]
+        line: { type: integer }
+        text: { type: string }
+    Facts:
+      type: object
+      required: [devices, holes]
+      properties:
+        devices:
+          type: object
+          description: >
+            Neutral configured facts per lowered node name. vnis is always present
+            (an empty list means no modeled VXLAN VNIs); other empty lists are omitted.
+            Each VNI includes vni, layer (l2/l3), vrf, sourceVrf, sourceAddress,
+            udpPort, vlan (L2 only), bumTransportMethod and bumTransportIps.
+            vxlanEdges reports computed L2 and L3 tunnel edges with VNI_Layer (l2/l3).
+            L3 edges require learned EVPN next-hop VTEPs and bidirectional modeled
+            underlay reachability. evpnRib exposes computed EVPN routes. evpnL3VniProperties exposes tenant route targets (imports are Batfish regular expressions). Neither
+            answer represents live observations.
+          additionalProperties: { type: object }
+        holes:
+          type: array
+          items: { $ref: "#/components/schemas/CoverageHole" }
+    QuestionName:
+      type: string
+      enum:
+        [routes, bgpSessionStatus, bgpSessionCompatibility, ospfSessionCompatibility, traceroute, testFilters,
+         reachability, differentialReachability, layer3Edges, vxlanEdges, evpnRib, evpnL3VniProperties]
+    QuestionParameters:
+      type: object
+      description: >
+        The Batfish question's own parameters (for example `nodes`, `network`,
+        `headers`, `startLocation`). Unknown parameters are rejected.
+        testFilters accepts nodes, filters, headers and startLocation; its answer
+        includes Node, Filter_Name, Flow, Action, Line_Content and Trace. It tests
+        a representative packet within the header constraints, not every packet
+        in a range. Pin every packet header and the ingress location, and compare
+        the returned Flow before attaching matched-line evidence to a path.
+      additionalProperties: true
+    DiffRequest:
+      type: object
+      required: [base, proposed, question]
+      additionalProperties: false
+      properties:
+        base: { type: string }
+        proposed: { type: string }
+        question: { $ref: "#/components/schemas/QuestionName" }
+        parameters: { $ref: "#/components/schemas/QuestionParameters" }
+    Answer:
+      type: object
+      required: [question, answer]
+      properties:
+        question: { $ref: "#/components/schemas/QuestionName" }
+        answer:
+          type: object
+          description: Batfish's TableAnswerElement (metadata and rows), as Batfish serializes it.

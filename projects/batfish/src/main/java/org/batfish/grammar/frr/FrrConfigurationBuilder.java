@@ -629,6 +629,10 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   @Override
   public void exitRbafi_network(Rbafi_networkContext ctx) {
+    if (ctx.NO() != null) {
+      _currentBgpVrf.getIpv4Unicast().getNetworks().remove(toPrefix(ctx.network));
+      return;
+    }
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
       routeMap = getFullText(ctx.rm);

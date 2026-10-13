@@ -1,0 +1,258 @@
+{
+  "r1" : {
+    "format" : "FLAT_JUNIPER",
+    "interfaces" : [
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth1",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.1.0.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth1.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOGICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth2",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.0.0.1/30"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth2.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOGICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E12,
+        "mtu" : 1500,
+        "name" : "lo0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "1.1.1.1/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E12,
+        "mtu" : 1500,
+        "name" : "lo0.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      }
+    ],
+    "node" : "r1",
+    "policies" : [
+      {
+        "clauses" : [
+          {
+            "lines" : [
+              "set policy-options policy-statement export-site term site-a from protocol direct",
+              "set policy-options policy-statement export-site term site-a from route-filter 10.1.0.0/24 exact",
+              "set policy-options policy-statement export-site term site-a then accept"
+            ],
+            "name" : "export-site term site-a"
+          }
+        ],
+        "compiled" : true,
+        "lines" : [
+          "set policy-options policy-statement export-site term site-a from protocol direct",
+          "set policy-options policy-statement export-site term site-a from route-filter 10.1.0.0/24 exact",
+          "set policy-options policy-statement export-site term site-a then accept"
+        ],
+        "name" : "export-site",
+        "type" : "policy-statement",
+        "usedBy" : [
+          "bgp export policy-statement"
+        ]
+      }
+    ],
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "bgp" : {
+          "peers" : [
+            {
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.2/32~",
+              "families" : [
+                "ipv4-unicast"
+              ],
+              "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:10.0.0.2/32~",
+              "kind" : "address",
+              "localAs" : 65001,
+              "peer" : "10.0.0.2",
+              "remoteAsns" : "65002"
+            }
+          ],
+          "routerId" : "1.1.1.1"
+        },
+        "name" : "default"
+      }
+    ]
+  },
+  "r2" : {
+    "format" : "FLAT_JUNIPER",
+    "interfaces" : [
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth1",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.0.0.2/30"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth1.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOGICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth2",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.2.0.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E11,
+        "mtu" : 1500,
+        "name" : "eth2.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOGICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "adminUp" : true,
+        "bandwidth" : 1.0E12,
+        "mtu" : 1500,
+        "name" : "lo0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "2.2.2.2/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E12,
+        "mtu" : 1500,
+        "name" : "lo0.0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      }
+    ],
+    "node" : "r2",
+    "policies" : [
+      {
+        "clauses" : [
+          {
+            "lines" : [
+              "set policy-options policy-statement export-site term site-b from protocol direct",
+              "set policy-options policy-statement export-site term site-b from route-filter 10.2.0.0/24 exact",
+              "set policy-options policy-statement export-site term site-b then accept"
+            ],
+            "name" : "export-site term site-b"
+          }
+        ],
+        "compiled" : true,
+        "lines" : [
+          "set policy-options policy-statement export-site term site-b from protocol direct",
+          "set policy-options policy-statement export-site term site-b from route-filter 10.2.0.0/24 exact",
+          "set policy-options policy-statement export-site term site-b then accept"
+        ],
+        "name" : "export-site",
+        "type" : "policy-statement",
+        "usedBy" : [
+          "bgp export policy-statement"
+        ]
+      }
+    ],
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "bgp" : {
+          "peers" : [
+            {
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.1/32~",
+              "families" : [
+                "ipv4-unicast"
+              ],
+              "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:10.0.0.1/32~",
+              "kind" : "address",
+              "localAs" : 65002,
+              "peer" : "10.0.0.1",
+              "remoteAsns" : "65001"
+            }
+          ],
+          "routerId" : "2.2.2.2"
+        },
+        "name" : "default"
+      }
+    ]
+  }
+}

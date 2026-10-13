@@ -1,0 +1,3 @@
+edge1 default 1.1.1.1/32 connected NextHopInterface{interfaceName=Loopback0} 0 0
+edge1 default 10.0.0.0/30 connected NextHopInterface{interfaceName=Ethernet2} 0 0
+edge1 default 10.1.0.0/24 connected NextHopInterface{interfaceName=Ethernet1} 0 0

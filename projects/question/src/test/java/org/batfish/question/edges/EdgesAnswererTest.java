@@ -42,10 +42,10 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -501,25 +501,21 @@ public class EdgesAnswererTest {
     Set<String> includeNodes = configurations.keySet();
     Set<String> includeRemoteNodes = configurations.keySet();
 
+    Multiset<Row> rows = getVxlanEdges(nc, includeNodes, includeRemoteNodes, vxlanTopology);
+    assertThat(rows.size(), equalTo(4));
     assertThat(
-        getVxlanEdges(nc, includeNodes, includeRemoteNodes, vxlanTopology),
-        equalTo(
-            vxlanEdgeToRows(
-                    nc,
-                    includeNodes,
-                    includeRemoteNodes,
-                    EndpointPair.unordered(
-                        VxlanNode.builder()
-                            .setHostname(VXLAN_NODE1)
-                            .setVni(VXLAN_VNI)
-                            .setVniLayer(LAYER_2)
-                            .build(),
-                        VxlanNode.builder()
-                            .setHostname(VXLAN_NODE2)
-                            .setVni(VXLAN_VNI)
-                            .setVniLayer(LAYER_2)
-                            .build()))
-                .collect(ImmutableMultiset.toImmutableMultiset())));
+        rows.stream().filter(r -> r.getString(EdgesAnswerer.COL_VNI_LAYER).equals("l2")).count(),
+        equalTo(2L));
+    assertThat(
+        rows.stream().filter(r -> r.getString(EdgesAnswerer.COL_VNI_LAYER).equals("l3")).count(),
+        equalTo(2L));
+    for (Row row : rows) {
+      if (row.getString(EdgesAnswerer.COL_VNI_LAYER).equals("l3")) {
+        assertThat(row.getInteger(EdgesAnswerer.COL_VLAN), nullValue());
+        assertThat(row.getInteger(EdgesAnswerer.COL_REMOTE_VLAN), nullValue());
+        assertThat(row.getIp(EdgesAnswerer.COL_MULTICAST_GROUP), nullValue());
+      }
+    }
   }
 
   @Test
@@ -578,6 +574,7 @@ public class EdgesAnswererTest {
         equalTo(
             Row.builder()
                 .put(EdgesAnswerer.COL_VNI, VXLAN_VNI)
+                .put(EdgesAnswerer.COL_VNI_LAYER, "l2")
                 .put(EdgesAnswerer.COL_NODE, new Node(VXLAN_NODE1))
                 .put(EdgesAnswerer.COL_REMOTE_NODE, new Node(VXLAN_NODE2))
                 .put(EdgesAnswerer.COL_VTEP_ADDRESS, VXLAN_SRC_IP1)

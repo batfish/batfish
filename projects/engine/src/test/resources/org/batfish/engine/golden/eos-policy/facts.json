@@ -1,0 +1,119 @@
+{
+  "edge1" : {
+    "format" : "ARISTA",
+    "interfaces" : [
+      {
+        "active" : true,
+        "addresses" : [
+          "10.1.0.1/24"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet1",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "10.0.0.1/30"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 1.0E9,
+        "mtu" : 1500,
+        "name" : "Ethernet2",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "PHYSICAL",
+        "vrf" : "default"
+      },
+      {
+        "active" : true,
+        "addresses" : [
+          "1.1.1.1/32"
+        ],
+        "adminUp" : true,
+        "bandwidth" : 8.0E9,
+        "mtu" : 1500,
+        "name" : "Loopback0",
+        "nat" : false,
+        "switchportMode" : "NONE",
+        "type" : "LOOPBACK",
+        "vrf" : "default"
+      }
+    ],
+    "node" : "edge1",
+    "policies" : [
+      {
+        "clauses" : [
+          {
+            "lines" : [
+              "route-map EXPORT-SITE permit 10",
+              "   match ip address prefix-list SITE-A",
+              "   set community 65001:100"
+            ],
+            "name" : "EXPORT-SITE 10",
+            "references" : [
+              {
+                "name" : "SITE-A",
+                "type" : "ipv4 prefix-list"
+              }
+            ]
+          },
+          {
+            "lines" : [
+              "route-map EXPORT-SITE deny 20"
+            ],
+            "name" : "EXPORT-SITE 20"
+          }
+        ],
+        "compiled" : true,
+        "lines" : [
+          "route-map EXPORT-SITE permit 10",
+          "   match ip address prefix-list SITE-A",
+          "   set community 65001:100",
+          "route-map EXPORT-SITE deny 20"
+        ],
+        "name" : "EXPORT-SITE",
+        "type" : "route-map",
+        "usedBy" : [
+          "bgp outbound route-map"
+        ]
+      }
+    ],
+    "sets" : [
+      {
+        "lines" : [
+          "ip prefix-list SITE-A seq 10 permit 10.1.0.0/24"
+        ],
+        "name" : "SITE-A",
+        "type" : "ipv4 prefix-list"
+      }
+    ],
+    "vnis" : [ ],
+    "vrfs" : [
+      {
+        "bgp" : {
+          "peers" : [
+            {
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.2~",
+              "families" : [
+                "ipv4-unicast"
+              ],
+              "kind" : "address",
+              "localAs" : 65001,
+              "localIp" : "10.0.0.1",
+              "peer" : "10.0.0.2",
+              "remoteAsns" : "65002"
+            }
+          ],
+          "routerId" : "1.1.1.1"
+        },
+        "name" : "default"
+      }
+    ]
+  }
+}

@@ -61,6 +61,8 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Vni;
+import org.batfish.datamodel.vxlan.VniLayer;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
@@ -85,6 +87,7 @@ public class EdgesAnswerer extends Answerer {
   static final String COL_REMOTE_VTEP_ADDRESS = "Remote_VTEP_Address";
   static final String COL_UDP_PORT = "UDP_Port";
   static final String COL_VNI = "VNI";
+  static final String COL_VNI_LAYER = "VNI_Layer";
   static final String COL_VTEP_ADDRESS = "VTEP_Address";
 
   // Layer 2
@@ -222,8 +225,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       VxlanTopology vxlanTopology) {
-    return vxlanTopology
-        .getLayer2VniEdges()
+    return Stream.concat(vxlanTopology.getLayer2VniEdges(), vxlanTopology.getLayer3VniEdges())
         .flatMap(edge -> vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, edge))
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -438,21 +440,28 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Row vxlanEdgeToRow(NetworkConfigurations nc, VxlanNode node, VxlanNode remoteNode) {
-    // TODO: support information about layer-3 VNIs
-    Layer2Vni node1Settings =
-        nc.getVniSettings(node.getHostname(), node.getVni(), Vrf::getLayer2Vnis).get();
-    Layer2Vni node2Settings =
-        nc.getVniSettings(remoteNode.getHostname(), remoteNode.getVni(), Vrf::getLayer2Vnis).get();
+    boolean layer2 = node.getVniLayer() == VniLayer.LAYER_2;
+    Vni node1Settings =
+        layer2
+            ? nc.getVniSettings(node.getHostname(), node.getVni(), Vrf::getLayer2Vnis).get()
+            : nc.getVniSettings(node.getHostname(), node.getVni(), Vrf::getLayer3Vnis).get();
+    Vni node2Settings =
+        layer2
+            ? nc.getVniSettings(remoteNode.getHostname(), remoteNode.getVni(), Vrf::getLayer2Vnis)
+                .get()
+            : nc.getVniSettings(remoteNode.getHostname(), remoteNode.getVni(), Vrf::getLayer3Vnis)
+                .get();
     RowBuilder row = Row.builder();
     row.put(COL_VNI, node.getVni())
+        .put(COL_VNI_LAYER, layer2 ? "l2" : "l3")
         .put(COL_NODE, new Node(node.getHostname()))
         .put(COL_REMOTE_NODE, new Node(remoteNode.getHostname()))
         .put(COL_VTEP_ADDRESS, node1Settings.getSourceAddress())
         .put(COL_REMOTE_VTEP_ADDRESS, node2Settings.getSourceAddress())
-        .put(COL_VLAN, node1Settings.getVlan())
-        .put(COL_REMOTE_VLAN, node2Settings.getVlan())
+        .put(COL_VLAN, layer2 ? ((Layer2Vni) node1Settings).getVlan() : null)
+        .put(COL_REMOTE_VLAN, layer2 ? ((Layer2Vni) node2Settings).getVlan() : null)
         .put(COL_UDP_PORT, node1Settings.getUdpPort())
-        .put(COL_MULTICAST_GROUP, node1Settings.getMulticastGroup());
+        .put(COL_MULTICAST_GROUP, layer2 ? ((Layer2Vni) node1Settings).getMulticastGroup() : null);
     return row.build();
   }
 
@@ -609,6 +618,9 @@ public class EdgesAnswerer extends Answerer {
                 Boolean.TRUE));
         break;
       case VXLAN:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_VNI_LAYER, Schema.STRING, "VXLAN VNI layer (l2 or l3)", true, false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_VNI, Schema.INTEGER, "VNI of the VXLAN tunnel edge", true, false));
