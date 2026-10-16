@@ -3,6 +3,7 @@ package org.batfish.datamodel.bgp;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -12,11 +13,13 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -218,6 +221,20 @@ public final class BgpTopologyUtils {
     }
     SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
 
+    // An unnumbered peer can only form a session with an unnumbered peer on the interface at the
+    // other end of its point-to-point link, so index them by interface once rather than scanning
+    // every node of the graph for each of them.
+    Map<NodeInterfacePair, List<BgpPeerConfigId>> unnumberedPeersByInterface = new HashMap<>();
+    for (BgpPeerConfigId peer : graph.nodes()) {
+      if (peer.getType() == BgpPeerConfigType.UNNUMBERED) {
+        unnumberedPeersByInterface
+            .computeIfAbsent(
+                NodeInterfacePair.of(peer.getHostname(), peer.getPeerInterface()),
+                k -> new ArrayList<>())
+            .add(peer);
+      }
+    }
+
     // In parallel, test which sessions can be established, and collect the new edges into a list.
     // Have to materialize so that adding the edges to the graph is done sequentially.
     List<BgpEdge> newEdges =
@@ -239,7 +256,10 @@ public final class BgpTopologyUtils {
                             tracerouteEngine);
                     case UNNUMBERED ->
                         addUnnumberedPeerEdges(
-                            neighborId, graph.nodes(), networkConfigurations, l3Adjacencies);
+                            neighborId,
+                            unnumberedPeersByInterface,
+                            networkConfigurations,
+                            l3Adjacencies);
                   };
                 })
             .collect(Collectors.toList());
@@ -334,7 +354,7 @@ public final class BgpTopologyUtils {
 
   private static Stream<BgpEdge> addUnnumberedPeerEdges(
       BgpPeerConfigId neighborId,
-      Set<BgpPeerConfigId> nodes,
+      Map<NodeInterfacePair, List<BgpPeerConfigId>> unnumberedPeersByInterface,
       NetworkConfigurations nc,
       L3Adjacencies l3Adjacencies) {
     // neighbor will be null if neighborId has no peer interface defined
@@ -345,16 +365,20 @@ public final class BgpTopologyUtils {
 
     String hostname = neighborId.getHostname();
     NodeInterfacePair peerNip = NodeInterfacePair.of(hostname, neighborId.getPeerInterface());
-    return nodes.stream()
+    // Check layer 2 connectivity: the candidates are the unnumbered peers on the interface at the
+    // other end of the point-to-point link, where that interface's link leads back here.
+    Optional<NodeInterfacePair> paired = l3Adjacencies.pairedPointToPointL3Interface(peerNip);
+    if (paired.isEmpty()
+        || !l3Adjacencies
+            .pairedPointToPointL3Interface(paired.get())
+            .map(peerNip::equals)
+            .orElse(false)) {
+      return Stream.of();
+    }
+    return unnumberedPeersByInterface.getOrDefault(paired.get(), ImmutableList.of()).stream()
+        //  Ensure candidate is unnumbered and has compatible local/remote AS
         .filter(
-            candidateId ->
-                //  Ensure candidate is unnumbered and has compatible local/remote AS
-                bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
-                    // Check layer 2 connectivity
-                    && l3Adjacencies.inSamePointToPointDomain(
-                        peerNip,
-                        NodeInterfacePair.of(
-                            candidateId.getHostname(), candidateId.getPeerInterface())))
+            candidateId -> bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc))
         .flatMap(remoteId -> addEdges(neighbor, neighborId, neighbor.getLocalIp(), remoteId, nc));
   }
 
