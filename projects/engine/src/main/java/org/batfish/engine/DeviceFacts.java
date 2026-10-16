@@ -21,8 +21,8 @@ public record DeviceFacts(
     @JsonInclude(JsonInclude.Include.ALWAYS) @Nonnull List<VniFacts> vnis) {
 
   /**
-   * Configured VXLAN settings. Source VRF is the underlay; vrf is the model container (tenant domain
-   * for L3).
+   * Configured VXLAN settings. Source VRF is the underlay; vrf is the model container (tenant
+   * domain for L3).
    */
   public record VniFacts(
       int vni,

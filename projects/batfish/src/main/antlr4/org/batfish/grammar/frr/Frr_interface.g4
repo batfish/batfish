@@ -20,7 +20,7 @@ s_interface
 
 si_shutdown
 :
-  SHUTDOWN NEWLINE
+  NO? SHUTDOWN NEWLINE
 ;
 
 si_ip

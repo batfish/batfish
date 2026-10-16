@@ -790,6 +790,35 @@ public final class FrrConversionsTest {
   }
 
   @Test
+  public void testGenerateBgpCommonPeerConfigEnforceFirstAs() {
+    for (boolean enforce : List.of(true, false)) {
+      Ip peerIp = Ip.parse("10.0.0.2");
+      BgpIpNeighbor neighbor = new BgpIpNeighbor("peer", peerIp);
+      neighbor.setRemoteAs(RemoteAs.internal());
+      BgpVrf vrf = new BgpVrf("vrf");
+      vrf.setEnforceFirstAs(enforce);
+      org.batfish.datamodel.BgpProcess process =
+          org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
+      Configuration c =
+          new NetworkFactory()
+              .configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+      generateBgpCommonPeerConfig(
+          c,
+          _vc,
+          _frr,
+          neighbor,
+          10000L,
+          vrf,
+          process,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          new Warnings());
+      assertThat(process.getActiveNeighbors().get(peerIp).getEnforceFirstAs(), equalTo(enforce));
+    }
+  }
+
+  @Test
   public void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
     Ip peerIp = Ip.parse("10.0.0.2");

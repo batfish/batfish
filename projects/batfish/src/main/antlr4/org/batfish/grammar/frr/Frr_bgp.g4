@@ -31,6 +31,7 @@ rb_bgp
   BGP
   (
     rbb_bestpath
+    | rbb_enforce_first_as
     | rbb_confederation
     | rbb_log_neighbor_changes
     | rbb_router_id
@@ -54,6 +55,7 @@ rbno_bgp
   BGP
   (
      rbnob_default
+     | rbnob_enforce_first_as
   )
 ;
 
@@ -562,3 +564,12 @@ rb_timers
     TIMERS BGP uint32 uint32 NEWLINE
 ;
 
+rbb_enforce_first_as
+:
+  ENFORCE_FIRST_AS NEWLINE
+;
+
+rbnob_enforce_first_as
+:
+  ENFORCE_FIRST_AS NEWLINE
+;

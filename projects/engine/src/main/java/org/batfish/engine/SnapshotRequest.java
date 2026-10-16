@@ -50,7 +50,7 @@ public record SnapshotRequest(
     }
   }
 
-  /** A kernel interface on an FRR host: its name, CIDR addresses, and whether it is up. */
+  /** A kernel interface on an FRR host: its name, CIDRs, and administrative IFF_UP flag. */
   public record LinuxInterface(@Nonnull String name, @Nonnull List<String> addresses, boolean up) {
     public LinuxInterface {
       addresses = addresses == null ? ImmutableList.of() : ImmutableList.copyOf(addresses);

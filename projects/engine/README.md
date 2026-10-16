@@ -25,6 +25,23 @@ bazel build //projects/engine:engine_main_deploy.jar
 ENGINE_PORT=9800 java -jar bazel-bin/projects/engine/engine_main_deploy.jar
 ```
 
+For engine changes involving FRR parsing or conversion, run all three regression
+suites together from the repository root. Use Bazelisk (available as either
+`bazel` or `bazelisk`) to select the version pinned in `.bazelversion`:
+
+```sh
+bazelisk test \
+  //projects/engine:engine_tests \
+  //projects/batfish/src/test/java/org/batfish/grammar/frr:tests \
+  //projects/batfish/src/test/java/org/batfish/representation/frr:tests \
+  --lockfile_mode=off --nocache_test_results --test_output=errors
+```
+
+`--lockfile_mode=off` keeps regression verification from updating the dependency
+lockfile; `--nocache_test_results` executes tests even when matching results exist.
+The engine suite includes candidate administrative repairs, physical outage
+preservation, coverage classification, HTTP contracts and golden model fixtures.
+
 ## Dialects
 
 | Dialect | Input | Notes |
@@ -48,8 +65,10 @@ engine build. This endpoint does not persist the in-memory snapshot/job registry
 API 1.1.0 accepts `{device, configText}` as an alternative to `{device, lines}` in
 derive requests. Supply exactly one form. Replacement text is a full native
 configuration, not a command delta; deployment commands belong to the caller's
-reviewed proposal. Linux interfaces with `up: false` are modeled line-down even
-when not separately listed in `environment.interfacesDown`.
+reviewed proposal. Linux interface `up` records the administrative kernel IFF_UP flag. An
+interface with `up: false` is composed as FRR `shutdown`, so a candidate
+`no shutdown` can restore it. Explicit `environment.interfacesDown` records
+physical line outages and remains down even after an administrative repair.
 
 ## Packet paths and ACL evidence
 
@@ -99,3 +118,19 @@ marks any partially deleted model failed, so it cannot answer assurance question
 API 1.6.0 introduces bounded retention, exclusive cache ownership, retryable
 cleanup, and conservative forwarding-policy coverage. Refresh older models
 after deploying this version so previous coverage classifications are retired.
+
+API 1.6.2 keeps PIM/IGMP warnings as explicit `multicast` coverage holes, including
+validated IPv4 multicast RP ranges. These features remain unmodeled. Packet-assurance
+clients may distinguish plain IPv4 unicast from multicast-dependent forwarding;
+unknown families and tunnel transport dependencies must remain conservative.
+The exact EOS `system l1` mode header and `radius-server` management commands are
+classified as management, while unknown forwarding commands remain unclassified.
+
+Engine implementation 1.6.3 (API schema unchanged) models FRR global `bgp enforce-first-as` and `no bgp enforce-first-as` statements are
+modeled explicitly per VRF and converted to the peer's first-AS check. This
+preserves the existing behavior for inputs without an explicit setting;
+per-neighbor enforcement overrides remain unsupported and produce coverage
+holes. FRR's version compatibility can cause a retained FRR 8 configuration
+loaded by FRR 10 to emit `no bgp enforce-first-as`; this is forwarding behavior,
+not management noise. See the [FRR BGP command documentation](https://docs.frrouting.org/en/stable-10.2/bgp.html#enforce-first-as)
+and [version-dependent defaults](https://github.com/FRRouting/frr/blob/master/doc/user/basic.rst).

@@ -38,7 +38,7 @@ public final class EngineServer implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(EngineServer.class);
 
   /** The engine's own version, reported by {@code /health}. */
-  public static final String ENGINE_VERSION = "1.6.0";
+  public static final String ENGINE_VERSION = "1.6.3";
 
   record DeriveRequest(@Nonnull String id, @Nonnull List<Change> changes) {}
 

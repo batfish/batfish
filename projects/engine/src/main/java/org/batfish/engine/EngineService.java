@@ -95,20 +95,20 @@ public final class EngineService implements AutoCloseable {
   private static final Pattern ID = Pattern.compile("^[A-Za-z0-9._-]{1,128}$");
 
   private static final class Entry {
-    final String id;
-    final String contentHash;
-    final @Nullable String base;
-    final SnapshotId internalId = EngineBatfish.freshSnapshotId("snap");
-    volatile String jobId;
-    volatile Status status = Status.pending;
-    volatile @Nullable SnapshotBuilder.Built built;
-    volatile List<CoverageHole> introduced = ImmutableList.of();
-    volatile @Nullable String error;
+    final String _id;
+    final String _contentHash;
+    final @Nullable String _base;
+    final SnapshotId _internalId = EngineBatfish.freshSnapshotId("snap");
+    volatile String _jobId;
+    volatile Status _status = Status.pending;
+    volatile @Nullable SnapshotBuilder.Built _built;
+    volatile List<CoverageHole> _introduced = ImmutableList.of();
+    volatile @Nullable String _error;
 
     Entry(String id, String contentHash, @Nullable String base) {
-      this.id = id;
-      this.contentHash = contentHash;
-      this.base = base;
+      this._id = id;
+      this._contentHash = contentHash;
+      this._base = base;
     }
   }
 
@@ -159,8 +159,8 @@ public final class EngineService implements AutoCloseable {
     if (_snapshots.size() < _maxSnapshots) return;
     String victim =
         _snapshots.values().stream()
-            .filter(e -> e.status == Status.done || e.status == Status.failed)
-            .map(e -> e.id)
+            .filter(e -> e._status == Status.done || e._status == Status.failed)
+            .map(e -> e._id)
             .filter(id -> !protectedIds.contains(id))
             .findFirst()
             .orElseThrow(
@@ -185,15 +185,15 @@ public final class EngineService implements AutoCloseable {
     String hash = hash(request);
     Entry existing = _snapshots.get(id);
     if (existing != null) {
-      if (!existing.contentHash.equals(hash)) {
+      if (!existing._contentHash.equals(hash)) {
         throw new EngineException(409, "snapshot " + id + " exists with different content");
       }
-      return new JobRef(existing.jobId, id);
+      return new JobRef(existing._jobId, id);
     }
     makeRoom(Set.of());
     Entry entry = new Entry(id, hash, null);
     _snapshots.put(id, entry);
-    return submit("build", entry, () -> _builder.build(entry.internalId, request));
+    return submit("build", entry, () -> _builder.build(entry._internalId, request));
   }
 
   public synchronized @Nonnull JobRef derive(
@@ -203,15 +203,15 @@ public final class EngineService implements AutoCloseable {
       throw new EngineException(400, "a derivation needs at least one change");
     }
     Entry base = done(baseId);
-    String hash = hash(Map.of("base", base.contentHash, "changes", changes));
+    String hash = hash(Map.of("base", base._contentHash, "changes", changes));
     Entry existing = _snapshots.get(id);
     if (existing != null) {
-      if (!existing.contentHash.equals(hash)) {
+      if (!existing._contentHash.equals(hash)) {
         throw new EngineException(409, "snapshot " + id + " exists with different content");
       }
-      return new JobRef(existing.jobId, id);
+      return new JobRef(existing._jobId, id);
     }
-    SnapshotBuilder.Built built = base.built;
+    SnapshotBuilder.Built built = base._built;
     var known =
         built.request().devices().stream().map(d -> d.name().toLowerCase(Locale.ROOT)).toList();
     for (Change c : changes) {
@@ -226,8 +226,8 @@ public final class EngineService implements AutoCloseable {
         "derive",
         entry,
         () -> {
-          Deriver.Derived derived = _deriver.derive(built, changes, entry.internalId);
-          entry.introduced = derived.introduced();
+          Deriver.Derived derived = _deriver.derive(built, changes, entry._internalId);
+          entry._introduced = derived.introduced();
           return derived.snapshot();
         });
   }
@@ -242,24 +242,24 @@ public final class EngineService implements AutoCloseable {
 
   public synchronized @Nonnull SnapshotView snapshot(@Nonnull String id) {
     Entry e = entry(id);
-    SnapshotBuilder.Built built = e.built;
+    SnapshotBuilder.Built built = e._built;
     return new SnapshotView(
-        e.id,
-        e.status,
-        e.base,
+        e._id,
+        e._status,
+        e._base,
         built == null ? ImmutableList.of() : built.holes(),
-        e.introduced,
-        e.error);
+        e._introduced,
+        e._error);
   }
 
   public synchronized @Nonnull Facts facts(@Nonnull String id) {
-    SnapshotBuilder.Built built = done(id).built;
+    SnapshotBuilder.Built built = done(id)._built;
     return new Facts(built.facts(), built.holes());
   }
 
   /** Exact analyzed inputs in the standard Batfish snapshot ZIP layout. */
   public synchronized byte[] exportSnapshot(@Nonnull String id) {
-    Path input = _builder.snapshotDir(done(id).built.id()).resolve("input");
+    Path input = _builder.snapshotDir(done(id)._built.id()).resolve("input");
     try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(bytes);
         Stream<Path> paths = Files.walk(input)) {
@@ -284,7 +284,7 @@ public final class EngineService implements AutoCloseable {
       throw new EngineException(400, question + " is differential; use /diff");
     }
     Question q = question(question, parameters);
-    SnapshotId snap = done(id).built.id();
+    SnapshotId snap = done(id)._built.id();
     Batfish bf = _engine.batfish(snap, null);
     Answerer answerer = answerer(q, bf);
     return new Answer(question, answerer.answer(EngineBatfish.snapshot(snap)));
@@ -297,8 +297,8 @@ public final class EngineService implements AutoCloseable {
       @Nullable JsonNode parameters) {
     Question q = question(question, parameters);
     q.setDifferential(true);
-    SnapshotId base = done(baseId).built.id();
-    SnapshotId proposed = done(proposedId).built.id();
+    SnapshotId base = done(baseId)._built.id();
+    SnapshotId proposed = done(proposedId)._built.id();
     Batfish bf = _engine.batfish(proposed, base);
     Answerer answerer = answerer(q, bf);
     return new Answer(
@@ -308,21 +308,21 @@ public final class EngineService implements AutoCloseable {
 
   public synchronized void delete(@Nonnull String id) {
     Entry e = entry(id);
-    if (e.status == Status.pending || e.status == Status.running) {
+    if (e._status == Status.pending || e._status == Status.running) {
       throw new EngineException(409, "snapshot " + id + " is still being built");
     }
     try {
-      _discard.accept(e.internalId);
+      _discard.accept(e._internalId);
     } catch (RuntimeException failure) {
       // Partial deletion cannot remain queryable as a complete model.
-      e.error = "snapshot cleanup failed: " + failure.getMessage();
-      e.status = Status.failed;
-      Job job = _jobs.get(e.jobId);
-      _jobs.put(e.jobId, new Job(e.jobId, job.kind(), id, Status.failed, e.error));
+      e._error = "snapshot cleanup failed: " + failure.getMessage();
+      e._status = Status.failed;
+      Job job = _jobs.get(e._jobId);
+      _jobs.put(e._jobId, new Job(e._jobId, job.kind(), id, Status.failed, e._error));
       throw failure;
     }
     _snapshots.remove(id);
-    _jobs.remove(e.jobId);
+    _jobs.remove(e._jobId);
   }
 
   @Override
@@ -340,36 +340,36 @@ public final class EngineService implements AutoCloseable {
 
   private JobRef submit(String kind, Entry entry, Supplier<SnapshotBuilder.Built> work) {
     String jobId = UUID.randomUUID().toString();
-    entry.jobId = jobId;
-    _jobs.put(jobId, new Job(jobId, kind, entry.id, Status.pending, null));
+    entry._jobId = jobId;
+    _jobs.put(jobId, new Job(jobId, kind, entry._id, Status.pending, null));
     _worker.submit(
         () -> {
-          _jobs.put(jobId, new Job(jobId, kind, entry.id, Status.running, null));
-          entry.status = Status.running;
+          _jobs.put(jobId, new Job(jobId, kind, entry._id, Status.running, null));
+          entry._status = Status.running;
           SnapshotBuilder.Built built = null;
           try {
             built = work.get();
             _compute.accept(built);
             synchronized (this) {
-              entry.built = built;
-              _jobs.put(jobId, new Job(jobId, kind, entry.id, Status.done, null));
-              entry.status = Status.done;
+              entry._built = built;
+              _jobs.put(jobId, new Job(jobId, kind, entry._id, Status.done, null));
+              entry._status = Status.done;
             }
           } catch (RuntimeException | Error ex) {
-            entry.error = String.valueOf(ex.getMessage());
+            entry._error = String.valueOf(ex.getMessage());
             try {
-              _discard.accept(entry.internalId);
+              _discard.accept(entry._internalId);
             } catch (RuntimeException cleanup) {
               ex.addSuppressed(cleanup);
-              entry.error += "; snapshot cleanup failed: " + cleanup.getMessage();
+              entry._error += "; snapshot cleanup failed: " + cleanup.getMessage();
             }
             synchronized (this) {
-              _jobs.put(jobId, new Job(jobId, kind, entry.id, Status.failed, entry.error));
-              entry.status = Status.failed;
+              _jobs.put(jobId, new Job(jobId, kind, entry._id, Status.failed, entry._error));
+              entry._status = Status.failed;
             }
           }
         });
-    return new JobRef(jobId, entry.id);
+    return new JobRef(jobId, entry._id);
   }
 
   private Entry entry(String id) {
@@ -382,8 +382,8 @@ public final class EngineService implements AutoCloseable {
 
   private Entry done(String id) {
     Entry e = entry(id);
-    if (e.status != Status.done) {
-      throw new EngineException(409, "snapshot " + id + " is " + e.status);
+    if (e._status != Status.done) {
+      throw new EngineException(409, "snapshot " + id + " is " + e._status);
     }
     return e;
   }

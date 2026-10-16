@@ -701,6 +701,9 @@ public final class FrrConversions {
     // FRR/Cumulus/SONiC run BGP over a listening socket that is not bound to a particular VRF and
     // rely on the kernel sysctl tcp_l3mdev_accept=1 to accept connections arriving on any VRF.
     peerConfigBuilder.setSessionVrfScope(AnyVrf.instance());
+    if (bgpVrf.getEnforceFirstAs() != null) {
+      peerConfigBuilder.setEnforceFirstAs(bgpVrf.getEnforceFirstAs());
+    }
     peerConfigBuilder
         .setBgpProcess(newProc)
         .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, localAs))

@@ -258,6 +258,23 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpEnforceFirstAs() {
+    parseLines(
+        "router bgp 65001",
+        "bgp enforce-first-as",
+        "router bgp 65001 vrf BLUE",
+        "no bgp enforce-first-as");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getEnforceFirstAs(), equalTo(true));
+    assertThat(_frr.getBgpProcess().getVrfs().get("BLUE").getEnforceFirstAs(), equalTo(false));
+  }
+
+  @Test
+  public void testBgpClearEnforceFirstAs() {
+    parseLines("router bgp 65001", "bgp enforce-first-as", "no bgp enforce-first-as");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getEnforceFirstAs(), equalTo(false));
+  }
+
+  @Test
   public void testBgp_vrf() {
     parse("router bgp 12345 vrf foo\n");
     assertThat(_frr.getBgpProcess().getVrfs().get("foo").getAutonomousSystem(), equalTo(12345L));
@@ -2676,6 +2693,12 @@ public class FrrGrammarTest {
   public void testSetInterfaceShutdown() {
     parseLines("interface eth1", "shutdown");
     assertTrue(_frr.getInterfaces().get("eth1").getShutdown());
+  }
+
+  @Test
+  public void testClearInterfaceShutdown() {
+    parseLines("interface eth1", "shutdown", "no shutdown");
+    assertFalse(_frr.getInterfaces().get("eth1").getShutdown());
   }
 
   @Test

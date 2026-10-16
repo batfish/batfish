@@ -161,15 +161,6 @@ public final class SnapshotBuilder {
               i ->
                   interfacesDown.add(
                       NodeInterfacePair.of(i.node().toLowerCase(Locale.ROOT), i.iface())));
-      for (Device device : request.devices()) {
-        if (device.dialect() != Dialect.FRR_LINUX || device.linuxInterfaces() == null) continue;
-        device.linuxInterfaces().stream()
-            .filter(i -> !i.up())
-            .forEach(
-                i ->
-                    interfacesDown.add(
-                        NodeInterfacePair.of(device.name().toLowerCase(Locale.ROOT), i.name())));
-      }
       if (!interfacesDown.isEmpty()) {
         SnapshotRuntimeData runtime =
             SnapshotRuntimeData.builder().setInterfacesLineDown(interfacesDown).build();

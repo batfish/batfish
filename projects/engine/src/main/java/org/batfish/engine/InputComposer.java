@@ -94,8 +94,23 @@ public final class InputComposer {
       }
     }
     sb.append("# ports.conf --\n");
+    // The kernel's IFF_UP flag is administrative state. Express it in FRR's
+    // native configuration so a proposed no shutdown can change it. Physical
+    // line outages remain separate snapshot runtime data.
+    StringBuilder adminState = new StringBuilder();
+    if (interfaces != null) {
+      for (LinuxInterface iface : interfaces) {
+        if (!iface.up()) {
+          adminState.append("interface ").append(iface.name()).append("\n shutdown\n!\n");
+        }
+      }
+    }
     String frr =
         withHostname(stripVtyshPreamble(device.configText()), Dialect.FRR_LINUX, device.name());
+    Matcher hostname = HOSTNAME.matcher(frr);
+    if (!adminState.isEmpty() && hostname.find()) {
+      frr = frr.substring(0, hostname.end()) + "\n" + adminState + frr.substring(hostname.end());
+    }
     ImmutableList.Builder<Gap> gaps = ImmutableList.builder();
     if (ebgpRequiresPolicy(frr)) {
       gaps.add(

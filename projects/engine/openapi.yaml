@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: NOCFlow Batfish engine
-  version: 1.6.0
+  version: 1.6.3
   description: >
     One tenant's what-if engine. NOCFlow puts a snapshot of the tenant's network
     (each device's redacted config text, the physical links, and the observed
@@ -235,7 +235,9 @@ components:
       properties:
         name: { type: string }
         addresses: { type: array, items: { type: string } }
-        up: { type: boolean }
+        up:
+          type: boolean
+          description: Administrative IFF_UP state, composed into native FRR configuration; physical line outages are supplied separately in environment.interfacesDown.
     Link:
       type: object
       required: [node1, interface1, node2, interface2]
@@ -335,7 +337,7 @@ components:
         node: { type: string }
         family:
           type: string
-          enum: [interfaces, bgp, ospf, static, policy, acl, nat, management, unclassified]
+          enum: [interfaces, bgp, ospf, static, policy, acl, nat, multicast, management, unclassified]
         kind:
           type: string
           enum:

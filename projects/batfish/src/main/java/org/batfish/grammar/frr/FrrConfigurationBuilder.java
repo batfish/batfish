@@ -139,6 +139,7 @@ import org.batfish.grammar.frr.FrrParser.Rbafln_route_mapContext;
 import org.batfish.grammar.frr.FrrParser.Rbafln_route_reflector_clientContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_cluster_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_confederationContext;
+import org.batfish.grammar.frr.FrrParser.Rbb_enforce_first_asContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_router_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.frr.FrrParser.Rbbl_limitContext;
@@ -149,6 +150,7 @@ import org.batfish.grammar.frr.FrrParser.Rbn_ip6Context;
 import org.batfish.grammar.frr.FrrParser.Rbn_ipContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_nameContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_peer_group_declContext;
+import org.batfish.grammar.frr.FrrParser.Rbnob_enforce_first_asContext;
 import org.batfish.grammar.frr.FrrParser.Rbnobd_ipv4_unicastContext;
 import org.batfish.grammar.frr.FrrParser.Rbnp_descriptionContext;
 import org.batfish.grammar.frr.FrrParser.Rbnp_ebgp_multihopContext;
@@ -961,7 +963,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   @Override
   public void exitSi_shutdown(Si_shutdownContext ctx) {
-    _currentInterface.setShutdown(true);
+    _currentInterface.setShutdown(ctx.NO() == null);
   }
 
   @Override
@@ -1228,6 +1230,16 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRbbb_aspath_multipath_relax(Rbbb_aspath_multipath_relaxContext ctx) {
     _currentBgpVrf.setAsPathMultipathRelax(true);
+  }
+
+  @Override
+  public void exitRbb_enforce_first_as(Rbb_enforce_first_asContext ctx) {
+    _currentBgpVrf.setEnforceFirstAs(true);
+  }
+
+  @Override
+  public void exitRbnob_enforce_first_as(Rbnob_enforce_first_asContext ctx) {
+    _currentBgpVrf.setEnforceFirstAs(false);
   }
 
   @Override

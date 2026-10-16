@@ -4,6 +4,8 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 /**
  * Part of a device's configuration that Batfish did not fully model. Batfish is closed-world: what
@@ -33,6 +35,9 @@ public record CoverageHole(
   public static final String ACL = "acl";
   public static final String NAT = "nat";
 
+  /** Multicast-only control plane; still a forwarding hole for multicast traffic. */
+  public static final String MULTICAST = "multicast";
+
   /** Management-plane configuration: never affects forwarding answers. */
   public static final String MANAGEMENT = "management";
 
@@ -43,7 +48,7 @@ public record CoverageHole(
   private static final Pattern MANAGEMENT_TEXT =
       Pattern.compile(
           "^\\s*(no\\s+)?(lldp|cdp|username|user|enable\\s+(secret|password)|snmp-server|snmp"
-              + "|ntp|logging|log|aaa|tacacs|radius|banner|clock|management"
+              + "|ntp|logging|log|aaa|tacacs|radius-server|radius|banner|clock|management"
               + "|service\\s+(password-encryption|timestamps|sequence-numbers|compress-config)"
               + "|line|ip\\s+(domain|name-server|ssh|http)|domain-name|name-server|motd"
               + "|hostname|terminal|alias)(?=\\s|$)");
@@ -52,6 +57,10 @@ public record CoverageHole(
   // Keep the warning visible; only these exact guard commands are non-forwarding.
   private static final Pattern L1_CLI_GUARD =
       Pattern.compile("^unsupported (speed|error-correction) action (error|warn)$");
+
+  private static final Pattern MULTICAST_TEXT =
+      Pattern.compile("^(?:no\\s+)?(?:ip\\s+(?:igmp|pim)|router\\s+pim)(?=\\s|$)");
+  private static final Pattern MULTICAST_RP = Pattern.compile("^rp\\s+(\\S+)\\s+(\\S+)$");
 
   private static final Pattern BGP_TEXT = Pattern.compile("\\b(bgp|neighbor|peer-as|evpn)\\b");
   private static final Pattern OSPF_TEXT = Pattern.compile("\\bospf");
@@ -72,8 +81,19 @@ public record CoverageHole(
    */
   public static @Nonnull String classify(@Nonnull String text) {
     String t = text.toLowerCase(Locale.ROOT);
-    if (MANAGEMENT_TEXT.matcher(t).find() || L1_CLI_GUARD.matcher(t.strip()).matches()) {
+    if (MANAGEMENT_TEXT.matcher(t).find()
+        || L1_CLI_GUARD.matcher(t.strip()).matches()
+        || t.strip().equals("system l1")) {
       return MANAGEMENT;
+    }
+    var rp = MULTICAST_RP.matcher(t.strip());
+    if (MULTICAST_TEXT.matcher(t.strip()).find()
+        || (rp.matches()
+            && Ip.tryParse(rp.group(1)).isPresent()
+            && Prefix.tryParse(rp.group(2))
+                .filter(p -> p.getPrefixLength() >= 4 && (p.getStartIp().asLong() >>> 28) == 14)
+                .isPresent())) {
+      return MULTICAST;
     }
     if (POLICY_TEXT.matcher(t).find()) {
       return POLICY;

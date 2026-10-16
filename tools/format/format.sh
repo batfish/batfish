@@ -60,8 +60,13 @@ else
   else
     GNU_FIND=find
   fi
-  mapfile -t FILES < <(cd "${WORKDIR}" && ${GNU_FIND} "${WORKDIR}/projects" \
-    -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java')
+  # macOS ships Bash 3.2, which has no mapfile builtin. NUL delimiters also
+  # preserve source paths containing spaces or newlines.
+  FILES=()
+  while IFS= read -r -d '' file; do
+    FILES+=("${file}")
+  done < <(${GNU_FIND} "${WORKDIR}/projects" \
+    \( -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' \) -print0)
 fi
 
 "${GJF}" "${GJF_ARGS[@]}" "${FILES[@]}"

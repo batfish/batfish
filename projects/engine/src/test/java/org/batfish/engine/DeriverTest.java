@@ -52,6 +52,91 @@ public final class DeriverTest {
   }
 
   @Test
+  public void frrExplicitNoEnforceFirstAsRetainsRoutingWithoutCoverageHoles() {
+    Deriver.Derived derived =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change("r1", List.of("router bgp 65001", "no bgp enforce-first-as")));
+    assertThat(derived.introduced(), empty());
+    assertThat(routes(dataPlane(derived.snapshot()), "r2", "10.1.0.0/24"), hasSize(1));
+  }
+
+  @Test
+  public void frrNoShutdownRestoresInterface() {
+    Deriver.Derived d =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change("r1", List.of("interface eth1", "shutdown", "no shutdown")));
+    assertThat(d.introduced(), empty());
+    assertThat(
+        d.snapshot().facts().get("r1").interfaces().stream()
+            .filter(i -> i.name().equals("eth1"))
+            .findFirst()
+            .orElseThrow()
+            .adminUp(),
+        equalTo(true));
+  }
+
+  @Test
+  public void frrRepairChangesAdministrativeStateButPreservesPhysicalOutages() {
+    SnapshotRequest original = Fixtures.frrOspfBgp();
+    List<SnapshotRequest.Device> devices =
+        original.devices().stream()
+            .map(
+                d ->
+                    new SnapshotRequest.Device(
+                        d.name(),
+                        d.dialect(),
+                        d.configText(),
+                        d.linuxInterfaces().stream()
+                            .map(
+                                i ->
+                                    new SnapshotRequest.LinuxInterface(
+                                        i.name(),
+                                        i.addresses(),
+                                        i.up()
+                                            && !(d.name().equals("r1") && i.name().equals("eth1"))))
+                            .toList()))
+            .toList();
+    Change repair = new Change("r1", List.of("interface eth1", "no shutdown"));
+    SnapshotBuilder.Built base =
+        _builder.build(
+            new SnapshotRequest(devices, original.layer1(), SnapshotRequest.Environment.NONE));
+    assertThat(
+        base.facts().get("r1").interfaces().stream()
+            .filter(i -> i.name().equals("eth1"))
+            .findFirst()
+            .orElseThrow()
+            .adminUp(),
+        equalTo(false));
+    Deriver.Derived repaired = _deriver.derive(base, List.of(repair));
+    assertThat(repaired.introduced(), empty());
+    assertThat(
+        repaired.snapshot().facts().get("r1").interfaces().stream()
+            .filter(i -> i.name().equals("eth1"))
+            .findFirst()
+            .orElseThrow()
+            .active(),
+        equalTo(true));
+    assertThat(routes(dataPlane(repaired.snapshot()), "r2", "10.1.0.0/24"), hasSize(1));
+    Deriver.Derived physicallyDown =
+        derive(
+            new SnapshotRequest(
+                devices,
+                original.layer1(),
+                new SnapshotRequest.Environment(
+                    Set.of(new SnapshotRequest.NodeInterface("r1", "eth1")), Set.of())),
+            repair);
+    assertThat(
+        physicallyDown.snapshot().facts().get("r1").interfaces().stream()
+            .filter(i -> i.name().equals("eth1"))
+            .findFirst()
+            .orElseThrow()
+            .active(),
+        equalTo(false));
+  }
+
+  @Test
   public void applyInsertsBeforeTrailingEnd() {
     assertThat(
         Deriver.apply("hostname a\n!\nend\n", ImmutableList.of("ip routing")),

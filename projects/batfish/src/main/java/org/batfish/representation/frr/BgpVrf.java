@@ -15,6 +15,7 @@ import org.batfish.datamodel.Prefix;
 public class BgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
+  private @Nullable Boolean _enforceFirstAs;
   private @Nullable Long _autonomousSystem;
   private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
@@ -36,6 +37,15 @@ public class BgpVrf implements Serializable {
     _neighbors = new HashMap<>();
     _networks = ImmutableMap.of();
     _redistributionPolicies = new TreeMap<>();
+  }
+
+  /** Explicit global setting; null retains the existing unspecified-default behavior. */
+  public @Nullable Boolean getEnforceFirstAs() {
+    return _enforceFirstAs;
+  }
+
+  public void setEnforceFirstAs(boolean enforceFirstAs) {
+    _enforceFirstAs = enforceFirstAs;
   }
 
   public boolean isIpv4UnicastActive() {

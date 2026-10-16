@@ -163,6 +163,8 @@ DOUBLE_QUOTE
 
 EGP: 'egp';
 
+ENFORCE_FIRST_AS: 'enforce-first-as';
+
 EIGRP: 'eigrp';
 
 EMERGENCIES: 'emergencies';

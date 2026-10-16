@@ -17,15 +17,15 @@ final class EngineStorage implements AutoCloseable {
   // Never open a second channel for an owned lock file: on some systems closing
   // that channel would release another channel's process-wide file lock.
   private static final Set<Path> OWNED = new HashSet<>();
-  private final Path root;
-  private boolean closed;
-  private final FileChannel channel;
-  private final FileLock lock;
+  private final Path _root;
+  private boolean _closed;
+  private final FileChannel _channel;
+  private final FileLock _lock;
 
   private EngineStorage(Path root, FileChannel channel, FileLock lock) {
-    this.root = root;
-    this.channel = channel;
-    this.lock = lock;
+    this._root = root;
+    this._channel = channel;
+    this._lock = lock;
   }
 
   static synchronized EngineStorage open(Path base) throws IOException {
@@ -86,15 +86,15 @@ final class EngineStorage implements AutoCloseable {
   @Override
   public void close() throws IOException {
     synchronized (EngineStorage.class) {
-      if (closed) return;
+      if (_closed) return;
       try {
-        if (lock.isValid()) lock.release();
+        if (_lock.isValid()) _lock.release();
       } finally {
         try {
-          channel.close();
+          _channel.close();
         } finally {
-          closed = !channel.isOpen();
-          if (closed) OWNED.remove(root);
+          _closed = !_channel.isOpen();
+          if (_closed) OWNED.remove(_root);
         }
       }
     }

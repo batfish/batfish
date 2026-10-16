@@ -180,6 +180,30 @@ public final class SnapshotBuilderTest {
   }
 
   @Test
+  public void multicastWarningsRemainDistinctFromUnicastAndUnknownCommands() {
+    assertThat(CoverageHole.classify("system l1"), equalTo(CoverageHole.MANAGEMENT));
+    assertThat(
+        CoverageHole.classify("system l1 forwarding-override"), equalTo(CoverageHole.UNCLASSIFIED));
+    assertThat(
+        CoverageHole.classify("radius-server host 192.0.2.10"), equalTo(CoverageHole.MANAGEMENT));
+    assertThat(CoverageHole.classify("radius-routing-magic"), equalTo(CoverageHole.UNCLASSIFIED));
+    for (String line :
+        List.of(
+            "ip igmp",
+            "ip igmp join-group 239.77.30.1",
+            "ip pim",
+            "router pim",
+            "rp 10.77.30.1 239.77.0.0/16")) {
+      assertThat(CoverageHole.classify(line), equalTo(CoverageHole.MULTICAST));
+    }
+    assertThat(CoverageHole.classify("rp 10.0.0.1 10.0.0.0/8"), equalTo(CoverageHole.UNCLASSIFIED));
+    assertThat(
+        CoverageHole.classify("rp not-an-ip 239.0.0.0/8"), equalTo(CoverageHole.UNCLASSIFIED));
+    assertThat(CoverageHole.classify("ip mystery-forwarding"), equalTo(CoverageHole.UNCLASSIFIED));
+    assertThat(CoverageHole.classify("ip route 224.0.0.0/4 Null0"), equalTo(CoverageHole.STATIC));
+  }
+
+  @Test
   public void managementLinesAreNotForwardingHoles() {
     List<CoverageHole> holes = build(Fixtures.dc1Eos()).holes();
 
