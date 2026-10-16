@@ -125,9 +125,18 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Arg arg) {
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(
-        communityMatchRegex.accept(new CommunityMatchExprVarCollector(), arg.getConfiguration()),
-        arg);
+    Set<CommunityVar> allVars =
+        communityMatchRegex.accept(new CommunityMatchExprVarCollector(), arg.getConfiguration());
+    BDD result = CommunitySetMatchExprToBDD.communityVarsToBDD(allVars, arg);
+
+    // Subtract communities whose colon form matches the regex but whose rendered name does not.
+    Set<CommunityVar> excluded =
+        CommunityMatchExprVarCollector.regexExcludedSpecialCases(
+            communityMatchRegex.getRegex(), communityMatchRegex.getCommunityRendering());
+    if (!excluded.isEmpty()) {
+      result = result.and(CommunitySetMatchExprToBDD.communityVarsToBDD(excluded, arg).not());
+    }
+    return result;
   }
 
   @Override

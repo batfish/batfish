@@ -41,6 +41,7 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.SpecialCasesRendering;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
@@ -265,6 +266,24 @@ public class CommunityMatchExprToBDDTest {
     CommunityVar cvar = CommunityVar.from("^20:");
 
     assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunityMatchRegex_excludesSpecialCaseByName() {
+    // Regex "^20:" matches the colon form "20:30", but under SpecialCasesRendering where
+    // 20:30 is rendered as "foo", FRR would not match it. The BDD should exclude 20:30.
+    CommunityMatchRegex cmr =
+        new CommunityMatchRegex(
+            SpecialCasesRendering.of(
+                ColonSeparatedRendering.instance(),
+                ImmutableMap.of(StandardCommunity.parse("20:30"), "foo")),
+            "^20:");
+
+    BDD result = _communityMatchExprToBDD.visitCommunityMatchRegex(cmr, _arg);
+
+    CommunityVar regexVar = CommunityVar.from("^20:");
+    CommunityVar excludedVar = CommunityVar.from(StandardCommunity.parse("20:30"));
+    assertEquals(cvarToBDD(regexVar).and(cvarToBDD(excludedVar).not()), result);
   }
 
   @Test
