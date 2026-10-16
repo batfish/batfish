@@ -463,18 +463,23 @@ public class BgpTopologyUtilsTest {
   }
 
   /**
-   * For testing unnumbered links, make an L3 adjacencies that always returns the same value for
-   * checking interfaces are point to point and in the same domain.
+   * For testing unnumbered links, make an L3 adjacencies that pairs the two test nodes' interfaces
+   * on a point-to-point link, or pairs nothing.
    */
   @ParametersAreNonnullByDefault
   private static class FixedL3Adjacencies implements L3Adjacencies {
     public FixedL3Adjacencies(boolean answer) {
-      _answer = answer;
+      this(
+          answer
+              ? ImmutableMap.of(
+                  NodeInterfacePair.of(NODE1, "iface1"), NodeInterfacePair.of(NODE2, "iface2"),
+                  NodeInterfacePair.of(NODE2, "iface2"), NodeInterfacePair.of(NODE1, "iface1"))
+              : ImmutableMap.of());
     }
 
-    @Override
-    public boolean inSamePointToPointDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-      return _answer;
+    /** Pairs each interface with the one it maps to; a one-way mapping is a half-wired link. */
+    public FixedL3Adjacencies(Map<NodeInterfacePair, NodeInterfacePair> paired) {
+      _paired = paired;
     }
 
     @Override
@@ -485,10 +490,45 @@ public class BgpTopologyUtilsTest {
     @Override
     public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
         NodeInterfacePair iface) {
-      throw new UnsupportedOperationException();
+      return Optional.ofNullable(_paired.get(iface));
     }
 
-    private final boolean _answer;
+    private final Map<NodeInterfacePair, NodeInterfacePair> _paired;
+  }
+
+  @Test
+  public void testInitTopologyBgpUnnumberedHalfWiredLink() {
+    /*
+         AS 1          AS 2
+           N1 ---------- N2
+      Peers on N1 and N2 are compatible, but N2's interface pairs with a third interface rather
+      than back to N1's: not a point-to-point link between the two, so no session.
+    */
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder()
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setLocalIp(Ip.parse("169.254.0.1"));
+    _node1BgpProcess.setInterfaceNeighbors(
+        ImmutableSortedMap.of(
+            iface1, builder.setLocalAs(1L).setRemoteAs(2L).setPeerInterface(iface1).build()));
+    _node2BgpProcess.setInterfaceNeighbors(
+        ImmutableSortedMap.of(
+            iface2, builder.setLocalAs(2L).setRemoteAs(1L).setPeerInterface(iface2).build()));
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(
+                _configs,
+                ImmutableMap.of(),
+                true,
+                new FixedL3Adjacencies(
+                    ImmutableMap.of(
+                        NodeInterfacePair.of(NODE1, iface1), NodeInterfacePair.of(NODE2, iface2),
+                        NodeInterfacePair.of(NODE2, iface2), NodeInterfacePair.of("n3", "i3"))))
+            .getGraph();
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(bgpTopology.edges(), empty());
   }
 
   @Test
