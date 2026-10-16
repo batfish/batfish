@@ -1,10 +1,13 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.BDDReachabilityUtils.backwardFixpoint;
+import static org.batfish.bddreachability.BDDReachabilityUtils.backwardFixpointTransposed;
 import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation;
+import static org.batfish.bddreachability.BDDReachabilityUtils.transposeAndMaterialize;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -29,6 +32,7 @@ import org.batfish.symbolic.state.StateExpr;
 public class BDDLoopDetectionAnalysis {
   private final BDDPacket _bddPacket;
   private final Table<StateExpr, StateExpr, Transition> _forwardEdgeTable;
+  private final Supplier<Table<StateExpr, StateExpr, Transition>> _transposedEdgeTable;
   private final Map<StateExpr, BDD> _ingressLocationStateBDDs;
 
   /**
@@ -39,9 +43,26 @@ public class BDDLoopDetectionAnalysis {
       BDDPacket bddPacket,
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
       Map<StateExpr, BDD> ingressLocationStateBDDs) {
+    this(
+        bddPacket,
+        forwardEdgeTable,
+        Suppliers.memoize(() -> transposeAndMaterialize(forwardEdgeTable)),
+        ingressLocationStateBDDs);
+  }
+
+  /**
+   * As {@link #BDDLoopDetectionAnalysis(BDDPacket, Table, Map)}, with the transposed form of {@code
+   * forwardEdgeTable} supplied by the caller, who may share one across many analyses of one graph.
+   */
+  public BDDLoopDetectionAnalysis(
+      BDDPacket bddPacket,
+      Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
+      Supplier<Table<StateExpr, StateExpr, Transition>> transposedEdgeTable,
+      Map<StateExpr, BDD> ingressLocationStateBDDs) {
     _bddPacket = bddPacket;
     _ingressLocationStateBDDs = ImmutableMap.copyOf(ingressLocationStateBDDs);
     _forwardEdgeTable = ImmutableTable.copyOf(forwardEdgeTable);
+    _transposedEdgeTable = transposedEdgeTable;
   }
 
   /**
@@ -104,9 +125,13 @@ public class BDDLoopDetectionAnalysis {
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     /*
-     * Run backward to find the ingress locations/headerspaces that lead to loops.
+     * Run backward to find the ingress locations/headerspaces that lead to loops. Only where there
+     * are any: the backward pass over a loop-free network is a no-op, and transposing the edge
+     * table for it costs as much as the forward pass.
      */
-    backwardFixpoint(_forwardEdgeTable, loopBDDs);
+    if (!loopBDDs.isEmpty()) {
+      backwardFixpointTransposed(_transposedEdgeTable.get(), loopBDDs);
+    }
 
     /*
      * Extract the ingress location BDDs.

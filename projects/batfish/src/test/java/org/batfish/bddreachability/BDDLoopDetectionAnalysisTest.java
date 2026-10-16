@@ -241,4 +241,62 @@ public final class BDDLoopDetectionAnalysisTest {
       assertEquals(ImmutableMap.of(state1, _pkt.getFactory().zero()), loops);
     }
   }
+
+  @Test
+  public void testLoopFreeGraphNeverTransposes() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+    StateExpr state3 = new OriginateVrf("node3", "vrf3");
+    Table<StateExpr, StateExpr, Transition> edgeTable =
+        ImmutableTable.<StateExpr, StateExpr, Transition>builder()
+            .put(state1, state2, IDENTITY)
+            .put(state2, state3, IDENTITY)
+            .build();
+    Map<StateExpr, BDD> ingress = ImmutableMap.of(state1, _pkt.getFactory().one());
+
+    // No loops, so the backward pass has nothing to do and the transposition is never built.
+    Map<StateExpr, BDD> loops =
+        new BDDLoopDetectionAnalysis(
+                _pkt,
+                edgeTable,
+                () -> {
+                  throw new AssertionError("transposed the edge table of a loop-free graph");
+                },
+                ingress)
+            .detectLoopsStateExpr();
+    assertEquals(ImmutableMap.of(state1, _pkt.getFactory().zero()), loops);
+  }
+
+  @Test
+  public void testSuppliedTransposedEdgeTable() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+    StateExpr state3 = new OriginateVrf("node3", "vrf3");
+
+    BDD ip1Bdd = _dst.toBDD(Ip.parse("1.1.1.1"));
+    // state1 feeds a loop between state2 and state3 that only 1.1.1.1 enters.
+    Table<StateExpr, StateExpr, Transition> edgeTable =
+        ImmutableTable.<StateExpr, StateExpr, Transition>builder()
+            .put(state1, state2, constraint(ip1Bdd))
+            .put(state2, state3, IDENTITY)
+            .put(state3, state2, IDENTITY)
+            .build();
+    Table<StateExpr, StateExpr, Transition> transposed =
+        BDDReachabilityUtils.transposeAndMaterialize(edgeTable);
+    Map<StateExpr, BDD> ingress = ImmutableMap.of(state1, _dst.toBDD(Prefix.parse("1.0.0.0/8")));
+
+    // The supplied transposition is what runs the backward pass; a wrong one changes the answer.
+    assertEquals(
+        ImmutableMap.of(state1, ip1Bdd),
+        new BDDLoopDetectionAnalysis(_pkt, edgeTable, () -> transposed, ingress)
+            .detectLoopsStateExpr());
+    assertEquals(
+        new BDDLoopDetectionAnalysis(_pkt, edgeTable, ingress).detectLoopsStateExpr(),
+        new BDDLoopDetectionAnalysis(_pkt, edgeTable, () -> transposed, ingress)
+            .detectLoopsStateExpr());
+    assertEquals(
+        ImmutableMap.of(state1, _pkt.getFactory().zero()),
+        new BDDLoopDetectionAnalysis(_pkt, edgeTable, ImmutableTable::of, ingress)
+            .detectLoopsStateExpr());
+  }
 }
