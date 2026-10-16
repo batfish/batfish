@@ -4,8 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertSame;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -603,5 +605,112 @@ public class BgpRibTest {
     assertThat(bestPathRib.getRoutes(), contains(best));
     assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
     assertThat(bestPathRib.getArrivalTimeForTesting(), hasKey(best));
+  }
+
+  private static Bgpv4Rib bestPathRib() {
+    return new Bgpv4Rib(
+        null,
+        BgpTieBreaker.ROUTER_ID,
+        1,
+        null,
+        false,
+        LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+        ResolutionRestriction.alwaysTrue());
+  }
+
+  @Test
+  public void testGetBestPathRoutes_sameInstanceWhenUnchanged() {
+    Bgpv4Rib rib = bestPathRib();
+    assertSame(rib.getBestPathRoutes(), rib.getBestPathRoutes());
+
+    rib.mergeRoute(Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).build());
+    Set<Bgpv4Route> first = rib.getBestPathRoutes();
+    assertSame(first, rib.getBestPathRoutes());
+  }
+
+  @Test
+  public void testGetBestPathRoutes_newBestPath() {
+    Bgpv4Rib rib = bestPathRib();
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Bgpv4Route good =
+        rb.setLocalPreference(20).setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build();
+    Bgpv4Route best =
+        rb.setLocalPreference(40).setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3"))).build();
+    Bgpv4Route otherPrefix = rb.setNetwork(Prefix.parse("10.0.0.0/8")).build();
+
+    rib.mergeRoute(good);
+    assertThat(rib.getBestPathRoutes(), contains(good));
+
+    // A better path for the same prefix replaces it
+    rib.mergeRoute(best);
+    assertThat(rib.getBestPathRoutes(), contains(best));
+
+    // A path for a new prefix is added
+    rib.mergeRoute(otherPrefix);
+    assertThat(rib.getBestPathRoutes(), containsInAnyOrder(best, otherPrefix));
+  }
+
+  @Test
+  public void testGetBestPathRoutes_worsePathLeavesBestPathUnchanged() {
+    Bgpv4Rib rib = bestPathRib();
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Bgpv4Route best =
+        rb.setLocalPreference(40).setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3"))).build();
+    Bgpv4Route worse =
+        rb.setLocalPreference(20).setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build();
+
+    rib.mergeRoute(best);
+    Set<Bgpv4Route> before = rib.getBestPathRoutes();
+
+    rib.mergeRoute(worse);
+    Set<Bgpv4Route> after = rib.getBestPathRoutes();
+    assertThat(after, equalTo(before));
+    assertThat(after, contains(best));
+
+    // Removing the worse path also leaves the best path unchanged
+    rib.removeRoute(worse);
+    assertThat(rib.getBestPathRoutes(), equalTo(before));
+  }
+
+  @Test
+  public void testGetBestPathRoutes_removeBestPath() {
+    Bgpv4Rib rib = bestPathRib();
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Bgpv4Route best =
+        rb.setLocalPreference(40).setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3"))).build();
+    Bgpv4Route worse =
+        rb.setLocalPreference(20).setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build();
+
+    rib.mergeRoute(best);
+    rib.mergeRoute(worse);
+    assertThat(rib.getBestPathRoutes(), contains(best));
+
+    // The runner-up takes over
+    rib.removeRoute(best);
+    assertThat(rib.getBestPathRoutes(), contains(worse));
+
+    // Removing the last path for the prefix leaves no best path
+    rib.removeRoute(worse);
+    assertThat(rib.getBestPathRoutes(), empty());
+  }
+
+  @Test
+  public void testGetBestPathRoutes_returnedSetIsNotMutatedLater() {
+    Bgpv4Rib rib = bestPathRib();
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Bgpv4Route good =
+        rb.setLocalPreference(20).setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build();
+    Bgpv4Route best =
+        rb.setLocalPreference(40).setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3"))).build();
+
+    rib.mergeRoute(good);
+    Set<Bgpv4Route> held = rib.getBestPathRoutes();
+
+    rib.mergeRoute(best);
+    rib.removeRoute(good);
+    assertThat(rib.getBestPathRoutes(), contains(best));
+    assertThat(held, contains(good));
   }
 }

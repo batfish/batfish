@@ -79,6 +79,12 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   protected final @Nonnull Map<Prefix, R> _bestPaths;
 
   /**
+   * Memoized {@link #getBestPathRoutes()}, dropped when {@link #_bestPaths} changes. Every BGP
+   * process asks for it at the end of every round, and most rounds change few RIBs.
+   */
+  private transient @Nullable Set<R> _bestPathRoutes;
+
+  /**
    * This logical clock helps us keep track when routes were merged into the RIB to determine their
    * age. It's incremented each time a route is merged into the RIB.
    */
@@ -472,7 +478,10 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   public Set<R> getBestPathRoutes() {
-    return ImmutableSet.copyOf(_bestPaths.values());
+    if (_bestPathRoutes == null) {
+      _bestPathRoutes = ImmutableSet.copyOf(_bestPaths.values());
+    }
+    return _bestPathRoutes;
   }
 
   private int compareRouteAsPath(R lhs, R rhs) {
@@ -503,11 +512,15 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     Set<R> remainingBestPaths = super.getRoutes(prefix);
     if (remainingBestPaths.isEmpty()) {
       // Remove best path and return
-      _bestPaths.remove(prefix);
+      if (_bestPaths.remove(prefix) != null) {
+        _bestPathRoutes = null;
+      }
       return;
     }
     R best = Collections.max(remainingBestPaths, this::bestPathComparator);
-    _bestPaths.put(prefix, best);
+    if (!best.equals(_bestPaths.put(prefix, best))) {
+      _bestPathRoutes = null;
+    }
   }
 
   /**
