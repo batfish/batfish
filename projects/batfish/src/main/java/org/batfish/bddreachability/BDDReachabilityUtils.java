@@ -180,6 +180,11 @@ public final class BDDReachabilityUtils {
   public static void backwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
       Map<StateExpr, BDD> reverseReachable) {
+    if (reverseReachable.isEmpty()) {
+      // Nothing to propagate, so do not transpose the table: that costs about as much as
+      // building it, and loop detection ends here on every loop-free network.
+      return;
+    }
     backwardFixpointTransposed(transposeAndMaterialize(forwardEdgeTable), reverseReachable);
   }
 
