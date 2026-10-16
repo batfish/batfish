@@ -1553,6 +1553,15 @@ public final class VirtualRouter {
     return _fib;
   }
 
+  /**
+   * Drops the FIB computed at the end of the previous topology round. Nothing reads it until {@link
+   * #computeFib} rebuilds it, and on a large network the FIBs of all VRFs are a large share of the
+   * heap during route computation.
+   */
+  void clearFib() {
+    _fib = null;
+  }
+
   Rib getMainRib() {
     return _mainRib;
   }

@@ -519,6 +519,12 @@ final class IncrementalBdpEngine {
     boolean converged = false;
     while (!converged && topologyIterations++ < MAX_TOPOLOGY_ITERATIONS) {
       LOGGER.info("Starting topology iteration {}", topologyIterations);
+      // The previous round's FIBs and forwarding analysis have served their purpose (the topology
+      // and tracks above were derived from them) and are rebuilt below. Drop them now, from the
+      // dataplane and from every virtual router, rather than holding them through the route
+      // computation, where they would sit beside the RIBs and message queues at their largest.
+      currentDataplane = null;
+      vrs.forEach(VirtualRouter::clearFib);
       boolean isOscillating =
           computeNonMonotonicPortionOfDataPlane(
               nodes,
@@ -536,7 +542,6 @@ final class IncrementalBdpEngine {
       }
 
       updateLayer3Vnis(vrs);
-      currentDataplane = null; // free the old one
       currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs, currentIpOwners);
       TopologyContext nextTopologyContext =
           nextTopologyContext(

@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
@@ -338,6 +340,29 @@ public class VirtualRouterTest {
     vr.initForEgpComputationWithNewTopology(TopologyContext.builder().build(), c -> evaluator);
     vr.activateStaticRoutes(evaluator);
     assertThat(vr.getMainRib().getUnannotatedRoutes(), hasItem(dependentRoute));
+  }
+
+  /** The FIB is dropped between topology rounds and rebuilt from the main RIB on demand. */
+  @Test
+  public void testClearFibDropsItAndComputeFibRebuildsIt() {
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.initRibs();
+    vr.initConnectedRib();
+    for (AnnotatedRoute<ConnectedRoute> r : vr.getConnectedRib().getRoutes()) {
+      vr.getMainRib().mergeRoute(new AnnotatedRoute<AbstractRoute>(r.getRoute(), r.getSourceVrf()));
+    }
+    vr.computeFib();
+    Fib before = vr.getFib();
+    assertThat(before, notNullValue());
+    assertThat(before.allEntries(), not(empty()));
+
+    vr.clearFib();
+    assertThat(vr.getFib(), nullValue());
+
+    vr.computeFib();
+    assertThat(vr.getFib(), notNullValue());
+    assertThat(vr.getFib().allEntries(), equalTo(before.allEntries()));
   }
 
   /** Check that initialization of Connected RIB is as expected */
