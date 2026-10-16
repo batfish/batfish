@@ -274,16 +274,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private final @Nonnull Multiset<Bgpv4Route> _importedFromOtherVrfs = HashMultiset.create(0);
 
   /**
-   * {@link #_importedFromOtherVrfs} as of the end of the previous inner round, which is what other
-   * VRFs leaking from this one read. Every VRF runs its iteration, leaks included, in one parallel
-   * step, so reading the live set raced with this VRF's own iteration and made what a leak saw
-   * depend on thread timing. Taken only where another VRF leaks from this one, and only when the
-   * set changed.
+   * The previous inner round's deltas that other VRFs leaking from this one may import: {@link
+   * #_bgpv4DeltaPrev} less what this VRF itself imported from other VRFs, as of the end of that
+   * round. Every VRF runs its iteration, leaks included, in one parallel step, so filtering against
+   * the live {@link #_importedFromOtherVrfs} raced with this VRF's own iteration and made what a
+   * leak saw depend on thread timing. Sized by the round's delta rather than by everything ever
+   * imported, which on a large network is the whole table. Taken only where another VRF leaks from
+   * this one.
    */
-  private @Nonnull Set<Bgpv4Route> _importedFromOtherVrfsPrev = ImmutableSet.of();
-
-  /** Whether {@link #_importedFromOtherVrfs} changed since {@link #_importedFromOtherVrfsPrev}. */
-  private boolean _importedFromOtherVrfsChanged;
+  private @Nonnull List<RouteAdvertisement<Bgpv4Route>> _routesToLeakPrev = ImmutableList.of();
 
   /** Whether another VRF of this node leaks BGP routes from this one, as BGP or EVPN. */
   private final boolean _isBgpLeakSource;
@@ -2747,7 +2746,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private void addLeakedV4Route(Bgpv4Route route) {
     if (_importedFromOtherVrfs.add(route, 1) == 0) {
-      _importedFromOtherVrfsChanged = true;
       processMergeInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
       processMergeInBgpRib(route);
     }
@@ -2756,7 +2754,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Removes a route a leak imported; see {@link #addLeakedV4Route}. */
   private void removeLeakedV4Route(Bgpv4Route route) {
     if (_importedFromOtherVrfs.remove(route, 1) == 1) {
-      _importedFromOtherVrfsChanged = true;
       processRemoveInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
       processRemoveInBgpRib(route);
     }
@@ -2876,7 +2873,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
               processRemoveInBgpRib(transformedRoute);
               _importedFromOtherVrfs.remove(transformedRoute);
-              _importedFromOtherVrfsChanged = true;
             } else {
               RibDelta<Bgpv4Route> d =
                   processMergeInEbgpOrIbgpRib(
@@ -2884,7 +2880,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               LOGGER.debug("Node {}, VRF {}, route {} leaked from EVPN", _hostname, _vrfName, d);
               processMergeInBgpRib(transformedRoute);
               _importedFromOtherVrfs.add(transformedRoute);
-              _importedFromOtherVrfsChanged = true;
             }
           } else {
             LOGGER.trace(
@@ -3071,9 +3066,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Take a snapshot of this round's deltas to [additionally] send to add-path sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
     // And of what other VRFs leaking from this one read.
-    if (_isBgpLeakSource && _importedFromOtherVrfsChanged) {
-      _importedFromOtherVrfsPrev = ImmutableSet.copyOf(_importedFromOtherVrfs.elementSet());
-      _importedFromOtherVrfsChanged = false;
+    if (_isBgpLeakSource) {
+      _routesToLeakPrev =
+          _bgpv4DeltaPrev.isEmpty()
+              ? ImmutableList.of()
+              : _bgpv4DeltaPrev.stream()
+                  .filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()))
+                  .collect(ImmutableList.toImmutableList());
     }
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
     _evpnType3DeltaPrev = _evpnType3DeltaBuilder.build();
@@ -3184,7 +3183,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfsPrev.contains(r.getRoute()));
+    return _routesToLeakPrev.stream();
   }
 
   /** Return a stream of EVPN route advertisements to leak to other VRFs. */

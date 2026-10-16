@@ -82,6 +82,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -1016,6 +1017,76 @@ public class BgpRoutingProcessTest {
 
     assertThat(_routingProcess.getBgpv4DeltaBuilder().build().getActions(), empty());
     assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+  }
+
+  /** A BGP process over the current configuration that {@link #_vrf2} leaks BGP routes from. */
+  private BgpRoutingProcess newLeakSourceProcess() {
+    _vrf2.setVrfLeakConfig(
+        VrfLeakConfig.builder(true)
+            .addBgpVrfLeakConfig(
+                BgpVrfLeakConfig.builder()
+                    .setImportFromVrf(DEFAULT_VRF_NAME)
+                    .setAdmin(0)
+                    .setWeight(0)
+                    .build())
+            .build());
+    return newRoutingProcess();
+  }
+
+  @Test
+  public void testRoutesToLeakAreTheRoundsDeltaLessWhatThisVrfImported() {
+    // A route this VRF itself imported from another VRF is in its delta like any other, but is not
+    // offered on to the VRFs that leak from this one.
+    _c.setExportBgpFromBgpRib(true);
+    _bgpProcess.setRedistributionPolicy(leakPolicy("accept", true).getName());
+    _routingProcess = newLeakSourceProcess();
+    Prefix local = Prefix.parse("1.1.1.0/24");
+    _routingProcess.redistribute(
+        RibDelta.adding(
+            new AnnotatedRoute<>(
+                StaticRoute.testBuilder().setNetwork(local).build(), _vrf.getName())));
+    Bgpv4Route imported =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpVrfLeakConfig leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0).build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(imported)), leak);
+    assertThat(_routingProcess.getBgpv4DeltaBuilder().build().getActions(), hasSize(2));
+
+    _routingProcess.endOfInnerRound();
+
+    assertThat(
+        _routingProcess
+            .getRoutesToLeak()
+            .map(RouteAdvertisement::getRoute)
+            .collect(Collectors.toList()),
+        contains(isBgpv4RouteThat(hasPrefix(local))));
+  }
+
+  @Test
+  public void testRoutesToLeakAreFixedAtTheEndOfTheRound() {
+    // Every VRF runs its iteration, leaks included, in one parallel step, so a VRF leaking from
+    // this one may read what this one offers while this one is already importing for its next
+    // round. What it reads must not depend on that.
+    _routingProcess = newLeakSourceProcess();
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpVrfLeakConfig leak =
+        BgpVrfLeakConfig.builder().setImportFromVrf("otherVrf").setAdmin(0).setWeight(0).build();
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.adding(route)), leak);
+    _routingProcess.endOfInnerRound();
+    assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
+
+    // Withdrawing the import takes the route out of what this VRF imported, so filtering the
+    // previous round's delta against the live imports would now offer it.
+    _routingProcess.importCrossVrfV4Routes(Stream.of(RouteAdvertisement.withdrawing(route)), leak);
+
+    assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
   }
 
   private static void applyTo(Set<BgpRoute<?, ?>> rib, RibDelta<BgpRoute<?, ?>> delta) {
