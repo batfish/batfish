@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
@@ -2484,6 +2485,69 @@ public final class WorkMgrTest {
 
     // snapshot should no longer exist
     assertThat(_manager.listSnapshots(network), emptyIterable());
+  }
+
+  /** Deleting a snapshot deletes its data too. */
+  @Test
+  public void testDeleteSnapshotDeletesData() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId).get();
+
+    _manager.delSnapshot(network, snapshot);
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadSnapshotMetadata(networkId, snapshotId);
+  }
+
+  /** A snapshot with work in flight keeps its data until that work finishes. */
+  @Test
+  public void testDeleteSnapshotDefersDataUntilWorkFinishes() throws Exception {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId).get();
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(network, snapshot),
+            WorkDetails.builder()
+                .setNetworkId(networkId)
+                .setSnapshotId(snapshotId)
+                .setWorkType(WorkType.PARSING)
+                .build());
+    _manager.getWorkQueueMgr().queueUnassignedWork(work);
+
+    assertTrue(_manager.delSnapshot(network, snapshot));
+
+    // the name is gone, but the data the running work needs is not
+    assertThat(_manager.listSnapshots(network), emptyIterable());
+    _manager.reapDeletedData();
+    assertThat(_storage.loadSnapshotMetadata(networkId, snapshotId), notNullValue());
+
+    // once the work is out of the queue, the data goes
+    _manager.getWorkQueueMgr().markAssignmentError(work);
+    _manager.reapDeletedData();
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadSnapshotMetadata(networkId, snapshotId);
+  }
+
+  /** Deleting a network deletes its data too. */
+  @Test
+  public void testDeleteNetworkDeletesData() throws IOException {
+    String network = "network1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, "snapshot1");
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+
+    assertTrue(_manager.delNetwork(network));
+
+    assertFalse(_storage.checkNetworkExists(networkId));
   }
 
   @Test
