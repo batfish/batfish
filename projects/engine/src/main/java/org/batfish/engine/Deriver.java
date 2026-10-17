@@ -3,6 +3,7 @@ package org.batfish.engine;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -121,6 +122,8 @@ public final class Deriver {
 
   private static final Pattern ROUTE_MAP_CLAUSE =
       Pattern.compile("^\\s*route-map\\s+(\\S+)\\s+(permit|deny)\\s+(\\d+)\\s*$");
+  private static final Pattern NO_ROUTE_MAP =
+      Pattern.compile("^\\s*no\\s+route-map\\s+(\\S+)(?:\\s+(?:permit|deny)\\s+(\\d+))?\\s*$");
 
   /**
    * Re-declaring an existing route-map clause with the other action is silent in Batfish, which
@@ -134,30 +137,45 @@ public final class Deriver {
       return ImmutableList.of();
     }
     ImmutableList.Builder<CoverageHole> holes = ImmutableList.builder();
-    for (String line : lines) {
+    Map<String, String> actions = new HashMap<>();
+    for (DeviceFacts.PolicyFacts policy : facts.policies()) {
+      for (DeviceFacts.ClauseFacts clause : policy.clauses()) {
+        if (clause.lines().isEmpty()) continue;
+        Matcher header = ROUTE_MAP_CLAUSE.matcher(clause.lines().get(0));
+        if (header.matches()) actions.put(clause.name(), header.group(2));
+      }
+    }
+    boolean frr =
+        base.request().devices().stream()
+            .anyMatch(d -> d.name().equalsIgnoreCase(device) && d.dialect() == Dialect.FRR_LINUX);
+    // The parser sees physical lines even when an agent sends a multiline CLI
+    // block in one array element. Coverage checks must inspect the same input.
+    for (String line : lines.stream().flatMap(String::lines).toList()) {
+      Matcher removal = NO_ROUTE_MAP.matcher(line);
+      if (frr && removal.matches()) {
+        if (removal.group(2) == null) {
+          actions.keySet().removeIf(clause -> clause.startsWith(removal.group(1) + " "));
+        } else {
+          actions.remove(removal.group(1) + " " + removal.group(2));
+        }
+        continue;
+      }
       Matcher m = ROUTE_MAP_CLAUSE.matcher(line);
       if (!m.matches()) {
         continue;
       }
       String clause = m.group(1) + " " + m.group(3);
-      for (DeviceFacts.PolicyFacts policy : facts.policies()) {
-        for (DeviceFacts.ClauseFacts c : policy.clauses()) {
-          if (!c.name().equals(clause) || c.lines().isEmpty()) {
-            continue;
-          }
-          Matcher header = ROUTE_MAP_CLAUSE.matcher(c.lines().get(0));
-          if (header.matches() && !header.group(2).equals(m.group(2))) {
-            holes.add(
-                new CoverageHole(
-                    device,
-                    CoverageHole.POLICY,
-                    "redeclared-clause",
-                    null,
-                    line.strip()
-                        + " changes the action of an existing clause; remove the clause"
-                        + " first"));
-          }
-        }
+      String previous = actions.putIfAbsent(clause, m.group(2));
+      if (previous != null && !previous.equals(m.group(2))) {
+        holes.add(
+            new CoverageHole(
+                device,
+                CoverageHole.POLICY,
+                "redeclared-clause",
+                null,
+                line.strip()
+                    + " changes the action of an existing clause; remove the clause"
+                    + " first"));
       }
     }
     return holes.build();

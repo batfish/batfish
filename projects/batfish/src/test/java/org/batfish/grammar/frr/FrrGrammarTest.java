@@ -1417,6 +1417,48 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testFrrRouteMapRemoval() {
+    parseLines(
+        "route-map KEEP permit 10",
+        "route-map KEEP deny 20",
+        "route-map OTHER permit 10",
+        "no route-map KEEP deny 10",
+        "no route-map MISSING permit 10");
+    assertThat(_frr.getRouteMaps().get("KEEP").getEntries().keySet(), equalTo(ImmutableSet.of(20)));
+    assertThat(
+        _frr.getRouteMaps().get("OTHER").getEntries().keySet(), equalTo(ImmutableSet.of(10)));
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
+  public void testFrrRouteMapRemovalAndRecreation() {
+    parseLines(
+        "route-map RM deny 10",
+        " match ip address prefix-list OLD",
+        "route-map RM permit 20",
+        "route-map OTHER permit 10",
+        "no route-map RM deny 10",
+        "route-map RM permit 10");
+    RouteMap rm = _frr.getRouteMaps().get("RM");
+    assertThat(rm.getEntries().keySet(), equalTo(ImmutableSet.of(10, 20)));
+    assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+    assertNull(rm.getEntries().get(10).getMatchIpAddressPrefixList());
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
+  public void testFrrRouteMapAllRemoval() {
+    parseLines(
+        "route-map RM permit 10",
+        "route-map RM deny 20",
+        "route-map OTHER permit 10",
+        "no route-map RM",
+        "no route-map MISSING");
+    assertThat(_frr.getRouteMaps().keySet(), equalTo(ImmutableSet.of("OTHER")));
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
   public void testFrrVrfRouteMapDescription() {
     String name = "ROUTE-MAP-NAME";
     String description = "PERmit Xxx Yy_+!@#$%^&*()";

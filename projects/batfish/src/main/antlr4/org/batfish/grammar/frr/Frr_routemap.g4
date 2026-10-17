@@ -27,6 +27,11 @@ s_routemap
   )*
 ;
 
+sno_routemap
+:
+  ROUTE_MAP name = word (action = line_action sequence = route_map_sequence)? NEWLINE
+;
+
 rm_call
 :
   CALL name = word NEWLINE

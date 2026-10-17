@@ -232,16 +232,77 @@ public final class DeriverTest {
     assertThat(routes(dp, "r2", "1.1.1.1/32"), hasSize(1));
   }
 
-  /** Batfish's FRR grammar cannot remove a route-map clause: the change must come back unknown. */
   @Test
-  public void frrRemovingAClauseIsUnknown() {
+  public void frrRemovingAClauseWithdrawsExport() {
     Deriver.Derived d =
         derive(
             Fixtures.frrOspfBgp(), new Change("r1", List.of("no route-map EXPORT-SITE permit 10")));
 
+    assertThat(d.introduced(), empty());
+    assertThat(routes(dataPlane(d.snapshot()), "r2", "10.1.0.0/24"), empty());
+  }
+
+  @Test
+  public void frrRemovingDenyClauseRestoresExport() {
+    Deriver.Derived denied =
+        derive(Fixtures.frrOspfBgp(), new Change("r1", List.of("route-map EXPORT-SITE deny 5")));
+    assertThat(routes(dataPlane(denied.snapshot()), "r2", "10.1.0.0/24"), empty());
+    Deriver.Derived restored =
+        _deriver.derive(
+            denied.snapshot(),
+            List.of(new Change("r1", List.of("no route-map EXPORT-SITE deny 5"))));
+    assertThat(restored.introduced(), empty());
+    assertThat(routes(dataPlane(restored.snapshot()), "r2", "10.1.0.0/24"), hasSize(1));
+  }
+
+  @Test
+  public void frrRemoveThenRecreateClauseIsModeledInAMultilineBlock() {
+    Deriver.Derived d =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change(
+                "r1",
+                List.of(
+                    "no route-map EXPORT-SITE deny 10\n"
+                        + "ip prefix-list CLIENT seq 10 permit 10.1.0.0/24\n"
+                        + "route-map EXPORT-SITE permit 10\n"
+                        + "match ip address prefix-list CLIENT")));
+    assertThat(d.introduced(), empty());
+    assertThat(routes(dataPlane(d.snapshot()), "r2", "10.1.0.0/24"), hasSize(1));
+  }
+
+  @Test
+  public void frrRemoveThenChangeClauseActionIsModeled() {
+    Deriver.Derived d =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change(
+                "r1",
+                List.of("no route-map EXPORT-SITE permit 10", "route-map EXPORT-SITE deny 10")));
+    assertThat(d.introduced(), empty());
+    assertThat(routes(dataPlane(d.snapshot()), "r2", "10.1.0.0/24"), empty());
+  }
+
+  @Test
+  public void multilineClauseRedeclarationWithoutRemovalRemainsUnknown() {
+    Deriver.Derived d =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change("r1", List.of("! candidate\nroute-map EXPORT-SITE deny 10")));
     assertThat(
-        d.introduced().stream().map(h -> h.family() + "/" + h.kind()).toList(),
-        equalTo(List.of("policy/unrecognized")));
+        d.introduced().stream().map(CoverageHole::kind).toList(),
+        equalTo(List.of("redeclared-clause")));
+  }
+
+  @Test
+  public void newClauseRedeclaredWithoutRemovalRemainsUnknown() {
+    Deriver.Derived d =
+        derive(
+            Fixtures.frrOspfBgp(),
+            new Change("r1", List.of("route-map NEW permit 10\nroute-map NEW deny 10")));
+    assertThat(
+        d.introduced().stream().map(CoverageHole::kind).toList(),
+        equalTo(List.of("redeclared-clause")));
   }
 
   /** Batfish silently keeps the original clause, so the deriver must flag the redeclaration. */

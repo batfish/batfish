@@ -206,6 +206,7 @@ import org.batfish.grammar.frr.FrrParser.Siip_addressContext;
 import org.batfish.grammar.frr.FrrParser.Siipo_areaContext;
 import org.batfish.grammar.frr.FrrParser.Siipo_costContext;
 import org.batfish.grammar.frr.FrrParser.Siipo_network_p2pContext;
+import org.batfish.grammar.frr.FrrParser.Sno_routemapContext;
 import org.batfish.grammar.frr.FrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.frr.FrrParser.Standard_communityContext;
 import org.batfish.grammar.frr.FrrParser.Sv_routeContext;
@@ -1579,6 +1580,21 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitS_routemap(S_routemapContext ctx) {
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitSno_routemap(Sno_routemapContext ctx) {
+    String name = ctx.name.getText();
+    if (ctx.sequence == null) {
+      _frr.getRouteMaps().remove(name);
+      return;
+    }
+    RouteMap routeMap = _frr.getRouteMaps().get(name);
+    if (routeMap != null) {
+      // FRR's CLI deletes the sequence by identity; its permit/deny argument
+      // does not constrain the deletion (lib/routemap_cli.c, no_route_map).
+      routeMap.getEntries().remove(Integer.parseInt(ctx.sequence.getText()));
+    }
   }
 
   @Override
