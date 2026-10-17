@@ -165,6 +165,7 @@ sno_ip
    IP
    (
       snoip_forwarding
+      | ip_route
    )
 ;
 

@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -1930,18 +1931,42 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     StaticRoute route =
         new StaticRoute(
             Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
+    Set<StaticRoute> routes;
     if (ctx.vrf == null) {
-      _frr.getStaticRoutes().add(route);
+      routes = _frr.getStaticRoutes();
     } else {
       String vrfName = ctx.vrf.getText();
       if (!_vc.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
         _w.redFlagf("the static route is ignored since vrf %s is not defined", vrfName);
         return;
       }
-      _frr.getOrCreateVrf(vrfName).getStaticRoutes().add(route);
+      routes = _frr.getOrCreateVrf(vrfName).getStaticRoutes();
       _vc.referenceStructure(
           VRF, vrfName, FrrStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
     }
+    // FRR identifies a configured next hop independently of distance. A new
+    // distance moves that next hop; removal deletes it without touching other
+    // next hops or VRFs. Null0/blackhole are aliases, but reject is distinct.
+    routes.removeIf(
+        existing ->
+            existing.getNetwork().equals(route.getNetwork())
+                && Objects.equals(existing.getNextHopIp(), route.getNextHopIp())
+                && Objects.equals(
+                    staticRouteInterfaceIdentity(existing.getNextHopInterface()),
+                    staticRouteInterfaceIdentity(route.getNextHopInterface())));
+    if (!(ctx.getParent() instanceof FrrParser.Sno_ipContext)) {
+      routes.add(route);
+    }
+  }
+
+  private static @Nullable String staticRouteInterfaceIdentity(@Nullable String name) {
+    if (name == null) {
+      return null;
+    }
+    if (name.equalsIgnoreCase("Null0") || name.equalsIgnoreCase("blackhole")) {
+      return "Null0";
+    }
+    return name.equalsIgnoreCase("reject") ? "reject" : name;
   }
 
   private LineAction toLineAction(Access_list_actionContext ctx) {

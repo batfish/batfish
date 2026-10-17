@@ -62,6 +62,32 @@ public final class DeriverTest {
   }
 
   @Test
+  public void frrRemovingStaticDiscardRestoresLearnedReturnRoute() {
+    SnapshotRequest base = Fixtures.frrOspfBgp();
+    Deriver.Derived blocked = derive(base, new Change("r2", List.of("ip route 10.1.0.0/24 Null0")));
+    assertThat(blocked.introduced(), empty());
+    assertThat(
+        routes(dataPlane(blocked.snapshot()), "r2", "10.1.0.0/24").stream()
+            .allMatch(route -> route.getProtocol() == RoutingProtocol.STATIC),
+        equalTo(true));
+    Deriver.Derived repaired =
+        derive(
+            base,
+            new Change(
+                "r2", List.of("ip route 10.1.0.0/24 Null0", "no ip route 10.1.0.0/24 Null0")));
+    assertThat(repaired.introduced(), empty());
+    Set<AbstractRoute> restored = routes(dataPlane(repaired.snapshot()), "r2", "10.1.0.0/24");
+    assertThat(restored, hasSize(1));
+    assertThat(
+        restored.stream().noneMatch(route -> route.getProtocol() == RoutingProtocol.STATIC),
+        equalTo(true));
+    Deriver.Derived absent =
+        derive(base, new Change("r2", List.of("no ip route 10.1.0.0/24 Null0")));
+    assertThat(absent.introduced(), empty());
+    assertThat(routes(dataPlane(absent.snapshot()), "r2", "10.1.0.0/24"), hasSize(1));
+  }
+
+  @Test
   public void frrNoShutdownRestoresInterface() {
     Deriver.Derived d =
         derive(

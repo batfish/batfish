@@ -1340,6 +1340,43 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testNoIpRouteRemovesOnlyMatchingNextHop() {
+    parse(
+        "ip route 10.1.0.0/24 Null0\n"
+            + "ip route 10.1.0.0/24 10.0.0.1\n"
+            + "ip route 10.2.0.0/24 Null0\n"
+            + "no ip route 10.1.0.0/24 null0 1\n"
+            + "no ip route 10.3.0.0/24 Null0\n");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("10.1.0.0/24"), Ip.parse("10.0.0.1"), null, null),
+                new StaticRoute(Prefix.parse("10.2.0.0/24"), null, "Null0", null))));
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
+  public void testNoIpRoutePreservesOtherVrfAndNextHop() {
+    _frr.getVrfs().put("BLUE", new Vrf("BLUE"));
+    parse(
+        "ip route 10.1.0.0/24 Null0\n"
+            + "ip route 10.1.0.0/24 Null0 vrf BLUE\n"
+            + "ip route 10.1.0.0/24 Null0 100 vrf BLUE\n"
+            + "ip route 10.1.0.0/24 10.0.0.1 100 vrf BLUE\n"
+            + "ip route 10.1.0.0/24 reject vrf BLUE\n"
+            + "no ip route 10.1.0.0/24 Null0 1 vrf BLUE\n");
+    assertThat(_frr.getStaticRoutes(), hasSize(1));
+    assertThat(
+        _frr.getVrfs().get("BLUE").getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("10.1.0.0/24"), Ip.parse("10.0.0.1"), null, 100),
+                new StaticRoute(Prefix.parse("10.1.0.0/24"), null, "reject", null))));
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
   public void testFrrVrf_noExit() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
