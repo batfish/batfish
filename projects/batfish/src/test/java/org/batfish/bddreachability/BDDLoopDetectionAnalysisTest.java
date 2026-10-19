@@ -7,6 +7,7 @@ import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.symbolic.IngressLocation.interfaceLink;
 import static org.batfish.symbolic.IngressLocation.vrf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
@@ -240,5 +242,39 @@ public final class BDDLoopDetectionAnalysisTest {
               .detectLoopsStateExpr();
       assertEquals(ImmutableMap.of(state1, _pkt.getFactory().zero()), loops);
     }
+  }
+
+  /** Loop detection frees every BDD it creates except the ones it returns. */
+  @Test
+  public void testNoLeaks() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+    StateExpr state3 = new OriginateVrf("node3", "vrf3");
+
+    BDD ip1Bdd = _dst.toBDD(Ip.parse("1.1.1.1"));
+    BDD ip2Bdd = _dst.toBDD(Ip.parse("1.1.1.2"));
+    Table<StateExpr, StateExpr, Transition> edgeTable =
+        ImmutableTable.<StateExpr, StateExpr, Transition>builder()
+            .put(state1, state2, constraint(ip1Bdd.or(ip2Bdd)))
+            .put(state2, state1, constraint(ip1Bdd))
+            .put(state2, state2, IDENTITY)
+            .put(state2, state3, IDENTITY)
+            .build();
+    BDD pfxBdd = _dst.toBDD(Prefix.parse("1.0.0.0/8"));
+    BDDLoopDetectionAnalysis analysis =
+        new BDDLoopDetectionAnalysis(_pkt, edgeTable, ImmutableMap.of(state1, pfxBdd));
+
+    BDDFactory factory = _pkt.getFactory();
+    long before = factory.numOutstandingBDDs();
+    Map<StateExpr, BDD> loops = analysis.detectLoopsStateExpr();
+    assertEquals(before + loops.size(), factory.numOutstandingBDDs());
+    assertEquals(ImmutableMap.of(state1, ip1Bdd.or(ip2Bdd)), loops);
+    // The inputs are still usable.
+    assertEquals(pfxBdd, _dst.toBDD(Prefix.parse("1.0.0.0/8")));
+
+    before = factory.numOutstandingBDDs();
+    assertTrue(analysis.confirmLoop(state2, ip2Bdd));
+    assertFalse(analysis.confirmLoop(state3, ip1Bdd));
+    assertEquals(before, factory.numOutstandingBDDs());
   }
 }

@@ -63,7 +63,14 @@ public final class BDDReachabilityUtils {
             Edge::getPreState, Edge::getPostState, Edge::getTransition, Transitions::or));
   }
 
-  /** Apply edges to the reachableSets until a fixed point is reached. */
+  /**
+   * Apply edges to the reachableSets until a fixed point is reached.
+   *
+   * <p>{@code reachableSets}' input values are not freed or otherwise consumed by this method; the
+   * caller retains ownership of them and is still responsible for freeing them. On return, {@code
+   * reachableSets} holds a new, disjoint set of BDDs (the fixpoint result) that the caller now
+   * owns.
+   */
   @VisibleForTesting
   static void fixpoint(
       Map<StateExpr, BDD> reachableSets,
@@ -133,7 +140,13 @@ public final class BDDReachabilityUtils {
       }
 
       // Compute the newly learned BDDs (union of inputs) and then free them.
-      BDD learned = prior == null ? newValue.id() : factory.orAllAndFree(inputs);
+      BDD learned;
+      if (prior == null) {
+        learned = newValue.id();
+        inputs.forEach(BDD::free);
+      } else {
+        learned = factory.orAllAndFree(inputs);
+      }
 
       // Forward the learned BDDs along each outgoing edge.
       dirtyStateEdges.forEach(
@@ -150,6 +163,8 @@ public final class BDDReachabilityUtils {
                 dirtyStates.add(neighbor);
               }
               dirtyInputs.put(neighbor, result);
+            } else {
+              result.free();
             }
           });
       learned.free();
@@ -176,6 +191,10 @@ public final class BDDReachabilityUtils {
    * <p>If this function will be called more than once on the same edge table, prefer {@link
    * #backwardFixpointTransposed(Table, Map)} on a transposed, materialized edge table (see {@link
    * BDDReachabilityUtils#transposeAndMaterialize(Table)}) to save redundant computations.
+   *
+   * <p>Does not free or otherwise consume {@code reverseReachable}'s input values; the caller keeps
+   * ownership of them. On return, {@code reverseReachable} holds new BDDs that the caller now owns
+   * and is responsible for freeing.
    */
   public static void backwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
@@ -188,7 +207,7 @@ public final class BDDReachabilityUtils {
     backwardFixpointTransposed(transposeAndMaterialize(forwardEdgeTable), reverseReachable);
   }
 
-  /** See {@link #backwardFixpoint(Table, Map)}. */
+  /** See {@link #backwardFixpoint(Table, Map)}. Same BDD-ownership contract. */
   public static void backwardFixpointTransposed(
       Table<StateExpr, StateExpr, Transition> transposedEdgeTable,
       Map<StateExpr, BDD> reverseReachable) {
@@ -215,6 +234,11 @@ public final class BDDReachabilityUtils {
                 Edge::getPostState, Edge::getPreState, Edge::getTransition));
   }
 
+  /**
+   * Runs a fixpoint through the given graph forwards from the given states. Same BDD-ownership
+   * contract as {@link #backwardFixpoint(Table, Map)}: {@code reachable}'s input values are not
+   * freed, and its output values are new BDDs owned by the caller.
+   */
   public static void forwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable, Map<StateExpr, BDD> reachable) {
     fixpoint(reachable, forwardEdgeTable, Transition::transitForward);

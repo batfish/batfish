@@ -5,9 +5,11 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,6 +84,9 @@ public class BDDLoopDetectionAnalysis {
    * Detect infinite routing loops in the network.
    */
   public Map<StateExpr, BDD> detectLoopsStateExpr() {
+    BDDFactory factory = _bddPacket.getFactory();
+    long before = factory.numOutstandingBDDs();
+
     /*
      * Run enough rounds to exceed the max TTL (255). It takes at most 6 iterations to go between
      * hops:
@@ -98,24 +103,41 @@ public class BDDLoopDetectionAnalysis {
     /*
      * Identify which of the candidates are actually on loops
      */
-    Map<StateExpr, BDD> loopBDDs =
-        reachableInNRounds.entrySet().stream()
-            .filter(entry -> confirmLoop(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    Map<StateExpr, BDD> loopBDDs = new HashMap<>();
+    reachableInNRounds.forEach(
+        (state, bdd) -> {
+          if (confirmLoop(state, bdd)) {
+            loopBDDs.put(state, bdd);
+          } else {
+            bdd.free();
+          }
+        });
 
     /*
-     * Run backward to find the ingress locations/headerspaces that lead to loops.
+     * Run backward to find the ingress locations/headerspaces that lead to loops. The fixpoint
+     * replaces the map's values without freeing them.
      */
+    List<BDD> candidates = ImmutableList.copyOf(loopBDDs.values());
     backwardFixpoint(_forwardEdgeTable, loopBDDs);
+    candidates.forEach(BDD::free);
 
     /*
      * Extract the ingress location BDDs.
      */
-    return getIngressStateExprBdds(loopBDDs, _ingressLocationStateBDDs, _bddPacket.getFactory());
+    Map<StateExpr, BDD> result =
+        getIngressStateExprBdds(loopBDDs, _ingressLocationStateBDDs, factory);
+    loopBDDs.values().forEach(BDD::free);
+    assert factory.numOutstandingBDDs() == before + result.size()
+        : "detectLoopsStateExpr leaked BDDs";
+    return result;
   }
 
+  /**
+   * Returns the flows reaching each state in one step from {@code bdds}. The caller owns the
+   * returned BDDs; {@code bdds} is not modified.
+   */
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
-    BDD zero = _bddPacket.getFactory().zero();
+    BDDFactory factory = _bddPacket.getFactory();
     Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
     bdds.forEach(
         (source, sourceBdd) ->
@@ -123,10 +145,24 @@ public class BDDLoopDetectionAnalysis {
                 .row(source)
                 .forEach(
                     (target, transition) -> {
-                      BDD targetBdd = newReachableInNRounds.getOrDefault(target, zero);
-                      BDD newTragetBdd = targetBdd.or(transition.transitForward(sourceBdd));
-                      if (!newTragetBdd.isZero()) {
-                        newReachableInNRounds.put(target, newTragetBdd);
+                      long priorBDDs = factory.numOutstandingBDDs();
+                      BDD transited = transition.transitForward(sourceBdd);
+                      assert factory.numOutstandingBDDs() - priorBDDs == 1
+                          : "Leak of size "
+                              + (factory.numOutstandingBDDs() - priorBDDs - 1)
+                              + " transiting "
+                              + source
+                              + " -> "
+                              + target;
+                      if (transited.isZero()) {
+                        transited.free();
+                        return;
+                      }
+                      BDD targetBdd = newReachableInNRounds.get(target);
+                      if (targetBdd == null) {
+                        newReachableInNRounds.put(target, transited);
+                      } else {
+                        targetBdd.orWith(transited);
                       }
                     }));
     return newReachableInNRounds;
@@ -138,48 +174,85 @@ public class BDDLoopDetectionAnalysis {
    */
   @VisibleForTesting
   boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
+    BDDFactory factory = _bddPacket.getFactory();
+    long before = factory.numOutstandingBDDs();
     Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
-    Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
+    try {
+      Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
+      while (!dirty.isEmpty()) {
+        Set<StateExpr> newDirty = new HashSet<>();
 
-    BDD zero = _bddPacket.getFactory().zero();
-    while (!dirty.isEmpty()) {
-      Set<StateExpr> newDirty = new HashSet<>();
+        for (StateExpr preState : dirty) {
+          BDD preStateBDD = reachable.get(preState);
+          // Replaced BDDs are freed after the loop: one may be preStateBDD (a self-loop).
+          List<BDD> replaced = new ArrayList<>();
+          for (Entry<StateExpr, Transition> entry : _forwardEdgeTable.row(preState).entrySet()) {
+            StateExpr postState = entry.getKey();
+            Transition transition = entry.getValue();
+            long priorBDDs = factory.numOutstandingBDDs();
+            BDD result = transition.transitForward(preStateBDD);
+            assert factory.numOutstandingBDDs() - priorBDDs == 1
+                : "Leak of size "
+                    + (factory.numOutstandingBDDs() - priorBDDs - 1)
+                    + " transiting "
+                    + preState
+                    + " -> "
+                    + postState;
+            if (result.isZero()) {
+              result.free();
+              continue;
+            }
 
-      for (StateExpr preState : dirty) {
-        BDD preStateBDD = reachable.get(preState);
-        for (Entry<StateExpr, Transition> entry : _forwardEdgeTable.row(preState).entrySet()) {
-          StateExpr postState = entry.getKey();
-          Transition transition = entry.getValue();
-          BDD result = transition.transitForward(preStateBDD);
-          if (result.isZero()) {
-            continue;
+            if (postState.equals(stateExpr) && result.andSat(bdd)) {
+              result.free();
+              replaced.forEach(BDD::free);
+              return true;
+            }
+
+            // update postState BDD reverse-reachable from leaf
+            BDD oldReach = reachable.get(postState);
+            if (oldReach == null) {
+              reachable.put(postState, result);
+              newDirty.add(postState);
+              continue;
+            }
+            BDD newReach = oldReach.or(result);
+            result.free();
+            if (oldReach.equals(newReach)) {
+              newReach.free();
+            } else {
+              reachable.put(postState, newReach);
+              replaced.add(oldReach);
+              newDirty.add(postState);
+            }
           }
-
-          if (postState.equals(stateExpr) && result.andSat(bdd)) {
-            return true;
-          }
-
-          // update postState BDD reverse-reachable from leaf
-          BDD oldReach = reachable.getOrDefault(postState, zero);
-          BDD newReach = oldReach == null ? result : oldReach.or(result);
-          if (oldReach == null || !oldReach.equals(newReach)) {
-            reachable.put(postState, newReach);
-            newDirty.add(postState);
-          }
+          replaced.forEach(BDD::free);
         }
-      }
 
-      dirty = newDirty;
+        dirty = newDirty;
+      }
+      return false;
+    } finally {
+      reachable.values().forEach(BDD::free);
+      assert factory.numOutstandingBDDs() == before : "confirmLoop leaked BDDs";
     }
-    return false;
   }
 
+  /** Returns the flows reachable in exactly {@code numRounds} steps; the caller owns them. */
   private Map<StateExpr, BDD> reachableInNRounds(int numRounds) {
-    // All ingress locations are reachable in 0 rounds.
+    // All ingress locations are reachable in 0 rounds. That map is ours, not the caller's.
     Map<StateExpr, BDD> reachableInNRounds = _ingressLocationStateBDDs;
 
     for (int round = 0; !reachableInNRounds.isEmpty() && round < numRounds; round++) {
-      reachableInNRounds = propagate(reachableInNRounds);
+      Map<StateExpr, BDD> next = propagate(reachableInNRounds);
+      if (reachableInNRounds != _ingressLocationStateBDDs) {
+        reachableInNRounds.values().forEach(BDD::free);
+      }
+      reachableInNRounds = next;
+    }
+    if (reachableInNRounds == _ingressLocationStateBDDs) {
+      return reachableInNRounds.entrySet().stream()
+          .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().id()));
     }
     return reachableInNRounds;
   }
@@ -189,9 +262,12 @@ public class BDDLoopDetectionAnalysis {
       Map<StateExpr, BDD> ingressLocationStateBDDs,
       BDDFactory factory) {
     BDD zero = factory.zero();
-    return toImmutableMap(
-        ingressLocationStateBDDs,
-        Map.Entry::getKey,
-        entry -> stateReachableBdds.getOrDefault(entry.getKey(), zero).and(entry.getValue()));
+    Map<StateExpr, BDD> result =
+        toImmutableMap(
+            ingressLocationStateBDDs,
+            Map.Entry::getKey,
+            entry -> stateReachableBdds.getOrDefault(entry.getKey(), zero).and(entry.getValue()));
+    zero.free();
+    return result;
   }
 }
