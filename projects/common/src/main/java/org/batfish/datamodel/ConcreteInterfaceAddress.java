@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableMap;
 import java.util.Comparator;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -39,10 +38,6 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
         "Invalid network mask %s, must be between 1 and %s",
         networkBits,
         Prefix.MAX_PREFIX_LENGTH);
-    assert Prefix.create(ip, networkBits).toHostIpSpace().containsIp(ip, ImmutableMap.of())
-        : String.format(
-            "ConcreteInterfaceAddress: IP is not a host IP. ip=%s, networkBits=%d",
-            ip, networkBits);
     return new ConcreteInterfaceAddress(ip, networkBits);
   }
 

@@ -3802,14 +3802,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterIfi_address(Ifi_addressContext ctx) {
     Set<ConcreteInterfaceAddress> allAddresses = _currentInterfaceOrRange.getAllAddresses();
-    ConcreteInterfaceAddress address;
-    if (ctx.ip_prefix() != null) {
-      address = toConcreteInterfaceAddress(ctx.ip_prefix());
-    } else {
-      assert ctx.ip_address() != null;
-      Ip ip = toIp(ctx.ip_address());
-      address = ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH);
-    }
+    ConcreteInterfaceAddress address = toConcreteInterfaceAddress(ctx);
     _currentInterfaceAddress = address;
     if (_currentInterfaceOrRange.getPrimaryAddress() == null) {
       _currentInterfaceOrRange.setPrimaryAddress(address);
@@ -7664,6 +7657,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
       }
     }
+  }
+
+  private @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(Ifi_addressContext ctx) {
+    ConcreteInterfaceAddress address;
+    if (ctx.ip_prefix() != null) {
+      address = toConcreteInterfaceAddress(ctx.ip_prefix());
+    } else {
+      assert ctx.ip_address() != null;
+      address = ConcreteInterfaceAddress.create(toIp(ctx.ip_address()), Prefix.MAX_PREFIX_LENGTH);
+    }
+    Ip ip = address.getIp();
+    Prefix prefix = address.getPrefix();
+    if (address.getNetworkBits() < 31
+        && (ip.equals(prefix.getStartIp()) || ip.equals(prefix.getEndIp()))) {
+      _w.fatalRedFlag(
+          "Cannot assign %s address as ip address: %s on interface %s",
+          ip.equals(prefix.getStartIp()) ? "network" : "broadcast",
+          address,
+          _currentInterfaceOrRange.getName());
+    }
+    return address;
   }
 
   private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(

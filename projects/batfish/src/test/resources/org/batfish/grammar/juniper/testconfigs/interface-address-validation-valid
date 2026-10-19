@@ -1,0 +1,11 @@
+set system host-name interface-address-validation-valid
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.0/31
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/31
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.0/32
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.255/32
+set interfaces ge-0/0/0 unit 0 family inet address 198.51.100.0
+set interfaces ge-0/0/0 unit 0 family inet address 198.51.100.255
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.0/22
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.255/22
+set security nat source pool POOL address 192.0.2.0/24 to 192.0.2.255/24
