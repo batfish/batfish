@@ -33,7 +33,7 @@
     "commons-cli:commons-cli": 1754587837,
     "commons-io:commons-io": 1305681826,
     "dk.brics:automaton": -1128129151,
-    "io.github.java-diff-utils:java-diff-utils": -510462449,
+    "io.github.java-diff-utils:java-diff-utils": 1977050384,
     "jakarta.activation:jakarta.activation-api": 1724199980,
     "jakarta.annotation:jakarta.annotation-api": -1862893936,
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
@@ -150,8 +150,8 @@
     "dk.brics:automaton:jar:sources": 153550414,
     "info.picocli:picocli": 996750497,
     "info.picocli:picocli:jar:sources": 1275876040,
-    "io.github.java-diff-utils:java-diff-utils": 956718211,
-    "io.github.java-diff-utils:java-diff-utils:jar:sources": -2012277036,
+    "io.github.java-diff-utils:java-diff-utils": 668781851,
+    "io.github.java-diff-utils:java-diff-utils:jar:sources": 2020948964,
     "jakarta.activation:jakarta.activation-api": 345559132,
     "jakarta.activation:jakarta.activation-api:jar:sources": 928484586,
     "jakarta.annotation:jakarta.annotation-api": -468827502,
@@ -610,10 +610,10 @@
     },
     "io.github.java-diff-utils:java-diff-utils": {
       "shasums": {
-        "jar": "3e3b6e149bf5d091422689ad6fcc22baad503a52b1139a9baf250fb6de633024",
-        "sources": "a510439dd5d4795e80eb671107a270c0f2c8e1b0741a7bc88c6decf0c3ab3bdf"
+        "jar": "a20d8f538a1254dde49370cc06466aff7df7e8cbc75d1077e14f5c951d2f8bfa",
+        "sources": "38ed1be24a8a90a5543bf645faa7358527b675e796f29ac487ea740719d470e6"
       },
-      "version": "4.17"
+      "version": "4.18"
     },
     "jakarta.activation:jakarta.activation-api": {
       "shasums": {
