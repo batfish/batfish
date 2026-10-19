@@ -1,0 +1,8 @@
+set system host-name interface-address-validation-invalid
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/30
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.0/24 primary
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.4/30
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.3/30 preferred
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.3/30 vrrp-group 1 virtual-address 192.0.2.2
+set interfaces ge-0/0/0 unit 0 family inet address 198.51.100.255/24
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.2/30

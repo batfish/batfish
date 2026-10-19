@@ -3111,6 +3111,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private Interface _currentInterfaceOrRange;
 
+  private @Nullable Interface _currentInterfaceBeforeInvalidAddress;
+
   private ConcreteInterfaceAddress _currentInterfaceAddress;
 
   private ConcreteInterfaceAddress6 _currentInterfaceAddress6;
@@ -3801,10 +3803,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIfi_address(Ifi_addressContext ctx) {
-    Set<ConcreteInterfaceAddress> allAddresses = _currentInterfaceOrRange.getAllAddresses();
     ConcreteInterfaceAddress address;
     if (ctx.ip_prefix() != null) {
-      address = toConcreteInterfaceAddress(ctx.ip_prefix());
+      String text = ctx.ip_prefix().getText();
+      Ip ip = Ip.parse(text.substring(0, text.indexOf('/')));
+      Prefix prefix = toPrefix(ctx.ip_prefix());
+      if (prefix.getPrefixLength() > 0
+          && prefix.getPrefixLength() < 31
+          && (ip.equals(prefix.getStartIp()) || ip.equals(prefix.getEndIp()))) {
+        _w.fatalRedFlag(
+            "Cannot assign %s address as ip address: %s on interface %s",
+            ip.equals(prefix.getStartIp()) ? "network" : "broadcast",
+            text,
+            _currentInterfaceOrRange.getName());
+        // Discard the address and its nested statements using a dummy interface.
+        _currentInterfaceBeforeInvalidAddress = _currentInterfaceOrRange;
+        _currentInterfaceOrRange = new Interface(_currentInterfaceOrRange.getName());
+        address =
+            ConcreteInterfaceAddress.create(prefix.getFirstHostIp(), prefix.getPrefixLength());
+      } else {
+        address = toConcreteInterfaceAddress(ctx.ip_prefix());
+      }
     } else {
       assert ctx.ip_address() != null;
       Ip ip = toIp(ctx.ip_address());
@@ -3817,7 +3836,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (_currentInterfaceOrRange.getPreferredAddress() == null) {
       _currentInterfaceOrRange.setPreferredAddress(address);
     }
-    allAddresses.add(address);
+    _currentInterfaceOrRange.getAllAddresses().add(address);
     Ip ip = address.getIp();
     _currentInterfaceOrRange.getAllAddressIps().add(ip);
   }
@@ -7059,6 +7078,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfi_address(Ifi_addressContext ctx) {
     _currentInterfaceAddress = null;
+    if (_currentInterfaceBeforeInvalidAddress != null) {
+      _currentInterfaceOrRange = _currentInterfaceBeforeInvalidAddress;
+      _currentInterfaceBeforeInvalidAddress = null;
+    }
   }
 
   @Override
