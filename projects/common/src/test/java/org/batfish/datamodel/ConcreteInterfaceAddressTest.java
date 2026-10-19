@@ -34,6 +34,18 @@ public class ConcreteInterfaceAddressTest {
   }
 
   @Test
+  public void testParseNetworkAddress() {
+    assertThat(
+        ConcreteInterfaceAddress.parse("192.0.2.0/24").getIp(), equalTo(Ip.parse("192.0.2.0")));
+  }
+
+  @Test
+  public void testParseBroadcastAddress() {
+    assertThat(
+        ConcreteInterfaceAddress.parse("192.0.2.255/24").getIp(), equalTo(Ip.parse("192.0.2.255")));
+  }
+
+  @Test
   public void testTryParse() {
     assertThat(
         ConcreteInterfaceAddress.tryParse("1.1.1.1/24"),
