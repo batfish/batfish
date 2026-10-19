@@ -45,6 +45,21 @@ public class JFactoryTest {
     assertThat(differentAssignments, hasSize(greaterThanOrEqualTo(100)));
   }
 
+  /** {@code exist} as the first operation on a new factory must initialize the caches it uses. */
+  @Test
+  public void testExistOnNewFactory() {
+    BDDFactory f = JFactory.init(1000, 1000);
+    f.setVarNum(4);
+    // x0 & x2 | x1 & x3 | !x0 & !x1 & !x2: quantifying x0 and x1 ORs more than two cofactors.
+    BDD b =
+        f.ithVar(0)
+            .andWith(f.ithVar(2))
+            .orWith(f.ithVar(1).andWith(f.ithVar(3)))
+            .orWith(f.nithVar(0).andWith(f.nithVar(1)).andWith(f.nithVar(2)));
+    BDD cube = f.ithVar(0).andWith(f.ithVar(1));
+    assertEquals(f.one(), b.exist(cube));
+  }
+
   @Test
   public void testIsConstant() {
     _factory.setVarNum(3);

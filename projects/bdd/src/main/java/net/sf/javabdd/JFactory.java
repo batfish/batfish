@@ -3193,6 +3193,10 @@ public final class JFactory extends BDDFactory implements Serializable {
     if (quantcache == null) {
       quantcache = new FlatCacheI("quant", cachesize);
     }
+    if (multiopcache == null) {
+      // exist_rec ORs cofactors with orAll_rec.
+      multiopcache = BddCacheMultiOp_init(cachesize);
+    }
     applyop = bddop_or;
     quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
 
