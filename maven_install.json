@@ -22,7 +22,7 @@
     "com.google.code.gson:gson": 2063056812,
     "com.google.errorprone:error_prone_annotations": 911823543,
     "com.google.googlejavaformat:google-java-format": -302611545,
-    "com.google.guava:guava": -692456693,
+    "com.google.guava:guava": 1943808618,
     "com.google.guava:guava-bom": -231672499,
     "com.google.guava:guava-testlib": 279911981,
     "com.google.j2objc:j2objc-annotations": 2003271689,
@@ -331,7 +331,6 @@
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.3",
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.22.3",
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.22.3",
-    "com.google.guava:guava": "com.google.guava:guava:33.7.1-jre",
     "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.7.1-jre",
     "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.7.1-jre",
     "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1"
