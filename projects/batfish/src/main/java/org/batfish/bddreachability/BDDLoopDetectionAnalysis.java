@@ -84,6 +84,9 @@ public class BDDLoopDetectionAnalysis {
    * Detect infinite routing loops in the network.
    */
   public Map<StateExpr, BDD> detectLoopsStateExpr() {
+    BDDFactory factory = _bddPacket.getFactory();
+    long before = factory.numOutstandingBDDs();
+
     /*
      * Run enough rounds to exceed the max TTL (255). It takes at most 6 iterations to go between
      * hops:
@@ -122,8 +125,10 @@ public class BDDLoopDetectionAnalysis {
      * Extract the ingress location BDDs.
      */
     Map<StateExpr, BDD> result =
-        getIngressStateExprBdds(loopBDDs, _ingressLocationStateBDDs, _bddPacket.getFactory());
+        getIngressStateExprBdds(loopBDDs, _ingressLocationStateBDDs, factory);
     loopBDDs.values().forEach(BDD::free);
+    assert factory.numOutstandingBDDs() == before + result.size()
+        : "detectLoopsStateExpr leaked BDDs";
     return result;
   }
 
@@ -132,6 +137,7 @@ public class BDDLoopDetectionAnalysis {
    * returned BDDs; {@code bdds} is not modified.
    */
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
+    BDDFactory factory = _bddPacket.getFactory();
     Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
     bdds.forEach(
         (source, sourceBdd) ->
@@ -139,7 +145,15 @@ public class BDDLoopDetectionAnalysis {
                 .row(source)
                 .forEach(
                     (target, transition) -> {
+                      long priorBDDs = factory.numOutstandingBDDs();
                       BDD transited = transition.transitForward(sourceBdd);
+                      assert factory.numOutstandingBDDs() - priorBDDs == 1
+                          : "Leak of size "
+                              + (factory.numOutstandingBDDs() - priorBDDs - 1)
+                              + " transiting "
+                              + source
+                              + " -> "
+                              + target;
                       if (transited.isZero()) {
                         transited.free();
                         return;
@@ -160,6 +174,8 @@ public class BDDLoopDetectionAnalysis {
    */
   @VisibleForTesting
   boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
+    BDDFactory factory = _bddPacket.getFactory();
+    long before = factory.numOutstandingBDDs();
     Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
     try {
       Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
@@ -173,7 +189,15 @@ public class BDDLoopDetectionAnalysis {
           for (Entry<StateExpr, Transition> entry : _forwardEdgeTable.row(preState).entrySet()) {
             StateExpr postState = entry.getKey();
             Transition transition = entry.getValue();
+            long priorBDDs = factory.numOutstandingBDDs();
             BDD result = transition.transitForward(preStateBDD);
+            assert factory.numOutstandingBDDs() - priorBDDs == 1
+                : "Leak of size "
+                    + (factory.numOutstandingBDDs() - priorBDDs - 1)
+                    + " transiting "
+                    + preState
+                    + " -> "
+                    + postState;
             if (result.isZero()) {
               result.free();
               continue;
@@ -210,6 +234,7 @@ public class BDDLoopDetectionAnalysis {
       return false;
     } finally {
       reachable.values().forEach(BDD::free);
+      assert factory.numOutstandingBDDs() == before : "confirmLoop leaked BDDs";
     }
   }
 
