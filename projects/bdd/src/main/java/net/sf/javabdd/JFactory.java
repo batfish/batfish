@@ -5079,6 +5079,10 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
 
     reorder_done();
+    // Reordering frees node slots and reuses them for other functions, but the GC in reorder_done
+    // only drops cache entries that point at free slots, so entries keyed by a reused slot would
+    // return wrong results.
+    bdd_operator_reset();
   }
 
   private int reorder_varup(int var) {
