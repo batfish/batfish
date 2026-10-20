@@ -218,11 +218,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nullable Set<BgpAdvertisement> _externalAdvertisements;
 
   // RIBs and RIB delta builders
-  /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
+  /**
+   * Helper RIB containing all paths obtained with external BGP, for IPv4 unicast. Only
+   * advertise-external export reads it, so it is left empty unless {@link #_maintainEbgpRib}.
+   */
   final @Nonnull Bgpv4Rib _ebgpv4Rib;
 
-  /** RIB containing paths obtained with iBGP, for IPv4 unicast */
-  final @Nonnull Bgpv4Rib _ibgpv4Rib;
+  /**
+   * Whether {@link #_ebgpv4Rib} is maintained: some peer of this process can advertise external.
+   * Decided from the peer configurations, so a session that comes up in a later round finds the RIB
+   * populated.
+   */
+  private final boolean _maintainEbgpRib;
 
   // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
   private @Nonnull RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
@@ -496,17 +503,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getNetworkNextHopIpTieBreaker(),
             _process.getRedistributeNextHopIpTieBreaker(),
             nextHopIpResolverRestriction);
-    _ibgpv4Rib =
-        new Bgpv4Rib(
-            _mainRib,
-            bestPathTieBreaker,
-            _process.getMultipathIbgp() ? null : 1,
-            multiPathMatchMode,
-            clusterListAsIbgpCost,
-            _process.getLocalOriginationTypeTieBreaker(),
-            _process.getNetworkNextHopIpTieBreaker(),
-            _process.getRedistributeNextHopIpTieBreaker(),
-            nextHopIpResolverRestriction);
+    _maintainEbgpRib =
+        _process
+            .allPeerConfigsStream()
+            .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
+            .filter(Objects::nonNull)
+            .anyMatch(af -> af.getAddressFamilyCapabilities().getAdvertiseExternal());
     _bgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -1238,7 +1240,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route transformedIncomingRoute = imported.transformed();
       if (imported.withdrawn()) {
         // Remove from target and overall RIBs and update deltas
-        processRemoveInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
+        processRemoveInEbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
         processRemoveInBgpRib(transformedIncomingRoute);
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.remove(
@@ -1246,7 +1248,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
       } else {
         // Merge into target and overall RIBs and update deltas
-        processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
+        processMergeInEbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
         processMergeInBgpRib(transformedIncomingRoute);
         if (useRibGroups) {
           // If new route gets leaked to other VRFs via RibGroup, this VRF should be its source VRF.
@@ -1523,6 +1525,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     Stream.concat(
                         bgpv4Prev.stream(),
                         ourSession.getAdvertiseExternal() ? ebgpv4Prev.stream() : Stream.of()),
+                    // Without advertise-external the eBGP delta holds nothing this session sent,
+                    // and is empty anyway unless some peer of this process has it.
                     Stream.concat(bgpv4DeltaPrev.stream(), ebgpv4DeltaPrev.stream())
                         .filter(RouteAdvertisement::isWithdrawn)
                         .map(RouteAdvertisement::getRoute)))
@@ -2357,7 +2361,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               // TODO: possibly support setting tag
               .setWeight(advert.getWeight())
               .build();
-      processMergeInEbgpOrIbgpRib(route, ebgp);
+      processMergeInEbgpRib(route, ebgp);
       processMergeInBgpRib(route);
     } else {
       // Since the route was logged after sending, it is from a pre-import-chain view of the route.
@@ -2413,50 +2417,45 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       }
       if (acceptIncoming) {
         Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-        processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ebgp);
+        processMergeInEbgpRib(transformedIncomingRoute, ebgp);
         processMergeInBgpRib(transformedIncomingRoute);
       }
     }
   }
 
   /**
-   * Merges the given {@link Bgpv4Route} into {@link #_ebgpv4Rib} or {@link #_ibgpv4Rib}. If {@code
-   * ebgp}, updates the eBGP multipath and best path delta builders accordingly. Returns the
-   * multipath delta associated with the merge.
-   *
-   * @param ebgp Whether to merge the route into the eBGP RIB (if false, merges into iBGP RIB)
+   * Merges the given {@link Bgpv4Route} into {@link #_ebgpv4Rib} if {@code ebgp} and the RIB is
+   * maintained, updating the eBGP multipath and best path delta builders. Returns the multipath
+   * delta associated with the merge, empty if nothing was done.
    */
-  private RibDelta<Bgpv4Route> processMergeInEbgpOrIbgpRib(Bgpv4Route route, boolean ebgp) {
-    return processMergeOrRemoveInEbgpOrIbgpRib(route, ebgp, true);
+  private RibDelta<Bgpv4Route> processMergeInEbgpRib(Bgpv4Route route, boolean ebgp) {
+    return processMergeOrRemoveInEbgpRib(route, ebgp, true);
   }
 
   /**
-   * Removes the given {@link Bgpv4Route} from {@link #_ebgpv4Rib} or {@link #_ibgpv4Rib}. If {@code
-   * ebgp}, updates the eBGP multipath and best path delta builders accordingly. Returns the
-   * multipath delta associated with the removal.
-   *
-   * @param ebgp Whether to remove the route from the eBGP RIB (if false, removes from iBGP RIB)
+   * Removes the given {@link Bgpv4Route} from {@link #_ebgpv4Rib} if {@code ebgp} and the RIB is
+   * maintained, updating the eBGP multipath and best path delta builders. Returns the multipath
+   * delta associated with the removal, empty if nothing was done.
    */
-  private RibDelta<Bgpv4Route> processRemoveInEbgpOrIbgpRib(Bgpv4Route route, boolean ebgp) {
-    return processMergeOrRemoveInEbgpOrIbgpRib(route, ebgp, false);
+  private RibDelta<Bgpv4Route> processRemoveInEbgpRib(Bgpv4Route route, boolean ebgp) {
+    return processMergeOrRemoveInEbgpRib(route, ebgp, false);
   }
 
   /**
-   * Merges or removes the given {@link Bgpv4Route} from {@link #_ebgpv4Rib} or {@link #_ibgpv4Rib}.
-   * If eBGP, updates the eBGP multipath and best path delta builders accordingly. Returns the
-   * multipath delta associated with the change.
+   * Merges or removes the given {@link Bgpv4Route} from {@link #_ebgpv4Rib}, updating the eBGP
+   * multipath and best path delta builders. Does nothing for an iBGP route, or when the RIB is not
+   * maintained. Returns the multipath delta associated with the change.
    *
-   * @param ebgp Whether to modify the eBGP RIB (if false, modifies the iBGP RIB)
+   * @param ebgp Whether the route was learned over eBGP
    * @param merge Whether to merge the given route (if false, removes it)
    */
-  private RibDelta<Bgpv4Route> processMergeOrRemoveInEbgpOrIbgpRib(
+  private RibDelta<Bgpv4Route> processMergeOrRemoveInEbgpRib(
       Bgpv4Route route, boolean ebgp, boolean merge) {
-    if (ebgp) {
-      return processMergeOrRemove(
-          _ebgpv4Rib, route, _ebgpv4DeltaBuilder, _ebgpv4DeltaBestPathBuilder, merge);
+    if (!ebgp || !_maintainEbgpRib) {
+      return RibDelta.empty();
     }
-    // No need to track deltas for IBGP
-    return merge ? _ibgpv4Rib.mergeRouteGetDelta(route) : _ibgpv4Rib.removeRouteGetDelta(route);
+    return processMergeOrRemove(
+        _ebgpv4Rib, route, _ebgpv4DeltaBuilder, _ebgpv4DeltaBestPathBuilder, merge);
   }
 
   /**
@@ -2746,7 +2745,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private void addLeakedV4Route(Bgpv4Route route) {
     if (_importedFromOtherVrfs.add(route, 1) == 0) {
-      processMergeInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
+      processMergeInEbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
       processMergeInBgpRib(route);
     }
   }
@@ -2754,7 +2753,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Removes a route a leak imported; see {@link #addLeakedV4Route}. */
   private void removeLeakedV4Route(Bgpv4Route route) {
     if (_importedFromOtherVrfs.remove(route, 1) == 1) {
-      processRemoveInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
+      processRemoveInEbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
       processRemoveInBgpRib(route);
     }
   }
@@ -2869,13 +2868,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           if (accept) {
             Bgpv4Route transformedRoute = builder.build();
             if (ra.isWithdrawn()) {
-              processRemoveInEbgpOrIbgpRib(
-                  transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
+              processRemoveInEbgpRib(transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
               processRemoveInBgpRib(transformedRoute);
               _importedFromOtherVrfs.remove(transformedRoute);
             } else {
               RibDelta<Bgpv4Route> d =
-                  processMergeInEbgpOrIbgpRib(
+                  processMergeInEbgpRib(
                       transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
               LOGGER.debug("Node {}, VRF {}, route {} leaked from EVPN", _hostname, _vrfName, d);
               processMergeInBgpRib(transformedRoute);

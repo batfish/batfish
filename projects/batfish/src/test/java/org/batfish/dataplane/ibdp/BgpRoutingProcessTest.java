@@ -84,6 +84,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
@@ -149,12 +150,96 @@ public class BgpRoutingProcessTest {
 
   @Test
   public void testInitRibsEmpty() {
-    // iBGP
-    assertThat(_routingProcess._ibgpv4Rib.getUnannotatedRoutes(), empty());
     // eBGP
     assertThat(_routingProcess._ebgpv4Rib.getUnannotatedRoutes(), empty());
     // Combined bgp
     assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
+  }
+
+  /** An eBGP neighbor at {@code peerIp} whose IPv4 unicast family may advertise external. */
+  private static BgpActivePeerConfig ebgpNeighbor(Ip peerIp, boolean advertiseExternal) {
+    return BgpActivePeerConfig.builder()
+        .setLocalIp(Ip.parse("1.1.1.2"))
+        .setLocalAs(1L)
+        .setRemoteAs(2L)
+        .setPeerAddress(peerIp)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setAdvertiseExternal(advertiseExternal)
+                        .build())
+                .build())
+        .build();
+  }
+
+  /** A main RIB in which the advertisements' next hop resolves, so the BGP routes activate. */
+  private static Rib mainRibResolvingNextHop() {
+    Rib rib = new Rib();
+    rib.mergeRoute(
+        new AnnotatedRoute<>(
+            new ConnectedRoute(Prefix.parse("2.2.2.0/24"), "eth0"), DEFAULT_VRF_NAME));
+    return rib;
+  }
+
+  /** An external advertisement of {@code network} received over eBGP from {@code srcIp}. */
+  private static BgpAdvertisement ebgpReceived(Ip srcIp, Prefix network) {
+    return BgpAdvertisement.builder()
+        .setType(BgpAdvertisementType.EBGP_RECEIVED)
+        .setNetwork(network)
+        .setNextHopIp(Ip.parse("2.2.2.2"))
+        .setSrcIp(srcIp)
+        .setSrcNode("neighbor")
+        .setSrcVrf(DEFAULT_VRF_NAME)
+        .setDstIp(Ip.parse("1.1.1.2"))
+        .setDstNode("c1")
+        .setDstVrf(DEFAULT_VRF_NAME)
+        .setOriginatorIp(srcIp)
+        .setOriginType(OriginType.EGP)
+        .setSrcProtocol(RoutingProtocol.BGP)
+        .setAsPath(AsPath.ofSingletonAsSets(2L))
+        .setCommunities(ImmutableSortedSet.of())
+        .setClusterList(ImmutableSortedSet.of())
+        .build();
+  }
+
+  @Test
+  public void testEbgpRibLeftEmptyWithoutAdvertiseExternal() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, ebgpNeighbor(srcIp, false)));
+    BgpRoutingProcess proc =
+        new BgpRoutingProcess(
+            _bgpProcess,
+            _c,
+            DEFAULT_VRF_NAME,
+            mainRibResolvingNextHop(),
+            BgpTopology.EMPTY,
+            new PrefixTracer());
+
+    proc.processExternalBgpAdvertisement(ebgpReceived(srcIp, Prefix.parse("10.0.0.0/8")));
+
+    assertThat(proc._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+    assertThat(proc._ebgpv4Rib.getUnannotatedRoutes(), empty());
+  }
+
+  @Test
+  public void testEbgpRibMaintainedWithAdvertiseExternal() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, ebgpNeighbor(srcIp, true)));
+    BgpRoutingProcess proc =
+        new BgpRoutingProcess(
+            _bgpProcess,
+            _c,
+            DEFAULT_VRF_NAME,
+            mainRibResolvingNextHop(),
+            BgpTopology.EMPTY,
+            new PrefixTracer());
+
+    proc.processExternalBgpAdvertisement(ebgpReceived(srcIp, Prefix.parse("10.0.0.0/8")));
+
+    assertThat(proc._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+    assertThat(
+        proc._ebgpv4Rib.getUnannotatedRoutes(), equalTo(proc._bgpv4Rib.getUnannotatedRoutes()));
   }
 
   @Test
