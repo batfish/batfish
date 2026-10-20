@@ -8,6 +8,8 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_REDISTRIBUTE;
 
+import com.carrotsearch.hppc.ObjectLongHashMap;
+import com.carrotsearch.hppc.cursors.ObjectLongCursor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
@@ -90,8 +92,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   protected long _logicalClock;
 
-  /** Map to keep track when routes were merged in. */
-  protected Map<R, Long> _logicalArrivalTime;
+  /**
+   * When each route was merged in, by {@link #_logicalClock}. One entry per route the RIB holds, so
+   * kept as a primitive-valued map rather than a boxed one.
+   */
+  protected ObjectLongHashMap<R> _logicalArrivalTime;
 
   /** For FRR, Cluster List Length is used as an IGP metric. */
   protected boolean _clusterListAsIgpCost;
@@ -129,7 +134,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _bestPaths = new HashMap<>(0);
-    _logicalArrivalTime = new HashMap<>(0);
+    _logicalArrivalTime = new ObjectLongHashMap<>();
     _logicalClock = 0;
     _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
   }
@@ -248,8 +253,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
 
     RibDelta<R> delta = actionRouteGetDelta(route, super::mergeRouteGetDelta);
-    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER
-        && _logicalArrivalTime.putIfAbsent(route, _logicalClock) == null) {
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && !_logicalArrivalTime.containsKey(route)) {
+      _logicalArrivalTime.put(route, _logicalClock);
       _logicalClock++;
     }
     if (!delta.isEmpty()) {
@@ -747,6 +752,10 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @VisibleForTesting
   @Nonnull
   Map<R, Long> getArrivalTimeForTesting() {
-    return Collections.unmodifiableMap(_logicalArrivalTime);
+    Map<R, Long> out = new HashMap<>(_logicalArrivalTime.size());
+    for (ObjectLongCursor<R> c : _logicalArrivalTime) {
+      out.put(c.key, c.value);
+    }
+    return Collections.unmodifiableMap(out);
   }
 }
