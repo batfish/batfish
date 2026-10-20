@@ -5717,10 +5717,19 @@ public final class JFactory extends BDDFactory implements Serializable {
     INCREF(r);
   }
 
+  /**
+   * Marks every pair of variables in {@code dep} as interacting. mark_roots calls this once per
+   * referenced node, usually with only a few variables set, so only rows of set variables are
+   * scanned: a full varNum x varNum scan per call made reordering cubic in the number of variables,
+   * even for a factory holding little more than its variable nodes.
+   */
   private void addDependencies(boolean[] dep) {
     for (int n = 0; n < bddvarnum; n++) {
+      if (!dep[n]) {
+        continue;
+      }
       for (int m = n; m < bddvarnum; m++) {
-        if (dep[n] && dep[m]) {
+        if (dep[m]) {
           imatrixSet(iactmtx, n, m);
           imatrixSet(iactmtx, m, n);
         }
