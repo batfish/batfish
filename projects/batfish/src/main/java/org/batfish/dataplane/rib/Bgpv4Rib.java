@@ -5,8 +5,8 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.SortedSetMultimap;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -46,14 +46,14 @@ import org.batfish.datamodel.route.nh.NextHopVtep;
 public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   private final class ResolvabilityEnforcer {
     /** Map of NHIP to {@link Bgpv4Route} with that NHIP */
-    private final @Nonnull SetMultimap<Ip, Bgpv4Route> _bgpRoutesByNhip;
+    private final @Nonnull CompactSetMultimap<Ip, Bgpv4Route> _bgpRoutesByNhip;
 
     /**
      * Mapping : prefix -> routes tracked herein with that prefix.
      *
      * <p>Needed for efficient bookkeeping
      */
-    private final @Nonnull SetMultimap<Prefix, Bgpv4Route> _bgpRoutesByPrefix;
+    private final @Nonnull CompactSetMultimap<Prefix, Bgpv4Route> _bgpRoutesByPrefix;
 
     /** The keys of {@link #_bgpRoutesByNhip}, ordered so the NHIPs inside a prefix can be found. */
     private final @Nonnull TreeSet<Ip> _nhips;
@@ -73,8 +73,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     private final @Nonnull Set<Ip> _mixedNhips;
 
     private ResolvabilityEnforcer() {
-      _bgpRoutesByNhip = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-      _bgpRoutesByPrefix = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+      _bgpRoutesByNhip = new CompactSetMultimap<>();
+      _bgpRoutesByPrefix = new CompactSetMultimap<>();
       _nhips = new TreeSet<>();
       _unresolvableNhips = new HashSet<>();
       _mixedNhips = new HashSet<>();
@@ -137,9 +137,12 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       return resolvable != _unresolvableNhips.contains(nhip) && !_mixedNhips.contains(nhip);
     }
 
-    /** Get all routes with the given {@code prefix} tracked by the resolvability enforcer. */
+    /**
+     * Get all routes with the given {@code prefix} tracked by the resolvability enforcer, as a view
+     * that is valid until the enforcer is next modified.
+     */
     @Nonnull
-    Set<Bgpv4Route> getBgpRoutes(Prefix prefix) {
+    Collection<Bgpv4Route> getBgpRoutes(Prefix prefix) {
       return _bgpRoutesByPrefix.get(prefix);
     }
 
