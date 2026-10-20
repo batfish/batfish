@@ -56,6 +56,7 @@ java_library(
         "//projects/bdd",
         "//projects/common",
         "//projects/symbolic",
+        "@maven//:com_carrotsearch_hppc",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
