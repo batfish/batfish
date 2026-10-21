@@ -1,0 +1,21 @@
+{
+ "TransitGatewayPropagations": [
+  {
+   "TransitGatewayRouteTableId": "tgw-rtb-dx02",
+   "TransitGatewayRouteTablePropagations": [
+    {
+     "ResourceId": "vpc-dx02",
+     "ResourceType": "vpc",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-vpc02"
+    },
+    {
+     "ResourceId": "9c3d5e7f-5678-4def-8abc-0123456789ab",
+     "ResourceType": "direct-connect-gateway",
+     "State": "enabled",
+     "TransitGatewayAttachmentId": "tgw-attach-dx02"
+    }
+   ]
+  }
+ ]
+}

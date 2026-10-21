@@ -1,0 +1,20 @@
+{
+ "TransitGatewayVpcAttachments": [
+  {
+   "CreationTime": "2023-01-01 00:00:00+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-dx02"
+   ],
+   "Tags": [],
+   "TransitGatewayAttachmentId": "tgw-attach-vpc02",
+   "TransitGatewayId": "tgw-dx02",
+   "VpcId": "vpc-dx02",
+   "VpcOwnerId": "123456789012"
+  }
+ ]
+}

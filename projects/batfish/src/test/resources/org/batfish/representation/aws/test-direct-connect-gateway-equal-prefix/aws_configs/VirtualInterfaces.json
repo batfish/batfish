@@ -1,0 +1,27 @@
+{
+ "VirtualInterfaces": [
+  {
+   "VirtualInterfaceId": "dxvif-dx02",
+   "VirtualInterfaceName": "dx-equal-prefix-vif",
+   "VirtualInterfaceType": "transit",
+   "ConnectionId": "dxcon-dx02",
+   "DirectConnectGatewayId": "9c3d5e7f-5678-4def-8abc-0123456789ab",
+   "Vlan": 100,
+   "Asn": 65001,
+   "AmazonAddress": "169.254.10.1/30",
+   "CustomerAddress": "169.254.10.2/30",
+   "VirtualInterfaceState": "available",
+   "BgpPeers": [
+    {
+     "Asn": 65001,
+     "AmazonAddress": "169.254.10.1/30",
+     "CustomerAddress": "169.254.10.2/30",
+     "BgpPeerState": "available",
+     "BgpStatus": "up"
+    }
+   ],
+   "RouteFilterPrefixes": [],
+   "Tags": []
+  }
+ ]
+}

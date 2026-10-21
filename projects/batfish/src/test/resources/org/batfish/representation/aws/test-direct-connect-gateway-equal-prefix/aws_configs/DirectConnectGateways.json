@@ -1,0 +1,11 @@
+{
+ "DirectConnectGateways": [
+  {
+   "DirectConnectGatewayId": "9c3d5e7f-5678-4def-8abc-0123456789ab",
+   "DirectConnectGatewayName": "dx-equal-prefix-gateway",
+   "AmazonSideAsn": 64513,
+   "DirectConnectGatewayState": "available",
+   "Tags": []
+  }
+ ]
+}

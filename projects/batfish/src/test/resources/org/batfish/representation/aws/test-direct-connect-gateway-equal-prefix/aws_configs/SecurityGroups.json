@@ -1,0 +1,38 @@
+{
+ "SecurityGroups": [
+  {
+   "Description": "Security group for the equal-prefix test instance",
+   "GroupId": "sg-dx02",
+   "GroupName": "dx-equal-prefix-sg",
+   "IpPermissions": [
+    {
+     "IpProtocol": "-1",
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0"
+      }
+     ],
+     "Ipv6Ranges": [],
+     "PrefixListIds": [],
+     "UserIdGroupPairs": []
+    }
+   ],
+   "IpPermissionsEgress": [
+    {
+     "IpProtocol": "-1",
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0"
+      }
+     ],
+     "Ipv6Ranges": [],
+     "PrefixListIds": [],
+     "UserIdGroupPairs": []
+    }
+   ],
+   "OwnerId": "123456789012",
+   "Tags": [],
+   "VpcId": "vpc-dx02"
+  }
+ ]
+}
