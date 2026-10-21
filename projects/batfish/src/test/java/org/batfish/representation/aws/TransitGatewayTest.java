@@ -21,6 +21,8 @@ import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.representation.aws.VpnConnection.VPN_UNDERLAY_VRF_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -41,7 +43,9 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
@@ -458,6 +462,100 @@ public class TransitGatewayTest {
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
     assertThat(tgwInterface, hasVrfName(VPN_UNDERLAY_VRF_NAME));
+  }
+
+  /**
+   * DXGW attachment: the TGW and DXGW get BGP-unnumbered peers over a link-local link in the DX
+   * route table's VRF, and the DXGW gets a static toward the TGW for each of the association's
+   * allowed prefixes (batfish/batfish#10447).
+   */
+  @Test
+  public void testConnectDirectConnectAttachment() {
+    String routeTableId = "tgw-rtb";
+    TransitGateway tgw =
+        new TransitGateway(
+            "tgw",
+            new TransitGatewayOptions(64512L, true, routeTableId, true, routeTableId, true),
+            "123456789012",
+            ImmutableMap.of());
+
+    String dxgwId = "12345678-90ab-4cde-9f01-23456789abcd";
+    DirectConnectGateway dxgw =
+        new DirectConnectGateway(dxgwId, "dxgw-name", 64513L, ImmutableMap.of());
+    Prefix allowedPrefix = Prefix.parse("10.100.0.0/16");
+    DirectConnectGatewayAssociation association =
+        new DirectConnectGatewayAssociation(
+            "dxgw-assoc",
+            dxgwId,
+            new DirectConnectGatewayAssociation.AssociatedGateway(
+                tgw.getId(),
+                DirectConnectGatewayAssociation.AssociatedGateway.GatewayType.TRANSIT_GATEWAY,
+                "123456789012",
+                "region"),
+            ImmutableList.of(allowedPrefix));
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgw.getId(),
+            "account",
+            ResourceType.DIRECT_CONNECT_GATEWAY,
+            dxgwId,
+            "account",
+            new Association(routeTableId, STATE_ASSOCIATED));
+
+    Region region =
+        Region.builder("region")
+            .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
+            .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId,
+                    new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
+            .setDirectConnectGateways(ImmutableMap.of(dxgwId, dxgw))
+            .setDirectConnectGatewayAssociations(ImmutableMap.of(association.getId(), association))
+            .build();
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
+
+    Configuration dxgwCfg =
+        dxgw.toConfigurationNode(ImmutableList.of(association), ImmutableList.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+    awsConfiguration.addNode(dxgwCfg);
+
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
+
+    String tgwIfaceToDxgw = Utils.interfaceNameToRemote(dxgwCfg, routeTableId);
+    String dxgwIfaceToTgw = Utils.interfaceNameToRemote(tgwCfg, routeTableId);
+    assertTrue(tgwCfg.getAllInterfaces().containsKey(tgwIfaceToDxgw));
+    assertTrue(dxgwCfg.getAllInterfaces().containsKey(dxgwIfaceToTgw));
+
+    // BGP unnumbered peers on both sides of the link
+    assertThat(
+        tgwCfg
+            .getVrfs()
+            .get(vrfNameForRouteTable(routeTableId))
+            .getBgpProcess()
+            .getInterfaceNeighbors()
+            .keySet(),
+        contains(tgwIfaceToDxgw));
+    assertThat(
+        dxgwCfg.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().keySet(),
+        contains(dxgwIfaceToTgw));
+
+    // The allowed prefix is routed toward the TGW; the discard fallback from node construction
+    // remains at a higher admin distance.
+    assertThat(
+        dxgwCfg.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            toStaticRoute(allowedPrefix, dxgwIfaceToTgw, LINK_LOCAL_IP),
+            StaticRoute.builder()
+                .setNetwork(allowedPrefix)
+                .setNextHop(NextHopDiscard.instance())
+                .setAdministrativeCost(DirectConnectGateway.ALLOWED_PREFIX_FALLBACK_ADMIN)
+                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                .build()));
   }
 
   @Test

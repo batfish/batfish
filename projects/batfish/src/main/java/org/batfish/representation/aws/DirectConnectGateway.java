@@ -36,6 +36,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
@@ -129,10 +130,18 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
 
   /**
    * Routing policy that exports routes to the customer over the VIF: only the originated allowed
-   * prefixes (advertised as static null-routes on the DXGW), matching AWS's behavior of advertising
-   * the allowed prefix list itself rather than the underlying routes.
+   * prefixes (installed as static routes on the DXGW), matching AWS's behavior of advertising the
+   * allowed prefix list itself rather than the underlying routes.
    */
   static final String VIF_EXPORT_POLICY_NAME = "~dxgw~vif-export~";
+
+  /**
+   * Admin distance of the discard route installed for each allowed prefix when the DXGW node is
+   * built. Once the association's gateway is wired, {@link #installAllowedPrefixRoutes} adds a
+   * static toward that gateway at {@link Route#DEFAULT_STATIC_ROUTE_ADMIN}, which supersedes the
+   * discard. Above every BGP admin distance so the discard never shadows a learned route.
+   */
+  static final int ALLOWED_PREFIX_FALLBACK_ADMIN = 250;
 
   /** Per-association policy for routes exported from the DXGW toward an associated TGW. */
   static String tgwExportPolicyName(String associationId) {
@@ -216,12 +225,16 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
    *
    * <ul>
    *   <li>Each association's {@code allowedPrefixesToDirectConnectGateway} list is originated as
-   *       static null-routes on the DXGW. These statics are advertised to the on-prem customer BGP
-   *       peer (matching AWS's "advertise the allowed prefix list itself" behavior).
+   *       static routes on the DXGW and advertised to the on-prem customer BGP peer (matching AWS's
+   *       "advertise the allowed prefix list itself" behavior). This method installs them as
+   *       discard routes at {@link #ALLOWED_PREFIX_FALLBACK_ADMIN}; when the association's gateway
+   *       is wired ({@link TransitGateway} for TGWs, {@link #connectVgwAssociation} for VGWs), a
+   *       static toward that gateway supersedes the discard, so on-prem traffic for the whole
+   *       allowed prefix is handed to the gateway, whose route table decides, as in AWS.
    *   <li>Routes received from on-prem (BGP) are exported toward each TGW peer, filtered to those
    *       within or equal to one of that association's allowed prefixes.
-   *   <li>Routes received from a TGW peer (BGP) are kept locally on the DXGW for forwarding but not
-   *       re-advertised toward on-prem (the on-prem side already has the summary statics).
+   *   <li>Routes received from a TGW peer (BGP) are kept on the DXGW but not re-advertised toward
+   *       on-prem (the on-prem side already has the allowed prefixes).
    * </ul>
    */
   Configuration toConfigurationNode(
@@ -239,10 +252,10 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
 
     initBgp(cfgNode);
 
-    // Per-association: install allowed-prefix statics and a downstream-export filter.
+    // Per-association: install allowed-prefix fallback statics and a downstream-export filter.
     associations.forEach(
         assoc -> {
-          installAllowedPrefixStatics(cfgNode, assoc.getAllowedPrefixes());
+          installAllowedPrefixFallbackStatics(cfgNode, assoc.getAllowedPrefixes());
           String policyName =
               assoc.getAssociatedGateway().getType()
                       == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
@@ -281,27 +294,49 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         .build();
   }
 
-  private static void installAllowedPrefixStatics(Configuration cfgNode, List<Prefix> prefixes) {
+  /**
+   * Installs a discard route for each allowed prefix so the prefix is advertised to on-prem even if
+   * the association's gateway is never wired (e.g., the TGW attachment is missing or not
+   * associated). See {@link #ALLOWED_PREFIX_FALLBACK_ADMIN}.
+   */
+  private static void installAllowedPrefixFallbackStatics(
+      Configuration cfgNode, List<Prefix> prefixes) {
     Vrf defaultVrf = cfgNode.getDefaultVrf();
     prefixes.forEach(
-        p -> {
-          // The static null-route exists so BGP can advertise the allowed-prefix list to on-prem
-          // (matching AWS's behavior of advertising the allowed-prefix list itself). The static
-          // is the "summary" route; the customer router uses it for outbound destinations within
-          // the allowed prefix and the DXGW relies on the more-specific BGP-learned route from
-          // the TGW peer for forwarding.
-          StaticRoute route =
-              StaticRoute.builder()
-                  .setNetwork(p)
-                  .setNextHop(org.batfish.datamodel.route.nh.NextHopDiscard.instance())
-                  .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                  .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                  .build();
-          defaultVrf.getStaticRoutes().add(route);
-        });
+        p ->
+            defaultVrf
+                .getStaticRoutes()
+                .add(
+                    StaticRoute.builder()
+                        .setNetwork(p)
+                        .setNextHop(NextHopDiscard.instance())
+                        .setAdministrativeCost(ALLOWED_PREFIX_FALLBACK_ADMIN)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .build()));
   }
 
-  /** Build the policy that exports allowed-prefix static null-routes toward on-prem. */
+  /**
+   * Installs a static route on {@code dxgwCfg} for each of {@code association}'s allowed prefixes
+   * toward the associated gateway, reached over {@code nextHopInterface}. AWS routes on-prem
+   * traffic for an allowed prefix to the associated gateway regardless of what that gateway's route
+   * table holds, so these statics carry forwarding. They supersede the discard fallbacks installed
+   * when the node was built and are what the VIF export policy advertises to on-prem.
+   */
+  static void installAllowedPrefixRoutes(
+      Configuration dxgwCfg,
+      DirectConnectGatewayAssociation association,
+      String nextHopInterface,
+      Ip nextHopIp) {
+    Vrf defaultVrf = dxgwCfg.getDefaultVrf();
+    association
+        .getAllowedPrefixes()
+        .forEach(
+            p ->
+                Utils.addStaticRoute(
+                    defaultVrf, Utils.toStaticRoute(p, nextHopInterface, nextHopIp)));
+  }
+
+  /** Build the policy that exports the allowed-prefix statics toward on-prem. */
   private static void buildVifExportPolicy(Configuration cfgNode) {
     if (cfgNode.getRoutingPolicies().containsKey(VIF_EXPORT_POLICY_NAME)) {
       return;
@@ -353,9 +388,9 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
 
   /**
    * Wire a BGP-unnumbered link from this DXGW node to the associated VGW node for a VGW-typed
-   * association. The DXGW exports allowed prefixes (same filter as TGW exports). The VGW imports
-   * BGP and exports its VPC CIDRs (existing VGW BGP setup, see {@link
-   * VpnGateway#toConfigurationNode}).
+   * association. The DXGW routes the allowed prefixes toward the VGW and exports on-prem routes
+   * within them (same filter as TGW exports). The VGW imports BGP and exports its VPC CIDRs
+   * (existing VGW BGP setup, see {@link VpnGateway#toConfigurationNode}).
    */
   static void connectVgwAssociation(
       Configuration dxgwCfg,
@@ -389,6 +424,13 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
         association.getId());
 
     String dxgwIfaceToVgw = Utils.interfaceNameToRemote(vgwCfg, association.getId());
+    String vgwIfaceToDxgw = Utils.interfaceNameToRemote(dxgwCfg, association.getId());
+    installAllowedPrefixRoutes(
+        dxgwCfg,
+        association,
+        dxgwIfaceToVgw,
+        Utils.getInterfaceLinkLocalIp(vgwCfg, vgwIfaceToDxgw));
+
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(dxgwIfaceToVgw)
         .setRemoteAs(vgwAmazonSideAsn)
@@ -402,7 +444,6 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
                 .build())
         .build();
 
-    String vgwIfaceToDxgw = Utils.interfaceNameToRemote(dxgwCfg, association.getId());
     String vgwImportPolicy =
         installDxImportPolicy(vgwCfg, VpnGateway.vgwDxImportPolicyName(association.getId()));
     BgpUnnumberedPeerConfig.builder()

@@ -1,0 +1,25 @@
+!
+hostname onprem-router
+!
+interface Loopback0
+ ip address 10.10.0.1 255.255.255.255
+!
+interface GigabitEthernet0/0
+ description Direct Connect VIF to AWS
+ ip address 169.254.10.2 255.255.255.252
+ no shutdown
+!
+router bgp 65001
+ bgp router-id 10.10.0.1
+ neighbor 169.254.10.1 remote-as 64513
+ !
+ address-family ipv4 unicast
+  network 10.10.0.0 mask 255.255.0.0
+  neighbor 169.254.10.1 activate
+ exit-address-family
+!
+! On-prem advertises its /16 to AWS over the Direct Connect VIF and expects AWS
+! to advertise the association's allowed prefixes (the VPC CIDR 10.100.0.0/16
+! and the summary 10.0.0.0/8) back over BGP.
+ip route 10.10.0.0 255.255.0.0 Null0
+!

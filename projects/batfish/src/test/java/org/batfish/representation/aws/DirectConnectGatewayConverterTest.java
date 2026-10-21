@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway.GatewayType;
 import org.junit.Test;
@@ -29,6 +31,16 @@ public class DirectConnectGatewayConverterTest {
 
   private static DirectConnectGateway dxgw() {
     return new DirectConnectGateway(DXGW_ID, "my-dx-gateway", 64512L, ImmutableMap.of());
+  }
+
+  /** The discard route installed for an allowed prefix when the DXGW node is built. */
+  private static StaticRoute fallbackDiscard(Prefix prefix) {
+    return StaticRoute.builder()
+        .setNetwork(prefix)
+        .setNextHop(NextHopDiscard.instance())
+        .setAdministrativeCost(DirectConnectGateway.ALLOWED_PREFIX_FALLBACK_ADMIN)
+        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .build();
   }
 
   /**
@@ -85,12 +97,11 @@ public class DirectConnectGatewayConverterTest {
     // regions where no VIFs exist.
     assertThat(cfg.getAllInterfaces().keySet(), hasItem(vif.getId()));
 
-    // Allowed-prefix static null route from the us-west-1 association is installed.
-    List<Prefix> staticNetworks =
-        cfg.getDefaultVrf().getStaticRoutes().stream()
-            .map(StaticRoute::getNetwork)
-            .collect(Collectors.toList());
-    assertThat(staticNetworks, contains(Prefix.parse("10.0.0.0/8")));
+    // The TGW is not wired here, so the us-west-1 association's allowed prefix is present only as
+    // the fallback discard route.
+    assertThat(
+        cfg.getDefaultVrf().getStaticRoutes(),
+        contains(fallbackDiscard(Prefix.parse("10.0.0.0/8"))));
   }
 
   /** When the DXGW is referenced but not declared anywhere, no node is produced. */
@@ -167,6 +178,16 @@ public class DirectConnectGatewayConverterTest {
     assertThat(
         dxgwCfg.getRoutingPolicies().keySet(),
         hasItem(DirectConnectGateway.vgwExportPolicyName(assoc.getId())));
+
+    // The allowed prefix is routed toward the VGW; the discard fallback from node construction
+    // remains at a higher admin distance.
+    Prefix allowedPrefix = Prefix.parse("10.0.0.0/8");
+    assertThat(
+        dxgwCfg.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            Utils.toStaticRoute(
+                allowedPrefix, Utils.interfaceNameToRemote(vgwCfg, assoc.getId()), LINK_LOCAL_IP),
+            fallbackDiscard(allowedPrefix)));
   }
 
   /** Two distinct DXGWs across regions each get their own node. */
