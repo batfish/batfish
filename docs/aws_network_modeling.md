@@ -279,7 +279,7 @@ Uses a single default VRF for both customer-facing (VIF) and downstream-facing (
 - A `bgp-loopback` interface with a link-local address hosts the BGP process.
 - For each `VirtualInterface` whose `DirectConnectGatewayId` matches this DXGW (Transit VIFs and DXGW-attached Private VIFs both qualify), a VIF interface is created with the Amazon-side `ConcreteInterfaceAddress` (e.g., 169.254.10.1/30) and the VLAN tag as dot1Q encapsulation. A `BgpActivePeerConfig` is added with the customer's address as the peer and the customer ASN as remote-AS.
 - For each `DirectConnectGatewayAssociation` involving this DXGW:
-  - Each prefix in `AllowedPrefixesToDirectConnectGateway` is installed as a static null-route. These statics are advertised to the on-prem customer over the VIF (matching AWS's "advertise the allowed-prefix list" behavior). They use a high admin distance so that more-specific BGP routes from the downstream peer win in the FIB.
+  - Each prefix in `AllowedPrefixesToDirectConnectGateway` is installed as a static route and advertised to the on-prem customer over the VIF (matching AWS's "advertise the allowed-prefix list" behavior). At node-build time the static is a discard route at admin distance 250 (`ALLOWED_PREFIX_FALLBACK_ADMIN`). When the association's gateway is wired (`TransitGateway.connectDirectConnect` for a TGW, `DirectConnectGateway.connectVgwAssociation` for a VGW), a static toward that gateway at admin distance 1 supersedes the discard. AWS routes on-prem traffic for an allowed prefix to the associated gateway regardless of that gateway's route table, so the gateway, not the DXGW, decides whether a destination is reachable. The discard stays active only for an association whose gateway is never wired (missing or unassociated TGW attachment).
   - A per-association downstream-export policy is built that filters routes received from on-prem to those within or equal to one of the allowed prefixes (`PrefixRange.sameAsOrMoreSpecificThan`). This is the boundary filter AWS applies between the DXGW and the downstream peer's route table. The policy name varies by associated-gateway type (`tgwExportPolicyName` vs `vgwExportPolicyName`); the filter logic is identical.
   - When the association's downstream is a VGW, the converter immediately wires a BGP-unnumbered link from the DXGW to the VGW node (already created during the per-region pass) and adds peers on both sides — see "VGW changes" below.
 
@@ -290,9 +290,10 @@ The `DIRECT_CONNECT_GATEWAY` case in `TransitGateway`'s attachment-dispatch swit
 1. Locates the matching `DirectConnectGatewayAssociation` for `(DXGW, TGW)`.
 2. Ensures a BGP process exists on the TGW VRF for the route table the DX attachment is associated with (creates one if not — shared with VPN attachments in the same VRF).
 3. Calls `Utils.connect()` to create link-local interfaces between the TGW VRF and the DXGW default VRF, with an L1 edge.
-4. Installs a **per-route-table DX import policy** via `DirectConnectGateway.installDxImportPolicy(...)`. The same shared helper is used at every DX-adjacent BGP peer (TGW import here; VGW imports for both Private-VIF cases). It reads any AWS Direct Connect traffic-engineering community on the route (`7224:7300` HIGH, `7224:7200` MEDIUM, `7224:7100` LOW) and sets local-preference accordingly: HIGH=300, MEDIUM=200, LOW=150 (no community → MEDIUM). All three values exceed the default BGP local-preference (100) used for VPN routes, so DX routes always win against VPN routes for the same prefix.
-5. Creates **`BgpUnnumberedPeerConfig`** entries on both sides:
-   - On the TGW (in the DX route table's VRF): peer-interface = TGW's link-local interface to the DXGW; export = `bgpExportPolicyName(vrf)`; import = the DX import policy from step 4.
+4. Installs on the DXGW a static route toward the TGW for each of the association's allowed prefixes (`DirectConnectGateway.installAllowedPrefixRoutes`), superseding the discard fallbacks from node construction.
+5. Installs a **per-route-table DX import policy** via `DirectConnectGateway.installDxImportPolicy(...)`. The same shared helper is used at every DX-adjacent BGP peer (TGW import here; VGW imports for both Private-VIF cases). It reads any AWS Direct Connect traffic-engineering community on the route (`7224:7300` HIGH, `7224:7200` MEDIUM, `7224:7100` LOW) and sets local-preference accordingly: HIGH=300, MEDIUM=200, LOW=150 (no community → MEDIUM). All three values exceed the default BGP local-preference (100) used for VPN routes, so DX routes always win against VPN routes for the same prefix.
+6. Creates **`BgpUnnumberedPeerConfig`** entries on both sides:
+   - On the TGW (in the DX route table's VRF): peer-interface = TGW's link-local interface to the DXGW; export = `bgpExportPolicyName(vrf)`; import = the DX import policy from step 5.
    - On the DXGW (default VRF): peer-interface = DXGW's link-local interface to the TGW; export = the per-association `tgwExportPolicyName`; import = `DXGW_IMPORT_POLICY_NAME` (accept all BGP).
 
 **VGW changes for Private VIFs** (in `VpnGateway.toConfigurationNode` and `DirectConnectGateway.connectVgwAssociation`)
@@ -302,7 +303,7 @@ A VGW gets BGP enabled if any of the following holds: it has a BGP-based VPN con
 For each VGW-attached Private VIF (`VirtualInterface.VirtualGatewayId` matches this VGW), the VGW gets a customer-facing VIF interface (Amazon-side address, dot1Q encapsulation = `Vlan`) and a `BgpActivePeerConfig` toward the customer address. As with VPN customer-gateways, operators wire the on-prem device to this VIF interface via L1 topology.
 
 For each DXGW association whose `AssociatedGateway` is this VGW, the DXGW converter creates link-local interfaces between the DXGW default VRF and the VGW default VRF and adds `BgpUnnumberedPeerConfig` entries on both sides:
-- On the DXGW: export = `vgwExportPolicyName(associationId)` (allowed-prefix filter); import = `DXGW_IMPORT_POLICY_NAME`.
+- On the DXGW: export = `vgwExportPolicyName(associationId)` (allowed-prefix filter); import = `DXGW_IMPORT_POLICY_NAME`; a static route toward the VGW for each allowed prefix.
 - On the VGW: export = `VGW_EXPORT_POLICY_NAME` (VPC CIDRs); import = the per-association DX import policy (community → local-pref).
 
 **Static-route attachment dispatch** (in `addTransitGatewayStaticRouteAttachment`)
@@ -327,7 +328,7 @@ When a TGW route table has a static route targeting a DX attachment, the TGW ins
 2. The TGW VRF's BGP export policy (`ACCEPT_ALL_BGP_AND_STATIC`) advertises these to the DXGW peer.
 3. The DXGW's default VRF receives them (unfiltered import).
 4. The DXGW's VIF export policy advertises the originated allowed-prefix statics to the on-prem customer. These represent the summary prefixes the customer is permitted to reach via DX.
-5. Forwarding within an allowed prefix on the DXGW uses the more-specific BGP route from the TGW (lower admin distance than the static null-route).
+5. Forwarding on the DXGW for any destination inside an allowed prefix follows the allowed-prefix static toward the TGW. BGP routes from the TGW for the same or more-specific prefixes point the same way. A destination the TGW route table cannot route is dropped on the TGW, as in AWS.
 
 **AWS prefix → on-prem (Private VIF):** the VGW originates VPC CIDRs as BGP advertisements via `VGW_EXPORT_POLICY_NAME` (existing behavior, unchanged). DXGW-attached: the VGW advertises VPC CIDRs to the DXGW, which advertises the allowed-prefix statics to on-prem (same shape as the Transit VIF flow). VGW-attached: the VGW advertises VPC CIDRs directly to on-prem over the VIF.
 

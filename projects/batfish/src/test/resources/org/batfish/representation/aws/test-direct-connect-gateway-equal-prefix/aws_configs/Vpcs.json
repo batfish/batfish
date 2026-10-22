@@ -1,0 +1,23 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "10.100.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-dx02",
+     "CidrBlock": "10.100.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-dx02",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "State": "available",
+   "Tags": [],
+   "OwnerId": "123456789012",
+   "VpcId": "vpc-dx02"
+  }
+ ]
+}

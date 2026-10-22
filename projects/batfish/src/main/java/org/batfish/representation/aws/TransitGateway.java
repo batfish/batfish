@@ -435,6 +435,17 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     // Connect TGW to DXGW via link-local interfaces (DXGW uses default VRF)
     connect(
         awsConfiguration, tgwCfg, vrfName, dxgwCfg, Configuration.DEFAULT_VRF_NAME, routeTableId);
+    String tgwIfaceToDxgw = interfaceNameToRemote(dxgwCfg, routeTableId);
+    String dxgwIfaceToTgw = interfaceNameToRemote(tgwCfg, routeTableId);
+
+    // AWS routes on-prem traffic for an allowed prefix to this TGW regardless of what the TGW
+    // route table holds, so install the allowed prefixes on the DXGW as statics toward the TGW.
+    // These supersede the discard fallbacks installed when the DXGW node was built.
+    DirectConnectGateway.installAllowedPrefixRoutes(
+        dxgwCfg,
+        dxgwAssociation.get(),
+        dxgwIfaceToTgw,
+        Utils.getInterfaceLinkLocalIp(tgwCfg, tgwIfaceToDxgw));
 
     // Per-route-table TGW-side import policy: accepts BGP and tags routes with a local-preference
     // value depending on the AWS DX traffic-engineering community on the route. Customers attach
@@ -449,7 +460,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     // BGP unnumbered peer on the TGW side (in the DX route table's VRF). The peer interface is
     // the link-local interface to the DXGW that was just created by connect().
-    String tgwIfaceToDxgw = interfaceNameToRemote(dxgwCfg, routeTableId);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(tgwIfaceToDxgw)
         .setRemoteAs(dxgwAmazonSideAsn)
@@ -465,7 +475,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     // BGP unnumbered peer on the DXGW side (in default VRF). Export filtered by allowed prefixes
     // for this association; import accepts all BGP.
-    String dxgwIfaceToTgw = interfaceNameToRemote(tgwCfg, routeTableId);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(dxgwIfaceToTgw)
         .setRemoteAs(tgwAmazonSideAsn)
