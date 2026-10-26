@@ -70,7 +70,7 @@
     "org.skyscreamer:jsonassert": -898776828,
     "org.yaml:snakeyaml": -1448162181,
     "repositories": -1949687017,
-    "tools.profiler:async-profiler": 180920570
+    "tools.profiler:async-profiler": 856143605
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "at.yawk.lz4:lz4-java": -1261908509,
@@ -315,11 +315,11 @@
     "org.xmlresolver:xmlresolver:jar:sources": 294380453,
     "org.yaml:snakeyaml": -1766780312,
     "org.yaml:snakeyaml:jar:sources": -533718006,
-    "tools.profiler:async-profiler": 369181935,
-    "tools.profiler:async-profiler:jar:linux-arm64": 767902809,
-    "tools.profiler:async-profiler:jar:linux-x64": 1724197418,
-    "tools.profiler:async-profiler:jar:macos": -718213337,
-    "tools.profiler:async-profiler:jar:sources": 1066933666
+    "tools.profiler:async-profiler": -1068712717,
+    "tools.profiler:async-profiler:jar:linux-arm64": 7135173,
+    "tools.profiler:async-profiler:jar:linux-x64": -657083804,
+    "tools.profiler:async-profiler:jar:macos": 406016904,
+    "tools.profiler:async-profiler:jar:sources": 191814546
   },
   "conflict_resolution": {
     "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.core:jackson-annotations:2.22",
@@ -1185,13 +1185,13 @@
     },
     "tools.profiler:async-profiler": {
       "shasums": {
-        "jar": "d0184907de67ca63363f1a6333c75eb7414fb3e13c564641304fe0fdca97363e",
-        "linux-arm64": "0c21db24ac9b07967ddde00fef0ddc787bf6574fc3fc0f50796a675f3ececa27",
-        "linux-x64": "9c1045baf2ff2a79729d0f09fa1a4e86dce7c9fd15c9caf5ebb8d96102b51e72",
-        "macos": "cdd358af08c87a8cc7a176327ebac0571a1dc5815acadb19cbd5a6f9ceb402cd",
-        "sources": "77a40ba77ac4ec083004fce7df9bf0af6cfa9b6db1e716a7d1c97781d685b1a6"
+        "jar": "a5d3d9f4582c2033fa9db518046e73ef97219801f3e7542b82e3e09261ebe493",
+        "linux-arm64": "34846ee360a42d374489da14379d7c4e7dfc307cfa71128faa509ae1152740fc",
+        "linux-x64": "5299f13e7eeb7187e39d0c61552f03ecc2441045d95ae3734104ccff3ad8dc94",
+        "macos": "9d40d2892b61290fbdab1a9a0e44e9a5f1f9ba0f085ae30a622fdc62082ab614",
+        "sources": "b02d1978c1be80e3f14791a7209974f57d672d9ceaf7be589ff6db7ea3602fd7"
       },
-      "version": "4.5"
+      "version": "4.6"
     }
   },
   "dependencies": {
