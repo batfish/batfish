@@ -159,6 +159,7 @@ public final class FrrConversions {
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
+  public static final long DEFAULT_OSPF_MAX_METRIC_SUMMARY = 0xFF0000;
 
   /** Locally-generated BGP routes have a default weight of 32768. */
   public static final int BGP_LOCAL_WEIGHT = 32768;
@@ -1457,6 +1458,9 @@ public final class FrrConversions {
     // Handle Max Metric Router LSA
     if (firstNonNull(frr.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
       proc.setMaxMetricTransitLinks(DEFAULT_OSPF_MAX_METRIC);
+      // FRR also advertises inter-area networks (type 3 summary LSAs) with max metric, but not
+      // routes to ASBRs (type 4 summary LSAs).
+      proc.setMaxMetricInterAreaNetworks(DEFAULT_OSPF_MAX_METRIC_SUMMARY);
     }
 
     // Handle Redistribution

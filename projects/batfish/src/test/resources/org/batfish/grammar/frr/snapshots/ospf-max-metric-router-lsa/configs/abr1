@@ -1,0 +1,34 @@
+abr1
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+auto swp2
+iface swp2
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+interface lo
+ ip address 10.255.0.1/32
+ ip ospf area 1
+!
+interface swp1
+ ip address 10.0.1.1/31
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp2
+ ip address 10.11.0.0/31
+ ip ospf area 1
+ ip ospf network point-to-point
+!
+router ospf
+ ospf router-id 10.255.0.1
+ max-metric router-lsa administrative
+!
+end

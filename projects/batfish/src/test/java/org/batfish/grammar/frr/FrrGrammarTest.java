@@ -2637,6 +2637,51 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testOspfMaxMetricRouterLsa_behavior() throws IOException {
+    /*
+      r0 (area 0) and r1 (area 1) are connected through two ABRs: abr1 over cost-10 links and abr2
+      over cost-40000 links. abr1 has max-metric router-lsa administrative, so FRR advertises its
+      inter-area networks with metric 0xFF0000 and traffic between the areas goes through abr2.
+      r1 redistributes 192.0.2.0/24 as E1; abr1 does not max the metric of its route to r1 as an
+      ASBR, so r0 still prefers abr1 for it.
+    */
+    String snapshotName = "ospf-max-metric-router-lsa";
+    List<String> configurationNames = ImmutableList.of("r0", "abr1", "abr2", "r1");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    assertThat(
+        dp.getRibs().get("r0", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.255.1.1/32")),
+                hasMetric(80000L),
+                hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.0.2.1"))))));
+    assertThat(
+        dp.getRibs().get("r1", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.255.0.10/32")),
+                hasMetric(80000L),
+                hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.12.0.0"))))));
+    assertThat(
+        dp.getRibs().get("r0", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("192.0.2.0/24")),
+                hasMetric(65565L),
+                hasNextHop(NextHopInterface.of("swp1", Ip.parse("10.0.1.1"))))));
+  }
+
+  @Test
   public void testCreatePhysicalInterfaceInFRR() {
     String name = "eth1";
     parse(String.format("interface %s\n", name));
