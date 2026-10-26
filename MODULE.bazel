@@ -67,10 +67,10 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.mockito:mockito-inline:5.2.0",
     "org.skyscreamer:jsonassert:1.5.3",
     "org.yaml:snakeyaml:2.7",
-    "tools.profiler:async-profiler:4.5",
-    "tools.profiler:async-profiler:4.5:linux-arm64",
-    "tools.profiler:async-profiler:4.5:linux-x64",
-    "tools.profiler:async-profiler:4.5:macos",
+    "tools.profiler:async-profiler:4.6",
+    "tools.profiler:async-profiler:4.6:linux-arm64",
+    "tools.profiler:async-profiler:4.6:linux-x64",
+    "tools.profiler:async-profiler:4.6:macos",
 ]
 
 BATFISH_MAVEN_BOMS = [
