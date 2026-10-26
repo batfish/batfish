@@ -19,7 +19,7 @@
     "com.google.auto.value:auto-value": -661233359,
     "com.google.auto.value:auto-value-annotations": 1386235898,
     "com.google.code.findbugs:jsr305": 495355163,
-    "com.google.code.gson:gson": 2063056812,
+    "com.google.code.gson:gson": 266105453,
     "com.google.errorprone:error_prone_annotations": 911823543,
     "com.google.googlejavaformat:google-java-format": -302611545,
     "com.google.guava:guava": 1943808618,
@@ -111,8 +111,8 @@
     "com.google.auto:auto-common:jar:sources": -542679945,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.findbugs:jsr305:jar:sources": -935881202,
-    "com.google.code.gson:gson": -1663769307,
-    "com.google.code.gson:gson:jar:sources": 935710753,
+    "com.google.code.gson:gson": -1591943442,
+    "com.google.code.gson:gson:jar:sources": 755669897,
     "com.google.errorprone:error_prone_annotations": 652227016,
     "com.google.errorprone:error_prone_annotations:jar:sources": -507624312,
     "com.google.googlejavaformat:google-java-format:jar:all-deps": 1369900008,
@@ -176,13 +176,13 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": 1404898280,
     "net.sf.saxon:Saxon-HE:jar:sources": 37033699,
-    "net.sourceforge.pmd:pmd-cli": 41741732,
+    "net.sourceforge.pmd:pmd-cli": 377088018,
     "net.sourceforge.pmd:pmd-cli:jar:sources": -313254172,
-    "net.sourceforge.pmd:pmd-core": 1179979713,
+    "net.sourceforge.pmd:pmd-core": 977654253,
     "net.sourceforge.pmd:pmd-core:jar:sources": -415188564,
     "net.sourceforge.pmd:pmd-designer": 906775713,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
-    "net.sourceforge.pmd:pmd-java": -1750530546,
+    "net.sourceforge.pmd:pmd-java": 39490604,
     "net.sourceforge.pmd:pmd-java:jar:sources": 258299743,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
@@ -471,10 +471,10 @@
     },
     "com.google.code.gson:gson": {
       "shasums": {
-        "jar": "2cbd119bf1961c28788310963dc80ba65f58cdeec1dd139c8bdb1240faa2c36f",
-        "sources": "a4873f0ef88981cab520c3d7449cd89a68e605f15e9fe46e1aa2c77d5f87eb6f"
+        "jar": "96d3dd843dc2911de01cdabcd50064cb9e860353102a0a78c96fd833d396fc7d",
+        "sources": "e689856e33f12904741d481825ee582fa160f751c741836601bc16666dbc7249"
       },
-      "version": "2.14.0"
+      "version": "2.15.0"
     },
     "com.google.errorprone:error_prone_annotations": {
       "shasums": {

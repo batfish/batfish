@@ -19,7 +19,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.auto.value:auto-value:1.11.1",
     "com.google.auto.value:auto-value-annotations:1.11.1",
     "com.google.code.findbugs:jsr305:3.0.2",
-    "com.google.code.gson:gson:2.14.0",
+    "com.google.code.gson:gson:2.15.0",
     "com.google.errorprone:error_prone_annotations:2.50.0",
     "com.google.googlejavaformat:google-java-format:1.37.0:all-deps",
     "com.google.guava:guava",
