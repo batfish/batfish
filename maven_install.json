@@ -32,7 +32,7 @@
     "commons-beanutils:commons-beanutils": 332733947,
     "commons-cli:commons-cli": 1754587837,
     "commons-io:commons-io": 1305681826,
-    "dk.brics:automaton": -1128129151,
+    "dk.brics:automaton": -1797684417,
     "io.github.java-diff-utils:java-diff-utils": 1977050384,
     "jakarta.activation:jakarta.activation-api": 1724199980,
     "jakarta.annotation:jakarta.annotation-api": -1862893936,
@@ -146,8 +146,8 @@
     "commons-io:commons-io:jar:sources": -238571367,
     "commons-logging:commons-logging": -2039356713,
     "commons-logging:commons-logging:jar:sources": 494659498,
-    "dk.brics:automaton": 2008063075,
-    "dk.brics:automaton:jar:sources": 153550414,
+    "dk.brics:automaton": -38615336,
+    "dk.brics:automaton:jar:sources": 748568597,
     "info.picocli:picocli": 996750497,
     "info.picocli:picocli:jar:sources": 1275876040,
     "io.github.java-diff-utils:java-diff-utils": 668781851,
@@ -596,10 +596,10 @@
     },
     "dk.brics:automaton": {
       "shasums": {
-        "jar": "3941b48f2e9281aab7234395c549cbb399b3dc80fed2e13999a80db47f94b041",
-        "sources": "11337f78fdb061d7209d346b30e0da16c6b5e8806a5fc9a3481d13cf834cfd23"
+        "jar": "aab8810db206bf2e26f3760c705be82a031aebc1089ebb274b7c674d628fd90d",
+        "sources": "fc1e7b9483f236d34495ec05b951520a755868a0cc4da5d537eb13527ddaea3c"
       },
-      "version": "1.12-4"
+      "version": "1.13-1"
     },
     "info.picocli:picocli": {
       "shasums": {
