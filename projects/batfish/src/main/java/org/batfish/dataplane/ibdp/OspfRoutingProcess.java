@@ -1037,7 +1037,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     areaConfig,
                     sessionProperties.getIpLink().getIp1(),
                     nextHopIp,
-                    _process.getMaxMetricSummaryNetworks()),
+                    _process.getMaxMetricSummaryNetworks() != null
+                        ? _process.getMaxMetricSummaryNetworks()
+                        : _process.getMaxMetricInterAreaNetworks()),
                 computeDefaultInterAreaRouteToInject(edgeId, areaConfig, nextHopIp))
             .collect(ImmutableSet.toImmutableSet()));
   }

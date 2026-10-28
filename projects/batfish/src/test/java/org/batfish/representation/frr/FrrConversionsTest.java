@@ -1222,6 +1222,10 @@ public final class FrrConversionsTest {
             new Warnings());
     assertThat(
         ospfProcess.getMaxMetricTransitLinks(), equalTo(FrrConversions.DEFAULT_OSPF_MAX_METRIC));
+    assertThat(
+        ospfProcess.getMaxMetricInterAreaNetworks(),
+        equalTo(FrrConversions.DEFAULT_OSPF_MAX_METRIC_SUMMARY));
+    assertNull(ospfProcess.getMaxMetricSummaryNetworks());
   }
 
   @Test

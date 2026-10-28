@@ -50,6 +50,7 @@ public final class OspfProcess implements Serializable {
     private @Nullable Map<RoutingProtocol, Long> _adminCosts;
     private @Nullable String _exportPolicy;
     private @Nullable Long _maxMetricExternalNetworks;
+    private @Nullable Long _maxMetricInterAreaNetworks;
     private @Nullable Long _maxMetricStubNetworks;
     private @Nullable Long _maxMetricSummaryNetworks;
     private @Nullable Long _maxMetricTransitLinks;
@@ -100,6 +101,7 @@ public final class OspfProcess implements Serializable {
               _exportPolicySources,
               _generatedRoutes,
               _maxMetricExternalNetworks,
+              _maxMetricInterAreaNetworks,
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
@@ -143,6 +145,11 @@ public final class OspfProcess implements Serializable {
 
     public Builder setMaxMetricExternalNetworks(Long maxMetricExternalNetworks) {
       _maxMetricExternalNetworks = maxMetricExternalNetworks;
+      return this;
+    }
+
+    public Builder setMaxMetricInterAreaNetworks(Long maxMetricInterAreaNetworks) {
+      _maxMetricInterAreaNetworks = maxMetricInterAreaNetworks;
       return this;
     }
 
@@ -238,6 +245,7 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
   private static final String PROP_MAX_METRIC_EXTERNAL_NETWORKS = "maxMetricExternalNetworks";
+  private static final String PROP_MAX_METRIC_INTER_AREA_NETWORKS = "maxMetricInterAreaNetworks";
   private static final String PROP_MAX_METRIC_STUB_NETWORKS = "maxMetricStubNetworks";
   private static final String PROP_MAX_METRIC_SUMMARY_NETWORKS = "maxMetricSummaryNetworks";
   private static final String PROP_MAX_METRIC_TRANSIT_LINKS = "maxMetricTransitLinks";
@@ -264,6 +272,7 @@ public final class OspfProcess implements Serializable {
   private @Nonnull Set<String> _exportPolicySources;
   private @Nonnull Set<GeneratedRoute> _generatedRoutes;
   private @Nullable Long _maxMetricExternalNetworks;
+  private @Nullable Long _maxMetricInterAreaNetworks;
   private @Nullable Long _maxMetricStubNetworks;
   private @Nullable Long _maxMetricSummaryNetworks;
   private @Nullable Long _maxMetricTransitLinks;
@@ -286,6 +295,7 @@ public final class OspfProcess implements Serializable {
       Set<String> exportPolicySources,
       Set<GeneratedRoute> generatedRoutes,
       @Nullable Long maxMetricExternalNetworks,
+      @Nullable Long maxMetricInterAreaNetworks,
       @Nullable Long maxMetricStubNetworks,
       @Nullable Long maxMetricSummaryNetworks,
       @Nullable Long maxMetricTransitLinks,
@@ -302,6 +312,7 @@ public final class OspfProcess implements Serializable {
     _exportPolicySources = exportPolicySources;
     _generatedRoutes = generatedRoutes;
     _maxMetricExternalNetworks = maxMetricExternalNetworks;
+    _maxMetricInterAreaNetworks = maxMetricInterAreaNetworks;
     _maxMetricStubNetworks = maxMetricStubNetworks;
     _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
     _maxMetricTransitLinks = maxMetricTransitLinks;
@@ -325,6 +336,7 @@ public final class OspfProcess implements Serializable {
       @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
       @JsonProperty(PROP_GENERATED_ROUTES) @Nullable SortedSet<GeneratedRoute> generatedRoutes,
       @JsonProperty(PROP_MAX_METRIC_EXTERNAL_NETWORKS) @Nullable Long maxMetricExternalNetworks,
+      @JsonProperty(PROP_MAX_METRIC_INTER_AREA_NETWORKS) @Nullable Long maxMetricInterAreaNetworks,
       @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) @Nullable Long maxMetricStubNetworks,
       @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) @Nullable Long maxMetricSummaryNetworks,
       @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) @Nullable Long maxMetricTransitLinks,
@@ -346,6 +358,7 @@ public final class OspfProcess implements Serializable {
     ofNullable(generatedRoutes).ifPresent(builder::setGeneratedRoutes);
     builder
         .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
+        .setMaxMetricInterAreaNetworks(maxMetricInterAreaNetworks)
         .setMaxMetricStubNetworks(maxMetricStubNetworks)
         .setMaxMetricSummaryNetworks(maxMetricSummaryNetworks)
         .setMaxMetricTransitLinks(maxMetricTransitLinks);
@@ -451,6 +464,15 @@ public final class OspfProcess implements Serializable {
   @JsonProperty(PROP_MAX_METRIC_EXTERNAL_NETWORKS)
   public @Nullable Long getMaxMetricExternalNetworks() {
     return _maxMetricExternalNetworks;
+  }
+
+  /**
+   * Metric to advertise for inter-area networks (type 3 summary LSAs) only. Unlike {@link
+   * #getMaxMetricSummaryNetworks()}, it does not apply to routes to ASBRs (type 4 summary LSAs).
+   */
+  @JsonProperty(PROP_MAX_METRIC_INTER_AREA_NETWORKS)
+  public @Nullable Long getMaxMetricInterAreaNetworks() {
+    return _maxMetricInterAreaNetworks;
   }
 
   @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS)
@@ -581,6 +603,11 @@ public final class OspfProcess implements Serializable {
   @JsonIgnore
   public void setMaxMetricExternalNetworks(@Nullable Long maxMetricExternalNetworks) {
     _maxMetricExternalNetworks = maxMetricExternalNetworks;
+  }
+
+  @JsonIgnore
+  public void setMaxMetricInterAreaNetworks(@Nullable Long maxMetricInterAreaNetworks) {
+    _maxMetricInterAreaNetworks = maxMetricInterAreaNetworks;
   }
 
   @JsonIgnore

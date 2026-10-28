@@ -114,6 +114,7 @@ public class OspfTest {
   private static final String C4_NAME = "r4";
 
   private static final long MAX_METRIC_EXTERNAL_NETWORKS = 16711680L;
+  private static final long MAX_METRIC_INTER_AREA_NETWORKS = 16711680L;
   private static final long MAX_METRIC_STUB_NETWORKS = 65535L;
   private static final long MAX_METRIC_SUMMARY_NETWORKS = 16711680L;
   private static final long MAX_METRIC_TRANSIT_LINKS = 65535L;
@@ -167,6 +168,38 @@ public class OspfTest {
       long areaF,
       long areaG,
       Long maxMetricExternalNetworks,
+      Long maxMetricStubNetworks,
+      Long maxMetricSummaryNetworks,
+      Long maxMetricTransitLinks,
+      @Nullable SummaryRouteBehavior summaryR1L0Behavior,
+      Long summarizeR1L0Metric) {
+    return getOspfRoutes(
+        areaA,
+        areaB,
+        areaC,
+        areaD,
+        areaE,
+        areaF,
+        areaG,
+        maxMetricExternalNetworks,
+        null,
+        maxMetricStubNetworks,
+        maxMetricSummaryNetworks,
+        maxMetricTransitLinks,
+        summaryR1L0Behavior,
+        summarizeR1L0Metric);
+  }
+
+  private static SortedMap<String, SortedMap<String, Set<AbstractRoute>>> getOspfRoutes(
+      long areaA,
+      long areaB,
+      long areaC,
+      long areaD,
+      long areaE,
+      long areaF,
+      long areaG,
+      Long maxMetricExternalNetworks,
+      Long maxMetricInterAreaNetworks,
       Long maxMetricStubNetworks,
       Long maxMetricSummaryNetworks,
       Long maxMetricTransitLinks,
@@ -254,12 +287,14 @@ public class OspfTest {
         opb.setVrf(v2)
             .setRouterId(C2_L1_ADDRESS.getIp())
             .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
+            .setMaxMetricInterAreaNetworks(maxMetricInterAreaNetworks)
             .setMaxMetricStubNetworks(maxMetricStubNetworks)
             .setMaxMetricSummaryNetworks(maxMetricSummaryNetworks)
             .setMaxMetricTransitLinks(maxMetricTransitLinks)
             .setExportPolicy(c2ExportPolicy)
             .build();
     opb.setMaxMetricExternalNetworks(null)
+        .setMaxMetricInterAreaNetworks(null)
         .setMaxMetricStubNetworks(null)
         .setMaxMetricSummaryNetworks(null)
         .setMaxMetricTransitLinks(null);
@@ -788,6 +823,72 @@ public class OspfTest {
     assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
     assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 16711682L);
     assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
+  }
+
+  @Test
+  public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricInterArea() {
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
+        getOspfRoutes(
+            1L,
+            1L,
+            0L,
+            0L,
+            0L,
+            0L,
+            0L,
+            null,
+            MAX_METRIC_INTER_AREA_NETWORKS,
+            null,
+            null,
+            null,
+            null,
+            null);
+    // inter-area networks get max metric from R2, but routes to ASBRs (type 4) do not
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 22L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 23L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 22L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 23L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 16711682L);
+  }
+
+  @Test
+  public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricSummaryOverridesInterArea() {
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
+        getOspfRoutes(
+            1L,
+            1L,
+            0L,
+            0L,
+            0L,
+            0L,
+            0L,
+            null,
+            MAX_METRIC_INTER_AREA_NETWORKS,
+            null,
+            1000L,
+            null,
+            null,
+            null);
+    // max-metric summary-lsa takes precedence, and also applies to routes to ASBRs
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 1001L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 1001L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 1021L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 1001L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 1021L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 1001L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 1021L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_ADDRESS, 1002L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 1022L);
   }
 
   @Test
