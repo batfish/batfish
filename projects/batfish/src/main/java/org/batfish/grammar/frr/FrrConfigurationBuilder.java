@@ -1158,7 +1158,10 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
-    if (ctx.REPLACE_AS() != null) {
+    if (ctx.ALL() != null && ctx.REPLACE_AS() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRemovePrivateAsMode(
+          RemovePrivateAsMode.ALL_REPLACE_AS);
+    } else if (ctx.REPLACE_AS() != null) {
       _currentBgpNeighborIpv4UnicastAddressFamily.setRemovePrivateAsMode(
           RemovePrivateAsMode.REPLACE_AS);
     } else if (ctx.ALL() != null) {

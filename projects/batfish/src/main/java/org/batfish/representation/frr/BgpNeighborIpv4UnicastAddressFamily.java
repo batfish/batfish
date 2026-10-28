@@ -12,6 +12,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     BASIC,
     ALL,
     REPLACE_AS,
+    ALL_REPLACE_AS,
   }
 
   private @Nullable Boolean _activated;
