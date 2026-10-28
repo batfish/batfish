@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkP
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -2663,6 +2664,7 @@ public class FrrGrammarTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("10.255.1.1/32")),
+                hasProtocol(RoutingProtocol.OSPF_IA),
                 hasMetric(80000L),
                 hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.0.2.1"))))));
     assertThat(
@@ -2670,6 +2672,7 @@ public class FrrGrammarTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("10.255.0.10/32")),
+                hasProtocol(RoutingProtocol.OSPF_IA),
                 hasMetric(80000L),
                 hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.12.0.0"))))));
     assertThat(
@@ -2677,6 +2680,7 @@ public class FrrGrammarTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("192.0.2.0/24")),
+                hasProtocol(RoutingProtocol.OSPF_E1),
                 hasMetric(65565L),
                 hasNextHop(NextHopInterface.of("swp1", Ip.parse("10.0.1.1"))))));
   }
