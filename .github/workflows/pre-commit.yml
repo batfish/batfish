@@ -24,8 +24,6 @@ jobs:
       ymd: ${{ steps.date.outputs.ymd }}
   format:
     runs-on: ubuntu-latest
-    needs:
-      - get_date
     steps:
       - uses: actions/checkout@v7
       - name: Bazelisk cache
@@ -74,7 +72,7 @@ jobs:
             ${{runner.os}}-bazel-checkstyle-
       - name: Checkstyle
         run: bazel run //tools/checkstyle:checkstyle.check
-  bazel_build_test_and_pmd:
+  bazel_build_test:
     needs:
       - get_date
     runs-on: ubuntu-latest
@@ -99,12 +97,9 @@ jobs:
           java-version: "25"
       - name: Bazel build and test
         run: |
-          # Stop on first test failure for PRs; keep going for scheduled runs to see all failures
-          TEST_KEEP_GOING="false"
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            TEST_KEEP_GOING="true"
-          fi
-          bazel test --test_output=errors --test_keep_going=$TEST_KEEP_GOING -- //...
+          # Keep going on scheduled runs to report all test failures.
+          bazel test --test_output=errors --test_tag_filters=-pmd_test \
+            --test_keep_going=${{ github.event_name == 'schedule' }} -- //...
       - name: Build JAR
         run: |
           mkdir workspace
@@ -115,10 +110,47 @@ jobs:
         with:
           name: allinone_jar_25
           path: workspace/allinone.jar
+  pmd:
+    needs:
+      - get_date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Bazelisk cache
+        uses: actions/cache@v6
+        with:
+          path: "~/.cache/bazelisk"
+          key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
+      - name: Bazel cache
+        uses: actions/cache@v6
+        with:
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-pmd-${{ needs.get_date.outputs.ymd }}
+          restore-keys: |
+            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-pmd-
+            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+      - uses: actions/setup-java@v6
+        with:
+          distribution: "temurin"
+          java-version: "25"
+      - name: Bazel PMD
+        run: |
+          bazel test --build_tests_only --test_tag_filters=pmd_test \
+            --test_output=errors \
+            --test_keep_going=${{ github.event_name == 'schedule' }} -- //...
+  bazel_build_test_and_pmd:
+    if: ${{ always() }}
+    needs:
+      - bazel_build_test
+      - pmd
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build, tests, and PMD
+        run: |
+          test "${{ needs.bazel_build_test.result }}" = success
+          test "${{ needs.pmd.result }}" = success
   code_cov:
     needs:
-      - format
-      - json_template
       - get_date
     runs-on: ubuntu-latest
     steps:
@@ -143,7 +175,7 @@ jobs:
           java-version: "25"
       - name: Bazel Junit Tests and Coverage
         run: |
-          bazel coverage //projects/... \
+          bazel coverage --build_tests_only //projects/... \
             --instrumentation_filter="-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled,-//projects/common/src/main/java:specifier_common,-//projects/batfish/src/main/antlr4[/:],-//projects/.*/src/test[/:]" \
             --test_tag_filters=-pmd_test \
             --combined_report=lcov \
