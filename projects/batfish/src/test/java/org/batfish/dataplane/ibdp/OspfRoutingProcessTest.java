@@ -429,6 +429,50 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
+  public void testGetIncrementalCostLoopbacksAsStubLinks() {
+    String loopbackName = "lo";
+    Interface.builder()
+        .setName(loopbackName)
+        .setOwner(_c)
+        .setType(InterfaceType.LOOPBACK)
+        .setOspfSettings(
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess("1")
+                .setCost(5)
+                .setNetworkType(OspfNetworkType.BROADCAST)
+                .build())
+        .build();
+    long overrideMetric = 8888L;
+    Builder ospfProcess =
+        OspfProcess.builder()
+            .setProcessId("1")
+            .setRouterId(Ip.ZERO)
+            .setReferenceBandwidth(10e9)
+            .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
+            .setMaxMetricTransitLinks(overrideMetric);
+
+    // By default, a non-passive loopback is a transit link
+    assertThat(
+        new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
+            .getIncrementalCost(loopbackName, true),
+        equalTo(overrideMetric));
+
+    // As a stub link, it keeps its cost, while other links still get the transit override
+    ospfProcess.setLoopbacksAsStubLinks(true);
+    OspfRoutingProcess process =
+        new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology);
+    assertThat(process.getIncrementalCost(loopbackName, true), equalTo(5L));
+    assertThat(process.getIncrementalCost(ACTIVE_IFACE_NAME, false), equalTo(overrideMetric));
+
+    // and gets the stub override instead
+    ospfProcess.setMaxMetricStubNetworks(7777L);
+    assertThat(
+        new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
+            .getIncrementalCost(loopbackName, true),
+        equalTo(7777L));
+  }
+
+  @Test
   public void testComputeDefaultInterAreaRouteToInject() {
     OspfArea.Builder areaBuilder = OspfArea.builder().setNumber(1L);
     Ip nextHopIp = Ip.parse("1.1.1.1");
