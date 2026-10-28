@@ -21,6 +21,7 @@ def _impl(ctx):
         "check",
         "--no-cache",
         "--no-progress",
+        "--threads 1",
         "--minimum-priority MEDIUM",
         "-f text",
         "-R {}".format(ruleset.short_path),
