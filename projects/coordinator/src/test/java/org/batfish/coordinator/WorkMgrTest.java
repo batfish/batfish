@@ -2537,6 +2537,42 @@ public final class WorkMgrTest {
     _storage.loadSnapshotMetadata(networkId, snapshotId);
   }
 
+  /** A snapshot that is the reference of differential work in flight keeps its data too. */
+  @Test
+  public void testDeleteReferenceSnapshotDefersDataUntilWorkFinishes() throws Exception {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String reference = "reference1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, reference);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId).get();
+    SnapshotId referenceId = _idManager.getSnapshotId(reference, networkId).get();
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(network, snapshot),
+            WorkDetails.builder()
+                .setNetworkId(networkId)
+                .setSnapshotId(snapshotId)
+                .setReferenceSnapshotId(referenceId)
+                .setIsDifferential(true)
+                .setWorkType(WorkType.INDEPENDENT_ANSWERING)
+                .build());
+    _manager.getWorkQueueMgr().queueUnassignedWork(work);
+
+    assertTrue(_manager.delSnapshot(network, reference));
+
+    _manager.reapDeletedData();
+    assertThat(_storage.loadSnapshotMetadata(networkId, referenceId), notNullValue());
+
+    _manager.getWorkQueueMgr().markAssignmentError(work);
+    _manager.reapDeletedData();
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadSnapshotMetadata(networkId, referenceId);
+  }
+
   /** Deleting a network deletes its data too. */
   @Test
   public void testDeleteNetworkDeletesData() throws IOException {

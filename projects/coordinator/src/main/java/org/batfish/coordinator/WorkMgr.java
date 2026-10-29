@@ -428,10 +428,19 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  /**
+   * Returns whether any incomplete work uses the data being deleted, including differential work
+   * that uses a deleted snapshot as its reference.
+   */
   private boolean hasIncompleteWork(DataDeletion deletion) {
-    return !_workQueueMgr
-        .listIncompleteWork(deletion.networkId(), deletion.snapshotId(), null)
-        .isEmpty();
+    SnapshotId snapshotId = deletion.snapshotId();
+    return _workQueueMgr.listIncompleteWork(deletion.networkId(), null, null).stream()
+        .map(QueuedWork::getDetails)
+        .anyMatch(
+            details ->
+                snapshotId == null
+                    || snapshotId.equals(details.getSnapshotId())
+                    || snapshotId.equals(details.getReferenceSnapshotId()));
   }
 
   /**
