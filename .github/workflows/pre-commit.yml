@@ -138,17 +138,6 @@ jobs:
           bazel test --build_tests_only --test_tag_filters=pmd_test \
             --test_output=errors \
             --test_keep_going=${{ github.event_name == 'schedule' }} -- //...
-  bazel_build_test_and_pmd:
-    if: ${{ always() }}
-    needs:
-      - bazel_build_test
-      - pmd
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check build, tests, and PMD
-        run: |
-          test "${{ needs.bazel_build_test.result }}" = success
-          test "${{ needs.pmd.result }}" = success
   code_cov:
     needs:
       - get_date
