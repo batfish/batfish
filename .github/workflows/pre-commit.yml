@@ -87,10 +87,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-${{runner.arch}}-bazel-test-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
-            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-${{runner.arch}}-bazel-test-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-
+            ${{runner.os}}-${{runner.arch}}-bazel-test-${{ hashFiles('.bazelversion', '.bazelrc') }}-
       - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
@@ -125,10 +125,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-pmd-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-${{runner.arch}}-bazel-pmd-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-pmd-
-            ${{runner.os}}-bazel-25-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-${{runner.arch}}-bazel-pmd-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-
+            ${{runner.os}}-${{runner.arch}}-bazel-pmd-${{ hashFiles('.bazelversion', '.bazelrc') }}-
       - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
@@ -153,11 +153,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-${{runner.arch}}-bazel-coverage-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-
-            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
-            ${{runner.os}}-bazel-
+            ${{runner.os}}-${{runner.arch}}-bazel-coverage-${{ hashFiles('.bazelversion', '.bazelrc') }}-${{ hashFiles('MODULE.bazel', 'maven_install.json') }}-
+            ${{runner.os}}-${{runner.arch}}-bazel-coverage-${{ hashFiles('.bazelversion', '.bazelrc') }}-
       - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
