@@ -23,7 +23,7 @@
     "com.google.errorprone:error_prone_annotations": -885127816,
     "com.google.googlejavaformat:google-java-format": -302611545,
     "com.google.guava:guava": 1943808618,
-    "com.google.guava:guava-bom": -231672499,
+    "com.google.guava:guava-bom": 1511137836,
     "com.google.guava:guava-testlib": 279911981,
     "com.google.j2objc:j2objc-annotations": 2003271689,
     "com.google.re2j:re2j": 1525409503,
@@ -85,7 +85,7 @@
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": -1227756870,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1281576533,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 192110383,
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -26956375,
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -2108290850,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -1235762981,
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": 1000107608,
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": 11370829,
@@ -99,7 +99,7 @@
     "com.github.ben-manes.caffeine:caffeine:jar:sources": -1862682179,
     "com.github.oowekyala.ooxml:nice-xml-messages": -1242718147,
     "com.github.oowekyala.ooxml:nice-xml-messages:jar:sources": 923999346,
-    "com.google.auto.service:auto-service": -708427084,
+    "com.google.auto.service:auto-service": 1416618298,
     "com.google.auto.service:auto-service-annotations": 262983930,
     "com.google.auto.service:auto-service-annotations:jar:sources": -1392999316,
     "com.google.auto.service:auto-service:jar:sources": -1296332334,
@@ -107,7 +107,7 @@
     "com.google.auto.value:auto-value-annotations": 641752776,
     "com.google.auto.value:auto-value-annotations:jar:sources": -2083311588,
     "com.google.auto.value:auto-value:jar:sources": -30292358,
-    "com.google.auto:auto-common": -1902803804,
+    "com.google.auto:auto-common": 310829017,
     "com.google.auto:auto-common:jar:sources": -542679945,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.findbugs:jsr305:jar:sources": -935881202,
@@ -115,14 +115,14 @@
     "com.google.code.gson:gson:jar:sources": 755669897,
     "com.google.errorprone:error_prone_annotations": 295418660,
     "com.google.errorprone:error_prone_annotations:jar:sources": -751507593,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": -1542581027,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": 476656658,
     "com.google.googlejavaformat:google-java-format:jar:sources": 2122047025,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
-    "com.google.guava:guava": -623659839,
-    "com.google.guava:guava-testlib": 199931190,
-    "com.google.guava:guava-testlib:jar:sources": -1211573735,
-    "com.google.guava:guava:jar:sources": 1172872680,
+    "com.google.guava:guava": -221578555,
+    "com.google.guava:guava-testlib": 779830684,
+    "com.google.guava:guava-testlib:jar:sources": -1558744081,
+    "com.google.guava:guava:jar:sources": 852714858,
     "com.google.guava:listenablefuture": 1079558157,
     "com.google.j2objc:j2objc-annotations": -1008747351,
     "com.google.j2objc:j2objc-annotations:jar:sources": -1518668002,
@@ -130,7 +130,7 @@
     "com.google.re2j:re2j:jar:sources": 485338798,
     "com.ibm.icu:icu4j": -1667183492,
     "com.ibm.icu:icu4j:jar:sources": 1011748514,
-    "com.puppycrawl.tools:checkstyle": -1640637029,
+    "com.puppycrawl.tools:checkstyle": -358743162,
     "com.puppycrawl.tools:checkstyle:jar:sources": -1738313781,
     "com.vaadin.external.google:android-json": -815169796,
     "com.vaadin.external.google:android-json:jar:sources": -241719183,
@@ -331,8 +331,8 @@
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4",
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.22.4",
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.22.4",
-    "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.7.1-jre",
-    "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.7.1-jre",
+    "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.7.2-jre",
+    "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.7.2-jre",
     "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1"
   },
   "artifacts": {
@@ -499,17 +499,17 @@
     },
     "com.google.guava:guava": {
       "shasums": {
-        "jar": "796d8e28ac64e83a47c4c5935a8fecc4682650a04bbdead738ef0f5a3a0e6c46",
-        "sources": "9d60f1613f9252d1f1bc89847466915cfe711af33b0847b885c9184a8602d166"
+        "jar": "b530942257fb935f8b2cfaa5f8eb5bd59c555fd8e8d01b8ce98912e077ea606c",
+        "sources": "ab6a8934d352629e6d87087a79808b827b64ed18cff6c6b551be99cd8e03244c"
       },
-      "version": "33.7.1-jre"
+      "version": "33.7.2-jre"
     },
     "com.google.guava:guava-testlib": {
       "shasums": {
-        "jar": "eaee6892e3ae43eced37ef4401fd8989dc4b0f0b47f21b01c0913159a787bb4e",
-        "sources": "93e553a3d404743b51b52481e55aa3c9ccb1f80e9a93f0eb3de71da2369183e9"
+        "jar": "87684af5e41c7883aaa76c1c531e7ab98e620735bdb652cc97ceccd8e534c115",
+        "sources": "b49b709deebaee15c75c965c42a107d04854e894f50bd5d69a3214b8a7bab2cf"
       },
-      "version": "33.7.1-jre"
+      "version": "33.7.2-jre"
     },
     "com.google.guava:listenablefuture": {
       "shasums": {
