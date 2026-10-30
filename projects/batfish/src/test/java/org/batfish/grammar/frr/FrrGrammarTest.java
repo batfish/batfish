@@ -126,6 +126,7 @@ import org.batfish.representation.frr.BgpAsPathAccessList;
 import org.batfish.representation.frr.BgpAsPathAccessListLine;
 import org.batfish.representation.frr.BgpCommunityListExpanded;
 import org.batfish.representation.frr.BgpCommunityListExpandedLine;
+import org.batfish.representation.frr.BgpCommunityListStandard;
 import org.batfish.representation.frr.BgpInterfaceNeighbor;
 import org.batfish.representation.frr.BgpIpNeighbor;
 import org.batfish.representation.frr.BgpNeighbor;
@@ -1666,6 +1667,42 @@ public class FrrGrammarTest {
     BgpCommunityListExpanded communityList =
         (BgpCommunityListExpanded) _frr.getBgpCommunityLists().get(name);
     assertNotNull(communityList);
+  }
+
+  @Test
+  public void testFrrListSeq() {
+    // Expected orders are from FRR 10.7.1 given these lines: entries are sorted by seq, an omitted
+    // seq takes the next multiple of 5 after the highest, and a repeated seq replaces the entry.
+    parseLines(
+        "bgp community-list standard A seq 20 permit 65000:20",
+        "bgp community-list standard A seq 10 deny 65000:10",
+        "bgp community-list standard A permit 65000:99",
+        "bgp community-list standard A seq 10 permit 65000:11",
+        "bgp community-list expanded E seq 15 permit _65000:1_",
+        "bgp community-list expanded E seq 5 deny _65000:2_",
+        "bgp community-list expanded E permit .*",
+        "bgp as-path access-list P seq 30 permit ^65001_",
+        "bgp as-path access-list P seq 7 deny _65002$",
+        "bgp as-path access-list P permit .*",
+        "bgp as-path access-list P seq 7 permit _65003$");
+
+    assertThat(
+        ((BgpCommunityListStandard) _frr.getBgpCommunityLists().get("A"))
+            .getLines().stream()
+                .map(l -> l.getAction() + " " + l.getCommunities())
+                .collect(ImmutableList.toImmutableList()),
+        contains("PERMIT [65000:11]", "PERMIT [65000:20]", "PERMIT [65000:99]"));
+    assertThat(
+        ((BgpCommunityListExpanded) _frr.getBgpCommunityLists().get("E"))
+            .getLines().stream()
+                .map(l -> l.getAction() + " " + l.getRegex())
+                .collect(ImmutableList.toImmutableList()),
+        contains("DENY _65000:2_", "PERMIT _65000:1_", "PERMIT .*"));
+    assertThat(
+        _frr.getBgpAsPathAccessLists().get("P").getLines().stream()
+            .map(l -> l.getAction() + " " + l.getRegex())
+            .collect(ImmutableList.toImmutableList()),
+        contains("PERMIT _65003$", "PERMIT ^65001_", "PERMIT .*"));
   }
 
   @Test
