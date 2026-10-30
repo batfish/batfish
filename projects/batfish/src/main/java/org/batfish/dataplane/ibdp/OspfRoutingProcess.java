@@ -548,7 +548,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private long getIncrementalCost(Interface iface, boolean considerP2PasStub) {
     long cost = iface.getOspfCost();
     if (iface.getOspfPassive()
-        || (considerP2PasStub && (iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT))) {
+        || (considerP2PasStub && (iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT))
+        || (iface.isLoopback() && Boolean.TRUE.equals(_process.getLoopbacksAsStubLinks()))) {
       return firstNonNull(_process.getMaxMetricStubNetworks(), cost);
     } else {
       return firstNonNull(_process.getMaxMetricTransitLinks(), cost);

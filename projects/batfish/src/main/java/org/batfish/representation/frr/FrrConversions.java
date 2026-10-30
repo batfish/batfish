@@ -1461,6 +1461,8 @@ public final class FrrConversions {
       // FRR also advertises inter-area networks (type 3 summary LSAs) with max metric, but not
       // routes to ASBRs (type 4 summary LSAs).
       proc.setMaxMetricInterAreaNetworks(DEFAULT_OSPF_MAX_METRIC_SUMMARY);
+      // Loopbacks are stub links, whose metric FRR does not max.
+      proc.setLoopbacksAsStubLinks(true);
     }
 
     // Handle Redistribution
