@@ -49,14 +49,13 @@ public final class TrackReachabilityUtils {
             : Stream.of(
                 Maps.immutableEntry(
                     trackReachability.getSourceIp(), trackReachability.getSourceVrf())))
-        .anyMatch(
-            ipAndVrf ->
-                producesSuccessfulForwardAndReverseTraces(
-                    ipAndVrf.getKey(),
-                    trackReachability.getDestinationIp(),
-                    c,
-                    ipAndVrf.getValue(),
-                    tracerouteEngine));
+        .anyMatch(ipAndVrf ->
+            producesSuccessfulForwardAndReverseTraces(
+                ipAndVrf.getKey(),
+                trackReachability.getDestinationIp(),
+                c,
+                ipAndVrf.getValue(),
+                tracerouteEngine));
   }
 
   private static boolean producesSuccessfulForwardAndReverseTraces(
@@ -93,9 +92,8 @@ public final class TrackReachabilityUtils {
                 })
             .filter(Objects::nonNull)
             .flatMap(List::stream)
-            .anyMatch(
-                reverseTrace ->
-                    isSuccessfulReverseFlow(reverseTrace, originatingNode, originatingVrf));
+            .anyMatch(reverseTrace ->
+                isSuccessfulReverseFlow(reverseTrace, originatingNode, originatingVrf));
   }
 
   private static boolean isSuccessfulForwardFlow(TraceAndReverseFlow tr) {
@@ -114,18 +112,17 @@ public final class TrackReachabilityUtils {
       return false;
     }
     return finalReverseHop.getSteps().stream()
-        .anyMatch(
-            step -> {
-              if (!(step instanceof InboundStep)) {
-                return false;
-              }
-              String inboundInterface = ((InboundStep) step).getDetail().getInterface();
-              return forwardSender
-                  .getAllInterfaces()
-                  .get(inboundInterface)
-                  .getVrfName()
-                  .equals(forwardSenderVrf);
-            });
+        .anyMatch(step -> {
+          if (!(step instanceof InboundStep)) {
+            return false;
+          }
+          String inboundInterface = ((InboundStep) step).getDetail().getInterface();
+          return forwardSender
+              .getAllInterfaces()
+              .get(inboundInterface)
+              .getVrfName()
+              .equals(forwardSenderVrf);
+        });
   }
 
   /**
@@ -147,28 +144,27 @@ public final class TrackReachabilityUtils {
       Ip dstIp, String currentVrf, Map<String, Fib> fibs) {
     return fibs.get(currentVrf).get(dstIp).stream()
         .map(FibEntry::getAction)
-        .flatMap(
-            action ->
-                action.accept(
-                    new FibActionVisitor<Stream<String>>() {
-                      @Override
-                      public Stream<String> visitFibForward(FibForward fibForward) {
-                        return Stream.of(fibForward.getInterfaceName());
-                      }
+        .flatMap(action ->
+            action.accept(
+                new FibActionVisitor<Stream<String>>() {
+                  @Override
+                  public Stream<String> visitFibForward(FibForward fibForward) {
+                    return Stream.of(fibForward.getInterfaceName());
+                  }
 
-                      @Override
-                      public Stream<String> visitFibNextVrf(FibNextVrf fibNextVrf) {
-                        // assumption: next-vrf cycles not allowed
-                        String nextVrf = fibNextVrf.getNextVrf();
-                        assert fibs.containsKey(nextVrf);
-                        return getForwardingInterfaces(dstIp, fibNextVrf.getNextVrf(), fibs);
-                      }
+                  @Override
+                  public Stream<String> visitFibNextVrf(FibNextVrf fibNextVrf) {
+                    // assumption: next-vrf cycles not allowed
+                    String nextVrf = fibNextVrf.getNextVrf();
+                    assert fibs.containsKey(nextVrf);
+                    return getForwardingInterfaces(dstIp, fibNextVrf.getNextVrf(), fibs);
+                  }
 
-                      @Override
-                      public Stream<String> visitFibNullRoute(FibNullRoute fibNullRoute) {
-                        return Stream.of();
-                      }
-                    }));
+                  @Override
+                  public Stream<String> visitFibNullRoute(FibNullRoute fibNullRoute) {
+                    return Stream.of();
+                  }
+                }));
   }
 
   private TrackReachabilityUtils() {}

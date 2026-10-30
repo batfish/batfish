@@ -150,15 +150,14 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
               serviceGroup == null
                   ? ImmutableSet.of()
                   : serviceGroup.getMembers().values().stream()
-                      .map(
-                          member -> {
-                            Server server = a10Vc.getServers().get(member.getName());
-                            return ImmutableList.of(
-                                member.getName(),
-                                Integer.toString(member.getPort()),
-                                getServerTarget(server),
-                                getServerActive(member, server, serviceGroup.getType()));
-                          })
+                      .map(member -> {
+                        Server server = a10Vc.getServers().get(member.getName());
+                        return ImmutableList.of(
+                            member.getName(),
+                            Integer.toString(member.getPort()),
+                            getServerTarget(server),
+                            getServerActive(member, server, serviceGroup.getType()));
+                      })
                       .collect(ImmutableSet.toImmutableSet());
           rows.add(
               getRow(

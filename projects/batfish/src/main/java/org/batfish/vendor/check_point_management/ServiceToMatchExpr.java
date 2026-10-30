@@ -65,12 +65,10 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
     exprs.add(matchIpProtocol(IpProtocol.ICMP, ipProtocolTraceElement(IpProtocol.ICMP)));
     exprs.add(AclLineMatchExprs.matchIcmpType(type, icmpTypeTraceElement(type)));
     Optional.ofNullable(serviceIcmp.getIcmpCode())
-        .ifPresent(
-            code ->
-                exprs.add(
-                    AclLineMatchExprs.match(
-                        HeaderSpace.builder().setIcmpCodes(code).build(),
-                        icmpCodeTraceElement(code))));
+        .ifPresent(code ->
+            exprs.add(
+                AclLineMatchExprs.match(
+                    HeaderSpace.builder().setIcmpCodes(code).build(), icmpCodeTraceElement(code))));
 
     return and(exprs.build(), serviceIcmpTraceElement(serviceIcmp));
   }

@@ -175,9 +175,9 @@ public final class BDDRouteFactory {
    * Reorders {@code factory}'s variables so that each of the {@code width} non-prefix variables of
    * every one of the {@code numRoutes} routes (built contiguously at indices {@code [fixedWidth,
    * fixedWidth + numRoutes*width)}) is immediately followed by its counterpart(s) in every other
-   * route (preserving each route's relative order otherwise, and leaving the shared prefix/prefix-
-   * length variables at the very front, before {@code fixedWidth}, untouched). Needed for
-   * tractability whenever a computation relates more than two of the routes at once (see this
+   * route (preserving each route's relative order otherwise, and leaving the shared
+   * prefix/prefix-length variables at the very front, before {@code fixedWidth}, untouched). Needed
+   * for tractability whenever a computation relates more than two of the routes at once (see this
    * class's javadoc for why non-adjacent variables blow up).
    */
   private static void interleave(BDDFactory factory, int fixedWidth, int width, int numRoutes) {

@@ -82,40 +82,36 @@ public final class LocationInfoUtils {
       Map<String, Configuration> configs) {
     // Per device, in parallel; the collector keeps the encounter order.
     return configs.values().parallelStream()
-        .flatMap(
-            config -> {
-              Map<Location, LocationInfo> locationInfo =
-                  firstNonNull(config.getLocationInfo(), ImmutableMap.of());
-              return config.getAllInterfaces().values().stream()
-                  .flatMap(
-                      iface -> {
-                        String hostname = iface.getOwner().getHostname();
-                        String ifaceName = iface.getName();
+        .flatMap(config -> {
+          Map<Location, LocationInfo> locationInfo =
+              firstNonNull(config.getLocationInfo(), ImmutableMap.of());
+          return config.getAllInterfaces().values().stream()
+              .flatMap(iface -> {
+                String hostname = iface.getOwner().getHostname();
+                String ifaceName = iface.getName();
 
-                        Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
-                        Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
+                Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
+                Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
 
-                        if (!iface.getActive()) {
-                          // Would get filtered out below, so just omit.
-                          return Stream.of();
-                        }
+                if (!iface.getActive()) {
+                  // Would get filtered out below, so just omit.
+                  return Stream.of();
+                }
 
-                        return Stream.of(
-                            Maps.immutableEntry(
-                                ifaceLocation,
-                                getInterfaceLocationInfo(
-                                    locationInfo.get(ifaceLocation),
-                                    interfaceOwnedIps
-                                        .getOrDefault(hostname, ImmutableMap.of())
-                                        .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE))),
-                            Maps.immutableEntry(
-                                linkLocation,
-                                getInterfaceLinkLocationInfo(
-                                    locationInfo.get(linkLocation),
-                                    iface,
-                                    snapshotDeviceOwnedIps)));
-                      });
-            })
+                return Stream.of(
+                    Maps.immutableEntry(
+                        ifaceLocation,
+                        getInterfaceLocationInfo(
+                            locationInfo.get(ifaceLocation),
+                            interfaceOwnedIps
+                                .getOrDefault(hostname, ImmutableMap.of())
+                                .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE))),
+                    Maps.immutableEntry(
+                        linkLocation,
+                        getInterfaceLinkLocationInfo(
+                            locationInfo.get(linkLocation), iface, snapshotDeviceOwnedIps)));
+              });
+        })
         .filter(e -> !e.getValue().equals(LocationInfo.NOTHING))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }

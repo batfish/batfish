@@ -48,14 +48,11 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       ImmutableMap.Builder<Integer, Integer> vlanVnisBuilder) {
     c.getVrfs()
         .values()
-        .forEach(
-            vrf ->
-                vrf.getLayer2Vnis()
-                    .values()
-                    .forEach(
-                        vniSettings ->
-                            tryAddVlanVni(
-                                vniSettings, vlans, vlanVnisBuilder, switchedVlanInterfaces)));
+        .forEach(vrf ->
+            vrf.getLayer2Vnis()
+                .values()
+                .forEach(vniSettings ->
+                    tryAddVlanVni(vniSettings, vlans, vlanVnisBuilder, switchedVlanInterfaces)));
   }
 
   @VisibleForTesting
@@ -183,9 +180,8 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       Map<String, ColumnMetadata> columns,
       Collection<Row> rows) {
     Map<Integer, Integer> vlanVnis = vlanVnisBuilder.build();
-    switchedVlanInterfaces.forEach(
-        (vlan, interfaces) ->
-            rows.add(createRow(columns, node, vlan, interfaces.build(), vlanVnis)));
+    switchedVlanInterfaces.forEach((vlan, interfaces) ->
+        rows.add(createRow(columns, node, vlan, interfaces.build(), vlanVnis)));
   }
 
   @VisibleForTesting
@@ -222,9 +218,8 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
     } else if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       // Add allowed VLANs when in TRUNK mode
       iface.getAllowedVlans().stream()
-          .forEach(
-              allowedVlan ->
-                  tryAddInterfaceToVlan(switchedVlanInterfaces, ifacePair, allowedVlan, vlans));
+          .forEach(allowedVlan ->
+              tryAddInterfaceToVlan(switchedVlanInterfaces, ifacePair, allowedVlan, vlans));
     }
   }
 

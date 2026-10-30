@@ -229,10 +229,9 @@ public class TransferBDDValidationAnswererTest {
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> badPaths = tbdd.computePaths(policy, true);
     // change the local pref in the symbolic results, to create a violation
-    badPaths.forEach(
-        p ->
-            p.getOutputRoute()
-                .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
+    badPaths.forEach(p ->
+        p.getOutputRoute()
+            .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
     List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd, Environment.Direction.IN);
 
@@ -270,10 +269,9 @@ public class TransferBDDValidationAnswererTest {
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> badPaths = tbdd.computePaths(policy, true);
     // change the local pref in the symbolic results, to create a violation
-    badPaths.forEach(
-        p ->
-            p.getOutputRoute()
-                .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
+    badPaths.forEach(p ->
+        p.getOutputRoute()
+            .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
     List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd, Environment.Direction.OUT);
 
@@ -334,13 +332,12 @@ public class TransferBDDValidationAnswererTest {
             tbdd.getFactory()
                 .orAll(
                     cvars.stream()
-                        .flatMap(
-                            cvar ->
-                                _configAPs
-                                    .getStandardCommunityAtomicPredicates()
-                                    .getRegexAtomicPredicates()
-                                    .get(cvar)
-                                    .stream())
+                        .flatMap(cvar ->
+                            _configAPs
+                                .getStandardCommunityAtomicPredicates()
+                                .getRegexAtomicPredicates()
+                                .get(cvar)
+                                .stream())
                         .map(i -> orig.getCommunityAtomicPredicates()[i])
                         .collect(Collectors.toList()))
                 .not(),

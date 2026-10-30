@@ -167,17 +167,16 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       return ImmutableMap.of();
     }
     return map.entrySet().stream()
-        .filter(
-            e -> {
-              String key = keyFn.apply(e.getValue());
-              if (key.equals(e.getKey())) {
-                return true;
-              }
-              w.redFlagf(
-                  "Batfish internal error: invalid entry %s -> %s named %s",
-                  e.getKey(), e.getValue(), key);
-              return false;
-            })
+        .filter(e -> {
+          String key = keyFn.apply(e.getValue());
+          if (key.equals(e.getKey())) {
+            return true;
+          }
+          w.redFlagf(
+              "Batfish internal error: invalid entry %s -> %s named %s",
+              e.getKey(), e.getValue(), key);
+          return false;
+        })
         .sorted(Entry.comparingByKey(comparator)) /* ImmutableMap is insert ordered. */
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
@@ -627,25 +626,24 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void removeUndefinedBgpProcessRoutingPolicyReferences(
       Configuration c, Warnings w) {
     c.getVrfs()
-        .forEach(
-            (vrfName, vrf) -> {
-              BgpProcess proc = vrf.getBgpProcess();
-              if (proc == null) {
-                // nothing to check
-                return;
-              }
-              // Next hop IP resolver restriction policy
-              String nextHopIpResolverRestrictionPolicyName =
-                  proc.getNextHopIpResolverRestrictionPolicy();
-              if (nextHopIpResolverRestrictionPolicyName != null
-                  && !c.getRoutingPolicies().containsKey(nextHopIpResolverRestrictionPolicyName)) {
-                proc.setNextHopIpResolverRestrictionPolicy(null);
-                w.redFlagf(
-                    "Removing reference to undefined nextHopIpResolverRestrictionPolicy '%s' in BGP"
-                        + " process for vrf '%s'",
-                    nextHopIpResolverRestrictionPolicyName, vrfName);
-              }
-            });
+        .forEach((vrfName, vrf) -> {
+          BgpProcess proc = vrf.getBgpProcess();
+          if (proc == null) {
+            // nothing to check
+            return;
+          }
+          // Next hop IP resolver restriction policy
+          String nextHopIpResolverRestrictionPolicyName =
+              proc.getNextHopIpResolverRestrictionPolicy();
+          if (nextHopIpResolverRestrictionPolicyName != null
+              && !c.getRoutingPolicies().containsKey(nextHopIpResolverRestrictionPolicyName)) {
+            proc.setNextHopIpResolverRestrictionPolicy(null);
+            w.redFlagf(
+                "Removing reference to undefined nextHopIpResolverRestrictionPolicy '%s' in BGP"
+                    + " process for vrf '%s'",
+                nextHopIpResolverRestrictionPolicyName, vrfName);
+          }
+        });
   }
 
   /**
@@ -663,30 +661,29 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
   private static void removeUndefinedBgpProcessTrackReferences(Configuration c, Warnings w) {
     c.getVrfs()
-        .forEach(
-            (vrfName, vrf) -> {
-              BgpProcess proc = vrf.getBgpProcess();
-              if (proc == null) {
-                // nothing to check
-                return;
-              }
-              if (proc.getTracks().stream().allMatch(c.getTrackingGroups()::containsKey)) {
-                // all good
-                return;
-              }
-              // At least one undefined track
-              ImmutableSet.Builder<String> definedTracks = ImmutableSet.builder();
-              for (String trackName : proc.getTracks()) {
-                if (c.getTrackingGroups().containsKey(trackName)) {
-                  definedTracks.add(trackName);
-                } else {
-                  w.redFlagf(
-                      "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
-                      trackName, vrfName);
-                }
-              }
-              proc.setTracks(definedTracks.build());
-            });
+        .forEach((vrfName, vrf) -> {
+          BgpProcess proc = vrf.getBgpProcess();
+          if (proc == null) {
+            // nothing to check
+            return;
+          }
+          if (proc.getTracks().stream().allMatch(c.getTrackingGroups()::containsKey)) {
+            // all good
+            return;
+          }
+          // At least one undefined track
+          ImmutableSet.Builder<String> definedTracks = ImmutableSet.builder();
+          for (String trackName : proc.getTracks()) {
+            if (c.getTrackingGroups().containsKey(trackName)) {
+              definedTracks.add(trackName);
+            } else {
+              w.redFlagf(
+                  "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
+                  trackName, vrfName);
+            }
+          }
+          proc.setTracks(definedTracks.build());
+        });
   }
 
   private static void removeUndefinedHsrpTrackReferences(Configuration c, Warnings w) {
@@ -1078,34 +1075,32 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       // Parallelize because we may get a large number of configurations from e.g. Panorama,
       // CheckPoint MGMT.
       vendorConfiguration.toVendorIndependentConfigurations().parallelStream()
-          .forEach(
-              configuration -> {
-                Warnings currentConfigSpecificWarnings = Batfish.buildWarnings(_settings);
-                configSpecificWarnings.put(
-                    configuration.getHostname(), currentConfigSpecificWarnings);
-                // get iptables if applicable
-                IptablesVendorConfiguration iptablesConfig = null;
-                VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
-                if (ov != null) {
-                  // apply overlay
-                  HostConfiguration oh = (HostConfiguration) ov;
-                  iptablesConfig = oh.getIptablesVendorConfig();
-                } else if (vendorConfiguration instanceof HostConfiguration) {
-                  // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
-                  //       semantics.
-                  // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
-                  // iptablesConfig = oh.getIptablesVendorConfig();
-                }
-                if (iptablesConfig != null) {
-                  iptablesConfig.addAsIpAccessLists(
-                      configuration, vendorConfiguration, currentConfigSpecificWarnings);
-                  iptablesConfig.applyAsOverlay(configuration, currentConfigSpecificWarnings);
-                }
-                finalizeConfiguration(
-                    configuration, vendorConfiguration, currentConfigSpecificWarnings);
-                postFinalize(
-                    configurations, warningsByHost, fileMap, warnings, filenames, configuration);
-              });
+          .forEach(configuration -> {
+            Warnings currentConfigSpecificWarnings = Batfish.buildWarnings(_settings);
+            configSpecificWarnings.put(configuration.getHostname(), currentConfigSpecificWarnings);
+            // get iptables if applicable
+            IptablesVendorConfiguration iptablesConfig = null;
+            VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+            if (ov != null) {
+              // apply overlay
+              HostConfiguration oh = (HostConfiguration) ov;
+              iptablesConfig = oh.getIptablesVendorConfig();
+            } else if (vendorConfiguration instanceof HostConfiguration) {
+              // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
+              //       semantics.
+              // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+              // iptablesConfig = oh.getIptablesVendorConfig();
+            }
+            if (iptablesConfig != null) {
+              iptablesConfig.addAsIpAccessLists(
+                  configuration, vendorConfiguration, currentConfigSpecificWarnings);
+              iptablesConfig.applyAsOverlay(configuration, currentConfigSpecificWarnings);
+            }
+            finalizeConfiguration(
+                configuration, vendorConfiguration, currentConfigSpecificWarnings);
+            postFinalize(
+                configurations, warningsByHost, fileMap, warnings, filenames, configuration);
+          });
       saveStructureInfo(answerElement, vendorConfiguration);
       for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
         // Merge in config-specific warnings in deterministic fashion; values are ordered by

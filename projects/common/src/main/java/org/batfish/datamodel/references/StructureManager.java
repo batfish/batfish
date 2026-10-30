@@ -115,17 +115,16 @@ public final class StructureManager implements Serializable {
   public void markConcreteStructure(StructureType type) {
     Map<String, Map<StructureUsage, Multiset<Integer>>> references =
         _references.getOrDefault(type, Collections.emptyMap());
-    references.forEach(
-        (name, byUsage) -> {
-          DefinedStructureInfo def = _definitions.get(type.getDescription(), name);
-          if (def == null) {
-            byUsage.forEach(
-                (usage, lines) -> lines.forEach(line -> undefined(type, name, usage, line)));
-          } else {
-            int count = byUsage.values().stream().mapToInt(Multiset::size).sum();
-            def.setNumReferrers(def.getNumReferrers() + count);
-          }
-        });
+    references.forEach((name, byUsage) -> {
+      DefinedStructureInfo def = _definitions.get(type.getDescription(), name);
+      if (def == null) {
+        byUsage.forEach(
+            (usage, lines) -> lines.forEach(line -> undefined(type, name, usage, line)));
+      } else {
+        int count = byUsage.values().stream().mapToInt(Multiset::size).sum();
+        def.setNumReferrers(def.getNumReferrers() + count);
+      }
+    });
   }
 
   /**
@@ -142,9 +141,35 @@ public final class StructureManager implements Serializable {
       Collection<? extends StructureType> structureTypesToCheck) {
     Map<String, Map<StructureUsage, Multiset<Integer>>> references =
         firstNonNull(_references.get(type), Collections.emptyMap());
-    references.forEach(
-        (name, byUsage) -> {
-          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), ImmutableMultiset.of());
+    references.forEach((name, byUsage) -> {
+      Multiset<Integer> lines = firstNonNull(byUsage.get(usage), ImmutableMultiset.of());
+      List<DefinedStructureInfo> matchingStructures =
+          structureTypesToCheck.stream()
+              .map(t -> _definitions.get(t.getDescription(), name))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      if (matchingStructures.isEmpty()) {
+        for (int line : lines) {
+          undefined(type, name, usage, line);
+        }
+      } else {
+        matchingStructures.forEach(
+            info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
+      }
+    });
+  }
+
+  /**
+   * Updates referrers and/or warns for undefined structures based on references to an abstract
+   * {@link StructureType}: a reference type that may refer to one of a number of defined structure
+   * types passed in {@code structureTypesToCheck}.
+   */
+  public void markAbstractStructureAllUsages(
+      StructureType type, Collection<? extends StructureType> structureTypesToCheck) {
+    Map<String, Map<StructureUsage, Multiset<Integer>>> references =
+        firstNonNull(_references.get(type), Collections.emptyMap());
+    references.forEach((name, byUsage) ->
+        byUsage.forEach((usage, lines) -> {
           List<DefinedStructureInfo> matchingStructures =
               structureTypesToCheck.stream()
                   .map(t -> _definitions.get(t.getDescription(), name))
@@ -158,36 +183,7 @@ public final class StructureManager implements Serializable {
             matchingStructures.forEach(
                 info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
           }
-        });
-  }
-
-  /**
-   * Updates referrers and/or warns for undefined structures based on references to an abstract
-   * {@link StructureType}: a reference type that may refer to one of a number of defined structure
-   * types passed in {@code structureTypesToCheck}.
-   */
-  public void markAbstractStructureAllUsages(
-      StructureType type, Collection<? extends StructureType> structureTypesToCheck) {
-    Map<String, Map<StructureUsage, Multiset<Integer>>> references =
-        firstNonNull(_references.get(type), Collections.emptyMap());
-    references.forEach(
-        (name, byUsage) ->
-            byUsage.forEach(
-                (usage, lines) -> {
-                  List<DefinedStructureInfo> matchingStructures =
-                      structureTypesToCheck.stream()
-                          .map(t -> _definitions.get(t.getDescription(), name))
-                          .filter(Objects::nonNull)
-                          .collect(ImmutableList.toImmutableList());
-                  if (matchingStructures.isEmpty()) {
-                    for (int line : lines) {
-                      undefined(type, name, usage, line);
-                    }
-                  } else {
-                    matchingStructures.forEach(
-                        info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
-                  }
-                }));
+        }));
   }
 
   /** Record a reference on the given line. */

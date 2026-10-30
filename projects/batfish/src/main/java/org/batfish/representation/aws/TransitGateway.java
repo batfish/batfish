@@ -261,9 +261,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
             .collect(ImmutableSet.toImmutableSet());
 
     // create a VRF for each route table
-    routeTables.forEach(
-        table ->
-            Vrf.builder().setOwner(cfgNode).setName(vrfNameForRouteTable(table.getId())).build());
+    routeTables.forEach(table ->
+        Vrf.builder().setOwner(cfgNode).setName(vrfNameForRouteTable(table.getId())).build());
 
     // initialize VPN infrastructure if this TGW has any VPN attachments
     if (region.getTransitGatewayAttachments().values().stream()
@@ -275,49 +274,37 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     // make connections to the attachments
     region.getTransitGatewayAttachments().values().stream()
         .filter(a -> a.getGatewayId().equals(_gatewayId))
-        .forEach(
-            a ->
-                connectAttachment(
-                    cfgNode, a, routeTables, vsConfig, awsConfiguration, region, warnings));
+        .forEach(a ->
+            connectAttachment(
+                cfgNode, a, routeTables, vsConfig, awsConfiguration, region, warnings));
 
     // propagate routes
-    routeTables.forEach(
-        table ->
-            region
-                .getTransitGatewayPropagations()
-                .getOrDefault(
-                    table.getId(), new TransitGatewayPropagations("dummy", ImmutableList.of()))
-                .getPropagations()
-                .forEach(
-                    propagation ->
-                        propagateRoutes(
-                            cfgNode,
-                            table,
-                            propagation,
-                            vsConfig,
-                            awsConfiguration,
-                            region,
-                            warnings)));
+    routeTables.forEach(table ->
+        region
+            .getTransitGatewayPropagations()
+            .getOrDefault(
+                table.getId(), new TransitGatewayPropagations("dummy", ImmutableList.of()))
+            .getPropagations()
+            .forEach(propagation ->
+                propagateRoutes(
+                    cfgNode, table, propagation, vsConfig, awsConfiguration, region, warnings)));
 
     // add static routes that were configured for route tables
     region.getTransitGatewayRouteTables().values().stream()
-        .filter(
-            table ->
-                table.getGatewayId().equals(_gatewayId)
-                    && region.getTransitGatewayStaticRoutes().containsKey(table.getId()))
-        .forEach(
-            table ->
-                region.getTransitGatewayStaticRoutes().get(table.getId()).getRoutes().stream()
-                    .filter(route -> route instanceof TransitGatewayRouteV4)
-                    .forEach(
-                        route ->
-                            addTransitGatewayStaticRoute(
-                                cfgNode,
-                                table,
-                                (TransitGatewayRouteV4) route,
-                                awsConfiguration,
-                                region,
-                                warnings)));
+        .filter(table ->
+            table.getGatewayId().equals(_gatewayId)
+                && region.getTransitGatewayStaticRoutes().containsKey(table.getId()))
+        .forEach(table ->
+            region.getTransitGatewayStaticRoutes().get(table.getId()).getRoutes().stream()
+                .filter(route -> route instanceof TransitGatewayRouteV4)
+                .forEach(route ->
+                    addTransitGatewayStaticRoute(
+                        cfgNode,
+                        table,
+                        (TransitGatewayRouteV4) route,
+                        awsConfiguration,
+                        region,
+                        warnings)));
 
     return cfgNode;
   }
@@ -335,14 +322,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         {
           // for peerings, we create interfaces here, so we point static routes to it
           // the interfaces are connected when we process peerings after creating all TGWs
-          routeTables.forEach(
-              rt ->
-                  Utils.newInterface(
-                      sendSidePeeringInterfaceName(rt.getId(), attachment.getId()),
-                      tgwCfg,
-                      vrfNameForRouteTable(rt.getId()),
-                      LinkLocalAddress.of(LINK_LOCAL_IP),
-                      "To " + attachment.getResourceId()));
+          routeTables.forEach(rt ->
+              Utils.newInterface(
+                  sendSidePeeringInterfaceName(rt.getId(), attachment.getId()),
+                  tgwCfg,
+                  vrfNameForRouteTable(rt.getId()),
+                  LinkLocalAddress.of(LINK_LOCAL_IP),
+                  "To " + attachment.getResourceId()));
           return;
         }
       case VPC:
@@ -556,31 +542,22 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     // link to additional tables used for propagation
     region.getTransitGatewayRouteTables().values().stream()
-        .filter(
-            table ->
-                !table.getId().equals(associatedRouteTable) // not the assoc. table
-                    && table.getGatewayId().equals(attachment.getGatewayId()) // this TGW's table
-                    && region.getTransitGatewayPropagations().containsKey(table.getId())
-                    // propagations of the table contain the VPC
-                    && region
-                        .getTransitGatewayPropagations()
-                        .get(table.getId())
-                        .getPropagations()
-                        .stream()
-                        .anyMatch(
-                            propagation ->
-                                propagation.getAttachmentId().equals(attachment.getId())
-                                    && propagation.isEnabled()))
-        .forEach(
-            table ->
-                connectVpcToRouteTable(
-                    tgwCfg,
-                    table.getId(),
-                    vpcCfg,
-                    vrfNameOnVpc,
-                    false,
-                    awsConfiguration,
-                    warnings));
+        .filter(table ->
+            !table.getId().equals(associatedRouteTable) // not the assoc. table
+                && table.getGatewayId().equals(attachment.getGatewayId()) // this TGW's table
+                && region.getTransitGatewayPropagations().containsKey(table.getId())
+                // propagations of the table contain the VPC
+                && region
+                    .getTransitGatewayPropagations()
+                    .get(table.getId())
+                    .getPropagations()
+                    .stream()
+                    .anyMatch(propagation ->
+                        propagation.getAttachmentId().equals(attachment.getId())
+                            && propagation.isEnabled()))
+        .forEach(table ->
+            connectVpcToRouteTable(
+                tgwCfg, table.getId(), vpcCfg, vrfNameOnVpc, false, awsConfiguration, warnings));
   }
 
   private static void connectVpcToRouteTable(
@@ -661,13 +638,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     String associatedRoutingTableId = attachment.getAssociation().getRouteTableId();
     Set<String> propagatedRoutingTableIds =
         region.getTransitGatewayPropagations().values().stream()
-            .filter(
-                props ->
-                    props.getPropagations().stream()
-                        .anyMatch(
-                            prop ->
-                                prop.isEnabled()
-                                    && prop.getResourceId().equals(vpnConnection.getId())))
+            .filter(props ->
+                props.getPropagations().stream()
+                    .anyMatch(prop ->
+                        prop.isEnabled() && prop.getResourceId().equals(vpnConnection.getId())))
             .map(TransitGatewayPropagations::getId)
             .collect(ImmutableSet.toImmutableSet());
     if (propagatedRoutingTableIds.equals(ImmutableSet.of(associatedRoutingTableId))) {
@@ -792,12 +766,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     vpc.getCidrBlockAssociations()
-        .forEach(
-            pfx ->
-                addStaticRoute(
-                    tgwVrf,
-                    toStaticRoute(
-                        pfx, localIface.getName(), remoteIface.getLinkLocalAddress().getIp())));
+        .forEach(pfx ->
+            addStaticRoute(
+                tgwVrf,
+                toStaticRoute(
+                    pfx, localIface.getName(), remoteIface.getLinkLocalAddress().getIp())));
   }
 
   private void addTransitGatewayStaticRoute(
@@ -816,17 +789,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
     route
         .getAttachmentIds()
-        .forEach(
-            attachmentId ->
-                addTransitGatewayStaticRouteAttachment(
-                    tgwCfg,
-                    vrf,
-                    route,
-                    attachmentId,
-                    routeTable.getId(),
-                    awsConfiguration,
-                    region,
-                    warnings));
+        .forEach(attachmentId ->
+            addTransitGatewayStaticRouteAttachment(
+                tgwCfg,
+                vrf,
+                route,
+                attachmentId,
+                routeTable.getId(),
+                awsConfiguration,
+                region,
+                warnings));
   }
 
   private void addTransitGatewayStaticRouteAttachment(
@@ -902,12 +874,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           vpnConnection
               .get()
               .getIpsecTunnels()
-              .forEach(
-                  tunnel ->
-                      addStaticRoute(
-                          vrf,
-                          toStaticRoute(
-                              route.getDestinationCidrBlock(), tunnel.getCgwInsideAddress())));
+              .forEach(tunnel ->
+                  addStaticRoute(
+                      vrf,
+                      toStaticRoute(
+                          route.getDestinationCidrBlock(), tunnel.getCgwInsideAddress())));
           return;
         }
       case DIRECT_CONNECT_GATEWAY:

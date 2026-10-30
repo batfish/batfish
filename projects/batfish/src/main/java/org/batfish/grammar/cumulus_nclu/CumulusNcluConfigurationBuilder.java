@@ -358,12 +358,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       builder.addAll(rangeSet);
     }
     return builder.build().asRanges().stream()
-        .flatMapToLong(
-            r -> {
-              assert r.lowerBoundType() == BoundType.CLOSED
-                  && r.upperBoundType() == BoundType.CLOSED;
-              return LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint());
-            })
+        .flatMapToLong(r -> {
+          assert r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.CLOSED;
+          return LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint());
+        })
         .mapToObj(i -> String.format("%s%d", prefix, i))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -622,10 +620,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void enterA_interface(A_interfaceContext ctx) {
     Set<String> interfaceNames = toStrings(ctx.interfaces);
     _currentInterfaces = initInterfacesIfAbsent(interfaceNames, ctx);
-    _currentInterfaces.forEach(
-        i ->
-            _c.referenceStructure(
-                INTERFACE, i.getName(), NET_ADD_INTERFACE, ctx.getStart().getLine()));
+    _currentInterfaces.forEach(i ->
+        _c.referenceStructure(INTERFACE, i.getName(), NET_ADD_INTERFACE, ctx.getStart().getLine()));
   }
 
   @Override
@@ -654,13 +650,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               .map(suffix -> String.format("vlan%d", suffix))
               .collect(ImmutableSet.toImmutableSet());
       _currentVlans = initVlansIfAbsent(names, line);
-      names.forEach(
-          name ->
-              _c.referenceStructure(
-                  CumulusStructureType.VLAN,
-                  name,
-                  CumulusStructureUsage.VLAN_SELF_REFERENCE,
-                  line));
+      names.forEach(name ->
+          _c.referenceStructure(
+              CumulusStructureType.VLAN, name, CumulusStructureUsage.VLAN_SELF_REFERENCE, line));
     }
   }
 
@@ -1211,10 +1203,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .isEmpty()) {
       return;
     }
-    _currentInterfaces.forEach(
-        iface -> {
-          iface.setVrf(vrf);
-        });
+    _currentInterfaces.forEach(iface -> {
+      iface.setVrf(vrf);
+    });
   }
 
   @Override
@@ -1247,41 +1238,37 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     } else {
       vrf = null;
     }
-    _currentInterfaces.forEach(
-        iface -> {
-          InterfaceClagSettings clag = iface.getOrInitClag();
-          clag.setBackupIp(backupIp);
-          clag.setBackupIpVrf(vrf);
-        });
+    _currentInterfaces.forEach(iface -> {
+      InterfaceClagSettings clag = iface.getOrInitClag();
+      clag.setBackupIp(backupIp);
+      clag.setBackupIpVrf(vrf);
+    });
   }
 
   @Override
   public void exitIc_peer_ip(Ic_peer_ipContext ctx) {
     Ip peerIp = ctx.peer_ip != null ? toIp(ctx.peer_ip) : null;
-    _currentInterfaces.forEach(
-        iface -> {
-          InterfaceClagSettings clag = iface.getOrInitClag();
-          clag.setPeerIp(peerIp);
-          clag.setPeerIpLinkLocal(ctx.LINKLOCAL() != null);
-        });
+    _currentInterfaces.forEach(iface -> {
+      InterfaceClagSettings clag = iface.getOrInitClag();
+      clag.setPeerIp(peerIp);
+      clag.setPeerIpLinkLocal(ctx.LINKLOCAL() != null);
+    });
   }
 
   @Override
   public void exitIc_priority(Ic_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
-    _currentInterfaces.forEach(
-        iface -> {
-          iface.getOrInitClag().setPriority(priority);
-        });
+    _currentInterfaces.forEach(iface -> {
+      iface.getOrInitClag().setPriority(priority);
+    });
   }
 
   @Override
   public void exitIc_sys_mac(Ic_sys_macContext ctx) {
     MacAddress macAddress = toMacAddress(ctx.mac);
-    _currentInterfaces.forEach(
-        iface -> {
-          iface.getOrInitClag().setSysMac(macAddress);
-        });
+    _currentInterfaces.forEach(iface -> {
+      iface.getOrInitClag().setSysMac(macAddress);
+    });
   }
 
   @Override
@@ -1362,11 +1349,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void exitV_ip_address_virtual(V_ip_address_virtualContext ctx) {
     MacAddress macAddress = toMacAddress(ctx.mac);
     InterfaceAddress address = toInterfaceAddress(ctx.address);
-    _currentVlans.forEach(
-        vlan ->
-            vlan.getAddressVirtuals()
-                .computeIfAbsent(macAddress, m -> new HashSet<>())
-                .add(address));
+    _currentVlans.forEach(vlan ->
+        vlan.getAddressVirtuals().computeIfAbsent(macAddress, m -> new HashSet<>()).add(address));
   }
 
   @Override
@@ -1501,15 +1485,14 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   /** Returns already-present or newly-created {@link Vlan}s with given {@code names}. */
   private @Nonnull List<Vlan> initVlansIfAbsent(Set<String> names, int line) {
     return names.stream()
-        .map(
-            name ->
-                _c.getVlans()
-                    .computeIfAbsent(
-                        name,
-                        n -> {
-                          _c.defineSingleLineStructure(CumulusStructureType.VLAN, n, line);
-                          return new Vlan(n);
-                        }))
+        .map(name ->
+            _c.getVlans()
+                .computeIfAbsent(
+                    name,
+                    n -> {
+                      _c.defineSingleLineStructure(CumulusStructureType.VLAN, n, line);
+                      return new Vlan(n);
+                    }))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1537,10 +1520,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     newVrfs
         .build()
-        .forEach(
-            name -> {
-              _c.defineSingleLineStructure(CumulusStructureType.VRF, name, line);
-            });
+        .forEach(name -> {
+          _c.defineSingleLineStructure(CumulusStructureType.VRF, name, line);
+        });
     names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
     return vrfs;
   }
@@ -1569,15 +1551,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     newVxlans
         .build()
-        .forEach(
-            name -> {
-              _c.defineSingleLineStructure(CumulusStructureType.VXLAN, name, line);
-              _c.referenceStructure(
-                  CumulusStructureType.VXLAN,
-                  name,
-                  CumulusStructureUsage.VXLAN_SELF_REFERENCE,
-                  line);
-            });
+        .forEach(name -> {
+          _c.defineSingleLineStructure(CumulusStructureType.VXLAN, name, line);
+          _c.referenceStructure(
+              CumulusStructureType.VXLAN, name, CumulusStructureUsage.VXLAN_SELF_REFERENCE, line);
+        });
     return vxlans;
   }
 

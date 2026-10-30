@@ -630,16 +630,15 @@ public final class ParsedAutoComplete {
       Anchor.Type anchorType,
       int startIndex) {
     return suggestions.stream()
-        .map(
-            s ->
-                new ParsedAutoCompleteSuggestion(
-                    escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
-                        ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
-                        : s.getText(),
-                    Optional.ofNullable(s.getHint()).orElseGet(anchorType::getHint),
-                    startIndex,
-                    anchorType,
-                    Optional.ofNullable(s.getDescription()).orElse(null)))
+        .map(s ->
+            new ParsedAutoCompleteSuggestion(
+                escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
+                    ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
+                    : s.getText(),
+                Optional.ofNullable(s.getHint()).orElseGet(anchorType::getHint),
+                startIndex,
+                anchorType,
+                Optional.ofNullable(s.getDescription()).orElse(null)))
         .collect(ImmutableSet.toImmutableSet());
   }
 

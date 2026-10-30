@@ -203,12 +203,11 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     ListMultimap<String, String> azsSubnetIds = ArrayListMultimap.create();
     dbSubnetGroup
         .getDbSubnets()
-        .forEach(
-            s -> {
-              if (s.getStatus().equalsIgnoreCase("active")) {
-                azsSubnetIds.put(s.getAvailabilityZone(), s.getIdentifier());
-              }
-            });
+        .forEach(s -> {
+          if (s.getStatus().equalsIgnoreCase("active")) {
+            azsSubnetIds.put(s.getAvailabilityZone(), s.getIdentifier());
+          }
+        });
 
     return new RdsInstance(
         dbInstanceIdentifier,

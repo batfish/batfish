@@ -1416,10 +1416,8 @@ public final class TopologyUtilTest {
     // generated ISP node
     assertThat(
         layer3Topology.getEdges().stream()
-            .filter(
-                edge ->
-                    explicitNodes.contains(edge.getNode1())
-                        || explicitNodes.contains(edge.getNode2()))
+            .filter(edge ->
+                explicitNodes.contains(edge.getNode1()) || explicitNodes.contains(edge.getNode2()))
             .collect(ImmutableSet.toImmutableSet()),
         containsInAnyOrder(
             both(hasHead(l3B1)).and(hasNode1(in(ispNodes))), // INTERNET => b1

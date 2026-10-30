@@ -45,14 +45,13 @@ public final class Layer1Topology {
   public Layer1Topology(@Nonnull Stream<Layer1Edge> edges) {
     ImmutableGraph.Builder<Layer1Node> graph =
         GraphBuilder.directed().allowsSelfLoops(false).immutable();
-    edges.forEach(
-        edge -> {
-          if (edge.getNode1().equals(edge.getNode2())) {
-            // Ignore self-loops
-            return;
-          }
-          graph.putEdge(edge.getNode1(), edge.getNode2());
-        });
+    edges.forEach(edge -> {
+      if (edge.getNode1().equals(edge.getNode2())) {
+        // Ignore self-loops
+        return;
+      }
+      graph.putEdge(edge.getNode1(), edge.getNode2());
+    });
     _graph = graph.build();
   }
 

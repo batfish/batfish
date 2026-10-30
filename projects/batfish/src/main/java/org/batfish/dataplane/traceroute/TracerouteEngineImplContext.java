@@ -111,16 +111,15 @@ public class TracerouteEngineImplContext {
    */
   public Map<Flow, TraceDag> buildTraceDags() {
     return _flows.parallelStream()
-        .map(
-            flow -> {
-              validateInputs(_configurations, flow);
-              String ingressNodeName = flow.getIngressNode();
-              String ingressInterfaceName = flow.getIngressInterface();
-              DagTraceRecorder recorder = new DagTraceRecorder(flow);
-              initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
-                  .processHop();
-              return new SimpleEntry<>(flow, recorder.build());
-            })
+        .map(flow -> {
+          validateInputs(_configurations, flow);
+          String ingressNodeName = flow.getIngressNode();
+          String ingressInterfaceName = flow.getIngressInterface();
+          DagTraceRecorder recorder = new DagTraceRecorder(flow);
+          initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
+              .processHop();
+          return new SimpleEntry<>(flow, recorder.build());
+        })
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 

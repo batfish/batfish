@@ -98,9 +98,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     int firstWordLine = ctx.words.get(0).getStart().getLine();
     ImmutableSet.Builder<Integer> extraLinesBuilder =
         ImmutableSet.<Integer>builder().add(firstWordLine);
-    ctx.descriptive_comment.forEach(
-        comment ->
-            IntStream.range(comment.getLine(), firstWordLine).forEach(extraLinesBuilder::add));
+    ctx.descriptive_comment.forEach(comment ->
+        IntStream.range(comment.getLine(), firstWordLine).forEach(extraLinesBuilder::add));
     if (ctx.close != null) {
       extraLinesBuilder.add(ctx.close.getLine());
     }

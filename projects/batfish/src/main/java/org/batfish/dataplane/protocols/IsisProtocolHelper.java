@@ -45,15 +45,14 @@ public class IsisProtocolHelper {
 
     RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder();
     delta.stream()
-        .forEach(
-            ra -> {
-              IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();
-              if (ra.isWithdrawn()) {
-                deltaWithOverloadTrue.remove(newRoute, ra.getReason());
-              } else {
-                deltaWithOverloadTrue.add(newRoute);
-              }
-            });
+        .forEach(ra -> {
+          IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();
+          if (ra.isWithdrawn()) {
+            deltaWithOverloadTrue.remove(newRoute, ra.getReason());
+          } else {
+            deltaWithOverloadTrue.add(newRoute);
+          }
+        });
     return deltaWithOverloadTrue.build();
   }
 

@@ -149,26 +149,25 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
 
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()
-        .flatMap(
-            peerId ->
-                switch (peerId.getType()) {
-                  case ACTIVE -> {
-                    BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
-                    assert activePeer != null;
-                    yield Stream.of(
-                        getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
-                  }
-                  case DYNAMIC -> {
-                    BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
-                    assert passivePeer != null;
-                    yield getPassivePeerRows(peerId, passivePeer, nc, configuredTopology).stream();
-                  }
-                  case UNNUMBERED -> {
-                    BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
-                    assert unnumPeer != null;
-                    yield Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology));
-                  }
-                })
+        .flatMap(peerId ->
+            switch (peerId.getType()) {
+              case ACTIVE -> {
+                BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
+                assert activePeer != null;
+                yield Stream.of(
+                    getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
+              }
+              case DYNAMIC -> {
+                BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
+                assert passivePeer != null;
+                yield getPassivePeerRows(peerId, passivePeer, nc, configuredTopology).stream();
+              }
+              case UNNUMBERED -> {
+                BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
+                assert unnumPeer != null;
+                yield Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology));
+              }
+            })
         .filter(row -> matchesQuestionFilters(row, nodes, remoteNodes, question))
         .collect(ImmutableList.toImmutableList());
   }
@@ -254,25 +253,24 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             // inDegree vs outDegree doesn't matter here, just need to make sure the remote isn't
             // compatible with any other peers
             .filter(remoteId -> configuredTopology.inDegree(remoteId) == 1)
-            .map(
-                remoteId -> {
-                  BgpSessionProperties sessionProps =
-                      configuredTopology.edgeValue(passiveId, remoteId).orElse(null);
-                  assert sessionProps != null;
-                  BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
-                  assert activeRemote != null;
-                  return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
-                      .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
-                      .put(COL_LOCAL_IP, sessionProps.getLocalIp())
-                      .put(COL_LOCAL_AS, sessionProps.getLocalAs())
-                      .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
-                      .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
-                      .put(
-                          COL_REMOTE_IP,
-                          new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
-                      .put(COL_SESSION_TYPE, getSessionType(activeRemote))
-                      .build();
-                })
+            .map(remoteId -> {
+              BgpSessionProperties sessionProps =
+                  configuredTopology.edgeValue(passiveId, remoteId).orElse(null);
+              assert sessionProps != null;
+              BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
+              assert activeRemote != null;
+              return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
+                  .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
+                  .put(COL_LOCAL_IP, sessionProps.getLocalIp())
+                  .put(COL_LOCAL_AS, sessionProps.getLocalAs())
+                  .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
+                  .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
+                  .put(
+                      COL_REMOTE_IP,
+                      new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
+                  .put(COL_SESSION_TYPE, getSessionType(activeRemote))
+                  .build();
+            })
             .collect(ImmutableList.toImmutableList());
 
     // If no compatible neighbors were found, generate one NO_MATCH_FOUND row

@@ -299,10 +299,9 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     assert lastWord != null;
     subtree
         .getSubtrees()
-        .forEach(
-            t -> {
-              _statementsByTree.removeAll(t);
-            });
+        .forEach(t -> {
+          _statementsByTree.removeAll(t);
+        });
     assert subtree.getParent() != null;
     if (!replace) {
       subtree.getParent().deleteSubtree(lastWord);

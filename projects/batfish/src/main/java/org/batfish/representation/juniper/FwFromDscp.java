@@ -55,12 +55,10 @@ public final class FwFromDscp implements FwFrom {
 
     return DscpUtil.defaultValue(_spec)
         .map(integer -> AclLineMatchExprs.matchDscp(integer, getTraceElement()))
-        .orElseGet(
-            () ->
-                new FalseExpr(
-                    TraceElement.of(
-                        String.format(
-                            "Treated undefined DSCP alias '%s' as not matching", _spec))));
+        .orElseGet(() ->
+            new FalseExpr(
+                TraceElement.of(
+                    String.format("Treated undefined DSCP alias '%s' as not matching", _spec))));
   }
 
   private @Nonnull TraceElement getTraceElement() {

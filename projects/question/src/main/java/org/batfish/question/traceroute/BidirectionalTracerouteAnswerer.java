@@ -126,31 +126,23 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         computeReverseTraces(tracerouteEngine, reverseFlowsAndSessions, ignoreFilters);
 
     List<BidirectionalTrace> result = new ArrayList<>();
-    forwardTraces.forEach(
-        (forwardFlow, forwardTraceAndReverseFlows) ->
-            forwardTraceAndReverseFlows.forEach(
-                forwardTraceAndReverseFlow -> {
-                  Trace forwardTrace = forwardTraceAndReverseFlow.getTrace();
-                  Flow reverseFlow = forwardTraceAndReverseFlow.getReverseFlow();
-                  Set<FirewallSessionTraceInfo> newSessions =
-                      forwardTraceAndReverseFlow.getNewFirewallSessions();
-                  if (reverseFlow == null) {
-                    result.add(
-                        new BidirectionalTrace(forwardFlow, forwardTrace, newSessions, null, null));
-                  } else {
-                    FlowAndSessions fas = new FlowAndSessions(reverseFlow, newSessions);
-                    reverseTraces.get(fas).stream()
-                        .map(
-                            reverseTrace ->
-                                new BidirectionalTrace(
-                                    forwardFlow,
-                                    forwardTrace,
-                                    newSessions,
-                                    reverseFlow,
-                                    reverseTrace))
-                        .forEach(result::add);
-                  }
-                }));
+    forwardTraces.forEach((forwardFlow, forwardTraceAndReverseFlows) ->
+        forwardTraceAndReverseFlows.forEach(forwardTraceAndReverseFlow -> {
+          Trace forwardTrace = forwardTraceAndReverseFlow.getTrace();
+          Flow reverseFlow = forwardTraceAndReverseFlow.getReverseFlow();
+          Set<FirewallSessionTraceInfo> newSessions =
+              forwardTraceAndReverseFlow.getNewFirewallSessions();
+          if (reverseFlow == null) {
+            result.add(new BidirectionalTrace(forwardFlow, forwardTrace, newSessions, null, null));
+          } else {
+            FlowAndSessions fas = new FlowAndSessions(reverseFlow, newSessions);
+            reverseTraces.get(fas).stream()
+                .map(reverseTrace ->
+                    new BidirectionalTrace(
+                        forwardFlow, forwardTrace, newSessions, reverseFlow, reverseTrace))
+                .forEach(result::add);
+          }
+        }));
     return result;
   }
 

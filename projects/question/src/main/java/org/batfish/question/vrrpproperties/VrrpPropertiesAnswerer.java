@@ -135,12 +135,11 @@ public final class VrrpPropertiesAnswerer extends Answerer {
                 .put(COL_INTERFACE, NodeInterfacePair.of(nodeName, iface.getName()))
                 .put(COL_ACTIVE, iface.getActive());
         iface.getVrrpGroups().entrySet().stream()
-            .filter(
-                e ->
-                    e.getValue().getVirtualAddresses().values().stream()
-                        .flatMap(Collection::stream) // all addresses for all receiving interfaces
-                        .anyMatch(
-                            address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
+            .filter(e ->
+                e.getValue().getVirtualAddresses().values().stream()
+                    .flatMap(Collection::stream) // all addresses for all receiving interfaces
+                    .anyMatch(
+                        address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
             .forEach(e -> rows.add(populateRow(row, e.getKey(), e.getValue()).build()));
       }
     }

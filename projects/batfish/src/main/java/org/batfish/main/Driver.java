@@ -237,20 +237,19 @@ public class Driver {
 
       // run batfish on a new thread and set idle to true when done
       Thread thread =
-          new Thread(
-              () -> {
-                task.setStatus(TaskStatus.InProgress);
-                String errMsg = runBatfish(settings);
-                if (errMsg == null) {
-                  task.setStatus(TaskStatus.TerminatedNormally);
-                } else {
-                  task.setStatus(TaskStatus.TerminatedAbnormally);
-                  task.setErrMessage(errMsg);
-                }
-                task.setTerminated(new Date());
-                jobLogger.close();
-                makeIdle();
-              });
+          new Thread(() -> {
+            task.setStatus(TaskStatus.InProgress);
+            String errMsg = runBatfish(settings);
+            if (errMsg == null) {
+              task.setStatus(TaskStatus.TerminatedNormally);
+            } else {
+              task.setStatus(TaskStatus.TerminatedAbnormally);
+              task.setErrMessage(errMsg);
+            }
+            task.setTerminated(new Date());
+            jobLogger.close();
+            makeIdle();
+          });
 
       thread.start();
 

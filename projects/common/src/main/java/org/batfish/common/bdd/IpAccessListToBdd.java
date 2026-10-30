@@ -102,11 +102,9 @@ public abstract class IpAccessListToBdd {
      */
     _permitAndDenyBdds = new HashMap<>();
 
-    aclEnv.forEach(
-        (name, acl) ->
-            _permitAndDenyBdds.put(
-                name,
-                Suppliers.memoize(new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(acl)))));
+    aclEnv.forEach((name, acl) ->
+        _permitAndDenyBdds.put(
+            name, Suppliers.memoize(new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(acl)))));
     _bddSrcManager = bddSrcManager;
     _factory = pkt.getFactory();
     _bddOps = new BDDOps(_factory);

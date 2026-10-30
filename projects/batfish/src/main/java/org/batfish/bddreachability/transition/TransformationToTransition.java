@@ -61,13 +61,12 @@ public class TransformationToTransition {
             .getFactory()
             .orAll(
                 ranges.asRanges().stream()
-                    .map(
-                        range -> {
-                          assert range.lowerBoundType() == BoundType.CLOSED
-                              && range.upperBoundType() == BoundType.CLOSED;
-                          return primeVar.range(
-                              range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
-                        })
+                    .map(range -> {
+                      assert range.lowerBoundType() == BoundType.CLOSED
+                          && range.upperBoundType() == BoundType.CLOSED;
+                      return primeVar.range(
+                          range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
+                    })
                     .collect(Collectors.toList()));
     return transform(setValue, var.getPairingFactory());
   }

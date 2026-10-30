@@ -89,31 +89,28 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       configuration
           .getVrfs()
           .values()
-          .forEach(
-              vrf -> {
-                for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                  ospfProcess
-                      .getOspfNeighborConfigs()
-                      .keySet()
-                      .forEach(
-                          ospfNeighborConfigId -> {
-                            Set<OspfNeighborConfigId> filteredNeighbors =
-                                ospfTopology.neighbors(ospfNeighborConfigId).stream()
-                                    .filter(
-                                        neighborConfigId ->
-                                            remoteNodes.contains(neighborConfigId.getHostname()))
-                                    .collect(ImmutableSet.toImmutableSet());
-                            rows.addAll(
-                                getRowsForAllNeighbors(
-                                    configurations,
-                                    ospfNeighborConfigId,
-                                    filteredNeighbors,
-                                    ospfTopology,
-                                    columnMetadataMap,
-                                    statuses));
-                          });
-                }
-              });
+          .forEach(vrf -> {
+            for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+              ospfProcess
+                  .getOspfNeighborConfigs()
+                  .keySet()
+                  .forEach(ospfNeighborConfigId -> {
+                    Set<OspfNeighborConfigId> filteredNeighbors =
+                        ospfTopology.neighbors(ospfNeighborConfigId).stream()
+                            .filter(neighborConfigId ->
+                                remoteNodes.contains(neighborConfigId.getHostname()))
+                            .collect(ImmutableSet.toImmutableSet());
+                    rows.addAll(
+                        getRowsForAllNeighbors(
+                            configurations,
+                            ospfNeighborConfigId,
+                            filteredNeighbors,
+                            ospfTopology,
+                            columnMetadataMap,
+                            statuses));
+                  });
+            }
+          });
     }
     return rows;
   }
@@ -137,14 +134,13 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
         continue;
       }
       Optional<OspfSessionStatus> session = ospfTopology.getSessionStatus(nodeU, nodeV);
-      session.ifPresent(
-          ospfSessionStatus -> {
-            if (statuses.contains(ospfSessionStatus)) {
-              rows.add(
-                  createRow(
-                      nodeUConfig.get(), nodeVConfig.get(), ospfSessionStatus, columnMetadataMap));
-            }
-          });
+      session.ifPresent(ospfSessionStatus -> {
+        if (statuses.contains(ospfSessionStatus)) {
+          rows.add(
+              createRow(
+                  nodeUConfig.get(), nodeVConfig.get(), ospfSessionStatus, columnMetadataMap));
+        }
+      });
     }
     return rows;
   }

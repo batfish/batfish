@@ -457,11 +457,10 @@ final class Conversions {
     if (protocol.contains("-")) {
       return rangeStringToSubRange(protocol)
           .asStream()
-          .mapToObj(
-              i ->
-                  Service.builder(String.format("%s (IP protocol %d)", appName, i))
-                      .setIpProtocol(IpProtocol.fromNumber(i))
-                      .build())
+          .mapToObj(i ->
+              Service.builder(String.format("%s (IP protocol %d)", appName, i))
+                  .setIpProtocol(IpProtocol.fromNumber(i))
+                  .build())
           .collect(ImmutableList.toImmutableList());
     }
 

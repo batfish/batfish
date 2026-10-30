@@ -151,12 +151,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _process = process;
     _areaFilters =
         _process.getAreas().values().stream()
-            .map(
-                a ->
-                    Optional.ofNullable(a.getSummaryFilter())
-                        .map(_c.getRouteFilterLists()::get)
-                        .map(l -> new SimpleEntry<>(a.getAreaNumber(), l))
-                        .orElse(null))
+            .map(a ->
+                Optional.ofNullable(a.getSummaryFilter())
+                    .map(_c.getRouteFilterLists()::get)
+                    .map(l -> new SimpleEntry<>(a.getAreaNumber(), l))
+                    .orElse(null))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     _topology = topology;
@@ -253,21 +252,20 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     type2Builder.putAll(_type2IncomingRoutes);
 
     getIncomingEdgeStream(topology)
-        .forEach(
-            edgeId -> {
-              if (!_intraAreaIncomingRoutes.containsKey(edgeId)) {
-                intraAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
-              }
-              if (!_interAreaIncomingRoutes.containsKey(edgeId)) {
-                interAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
-              }
-              if (!_type1IncomingRoutes.containsKey(edgeId)) {
-                type1Builder.put(edgeId, new ConcurrentLinkedQueue<>());
-              }
-              if (!_type2IncomingRoutes.containsKey(edgeId)) {
-                type2Builder.put(edgeId, new ConcurrentLinkedQueue<>());
-              }
-            });
+        .forEach(edgeId -> {
+          if (!_intraAreaIncomingRoutes.containsKey(edgeId)) {
+            intraAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
+          }
+          if (!_interAreaIncomingRoutes.containsKey(edgeId)) {
+            interAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
+          }
+          if (!_type1IncomingRoutes.containsKey(edgeId)) {
+            type1Builder.put(edgeId, new ConcurrentLinkedQueue<>());
+          }
+          if (!_type2IncomingRoutes.containsKey(edgeId)) {
+            type2Builder.put(edgeId, new ConcurrentLinkedQueue<>());
+          }
+        });
     // Note: copyOf preserves order, but uses hash-based lookups which are much faster.
     _intraAreaIncomingRoutes = ImmutableMap.copyOf(intraAreaBuilder.build());
     _interAreaIncomingRoutes = ImmutableMap.copyOf(interAreaBuilder.build());
@@ -368,16 +366,15 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // If we are an ABR, also do conversion to IA routes here.
       intraAreaDelta
           .getRoutesStream()
-          .filter(
-              intraAreaRoute -> {
-                // If this area has summaries, make sure we only convert the non-summarized-routes
-                // to inter-area routes.
-                RouteFilterList areaFilter = _areaFilters.get(intraAreaRoute.getArea());
-                if (areaFilter == null) {
-                  return true;
-                }
-                return areaFilter.permits(intraAreaRoute.getNetwork());
-              })
+          .filter(intraAreaRoute -> {
+            // If this area has summaries, make sure we only convert the non-summarized-routes
+            // to inter-area routes.
+            RouteFilterList areaFilter = _areaFilters.get(intraAreaRoute.getArea());
+            if (areaFilter == null) {
+              return true;
+            }
+            return areaFilter.permits(intraAreaRoute.getNetwork());
+          })
           .forEach(
               r -> interAreaBuilder.add(OspfInterAreaRoute.builder(r).setNonRouting(true).build()));
     }
@@ -409,9 +406,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // type is not P2P or 2. its type is p2mp (See RFC 2328 Section 2.1.1)
       Set<OspfIntraAreaRoute> allRoutes =
           getIfaceAddressesForIntraAreaRoutes(iface)
-              .map(
-                  ifaceAddr ->
-                      computeIntraAreaRouteFromInterface(area.getAreaNumber(), iface, ifaceAddr))
+              .map(ifaceAddr ->
+                  computeIntraAreaRouteFromInterface(area.getAreaNumber(), iface, ifaceAddr))
               .collect(ImmutableSet.toImmutableSet());
 
       allRoutes.forEach(r -> deltaBuilder.from(_intraAreaRib.mergeRouteGetDelta(r)));
@@ -423,9 +419,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   static Stream<ConcreteInterfaceAddress> getIfaceAddressesForIntraAreaRoutes(Interface iface) {
     return (isLoopbackNotInP2PModeOrP2MP(iface)
         ? iface.getAllConcreteAddresses().stream()
-            .map(
-                ifaceAddr ->
-                    ConcreteInterfaceAddress.create(ifaceAddr.getIp(), Prefix.MAX_PREFIX_LENGTH))
+            .map(ifaceAddr ->
+                ConcreteInterfaceAddress.create(ifaceAddr.getIp(), Prefix.MAX_PREFIX_LENGTH))
         : iface.getAllConcreteAddresses().stream());
   }
 
@@ -562,25 +557,22 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   private @Nonnull RibDelta.Builder<OspfInterAreaRoute> processInterAreaRoutes() {
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
-    _interAreaIncomingRoutes.forEach(
-        (edgeId, queue) -> {
-          String ifaceName = edgeId.getHead().getInterfaceName();
-          long incrementalCost = getIncrementalCost(ifaceName, false);
-          while (!queue.isEmpty()) {
-            RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
+    _interAreaIncomingRoutes.forEach((edgeId, queue) -> {
+      String ifaceName = edgeId.getHead().getInterfaceName();
+      long incrementalCost = getIncrementalCost(ifaceName, false);
+      while (!queue.isEmpty()) {
+        RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
 
-            transformInterAreaRouteOnImport(
-                    routeAdvertisement.getRoute(), ifaceName, incrementalCost)
-                .ifPresent(
-                    routeBuilder -> {
-                      applyDistributeList(_c, _vrfName, ifaceName, routeBuilder);
-                      interAreaDelta.from(
-                          processRouteAdvertisement(
-                              routeAdvertisement.toBuilder().setRoute(routeBuilder.build()).build(),
-                              _interAreaRib));
-                    });
-          }
-        });
+        transformInterAreaRouteOnImport(routeAdvertisement.getRoute(), ifaceName, incrementalCost)
+            .ifPresent(routeBuilder -> {
+              applyDistributeList(_c, _vrfName, ifaceName, routeBuilder);
+              interAreaDelta.from(
+                  processRouteAdvertisement(
+                      routeAdvertisement.toBuilder().setRoute(routeBuilder.build()).build(),
+                      _interAreaRib));
+            });
+      }
+    });
     return interAreaDelta;
   }
 
@@ -623,16 +615,15 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private @Nonnull InternalDelta processIntraAreaRoutes() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
-    _intraAreaIncomingRoutes.forEach(
-        (edgeId, queue) -> {
-          String ifaceName = edgeId.getHead().getInterfaceName();
-          long incrementalCost = getIncrementalCost(ifaceName, false);
-          while (!queue.isEmpty()) {
-            RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
-            processIntraAreaAdvertisement(
-                intraAreaDelta, interAreaDelta, ifaceName, incrementalCost, routeAdvertisement);
-          }
-        });
+    _intraAreaIncomingRoutes.forEach((edgeId, queue) -> {
+      String ifaceName = edgeId.getHead().getInterfaceName();
+      long incrementalCost = getIncrementalCost(ifaceName, false);
+      while (!queue.isEmpty()) {
+        RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
+        processIntraAreaAdvertisement(
+            intraAreaDelta, interAreaDelta, ifaceName, incrementalCost, routeAdvertisement);
+      }
+    });
     return new InternalDelta(intraAreaDelta.build(), interAreaDelta.build(), RibDelta.empty());
   }
 
@@ -741,10 +732,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private @Nonnull RibDelta<OspfInterAreaRoute> computeInterAreaSummariesForArea(OspfArea area) {
     RibDelta.Builder<OspfInterAreaRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
-        .forEach(
-            (prefix, summary) ->
-                computeInterAreaSummaryRoute(prefix, summary, area.getAreaNumber())
-                    .ifPresent(r -> deltaBuilder.from(_interAreaRib.mergeRouteGetDelta(r))));
+        .forEach((prefix, summary) ->
+            computeInterAreaSummaryRoute(prefix, summary, area.getAreaNumber())
+                .ifPresent(r -> deltaBuilder.from(_interAreaRib.mergeRouteGetDelta(r))));
     return deltaBuilder.build();
   }
 
@@ -753,14 +743,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfArea area) {
     RibDelta.Builder<OspfInternalSummaryRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
-        .forEach(
-            (prefix, summary) -> {
-              if (summary.installsDiscard()) {
-                computeInternalSummaryRoute(prefix, area.getAreaNumber())
-                    // TODO: support withdrawals
-                    .ifPresent(r -> deltaBuilder.from(_internalSummaryRib.mergeRouteGetDelta(r)));
-              }
-            });
+        .forEach((prefix, summary) -> {
+          if (summary.installsDiscard()) {
+            computeInternalSummaryRoute(prefix, area.getAreaNumber())
+                // TODO: support withdrawals
+                .ifPresent(r -> deltaBuilder.from(_internalSummaryRib.mergeRouteGetDelta(r)));
+          }
+        });
     return deltaBuilder.build();
   }
 
@@ -932,17 +921,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
          * the route's area
          */
         .filter(r -> r.getRoute().getArea() == areaConfig.getAreaNumber())
-        .map(
-            r ->
-                r.toBuilder()
-                    .setRoute(
-                        r.getRoute().toBuilder()
-                            .setNextHop(NextHopIp.of(nextHopIp))
-                            // Set to non-routing because this is in-transit route missing final
-                            // next-hop-interface of receiver.
-                            .setNonRouting(true)
-                            .build())
-                    .build())
+        .map(r ->
+            r.toBuilder()
+                .setRoute(
+                    r.getRoute().toBuilder()
+                        .setNextHop(NextHopIp.of(nextHopIp))
+                        // Set to non-routing because this is in-transit route missing final
+                        // next-hop-interface of receiver.
+                        .setNonRouting(true)
+                        .build())
+                .build())
         .distinct();
   }
 
@@ -991,18 +979,17 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .filter(r -> r.getRoute().getArea() == areaConfig.getAreaNumber())
         /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
         .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
-        .map(
-            r ->
-                r.toBuilder()
-                    .setRoute(
-                        r.getRoute().toBuilder()
-                            .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
-                            .setNextHop(NextHopIp.of(nextHopIp))
-                            // Set to non-routing because this is in-transit route missing final
-                            // next-hop-interface of receiver.
-                            .setNonRouting(true)
-                            .build())
-                    .build())
+        .map(r ->
+            r.toBuilder()
+                .setRoute(
+                    r.getRoute().toBuilder()
+                        .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
+                        .setNextHop(NextHopIp.of(nextHopIp))
+                        // Set to non-routing because this is in-transit route missing final
+                        // next-hop-interface of receiver.
+                        .setNonRouting(true)
+                        .build())
+                .build())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -1073,19 +1060,18 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
         .filter(r -> !neighborIp.equals(r.getRoute().getNextHopIp()))
         // Overwrite area on the route before sending it out
-        .map(
-            r ->
-                r.toBuilder()
-                    .setRoute(
-                        r.getRoute().toBuilder()
-                            .setArea(areaConfig.getAreaNumber())
-                            .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
-                            .setNextHop(NextHopIp.of(nextHopIp))
-                            // Set to non-routing because this is in-transit route missing final
-                            // next-hop-interface of receiver.
-                            .setNonRouting(true)
-                            .build())
-                    .build());
+        .map(r ->
+            r.toBuilder()
+                .setRoute(
+                    r.getRoute().toBuilder()
+                        .setArea(areaConfig.getAreaNumber())
+                        .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
+                        .setNextHop(NextHopIp.of(nextHopIp))
+                        // Set to non-routing because this is in-transit route missing final
+                        // next-hop-interface of receiver.
+                        .setNonRouting(true)
+                        .build())
+                .build());
   }
 
   /**
@@ -1162,16 +1148,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .map(potentialExport -> convertToExternalRoute(potentialExport, _exportPolicy))
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .forEach(
-            route -> {
-              if (route.getOspfMetricType() == OspfMetricType.E1) {
-                type1deltaBuilder.from(
-                    _type1Rib.mergeRouteGetDelta((OspfExternalType1Route) route));
-              } else { // assuming here that MetricType exists. Or E2 is the default
-                type2deltaBuilder.from(
-                    _type2Rib.mergeRouteGetDelta((OspfExternalType2Route) route));
-              }
-            });
+        .forEach(route -> {
+          if (route.getOspfMetricType() == OspfMetricType.E1) {
+            type1deltaBuilder.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) route));
+          } else { // assuming here that MetricType exists. Or E2 is the default
+            type2deltaBuilder.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) route));
+          }
+        });
     return new ExternalDelta(type1deltaBuilder.build(), type2deltaBuilder.build());
   }
 
@@ -1185,30 +1168,29 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Process type 1 routes from all message queues */
   private @Nonnull RibDelta<OspfExternalType1Route> processType1Routes() {
     RibDelta.Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
-    _type1IncomingRoutes.forEach(
-        (edgeId, queue) -> {
-          String headIfaceName = edgeId.getHead().getInterfaceName();
-          OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
-          assert session != null; // Invariant of the edge existing
-          long incrementalCost = getIncrementalCost(headIfaceName, false);
-          while (!queue.isEmpty()) {
-            RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
-            OspfExternalType1Route.Builder ospfRouteBuilder =
-                transformType1RouteOnImport(
-                    // Neighbor IP is the IP of tail node which means Ip1
-                    routeAdvertisement.getRoute(),
-                    headIfaceName,
-                    session.getIpLink().getIp1(),
-                    incrementalCost);
-            applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
-            type1deltaBuilder.from(
-                processRouteAdvertisement(
-                    routeAdvertisement.toBuilder()
-                        .setRoute((OspfExternalType1Route) ospfRouteBuilder.build())
-                        .build(),
-                    _type1Rib));
-          }
-        });
+    _type1IncomingRoutes.forEach((edgeId, queue) -> {
+      String headIfaceName = edgeId.getHead().getInterfaceName();
+      OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
+      assert session != null; // Invariant of the edge existing
+      long incrementalCost = getIncrementalCost(headIfaceName, false);
+      while (!queue.isEmpty()) {
+        RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
+        OspfExternalType1Route.Builder ospfRouteBuilder =
+            transformType1RouteOnImport(
+                // Neighbor IP is the IP of tail node which means Ip1
+                routeAdvertisement.getRoute(),
+                headIfaceName,
+                session.getIpLink().getIp1(),
+                incrementalCost);
+        applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
+        type1deltaBuilder.from(
+            processRouteAdvertisement(
+                routeAdvertisement.toBuilder()
+                    .setRoute((OspfExternalType1Route) ospfRouteBuilder.build())
+                    .build(),
+                _type1Rib));
+      }
+    });
     return type1deltaBuilder.build();
   }
 
@@ -1226,30 +1208,29 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Process type 2 routes from all message queues */
   private @Nonnull RibDelta<OspfExternalType2Route> processType2Routes() {
     RibDelta.Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
-    _type2IncomingRoutes.forEach(
-        (edgeId, queue) -> {
-          String headIfaceName = edgeId.getHead().getInterfaceName();
-          OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
-          assert session != null; // Invariant of the edge existing
-          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
-          while (!queue.isEmpty()) {
-            RouteAdvertisement<OspfExternalType2Route> routeAdvertisement = queue.remove();
-            OspfExternalType2Route.Builder ospfRouteBuilder =
-                transformType2RouteOnImport(
-                    // Neighbor IP is the IP of tail node which means Ip1
-                    routeAdvertisement.getRoute(),
-                    headIfaceName,
-                    session.getIpLink().getIp1(),
-                    incrementalCost);
-            applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
-            type2deltaBuilder.from(
-                processRouteAdvertisement(
-                    routeAdvertisement.toBuilder()
-                        .setRoute((OspfExternalType2Route) ospfRouteBuilder.build())
-                        .build(),
-                    _type2Rib));
-          }
-        });
+    _type2IncomingRoutes.forEach((edgeId, queue) -> {
+      String headIfaceName = edgeId.getHead().getInterfaceName();
+      OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
+      assert session != null; // Invariant of the edge existing
+      long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+      while (!queue.isEmpty()) {
+        RouteAdvertisement<OspfExternalType2Route> routeAdvertisement = queue.remove();
+        OspfExternalType2Route.Builder ospfRouteBuilder =
+            transformType2RouteOnImport(
+                // Neighbor IP is the IP of tail node which means Ip1
+                routeAdvertisement.getRoute(),
+                headIfaceName,
+                session.getIpLink().getIp1(),
+                incrementalCost);
+        applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
+        type2deltaBuilder.from(
+            processRouteAdvertisement(
+                routeAdvertisement.toBuilder()
+                    .setRoute((OspfExternalType2Route) ospfRouteBuilder.build())
+                    .build(),
+                _type2Rib));
+      }
+    });
     return type2deltaBuilder.build();
   }
 
@@ -1293,30 +1274,29 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RibDelta<OspfExternalType1Route> type1, Map<String, Node> allNodes, OspfTopology topology) {
     _type1IncomingRoutes
         .keySet()
-        .forEach(
-            edge -> {
-              String ifaceName = edge.getHead().getInterfaceName();
-              Interface iface = _c.getAllInterfaces().get(ifaceName);
-              assert iface != null;
-              OspfSessionProperties session = topology.getSession(edge).orElse(null);
-              assert session != null; // Invariant of the edge being in the topology
-              OspfArea areaConfig = _process.getAreas().get(session.getArea());
-              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
-              assert neighborProcess != null;
-              RoutingPolicy rp;
-              if (iface.getOspfSettings() != null
-                  && iface.getOspfSettings().getType5FilterPolicy() != null) {
-                rp = _c.getRoutingPolicies().get(iface.getOspfSettings().getType5FilterPolicy());
-              } else {
-                rp = null;
-              }
-              neighborProcess.enqueueMessagesType1(
-                  edge.reverse(),
-                  transformType1RoutesOnExport(
-                      filterExternalRoutesOnExport(type1, areaConfig, rp),
-                      areaConfig,
-                      edge.getHead().getAddress().getIp()));
-            });
+        .forEach(edge -> {
+          String ifaceName = edge.getHead().getInterfaceName();
+          Interface iface = _c.getAllInterfaces().get(ifaceName);
+          assert iface != null;
+          OspfSessionProperties session = topology.getSession(edge).orElse(null);
+          assert session != null; // Invariant of the edge being in the topology
+          OspfArea areaConfig = _process.getAreas().get(session.getArea());
+          OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+          assert neighborProcess != null;
+          RoutingPolicy rp;
+          if (iface.getOspfSettings() != null
+              && iface.getOspfSettings().getType5FilterPolicy() != null) {
+            rp = _c.getRoutingPolicies().get(iface.getOspfSettings().getType5FilterPolicy());
+          } else {
+            rp = null;
+          }
+          neighborProcess.enqueueMessagesType1(
+              edge.reverse(),
+              transformType1RoutesOnExport(
+                  filterExternalRoutesOnExport(type1, areaConfig, rp),
+                  areaConfig,
+                  edge.getHead().getAddress().getIp()));
+        });
   }
 
   /** Send out type 2 external route updates to all neighbors */
@@ -1324,30 +1304,29 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RibDelta<OspfExternalType2Route> type2, Map<String, Node> allNodes, OspfTopology topology) {
     _type2IncomingRoutes
         .keySet()
-        .forEach(
-            edge -> {
-              String ifaceName = edge.getHead().getInterfaceName();
-              Interface iface = _c.getAllInterfaces().get(ifaceName);
-              assert iface != null;
-              OspfSessionProperties session = topology.getSession(edge).orElse(null);
-              assert session != null; // Invariant of the edge being in the topology
-              OspfArea areaConfig = _process.getAreas().get(session.getArea());
-              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
-              assert neighborProcess != null;
-              RoutingPolicy rp;
-              if (iface.getOspfSettings() != null
-                  && iface.getOspfSettings().getType5FilterPolicy() != null) {
-                rp = _c.getRoutingPolicies().get(iface.getOspfSettings().getType5FilterPolicy());
-              } else {
-                rp = null;
-              }
-              neighborProcess.enqueueMessagesType2(
-                  edge.reverse(),
-                  transformType2RoutesOnExport(
-                      filterExternalRoutesOnExport(type2, areaConfig, rp),
-                      areaConfig,
-                      edge.getHead().getAddress().getIp()));
-            });
+        .forEach(edge -> {
+          String ifaceName = edge.getHead().getInterfaceName();
+          Interface iface = _c.getAllInterfaces().get(ifaceName);
+          assert iface != null;
+          OspfSessionProperties session = topology.getSession(edge).orElse(null);
+          assert session != null; // Invariant of the edge being in the topology
+          OspfArea areaConfig = _process.getAreas().get(session.getArea());
+          OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+          assert neighborProcess != null;
+          RoutingPolicy rp;
+          if (iface.getOspfSettings() != null
+              && iface.getOspfSettings().getType5FilterPolicy() != null) {
+            rp = _c.getRoutingPolicies().get(iface.getOspfSettings().getType5FilterPolicy());
+          } else {
+            rp = null;
+          }
+          neighborProcess.enqueueMessagesType2(
+              edge.reverse(),
+              transformType2RoutesOnExport(
+                  filterExternalRoutesOnExport(type2, areaConfig, rp),
+                  areaConfig,
+                  edge.getHead().getAddress().getIp()));
+        });
   }
 
   /**
@@ -1412,35 +1391,34 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     || areaConfig.getAreaNumber() == 0
                     || r.getRoute().getArea() == areaConfig.getAreaNumber()
                     || r.getRoute().getArea() == OspfRoute.NO_AREA)
-        .map(
-            r -> {
-              final OspfExternalType1Route route = r.getRoute();
-              return r.toBuilder()
-                  .setRoute(
-                      (OspfExternalType1Route)
-                          route.toBuilder()
-                              /*
-                              Override the metric but only for "summary" routes that cross an area boundary.
-                              area == NO_AREA means we generated this route locally, so it can't be summarized (?)
-                               */
-                              .setMetric(
-                                  metricOverride != null
-                                          && route.getArea() != OspfRoute.NO_AREA
-                                          && areaConfig.getAreaNumber() != route.getArea()
-                                      ? metricOverride + route.getLsaMetric()
-                                      : route.getMetric())
-                              // TODO: should cost to advertiser ignore override for locally
-                              //       generated routes like metric does?
-                              .setCostToAdvertiser(
-                                  firstNonNull(metricOverride, route.getCostToAdvertiser()))
-                              // Override area before sending out
-                              .setArea(areaConfig.getAreaNumber())
-                              // Set to non-routing because this is in-transit route.
-                              .setNonRouting(true)
-                              .setNextHop(NextHopIp.of(nextHopIp))
-                              .build())
-                  .build();
-            })
+        .map(r -> {
+          final OspfExternalType1Route route = r.getRoute();
+          return r.toBuilder()
+              .setRoute(
+                  (OspfExternalType1Route)
+                      route.toBuilder()
+                          /*
+                          Override the metric but only for "summary" routes that cross an area boundary.
+                          area == NO_AREA means we generated this route locally, so it can't be summarized (?)
+                           */
+                          .setMetric(
+                              metricOverride != null
+                                      && route.getArea() != OspfRoute.NO_AREA
+                                      && areaConfig.getAreaNumber() != route.getArea()
+                                  ? metricOverride + route.getLsaMetric()
+                                  : route.getMetric())
+                          // TODO: should cost to advertiser ignore override for locally
+                          //       generated routes like metric does?
+                          .setCostToAdvertiser(
+                              firstNonNull(metricOverride, route.getCostToAdvertiser()))
+                          // Override area before sending out
+                          .setArea(areaConfig.getAreaNumber())
+                          // Set to non-routing because this is in-transit route.
+                          .setNonRouting(true)
+                          .setNextHop(NextHopIp.of(nextHopIp))
+                          .build())
+              .build();
+        })
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -1457,24 +1435,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
           OspfArea areaConfig,
           Ip nextHopIp) {
     return routeAdvertisements
-        .map(
-            r -> {
-              final OspfExternalType2Route route = r.getRoute();
-              return r.toBuilder()
-                  .setRoute(
-                      (OspfExternalType2Route)
-                          route.toBuilder()
-                              .setArea(
-                                  // TODO: verify area setting logic
-                                  route.getArea() == OspfRoute.NO_AREA
-                                      ? areaConfig.getAreaNumber()
-                                      : route.getArea())
-                              // Set to non-routing because this is in-transit route.
-                              .setNonRouting(true)
-                              .setNextHop(NextHopIp.of(nextHopIp))
-                              .build())
-                  .build();
-            })
+        .map(r -> {
+          final OspfExternalType2Route route = r.getRoute();
+          return r.toBuilder()
+              .setRoute(
+                  (OspfExternalType2Route)
+                      route.toBuilder()
+                          .setArea(
+                              // TODO: verify area setting logic
+                              route.getArea() == OspfRoute.NO_AREA
+                                  ? areaConfig.getAreaNumber()
+                                  : route.getArea())
+                          // Set to non-routing because this is in-transit route.
+                          .setNonRouting(true)
+                          .setNextHop(NextHopIp.of(nextHopIp))
+                          .build())
+              .build();
+        })
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -1545,15 +1522,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .map(r -> convertToExternalRoute(new AnnotatedRoute<>(r, _vrfName), _exportPolicy))
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .forEach(
-            r -> {
-              // Merge into correct RIB
-              if (r.getOspfMetricType() == OspfMetricType.E1) {
-                activated.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
-              } else { // only other option is E2
-                activated.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
-              }
-            });
+        .forEach(r -> {
+          // Merge into correct RIB
+          if (r.getOspfMetricType() == OspfMetricType.E1) {
+            activated.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+          } else { // only other option is E2
+            activated.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+          }
+        });
     return activated.build();
   }
 
@@ -1594,33 +1570,32 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     // type1 edges should be equal to type2 edges, doesn't matter which ones we iterate over.
     _type1IncomingRoutes
         .keySet()
-        .forEach(
-            edge -> {
-              OspfSessionProperties session = topology.getSession(edge).orElse(null);
-              assert session != null; // Invariant of the edge being in the topology
-              OspfArea areaConfig = _process.getAreas().get(session.getArea());
-              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
-              assert neighborProcess != null;
+        .forEach(edge -> {
+          OspfSessionProperties session = topology.getSession(edge).orElse(null);
+          assert session != null; // Invariant of the edge being in the topology
+          OspfArea areaConfig = _process.getAreas().get(session.getArea());
+          OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+          assert neighborProcess != null;
 
-              neighborProcess.enqueueMessagesType1(
-                  edge.reverse(),
-                  transformType1RoutesOnExport(
-                      filterGeneratedRoutesOnExport(
-                          _activatedGeneratedRoutes.getRoutesStream(),
-                          areaConfig,
-                          OspfExternalType1Route.class),
+          neighborProcess.enqueueMessagesType1(
+              edge.reverse(),
+              transformType1RoutesOnExport(
+                  filterGeneratedRoutesOnExport(
+                      _activatedGeneratedRoutes.getRoutesStream(),
                       areaConfig,
-                      edge.getHead().getAddress().getIp()));
-              neighborProcess.enqueueMessagesType2(
-                  edge.reverse(),
-                  transformType2RoutesOnExport(
-                      filterGeneratedRoutesOnExport(
-                          _activatedGeneratedRoutes.getRoutesStream(),
-                          areaConfig,
-                          OspfExternalType2Route.class),
+                      OspfExternalType1Route.class),
+                  areaConfig,
+                  edge.getHead().getAddress().getIp()));
+          neighborProcess.enqueueMessagesType2(
+              edge.reverse(),
+              transformType2RoutesOnExport(
+                  filterGeneratedRoutesOnExport(
+                      _activatedGeneratedRoutes.getRoutesStream(),
                       areaConfig,
-                      edge.getHead().getAddress().getIp()));
-            });
+                      OspfExternalType2Route.class),
+                  areaConfig,
+                  edge.getHead().getAddress().getIp()));
+        });
   }
 
   /**

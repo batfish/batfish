@@ -86,15 +86,13 @@ public class TransformationEvaluator {
 
     private List<Step<?>> getTraceSteps() {
       return _flowDiffs.entrySet().stream()
-          .map(
-              entry -> {
-                ImmutableSortedSet<FlowDiff> flowDiffs = entry.getValue().build();
-                TransformationStepDetail detail =
-                    new TransformationStepDetail(entry.getKey(), flowDiffs);
-                StepAction action =
-                    flowDiffs.isEmpty() ? StepAction.PERMITTED : StepAction.TRANSFORMED;
-                return new org.batfish.datamodel.flow.TransformationStep(detail, action);
-              })
+          .map(entry -> {
+            ImmutableSortedSet<FlowDiff> flowDiffs = entry.getValue().build();
+            TransformationStepDetail detail =
+                new TransformationStepDetail(entry.getKey(), flowDiffs);
+            StepAction action = flowDiffs.isEmpty() ? StepAction.PERMITTED : StepAction.TRANSFORMED;
+            return new org.batfish.datamodel.flow.TransformationStep(detail, action);
+          })
           .collect(ImmutableList.toImmutableList());
     }
 

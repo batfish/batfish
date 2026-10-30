@@ -235,10 +235,8 @@ public final class CumulusConversions {
       org.batfish.datamodel.BgpProcess proc,
       Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
     aggregateNetworks.entrySet().stream()
-        .map(
-            aggregateByPrefixEntry ->
-                toBgpAggregate(
-                    aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
+        .map(aggregateByPrefixEntry ->
+            toBgpAggregate(aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
         .forEach(proc::addAggregate);
   }
 
@@ -293,25 +291,22 @@ public final class CumulusConversions {
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
-        .forEach(
-            (vrfName, bgpVrf) ->
-                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, vsConfig, vrfName, bgpVrf)));
+        .forEach((vrfName, bgpVrf) ->
+            c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, vsConfig, vrfName, bgpVrf)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
-        .forEach(
-            (vrfName, vrf) -> {
-              if ((!vrf.getLayer2Vnis().isEmpty()
-                      || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
-                  && vrf.getBgpProcess() == null // process does not already exist
-                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
-                vrf.setBgpProcess(
-                    bgpProcessBuilder()
-                        .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
-                        .build());
-              }
-            });
+        .forEach((vrfName, vrf) -> {
+          if ((!vrf.getLayer2Vnis().isEmpty() || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
+              && vrf.getBgpProcess() == null // process does not already exist
+              && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+            vrf.setBgpProcess(
+                bgpProcessBuilder()
+                    .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
+                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
+                    .build());
+          }
+        });
 
     /*
      * Second pass: Add neighbors.
@@ -319,13 +314,12 @@ public final class CumulusConversions {
      * that access other VRFs (e.g., EVPN)
      */
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
-        .forEach(
-            bgpVrf -> {
-              bgpVrf
-                  .getNeighbors()
-                  .values()
-                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
-            });
+        .forEach(bgpVrf -> {
+          bgpVrf
+              .getNeighbors()
+              .values()
+              .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
+        });
   }
 
   private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
@@ -796,13 +790,10 @@ public final class CumulusConversions {
       return null;
     }
     return c.getAllInterfaces(vrf.getName()).values().stream()
-        .flatMap(
-            i ->
-                i.getAllConcreteAddresses().stream()
-                    .filter(
-                        addr ->
-                            addr.getPrefix().containsIp(remoteIp)
-                                && !addr.getIp().equals(remoteIp)))
+        .flatMap(i ->
+            i.getAllConcreteAddresses().stream()
+                .filter(addr ->
+                    addr.getPrefix().containsIp(remoteIp) && !addr.getIp().equals(remoteIp)))
         .findFirst()
         .map(ConcreteInterfaceAddress::getIp)
         .orElse(null);
@@ -877,25 +868,24 @@ public final class CumulusConversions {
     Stream.concat(
             bgpVrf.getRedistributionPolicies().values().stream(),
             bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values().stream())
-        .forEach(
-            redistributeProtocolPolicy -> {
+        .forEach(redistributeProtocolPolicy -> {
 
-              // Get a match expression for the protocol to be redistributed
-              CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
-              MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
-              BooleanExpr exportProtocolConditions = matchProtocol;
+          // Get a match expression for the protocol to be redistributed
+          CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+          MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
+          BooleanExpr exportProtocolConditions = matchProtocol;
 
-              // Filter by redistribution route-map, if one is defined
-              String mapName = redistributeProtocolPolicy.getRouteMap();
-              if (mapName != null && routeMaps.containsKey(mapName)) {
-                exportProtocolConditions =
-                    new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
-              }
+          // Filter by redistribution route-map, if one is defined
+          String mapName = redistributeProtocolPolicy.getRouteMap();
+          if (mapName != null && routeMaps.containsKey(mapName)) {
+            exportProtocolConditions =
+                new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
+          }
 
-              exportProtocolConditions.setComment(
-                  String.format("Redistribute %s routes into BGP", protocol));
-              redistributionDisjuncts.add(exportProtocolConditions);
-            });
+          exportProtocolConditions.setComment(
+              String.format("Redistribute %s routes into BGP", protocol));
+          redistributionDisjuncts.add(exportProtocolConditions);
+        });
     redistributionPolicy.addStatement(
         new If(
             new Disjunction(redistributionDisjuncts.build()),
@@ -906,26 +896,25 @@ public final class CumulusConversions {
     ImmutableList.Builder<BooleanExpr> networkDisjuncts = ImmutableList.builder();
     Iterables.concat(
             bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
-        .forEach(
-            network -> {
-              @Nullable String routeMapName = network.getRouteMap();
-              ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
-              /* Match network prefix */
-              matchNetworkConjuncts.add(
-                  new MatchPrefixSet(
-                      DestinationNetwork.instance(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
-              matchNetworkConjuncts.add(
-                  new Not(
-                      new MatchProtocol(
-                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
-              if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
-                matchNetworkConjuncts.add(new CallExpr(routeMapName));
-              }
-              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
-              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
-            });
+        .forEach(network -> {
+          @Nullable String routeMapName = network.getRouteMap();
+          ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
+          /* Match network prefix */
+          matchNetworkConjuncts.add(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(),
+                  new ExplicitPrefixSet(
+                      new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
+          matchNetworkConjuncts.add(
+              new Not(
+                  new MatchProtocol(
+                      RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+          if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
+            matchNetworkConjuncts.add(new CallExpr(routeMapName));
+          }
+          networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
+          networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
+        });
     redistributionPolicy.addStatement(
         new If(
             "Add network statement routes to BGP",
@@ -980,25 +969,23 @@ public final class CumulusConversions {
     if (evpnConfig.getAdvertiseAllVni()) {
       c.getVrfs()
           .values()
-          .forEach(
-              vrf ->
-                  vrf.getLayer2Vnis()
-                      .values()
-                      .forEach(
-                          vxlan -> {
-                            RouteDistinguisher rd =
-                                RouteDistinguisher.from(
-                                    newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-                            ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-                            // Advertise L2 VNIs
-                            l2Vnis.add(
-                                Layer2VniConfig.builder()
-                                    .setVni(vxlan.getVni())
-                                    .setVrf(DEFAULT_VRF_NAME)
-                                    .setRouteDistinguisher(rd)
-                                    .setRouteTarget(rt)
-                                    .build());
-                          }));
+          .forEach(vrf ->
+              vrf.getLayer2Vnis()
+                  .values()
+                  .forEach(vxlan -> {
+                    RouteDistinguisher rd =
+                        RouteDistinguisher.from(
+                            newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+                    ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+                    // Advertise L2 VNIs
+                    l2Vnis.add(
+                        Layer2VniConfig.builder()
+                            .setVni(vxlan.getVni())
+                            .setVrf(DEFAULT_VRF_NAME)
+                            .setRouteDistinguisher(rd)
+                            .setRouteTarget(rt)
+                            .build());
+                  }));
     }
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
@@ -1007,48 +994,47 @@ public final class CumulusConversions {
     // must be aware of the fact that it has a VNI and advertise it.
     c.getVrfs()
         .values()
-        .forEach(
-            innerVrf -> {
-              String innerVrfName = innerVrf.getName();
-              Vrf vsVrf = vsConfig.getVrf(innerVrfName);
-              if (vsVrf == null) {
-                return;
-              }
-              Integer l3Vni = vsVrf.getVni();
-              if (l3Vni == null) {
-                return;
-              }
-              if (!vniToIndex.containsKey(l3Vni)) {
-                w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
-                return;
-              }
-              RouteDistinguisher rd =
-                  RouteDistinguisher.from(
-                      Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
-                          .map(org.batfish.datamodel.BgpProcess::getRouterId)
-                          .orElse(bgpVrf.getRouterId()),
-                      vniToIndex.get(l3Vni));
-              ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-              // Grab the BgpVrf for the innerVrf, if it exists
-              @Nullable
-              BgpVrf innerBgpVrf =
-                  (innerVrfName.equals(DEFAULT_VRF_NAME)
-                      ? bgpProcess.getDefaultVrf()
-                      : bgpProcess.getVrfs().get(innerVrfName));
-              l3Vnis.add(
-                  Layer3VniConfig.builder()
-                      .setVni(l3Vni)
-                      .setVrf(innerVrfName)
-                      .setRouteDistinguisher(rd)
-                      .setRouteTarget(rt)
-                      .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                      .setAdvertiseV4Unicast(
-                          Optional.ofNullable(innerBgpVrf)
-                              .map(BgpVrf::getL2VpnEvpn)
-                              .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
-                              .isPresent())
-                      .build());
-            });
+        .forEach(innerVrf -> {
+          String innerVrfName = innerVrf.getName();
+          Vrf vsVrf = vsConfig.getVrf(innerVrfName);
+          if (vsVrf == null) {
+            return;
+          }
+          Integer l3Vni = vsVrf.getVni();
+          if (l3Vni == null) {
+            return;
+          }
+          if (!vniToIndex.containsKey(l3Vni)) {
+            w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
+            return;
+          }
+          RouteDistinguisher rd =
+              RouteDistinguisher.from(
+                  Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
+                      .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                      .orElse(bgpVrf.getRouterId()),
+                  vniToIndex.get(l3Vni));
+          ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+          // Grab the BgpVrf for the innerVrf, if it exists
+          @Nullable
+          BgpVrf innerBgpVrf =
+              (innerVrfName.equals(DEFAULT_VRF_NAME)
+                  ? bgpProcess.getDefaultVrf()
+                  : bgpProcess.getVrfs().get(innerVrfName));
+          l3Vnis.add(
+              Layer3VniConfig.builder()
+                  .setVni(l3Vni)
+                  .setVrf(innerVrfName)
+                  .setRouteDistinguisher(rd)
+                  .setRouteTarget(rt)
+                  .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                  .setAdvertiseV4Unicast(
+                      Optional.ofNullable(innerBgpVrf)
+                          .map(BgpVrf::getL2VpnEvpn)
+                          .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                          .isPresent())
+                  .build());
+        });
 
     return EvpnAddressFamily.builder()
         .setL2Vnis(l2Vnis.build())
@@ -1100,17 +1086,16 @@ public final class CumulusConversions {
     ospfProcess
         .getVrfs()
         .values()
-        .forEach(
-            ospfVrf -> {
-              org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
+        .forEach(ospfVrf -> {
+          org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
 
-              if (vrf == null) {
-                w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
-                return;
-              }
+          if (vrf == null) {
+            w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
+            return;
+          }
 
-              convertOspfVrf(c, vsConfig, ospfVrf, vrf, w);
-            });
+          convertOspfVrf(c, vsConfig, ospfVrf, vrf, w);
+        });
   }
 
   private static void convertOspfVrf(
@@ -1259,31 +1244,30 @@ public final class CumulusConversions {
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
       Warnings w) {
-    viIfaces.forEach(
-        (ifaceName, iface) -> {
-          Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(ifaceName);
-          if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
-            return;
-          }
+    viIfaces.forEach((ifaceName, iface) -> {
+      Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(ifaceName);
+      if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
+        return;
+      }
 
-          OspfInterface ospfInterface = ospfOpt.get();
-          iface.setOspfSettings(
-              OspfInterfaceSettings.builder()
-                  .setPassive(
-                      Optional.ofNullable(ospfInterface.getPassive())
-                          .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
-                  .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
-                  .setDeadInterval(
-                      Optional.ofNullable(ospfInterface.getDeadInterval())
-                          .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
-                  .setHelloInterval(
-                      Optional.ofNullable(ospfInterface.getHelloInterval())
-                          .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
-                  .setProcess(processId)
-                  .setCost(ospfInterface.getCost())
-                  .build());
-        });
+      OspfInterface ospfInterface = ospfOpt.get();
+      iface.setOspfSettings(
+          OspfInterfaceSettings.builder()
+              .setPassive(
+                  Optional.ofNullable(ospfInterface.getPassive())
+                      .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
+              .setAreaName(ospfInterface.getOspfArea())
+              .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+              .setDeadInterval(
+                  Optional.ofNullable(ospfInterface.getDeadInterval())
+                      .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
+              .setHelloInterval(
+                  Optional.ofNullable(ospfInterface.getHelloInterval())
+                      .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
+              .setProcess(processId)
+              .setCost(ospfInterface.getCost())
+              .build());
+    });
   }
 
   @VisibleForTesting
@@ -1291,11 +1275,10 @@ public final class CumulusConversions {
       CumulusNcluConfiguration vsConfig, Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
-            .filter(
-                iface -> {
-                  Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(iface);
-                  return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
-                })
+            .filter(iface -> {
+              Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(iface);
+              return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
+            })
             .collect(
                 groupingBy(
                     iface -> vsConfig.getOspfInterface(iface).get().getOspfArea(),
@@ -1321,28 +1304,24 @@ public final class CumulusConversions {
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
     // create CommunitySetMatchExpr for route-map match community
-    ipCommunityLists.forEach(
-        (name, list) -> {
-          if (list instanceof IpCommunityListStandard) {
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
-          } else if (list instanceof IpCommunityListExpanded) {
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
-          }
-        });
+    ipCommunityLists.forEach((name, list) -> {
+      if (list instanceof IpCommunityListStandard) {
+        c.getCommunitySetMatchExprs()
+            .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
+      } else if (list instanceof IpCommunityListExpanded) {
+        c.getCommunitySetMatchExprs()
+            .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
+      }
+    });
 
     // The following code-block is only for "set comm-list delete" statements.
-    ipCommunityLists.forEach(
-        (name, list) -> {
-          if (list instanceof IpCommunityListStandard) {
-            c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
-          } else if (list instanceof IpCommunityListExpanded) {
-            c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
-          }
-        });
+    ipCommunityLists.forEach((name, list) -> {
+      if (list instanceof IpCommunityListStandard) {
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
+      } else if (list instanceof IpCommunityListExpanded) {
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
+      }
+    });
   }
 
   @VisibleForTesting
@@ -1430,9 +1409,8 @@ public final class CumulusConversions {
 
   static void convertIpAsPathAccessLists(
       Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {
-    ipAsPathAccessLists.forEach(
-        (name, asPathAccessList) ->
-            c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
+    ipAsPathAccessLists.forEach((name, asPathAccessList) ->
+        c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
   }
 
   @VisibleForTesting
@@ -1442,10 +1420,9 @@ public final class CumulusConversions {
         asPathAccessList.getLines().stream()
             // TODO Check FRR AS path match semantics.
             // This regex assumes we should match any path containing the specified ASN anywhere.
-            .map(
-                line ->
-                    new AsPathAccessListLine(
-                        line.getAction(), String.format("(^| )%s($| )", line.getAsNum())))
+            .map(line ->
+                new AsPathAccessListLine(
+                    line.getAction(), String.format("(^| )%s($| )", line.getAsNum())))
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(name, lines);
   }
@@ -1546,57 +1523,55 @@ public final class CumulusConversions {
     vsConfig
         .getVxlans()
         .values()
-        .forEach(
-            vxlan -> {
-              if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
-                // Not a valid VNI configuration
-                w.redFlagf(
-                    "Vxlan %s is not configured properly: %s is not defined",
-                    vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
-                return;
-              }
-              // Cumulus documents complex conditions for when clag-anycast address is a valid
-              // source:
-              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
-              // In testing, we couldn't reproduce that behavior and the address was always active.
-              // We go with that assumption here until we can reproduce the exact behavior.
-              Ip localIp =
-                  Stream.of(
-                          loopbackClagVxlanAnycastIp,
-                          vxlan.getLocalTunnelip(),
-                          loopbackVxlanLocalTunnelIp)
-                      .filter(Objects::nonNull)
-                      .findFirst()
-                      .orElse(null);
-              if (localIp == null) {
-                w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
-                return;
-              }
-              @Nullable String vrfName = vniToVrf.get(vxlan.getId());
-              if (vrfName != null) {
-                // This is an L3 VNI.
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer3Vni(
-                                Layer3Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setSourceAddress(localIp)
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
-              } else {
-                c.getDefaultVrf()
-                    .addLayer2Vni(
-                        Layer2Vni.builder()
+        .forEach(vxlan -> {
+          if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
+            // Not a valid VNI configuration
+            w.redFlagf(
+                "Vxlan %s is not configured properly: %s is not defined",
+                vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
+            return;
+          }
+          // Cumulus documents complex conditions for when clag-anycast address is a valid
+          // source:
+          // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+          // In testing, we couldn't reproduce that behavior and the address was always active.
+          // We go with that assumption here until we can reproduce the exact behavior.
+          Ip localIp =
+              Stream.of(
+                      loopbackClagVxlanAnycastIp,
+                      vxlan.getLocalTunnelip(),
+                      loopbackVxlanLocalTunnelIp)
+                  .filter(Objects::nonNull)
+                  .findFirst()
+                  .orElse(null);
+          if (localIp == null) {
+            w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
+            return;
+          }
+          @Nullable String vrfName = vniToVrf.get(vxlan.getId());
+          if (vrfName != null) {
+            // This is an L3 VNI.
+            Optional.ofNullable(c.getVrfs().get(vrfName))
+                .ifPresent(vrf ->
+                    vrf.addLayer3Vni(
+                        Layer3Vni.builder()
                             .setVni(vxlan.getId())
-                            .setVlan(vxlan.getBridgeAccessVlan())
                             .setSourceAddress(localIp)
                             .setUdpPort(NamedPort.VXLAN.number())
-                            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                             .setSrcVrf(DEFAULT_VRF_NAME)
-                            .build());
-              }
-            });
+                            .build()));
+          } else {
+            c.getDefaultVrf()
+                .addLayer2Vni(
+                    Layer2Vni.builder()
+                        .setVni(vxlan.getId())
+                        .setVlan(vxlan.getBridgeAccessVlan())
+                        .setSourceAddress(localIp)
+                        .setUdpPort(NamedPort.VXLAN.number())
+                        .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                        .setSrcVrf(DEFAULT_VRF_NAME)
+                        .build());
+          }
+        });
   }
 }

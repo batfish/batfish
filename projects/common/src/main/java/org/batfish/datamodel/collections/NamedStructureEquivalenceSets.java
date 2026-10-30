@@ -69,10 +69,9 @@ public class NamedStructureEquivalenceSets<T> {
       } else {
         Optional<NamedStructureEquivalenceSet<T>> potentialMatchingSet =
             eqSetsWithSameHash.stream()
-                .filter(
-                    s ->
-                        checkJsonStringEquals(
-                            structureJson, writeObject(s.getNamedStructure(), definitionJsonifier)))
+                .filter(s ->
+                    checkJsonStringEquals(
+                        structureJson, writeObject(s.getNamedStructure(), definitionJsonifier)))
                 .findAny();
         if (potentialMatchingSet.isPresent()) {
           NamedStructureEquivalenceSet<T> matchingSet = potentialMatchingSet.get();
@@ -178,14 +177,12 @@ public class NamedStructureEquivalenceSets<T> {
   @JsonIgnore
   public Map<String, Set<String>> getRepresentatives() {
     Map<String, Set<String>> representativesByHostname = new LinkedHashMap<>();
-    _sameNamedStructures.forEach(
-        (aclName, equivalenceSets) ->
-            equivalenceSets.forEach(
-                equivalenceSet ->
-                    representativesByHostname
-                        .computeIfAbsent(
-                            equivalenceSet.getRepresentativeElement(), n -> new LinkedHashSet<>())
-                        .add(aclName)));
+    _sameNamedStructures.forEach((aclName, equivalenceSets) ->
+        equivalenceSets.forEach(equivalenceSet ->
+            representativesByHostname
+                .computeIfAbsent(
+                    equivalenceSet.getRepresentativeElement(), n -> new LinkedHashSet<>())
+                .add(aclName)));
     return CollectionUtil.toImmutableMap(
         representativesByHostname, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }

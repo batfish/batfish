@@ -58,10 +58,9 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
       LaunchResult lr, String taskId, BatfishWorkerService batfishWorkerService) {
     return switch (lr.getType()) {
       case LAUNCHED ->
-          SubmissionResult.success(
-              () ->
-                  Optional.ofNullable(batfishWorkerService.getTaskStatus(taskId))
-                      .orElse(Task.unknown()));
+          SubmissionResult.success(() ->
+              Optional.ofNullable(batfishWorkerService.getTaskStatus(taskId))
+                  .orElse(Task.unknown()));
       case BUSY -> SubmissionResult.busy();
       case ERROR -> SubmissionResult.error(lr.getMessage());
     };
@@ -72,13 +71,12 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
     Map<String, String> params = new TreeMap<>(work.resolveRequestParams());
     params.put(BfConsts.ARG_STORAGE_BASE, containersLocation.toAbsolutePath().toString());
     ImmutableList.Builder<String> argsBuilder = ImmutableList.builder();
-    params.forEach(
-        (k, v) -> {
-          argsBuilder.add("-" + k);
-          if (!Strings.isNullOrEmpty(v)) {
-            argsBuilder.add(v);
-          }
-        });
+    params.forEach((k, v) -> {
+      argsBuilder.add("-" + k);
+      if (!Strings.isNullOrEmpty(v)) {
+        argsBuilder.add(v);
+      }
+    });
     return argsBuilder.build();
   }
 

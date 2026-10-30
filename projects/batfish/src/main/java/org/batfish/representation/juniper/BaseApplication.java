@@ -105,7 +105,7 @@ public final class BaseApplication implements Application, Serializable {
     if (_terms.isEmpty()) {
       lines.add(termToExprAclLine(_mainTerm, oldHeaderSpace, action));
     } else {
-      _terms.values().forEach((term) -> lines.add(termToExprAclLine(term, oldHeaderSpace, action)));
+      _terms.values().forEach(term -> lines.add(termToExprAclLine(term, oldHeaderSpace, action)));
     }
   }
 

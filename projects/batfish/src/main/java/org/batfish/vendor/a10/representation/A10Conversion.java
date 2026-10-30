@@ -177,25 +177,24 @@ public class A10Conversion {
   static @Nonnull List<TransformationStep> toDstTransformationSteps(
       ServiceGroup serviceGroup, Map<String, Server> servers) {
     return serviceGroup.getMembers().values().stream()
-        .map(
-            m -> {
-              Server server = servers.get(m.getName());
-              ServerPort.ServerPortAndType serverPortKey =
-                  new ServerPort.ServerPortAndType(m.getPort(), serviceGroup.getType());
+        .map(m -> {
+          Server server = servers.get(m.getName());
+          ServerPort.ServerPortAndType serverPortKey =
+              new ServerPort.ServerPortAndType(m.getPort(), serviceGroup.getType());
 
-              // Guaranteed by extraction
-              assert server != null;
-              ServerPort serverPort = server.getPorts().get(serverPortKey);
-              assert serverPort != null;
+          // Guaranteed by extraction
+          assert server != null;
+          ServerPort serverPort = server.getPorts().get(serverPortKey);
+          assert serverPort != null;
 
-              if (!firstNonNull(server.getEnable(), true)
-                  || !firstNonNull(serverPort.getEnable(), true)) {
-                return null;
-              }
+          if (!firstNonNull(server.getEnable(), true)
+              || !firstNonNull(serverPort.getEnable(), true)) {
+            return null;
+          }
 
-              return new ApplyAll(
-                  toDstPortTransformationStep(serverPort), toDstIpTransformationStep(server));
-            })
+          return new ApplyAll(
+              toDstPortTransformationStep(serverPort), toDstIpTransformationStep(server));
+        })
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
@@ -731,11 +730,10 @@ public class A10Conversion {
     // TODO: support deactivated neighbor
     bgpProcess
         .getNeighbors()
-        .forEach(
-            (bgpNeighborId, bgpNeighbor) -> {
-              createAndAttachBgpNeighbor(
-                  bgpNeighborId, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
-            });
+        .forEach((bgpNeighborId, bgpNeighbor) -> {
+          createAndAttachBgpNeighbor(
+              bgpNeighborId, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
+        });
   }
 
   private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
@@ -882,18 +880,15 @@ public class A10Conversion {
             filename, A10StructureType.ACCESS_LIST.getDescription(), acl.getName());
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     acl.getRules()
-        .forEach(
-            rule ->
-                lines.add(
-                    new ExprAclLine(
-                        toLineAction(rule),
-                        AccessListRuleToMatchExpr.INSTANCE.visit(rule),
-                        rule.getLineText(),
-                        traceElementForAccessList(
-                            acl.getName(),
-                            filename,
-                            rule.getAction() == AccessListRule.Action.PERMIT),
-                        vsid)));
+        .forEach(rule ->
+            lines.add(
+                new ExprAclLine(
+                    toLineAction(rule),
+                    AccessListRuleToMatchExpr.INSTANCE.visit(rule),
+                    rule.getLineText(),
+                    traceElementForAccessList(
+                        acl.getName(), filename, rule.getAction() == AccessListRule.Action.PERMIT),
+                    vsid)));
     return lines.build();
   }
 

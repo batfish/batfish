@@ -89,10 +89,9 @@ public final class TopologyUtil {
       */
       Set<Range<Integer>> sharedRanges =
           Sets.intersection(node1Ranges.getMap().keySet(), node2Ranges.getMap().keySet()).stream()
-              .filter(
-                  r ->
-                      node1Ranges.getMap().get(r).contains(l1Node1.getInterfaceName())
-                          && node2Ranges.getMap().get(r).contains(l1Node2.getInterfaceName()))
+              .filter(r ->
+                  node1Ranges.getMap().get(r).contains(l1Node1.getInterfaceName())
+                      && node2Ranges.getMap().get(r).contains(l1Node2.getInterfaceName()))
               .collect(ImmutableSet.toImmutableSet());
       for (Range<Integer> sharedRange : sharedRanges) {
         // This frame will be tagged by i1 and we can directly check whether i2 allows.
@@ -234,24 +233,23 @@ public final class TopologyUtil {
     // Additionally, edges need not be added symmetrically.
     switchportsByVlan
         .getMap()
-        .forEach(
-            (vlanRange, interfaceNames) -> {
-              Range<Integer> canonicalRange = vlanRange.canonical(DiscreteDomain.integers());
-              if (canonicalRange.isEmpty()) {
-                // RangeMap produces all intervals, and is not always aware that the underlying
-                // domain is discrete. So it can produce empty intervals like (3, 4). Skip these.
-                return;
-              }
-              assert !interfaceNames.isEmpty();
-              Iterator<String> iterator = interfaceNames.iterator();
-              String firstInterface = iterator.next();
-              Layer2Node firstNode = new Layer2Node(hostname, firstInterface, canonicalRange);
-              while (iterator.hasNext()) {
-                String otherInterface = iterator.next();
-                Layer2Node otherNode = new Layer2Node(hostname, otherInterface, canonicalRange);
-                edges.accept(new Layer2Edge(firstNode, otherNode));
-              }
-            });
+        .forEach((vlanRange, interfaceNames) -> {
+          Range<Integer> canonicalRange = vlanRange.canonical(DiscreteDomain.integers());
+          if (canonicalRange.isEmpty()) {
+            // RangeMap produces all intervals, and is not always aware that the underlying
+            // domain is discrete. So it can produce empty intervals like (3, 4). Skip these.
+            return;
+          }
+          assert !interfaceNames.isEmpty();
+          Iterator<String> iterator = interfaceNames.iterator();
+          String firstInterface = iterator.next();
+          Layer2Node firstNode = new Layer2Node(hostname, firstInterface, canonicalRange);
+          while (iterator.hasNext()) {
+            String otherInterface = iterator.next();
+            Layer2Node otherNode = new Layer2Node(hostname, otherInterface, canonicalRange);
+            edges.accept(new Layer2Edge(firstNode, otherNode));
+          }
+        });
     Map<Integer, Layer2Vni> vniSettingsByVlan =
         config.getVrfs().values().stream()
             .flatMap(vrf -> vrf.getLayer2Vnis().values().stream())
@@ -259,27 +257,23 @@ public final class TopologyUtil {
     config.getAllInterfaces().values().stream()
         .filter(Interface::getActive)
         .filter(i -> i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() != null)
-        .forEach(
-            irbInterface -> {
-              String irbName = irbInterface.getName();
-              int vlanId = irbInterface.getVlan();
-              computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, irbName, vlanId)
-                  .forEach(edges::accept);
-              // Link IRB to VNI in same VLAN
-              Optional.ofNullable(vniSettingsByVlan.get(vlanId))
-                  .map(vniSettings -> computeVniName(vniSettings.getVni()))
-                  .ifPresent(
-                      vniName ->
-                          edges.accept(
-                              new Layer2Edge(hostname, irbName, null, hostname, vniName, null)));
-            });
-    // Link each VNI to switchports in same VLAN
-    vniSettingsByVlan.forEach(
-        (vlanId, vniSettings) -> {
-          String vniName = computeVniName(vniSettings.getVni());
-          computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, vniName, vlanId)
+        .forEach(irbInterface -> {
+          String irbName = irbInterface.getName();
+          int vlanId = irbInterface.getVlan();
+          computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, irbName, vlanId)
               .forEach(edges::accept);
+          // Link IRB to VNI in same VLAN
+          Optional.ofNullable(vniSettingsByVlan.get(vlanId))
+              .map(vniSettings -> computeVniName(vniSettings.getVni()))
+              .ifPresent(vniName ->
+                  edges.accept(new Layer2Edge(hostname, irbName, null, hostname, vniName, null)));
         });
+    // Link each VNI to switchports in same VLAN
+    vniSettingsByVlan.forEach((vlanId, vniSettings) -> {
+      String vniName = computeVniName(vniSettings.getVni());
+      computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, vniName, vlanId)
+          .forEach(edges::accept);
+    });
   }
 
   /**
@@ -327,11 +321,10 @@ public final class TopologyUtil {
     Stream.Builder<Layer2Edge> edges = Stream.builder();
     switchportsByVlan
         .get(vlanId)
-        .forEach(
-            switchportName ->
-                edges.accept(
-                    new Layer2Edge(
-                        hostname, nonSwitchportName, null, hostname, switchportName, vlanId)));
+        .forEach(switchportName ->
+            edges.accept(
+                new Layer2Edge(
+                    hostname, nonSwitchportName, null, hostname, switchportName, vlanId)));
     return edges.build();
   }
 
@@ -380,24 +373,20 @@ public final class TopologyUtil {
         // Optimization: skip nodes with neither L1 nor VXLAN edges, since their L2 self-edges will
         // not contribute to broadcast domains.
         .filter(c -> nodesWithUsefulL2SelfEdges.containsKey(c.getHostname()))
-        .forEach(
-            c ->
-                computeLayer2SelfEdges(
-                    c,
-                    nodesWithUsefulL2SelfEdges.get(c.getHostname()),
-                    l2TopologyBuilder::addEdge));
+        .forEach(c ->
+            computeLayer2SelfEdges(
+                c, nodesWithUsefulL2SelfEdges.get(c.getHostname()), l2TopologyBuilder::addEdge));
 
     // Add layer2 edges for physical links.
     layer1LogicalTopology
         .edgeStream()
-        .forEach(
-            layer1Edge ->
-                computeLayer2EdgesForLayer1Edge(
-                    layer1Edge,
-                    configurations,
-                    l2TopologyBuilder::addEdge,
-                    parentChildrenMap,
-                    nodesWithUsefulL2SelfEdges));
+        .forEach(layer1Edge ->
+            computeLayer2EdgesForLayer1Edge(
+                layer1Edge,
+                configurations,
+                l2TopologyBuilder::addEdge,
+                parentChildrenMap,
+                nodesWithUsefulL2SelfEdges));
 
     // Finally add edges between connected VNIs on different nodes
     computeVniInterNodeEdges(vxlanTopology).forEach(l2TopologyBuilder::addEdge);
@@ -439,22 +428,18 @@ public final class TopologyUtil {
 
     // Map each parent interface that is the target of a bind dependency to the set of its child
     // interfaces (e.g. Juniper units).
-    configurations.forEach(
-        (hostname, c) ->
-            c.getAllInterfaces()
-                .forEach(
-                    (iName, i) ->
-                        // i is a potential child interface
-                        i.getDependencies().stream()
-                            .filter(dependency -> dependency.getType() == DependencyType.BIND)
-                            .forEach(
-                                bindDependency ->
-                                    builderMap
-                                        .computeIfAbsent(
-                                            new Layer1Node(
-                                                hostname, bindDependency.getInterfaceName()),
-                                            n -> ImmutableSet.builder())
-                                        .add(new Layer1Node(hostname, iName)))));
+    configurations.forEach((hostname, c) ->
+        c.getAllInterfaces()
+            .forEach((iName, i) ->
+                // i is a potential child interface
+                i.getDependencies().stream()
+                    .filter(dependency -> dependency.getType() == DependencyType.BIND)
+                    .forEach(bindDependency ->
+                        builderMap
+                            .computeIfAbsent(
+                                new Layer1Node(hostname, bindDependency.getInterfaceName()),
+                                n -> ImmutableSet.builder())
+                            .add(new Layer1Node(hostname, iName)))));
     // finalize and freeze
     return toImmutableMap(builderMap, Entry::getKey, e -> e.getValue().build());
   }
@@ -485,23 +470,21 @@ public final class TopologyUtil {
             .flatMap(Configuration::activeInterfaces)
             .filter(TopologyUtil::hasPointToPointAddress)
             .map(i -> NodeInterfacePair.of(i.getOwner().getHostname(), i.getName()))
-            .flatMap(
-                nip -> {
-                  @Nullable
-                  NodeInterfacePair paired =
-                      adjacencies
-                          .pairedPointToPointL3Interface(nip)
-                          .filter(
-                              other ->
-                                  nc.getInterface(other.getHostname(), other.getInterface())
-                                      .map(i -> i.getActive() && hasPointToPointAddress(i))
-                                      .orElse(false))
-                          .orElse(null);
-                  if (paired == null) {
-                    return Stream.of();
-                  }
-                  return Stream.of(new Edge(nip, paired), new Edge(paired, nip));
-                });
+            .flatMap(nip -> {
+              @Nullable
+              NodeInterfacePair paired =
+                  adjacencies
+                      .pairedPointToPointL3Interface(nip)
+                      .filter(other ->
+                          nc.getInterface(other.getHostname(), other.getInterface())
+                              .map(i -> i.getActive() && hasPointToPointAddress(i))
+                              .orElse(false))
+                      .orElse(null);
+              if (paired == null) {
+                return Stream.of();
+              }
+              return Stream.of(new Edge(nip, paired), new Edge(paired, nip));
+            });
 
     return new Topology(
         Streams.concat(filteredEdgeStream, pointToPointEdges)
@@ -640,9 +623,8 @@ public final class TopologyUtil {
         .mapToObj(
             i -> prefixBuckets.getOrDefault(Prefix.create(p.getStartIp(), i), ImmutableList.of()))
         .flatMap(Collection::stream)
-        .filter(
-            iface ->
-                iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
+        .filter(iface ->
+            iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
         .forEach(candidateInterfaces::add);
     return candidateInterfaces;
   }
@@ -651,23 +633,22 @@ public final class TopologyUtil {
   private static @Nonnull Map<Prefix, List<Interface>> computeInterfacesBucketByPrefix(
       Map<String, Configuration> configurations) {
     Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
-    configurations.forEach(
-        (nodeName, node) -> {
-          for (Interface iface : node.getAllInterfaces().values()) {
-            if (iface.isLoopback() || !iface.getActive()) {
-              continue;
-            }
-            // Look at all allocated addresses to determine subnet buckets
-            for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
-              Prefix prefix = address.getPrefix();
-              if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
-                List<Interface> interfaceBucket =
-                    prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
-                interfaceBucket.add(iface);
-              }
-            }
+    configurations.forEach((nodeName, node) -> {
+      for (Interface iface : node.getAllInterfaces().values()) {
+        if (iface.isLoopback() || !iface.getActive()) {
+          continue;
+        }
+        // Look at all allocated addresses to determine subnet buckets
+        for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
+          Prefix prefix = address.getPrefix();
+          if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+            List<Interface> interfaceBucket =
+                prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
+            interfaceBucket.add(iface);
           }
-        });
+        }
+      }
+    });
     return prefixInterfaces;
   }
 
@@ -782,12 +763,11 @@ public final class TopologyUtil {
     initialTunnelTopology
         .getGraph()
         .edges()
-        .forEach(
-            edge -> {
-              if (tracerouteForTunnelEdge(configurations, tracerouteEngine, edge)) {
-                builder.add(edge.nodeU(), edge.nodeV());
-              }
-            });
+        .forEach(edge -> {
+          if (tracerouteForTunnelEdge(configurations, tracerouteEngine, edge)) {
+            builder.add(edge.nodeU(), edge.nodeV());
+          }
+        });
     return builder.build();
   }
 

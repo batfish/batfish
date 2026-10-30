@@ -2106,7 +2106,7 @@ public final class CiscoAsaGrammarTest {
     // out is always the egress interface
     IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
     Function<String, List<TraceTree>> trace =
-        (inIface) ->
+        inIface ->
             AclTracer.trace(
                 filter,
                 flow,

@@ -32,9 +32,8 @@ public final class EthernetHub extends Node<EthernetTag> {
       return;
     }
 
-    _attachedInterfaces.forEach(
-        (iface, edge) ->
-            edge.traverse(tag).ifPresent(newTag -> iface.receive(newTag, domain, visited)));
+    _attachedInterfaces.forEach((iface, edge) ->
+        edge.traverse(tag).ifPresent(newTag -> iface.receive(newTag, domain, visited)));
   }
 
   // Internal implementation details.

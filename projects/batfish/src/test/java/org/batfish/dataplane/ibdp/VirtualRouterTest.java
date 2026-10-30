@@ -120,9 +120,8 @@ public class VirtualRouterTest {
       Configuration c, Map<String, ConcreteInterfaceAddress> interfaceAddresses) {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(c.getDefaultVrf());
-    interfaceAddresses.forEach(
-        (ifaceName, address) ->
-            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+    interfaceAddresses.forEach((ifaceName, address) ->
+        ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
   }
 
   /** The dirty-state description names the pending main RIB delta that makes a VR dirty. */
@@ -381,11 +380,9 @@ public class VirtualRouterTest {
         vr.getConnectedRib().getRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
-                .map(
-                    e ->
-                        new AnnotatedRoute<>(
-                            new ConnectedRoute(e.getValue().getPrefix(), e.getKey()),
-                            DEFAULT_VRF_NAME))
+                .map(e ->
+                    new AnnotatedRoute<>(
+                        new ConnectedRoute(e.getValue().getPrefix(), e.getKey()), DEFAULT_VRF_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -479,10 +476,9 @@ public class VirtualRouterTest {
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
-                .map(
-                    e ->
-                        new AnnotatedRoute<>(
-                            new LocalRoute(e.getValue(), e.getKey()), DEFAULT_VRF_NAME))
+                .map(e ->
+                    new AnnotatedRoute<>(
+                        new LocalRoute(e.getValue(), e.getKey()), DEFAULT_VRF_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -581,16 +577,15 @@ public class VirtualRouterTest {
         vr._ripInternalRib.getRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
-                .map(
-                    entry ->
-                        RipInternalRoute.builder()
-                            .setNetwork(entry.getValue().getPrefix())
-                            .setNextHop(NextHopInterface.of(entry.getKey()))
-                            .setAdmin(
-                                RoutingProtocol.RIP.getDefaultAdministrativeCost(
-                                    vr.getConfiguration().getConfigurationFormat()))
-                            .setMetric(RipProcess.DEFAULT_RIP_COST)
-                            .build())
+                .map(entry ->
+                    RipInternalRoute.builder()
+                        .setNetwork(entry.getValue().getPrefix())
+                        .setNextHop(NextHopInterface.of(entry.getKey()))
+                        .setAdmin(
+                            RoutingProtocol.RIP.getDefaultAdministrativeCost(
+                                vr.getConfiguration().getConfigurationFormat()))
+                        .setMetric(RipProcess.DEFAULT_RIP_COST)
+                        .build())
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -744,27 +739,25 @@ public class VirtualRouterTest {
 
     EigrpTopology eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
-        .forEach(
-            vr ->
-                vr.initForEgpComputationWithNewTopology(
-                    TopologyContext.builder()
-                        .setBgpTopology(bgpTopology)
-                        .setEigrpTopology(eigrpTopology)
-                        .setIsisTopology(initialIsisTopology)
-                        .build(),
-                    PreDataPlaneTrackMethodEvaluator::new));
+        .forEach(vr ->
+            vr.initForEgpComputationWithNewTopology(
+                TopologyContext.builder()
+                    .setBgpTopology(bgpTopology)
+                    .setEigrpTopology(eigrpTopology)
+                    .setIsisTopology(initialIsisTopology)
+                    .build(),
+                PreDataPlaneTrackMethodEvaluator::new));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes if the
     // topologies are empty
     vrs.values()
-        .forEach(
-            vr -> {
-              assertThat(vr._bgpRoutingProcess._bgpv4Edges, empty());
-              vr._eigrpProcesses
-                  .values()
-                  .forEach(process -> assertThat(process._incomingExternalRoutes, anEmptyMap()));
-              assertThat(vr._isisIncomingRoutes, anEmptyMap());
-            });
+        .forEach(vr -> {
+          assertThat(vr._bgpRoutingProcess._bgpv4Edges, empty());
+          vr._eigrpProcesses
+              .values()
+              .forEach(process -> assertThat(process._incomingExternalRoutes, anEmptyMap()));
+          assertThat(vr._isisIncomingRoutes, anEmptyMap());
+        });
 
     // Re-run with non-empty topology
     BgpTopology bgpTopology2 =
@@ -781,11 +774,10 @@ public class VirtualRouterTest {
     }
     // Assert that queues are initialized
     vrs.values()
-        .forEach(
-            vr -> {
-              assertThat(vr._bgpRoutingProcess._bgpv4Edges, is(notNullValue()));
-              assertThat(vr._bgpRoutingProcess._bgpv4Edges, hasSize(1));
-            });
+        .forEach(vr -> {
+          assertThat(vr._bgpRoutingProcess._bgpv4Edges, is(notNullValue()));
+          assertThat(vr._bgpRoutingProcess._bgpv4Edges, hasSize(1));
+        });
   }
 
   @Test
@@ -841,20 +833,18 @@ public class VirtualRouterTest {
     IsisTopology initialIsisTopology = initIsisTopology(configs, topology);
     EigrpTopology eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
-        .forEach(
-            vr ->
-                vr.initQueuesAndDeltaBuilders(
-                    TopologyContext.builder()
-                        .setEigrpTopology(eigrpTopology)
-                        .setIsisTopology(initialIsisTopology)
-                        .build()));
+        .forEach(vr ->
+            vr.initQueuesAndDeltaBuilders(
+                TopologyContext.builder()
+                    .setEigrpTopology(eigrpTopology)
+                    .setIsisTopology(initialIsisTopology)
+                    .build()));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
-        .forEach(
-            vr -> {
-              assertThat(vr._isisIncomingRoutes, anEmptyMap());
-            });
+        .forEach(vr -> {
+          assertThat(vr._isisIncomingRoutes, anEmptyMap());
+        });
 
     // Set IS-IS on interfaces
     i1.setIsis(isisInterfaceSettings);
@@ -863,13 +853,12 @@ public class VirtualRouterTest {
 
     // Re-run
     vrs.values()
-        .forEach(
-            vr ->
-                vr.initQueuesAndDeltaBuilders(
-                    TopologyContext.builder()
-                        .setEigrpTopology(eigrpTopology)
-                        .setIsisTopology(updatedIsisTopology)
-                        .build()));
+        .forEach(vr ->
+            vr.initQueuesAndDeltaBuilders(
+                TopologyContext.builder()
+                    .setEigrpTopology(eigrpTopology)
+                    .setIsisTopology(updatedIsisTopology)
+                    .build()));
 
     // Assert that queues are initialized
     assertThat(

@@ -73,10 +73,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   static @Nonnull <T> List<Map.Entry<String, String>> sparseKeys(Map<String, Map<String, T>> map) {
     List<Map.Entry<String, String>> sparseKeys =
         map.entrySet().parallelStream()
-            .flatMap(
-                e ->
-                    e.getValue().entrySet().parallelStream()
-                        .map(v -> new SimpleImmutableEntry<>(e.getKey(), v.getKey())))
+            .flatMap(e ->
+                e.getValue().entrySet().parallelStream()
+                    .map(v -> new SimpleImmutableEntry<>(e.getKey(), v.getKey())))
             .collect(Collectors.toCollection(ArrayList::new));
     Collections.shuffle(sparseKeys);
     return ImmutableList.copyOf(sparseKeys);
@@ -457,12 +456,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // interface -> owned IPs
       Map<String, Set<Ip>> interfaceOwnedIps) {
     Map<String, Set<Ip>> ipsByVrf = new HashMap<>();
-    activeInterfaces.forEach(
-        (ifaceName, iface) -> {
-          ipsByVrf
-              .computeIfAbsent(iface.getVrfName(), v -> new HashSet<>())
-              .addAll(interfaceOwnedIps.getOrDefault(ifaceName, ImmutableSet.of()));
-        });
+    activeInterfaces.forEach((ifaceName, iface) -> {
+      ipsByVrf
+          .computeIfAbsent(iface.getVrfName(), v -> new HashSet<>())
+          .addAll(interfaceOwnedIps.getOrDefault(ifaceName, ImmutableSet.of()));
+    });
     return ipsByVrf.entrySet().stream()
         .collect(
             ImmutableMap.toImmutableMap(
@@ -526,19 +524,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, IpSpace> dstIpsArpingForDestIp,
       Map<String, Map<String, IpSpace>> arpReplies) {
     ImmutableMap.Builder<Edge, IpSpace> result = ImmutableMap.builder();
-    dstIpsArpingForDestIp.forEach(
-        (iface, dstIpMatchesSomeRoutePrefix) -> {
-          NodeInterfacePair out = NodeInterfacePair.of(node, iface);
-          for (NodeInterfacePair receiver : topology.getNeighbors(out)) {
-            IpSpace recvReplies =
-                arpReplies.get(receiver.getHostname()).get(receiver.getInterface());
-            result.put(
-                new Edge(out, receiver),
-                AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
-                    .thenPermitting(recvReplies)
-                    .build());
-          }
-        });
+    dstIpsArpingForDestIp.forEach((iface, dstIpMatchesSomeRoutePrefix) -> {
+      NodeInterfacePair out = NodeInterfacePair.of(node, iface);
+      for (NodeInterfacePair receiver : topology.getNeighbors(out)) {
+        IpSpace recvReplies = arpReplies.get(receiver.getHostname()).get(receiver.getInterface());
+        result.put(
+            new Edge(out, receiver),
+            AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
+                .thenPermitting(recvReplies)
+                .build());
+      }
+    });
     return result.build();
   }
 
@@ -881,12 +877,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       ImmutableSet.Builder<AbstractRoute> routes = ImmutableSet.builder();
       _routesByInterfaceAndArpIp
           .getOrDefault(iface, ImmutableMap.of())
-          .forEach(
-              (arpIp, groupRoutes) -> {
-                if (arpIp.isPresent() && test.test(arpIp.get())) {
-                  routes.addAll(groupRoutes);
-                }
-              });
+          .forEach((arpIp, groupRoutes) -> {
+            if (arpIp.isPresent() && test.test(arpIp.get())) {
+              routes.addAll(groupRoutes);
+            }
+          });
       return routes.build();
     }
 
@@ -1083,16 +1078,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   private static Multimap<String, String> computeInterfacesWithMissingDevices(
       Map<Location, LocationInfo> locationInfo, IpSpaceToBDD toBdd, BDD unownedIpsBDD) {
     ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
-    locationInfo.forEach(
-        (location, info) -> {
-          if (!(location instanceof InterfaceLinkLocation)) {
-            return;
-          }
-          if (toBdd.visit(info.getArpIps()).andSat(unownedIpsBDD)) {
-            builder.put(
-                location.getNodeName(), ((InterfaceLinkLocation) location).getInterfaceName());
-          }
-        });
+    locationInfo.forEach((location, info) -> {
+      if (!(location instanceof InterfaceLinkLocation)) {
+        return;
+      }
+      if (toBdd.visit(info.getArpIps()).andSat(unownedIpsBDD)) {
+        builder.put(location.getNodeName(), ((InterfaceLinkLocation) location).getInterfaceName());
+      }
+    });
     return builder.build();
   }
 
@@ -1162,13 +1155,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   private static void assertAllInterfacesActiveVrfForwardingBehavior(
       Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
       Map<String, Configuration> configurations) {
-    vrfForwardingBehavior.forEach(
-        (node, vrfMap) ->
-            vrfMap.forEach(
-                (vrf, vfb) ->
-                    vfb.getInterfaceForwardingBehavior()
-                        .keySet()
-                        .forEach(i -> assertInterfaceActive(node, i, configurations))));
+    vrfForwardingBehavior.forEach((node, vrfMap) ->
+        vrfMap.forEach((vrf, vfb) ->
+            vfb.getInterfaceForwardingBehavior()
+                .keySet()
+                .forEach(i -> assertInterfaceActive(node, i, configurations))));
   }
 
   /**
@@ -1177,9 +1168,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   private static void assertAllInterfacesActiveNodeInterface(
       Map<String, Map<String, IpSpace>> nodeInterfaceMap,
       Map<String, Configuration> configurations) {
-    nodeInterfaceMap.forEach(
-        (node, ifaceMap) ->
-            ifaceMap.keySet().forEach(i -> assertInterfaceActive(node, i, configurations)));
+    nodeInterfaceMap.forEach((node, ifaceMap) ->
+        ifaceMap.keySet().forEach(i -> assertInterfaceActive(node, i, configurations)));
   }
 
   private static void assertInterfaceActive(

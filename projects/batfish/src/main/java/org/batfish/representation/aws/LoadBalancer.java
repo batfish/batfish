@@ -326,18 +326,17 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   static List<StaticRoute> getInstanceTargetStaticRoutes(
       Collection<Instance> instanceTargets, String lbSubnetId) {
     return instanceTargets.stream()
-        .map(
-            instance -> {
-              String subnetCfgHostname = Subnet.nodeName(lbSubnetId);
-              String instanceTargetsIface =
-                  interfaceNameToRemote(subnetCfgHostname, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
-              // Guaranteed by isTargetInAnyEnabledAvailabilityZone
-              assert instance.getPrimaryPrivateIpAddress() != null;
-              return toStaticRoute(
-                  instance.getPrimaryPrivateIpAddress().toPrefix(),
-                  instanceTargetsIface,
-                  AwsConfiguration.LINK_LOCAL_IP);
-            })
+        .map(instance -> {
+          String subnetCfgHostname = Subnet.nodeName(lbSubnetId);
+          String instanceTargetsIface =
+              interfaceNameToRemote(subnetCfgHostname, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+          // Guaranteed by isTargetInAnyEnabledAvailabilityZone
+          assert instance.getPrimaryPrivateIpAddress() != null;
+          return toStaticRoute(
+              instance.getPrimaryPrivateIpAddress().toPrefix(),
+              instanceTargetsIface,
+              AwsConfiguration.LINK_LOCAL_IP);
+        })
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -351,14 +350,13 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     if (viIface.getConcreteAddress() != null) { // May be null if we couldn't find a usable address
       List<LoadBalancerTransformation> listenerTransformations =
           listeners.stream()
-              .map(
-                  listener ->
-                      computeListenerTransformation(
-                          listener,
-                          viIface.getConcreteAddress().getIp(),
-                          enabledTargetZones,
-                          region,
-                          warnings))
+              .map(listener ->
+                  computeListenerTransformation(
+                      listener,
+                      viIface.getConcreteAddress().getIp(),
+                      enabledTargetZones,
+                      region,
+                      warnings))
               .filter(Objects::nonNull)
               .collect(ImmutableList.toImmutableList());
 
@@ -442,10 +440,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     Set<TargetHealthDescription> enabledTargets =
         targetHealth.getTargetHealthDescriptions().stream()
-            .filter(
-                desc ->
-                    isTargetInValidAvailabilityZone(
-                        desc, targetGroup.getTargetType(), enabledTargetZones, region))
+            .filter(desc ->
+                isTargetInValidAvailabilityZone(
+                    desc, targetGroup.getTargetType(), enabledTargetZones, region))
             .collect(ImmutableSet.toImmutableSet());
     if (enabledTargets.isEmpty()) {
       if (fileWarnings) {
@@ -499,14 +496,13 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     Set<TransformationStep> transformationSteps =
         activeTargets.stream()
-            .map(
-                desc ->
-                    computeTargetTransformationStep(
-                        desc.getTarget(),
-                        targetGroup.getTargetType(),
-                        loadBalancerIp,
-                        region,
-                        warnings))
+            .map(desc ->
+                computeTargetTransformationStep(
+                    desc.getTarget(),
+                    targetGroup.getTargetType(),
+                    loadBalancerIp,
+                    region,
+                    warnings))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -612,18 +608,16 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     List<AclLine> aclLines =
         listeners.stream()
             // consider only listeners with a forwarding action
-            .filter(
-                listener ->
-                    listener.getDefaultActions().stream()
-                        .anyMatch(action -> action.getType() == ActionType.FORWARD))
-            .map(
-                listener ->
-                    ExprAclLine.builder()
-                        .setTraceElement(getTraceElementForMatchedListener(listener.getId()))
-                        .setMatchCondition(new MatchHeaderSpace(listener.getMatchingHeaderSpace()))
-                        .setAction(LineAction.PERMIT)
-                        .setName("Listener " + listener.getId())
-                        .build())
+            .filter(listener ->
+                listener.getDefaultActions().stream()
+                    .anyMatch(action -> action.getType() == ActionType.FORWARD))
+            .map(listener ->
+                ExprAclLine.builder()
+                    .setTraceElement(getTraceElementForMatchedListener(listener.getId()))
+                    .setMatchCondition(new MatchHeaderSpace(listener.getMatchingHeaderSpace()))
+                    .setAction(LineAction.PERMIT)
+                    .setName("Listener " + listener.getId())
+                    .build())
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(LISTENER_FILTER_NAME)
@@ -715,12 +709,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     }
     String matchString = matcher.group(1);
     return region.getNetworkInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface
-                        .getDescription()
-                        .equals(LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + matchString)
-                    && iface.getSubnetId().equals(subnetId))
+        .filter(iface ->
+            iface.getDescription().equals(LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + matchString)
+                && iface.getSubnetId().equals(subnetId))
         .findAny();
   }
 

@@ -129,25 +129,20 @@ public final class BDDFibGenerator {
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _ifaceAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry -> {
-              String node = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrf = vrfEntry.getKey();
-                        return vrfEntry.getValue().entrySet().stream()
-                            .map(
-                                ifaceEntry -> {
-                                  String iface = ifaceEntry.getKey();
-                                  BDD acceptBdd = ifaceEntry.getValue();
-                                  return new Edge(
-                                      postInVrf.apply(node, vrf),
-                                      new InterfaceAccept(node, iface),
-                                      acceptBdd);
-                                });
-                      });
-            });
+        .flatMap(nodeEntry -> {
+          String node = nodeEntry.getKey();
+          return nodeEntry.getValue().entrySet().stream()
+              .flatMap(vrfEntry -> {
+                String vrf = vrfEntry.getKey();
+                return vrfEntry.getValue().entrySet().stream()
+                    .map(ifaceEntry -> {
+                      String iface = ifaceEntry.getKey();
+                      BDD acceptBdd = ifaceEntry.getValue();
+                      return new Edge(
+                          postInVrf.apply(node, vrf), new InterfaceAccept(node, iface), acceptBdd);
+                    });
+              });
+        });
   }
 
   @VisibleForTesting
@@ -155,19 +150,16 @@ public final class BDDFibGenerator {
   Stream<Edge> generateRules_InterfaceAccept_VrfAccept(Predicate<String> includedNode) {
     return _ifaceAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry -> {
-              String node = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry ->
-                          vrfEntry.getValue().keySet().stream()
-                              .map(
-                                  iface ->
-                                      new Edge(
-                                          new InterfaceAccept(node, iface),
-                                          new VrfAccept(node, vrfEntry.getKey()))));
-            });
+        .flatMap(nodeEntry -> {
+          String node = nodeEntry.getKey();
+          return nodeEntry.getValue().entrySet().stream()
+              .flatMap(vrfEntry ->
+                  vrfEntry.getValue().keySet().stream()
+                      .map(iface ->
+                          new Edge(
+                              new InterfaceAccept(node, iface),
+                              new VrfAccept(node, vrfEntry.getKey()))));
+        });
   }
 
   @VisibleForTesting
@@ -176,20 +168,18 @@ public final class BDDFibGenerator {
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .map(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          BDD acceptBDD = vrfEntry.getValue();
-                          BDD routableBDD = _routableBDDs.get(node).get(vrf);
-                          return new Edge(
-                              postInVrf.apply(node, vrf),
-                              new NodeDropNoRoute(node),
-                              acceptBDD.nor(routableBDD));
-                        }));
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().entrySet().stream()
+                .map(vrfEntry -> {
+                  String node = nodeEntry.getKey();
+                  String vrf = vrfEntry.getKey();
+                  BDD acceptBDD = vrfEntry.getValue();
+                  BDD routableBDD = _routableBDDs.get(node).get(vrf);
+                  return new Edge(
+                      postInVrf.apply(node, vrf),
+                      new NodeDropNoRoute(node),
+                      acceptBDD.nor(routableBDD));
+                }));
   }
 
   /** Generate edges from vrf to nextVrf */
@@ -199,25 +189,20 @@ public final class BDDFibGenerator {
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _nextVrfBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry -> {
-              String node = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrf = vrfEntry.getKey();
-                        return vrfEntry.getValue().entrySet().stream()
-                            .map(
-                                nextVrfEntry -> {
-                                  String nextVrf = nextVrfEntry.getKey();
-                                  BDD nextVrfBDD = nextVrfEntry.getValue();
-                                  return new Edge(
-                                      postInVrf.apply(node, vrf),
-                                      postInVrf.apply(node, nextVrf),
-                                      nextVrfBDD);
-                                });
-                      });
-            });
+        .flatMap(nodeEntry -> {
+          String node = nodeEntry.getKey();
+          return nodeEntry.getValue().entrySet().stream()
+              .flatMap(vrfEntry -> {
+                String vrf = vrfEntry.getKey();
+                return vrfEntry.getValue().entrySet().stream()
+                    .map(nextVrfEntry -> {
+                      String nextVrf = nextVrfEntry.getKey();
+                      BDD nextVrfBDD = nextVrfEntry.getValue();
+                      return new Edge(
+                          postInVrf.apply(node, vrf), postInVrf.apply(node, nextVrf), nextVrfBDD);
+                    });
+              });
+        });
   }
 
   @VisibleForTesting
@@ -228,25 +213,23 @@ public final class BDDFibGenerator {
       StateExprConstructor2 preOutVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .map(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          BDD routableBDD = _routableBDDs.get(node).get(vrf);
-                          BDD acceptBDD = vrfEntry.getValue();
-                          BDD[] routableDispatched =
-                              Stream.concat(
-                                      Stream.of(acceptBDD),
-                                      _nextVrfBDDs.get(node).get(vrf).values().stream())
-                                  .toArray(BDD[]::new);
-                          return new Edge(
-                              postInVrf.apply(node, vrf),
-                              preOutVrf.apply(node, vrf),
-                              routableBDD.diff(routableBDD.getFactory().orAll(routableDispatched)));
-                        }));
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().entrySet().stream()
+                .map(vrfEntry -> {
+                  String node = nodeEntry.getKey();
+                  String vrf = vrfEntry.getKey();
+                  BDD routableBDD = _routableBDDs.get(node).get(vrf);
+                  BDD acceptBDD = vrfEntry.getValue();
+                  BDD[] routableDispatched =
+                      Stream.concat(
+                              Stream.of(acceptBDD),
+                              _nextVrfBDDs.get(node).get(vrf).values().stream())
+                          .toArray(BDD[]::new);
+                  return new Edge(
+                      postInVrf.apply(node, vrf),
+                      preOutVrf.apply(node, vrf),
+                      routableBDD.diff(routableBDD.getFactory().orAll(routableDispatched)));
+                }));
   }
 
   @VisibleForTesting
@@ -255,19 +238,15 @@ public final class BDDFibGenerator {
       Predicate<String> includedNode, StateExprConstructor2 preOutVrf) {
     return _nullRoutedBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .map(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          BDD nullRoutedBDD = vrfEntry.getValue();
-                          return new Edge(
-                              preOutVrf.apply(node, vrf),
-                              new NodeDropNullRoute(node),
-                              nullRoutedBDD);
-                        }));
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().entrySet().stream()
+                .map(vrfEntry -> {
+                  String node = nodeEntry.getKey();
+                  String vrf = vrfEntry.getKey();
+                  BDD nullRoutedBDD = vrfEntry.getValue();
+                  return new Edge(
+                      preOutVrf.apply(node, vrf), new NodeDropNullRoute(node), nullRoutedBDD);
+                }));
   }
 
   /**
@@ -286,59 +265,49 @@ public final class BDDFibGenerator {
     // 2-5. arp false -> {DeliveredToSubnet,ExitsNetwork,InsufficientInfo,NeighborUnreachable}.
     return _arpTrueEdgeBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .flatMap(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          // 1. ArpTrue for edge, speculating on wrong interface
-                          Stream<BDD> arpEdgeBDDs =
-                              vrfEntry.getValue().entrySet().stream()
-                                  .map(
-                                      edgeEntry -> {
-                                        org.batfish.datamodel.Edge edge = edgeEntry.getKey();
-                                        BDD arpTrue = edgeEntry.getValue();
-                                        assert edge.getNode1().equals(node);
-                                        String iface = edge.getInt1();
-                                        BDD leavingIface1 =
-                                            _interfaceOutConstraint.apply(node, iface);
-                                        return arpTrue.diff(leavingIface1);
-                                      });
-                          // 2-5. ArpFalse for disposition, speculating on wrong interface
-                          Stream<BDD> ifaceDispositionBDDs =
-                              Stream.of(
-                                      _deliveredToSubnetBDDs.get(node).get(vrf).entrySet().stream(),
-                                      _exitsNetworkBDDs.get(node).get(vrf).entrySet().stream(),
-                                      _insufficientInfoBDDs.get(node).get(vrf).entrySet().stream(),
-                                      _neighborUnreachableBDDs
-                                          .get(node)
-                                          .get(vrf)
-                                          .entrySet()
-                                          .stream())
-                                  .flatMap(s -> s)
-                                  .map(
-                                      ifaceEntry -> {
-                                        String iface = ifaceEntry.getKey();
-                                        BDD bdd = ifaceEntry.getValue();
-                                        BDD leavingIface =
-                                            _interfaceOutConstraint.apply(node, iface);
-                                        return bdd.diff(leavingIface);
-                                      });
-                          BDD[] allWrongInterfaceBDDsInThisVrf =
-                              Stream.concat(arpEdgeBDDs, ifaceDispositionBDDs).toArray(BDD[]::new);
-                          if (allWrongInterfaceBDDsInThisVrf.length == 0) {
-                            // No BlackHole edges needed.
-                            return Stream.of();
-                          }
-                          BDDFactory factory = allWrongInterfaceBDDsInThisVrf[0].getFactory();
-                          return Stream.of(
-                              new Edge(
-                                  preOutVrf.apply(node, vrf),
-                                  BlackHole.INSTANCE,
-                                  factory.orAll(allWrongInterfaceBDDsInThisVrf)));
-                        }));
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().entrySet().stream()
+                .flatMap(vrfEntry -> {
+                  String node = nodeEntry.getKey();
+                  String vrf = vrfEntry.getKey();
+                  // 1. ArpTrue for edge, speculating on wrong interface
+                  Stream<BDD> arpEdgeBDDs =
+                      vrfEntry.getValue().entrySet().stream()
+                          .map(edgeEntry -> {
+                            org.batfish.datamodel.Edge edge = edgeEntry.getKey();
+                            BDD arpTrue = edgeEntry.getValue();
+                            assert edge.getNode1().equals(node);
+                            String iface = edge.getInt1();
+                            BDD leavingIface1 = _interfaceOutConstraint.apply(node, iface);
+                            return arpTrue.diff(leavingIface1);
+                          });
+                  // 2-5. ArpFalse for disposition, speculating on wrong interface
+                  Stream<BDD> ifaceDispositionBDDs =
+                      Stream.of(
+                              _deliveredToSubnetBDDs.get(node).get(vrf).entrySet().stream(),
+                              _exitsNetworkBDDs.get(node).get(vrf).entrySet().stream(),
+                              _insufficientInfoBDDs.get(node).get(vrf).entrySet().stream(),
+                              _neighborUnreachableBDDs.get(node).get(vrf).entrySet().stream())
+                          .flatMap(s -> s)
+                          .map(ifaceEntry -> {
+                            String iface = ifaceEntry.getKey();
+                            BDD bdd = ifaceEntry.getValue();
+                            BDD leavingIface = _interfaceOutConstraint.apply(node, iface);
+                            return bdd.diff(leavingIface);
+                          });
+                  BDD[] allWrongInterfaceBDDsInThisVrf =
+                      Stream.concat(arpEdgeBDDs, ifaceDispositionBDDs).toArray(BDD[]::new);
+                  if (allWrongInterfaceBDDsInThisVrf.length == 0) {
+                    // No BlackHole edges needed.
+                    return Stream.of();
+                  }
+                  BDDFactory factory = allWrongInterfaceBDDsInThisVrf[0].getFactory();
+                  return Stream.of(
+                      new Edge(
+                          preOutVrf.apply(node, vrf),
+                          BlackHole.INSTANCE,
+                          factory.orAll(allWrongInterfaceBDDsInThisVrf)));
+                }));
   }
 
   @VisibleForTesting
@@ -349,31 +318,27 @@ public final class BDDFibGenerator {
       StateExprConstructor4 preOutEdge) {
     return _arpTrueEdgeBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .flatMap(
-                        vrfEntry ->
-                            vrfEntry.getValue().entrySet().stream()
-                                .map(
-                                    edgeEntry -> {
-                                      org.batfish.datamodel.Edge edge = edgeEntry.getKey();
-                                      BDD arpTrue = edgeEntry.getValue();
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().entrySet().stream()
+                .flatMap(vrfEntry ->
+                    vrfEntry.getValue().entrySet().stream()
+                        .map(edgeEntry -> {
+                          org.batfish.datamodel.Edge edge = edgeEntry.getKey();
+                          BDD arpTrue = edgeEntry.getValue();
 
-                                      String node1 = edge.getNode1();
-                                      String iface1 = edge.getInt1();
-                                      String vrf1 = vrfEntry.getKey();
-                                      String node2 = edge.getNode2();
-                                      String iface2 = edge.getInt2();
+                          String node1 = edge.getNode1();
+                          String iface1 = edge.getInt1();
+                          String vrf1 = vrfEntry.getKey();
+                          String node2 = edge.getNode2();
+                          String iface2 = edge.getInt2();
 
-                                      BDD leavingIface1 =
-                                          _interfaceOutConstraint.apply(node1, iface1);
+                          BDD leavingIface1 = _interfaceOutConstraint.apply(node1, iface1);
 
-                                      return new Edge(
-                                          preOutVrf.apply(node1, vrf1),
-                                          preOutEdge.apply(node1, iface1, node2, iface2),
-                                          leavingIface1.and(arpTrue));
-                                    })));
+                          return new Edge(
+                              preOutVrf.apply(node1, vrf1),
+                              preOutEdge.apply(node1, iface1, node2, iface2),
+                              leavingIface1.and(arpTrue));
+                        })));
   }
 
   @VisibleForTesting
@@ -421,28 +386,24 @@ public final class BDDFibGenerator {
       BiFunction<String, String, BDD> interfaceOutConstraint) {
     return dispositionBddMap.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
-        .flatMap(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrfName = vrfEntry.getKey();
-                        StateExpr preState = preOutVrfConstructor.apply(hostname, vrfName);
-                        return vrfEntry.getValue().entrySet().stream()
-                            .filter(e -> !e.getValue().isZero())
-                            .map(
-                                ifaceEntry -> {
-                                  String ifaceName = ifaceEntry.getKey();
-                                  BDD bdd = ifaceEntry.getValue();
-                                  BDD forIface = interfaceOutConstraint.apply(hostname, ifaceName);
-                                  return new Edge(
-                                      preState,
-                                      preOutInterfaceDispositionConstructor.apply(
-                                          hostname, ifaceName),
-                                      forIface.and(bdd));
-                                });
-                      });
-            });
+        .flatMap(nodeEntry -> {
+          String hostname = nodeEntry.getKey();
+          return nodeEntry.getValue().entrySet().stream()
+              .flatMap(vrfEntry -> {
+                String vrfName = vrfEntry.getKey();
+                StateExpr preState = preOutVrfConstructor.apply(hostname, vrfName);
+                return vrfEntry.getValue().entrySet().stream()
+                    .filter(e -> !e.getValue().isZero())
+                    .map(ifaceEntry -> {
+                      String ifaceName = ifaceEntry.getKey();
+                      BDD bdd = ifaceEntry.getValue();
+                      BDD forIface = interfaceOutConstraint.apply(hostname, ifaceName);
+                      return new Edge(
+                          preState,
+                          preOutInterfaceDispositionConstructor.apply(hostname, ifaceName),
+                          forIface.and(bdd));
+                    });
+              });
+        });
   }
 }

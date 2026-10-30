@@ -22,11 +22,10 @@ public final class CommunitySetToRegexInputString
       TypesFirstAscendingSpaceSeparated typesFirstAscendingSpaceSeparated, CommunitySet arg) {
     return arg.getCommunities().stream()
         .sorted(TYPES_FIRST_ASCENDING_COMPARATOR)
-        .map(
-            c ->
-                typesFirstAscendingSpaceSeparated
-                    .getCommunityRendering()
-                    .accept(CommunityToRegexInputString.instance(), c))
+        .map(c ->
+            typesFirstAscendingSpaceSeparated
+                .getCommunityRendering()
+                .accept(CommunityToRegexInputString.instance(), c))
         .collect(Collectors.joining(" "));
   }
 

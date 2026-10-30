@@ -103,10 +103,9 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         NamedStructureEquivalenceSet<T> max =
             eClasses.stream()
                 .max(Comparator.comparingInt(es -> es.getNodes().size()))
-                .orElseThrow(
-                    () ->
-                        new BatfishException(
-                            "Named structure " + name + " has no equivalence classes"));
+                .orElseThrow(() ->
+                    new BatfishException(
+                        "Named structure " + name + " has no equivalence classes"));
         SortedSet<String> conformers = max.getNodes();
 
         SortedSet<String> outliers =

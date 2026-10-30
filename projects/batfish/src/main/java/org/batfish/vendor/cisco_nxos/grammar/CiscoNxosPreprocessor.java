@@ -144,14 +144,13 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             KICKSTART_MAJOR_VERSION_PATTERN,
             NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN,
             NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN)
-        .map(
-            p -> {
-              Matcher m = p.matcher(image);
-              if (!m.matches()) {
-                return null;
-              }
-              return inferMajorVersionFromVersion(m.group(1));
-            })
+        .map(p -> {
+          Matcher m = p.matcher(image);
+          if (!m.matches()) {
+            return null;
+          }
+          return inferMajorVersionFromVersion(m.group(1));
+        })
         .filter(Objects::nonNull)
         .findFirst()
         .orElse(null);

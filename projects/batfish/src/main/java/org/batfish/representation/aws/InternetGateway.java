@@ -147,15 +147,14 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         computeUnassociatedPrivateIpFilter(privatePublicMap.keySet());
     cfgNode.getIpAccessLists().put(unassociatedIpFilter.getName(), unassociatedIpFilter);
 
-    _attachmentVpcIds.forEach(
-        vpcId -> {
-          Interface iface =
-              connectGatewayToVpc(
-                  _internetGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings);
-          if (iface != null) {
-            iface.setIncomingFilter(unassociatedIpFilter);
-          }
-        });
+    _attachmentVpcIds.forEach(vpcId -> {
+      Interface iface =
+          connectGatewayToVpc(
+              _internetGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings);
+      if (iface != null) {
+        iface.setIncomingFilter(unassociatedIpFilter);
+      }
+    });
 
     // In order for the backbone to know that this IGW has these public IPs, we create
     // static null routes that will be advertised into BGP. These are non-forwarding routes so that
@@ -164,12 +163,10 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     PrefixSpace publicPrefixSpace = new PrefixSpace();
     privatePublicMap
         .values()
-        .forEach(
-            publicIp -> {
-              publicPrefixSpace.addPrefix(publicIp.toPrefix());
-              addStaticRoute(
-                  cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME, true));
-            });
+        .forEach(publicIp -> {
+          publicPrefixSpace.addPrefix(publicIp.toPrefix());
+          addStaticRoute(cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME, true));
+        });
 
     installRoutingPolicyAdvertiseStatic(
         IGW_TO_BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace);
@@ -216,15 +213,14 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     ImmutableList.Builder<Transformation.Builder> outgoingNatRules = ImmutableList.builder();
     ImmutableList.Builder<Transformation.Builder> incomingNatRules = ImmutableList.builder();
 
-    privatePublicMap.forEach(
-        (pvtIp, pubIp) -> {
-          outgoingNatRules.add(
-              Transformation.when(AclLineMatchExprs.matchSrc(pvtIp))
-                  .apply(TransformationStep.shiftSourceIp(pubIp.toPrefix())));
-          incomingNatRules.add(
-              Transformation.when(AclLineMatchExprs.matchDst(pubIp))
-                  .apply(TransformationStep.shiftDestinationIp(pvtIp.toPrefix())));
-        });
+    privatePublicMap.forEach((pvtIp, pubIp) -> {
+      outgoingNatRules.add(
+          Transformation.when(AclLineMatchExprs.matchSrc(pvtIp))
+              .apply(TransformationStep.shiftSourceIp(pubIp.toPrefix())));
+      incomingNatRules.add(
+          Transformation.when(AclLineMatchExprs.matchDst(pubIp))
+              .apply(TransformationStep.shiftDestinationIp(pvtIp.toPrefix())));
+    });
 
     bbInterface.setOutgoingTransformation(chain(outgoingNatRules.build()));
     bbInterface.setIncomingTransformation(chain(incomingNatRules.build()));

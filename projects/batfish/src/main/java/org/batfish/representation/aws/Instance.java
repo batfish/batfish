@@ -299,13 +299,11 @@ public final class Instance implements AwsVpcEntity, Serializable {
     // create LocationInfo for each link location on the instance.
     cfgNode.setLocationInfo(
         cfgNode.getAllInterfaces().values().stream()
-            .flatMap(
-                iface ->
-                    Stream.of(
-                        immutableEntry(
-                            interfaceLocation(iface), instanceInterfaceLocationInfo(iface)),
-                        immutableEntry(
-                            interfaceLinkLocation(iface), INSTANCE_INTERFACE_LINK_LOCATION_INFO)))
+            .flatMap(iface ->
+                Stream.of(
+                    immutableEntry(interfaceLocation(iface), instanceInterfaceLocationInfo(iface)),
+                    immutableEntry(
+                        interfaceLinkLocation(iface), INSTANCE_INTERFACE_LINK_LOCATION_INFO)))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;

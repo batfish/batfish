@@ -9951,13 +9951,12 @@ public final class CiscoNxosGrammarTest {
             ibgpClientNoNextHopSelfPeerIp,
             ibgpNonClientNoNextHopSelfPeerIp,
             ebgpPeerIp)
-        .forEach(
-            peerIp ->
-                assertThat(
-                    c.getRoutingPolicies(),
-                    hasKey(
-                        Names.generatedBgpPeerExportPolicyName(
-                            Configuration.DEFAULT_VRF_NAME, peerIp.toString()))));
+        .forEach(peerIp ->
+            assertThat(
+                c.getRoutingPolicies(),
+                hasKey(
+                    Names.generatedBgpPeerExportPolicyName(
+                        Configuration.DEFAULT_VRF_NAME, peerIp.toString()))));
 
     // Note that by default, NX-OS export policy does not set NHIP for iBGP sessions
 

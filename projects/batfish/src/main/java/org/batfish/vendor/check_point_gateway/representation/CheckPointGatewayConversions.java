@@ -176,16 +176,15 @@ public final class CheckPointGatewayConversions {
         .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
-                .map(
-                    r ->
-                        toAclLine(
-                            r,
-                            objs,
-                            serviceToMatchExpr,
-                            addressSpaceToMatchExpr,
-                            domainAndGateway,
-                            policyTargetsUid,
-                            w))
+                .map(r ->
+                    toAclLine(
+                        r,
+                        objs,
+                        serviceToMatchExpr,
+                        addressSpaceToMatchExpr,
+                        domainAndGateway,
+                        policyTargetsUid,
+                        w))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
@@ -270,17 +269,16 @@ public final class CheckPointGatewayConversions {
     return AclLineMatchExprs.or(
         services.stream()
             .map(objs::get)
-            .map(
-                o -> {
-                  if (!(o instanceof Service)) {
-                    w.redFlagf(
-                        "Cannot convert %s (type %s) to a service match expression,"
-                            + " making unmatchable.",
-                        o.getName(), o.getClass().getSimpleName());
-                    return FalseExpr.INSTANCE;
-                  }
-                  return serviceToMatchExpr.visit((Service) o, permitting);
-                })
+            .map(o -> {
+              if (!(o instanceof Service)) {
+                w.redFlagf(
+                    "Cannot convert %s (type %s) to a service match expression,"
+                        + " making unmatchable.",
+                    o.getName(), o.getClass().getSimpleName());
+                return FalseExpr.INSTANCE;
+              }
+              return serviceToMatchExpr.visit((Service) o, permitting);
+            })
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -329,36 +327,32 @@ public final class CheckPointGatewayConversions {
       Warnings w) {
     return AclLineMatchExprs.or(
         targets.stream()
-            .map(
-                u -> {
-                  NamedManagementObject o = objs.get(u);
-                  if (o == null) {
-                    w.redFlagf(
-                        "Cannot convert non-existent object (Uid '%s') to IpSpace," + " ignoring",
-                        u.getValue());
-                    IpSpace ref =
-                        new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
-                    return matchSource
-                        ? AclLineMatchExprs.matchSrc(ref)
-                        : AclLineMatchExprs.matchDst(ref);
-                  } else if (!(o instanceof AddressSpace)) {
-                    String type = o.getClass().getSimpleName();
-                    w.redFlagf(
-                        "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
-                            + " ignoring",
-                        o.getName(), u.getValue(), type);
-                    IpSpace ref =
-                        new IpSpaceReference(
-                            String.format("unsupported-%s-%s", type, u.getValue()));
-                    return matchSource
-                        ? AclLineMatchExprs.matchSrc(ref)
-                        : AclLineMatchExprs.matchDst(ref);
-                  }
-                  AddressSpace addrSpace = (AddressSpace) o;
-                  return matchSource
-                      ? addressSpaceToMatchExpr.convertSource(addrSpace)
-                      : addressSpaceToMatchExpr.convertDest(addrSpace);
-                })
+            .map(u -> {
+              NamedManagementObject o = objs.get(u);
+              if (o == null) {
+                w.redFlagf(
+                    "Cannot convert non-existent object (Uid '%s') to IpSpace," + " ignoring",
+                    u.getValue());
+                IpSpace ref = new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
+                return matchSource
+                    ? AclLineMatchExprs.matchSrc(ref)
+                    : AclLineMatchExprs.matchDst(ref);
+              } else if (!(o instanceof AddressSpace)) {
+                String type = o.getClass().getSimpleName();
+                w.redFlagf(
+                    "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace," + " ignoring",
+                    o.getName(), u.getValue(), type);
+                IpSpace ref =
+                    new IpSpaceReference(String.format("unsupported-%s-%s", type, u.getValue()));
+                return matchSource
+                    ? AclLineMatchExprs.matchSrc(ref)
+                    : AclLineMatchExprs.matchDst(ref);
+              }
+              AddressSpace addrSpace = (AddressSpace) o;
+              return matchSource
+                  ? addressSpaceToMatchExpr.convertSource(addrSpace)
+                  : addressSpaceToMatchExpr.convertDest(addrSpace);
+            })
             .collect(ImmutableList.toImmutableList()));
   }
 
@@ -445,9 +439,8 @@ public final class CheckPointGatewayConversions {
             // prefer member with lowest cluster member index
             .setPriority(VrrpGroup.MAX_PRIORITY - clusterMemberIndex)
             .setPreempt(true);
-    clusterInterfaces.forEach(
-        (receivingIfaceName, clusterInterface) ->
-            vgBuilder.addVirtualAddress(receivingIfaceName, clusterInterface.getIpv4Address()));
+    clusterInterfaces.forEach((receivingIfaceName, clusterInterface) ->
+        vgBuilder.addVirtualAddress(receivingIfaceName, clusterInterface.getIpv4Address()));
 
     newSyncIface.setVrrpGroups(ImmutableSortedMap.of(0, vgBuilder.build()));
   }

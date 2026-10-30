@@ -322,15 +322,14 @@ public class IpsecSessionStatusAnswererTest {
   public void testGetColumnMetadataKeyStatus() {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
 
-    columnMetadata.forEach(
-        cData -> {
-          if (cData.getName().equals(COL_STATUS)) {
-            assertFalse(cData.getName(), cData.getIsKey());
-            assertTrue(cData.getName(), cData.getIsValue());
-          } else {
-            assertTrue(cData.getName(), cData.getIsKey());
-            assertFalse(cData.getName(), cData.getIsValue());
-          }
-        });
+    columnMetadata.forEach(cData -> {
+      if (cData.getName().equals(COL_STATUS)) {
+        assertFalse(cData.getName(), cData.getIsKey());
+        assertTrue(cData.getName(), cData.getIsValue());
+      } else {
+        assertTrue(cData.getName(), cData.getIsKey());
+        assertFalse(cData.getName(), cData.getIsValue());
+      }
+    });
   }
 }

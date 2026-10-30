@@ -130,9 +130,8 @@ public final class ReachabilityParametersResolver {
                 .resolve(sourceLocations, _context)
                 .getEntries()
                 .stream()
-                .filter(
-                    entry ->
-                        _ipSpaceRepresentative.getRepresentative(entry.getIpSpace()).isPresent())
+                .filter(entry ->
+                    _ipSpaceRepresentative.getRepresentative(entry.getIpSpace()).isPresent())
                 .collect(ImmutableList.toImmutableList()));
 
     if (sourceIpSpaceAssignment.getEntries().isEmpty()) {

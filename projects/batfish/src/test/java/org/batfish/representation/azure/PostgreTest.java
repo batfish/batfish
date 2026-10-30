@@ -81,7 +81,6 @@ public class PostgreTest {
       assertEquals(Prefix.ZERO, st.getNetwork());
       assertEquals(0, st.getMetric());
       assertEquals(0, st.getAdministrativeCost());
-      ;
     }
 
     assertEquals(postgres.getCleanId().toLowerCase(), cfgNode.getHostname());

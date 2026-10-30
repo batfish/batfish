@@ -62,11 +62,10 @@ public final class TransitGatewayConverter {
     return getUniqueTransitGateways(
             collectGateways(awsConfiguration), awsConfiguration.getWarnings())
         .stream()
-        .map(
-            tgw ->
-                tgw.getGateway()
-                    .toConfigurationNode(
-                        awsConfiguration, configs, tgw.getRegion(), awsConfiguration.getWarnings()))
+        .map(tgw ->
+            tgw.getGateway()
+                .toConfigurationNode(
+                    awsConfiguration, configs, tgw.getRegion(), awsConfiguration.getWarnings()))
         .collect(ImmutableList.toImmutableList());
   }
 

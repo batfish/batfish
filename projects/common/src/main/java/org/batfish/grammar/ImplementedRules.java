@@ -23,15 +23,14 @@ public final class ImplementedRules {
         ParseTreeListener.class.isAssignableFrom(clazz), "%s is not a ParseTreeListener", clazz);
     return Arrays.stream(clazz.getDeclaredMethods())
         .map(Method::getName)
-        .map(
-            s -> {
-              if (s.startsWith("enter")) {
-                return s.substring("enter".length()).toLowerCase();
-              } else if (s.startsWith("exit")) {
-                return s.substring("exit".length()).toLowerCase();
-              }
-              return null;
-            })
+        .map(s -> {
+          if (s.startsWith("enter")) {
+            return s.substring("enter".length()).toLowerCase();
+          } else if (s.startsWith("exit")) {
+            return s.substring("exit".length()).toLowerCase();
+          }
+          return null;
+        })
         .filter(Objects::nonNull)
         .collect(ImmutableSet.toImmutableSet());
   }

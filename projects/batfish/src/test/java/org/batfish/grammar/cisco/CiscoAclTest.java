@@ -45,21 +45,19 @@ public class CiscoAclTest {
     assertThat(c.getConfigurationFormat(), equalTo(CISCO_IOS));
     ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
-        .forEach(
-            ip ->
-                assertThat(
-                    line,
-                    isExprAclLineThat(
-                        hasMatchCondition(
-                            isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip))))))));
+        .forEach(ip ->
+            assertThat(
+                line,
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip))))))));
     ImmutableList.of("4.3.0.0", "4.3.255.255").stream()
         .map(Ip::parse)
-        .forEach(
-            ip ->
-                assertThat(
-                    line,
-                    isExprAclLineThat(
-                        hasMatchCondition(
-                            isMatchHeaderSpaceThat(hasHeaderSpace(hasDstIps(containsIp(ip))))))));
+        .forEach(ip ->
+            assertThat(
+                line,
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        isMatchHeaderSpaceThat(hasHeaderSpace(hasDstIps(containsIp(ip))))))));
   }
 }

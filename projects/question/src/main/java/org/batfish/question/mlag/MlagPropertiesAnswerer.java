@@ -68,13 +68,12 @@ public final class MlagPropertiesAnswerer extends Answerer {
             .map(configs::get)
             .filter(Objects::nonNull)
             // Get matching MLAGs at each node
-            .map(
-                c ->
-                    new NodeToMlags(
-                        c.getHostname(),
-                        c.getMlags().values().stream()
-                            .filter(mlag -> mlagIds.contains(mlag.getId()))
-                            .collect(Collectors.toList())))
+            .map(c ->
+                new NodeToMlags(
+                    c.getHostname(),
+                    c.getMlags().values().stream()
+                        .filter(mlag -> mlagIds.contains(mlag.getId()))
+                        .collect(Collectors.toList())))
             .filter(mc -> !mc._mlags.isEmpty())
             .collect(ImmutableList.toImmutableList());
     TableAnswerElement answer = new TableAnswerElement(getMetadata());

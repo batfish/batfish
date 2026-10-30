@@ -92,14 +92,9 @@ public class CompareFiltersAnswerer extends Answerer {
     BDDPacket bddPacket = new BDDPacket();
     Multiset<Row> rows =
         commonFilters.entries().stream()
-            .flatMap(
-                entry ->
-                    compareFilter(
-                        entry.getKey(),
-                        entry.getValue(),
-                        bddPacket,
-                        currentContext,
-                        referenceContext))
+            .flatMap(entry ->
+                compareFilter(
+                    entry.getKey(), entry.getValue(), bddPacket, currentContext, referenceContext))
             .map(filterDifference -> toRow(filterDifference, currentContext, referenceContext))
             .collect(ImmutableMultiset.toImmutableMultiset());
 
@@ -214,21 +209,19 @@ public class CompareFiltersAnswerer extends Answerer {
         .isOne();
 
     return IntStream.range(0, currentLineBdds.size())
-        .mapToObj(
-            i -> {
-              PermitAndDenyBdds currentLineBdd = currentLineBdds.get(i);
-              return IntStream.range(0, referenceLineBdds.size())
-                  // Filter to reference lines that cover packets in common with the current line
-                  // but take different actions on them
-                  .filter(j -> takeDifferentActions(currentLineBdd, referenceLineBdds.get(j)))
-                  .mapToObj(
-                      j ->
-                          new FilterDifference(
-                              hostname,
-                              filtername,
-                              i < currentLineBdds.size() - 1 ? i : null,
-                              j < referenceLineBdds.size() - 1 ? j : null));
-            })
+        .mapToObj(i -> {
+          PermitAndDenyBdds currentLineBdd = currentLineBdds.get(i);
+          return IntStream.range(0, referenceLineBdds.size())
+              // Filter to reference lines that cover packets in common with the current line
+              // but take different actions on them
+              .filter(j -> takeDifferentActions(currentLineBdd, referenceLineBdds.get(j)))
+              .mapToObj(j ->
+                  new FilterDifference(
+                      hostname,
+                      filtername,
+                      i < currentLineBdds.size() - 1 ? i : null,
+                      j < referenceLineBdds.size() - 1 ? j : null));
+        })
         .flatMap(Function.identity());
   }
 

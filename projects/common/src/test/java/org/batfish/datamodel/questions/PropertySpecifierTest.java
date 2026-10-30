@@ -163,12 +163,11 @@ public class PropertySpecifierTest {
     configuration.setInterfaces(ImmutableSortedMap.of("i1", i1));
     InterfacePropertySpecifier.ALL
         .getMatchingProperties()
-        .forEach(
-            property -> {
-              PropertyDescriptor<Interface> propertyDescriptor =
-                  InterfacePropertySpecifier.getPropertyDescriptor(property);
-              RowBuilder row = Row.builder();
-              PropertySpecifier.fillProperty(propertyDescriptor, i1, property, row);
-            });
+        .forEach(property -> {
+          PropertyDescriptor<Interface> propertyDescriptor =
+              InterfacePropertySpecifier.getPropertyDescriptor(property);
+          RowBuilder row = Row.builder();
+          PropertySpecifier.fillProperty(propertyDescriptor, i1, property, row);
+        });
   }
 }

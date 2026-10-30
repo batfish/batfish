@@ -78,21 +78,20 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
         question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
-    configs.forEach(
-        (configName, config) -> {
-          if (specifiedNodes.contains(configName)) {
-            Row row = null;
-            if (config.getVendorFamily().getCisco() != null) {
-              row = getRow(configName, config.getVendorFamily().getCisco().getLines().values());
-            } else if (config.getVendorFamily().getJuniper() != null) {
-              row = getRow(configName, config.getVendorFamily().getJuniper().getLines().values());
-            }
+    configs.forEach((configName, config) -> {
+      if (specifiedNodes.contains(configName)) {
+        Row row = null;
+        if (config.getVendorFamily().getCisco() != null) {
+          row = getRow(configName, config.getVendorFamily().getCisco().getLines().values());
+        } else if (config.getVendorFamily().getJuniper() != null) {
+          row = getRow(configName, config.getVendorFamily().getJuniper().getLines().values());
+        }
 
-            if (row != null) {
-              answerElement.addRow(row);
-            }
-          }
-        });
+        if (row != null) {
+          answerElement.addRow(row);
+        }
+      }
+    });
     answerElement.setSummary(answerElement.computeSummary(question.getAssertion()));
     return answerElement;
   }

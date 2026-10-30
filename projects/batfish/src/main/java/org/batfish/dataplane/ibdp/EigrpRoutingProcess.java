@@ -193,23 +193,22 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       RoutingPolicy exportPolicy) {
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
     queueForRedistribution.stream()
-        .forEach(
-            ra -> {
-              EigrpExternalRoute outputRoute = computeEigrpExportRoute(exportPolicy, ra.getRoute());
-              if (outputRoute == null) {
-                return; // no need to export
-              }
-              // Do not use builder.from(_externalRib.merge/remove) here
-              // The goal is to send out redistributed routes regardless
-              // of whether they are new to our RIB as long as export policy allows them
-              if (!ra.isWithdrawn()) {
-                builder.add(outputRoute);
-                _externalRib.mergeRouteGetDelta(outputRoute);
-              } else {
-                builder.remove(outputRoute, Reason.WITHDRAW);
-                _externalRib.removeRouteGetDelta(outputRoute);
-              }
-            });
+        .forEach(ra -> {
+          EigrpExternalRoute outputRoute = computeEigrpExportRoute(exportPolicy, ra.getRoute());
+          if (outputRoute == null) {
+            return; // no need to export
+          }
+          // Do not use builder.from(_externalRib.merge/remove) here
+          // The goal is to send out redistributed routes regardless
+          // of whether they are new to our RIB as long as export policy allows them
+          if (!ra.isWithdrawn()) {
+            builder.add(outputRoute);
+            _externalRib.mergeRouteGetDelta(outputRoute);
+          } else {
+            builder.remove(outputRoute, Reason.WITHDRAW);
+            _externalRib.removeRouteGetDelta(outputRoute);
+          }
+        });
     return builder.build();
   }
 
@@ -486,16 +485,14 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return RibDelta.<EigrpExternalRoute>builder()
         .from(
             routes.stream()
-                .map(
-                    ra -> {
-                      Optional<EigrpExternalRoute> transformExternalRoute =
-                          filterAndTransformExternalRoute(eigrpEdge.getNode2(), ra.getRoute());
-                      return transformExternalRoute
-                          .map(
-                              eigrpExternalRoute ->
-                                  ra.toBuilder().setRoute(eigrpExternalRoute).build())
-                          .orElse(null);
-                    })
+                .map(ra -> {
+                  Optional<EigrpExternalRoute> transformExternalRoute =
+                      filterAndTransformExternalRoute(eigrpEdge.getNode2(), ra.getRoute());
+                  return transformExternalRoute
+                      .map(
+                          eigrpExternalRoute -> ra.toBuilder().setRoute(eigrpExternalRoute).build())
+                      .orElse(null);
+                })
                 .filter(Objects::nonNull))
         .build();
   }

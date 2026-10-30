@@ -108,11 +108,10 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
         .getRoutes()
-        .forEach(
-            r ->
-                builder.from(
-                    importingRib.mergeRouteGetDelta(
-                        new AnnotatedRoute<>(r.getRoute(), r.getSourceVrf()))));
+        .forEach(r ->
+            builder.from(
+                importingRib.mergeRouteGetDelta(
+                    new AnnotatedRoute<>(r.getRoute(), r.getSourceVrf()))));
     return builder.build();
   }
 

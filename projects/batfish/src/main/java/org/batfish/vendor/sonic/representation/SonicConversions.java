@@ -213,15 +213,14 @@ public class SonicConversions {
   @VisibleForTesting
   static List<Ip> convertDhcpServers(List<String> dhcpServers, Warnings w) {
     return dhcpServers.stream()
-        .map(
-            server -> {
-              try {
-                return Ip.parse(server);
-              } catch (IllegalArgumentException e) {
-                w.redFlagf("Cannot add a non-IP address value '%s' as DHCP server", server);
-                return null;
-              }
-            })
+        .map(server -> {
+          try {
+            return Ip.parse(server);
+          } catch (IllegalArgumentException e) {
+            w.redFlagf("Cannot add a non-IP address value '%s' as DHCP server", server);
+            return null;
+          }
+        })
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
@@ -328,30 +327,29 @@ public class SonicConversions {
     Set<String> rulesWithBadKeys = new HashSet<>();
     Set<String> rulesWithNonIpv4EtherType = new HashSet<>();
     Map<String, SortedSet<AclRuleWithName>> aclNameToRules = new HashMap<>();
-    aclRules.forEach(
-        (key, value) -> {
-          String[] ruleKeyParts = key.split("\\|", 2);
-          if (ruleKeyParts.length < 2) {
-            rulesWithBadKeys.add(key);
-            return;
-          }
-          if (!value.getPriority().isPresent()) {
-            rulesWithoutPriority.add(key);
-            return;
-          }
-          if (!value.getPacketAction().isPresent()) {
-            rulesWithoutPacketAction.add(key);
-            return;
-          }
-          Integer etherType = value.getEtherType();
-          if (etherType != null && etherType != 0x800) {
-            rulesWithNonIpv4EtherType.add(key);
-            return;
-          }
-          aclNameToRules
-              .computeIfAbsent(ruleKeyParts[0], aclName -> new TreeSet<>())
-              .add(new AclRuleWithName(ruleKeyParts[1], value));
-        });
+    aclRules.forEach((key, value) -> {
+      String[] ruleKeyParts = key.split("\\|", 2);
+      if (ruleKeyParts.length < 2) {
+        rulesWithBadKeys.add(key);
+        return;
+      }
+      if (!value.getPriority().isPresent()) {
+        rulesWithoutPriority.add(key);
+        return;
+      }
+      if (!value.getPacketAction().isPresent()) {
+        rulesWithoutPacketAction.add(key);
+        return;
+      }
+      Integer etherType = value.getEtherType();
+      if (etherType != null && etherType != 0x800) {
+        rulesWithNonIpv4EtherType.add(key);
+        return;
+      }
+      aclNameToRules
+          .computeIfAbsent(ruleKeyParts[0], aclName -> new TreeSet<>())
+          .add(new AclRuleWithName(ruleKeyParts[1], value));
+    });
 
     warnBadRules(
         rulesWithBadKeys,
@@ -380,15 +378,13 @@ public class SonicConversions {
     rulesWithNonIpEtherType.forEach(
         key -> w.redFlagf("Ignored ACL_RULE %s: Non-IPv4 ETHER_TYPE", key));
     Sets.difference(aclNameToRules.keySet(), aclTableNames) // missing acl tables
-        .forEach(
-            aclName ->
-                aclNameToRules
-                    .get(aclName)
-                    .forEach(
-                        aclRuleWithName ->
-                            w.redFlagf(
-                                "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
-                                aclName, aclRuleWithName._name, aclName)));
+        .forEach(aclName ->
+            aclNameToRules
+                .get(aclName)
+                .forEach(aclRuleWithName ->
+                    w.redFlagf(
+                        "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
+                        aclName, aclRuleWithName._name, aclName)));
   }
 
   /**

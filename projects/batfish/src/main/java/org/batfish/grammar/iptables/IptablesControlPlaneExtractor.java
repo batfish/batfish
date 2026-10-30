@@ -176,10 +176,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
         if (mCtx.match_module() != null && mCtx.match_module().match_module_tcp() != null) {
           boolean ruleHasProtocolTcp =
               rule.getMatchList().stream()
-                  .anyMatch(
-                      m ->
-                          m.getMatchType() == MatchType.PROTOCOL
-                              && m.getMatchData() == IpProtocol.TCP);
+                  .anyMatch(m ->
+                      m.getMatchType() == MatchType.PROTOCOL && m.getMatchData() == IpProtocol.TCP);
           if (!ruleHasProtocolTcp) {
             warn(
                 ctx,

@@ -528,10 +528,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     _bgpGlobalConfiguration
         .getVrfs()
-        .forEach(
-            (vrfName, bgpVrfConfig) -> {
-              convertBgpVrf(_c, _bgpGlobalConfiguration, bgpVrfConfig, vrfName);
-            });
+        .forEach((vrfName, bgpVrfConfig) -> {
+          convertBgpVrf(_c, _bgpGlobalConfiguration, bgpVrfConfig, vrfName);
+        });
     /*
      * If the VRF has a layer 3 VNI defined (but does not appear under "router bgp" in config),
      * it will still participate in BGP route exchange.
@@ -539,23 +538,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
      */
     _vrfs.values().stream()
         .filter(vrf -> vrf.getVni() != null)
-        .forEach(
-            vrf -> {
-              org.batfish.datamodel.Vrf viVrf = _c.getVrfs().get(vrf.getName());
-              if (viVrf.getBgpProcess() == null) {
-                // If the VI vrf has no BGP process, create a dummy one
-                viVrf.setBgpProcess(
-                    bgpProcessBuilder()
-                        .setRouterId(
-                            inferRouterId(
-                                viVrf.getName(),
-                                _c.getAllInterfaces(viVrf.getName()),
-                                _w,
-                                "BGP process"))
-                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(_c))
-                        .build());
-              }
-            });
+        .forEach(vrf -> {
+          org.batfish.datamodel.Vrf viVrf = _c.getVrfs().get(vrf.getName());
+          if (viVrf.getBgpProcess() == null) {
+            // If the VI vrf has no BGP process, create a dummy one
+            viVrf.setBgpProcess(
+                bgpProcessBuilder()
+                    .setRouterId(
+                        inferRouterId(
+                            viVrf.getName(),
+                            _c.getAllInterfaces(viVrf.getName()),
+                            _w,
+                            "BGP process"))
+                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(_c))
+                    .build());
+          }
+        });
   }
 
   private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
@@ -634,15 +632,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // Generate aggregate routes.
     if (ipv4af != null) {
       ipv4af.getAggregateNetworks().entrySet().stream()
-          .map(
-              aggregateByPrefixEntry ->
-                  toBgpAggregate(
-                      aggregateByPrefixEntry.getKey(),
-                      nxBgpGlobal,
-                      nxBgpVrf,
-                      aggregateByPrefixEntry.getValue(),
-                      c,
-                      _w))
+          .map(aggregateByPrefixEntry ->
+              toBgpAggregate(
+                  aggregateByPrefixEntry.getKey(),
+                  nxBgpGlobal,
+                  nxBgpVrf,
+                  aggregateByPrefixEntry.getValue(),
+                  c,
+                  _w))
           .forEach(newBgpProcess::addAggregate);
     }
 
@@ -678,12 +675,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO Support devices multiple NVEs for this context.
     Ip nveIp =
         _nves.values().stream()
-            .map(
-                nve ->
-                    Optional.ofNullable(nve.getSourceInterface())
-                        .map(c.getAllInterfaces()::get)
-                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
-                        .map(ConcreteInterfaceAddress::getIp))
+            .map(nve ->
+                Optional.ofNullable(nve.getSourceInterface())
+                    .map(c.getAllInterfaces()::get)
+                    .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                    .map(ConcreteInterfaceAddress::getIp))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .findFirst()
@@ -736,31 +732,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       LinkedListMultimap::create));
       networksByRouteMap
           .asMap()
-          .forEach(
-              (maybeMap, prefixes) -> {
-                PrefixSpace exportSpace = new PrefixSpace();
-                prefixes.forEach(exportSpace::addPrefix);
-                @Nullable String routeMap = maybeMap.orElse(null);
-                List<BooleanExpr> exportNetworkConditions =
+          .forEach((maybeMap, prefixes) -> {
+            PrefixSpace exportSpace = new PrefixSpace();
+            prefixes.forEach(exportSpace::addPrefix);
+            @Nullable String routeMap = maybeMap.orElse(null);
+            List<BooleanExpr> exportNetworkConditions =
+                ImmutableList.of(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
+                    new Not(
+                        new MatchProtocol(
+                            RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)),
+                    routeMap != null && _routeMaps.containsKey(routeMap)
+                        ? new CallExpr(routeMap)
+                        : BooleanExprs.TRUE);
+            newBgpProcess.addToOriginationSpace(exportSpace);
+            networkPolicy.addStatement(
+                new If(
+                    new Conjunction(exportNetworkConditions),
                     ImmutableList.of(
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                        new Not(
-                            new MatchProtocol(
-                                RoutingProtocol.BGP,
-                                RoutingProtocol.IBGP,
-                                RoutingProtocol.AGGREGATE)),
-                        routeMap != null && _routeMaps.containsKey(routeMap)
-                            ? new CallExpr(routeMap)
-                            : BooleanExprs.TRUE);
-                newBgpProcess.addToOriginationSpace(exportSpace);
-                networkPolicy.addStatement(
-                    new If(
-                        new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
-              });
+                        new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                        Statements.ExitAccept.toStaticStatement())));
+          });
     }
 
     // Finalize 'network' policy and attach to process
@@ -979,10 +972,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertEigrpProcess(String procName, EigrpProcessConfiguration processConfig) {
     processConfig
         .getVrfs()
-        .forEach(
-            (vrfName, vrfConfig) -> {
-              convertEigrpProcessVrf(procName, processConfig, vrfName, vrfConfig);
-            });
+        .forEach((vrfName, vrfConfig) -> {
+          convertEigrpProcessVrf(procName, processConfig, vrfName, vrfConfig);
+        });
   }
 
   /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
@@ -1093,16 +1085,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
             .flatMap(eigrpAf -> eigrpAf.getRedistributionPolicies().stream())
-            .filter(
-                redistPolicy -> {
-                  if (supportedProtocols.contains(redistPolicy.getInstance().getProtocol())) {
-                    return true;
-                  }
-                  _w.redFlagf(
-                      "Redistribution from %s into EIGRP is not supported",
-                      redistPolicy.getInstance().getProtocol());
-                  return false;
-                })
+            .filter(redistPolicy -> {
+              if (supportedProtocols.contains(redistPolicy.getInstance().getProtocol())) {
+                return true;
+              }
+              _w.redFlagf(
+                  "Redistribution from %s into EIGRP is not supported",
+                  redistPolicy.getInstance().getProtocol());
+              return false;
+            })
             .collect(ImmutableList.toImmutableList());
     if (redistPolicies.isEmpty()) {
       return false;
@@ -1122,65 +1113,63 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 () -> EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build());
     redistPolicies.stream()
         .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
-        .map(
-            policy -> {
-              switch (policy.getInstance().getProtocol()) {
-                // If adding support for a new protocol, also add it to supportedProtocols above
-                case BGP:
-                  assert policy.getInstance().getTag() != null;
-                  long asn = Long.parseLong(policy.getInstance().getTag());
-                  if (_bgpGlobalConfiguration.getLocalAs() != asn) {
-                    // NXOS won't let you configure multiple BGP processes, but it will let you
-                    // "redistribute bgp 1" in EIGRP even if there is no BGP process with ASN 1.
-                    return null;
-                  }
-                  BooleanExpr matchBgp =
-                      new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
-                  Statement setTag = new SetTag(new LiteralLong(asn));
-                  return new If(
-                      matchBgp,
-                      ImmutableList.of(
-                          setTag,
-                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
-                          call(policy.getRouteMap())));
-                case EIGRP:
-                  assert policy.getInstance().getTag() != null;
-                  Optional<Integer> eigrpAsn = getEigrpAsn(policy.getInstance().getTag(), vrfName);
-                  if (!eigrpAsn.isPresent()) {
-                    // There is either no EIGRP process with the given tag, this VRF is not
-                    // configured in that process, or there is no ASN configured for it.
-                    return null;
-                  }
-                  MatchProtocol matchEigrp =
-                      new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
-                  String mapName = policy.getRouteMap();
-                  List<BooleanExpr> matchConjuncts =
-                      Stream.of(
-                              new MatchProcessAsn(eigrpAsn.get()),
-                              matchEigrp,
-                              new Not(matchDefaultRoute()),
-                              new CallExpr(mapName))
-                          .filter(Objects::nonNull)
-                          .collect(ImmutableList.toImmutableList());
-                  Conjunction redistExpr = new Conjunction(matchConjuncts);
-                  return new If(
-                      redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-                case DIRECT:
-                  return new If(
-                      new MatchProtocol(RoutingProtocol.CONNECTED),
-                      ImmutableList.of(
-                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
-                          call(policy.getRouteMap())));
-                case STATIC:
-                  return new If(
-                      new MatchProtocol(RoutingProtocol.STATIC),
-                      ImmutableList.of(
-                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
-                          call(policy.getRouteMap())));
-                default:
-                  return null;
+        .map(policy -> {
+          switch (policy.getInstance().getProtocol()) {
+            // If adding support for a new protocol, also add it to supportedProtocols above
+            case BGP:
+              assert policy.getInstance().getTag() != null;
+              long asn = Long.parseLong(policy.getInstance().getTag());
+              if (_bgpGlobalConfiguration.getLocalAs() != asn) {
+                // NXOS won't let you configure multiple BGP processes, but it will let you
+                // "redistribute bgp 1" in EIGRP even if there is no BGP process with ASN 1.
+                return null;
               }
-            })
+              BooleanExpr matchBgp = new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
+              Statement setTag = new SetTag(new LiteralLong(asn));
+              return new If(
+                  matchBgp,
+                  ImmutableList.of(
+                      setTag,
+                      new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                      call(policy.getRouteMap())));
+            case EIGRP:
+              assert policy.getInstance().getTag() != null;
+              Optional<Integer> eigrpAsn = getEigrpAsn(policy.getInstance().getTag(), vrfName);
+              if (!eigrpAsn.isPresent()) {
+                // There is either no EIGRP process with the given tag, this VRF is not
+                // configured in that process, or there is no ASN configured for it.
+                return null;
+              }
+              MatchProtocol matchEigrp =
+                  new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
+              String mapName = policy.getRouteMap();
+              List<BooleanExpr> matchConjuncts =
+                  Stream.of(
+                          new MatchProcessAsn(eigrpAsn.get()),
+                          matchEigrp,
+                          new Not(matchDefaultRoute()),
+                          new CallExpr(mapName))
+                      .filter(Objects::nonNull)
+                      .collect(ImmutableList.toImmutableList());
+              Conjunction redistExpr = new Conjunction(matchConjuncts);
+              return new If(
+                  redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+            case DIRECT:
+              return new If(
+                  new MatchProtocol(RoutingProtocol.CONNECTED),
+                  ImmutableList.of(
+                      new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                      call(policy.getRouteMap())));
+            case STATIC:
+              return new If(
+                  new MatchProtocol(RoutingProtocol.STATIC),
+                  ImmutableList.of(
+                      new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                      call(policy.getRouteMap())));
+            default:
+              return null;
+          }
+        })
         .filter(Objects::nonNull)
         .forEach(statements::add);
     RoutingPolicy.builder()
@@ -1212,24 +1201,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertObjectGroups() {
     _objectGroups
         .values()
-        .forEach(
-            objectGroup ->
-                objectGroup.accept(
-                    new ObjectGroupVisitor<Void>() {
-                      @Override
-                      public Void visitObjectGroupIpAddress(
-                          ObjectGroupIpAddress objectGroupIpAddress) {
-                        _c.getIpSpaces()
-                            .put(objectGroupIpAddress.getName(), toIpSpace(objectGroupIpAddress));
-                        return null;
-                      }
+        .forEach(objectGroup ->
+            objectGroup.accept(
+                new ObjectGroupVisitor<Void>() {
+                  @Override
+                  public Void visitObjectGroupIpAddress(ObjectGroupIpAddress objectGroupIpAddress) {
+                    _c.getIpSpaces()
+                        .put(objectGroupIpAddress.getName(), toIpSpace(objectGroupIpAddress));
+                    return null;
+                  }
 
-                      @Override
-                      public Void visitObjectGroupIpPort(ObjectGroupIpPort objectGroupIpPort) {
-                        // TODO: how do we convert these, if at all?
-                        return null;
-                      }
-                    }));
+                  @Override
+                  public Void visitObjectGroupIpPort(ObjectGroupIpPort objectGroupIpPort) {
+                    // TODO: how do we convert these, if at all?
+                    return null;
+                  }
+                }));
   }
 
   private @Nonnull IpSpace toIpSpace(ObjectGroupIpAddress objectGroupIpAddress) {
@@ -1246,53 +1233,50 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertIpAsPathAccessLists() {
-    _ipAsPathAccessLists.forEach(
-        (name, ipAsPathAccessList) ->
-            _c.getAsPathAccessLists().put(name, toAsPathAccessList(ipAsPathAccessList)));
+    _ipAsPathAccessLists.forEach((name, ipAsPathAccessList) ->
+        _c.getAsPathAccessLists().put(name, toAsPathAccessList(ipAsPathAccessList)));
   }
 
   private void convertIpCommunityLists() {
     // create CommunitySetMatchExpr for route-map match community
-    _ipCommunityLists.forEach(
-        (name, list) ->
-            _c.getCommunitySetMatchExprs()
-                .put(
-                    name,
-                    list.accept(
-                        new IpCommunityListVisitor<CommunitySetMatchExpr>() {
-                          @Override
-                          public CommunitySetMatchExpr visitIpCommunityListExpanded(
-                              IpCommunityListExpanded ipCommunityListExpanded) {
-                            return toCommunitySetMatchExpr(ipCommunityListExpanded);
-                          }
+    _ipCommunityLists.forEach((name, list) ->
+        _c.getCommunitySetMatchExprs()
+            .put(
+                name,
+                list.accept(
+                    new IpCommunityListVisitor<CommunitySetMatchExpr>() {
+                      @Override
+                      public CommunitySetMatchExpr visitIpCommunityListExpanded(
+                          IpCommunityListExpanded ipCommunityListExpanded) {
+                        return toCommunitySetMatchExpr(ipCommunityListExpanded);
+                      }
 
-                          @Override
-                          public CommunitySetMatchExpr visitIpCommunityListStandard(
-                              IpCommunityListStandard ipCommunityListStandard) {
-                            return toCommunitySetMatchExpr(ipCommunityListStandard);
-                          }
-                        })));
+                      @Override
+                      public CommunitySetMatchExpr visitIpCommunityListStandard(
+                          IpCommunityListStandard ipCommunityListStandard) {
+                        return toCommunitySetMatchExpr(ipCommunityListStandard);
+                      }
+                    })));
 
     // create CommunityMatchExpr for route-map set comm-list delete
-    _ipCommunityLists.forEach(
-        (name, list) ->
-            _c.getCommunityMatchExprs()
-                .put(
-                    name,
-                    list.accept(
-                        new IpCommunityListVisitor<CommunityMatchExpr>() {
-                          @Override
-                          public CommunityMatchExpr visitIpCommunityListExpanded(
-                              IpCommunityListExpanded ipCommunityListExpanded) {
-                            return toCommunityMatchExpr(ipCommunityListExpanded);
-                          }
+    _ipCommunityLists.forEach((name, list) ->
+        _c.getCommunityMatchExprs()
+            .put(
+                name,
+                list.accept(
+                    new IpCommunityListVisitor<CommunityMatchExpr>() {
+                      @Override
+                      public CommunityMatchExpr visitIpCommunityListExpanded(
+                          IpCommunityListExpanded ipCommunityListExpanded) {
+                        return toCommunityMatchExpr(ipCommunityListExpanded);
+                      }
 
-                          @Override
-                          public CommunityMatchExpr visitIpCommunityListStandard(
-                              IpCommunityListStandard ipCommunityListStandard) {
-                            return toCommunityMatchExpr(ipCommunityListStandard);
-                          }
-                        })));
+                      @Override
+                      public CommunityMatchExpr visitIpCommunityListStandard(
+                          IpCommunityListStandard ipCommunityListStandard) {
+                        return toCommunityMatchExpr(ipCommunityListStandard);
+                      }
+                    })));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
@@ -1383,31 +1367,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertTracks() {
     Set<Integer> negatedTracks =
         _interfaces.values().stream()
-            .flatMap(
-                i ->
-                    i.getHsrp() != null
-                        ? i.getHsrp().getIpv4Groups().values().stream()
-                        : Stream.of())
+            .flatMap(i ->
+                i.getHsrp() != null ? i.getHsrp().getIpv4Groups().values().stream() : Stream.of())
             .flatMap(ig -> ig.getTracks().keySet().stream())
             .distinct()
             .filter(_tracks::containsKey)
             .collect(ImmutableSet.toImmutableSet());
-    _tracks.forEach(
-        (num, track) -> {
-          _c.getTrackingGroups().put(num.toString(), toTrackMethod(track, _w));
-          if (negatedTracks.contains(num)) {
-            _c.getTrackingGroups()
-                .put(
-                    generatedNegatedTrackMethodId(num.toString()),
-                    negatedReference(num.toString()));
-          }
-        });
+    _tracks.forEach((num, track) -> {
+      _c.getTrackingGroups().put(num.toString(), toTrackMethod(track, _w));
+      if (negatedTracks.contains(num)) {
+        _c.getTrackingGroups()
+            .put(generatedNegatedTrackMethodId(num.toString()), negatedReference(num.toString()));
+      }
+    });
   }
 
   private void convertIpPrefixLists() {
-    _ipPrefixLists.forEach(
-        (name, ipPrefixList) ->
-            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList, _filename)));
+    _ipPrefixLists.forEach((name, ipPrefixList) ->
+        _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList, _filename)));
   }
 
   private void convertLoggingServers() {
@@ -1429,19 +1406,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertOspfProcesses() {
     _ospfProcesses
         .values()
-        .forEach(
-            proc -> {
-              _c.getDefaultVrf().addOspfProcess(toOspfProcess(proc));
-              proc.getVrfs()
-                  .forEach(
-                      (vrfName, ospfVrf) -> {
-                        org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
-                        if (vrf == null) {
-                          return;
-                        }
-                        vrf.addOspfProcess(toOspfProcess(proc, ospfVrf, vrf));
-                      });
-            });
+        .forEach(proc -> {
+          _c.getDefaultVrf().addOspfProcess(toOspfProcess(proc));
+          proc.getVrfs()
+              .forEach((vrfName, ospfVrf) -> {
+                org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+                if (vrf == null) {
+                  return;
+                }
+                vrf.addOspfProcess(toOspfProcess(proc, ospfVrf, vrf));
+              });
+        });
   }
 
   private void convertRouteMaps() {
@@ -1583,11 +1558,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       }
       // NX-OS requires all L3 VNI VLANs have an associated active IRB in the tenant VRF
       if (_c.getAllInterfaces().values().stream()
-          .noneMatch(
-              iface ->
-                  vlan.equals(iface.getVlan())
-                      && iface.getActive()
-                      && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
+          .noneMatch(iface ->
+              vlan.equals(iface.getVlan())
+                  && iface.getActive()
+                  && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
       Layer3Vni vniSettings =
@@ -1701,18 +1675,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** Disable Vlan interfaces without corresponding top-level vlan declaration. */
   private void disableUnregisteredVlanInterfaces() {
     _c.getAllInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface.getInterfaceType() == InterfaceType.VLAN
-                    && iface.getActive()
-                    && !_vlans.containsKey(iface.getVlan()))
-        .forEach(
-            iface -> {
-              _w.redFlagf(
-                  "Disabling interface '%s' because it refers to an undefined vlan",
-                  iface.getName());
-              iface.deactivate(INVALID);
-            });
+        .filter(iface ->
+            iface.getInterfaceType() == InterfaceType.VLAN
+                && iface.getActive()
+                && !_vlans.containsKey(iface.getVlan()))
+        .forEach(iface -> {
+          _w.redFlagf(
+              "Disabling interface '%s' because it refers to an undefined vlan", iface.getName());
+          iface.deactivate(INVALID);
+        });
   }
 
   public @Nullable String getBannerExec() {
@@ -2288,15 +2259,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .collect(ImmutableSet.toImmutableSet()));
         iface.getSecondaryAddresses().stream()
             .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
-            .forEach(
-                addr ->
-                    addressMetadata.put(
-                        (ConcreteInterfaceAddress) addr.getAddress(),
-                        ConnectedRouteMetadata.builder()
-                            .setAdmin(addr.getRoutePreference())
-                            .setGenerateLocalRoute(true)
-                            .setTag(addr.getTag())
-                            .build()));
+            .forEach(addr ->
+                addressMetadata.put(
+                    (ConcreteInterfaceAddress) addr.getAddress(),
+                    ConnectedRouteMetadata.builder()
+                        .setAdmin(addr.getRoutePreference())
+                        .setGenerateLocalRoute(true)
+                        .setTag(addr.getTag())
+                        .build()));
         newIfaceBuilder.setAddressMetadata(addressMetadata.build());
       }
       // TODO: handle DHCP
@@ -2985,14 +2955,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Optional.ofNullable(proc.getRedistributionPolicy(RoutingProtocolInstance.staticc()))
         .map(RedistributionPolicy::getRouteMap)
         .filter(_c.getRoutingPolicies()::containsKey)
-        .ifPresent(
-            routeMapName -> {
-              exportPolicySourcesBuilder.add(routeMapName);
-              exportStatementsBuilder.add(
-                  new If(
-                      new MatchProtocol(RoutingProtocol.STATIC),
-                      ImmutableList.of(call(routeMapName))));
-            });
+        .ifPresent(routeMapName -> {
+          exportPolicySourcesBuilder.add(routeMapName);
+          exportStatementsBuilder.add(
+              new If(
+                  new MatchProtocol(RoutingProtocol.STATIC), ImmutableList.of(call(routeMapName))));
+        });
 
     // Then try originating default route (either always or from RIB route not covered above)
     if (defaultOriginate != null) {
@@ -3012,11 +2980,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       ImmutableList.Builder<Statement> defaultOriginateStatements = ImmutableList.builder();
       Optional.ofNullable(defaultOriginate.getRouteMap())
           .filter(_c.getRoutingPolicies()::containsKey)
-          .ifPresent(
-              defaultOriginateRouteMapName -> {
-                exportPolicySourcesBuilder.add(defaultOriginateRouteMapName);
-                defaultOriginateStatements.add(call(defaultOriginateRouteMapName));
-              });
+          .ifPresent(defaultOriginateRouteMapName -> {
+            exportPolicySourcesBuilder.add(defaultOriginateRouteMapName);
+            defaultOriginateStatements.add(call(defaultOriginateRouteMapName));
+          });
       defaultOriginateStatements.add(Statements.ExitAccept.toStaticStatement());
       exportStatementsBuilder.add(new If(guard, defaultOriginateStatements.build()));
     }
@@ -3024,14 +2991,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Optional.ofNullable(proc.getRedistributionPolicy(RoutingProtocolInstance.direct()))
         .map(RedistributionPolicy::getRouteMap)
         .filter(_c.getRoutingPolicies()::containsKey)
-        .ifPresent(
-            routeMapName -> {
-              exportPolicySourcesBuilder.add(routeMapName);
-              exportStatementsBuilder.add(
-                  new If(
-                      new MatchProtocol(RoutingProtocol.CONNECTED),
-                      ImmutableList.of(call(routeMapName))));
-            });
+        .ifPresent(routeMapName -> {
+          exportPolicySourcesBuilder.add(routeMapName);
+          exportStatementsBuilder.add(
+              new If(
+                  new MatchProtocol(RoutingProtocol.CONNECTED),
+                  ImmutableList.of(call(routeMapName))));
+        });
     List<Statement> exportInnerStatements = exportStatementsBuilder.build();
     int defaultRedistributionMetric =
         proc.getAreas().isEmpty()
@@ -3106,15 +3072,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       ImmutableMap.Builder<Prefix, OspfAreaSummary> summaries = ImmutableMap.builder();
       // Will deny all suppressed routes, permitting the rest.
       ImmutableList.Builder<RouteFilterLine> lines = ImmutableList.builder();
-      ranges.forEach(
-          (network, range) -> {
-            summaries.put(network, toOspfAreaSummary(range));
-            PrefixRange suppressedNetworks =
-                range.getNotAdvertise()
-                    ? PrefixRange.sameAsOrMoreSpecificThan(network)
-                    : PrefixRange.moreSpecificThan(network);
-            lines.add(new RouteFilterLine(LineAction.DENY, suppressedNetworks));
-          });
+      ranges.forEach((network, range) -> {
+        summaries.put(network, toOspfAreaSummary(range));
+        PrefixRange suppressedNetworks =
+            range.getNotAdvertise()
+                ? PrefixRange.sameAsOrMoreSpecificThan(network)
+                : PrefixRange.moreSpecificThan(network);
+        lines.add(new RouteFilterLine(LineAction.DENY, suppressedNetworks));
+      });
       lines.add(RouteFilterLine.PERMIT_ALL);
 
       RouteFilterList summaryFilter =
@@ -3141,43 +3106,42 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     long areaId = area.getId();
     _c.getAllInterfaces(vrfName)
         .keySet()
-        .forEach(
-            ifaceName -> {
-              Interface iface = _interfaces.get(ifaceName);
-              OspfInterface ospf = iface.getOspf();
-              if (ospf != null && ospf.getArea() != null) {
-                // add to this area if interface is explictly configured to be in it.
-                if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
-                  interfaces.add(ifaceName);
-                  finalizeInterfaceOspfSettings(
-                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault(), ospf);
-                }
-              } else {
-                // Otherwise if OSPF area not explicitly configured on interface, add to this area
-                // if interface IP is matched by wildcard.
-                Optional<Ip> ipOpt =
-                    Optional.ofNullable(iface.getAddress())
-                        .map(InterfaceAddressWithAttributes::getAddress)
-                        .filter(ConcreteInterfaceAddress.class::isInstance)
-                        .map(ConcreteInterfaceAddress.class::cast)
-                        .map(ConcreteInterfaceAddress::getIp);
-                if (!ipOpt.isPresent()) {
-                  return;
-                }
-                Ip ip = ipOpt.get();
-                if (wildcards.stream().noneMatch(wildcard -> wildcard.containsIp(ip))) {
-                  return;
-                }
-                interfaces.add(ifaceName);
-                finalizeInterfaceOspfSettings(
-                    ifaceName,
-                    areaId,
-                    processName,
-                    proc.getPassiveInterfaceDefault(),
-                    // If interface being added has no explicit OSPF configuration, use defaults
-                    ospf != null ? ospf : new OspfInterface());
-              }
-            });
+        .forEach(ifaceName -> {
+          Interface iface = _interfaces.get(ifaceName);
+          OspfInterface ospf = iface.getOspf();
+          if (ospf != null && ospf.getArea() != null) {
+            // add to this area if interface is explictly configured to be in it.
+            if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
+              interfaces.add(ifaceName);
+              finalizeInterfaceOspfSettings(
+                  ifaceName, areaId, processName, proc.getPassiveInterfaceDefault(), ospf);
+            }
+          } else {
+            // Otherwise if OSPF area not explicitly configured on interface, add to this area
+            // if interface IP is matched by wildcard.
+            Optional<Ip> ipOpt =
+                Optional.ofNullable(iface.getAddress())
+                    .map(InterfaceAddressWithAttributes::getAddress)
+                    .filter(ConcreteInterfaceAddress.class::isInstance)
+                    .map(ConcreteInterfaceAddress.class::cast)
+                    .map(ConcreteInterfaceAddress::getIp);
+            if (!ipOpt.isPresent()) {
+              return;
+            }
+            Ip ip = ipOpt.get();
+            if (wildcards.stream().noneMatch(wildcard -> wildcard.containsIp(ip))) {
+              return;
+            }
+            interfaces.add(ifaceName);
+            finalizeInterfaceOspfSettings(
+                ifaceName,
+                areaId,
+                processName,
+                proc.getPassiveInterfaceDefault(),
+                // If interface being added has no explicit OSPF configuration, use defaults
+                ospf != null ? ospf : new OspfInterface());
+          }
+        });
     return interfaces.build();
   }
 
@@ -3762,11 +3726,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             return new Disjunction(
                 routeMapMatchCommunity.getNames().stream()
                     .filter(_c.getCommunitySetMatchExprs()::containsKey)
-                    .map(
-                        name ->
-                            new MatchCommunities(
-                                InputCommunities.instance(),
-                                new CommunitySetMatchExprReference(name)))
+                    .map(name ->
+                        new MatchCommunities(
+                            InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
                     .collect(ImmutableList.toImmutableList()));
           }
 
@@ -3798,10 +3760,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             }
             return new Disjunction(
                 routeMapMatchIpAddressPrefixList.getNames().stream()
-                    .map(
-                        name ->
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet(name)))
+                    .map(name ->
+                        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(name)))
                     .collect(ImmutableList.toImmutableList()));
           }
 
@@ -3838,30 +3798,29 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             AtomicBoolean unsupported = new AtomicBoolean(false);
             Set<RoutingProtocol> protocols =
                 routeMapMatchRouteType.getTypes().stream()
-                    .flatMap(
-                        t -> {
-                          // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/bgp/match-route-type.html
-                          return switch (t) {
-                            case EXTERNAL ->
-                                Stream.of(
-                                    RoutingProtocol.BGP,
-                                    RoutingProtocol.EIGRP,
-                                    RoutingProtocol.OSPF_E1,
-                                    RoutingProtocol.OSPF_E2);
-                            case INTERNAL ->
-                                Stream.of(
-                                    RoutingProtocol.IBGP,
-                                    RoutingProtocol.OSPF,
-                                    RoutingProtocol.OSPF_IA);
-                            case LOCAL -> Stream.of(RoutingProtocol.LOCAL);
-                            case TYPE_1 -> Stream.of(RoutingProtocol.OSPF_E1);
-                            case TYPE_2 -> Stream.of(RoutingProtocol.OSPF_E2);
-                            case NSSA_EXTERNAL -> {
-                              unsupported.set(true);
-                              yield Stream.of(/* TODO */ );
-                            }
-                          };
-                        })
+                    .flatMap(t -> {
+                      // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/bgp/match-route-type.html
+                      return switch (t) {
+                        case EXTERNAL ->
+                            Stream.of(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.EIGRP,
+                                RoutingProtocol.OSPF_E1,
+                                RoutingProtocol.OSPF_E2);
+                        case INTERNAL ->
+                            Stream.of(
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.OSPF,
+                                RoutingProtocol.OSPF_IA);
+                        case LOCAL -> Stream.of(RoutingProtocol.LOCAL);
+                        case TYPE_1 -> Stream.of(RoutingProtocol.OSPF_E1);
+                        case TYPE_2 -> Stream.of(RoutingProtocol.OSPF_E2);
+                        case NSSA_EXTERNAL -> {
+                          unsupported.set(true);
+                          yield Stream.of(/* TODO */ );
+                        }
+                      };
+                    })
                     .collect(ImmutableSet.toImmutableSet());
             if (unsupported.get()) {
               return BooleanExprs.FALSE;
@@ -4101,33 +4060,31 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void makeLeakConfigs() {
-    _vrfs.forEach(
-        (vrfName, vrf) ->
-            convertBgpLeakConfigs(
-                vrf,
-                _c.getVrfs().get(vrfName),
-                _bgpGlobalConfiguration,
-                _c.getDefaultVrf().getBgpProcess(),
-                _c));
+    _vrfs.forEach((vrfName, vrf) ->
+        convertBgpLeakConfigs(
+            vrf,
+            _c.getVrfs().get(vrfName),
+            _bgpGlobalConfiguration,
+            _c.getDefaultVrf().getBgpProcess(),
+            _c));
   }
 
   private void computeImplicitOspfAreas() {
     ImmutableMultimap.Builder<Entry<String, String>, Long> builder = ImmutableMultimap.builder();
     _interfaces
         .values()
-        .forEach(
-            iface -> {
-              String vrf = firstNonNull(iface.getVrfMember(), Configuration.DEFAULT_VRF_NAME);
-              OspfInterface ospf = iface.getOspf();
-              if (ospf == null) {
-                return;
-              }
-              String process = ospf.getProcess();
-              if (process == null) {
-                return;
-              }
-              builder.put(Maps.immutableEntry(process, vrf), ospf.getArea());
-            });
+        .forEach(iface -> {
+          String vrf = firstNonNull(iface.getVrfMember(), Configuration.DEFAULT_VRF_NAME);
+          OspfInterface ospf = iface.getOspf();
+          if (ospf == null) {
+            return;
+          }
+          String process = ospf.getProcess();
+          if (process == null) {
+            return;
+          }
+          builder.put(Maps.immutableEntry(process, vrf), ospf.getArea());
+        });
     _implicitOspfAreas = builder.build();
   }
 

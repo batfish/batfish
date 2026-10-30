@@ -29,10 +29,9 @@ public final class RouteMapMatchCommunity implements RouteMapMatch {
     return new Disjunction(
         _names.stream()
             .filter(c.getCommunitySetMatchExprs()::containsKey)
-            .map(
-                name ->
-                    new MatchCommunities(
-                        InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
+            .map(name ->
+                new MatchCommunities(
+                    InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
             .collect(ImmutableList.toImmutableList()));
   }
 }

@@ -42,20 +42,18 @@ class FileParseStatusAnswerer extends Answerer {
     Multimap<String, String> fileToHost = TreeMultimap.create();
     pvcae
         .getFileMap()
-        .forEach(
-            (hostname, filename) -> {
-              fileToHost.put(filename, hostname);
-              fileToHost.putAll(filename, fileToConvertedHosts.get(filename));
-            });
+        .forEach((hostname, filename) -> {
+          fileToHost.put(filename, hostname);
+          fileToHost.putAll(filename, fileToConvertedHosts.get(filename));
+        });
 
-    statusMap.forEach(
-        (filename, status) ->
-            rows.add(
-                getRow(
-                    filename,
-                    status,
-                    pvcae.getFileFormats().getOrDefault(filename, ConfigurationFormat.UNKNOWN),
-                    fileToHost.get(filename))));
+    statusMap.forEach((filename, status) ->
+        rows.add(
+            getRow(
+                filename,
+                status,
+                pvcae.getFileFormats().getOrDefault(filename, ConfigurationFormat.UNKNOWN),
+                fileToHost.get(filename))));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());

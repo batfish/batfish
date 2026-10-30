@@ -53,51 +53,44 @@ public class InitIssuesAnswerer extends Answerer {
 
     Map<String, Warnings> convertWarnings = ccae.getWarnings();
     aggregateDuplicateWarnings(convertWarnings, Warnings::getRedFlagWarnings)
-        .forEach(
-            (warning, nodes) ->
-                rows.add(getRow(nodes, null, IssueType.ConvertWarningRedFlag, warning.getText())));
+        .forEach((warning, nodes) ->
+            rows.add(getRow(nodes, null, IssueType.ConvertWarningRedFlag, warning.getText())));
     aggregateDuplicateWarnings(convertWarnings, Warnings::getUnimplementedWarnings)
-        .forEach(
-            (warning, nodes) ->
-                rows.add(
-                    getRow(nodes, null, IssueType.ConvertWarningUnimplemented, warning.getText())));
+        .forEach((warning, nodes) ->
+            rows.add(
+                getRow(nodes, null, IssueType.ConvertWarningUnimplemented, warning.getText())));
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
     aggregateDuplicateParseWarnings(fileWarnings)
-        .forEach(
-            (triplet, fileLines) ->
-                rows.add(
-                    getRow(
-                        null,
-                        fileLines.asMap().entrySet().stream()
-                            .sorted(Entry.comparingByKey())
-                            .map(
-                                e ->
-                                    new FileLines(
-                                        e.getKey(), ImmutableSortedSet.copyOf(e.getValue())))
-                            .collect(ImmutableList.toImmutableList()),
-                        IssueType.ParseWarning,
-                        firstNonNull(triplet._comment, "(details not provided)"),
-                        triplet._text,
-                        triplet._parserContext)));
+        .forEach((triplet, fileLines) ->
+            rows.add(
+                getRow(
+                    null,
+                    fileLines.asMap().entrySet().stream()
+                        .sorted(Entry.comparingByKey())
+                        .map(
+                            e -> new FileLines(e.getKey(), ImmutableSortedSet.copyOf(e.getValue())))
+                        .collect(ImmutableList.toImmutableList()),
+                    IssueType.ParseWarning,
+                    firstNonNull(triplet._comment, "(details not provided)"),
+                    triplet._text,
+                    triplet._parserContext)));
     aggregateDuplicateWarnings(fileWarnings, Warnings::getRedFlagWarnings)
-        .forEach(
-            (warning, filenames) ->
-                rows.add(
-                    getRow(
-                        null,
-                        filenamesToFileLines(filenames),
-                        IssueType.ParseWarningRedFlag,
-                        warning.getText())));
+        .forEach((warning, filenames) ->
+            rows.add(
+                getRow(
+                    null,
+                    filenamesToFileLines(filenames),
+                    IssueType.ParseWarningRedFlag,
+                    warning.getText())));
     aggregateDuplicateWarnings(fileWarnings, Warnings::getUnimplementedWarnings)
-        .forEach(
-            (warning, filenames) ->
-                rows.add(
-                    getRow(
-                        null,
-                        filenamesToFileLines(filenames),
-                        IssueType.ParseWarningUnimplemented,
-                        warning.getText())));
+        .forEach((warning, filenames) ->
+            rows.add(
+                getRow(
+                    null,
+                    filenamesToFileLines(filenames),
+                    IssueType.ParseWarningUnimplemented,
+                    warning.getText())));
 
     for (Entry<ParseStatus, Set<String>> entry :
         aggregateParseStatuses(pvcae.getParseStatus()).entrySet()) {
@@ -125,34 +118,30 @@ public class InitIssuesAnswerer extends Answerer {
     }
 
     aggregateDuplicateErrors(ccae.getErrorDetails())
-        .forEach(
-            (errorDetails, nodeNames) ->
-                rows.add(getRow(nodeNames, null, IssueType.ConvertError, errorDetails._message)));
+        .forEach((errorDetails, nodeNames) ->
+            rows.add(getRow(nodeNames, null, IssueType.ConvertError, errorDetails._message)));
     aggregateDuplicateErrors(pvcae.getErrorDetails())
-        .forEach(
-            (errorDetails, fileNames) ->
-                rows.add(
-                    getRow(
-                        null,
-                        fileNames.stream()
-                            .map(
-                                name -> {
-                                  ImmutableSortedSet<Integer> lines = ImmutableSortedSet.of();
-                                  ErrorDetails details = pvcae.getErrorDetails().get(name);
-                                  if (details != null) {
-                                    ParseExceptionContext context =
-                                        details.getParseExceptionContext();
-                                    if (context != null && context.getLineNumber() != null) {
-                                      lines = ImmutableSortedSet.of(context.getLineNumber());
-                                    }
-                                  }
-                                  return new FileLines(name, lines);
-                                })
-                            .collect(ImmutableList.toImmutableList()),
-                        IssueType.ParseError,
-                        errorDetails._message,
-                        errorDetails._lineContent,
-                        errorDetails._parserContext)));
+        .forEach((errorDetails, fileNames) ->
+            rows.add(
+                getRow(
+                    null,
+                    fileNames.stream()
+                        .map(name -> {
+                          ImmutableSortedSet<Integer> lines = ImmutableSortedSet.of();
+                          ErrorDetails details = pvcae.getErrorDetails().get(name);
+                          if (details != null) {
+                            ParseExceptionContext context = details.getParseExceptionContext();
+                            if (context != null && context.getLineNumber() != null) {
+                              lines = ImmutableSortedSet.of(context.getLineNumber());
+                            }
+                          }
+                          return new FileLines(name, lines);
+                        })
+                        .collect(ImmutableList.toImmutableList()),
+                    IssueType.ParseError,
+                    errorDetails._message,
+                    errorDetails._lineContent,
+                    errorDetails._parserContext)));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());

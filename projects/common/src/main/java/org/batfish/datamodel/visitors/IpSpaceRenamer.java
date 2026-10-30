@@ -24,11 +24,10 @@ public class IpSpaceRenamer implements Function<IpSpace, IpSpace> {
       AclIpSpace.Builder renamedSpace = AclIpSpace.builder();
       aclIpSpace
           .getLines()
-          .forEach(
-              line -> {
-                IpSpace space = line.getIpSpace().accept(this);
-                renamedSpace.thenAction(line.getAction(), space);
-              });
+          .forEach(line -> {
+            IpSpace space = line.getIpSpace().accept(this);
+            renamedSpace.thenAction(line.getAction(), space);
+          });
       return renamedSpace.build();
     }
 

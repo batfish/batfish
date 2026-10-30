@@ -47,20 +47,19 @@ public final class CliUtils {
           .filter(Files::isRegularFile)
           .filter(path -> !path.getFileName().toString().startsWith("."))
           .parallel()
-          .map(
-              path -> {
-                if (logger != null) {
-                  // TODO: remove BatfishLogger
-                  logger.debugf("Reading: \"%s\"\n", path);
-                } else {
-                  LOGGER.debug("Reading file: '{}'", path);
-                }
-                try (InputStream inputStream = Files.newInputStream(path)) {
-                  return new SimpleEntry<>(path, decodeStreamAndAppendNewline(inputStream));
-                } catch (IOException e) {
-                  throw new UncheckedIOException(String.format("Failed to read file: %s", path), e);
-                }
-              })
+          .map(path -> {
+            if (logger != null) {
+              // TODO: remove BatfishLogger
+              logger.debugf("Reading: \"%s\"\n", path);
+            } else {
+              LOGGER.debug("Reading file: '{}'", path);
+            }
+            try (InputStream inputStream = Files.newInputStream(path)) {
+              return new SimpleEntry<>(path, decodeStreamAndAppendNewline(inputStream));
+            } catch (IOException e) {
+              throw new UncheckedIOException(String.format("Failed to read file: %s", path), e);
+            }
+          })
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(
                   Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));

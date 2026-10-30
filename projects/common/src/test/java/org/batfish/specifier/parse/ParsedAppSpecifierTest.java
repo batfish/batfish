@@ -48,11 +48,10 @@ public class ParsedAppSpecifierTest {
         new ParsedAppSpecifier(new RegexAppAstNode("htt")).resolve(),
         equalTo(
             Arrays.stream(Protocol.values())
-                .filter(
-                    protocol ->
-                        Pattern.compile("htt", Pattern.CASE_INSENSITIVE)
-                            .matcher(protocol.toString())
-                            .find())
+                .filter(protocol ->
+                    Pattern.compile("htt", Pattern.CASE_INSENSITIVE)
+                        .matcher(protocol.toString())
+                        .find())
                 .map(Protocol::toApplication)
                 .collect(ImmutableSet.toImmutableSet())));
   }

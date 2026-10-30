@@ -25,10 +25,9 @@ final class ConversionStatusAnswerer extends Answerer {
 
     Rows rows = new Rows();
     ccae.getConvertStatus()
-        .forEach(
-            (nodeName, nodeStatus) -> {
-              rows.add(getRow(nodeName, nodeStatus));
-            });
+        .forEach((nodeName, nodeStatus) -> {
+          rows.add(getRow(nodeName, nodeStatus));
+        });
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());

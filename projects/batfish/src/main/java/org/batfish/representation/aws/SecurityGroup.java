@@ -119,15 +119,13 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
   List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
     List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;
     return ipPerms.stream()
-        .map(
-            rule ->
-                // NOTE: Keep VI ACL lines 1-to-1 with group's IpPermissions; do not filter
-                rule.toIpAccessListLine(
-                    ingress,
-                    region,
-                    String.format(
-                        "%s - %s [%s]", _groupId, _groupName, ingress ? "ingress" : "egress"),
-                    warnings))
+        .map(rule ->
+            // NOTE: Keep VI ACL lines 1-to-1 with group's IpPermissions; do not filter
+            rule.toIpAccessListLine(
+                ingress,
+                region,
+                String.format("%s - %s [%s]", _groupId, _groupName, ingress ? "ingress" : "egress"),
+                warnings))
         .collect(ImmutableList.toImmutableList());
   }
 

@@ -105,15 +105,14 @@ public final class BDDPairingFactory implements Serializable {
   public BDD identityRelation(Predicate<BDD> includeDomainVar) {
     return _bddFactory.andAllAndFree(
         _varPairs.stream()
-            .map(
-                varPair -> {
-                  BDD oldVar = _bddFactory.ithVar(varPair.getOldVar());
-                  if (includeDomainVar.test(oldVar)) {
-                    return oldVar.biimpWith(_bddFactory.ithVar(varPair.getNewVar()));
-                  }
-                  oldVar.free();
-                  return null;
-                })
+            .map(varPair -> {
+              BDD oldVar = _bddFactory.ithVar(varPair.getOldVar());
+              if (includeDomainVar.test(oldVar)) {
+                return oldVar.biimpWith(_bddFactory.ithVar(varPair.getNewVar()));
+              }
+              oldVar.free();
+              return null;
+            })
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
   }

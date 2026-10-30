@@ -42,17 +42,15 @@ class ParseWarningAnswerer extends Answerer {
 
     if (question.getAggregateDuplicates()) {
       aggregateDuplicateParseWarnings(fileWarnings)
-          .forEach(
-              (triplet, fileLines) ->
-                  rows.add(getAggregateRow(triplet, fileLines, columnMetadataMap)));
+          .forEach((triplet, fileLines) ->
+              rows.add(getAggregateRow(triplet, fileLines, columnMetadataMap)));
 
     } else {
-      fileWarnings.forEach(
-          (filename, warnings) -> {
-            for (ParseWarning w : warnings.getParseWarnings()) {
-              rows.add(getRow(filename, w, columnMetadataMap));
-            }
-          });
+      fileWarnings.forEach((filename, warnings) -> {
+        for (ParseWarning w : warnings.getParseWarnings()) {
+          rows.add(getRow(filename, w, columnMetadataMap));
+        }
+      });
     }
 
     TableAnswerElement answerElement = new TableAnswerElement(createMetadata(question));
@@ -73,14 +71,13 @@ class ParseWarningAnswerer extends Answerer {
         .put(
             COL_FILELINES,
             fileLines.asMap().entrySet().stream()
-                .map(
-                    e ->
-                        new FileLines(
-                            e.getKey(),
-                            e.getValue().stream()
-                                .collect(
-                                    ImmutableSortedSet.toImmutableSortedSet(
-                                        Comparator.naturalOrder()))))
+                .map(e ->
+                    new FileLines(
+                        e.getKey(),
+                        e.getValue().stream()
+                            .collect(
+                                ImmutableSortedSet.toImmutableSortedSet(
+                                    Comparator.naturalOrder()))))
                 .collect(ImmutableList.toImmutableList()))
         .put(COL_TEXT, triplet._text)
         .put(COL_PARSER_CONTEXT, triplet._parserContext)

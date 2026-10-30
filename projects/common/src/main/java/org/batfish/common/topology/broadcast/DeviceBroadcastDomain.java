@@ -50,9 +50,8 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
       return;
     }
 
-    _physicalInterfaces.forEach(
-        (iface, edge) ->
-            edge.traverse(vlan).ifPresent(tag -> iface.transmit(tag, domain, visited)));
+    _physicalInterfaces.forEach((iface, edge) ->
+        edge.traverse(vlan).ifPresent(tag -> iface.transmit(tag, domain, visited)));
     _l2VNIs.forEach(
         (vni, edge) -> edge.traverse(vlan).ifPresent(unit -> vni.exit(unit, domain, visited)));
     _l3Interfaces.forEach(

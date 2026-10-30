@@ -452,9 +452,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   private static List<UnreachableFilterLine> computeUnreachableFilterLines(
       List<AclSpecs> aclSpecs) {
     return aclSpecs.parallelStream()
-        .flatMap(
-            aclSpec ->
-                FilterLineReachabilityUtils.computeUnreachableFilterLines(aclSpec, new BDDPacket()))
+        .flatMap(aclSpec ->
+            FilterLineReachabilityUtils.computeUnreachableFilterLines(aclSpec, new BDDPacket()))
         .collect(Collectors.toList());
   }
 }

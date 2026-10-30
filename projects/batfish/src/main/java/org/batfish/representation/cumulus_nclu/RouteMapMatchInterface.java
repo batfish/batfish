@@ -54,9 +54,8 @@ public class RouteMapMatchInterface implements RouteMapMatch {
                 _interfaces.stream()
                     // remove non-existent interfaces mentioned in the configuration
                     .filter(ifaceName -> c.getAllInterfaces().containsKey(ifaceName))
-                    .flatMap(
-                        ifaceName ->
-                            c.getAllInterfaces().get(ifaceName).getAllConcreteAddresses().stream())
+                    .flatMap(ifaceName ->
+                        c.getAllInterfaces().get(ifaceName).getAllConcreteAddresses().stream())
                     .map(ConcreteInterfaceAddress::getPrefix)
                     .map(PrefixRange::fromPrefix)
                     .collect(ImmutableSet.toImmutableSet()))));

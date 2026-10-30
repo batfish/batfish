@@ -2229,19 +2229,18 @@ public class CheckPointGatewayGrammarTest {
             new Layer1Edge(hostname1, SYNC_INTERFACE_NAME, hostname2, SYNC_INTERFACE_NAME),
             new Layer1Edge(hostname2, SYNC_INTERFACE_NAME, hostname1, SYNC_INTERFACE_NAME)));
     ImmutableList.of(hostname1, hostname2)
-        .forEach(
-            host ->
-                assertThat(
-                    warnings.get(host).getRedFlagWarnings().stream()
-                        .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))
-                        .collect(ImmutableList.toImmutableList()),
-                    containsInAnyOrder(
-                        WarningMatchers.hasText(
-                            "Cannot generate Sync interface edge to remote host 'cluster_member3'"
-                                + " because it lacks a Sync interface"),
-                        WarningMatchers.hasText(
-                            "Cannot generate Sync interface edge to cluster member 'cm4' whose"
-                                + " hostname cannot be determined"))));
+        .forEach(host ->
+            assertThat(
+                warnings.get(host).getRedFlagWarnings().stream()
+                    .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))
+                    .collect(ImmutableList.toImmutableList()),
+                containsInAnyOrder(
+                    WarningMatchers.hasText(
+                        "Cannot generate Sync interface edge to remote host 'cluster_member3'"
+                            + " because it lacks a Sync interface"),
+                    WarningMatchers.hasText(
+                        "Cannot generate Sync interface edge to cluster member 'cm4' whose"
+                            + " hostname cannot be determined"))));
     assertThat(
         warnings.get(hostname3).getRedFlagWarnings().stream()
             .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))

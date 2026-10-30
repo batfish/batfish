@@ -35,23 +35,21 @@ public final class DirectConnectGatewayConverter {
         region
             .getDirectConnectGatewayAssociations()
             .values()
-            .forEach(
-                a ->
-                    associationsByDxgw
-                        .computeIfAbsent(a.getDirectConnectGatewayId(), k -> new ArrayList<>())
-                        .add(a));
+            .forEach(a ->
+                associationsByDxgw
+                    .computeIfAbsent(a.getDirectConnectGatewayId(), k -> new ArrayList<>())
+                    .add(a));
         region
             .getDirectConnectVirtualInterfaces()
             .values()
-            .forEach(
-                v -> {
-                  if (v.getDirectConnectGatewayId() == null) {
-                    return;
-                  }
-                  vifsByDxgw
-                      .computeIfAbsent(v.getDirectConnectGatewayId(), k -> new ArrayList<>())
-                      .add(v);
-                });
+            .forEach(v -> {
+              if (v.getDirectConnectGatewayId() == null) {
+                return;
+              }
+              vifsByDxgw
+                  .computeIfAbsent(v.getDirectConnectGatewayId(), k -> new ArrayList<>())
+                  .add(v);
+            });
       }
     }
 
@@ -66,15 +64,13 @@ public final class DirectConnectGatewayConverter {
       // Wire DXGW→VGW links for VGW-typed associations. The VGW node was created during the
       // per-region pass, so it must already be present in convertedConfiguration.
       associations.stream()
-          .filter(
-              a ->
-                  a.getAssociatedGateway().getType()
-                      == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
-                          .VIRTUAL_PRIVATE_GATEWAY)
-          .forEach(
-              a ->
-                  DirectConnectGateway.connectVgwAssociation(
-                      node, dxgw, a, awsConfiguration, convertedConfiguration));
+          .filter(a ->
+              a.getAssociatedGateway().getType()
+                  == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                      .VIRTUAL_PRIVATE_GATEWAY)
+          .forEach(a ->
+              DirectConnectGateway.connectVgwAssociation(
+                  node, dxgw, a, awsConfiguration, convertedConfiguration));
     }
   }
 

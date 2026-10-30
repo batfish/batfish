@@ -161,16 +161,14 @@ public class SecurityRule extends Resource implements Serializable {
 
       _sourcePortRanges =
           Optional.ofNullable(sourcePortRanges)
-              .map(
-                  ranges ->
-                      ranges.stream().map(Properties::getSubRange).collect(Collectors.toSet()))
+              .map(ranges ->
+                  ranges.stream().map(Properties::getSubRange).collect(Collectors.toSet()))
               .orElseGet(HashSet::new);
 
       _destinationPortRanges =
           Optional.ofNullable(destinationPortRanges)
-              .map(
-                  ranges ->
-                      ranges.stream().map(Properties::getSubRange).collect(Collectors.toSet()))
+              .map(ranges ->
+                  ranges.stream().map(Properties::getSubRange).collect(Collectors.toSet()))
               .orElseGet(HashSet::new);
     }
 

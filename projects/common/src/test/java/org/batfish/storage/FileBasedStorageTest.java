@@ -309,18 +309,17 @@ public final class FileBasedStorageTest {
     for (int i = 0; i < numTries; i++) {
       for (int j = 0; j < numThreads; j++) {
         Thread thread =
-            new Thread(
-                () -> {
-                  try {
-                    // Wait until all threads are at the barrier
-                    barrier.await();
-                    _storage.mkdirs(dir);
-                  } catch (Exception e) {
-                    // Track exceptions with int since they are not directly surfaced
-                    exceptions.addAndGet(1);
-                    throw new BatfishException(e.getMessage());
-                  }
-                });
+            new Thread(() -> {
+              try {
+                // Wait until all threads are at the barrier
+                barrier.await();
+                _storage.mkdirs(dir);
+              } catch (Exception e) {
+                // Track exceptions with int since they are not directly surfaced
+                exceptions.addAndGet(1);
+                throw new BatfishException(e.getMessage());
+              }
+            });
         threads.add(thread);
         thread.start();
       }
@@ -1020,29 +1019,27 @@ public final class FileBasedStorageTest {
         // Seeded, so that a failing interleaving has a chance of repeating.
         Random random = new Random(t);
         Thread thread =
-            new Thread(
-                () -> {
-                  try {
-                    List<String> mine = new ArrayList<>();
-                    barrier.await();
-                    for (int i = 0; i < numOpsPerThread; i++) {
-                      switch (random.nextInt(4)) {
-                        case 0 -> {
-                          mine.add(createNetwork(prefix + "-" + i, live));
-                          networksCreated.incrementAndGet();
-                        }
-                        case 1 ->
-                            snapshotsDeleted.addAndGet(deleteSomeSnapshot(random, mine, live));
-                        case 2 -> networksDeleted.addAndGet(deleteSomeNetwork(random, mine, live));
-                        // Deleting data that is already gone must be harmless: two clients can
-                        // delete the same network, and one of them loses the race.
-                        default -> _storage.deleteNetwork(new NetworkId("never-existed"));
-                      }
+            new Thread(() -> {
+              try {
+                List<String> mine = new ArrayList<>();
+                barrier.await();
+                for (int i = 0; i < numOpsPerThread; i++) {
+                  switch (random.nextInt(4)) {
+                    case 0 -> {
+                      mine.add(createNetwork(prefix + "-" + i, live));
+                      networksCreated.incrementAndGet();
                     }
-                  } catch (Throwable e) {
-                    failures.add(e);
+                    case 1 -> snapshotsDeleted.addAndGet(deleteSomeSnapshot(random, mine, live));
+                    case 2 -> networksDeleted.addAndGet(deleteSomeNetwork(random, mine, live));
+                    // Deleting data that is already gone must be harmless: two clients can
+                    // delete the same network, and one of them loses the race.
+                    default -> _storage.deleteNetwork(new NetworkId("never-existed"));
                   }
-                });
+                }
+              } catch (Throwable e) {
+                failures.add(e);
+              }
+            });
         threads.add(thread);
         thread.start();
       }

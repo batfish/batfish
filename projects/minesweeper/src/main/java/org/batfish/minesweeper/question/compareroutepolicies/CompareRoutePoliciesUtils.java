@@ -138,31 +138,30 @@ public final class CompareRoutePoliciesUtils {
     // Using stream.sorted() to ensure consistent order.
     return nodes
         .sorted()
-        .flatMap(
-            node -> {
-              // If the referencePolicySpecifier is null then use the policies from
-              // policySpecifier and do a 1-1 comparison based on policy name equality.
-              if (_referencePolicySpecifier == null) {
-                return comparePoliciesForNode(
-                    node,
-                    _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
-                    _policySpecifier.resolve(node, referenceContext).stream().sorted(RP_BY_NAME),
-                    false,
-                    snapshot,
-                    reference);
-              } else {
-                // Otherwise cross-compare all policies in each set (policySpecifier and
-                // referencePolicySpecifier)
-                return comparePoliciesForNode(
-                    node,
-                    _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
-                    _referencePolicySpecifier.resolve(node, referenceContext).stream()
-                        .sorted(RP_BY_NAME),
-                    true,
-                    snapshot,
-                    reference);
-              }
-            });
+        .flatMap(node -> {
+          // If the referencePolicySpecifier is null then use the policies from
+          // policySpecifier and do a 1-1 comparison based on policy name equality.
+          if (_referencePolicySpecifier == null) {
+            return comparePoliciesForNode(
+                node,
+                _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
+                _policySpecifier.resolve(node, referenceContext).stream().sorted(RP_BY_NAME),
+                false,
+                snapshot,
+                reference);
+          } else {
+            // Otherwise cross-compare all policies in each set (policySpecifier and
+            // referencePolicySpecifier)
+            return comparePoliciesForNode(
+                node,
+                _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
+                _referencePolicySpecifier.resolve(node, referenceContext).stream()
+                    .sorted(RP_BY_NAME),
+                true,
+                snapshot,
+                reference);
+          }
+        });
   }
 
   /**
@@ -237,12 +236,10 @@ public final class CompareRoutePoliciesUtils {
       // In this case we cross-compare all routing policies in the two sets regardless of their
       // names.
       return referencePoliciesList.stream()
-          .flatMap(
-              referencePolicy ->
-                  currentPoliciesList.stream()
-                      .flatMap(
-                          currentPolicy ->
-                              comparePolicies(referencePolicy, currentPolicy, configAPs)));
+          .flatMap(referencePolicy ->
+              currentPoliciesList.stream()
+                  .flatMap(
+                      currentPolicy -> comparePolicies(referencePolicy, currentPolicy, configAPs)));
     } else {
       // In this case we only compare policies with the same name.
       // Create a stream of policy tuples (referencePolicy, currentPolicy) for policies with the
@@ -257,17 +254,15 @@ public final class CompareRoutePoliciesUtils {
 
       // Since they have been sorted by name the policies at each index should have the same name.
       return IntStream.range(0, currentPoliciesList.size())
-          .mapToObj(
-              i -> {
-                assert (referencePoliciesList
-                    .get(i)
-                    .getName()
-                    .equals(currentPoliciesList.get(i).getName()));
-                return new Tuple<>(referencePoliciesList.get(i), currentPoliciesList.get(i));
-              })
-          .flatMap(
-              policyTuple ->
-                  comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs));
+          .mapToObj(i -> {
+            assert (referencePoliciesList
+                .get(i)
+                .getName()
+                .equals(currentPoliciesList.get(i).getName()));
+            return new Tuple<>(referencePoliciesList.get(i), currentPoliciesList.get(i));
+          })
+          .flatMap(policyTuple ->
+              comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs));
     }
   }
 

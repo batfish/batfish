@@ -2476,7 +2476,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .getOspfProcesses()
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
-                (procName) -> {
+                procName -> {
                   OspfProcess p = new OspfProcess(procName);
                   p.setRouterId(routerId);
                   return p;
@@ -6009,11 +6009,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       Optional<String> nextHopIface = toNextHopInt(ctx.route_nexthop());
       if (!currentVrf()
           .getStaticRoutes()
-          .removeIf(
-              sr ->
-                  Objects.equals(sr.getNextHopInterface(), nextHopIface.orElse(null))
-                      && Objects.equals(sr.getNextHopIp(), nextHopIp.orElse(null))
-                      && sr.getPrefix().equals(prefix.get()))) {
+          .removeIf(sr ->
+              Objects.equals(sr.getNextHopInterface(), nextHopIface.orElse(null))
+                  && Objects.equals(sr.getNextHopIp(), nextHopIp.orElse(null))
+                  && sr.getPrefix().equals(prefix.get()))) {
         warn(ctx, "No static routes matched this line, so none will be removed");
       }
       return;
@@ -6032,10 +6031,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (prefix.isPresent()) {
       Optional<Ip> nextHopIp = toNextHopIp(nextHop);
       Optional<String> nextHopInterface = toNextHopInt(nextHop);
-      nextHopInterface.ifPresent(
-          iface ->
-              _configuration.referenceStructure(
-                  INTERFACE, iface, ROUTER_STATIC_ROUTE, nextHop.nhint.getStart().getLine()));
+      nextHopInterface.ifPresent(iface ->
+          _configuration.referenceStructure(
+              INTERFACE, iface, ROUTER_STATIC_ROUTE, nextHop.nhint.getStart().getLine()));
       int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
       if (props.distance != null) {
         distance = toInteger(props.distance);
@@ -6647,30 +6645,26 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAspse_length(Aspse_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length())
-        .ifPresent(
-            length ->
-                _currentAsPathSet.addElement(
-                    new LengthAsPathSetElem(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+        .ifPresent(length ->
+            _currentAsPathSet.addElement(
+                new LengthAsPathSetElem(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspsee_length(Aspsee_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length_expr())
-        .ifPresent(
-            length ->
-                _currentInlineAsPathSet.addElement(
-                    new LengthAsPathSetElem(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+        .ifPresent(length ->
+            _currentInlineAsPathSet.addElement(
+                new LengthAsPathSetElem(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspse_neighbor_is(Aspse_neighbor_isContext ctx) {
     toRanges(ctx, ctx.as_range_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathSet.addElement(
-                    new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentAsPathSet.addElement(new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   private @Nonnull Optional<List<Range<Long>>> toRanges(
@@ -6723,10 +6717,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAspsee_neighbor_is(Aspsee_neighbor_isContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentInlineAsPathSet.addElement(
-                    new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentInlineAsPathSet.addElement(
+                new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   private @Nonnull Optional<List<Range<Long>>> toRanges(
@@ -6768,57 +6761,51 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAspse_originates_from(Aspse_originates_fromContext ctx) {
     toRanges(ctx, ctx.as_range_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathSet.addElement(
-                    new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentAsPathSet.addElement(
+                new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspsee_originates_from(Aspsee_originates_fromContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentInlineAsPathSet.addElement(
-                    new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentInlineAsPathSet.addElement(
+                new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspse_passes_through(Aspse_passes_throughContext ctx) {
     toRanges(ctx, ctx.as_range_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathSet.addElement(
-                    new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentAsPathSet.addElement(
+                new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspsee_passes_through(Aspsee_passes_throughContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentInlineAsPathSet.addElement(
-                    new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
+        .ifPresent(ranges ->
+            _currentInlineAsPathSet.addElement(
+                new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspse_unique_length(Aspse_unique_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length())
-        .ifPresent(
-            length ->
-                _currentAsPathSet.addElement(
-                    new UniqueLengthAsPathSetElem(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+        .ifPresent(length ->
+            _currentAsPathSet.addElement(
+                new UniqueLengthAsPathSetElem(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspsee_unique_length(Aspsee_unique_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length_expr())
-        .ifPresent(
-            length ->
-                _currentInlineAsPathSet.addElement(
-                    new UniqueLengthAsPathSetElem(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+        .ifPresent(length ->
+            _currentInlineAsPathSet.addElement(
+                new UniqueLengthAsPathSetElem(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Eigrp_asnContext ctx) {
@@ -8102,48 +8089,43 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitBoolean_as_path_length(Boolean_as_path_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length_expr())
-        .ifPresent(
-            length ->
-                _currentAsPathBoolean =
-                    new RoutePolicyBooleanAsPathLength(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
+        .ifPresent(length ->
+            _currentAsPathBoolean =
+                new RoutePolicyBooleanAsPathLength(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
   }
 
   @Override
   public void exitBoolean_as_path_neighbor_is(Boolean_as_path_neighbor_isContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathBoolean =
-                    new RoutePolicyBooleanAsPathNeighborIs(ctx.EXACT() != null, ranges));
+        .ifPresent(ranges ->
+            _currentAsPathBoolean =
+                new RoutePolicyBooleanAsPathNeighborIs(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_originates_from(Boolean_as_path_originates_fromContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathBoolean =
-                    new RoutePolicyBooleanAsPathOriginatesFrom(ctx.EXACT() != null, ranges));
+        .ifPresent(ranges ->
+            _currentAsPathBoolean =
+                new RoutePolicyBooleanAsPathOriginatesFrom(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_passes_through(Boolean_as_path_passes_throughContext ctx) {
     toRanges(ctx, ctx.as_range_expr_list())
-        .ifPresent(
-            ranges ->
-                _currentAsPathBoolean =
-                    new RoutePolicyBooleanAsPathPassesThrough(ctx.EXACT() != null, ranges));
+        .ifPresent(ranges ->
+            _currentAsPathBoolean =
+                new RoutePolicyBooleanAsPathPassesThrough(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_unique_length(Boolean_as_path_unique_lengthContext ctx) {
     toInteger(ctx, ctx.as_path_length_expr())
-        .ifPresent(
-            length ->
-                _currentAsPathBoolean =
-                    new RoutePolicyBooleanAsPathUniqueLength(
-                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
+        .ifPresent(length ->
+            _currentAsPathBoolean =
+                new RoutePolicyBooleanAsPathUniqueLength(
+                    toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(

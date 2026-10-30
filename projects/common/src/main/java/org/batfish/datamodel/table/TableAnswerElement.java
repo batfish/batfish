@@ -169,16 +169,15 @@ public final class TableAnswerElement extends AnswerElement {
    * @param initialSet The initial set of rows
    */
   public void postProcessAnswer(Question question, Iterable<Row> initialSet) {
-    initialSet.forEach(
-        initialRow -> {
-          // exclude or not?
-          Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
-          if (exclusion != null) {
-            addExcludedRow(initialRow, exclusion.getName());
-          } else {
-            addRow(initialRow);
-          }
-        });
+    initialSet.forEach(initialRow -> {
+      // exclude or not?
+      Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
+      if (exclusion != null) {
+        addExcludedRow(initialRow, exclusion.getName());
+      } else {
+        addRow(initialRow);
+      }
+    });
 
     setSummary(computeSummary(question.getAssertion()));
   }

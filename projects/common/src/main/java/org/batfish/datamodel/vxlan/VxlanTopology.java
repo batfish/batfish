@@ -57,19 +57,17 @@ public final class VxlanTopology {
   @JsonIgnore
   public @Nonnull Stream<EndpointPair<VxlanNode>> getLayer2VniEdges() {
     return _graph.edges().stream()
-        .filter(
-            endpointPair ->
-                endpointPair.nodeU().getVniLayer() == LAYER_2
-                    && endpointPair.nodeV().getVniLayer() == LAYER_2);
+        .filter(endpointPair ->
+            endpointPair.nodeU().getVniLayer() == LAYER_2
+                && endpointPair.nodeV().getVniLayer() == LAYER_2);
   }
 
   @JsonIgnore
   public @Nonnull Stream<EndpointPair<VxlanNode>> getLayer3VniEdges() {
     return _graph.edges().stream()
-        .filter(
-            endpointPair ->
-                endpointPair.nodeU().getVniLayer() == LAYER_3
-                    && endpointPair.nodeV().getVniLayer() == LAYER_3);
+        .filter(endpointPair ->
+            endpointPair.nodeU().getVniLayer() == LAYER_3
+                && endpointPair.nodeV().getVniLayer() == LAYER_3);
   }
 
   @JsonIgnore

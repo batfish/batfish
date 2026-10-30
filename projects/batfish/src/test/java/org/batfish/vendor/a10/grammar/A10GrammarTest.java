@@ -1614,11 +1614,10 @@ public class A10GrammarTest {
               ConcreteInterfaceAddress.parse("1.0.0.2/32"),
               ConcreteInterfaceAddress.parse("2.0.0.1/32"),
               ConcreteInterfaceAddress.parse("3.0.0.1/32"))
-          .forEach(
-              virtualAddress ->
-                  assertThat(
-                      i.getAddressMetadata(),
-                      hasEntry(virtualAddress, expectedConnectedRouteMetadata)));
+          .forEach(virtualAddress ->
+              assertThat(
+                  i.getAddressMetadata(),
+                  hasEntry(virtualAddress, expectedConnectedRouteMetadata)));
       // Should not contain vrrp configuration
       assertThat(i.getVrrpGroups(), anEmptyMap());
     }

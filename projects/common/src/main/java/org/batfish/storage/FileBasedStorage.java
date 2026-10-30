@@ -524,12 +524,11 @@ public class FileBasedStorage implements StorageProvider {
     mkdirs(outputDir);
 
     configurations.entrySet().parallelStream()
-        .forEach(
-            e -> {
-              Path currentOutputPath = outputDir.resolve(e.getKey());
-              serializeObject(e.getValue(), currentOutputPath);
-              progressCount.incrementAndGet();
-            });
+        .forEach(e -> {
+          Path currentOutputPath = outputDir.resolve(e.getKey());
+          serializeObject(e.getValue(), currentOutputPath);
+          progressCount.incrementAndGet();
+        });
   }
 
   @Override
@@ -659,13 +658,12 @@ public class FileBasedStorage implements StorageProvider {
     AtomicInteger serializeCompleted =
         _newBatch.apply(String.format("Serializing '%s' instances to disk", className), size);
     objectsByPath.entrySet().parallelStream()
-        .forEach(
-            entry -> {
-              Path outputPath = entry.getKey();
-              S object = entry.getValue();
-              serializeObject(object, outputPath);
-              serializeCompleted.incrementAndGet();
-            });
+        .forEach(entry -> {
+          Path outputPath = entry.getKey();
+          S object = entry.getValue();
+          serializeObject(object, outputPath);
+          serializeCompleted.incrementAndGet();
+        });
   }
 
   private boolean cachedConfigsAreCompatible(NetworkId network, SnapshotId snapshot) {
@@ -1002,10 +1000,8 @@ public class FileBasedStorage implements StorageProvider {
     try {
       return Files.walk(objectPath)
           .filter(Files::isRegularFile)
-          .map(
-              path ->
-                  new StoredObjectMetadata(
-                      objectPath.relativize(path).toString(), getObjectSize(path)))
+          .map(path ->
+              new StoredObjectMetadata(objectPath.relativize(path).toString(), getObjectSize(path)))
           .collect(ImmutableList.toImmutableList());
     } catch (BatfishException e) {
       throw new IOException(e);
@@ -1023,10 +1019,9 @@ public class FileBasedStorage implements StorageProvider {
     try {
       return Files.walk(objectPath)
           .filter(Files::isRegularFile)
-          .map(
-              path ->
-                  new StoredObjectMetadata(
-                      fromBase64(path.getFileName().toString()), getObjectSize(path)))
+          .map(path ->
+              new StoredObjectMetadata(
+                  fromBase64(path.getFileName().toString()), getObjectSize(path)))
           .collect(ImmutableList.toImmutableList());
     } catch (BatfishException e) {
       throw new IOException(e);
@@ -1440,21 +1435,18 @@ public class FileBasedStorage implements StorageProvider {
     }
     try (Stream<Path> files = list(idsDir)) {
       return files
-          .filter(
-              path -> {
-                try {
-                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
-                } catch (IllegalArgumentException e) {
-                  return false;
-                }
-              })
+          .filter(path -> {
+            try {
+              return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
+            } catch (IllegalArgumentException e) {
+              return false;
+            }
+          })
           .map(Path::getFileName)
           .map(Path::toString)
           .map(FileBasedStorage::fromBase64)
-          .map(
-              nameWithExtension ->
-                  nameWithExtension.substring(
-                      0, nameWithExtension.length() - ID_EXTENSION.length()))
+          .map(nameWithExtension ->
+              nameWithExtension.substring(0, nameWithExtension.length() - ID_EXTENSION.length()))
           .collect(ImmutableSet.toImmutableSet());
     } catch (IOException e) {
       throw new IOException("Could not list files in '" + idsDir + "'", e);
@@ -1465,15 +1457,14 @@ public class FileBasedStorage implements StorageProvider {
   private @Nonnull Set<String> listResolvedIds(Class<? extends Id> type, Id... ancestors)
       throws IOException {
     return listResolvableNames(type, ancestors).stream()
-        .map(
-            name -> {
-              try {
-                return readId(type, name, ancestors);
-              } catch (IOException e) {
-                _logger.errorf("Could not read id for '%s' (type '%s')", name, type);
-                return Optional.<String>empty();
-              }
-            })
+        .map(name -> {
+          try {
+            return readId(type, name, ancestors);
+          } catch (IOException e) {
+            _logger.errorf("Could not read id for '%s' (type '%s')", name, type);
+            return Optional.<String>empty();
+          }
+        })
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableSet.toImmutableSet());
@@ -1585,25 +1576,24 @@ public class FileBasedStorage implements StorageProvider {
     assert fibHosts.containsAll(forwardingAnalysis.getVrfForwardingBehavior().keySet());
     ImmutableList<String> hostnames = ImmutableList.copyOf(fibHosts);
     hostnames.parallelStream()
-        .forEach(
-            hostname -> {
-              PerHostDataPlane dp =
-                  new PerHostDataPlane(
-                      dataPlane.getBgpRoutes().row(hostname),
-                      dataPlane.getBgpBackupRoutes().row(hostname),
-                      dataPlane.getEvpnRoutes().row(hostname),
-                      dataPlane.getEvpnBackupRoutes().row(hostname),
-                      dataPlane.getFibs().get(hostname),
-                      forwardingAnalysis.getArpReplies().getOrDefault(hostname, ImmutableMap.of()),
-                      forwardingAnalysis
-                          .getVrfForwardingBehavior()
-                          .getOrDefault(hostname, ImmutableMap.of()),
-                      dataPlane.getLayer2Vnis().row(hostname),
-                      dataPlane.getLayer3Vnis().row(hostname),
-                      dataPlane.getPrefixTracingInfoSummary().get(hostname),
-                      dataPlane.getRibs().row(hostname));
-              serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
-            });
+        .forEach(hostname -> {
+          PerHostDataPlane dp =
+              new PerHostDataPlane(
+                  dataPlane.getBgpRoutes().row(hostname),
+                  dataPlane.getBgpBackupRoutes().row(hostname),
+                  dataPlane.getEvpnRoutes().row(hostname),
+                  dataPlane.getEvpnBackupRoutes().row(hostname),
+                  dataPlane.getFibs().get(hostname),
+                  forwardingAnalysis.getArpReplies().getOrDefault(hostname, ImmutableMap.of()),
+                  forwardingAnalysis
+                      .getVrfForwardingBehavior()
+                      .getOrDefault(hostname, ImmutableMap.of()),
+                  dataPlane.getLayer2Vnis().row(hostname),
+                  dataPlane.getLayer3Vnis().row(hostname),
+                  dataPlane.getPrefixTracingInfoSummary().get(hostname),
+                  dataPlane.getRibs().row(hostname));
+          serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
+        });
   }
 
   @Override
@@ -1687,11 +1677,10 @@ public class FileBasedStorage implements StorageProvider {
     _logger.resetTimer();
     SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
     Path outputPath = getEnvironmentBgpTablesPath(snapshot);
-    environmentBgpTables.forEach(
-        (name, rt) -> {
-          Path currentOutputPath = outputPath.resolve(name);
-          output.put(currentOutputPath, rt);
-        });
+    environmentBgpTables.forEach((name, rt) -> {
+      Path currentOutputPath = outputPath.resolve(name);
+      output.put(currentOutputPath, rt);
+    });
     serializeObjects(output);
     _logger.printElapsedTime();
   }
@@ -1941,11 +1930,10 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     Map<Path, VendorConfiguration> output = new HashMap<>();
     Path outputPath = getVendorConfigurationsPath(snapshot);
-    vendorConfigurations.forEach(
-        (name, vc) -> {
-          Path currentOutputPath = outputPath.resolve(name);
-          output.put(currentOutputPath, vc);
-        });
+    vendorConfigurations.forEach((name, vc) -> {
+      Path currentOutputPath = outputPath.resolve(name);
+      output.put(currentOutputPath, vc);
+    });
     serializeObjects(output);
   }
 
@@ -2235,21 +2223,17 @@ public class FileBasedStorage implements StorageProvider {
       return;
     }
     try (Stream<Path> blobs = Files.walk(blobPath)) {
-      blobs.forEach(
-          path -> {
-            try {
-              if (Files.isRegularFile(path)
-                  && getLastModifiedTime(path).isBefore(blobExpungeBeforeDate)) {
-                Files.delete(path);
-              }
-            } catch (IOException e) {
-              LOGGER.error(
-                  "Failed to expunge blob '{}' of networkId '{}'",
-                  path.getFileName(),
-                  networkId,
-                  e);
-            }
-          });
+      blobs.forEach(path -> {
+        try {
+          if (Files.isRegularFile(path)
+              && getLastModifiedTime(path).isBefore(blobExpungeBeforeDate)) {
+            Files.delete(path);
+          }
+        } catch (IOException e) {
+          LOGGER.error(
+              "Failed to expunge blob '{}' of networkId '{}'", path.getFileName(), networkId, e);
+        }
+      });
     } catch (IOException e) {
       LOGGER.error("Failed to expunge blobs from networkId '{}'", networkId, e);
     }
@@ -2261,23 +2245,22 @@ public class FileBasedStorage implements StorageProvider {
     try {
       return listResolvedIds(SnapshotId.class, networkId).stream()
           .map(SnapshotId::new)
-          .map(
-              snapshotId -> {
-                try {
-                  return Optional.of(
-                      BatfishObjectMapper.mapper()
-                          .readValue(
-                              loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
-                } catch (IOException e) {
-                  LOGGER.error(
-                      "Error loading snapshot metadata for networkId '{}' snapshotId '{}'",
-                      networkId,
-                      snapshotId,
-                      e);
-                  // Just skip this snapshot
-                  return Optional.<SnapshotMetadata>empty();
-                }
-              })
+          .map(snapshotId -> {
+            try {
+              return Optional.of(
+                  BatfishObjectMapper.mapper()
+                      .readValue(
+                          loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
+            } catch (IOException e) {
+              LOGGER.error(
+                  "Error loading snapshot metadata for networkId '{}' snapshotId '{}'",
+                  networkId,
+                  snapshotId,
+                  e);
+              // Just skip this snapshot
+              return Optional.<SnapshotMetadata>empty();
+            }
+          })
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(SnapshotMetadata::getCreationTimestamp)

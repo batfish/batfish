@@ -326,26 +326,22 @@ public final class A10Configuration extends VendorConfiguration {
     _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
     _ifaceNametoIface = new HashMap<>();
-    _interfacesLoopback.forEach(
-        (num, iface) -> {
-          convertInterface(iface, vrf);
-          _ifaceNametoIface.put(getInterfaceName(iface), iface);
-        });
-    _interfacesEthernet.forEach(
-        (num, iface) -> {
-          convertInterface(iface, vrf);
-          _ifaceNametoIface.put(getInterfaceName(iface), iface);
-        });
-    _interfacesVe.forEach(
-        (num, iface) -> {
-          convertInterface(iface, vrf);
-          _ifaceNametoIface.put(getInterfaceName(iface), iface);
-        });
+    _interfacesLoopback.forEach((num, iface) -> {
+      convertInterface(iface, vrf);
+      _ifaceNametoIface.put(getInterfaceName(iface), iface);
+    });
+    _interfacesEthernet.forEach((num, iface) -> {
+      convertInterface(iface, vrf);
+      _ifaceNametoIface.put(getInterfaceName(iface), iface);
+    });
+    _interfacesVe.forEach((num, iface) -> {
+      convertInterface(iface, vrf);
+      _ifaceNametoIface.put(getInterfaceName(iface), iface);
+    });
     _interfacesTrunk.forEach((num, iface) -> convertInterface(iface, vrf));
 
-    _staticRoutes.forEach(
-        (prefix, manager) ->
-            manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
+    _staticRoutes.forEach((prefix, manager) ->
+        manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
 
     convertAccessLists();
 
@@ -410,24 +406,22 @@ public final class A10Configuration extends VendorConfiguration {
     ImmutableMap.Builder<String, Map<String, TrackAction>> builder = ImmutableMap.builder();
     _vrrpA
         .getFailOverPolicyTemplates()
-        .forEach(
-            (templateName, template) -> {
-              ImmutableMap.Builder<String, TrackAction> actionsBuilder = ImmutableMap.builder();
-              template
-                  .getGateways()
-                  .forEach(
-                      (ip, decrement) -> {
-                        String trackMethodName = generatedServerTrackMethodName(ip);
-                        if (!_c.getTrackingGroups().containsKey(trackMethodName)) {
-                          // unusable gateway health check
-                          return;
-                        }
-                        TrackAction action = new DecrementPriority(decrement);
-                        String failedTrackMethodName = createFailedTrackIfNeeded(trackMethodName);
-                        actionsBuilder.put(failedTrackMethodName, action);
-                      });
-              builder.put(templateName, actionsBuilder.build());
-            });
+        .forEach((templateName, template) -> {
+          ImmutableMap.Builder<String, TrackAction> actionsBuilder = ImmutableMap.builder();
+          template
+              .getGateways()
+              .forEach((ip, decrement) -> {
+                String trackMethodName = generatedServerTrackMethodName(ip);
+                if (!_c.getTrackingGroups().containsKey(trackMethodName)) {
+                  // unusable gateway health check
+                  return;
+                }
+                TrackAction action = new DecrementPriority(decrement);
+                String failedTrackMethodName = createFailedTrackIfNeeded(trackMethodName);
+                actionsBuilder.put(failedTrackMethodName, action);
+              });
+          builder.put(templateName, actionsBuilder.build());
+        });
     return builder.build();
   }
 
@@ -442,24 +436,22 @@ public final class A10Configuration extends VendorConfiguration {
                 .setAddressGroups(
                     _virtualServers.values().stream()
                         .filter(A10Conversion::isIpv4VirtualServer)
-                        .map(
-                            vServer ->
-                                new AddressGroup(
-                                    ImmutableSortedSet.of(
-                                        VirtualServerTargetVirtualAddressExtractor.INSTANCE
-                                            .visit(vServer.getTarget())
-                                            .toString()),
-                                    vServer.getName()))
+                        .map(vServer ->
+                            new AddressGroup(
+                                ImmutableSortedSet.of(
+                                    VirtualServerTargetVirtualAddressExtractor.INSTANCE
+                                        .visit(vServer.getTarget())
+                                        .toString()),
+                                vServer.getName()))
                         .collect(ImmutableList.toImmutableList()))
                 .build());
   }
 
   /** Creates named IpSpaces from configured NAT pools. */
   private void generateNatPoolIpSpaces() {
-    _natPools.forEach(
-        (name, pool) ->
-            _c.getIpSpaces()
-                .put(ipSpaceNameForNatPool(name), IpRange.range(pool.getStart(), pool.getEnd())));
+    _natPools.forEach((name, pool) ->
+        _c.getIpSpaces()
+            .put(ipSpaceNameForNatPool(name), IpRange.range(pool.getStart(), pool.getEnd())));
   }
 
   @VisibleForTesting
@@ -531,20 +523,18 @@ public final class A10Configuration extends VendorConfiguration {
                     unused -> connectedRouteMetadata));
     _c.getAllInterfaces().values().stream()
         .filter(A10Conversion::vrrpADisabledAppliesToInterface)
-        .forEach(
-            iface -> {
-              iface.setAllAddresses(
-                  ImmutableSortedSet.<InterfaceAddress>naturalOrder()
-                      .addAll(iface.getAllAddresses())
-                      .addAll(virtualAddresses)
-                      .build());
-              iface.setAddressMetadata(
-                  ImmutableSortedMap
-                      .<ConcreteInterfaceAddress, ConnectedRouteMetadata>naturalOrder()
-                      .putAll(iface.getAddressMetadata())
-                      .putAll(addressMetadata)
-                      .build());
-            });
+        .forEach(iface -> {
+          iface.setAllAddresses(
+              ImmutableSortedSet.<InterfaceAddress>naturalOrder()
+                  .addAll(iface.getAllAddresses())
+                  .addAll(virtualAddresses)
+                  .build());
+          iface.setAddressMetadata(
+              ImmutableSortedMap.<ConcreteInterfaceAddress, ConnectedRouteMetadata>naturalOrder()
+                  .putAll(iface.getAddressMetadata())
+                  .putAll(addressMetadata)
+                  .build());
+        });
   }
 
   /**
@@ -591,14 +581,13 @@ public final class A10Configuration extends VendorConfiguration {
     // cannot be disabled independently.
     // Grab the virtual addresses for each VRID from NAT pools and virtual-servers
     getEnabledVrids(_vrrpA)
-        .forEach(
-            vrid -> {
-              Streams.concat(
-                      getNatPoolIps(_natPools.values(), vrid),
-                      getVirtualServerIps(_virtualServers.values(), vrid),
-                      getFloatingIps(_vrrpA, vrid))
-                  .forEach(ip -> virtualAddressesByEnabledVridBuilder.put(vrid, ip));
-            });
+        .forEach(vrid -> {
+          Streams.concat(
+                  getNatPoolIps(_natPools.values(), vrid),
+                  getVirtualServerIps(_virtualServers.values(), vrid),
+                  getFloatingIps(_vrrpA, vrid))
+              .forEach(ip -> virtualAddressesByEnabledVridBuilder.put(vrid, ip));
+        });
     SetMultimap<Integer, Ip> virtualAddressesByEnabledVrid =
         virtualAddressesByEnabledVridBuilder.build();
     // VRID 0 may be used even if it is not configured explicitly.
@@ -613,27 +602,25 @@ public final class A10Configuration extends VendorConfiguration {
     final org.batfish.datamodel.Interface finalPeerInterface = peerInterface;
     List<String> ipOwnerInterfaces =
         _c.getAllInterfaces().values().stream()
-            .filter(
-                i ->
-                    i != finalPeerInterface
-                        && i.getInterfaceType() != InterfaceType.LOOPBACK
-                        && !i.getAllConcreteAddresses().isEmpty())
+            .filter(i ->
+                i != finalPeerInterface
+                    && i.getInterfaceType() != InterfaceType.LOOPBACK
+                    && !i.getAllConcreteAddresses().isEmpty())
             .map(org.batfish.datamodel.Interface::getName)
             .collect(ImmutableList.toImmutableList());
 
     final ConcreteInterfaceAddress finalSourceAddress = sourceAddress;
     virtualAddressesByEnabledVrid
         .asMap()
-        .forEach(
-            (vrid, virtualAddresses) ->
-                vrrpGroupsBuilder.put(
-                    vrid,
-                    toVrrpGroup(
-                        _vrrpA.getVrids().get(vrid),
-                        finalSourceAddress,
-                        virtualAddresses,
-                        ipOwnerInterfaces,
-                        failOverPolicyTemplateActions)));
+        .forEach((vrid, virtualAddresses) ->
+            vrrpGroupsBuilder.put(
+                vrid,
+                toVrrpGroup(
+                    _vrrpA.getVrids().get(vrid),
+                    finalSourceAddress,
+                    virtualAddresses,
+                    ipOwnerInterfaces,
+                    failOverPolicyTemplateActions)));
     // Assign the VRRP groups to the peer interface
     peerInterface.setVrrpGroups(vrrpGroupsBuilder.build());
   }
@@ -694,14 +681,13 @@ public final class A10Configuration extends VendorConfiguration {
     // cannot be disabled independently.
     // Grab the virtual addresses for each VRID from NAT pools and virtual-servers
     _ha.getGroups()
-        .forEach(
-            (haGroupId, haGroup) -> {
-              Streams.concat(
-                      getNatPoolIpsByHaGroup(_natPools.values(), haGroupId),
-                      getVirtualServerIpsByHaGroup(_virtualServers.values(), haGroupId),
-                      getFloatingIpsByHaGroup(_floatingIps, haGroupId))
-                  .forEach(ip -> virtualAddressesByEnabledHaGroupBuilder.put(haGroupId, ip));
-            });
+        .forEach((haGroupId, haGroup) -> {
+          Streams.concat(
+                  getNatPoolIpsByHaGroup(_natPools.values(), haGroupId),
+                  getVirtualServerIpsByHaGroup(_virtualServers.values(), haGroupId),
+                  getFloatingIpsByHaGroup(_floatingIps, haGroupId))
+              .forEach(ip -> virtualAddressesByEnabledHaGroupBuilder.put(haGroupId, ip));
+        });
     SetMultimap<Integer, Ip> virtualAddressesByEnabledHaGroup =
         virtualAddressesByEnabledHaGroupBuilder.build();
 
@@ -710,11 +696,10 @@ public final class A10Configuration extends VendorConfiguration {
     final org.batfish.datamodel.Interface finalHeartbeatInterface = heartbeatInterface;
     List<String> ipOwnerInterfaces =
         _c.getAllInterfaces().values().stream()
-            .filter(
-                i ->
-                    i != finalHeartbeatInterface
-                        && i.getInterfaceType() != InterfaceType.LOOPBACK
-                        && !i.getAllConcreteAddresses().isEmpty())
+            .filter(i ->
+                i != finalHeartbeatInterface
+                    && i.getInterfaceType() != InterfaceType.LOOPBACK
+                    && !i.getAllConcreteAddresses().isEmpty())
             .map(org.batfish.datamodel.Interface::getName)
             .collect(ImmutableList.toImmutableList());
 
@@ -724,17 +709,16 @@ public final class A10Configuration extends VendorConfiguration {
     final ConcreteInterfaceAddress finalSourceAddress = sourceAddress;
     virtualAddressesByEnabledHaGroup
         .asMap()
-        .forEach(
-            (haGroupId, virtualAddresses) ->
-                vrrpGroupsBuilder.put(
+        .forEach((haGroupId, virtualAddresses) ->
+            vrrpGroupsBuilder.put(
+                haGroupId,
+                toVrrpGroup(
                     haGroupId,
-                    toVrrpGroup(
-                        haGroupId,
-                        _ha,
-                        finalSourceAddress,
-                        virtualAddresses,
-                        ipOwnerInterfaces,
-                        trackActions)));
+                    _ha,
+                    finalSourceAddress,
+                    virtualAddresses,
+                    ipOwnerInterfaces,
+                    trackActions)));
     // Assign the VRRP groups to the heartbeat interface
     heartbeatInterface.setVrrpGroups(vrrpGroupsBuilder.build());
   }
@@ -784,41 +768,39 @@ public final class A10Configuration extends VendorConfiguration {
 
     // Apply transformations at each interface, along with incoming access list if present
     _c.getAllInterfaces()
-        .forEach(
-            (name, iface) -> {
-              iface.setFirewallSessionInterfaceInfo(
-                  new FirewallSessionInterfaceInfo(
-                      POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
-              String incomingFilter =
-                  // TODO Can trunk interfaces configure access-list?
-                  //  They are not included in _ifaceNametoIface.
-                  Optional.ofNullable(_ifaceNametoIface.get(name))
-                      .map(Interface::getAccessListIn)
-                      .orElse(null);
-              String policyName = packetPolicyName(incomingFilter);
+        .forEach((name, iface) -> {
+          iface.setFirewallSessionInterfaceInfo(
+              new FirewallSessionInterfaceInfo(
+                  POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
+          String incomingFilter =
+              // TODO Can trunk interfaces configure access-list?
+              //  They are not included in _ifaceNametoIface.
+              Optional.ofNullable(_ifaceNametoIface.get(name))
+                  .map(Interface::getAccessListIn)
+                  .orElse(null);
+          String policyName = packetPolicyName(incomingFilter);
 
-              // Create packet policy if it doesn't already exist
-              if (!_c.getPacketPolicies().containsKey(policyName)) {
-                PacketPolicy policy;
-                if (incomingFilter == null) {
-                  policy = new PacketPolicy(policyName, transformationStatements, returnFibLookup);
-                } else {
-                  List<Statement> policyStatements =
-                      ImmutableList.<Statement>builder()
-                          .add(
-                              new If(
-                                  new PacketMatchExpr(
-                                      new DeniedByAcl(computeAclName(incomingFilter))),
-                                  ImmutableList.of(new Return(Drop.instance()))))
-                          .addAll(transformationStatements)
-                          .build();
-                  policy = new PacketPolicy(policyName, policyStatements, returnFibLookup);
-                }
-                _c.getPacketPolicies().put(policyName, policy);
-              }
+          // Create packet policy if it doesn't already exist
+          if (!_c.getPacketPolicies().containsKey(policyName)) {
+            PacketPolicy policy;
+            if (incomingFilter == null) {
+              policy = new PacketPolicy(policyName, transformationStatements, returnFibLookup);
+            } else {
+              List<Statement> policyStatements =
+                  ImmutableList.<Statement>builder()
+                      .add(
+                          new If(
+                              new PacketMatchExpr(new DeniedByAcl(computeAclName(incomingFilter))),
+                              ImmutableList.of(new Return(Drop.instance()))))
+                      .addAll(transformationStatements)
+                      .build();
+              policy = new PacketPolicy(policyName, policyStatements, returnFibLookup);
+            }
+            _c.getPacketPolicies().put(policyName, policy);
+          }
 
-              iface.setPacketPolicy(policyName);
-            });
+          iface.setPacketPolicy(policyName);
+        });
   }
 
   @VisibleForTesting
@@ -986,18 +968,16 @@ public final class A10Configuration extends VendorConfiguration {
       ImmutableSet<String> memberNames =
           trunkIface.getMembers().stream()
               .map(A10Configuration::getInterfaceName)
-              .filter(
-                  memberName -> {
-                    boolean ifaceExists = _ifaceNametoIface.containsKey(memberName);
-                    if (!ifaceExists) {
-                      // Cannot tell if this missing member would invalidate other members or not
-                      // So, optimistically leave other members
-                      _w.redFlagf(
-                          "Trunk member %s does not exist, cannot add to %s",
-                          memberName, trunkName);
-                    }
-                    return ifaceExists;
-                  })
+              .filter(memberName -> {
+                boolean ifaceExists = _ifaceNametoIface.containsKey(memberName);
+                if (!ifaceExists) {
+                  // Cannot tell if this missing member would invalidate other members or not
+                  // So, optimistically leave other members
+                  _w.redFlagf(
+                      "Trunk member %s does not exist, cannot add to %s", memberName, trunkName);
+                }
+                return ifaceExists;
+              })
               .collect(ImmutableSet.toImmutableSet());
       if (memberNames.isEmpty()) {
         _w.redFlagf(
@@ -1007,10 +987,9 @@ public final class A10Configuration extends VendorConfiguration {
         newIface.setChannelGroupMembers(memberNames);
         newIface.setDependencies(
             memberNames.stream()
-                .map(
-                    member ->
-                        new org.batfish.datamodel.Interface.Dependency(
-                            member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
+                .map(member ->
+                    new org.batfish.datamodel.Interface.Dependency(
+                        member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
                 .collect(ImmutableSet.toImmutableSet()));
 
         // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
@@ -1040,11 +1019,10 @@ public final class A10Configuration extends VendorConfiguration {
       _interfacesTrunk.values().stream()
           .filter(t -> t.getMembers().contains(ifaceRef))
           .findFirst()
-          .ifPresent(
-              t -> {
-                newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, t.getNumber()));
-                // TODO determine if switchport settings need to be propagated to member interfaces
-              });
+          .ifPresent(t -> {
+            newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, t.getNumber()));
+            // TODO determine if switchport settings need to be propagated to member interfaces
+          });
     }
 
     newIface.build();
@@ -1059,15 +1037,14 @@ public final class A10Configuration extends VendorConfiguration {
   private boolean vlanSettingsDifferent(Collection<String> names) {
     Stream<org.batfish.datamodel.Interface> distinctVlanSettings =
         names.stream()
-            .map(
-                name -> {
-                  org.batfish.datamodel.Interface.Builder baseIface =
-                      org.batfish.datamodel.Interface.builder()
-                          .setName("")
-                          .setType(InterfaceType.PHYSICAL);
-                  setVlanSettings(_ifaceNametoIface.get(name), baseIface);
-                  return baseIface.build();
-                })
+            .map(name -> {
+              org.batfish.datamodel.Interface.Builder baseIface =
+                  org.batfish.datamodel.Interface.builder()
+                      .setName("")
+                      .setType(InterfaceType.PHYSICAL);
+              setVlanSettings(_ifaceNametoIface.get(name), baseIface);
+              return baseIface.build();
+            })
             .distinct();
     return distinctVlanSettings.count() > 1;
   }

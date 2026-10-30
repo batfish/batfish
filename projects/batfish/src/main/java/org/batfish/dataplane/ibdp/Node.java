@@ -67,11 +67,10 @@ public final class Node {
   @Nonnull
   VirtualRouter getVirtualRouterOrThrow(String vrfName) {
     return getVirtualRouter(vrfName)
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    String.format(
-                        "Cannot find VirtualRouter %s on node %s", vrfName, _c.getHostname())));
+        .orElseThrow(() ->
+            new IllegalStateException(
+                String.format(
+                    "Cannot find VirtualRouter %s on node %s", vrfName, _c.getHostname())));
   }
 
   /** Return a specific main RIB */

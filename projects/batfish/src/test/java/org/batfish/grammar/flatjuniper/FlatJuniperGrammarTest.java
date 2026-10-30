@@ -11883,18 +11883,17 @@ public final class FlatJuniperGrammarTest {
             .put("LB_SOURCE_IP_ONLY", LoadBalanceMethod.SOURCE_IP_ONLY)
             .put("LB_SYMMETRIC", LoadBalanceMethod.SYMMETRIC_CONSISTENT_HASH)
             .build();
-    expected.forEach(
-        (name, method) -> {
-          PolicyStatement ps = jc.getMasterLogicalSystem().getPolicyStatements().get(name);
-          assertThat(name, ps, notNullValue());
-          PsThen then =
-              ps.getDefaultTerm().getThens().getAllThens().stream()
-                  .filter(t -> t instanceof PsThenLoadBalance)
-                  .findFirst()
-                  .orElse(null);
-          assertThat(name, then, notNullValue());
-          assertThat(name, ((PsThenLoadBalance) then).getMethod(), equalTo(method));
-        });
+    expected.forEach((name, method) -> {
+      PolicyStatement ps = jc.getMasterLogicalSystem().getPolicyStatements().get(name);
+      assertThat(name, ps, notNullValue());
+      PsThen then =
+          ps.getDefaultTerm().getThens().getAllThens().stream()
+              .filter(t -> t instanceof PsThenLoadBalance)
+              .findFirst()
+              .orElse(null);
+      assertThat(name, then, notNullValue());
+      assertThat(name, ((PsThenLoadBalance) then).getMethod(), equalTo(method));
+    });
   }
 
   @Test

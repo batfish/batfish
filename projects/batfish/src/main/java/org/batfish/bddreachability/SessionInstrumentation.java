@@ -142,12 +142,11 @@ public class SessionInstrumentation {
   private static @Nonnull Set<String> computeNodesWithFibLookup(
       Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions) {
     return initializedSessions.entrySet().stream()
-        .filter(
-            initializedSessionsEntry ->
-                initializedSessionsEntry.getValue().stream()
-                    .map(BDDFirewallSessionTraceInfo::getAction)
-                    // TODO Update when reachability supports PreNatFibLookup
-                    .anyMatch(PostNatFibLookup.class::isInstance))
+        .filter(initializedSessionsEntry ->
+            initializedSessionsEntry.getValue().stream()
+                .map(BDDFirewallSessionTraceInfo::getAction)
+                // TODO Update when reachability supports PreNatFibLookup
+                .anyMatch(PostNatFibLookup.class::isInstance))
         .map(Entry::getKey)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -155,16 +154,15 @@ public class SessionInstrumentation {
   /** For each input edge, apply an additional constraint from the map if any. */
   private static @Nonnull Stream<Edge> constrainOutEdges(
       Stream<Edge> originalEdges, Map<StateExpr, BDD> existingOutEdgeConstraints) {
-    return originalEdges.map(
-        edge -> {
-          BDD additionalConstraint = existingOutEdgeConstraints.get(edge.getPreState());
-          return additionalConstraint == null
-              ? edge
-              : new Edge(
-                  edge.getPreState(),
-                  edge.getPostState(),
-                  compose(constraint(additionalConstraint), edge.getTransition()));
-        });
+    return originalEdges.map(edge -> {
+      BDD additionalConstraint = existingOutEdgeConstraints.get(edge.getPreState());
+      return additionalConstraint == null
+          ? edge
+          : new Edge(
+              edge.getPreState(),
+              edge.getPostState(),
+              compose(constraint(additionalConstraint), edge.getTransition()));
+    });
   }
 
   /**
@@ -178,16 +176,15 @@ public class SessionInstrumentation {
       Map<String, Configuration> configs) {
     return initializedSessions.values().stream()
         .flatMap(Collection::stream)
-        .flatMap(
-            sessionInfo -> {
-              String hostname = sessionInfo.getHostname();
-              Collection<Interface> ifaces = configs.get(hostname).getAllInterfaces().values();
-              BDD nonSessionFlows = sessionInfo.getSessionFlows().not();
-              return sessionInfo
-                  .getSessionScope()
-                  .accept(new SessionEdgePreStates(hostname, ifaces))
-                  .map(state -> Maps.immutableEntry(state, nonSessionFlows));
-            })
+        .flatMap(sessionInfo -> {
+          String hostname = sessionInfo.getHostname();
+          Collection<Interface> ifaces = configs.get(hostname).getAllInterfaces().values();
+          BDD nonSessionFlows = sessionInfo.getSessionFlows().not();
+          return sessionInfo
+              .getSessionScope()
+              .accept(new SessionEdgePreStates(hostname, ifaces))
+              .map(state -> Maps.immutableEntry(state, nonSessionFlows));
+        })
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue, BDD::and));
   }
 
@@ -345,26 +342,25 @@ public class SessionInstrumentation {
               public Stream<Edge> visitIncomingSessionScope(
                   IncomingSessionScope incomingSessionScope) {
                 return incomingSessionScope.getIncomingInterfaces().stream()
-                    .map(
-                        inIface -> {
-                          StateExpr preState = new PreInInterface(hostname, inIface);
-                          BDD sessionFlows = sessionInfo.getSessionFlows();
-                          BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
+                    .map(inIface -> {
+                      StateExpr preState = new PreInInterface(hostname, inIface);
+                      BDD sessionFlows = sessionInfo.getSessionFlows();
+                      BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
-                          Transition transition =
-                              compose(
-                                  constraint(sessionFlows.and(inAclBdd)),
-                                  sessionInfo.getTransformation(),
-                                  outAcl,
-                                  removeNodeSpecificConstraints(
-                                      hostname, _lastHopMgr, outgoingOriginalFlowFilterMgr, srcMgr),
-                                  addSourceIfaceConstraint,
-                                  addLastHop);
-                          if (transition == Zero.INSTANCE) {
-                            return null;
-                          }
-                          return new Edge(preState, postState, transition);
-                        })
+                      Transition transition =
+                          compose(
+                              constraint(sessionFlows.and(inAclBdd)),
+                              sessionInfo.getTransformation(),
+                              outAcl,
+                              removeNodeSpecificConstraints(
+                                  hostname, _lastHopMgr, outgoingOriginalFlowFilterMgr, srcMgr),
+                              addSourceIfaceConstraint,
+                              addLastHop);
+                      if (transition == Zero.INSTANCE) {
+                        return null;
+                      }
+                      return new Edge(preState, postState, transition);
+                    })
                     .filter(Objects::nonNull);
               }
 
@@ -430,26 +426,25 @@ public class SessionInstrumentation {
                           public Stream<Edge> visitIncomingSessionScope(
                               IncomingSessionScope incomingSessionScope) {
                             return incomingSessionScope.getIncomingInterfaces().stream()
-                                .map(
-                                    inIface -> {
-                                      StateExpr preState = new PreInInterface(hostname, inIface);
-                                      BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
+                                .map(inIface -> {
+                                  StateExpr preState = new PreInInterface(hostname, inIface);
+                                  BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
-                                      Transition transition =
-                                          compose(
-                                              constraint(sessionFlows.and(inAclBdd)),
-                                              sessionInfo.getTransformation(),
-                                              denyOutAcl,
-                                              removeNodeSpecificConstraints(
-                                                  hostname,
-                                                  _lastHopMgr,
-                                                  outgoingOriginalFlowFilterMgr,
-                                                  srcMgr));
-                                      if (transition == Zero.INSTANCE) {
-                                        return null;
-                                      }
-                                      return new Edge(preState, postState, transition);
-                                    })
+                                  Transition transition =
+                                      compose(
+                                          constraint(sessionFlows.and(inAclBdd)),
+                                          sessionInfo.getTransformation(),
+                                          denyOutAcl,
+                                          removeNodeSpecificConstraints(
+                                              hostname,
+                                              _lastHopMgr,
+                                              outgoingOriginalFlowFilterMgr,
+                                              srcMgr));
+                                  if (transition == Zero.INSTANCE) {
+                                    return null;
+                                  }
+                                  return new Edge(preState, postState, transition);
+                                })
                                 .filter(Objects::nonNull);
                           }
 
@@ -492,26 +487,25 @@ public class SessionInstrumentation {
               public Stream<Edge> visitIncomingSessionScope(
                   IncomingSessionScope incomingSessionScope) {
                 return incomingSessionScope.getIncomingInterfaces().stream()
-                    .map(
-                        inIface -> {
-                          StateExpr preState = new PreInInterface(hostname, inIface);
-                          BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
-                          BDD sessionFlows = sessionInfo.getSessionFlows();
+                    .map(inIface -> {
+                      StateExpr preState = new PreInInterface(hostname, inIface);
+                      BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
+                      BDD sessionFlows = sessionInfo.getSessionFlows();
 
-                          /* Don't remove the source interface/last hop constraints here. They get
-                           * removed in the transition from NodeInterfaceDeliveredToSubnet to
-                           * DeliveredToSubnet.
-                           */
-                          Transition transition =
-                              compose(
-                                  constraint(sessionFlows.and(inAclBdd)),
-                                  sessionInfo.getTransformation(),
-                                  outAcl);
-                          if (transition == Zero.INSTANCE) {
-                            return null;
-                          }
-                          return new Edge(preState, postState, transition);
-                        })
+                      /* Don't remove the source interface/last hop constraints here. They get
+                       * removed in the transition from NodeInterfaceDeliveredToSubnet to
+                       * DeliveredToSubnet.
+                       */
+                      Transition transition =
+                          compose(
+                              constraint(sessionFlows.and(inAclBdd)),
+                              sessionInfo.getTransformation(),
+                              outAcl);
+                      if (transition == Zero.INSTANCE) {
+                        return null;
+                      }
+                      return new Edge(preState, postState, transition);
+                    })
                     .filter(Objects::nonNull);
               }
 
@@ -549,25 +543,21 @@ public class SessionInstrumentation {
               public Stream<Edge> visitIncomingSessionScope(
                   IncomingSessionScope incomingSessionScope) {
                 return incomingSessionScope.getIncomingInterfaces().stream()
-                    .map(
-                        inIface -> {
-                          StateExpr preState = new PreInInterface(hostname, inIface);
-                          BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
+                    .map(inIface -> {
+                      StateExpr preState = new PreInInterface(hostname, inIface);
+                      BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
-                          Transition transition =
-                              compose(
-                                  constraint(sessionInfo.getSessionFlows().and(inAclBdd)),
-                                  sessionInfo.getTransformation(),
-                                  removeNodeSpecificConstraints(
-                                      hostname,
-                                      _lastHopMgr,
-                                      outgoingOriginalFlowFilterMgr,
-                                      srcMgr));
-                          if (transition == Zero.INSTANCE) {
-                            return null;
-                          }
-                          return new Edge(preState, postState, transition);
-                        })
+                      Transition transition =
+                          compose(
+                              constraint(sessionInfo.getSessionFlows().and(inAclBdd)),
+                              sessionInfo.getTransformation(),
+                              removeNodeSpecificConstraints(
+                                  hostname, _lastHopMgr, outgoingOriginalFlowFilterMgr, srcMgr));
+                      if (transition == Zero.INSTANCE) {
+                        return null;
+                      }
+                      return new Edge(preState, postState, transition);
+                    })
                     .filter(Objects::nonNull);
               }
 
@@ -605,24 +595,20 @@ public class SessionInstrumentation {
               public Stream<Edge> visitIncomingSessionScope(
                   IncomingSessionScope incomingSessionScope) {
                 return incomingSessionScope.getIncomingInterfaces().stream()
-                    .map(
-                        inIface -> {
-                          StateExpr preState = new PreInInterface(hostname, inIface);
-                          BDD inAclPermitBdd = getIncomingSessionFilterBdd(hostname, inIface);
+                    .map(inIface -> {
+                      StateExpr preState = new PreInInterface(hostname, inIface);
+                      BDD inAclPermitBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
-                          Transition transition =
-                              compose(
-                                  constraint(sessionFlows.diff(inAclPermitBdd)),
-                                  removeNodeSpecificConstraints(
-                                      hostname,
-                                      _lastHopMgr,
-                                      outgoingOriginalFlowFilterMgr,
-                                      srcMgr));
-                          if (transition == Zero.INSTANCE) {
-                            return null;
-                          }
-                          return new Edge(preState, postState, transition);
-                        })
+                      Transition transition =
+                          compose(
+                              constraint(sessionFlows.diff(inAclPermitBdd)),
+                              removeNodeSpecificConstraints(
+                                  hostname, _lastHopMgr, outgoingOriginalFlowFilterMgr, srcMgr));
+                      if (transition == Zero.INSTANCE) {
+                        return null;
+                      }
+                      return new Edge(preState, postState, transition);
+                    })
                     .filter(Objects::nonNull);
               }
 

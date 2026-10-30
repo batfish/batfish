@@ -40,7 +40,7 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     @JsonCreator
     private static ExitOutputIfaceStepDetail jsonCreator(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
+        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable Flow transformedFlow) {
       checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
       return new ExitOutputIfaceStepDetail(outInterface, transformedFlow);
     }

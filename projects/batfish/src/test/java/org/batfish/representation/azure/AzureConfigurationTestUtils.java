@@ -48,10 +48,9 @@ public class AzureConfigurationTestUtils {
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .findAny()
         .map(ConcreteInterfaceAddress::getIp)
-        .orElseThrow(
-            () ->
-                new IllegalArgumentException(
-                    "Could not find an interface with a concrete address on " + nodeName));
+        .orElseThrow(() ->
+            new IllegalArgumentException(
+                "Could not find an interface with a concrete address on " + nodeName));
   }
 
   /**

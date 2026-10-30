@@ -138,9 +138,8 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         Utils.newAwsConfiguration(_vpnGatewayId, "aws", _tags, DeviceModel.AWS_VPN_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    _attachmentVpcIds.forEach(
-        vpcId ->
-            connectGatewayToVpc(_vpnGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings));
+    _attachmentVpcIds.forEach(vpcId ->
+        connectGatewayToVpc(_vpnGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings));
 
     // VIFs that terminate directly on this VGW (Private VIFs, VGW-attached). VIFs are global
     // resources in the AWS model and may be observed in any region; aggregate across all regions.
@@ -157,12 +156,11 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         vsConfiguration.getAccounts().stream()
             .flatMap(a -> a.getRegions().stream())
             .flatMap(r -> r.getDirectConnectGatewayAssociations().values().stream())
-            .anyMatch(
-                a ->
-                    a.getAssociatedGateway().getType()
-                            == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
-                                .VIRTUAL_PRIVATE_GATEWAY
-                        && _vpnGatewayId.equals(a.getAssociatedGateway().getId()));
+            .anyMatch(a ->
+                a.getAssociatedGateway().getType()
+                        == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                            .VIRTUAL_PRIVATE_GATEWAY
+                    && _vpnGatewayId.equals(a.getAssociatedGateway().getId()));
 
     // if this VGW has any BGP-based VPN connections, configure BGP on it
     boolean doBgp =
@@ -202,14 +200,13 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
     if (!vpnConnections.isEmpty()) {
       VpnConnection.initVpnConnectionsInfrastructure(cfgNode);
-      vpnConnections.forEach(
-          c ->
-              c.applyToGateway(
-                  cfgNode,
-                  cfgNode.getDefaultVrf(),
-                  VGW_EXPORT_POLICY_NAME,
-                  VGW_IMPORT_POLICY_NAME,
-                  warnings));
+      vpnConnections.forEach(c ->
+          c.applyToGateway(
+              cfgNode,
+              cfgNode.getDefaultVrf(),
+              VGW_EXPORT_POLICY_NAME,
+              VGW_IMPORT_POLICY_NAME,
+              warnings));
     }
 
     // Wire customer-facing VIFs (Private VIFs, VGW-attached). The VIF interface and BGP peer live

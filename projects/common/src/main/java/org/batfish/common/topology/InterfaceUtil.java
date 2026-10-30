@@ -67,10 +67,8 @@ public final class InterfaceUtil {
    */
   private static SetMultimap<String, String> computeConfusionMap(Set<Set<String>> confusions) {
     ImmutableSetMultimap.Builder<String, String> ret = ImmutableSetMultimap.builder();
-    confusions.forEach(
-        c ->
-            c.forEach(
-                s -> ret.putAll(s.toLowerCase(), Sets.difference(c, Collections.singleton(s)))));
+    confusions.forEach(c ->
+        c.forEach(s -> ret.putAll(s.toLowerCase(), Sets.difference(c, Collections.singleton(s)))));
     return ret.build();
   }
 

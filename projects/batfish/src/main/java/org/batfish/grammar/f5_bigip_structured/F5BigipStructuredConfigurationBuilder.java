@@ -963,10 +963,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmtd_ca_devices(Cmtd_ca_devicesContext ctx) {
-    ctx.names.forEach(
-        name ->
-            _c.referenceStructure(
-                DEVICE, toName(name), TRUST_DOMAIN_CA_DEVICE, name.getStart().getLine()));
+    ctx.names.forEach(name ->
+        _c.referenceStructure(
+            DEVICE, toName(name), TRUST_DOMAIN_CA_DEVICE, name.getStart().getLine()));
   }
 
   @Override

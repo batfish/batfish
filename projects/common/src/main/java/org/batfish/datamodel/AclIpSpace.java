@@ -263,15 +263,14 @@ public class AclIpSpace extends IpSpace {
         StreamSupport.stream(ipSpaces.spliterator(), false)
             .filter(Objects::nonNull)
             .flatMap(AclIpSpace::flattenAclIpSpacesForUnion)
-            .filter(
-                s -> {
-                  hasAnything[0] = true;
-                  if (s instanceof UniverseIpSpace) {
-                    hasUniverse[0] = true;
-                    return false; // can't fully exit from here, but don't include in array
-                  }
-                  return !(s instanceof EmptyIpSpace);
-                })
+            .filter(s -> {
+              hasAnything[0] = true;
+              if (s instanceof UniverseIpSpace) {
+                hasUniverse[0] = true;
+                return false; // can't fully exit from here, but don't include in array
+              }
+              return !(s instanceof EmptyIpSpace);
+            })
             .toArray(IpSpace[]::new);
 
     if (hasUniverse[0]) {

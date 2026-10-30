@@ -60,20 +60,19 @@ public class SnapshotMetadataMgrTest {
     final AtomicBoolean done = new AtomicBoolean(false);
     try (ExecutorService pollerService = Executors.newSingleThreadExecutor()) {
       Future<Long> loops =
-          pollerService.submit(
-              () -> {
-                long count = 0;
-                Instant last = Instant.MIN;
-                while (!done.get()) {
-                  ++count;
-                  SnapshotMetadata meta = manager.readMetadata(net, ss);
-                  assertThat(meta, notNullValue());
-                  Instant cur = meta.getCreationTimestamp();
-                  assertThat(cur, greaterThanOrEqualTo(last));
-                  last = cur;
-                }
-                return count;
-              });
+          pollerService.submit(() -> {
+            long count = 0;
+            Instant last = Instant.MIN;
+            while (!done.get()) {
+              ++count;
+              SnapshotMetadata meta = manager.readMetadata(net, ss);
+              assertThat(meta, notNullValue());
+              Instant cur = meta.getCreationTimestamp();
+              assertThat(cur, greaterThanOrEqualTo(last));
+              last = cur;
+            }
+            return count;
+          });
 
       // Write continuously (in competition with the background reader).
       for (int i = 0; i < writes; ++i) {

@@ -2262,11 +2262,10 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
     String rawAuthenticationString = ctx.auth.getText();
-    _currentInterfaces.forEach(
-        i ->
-            i.getHsrpGroups()
-                .get(_currentHsrpGroup)
-                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
+    _currentInterfaces.forEach(i ->
+        i.getHsrpGroups()
+            .get(_currentHsrpGroup)
+            .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
   }
 
   @Override
@@ -2299,12 +2298,11 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
           ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
       holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
     }
-    _currentInterfaces.forEach(
-        i -> {
-          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
-          hsrpGroup.setHelloTime(helloTime);
-          hsrpGroup.setHoldTime(holdTime);
-        });
+    _currentInterfaces.forEach(i -> {
+      HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
+      hsrpGroup.setHelloTime(helloTime);
+      hsrpGroup.setHoldTime(holdTime);
+    });
   }
 
   @Override
@@ -2318,17 +2316,16 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
     _currentInterfaces.stream()
         .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
-        .forEach(
-            trackActions -> {
-              if (_no) {
-                // 'no' version of command only operates if rest of line matches existing setting
-                if (trackAction.equals(trackActions.get(trackingGroup))) {
-                  trackActions.remove(trackingGroup);
-                }
-              } else {
-                trackActions.put(trackingGroup, trackAction);
-              }
-            });
+        .forEach(trackActions -> {
+          if (_no) {
+            // 'no' version of command only operates if rest of line matches existing setting
+            if (trackAction.equals(trackActions.get(trackingGroup))) {
+              trackActions.remove(trackingGroup);
+            }
+          } else {
+            trackActions.put(trackingGroup, trackAction);
+          }
+        });
   }
 
   private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
@@ -2689,7 +2686,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       _currentServiceObjectGroup =
           _configuration
               .getServiceObjectGroups()
-              .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
+              .computeIfAbsent(name, groupName -> new ServiceObjectGroup(groupName, protocol));
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
@@ -3049,7 +3046,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
             .getOspfProcesses()
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
-                (procName) -> {
+                procName -> {
                   OspfProcess p = new OspfProcess(procName);
                   p.setRouterId(routerId);
                   return p;
@@ -3406,9 +3403,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       _currentVrf = ctx.vrf.getText();
     }
     _currentOspfProcess =
-        currentVrf()
-            .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName));
+        currentVrf().getOspfProcesses().computeIfAbsent(procName, pName -> new OspfProcess(pName));
   }
 
   @Override

@@ -284,28 +284,25 @@ public final class F5BigipStructuredGrammarTest {
       ConvertConfigurationAnswerElement ans,
       Stream<F5BigipStructureType> types,
       Function<String, ? extends Builtin> nameToBuiltin) {
-    types.forEach(
-        type ->
-            ans.getUndefinedReferences()
-                .values()
-                .forEach(
-                    undefinedReferencesForFile ->
-                        undefinedReferencesForFile
-                            .get(type.getDescription())
-                            .keySet()
-                            .forEach(
-                                structureName -> {
-                                  String msg =
-                                      String.format(
-                                          "Reference to '%s' of type '%s' should not be undefined"
-                                              + " because '%s' is a builtin.",
-                                          structureName, type.getDescription(), structureName);
-                                  assertThat(msg, nameToBuiltin.apply(structureName), nullValue());
-                                  assertThat(
-                                      msg,
-                                      nameToBuiltin.apply(Builtin.COMMON_PREFIX + structureName),
-                                      nullValue());
-                                })));
+    types.forEach(type ->
+        ans.getUndefinedReferences()
+            .values()
+            .forEach(undefinedReferencesForFile ->
+                undefinedReferencesForFile
+                    .get(type.getDescription())
+                    .keySet()
+                    .forEach(structureName -> {
+                      String msg =
+                          String.format(
+                              "Reference to '%s' of type '%s' should not be undefined"
+                                  + " because '%s' is a builtin.",
+                              structureName, type.getDescription(), structureName);
+                      assertThat(msg, nameToBuiltin.apply(structureName), nullValue());
+                      assertThat(
+                          msg,
+                          nameToBuiltin.apply(Builtin.COMMON_PREFIX + structureName),
+                          nullValue());
+                    })));
   }
 
   private static @Nonnull Flow createHttpFlow(String ingressNode, Ip dstIp) {
@@ -3359,50 +3356,43 @@ public final class F5BigipStructuredGrammarTest {
   public void testVirtualMisconfigurations() {
     F5BigipConfiguration c = parseVendorConfig("f5_bigip_structured_virtual_misconfigurations");
     Stream.of("ip_forward", "reject")
-        .forEach(
-            mode ->
-                IntStream.of(1, 2, 3)
-                    .forEach(
-                        i -> {
-                          Virtual virtual =
-                              c.getVirtuals()
-                                  .get(String.format("/Common/virtual_%s_translate%d", mode, i));
-                          // translation should not occur regardless of whether directives appear
-                          assertFalse(virtual.getTranslateAddress());
-                          assertFalse(virtual.getTranslatePort());
-                        }));
+        .forEach(mode ->
+            IntStream.of(1, 2, 3)
+                .forEach(i -> {
+                  Virtual virtual =
+                      c.getVirtuals().get(String.format("/Common/virtual_%s_translate%d", mode, i));
+                  // translation should not occur regardless of whether directives appear
+                  assertFalse(virtual.getTranslateAddress());
+                  assertFalse(virtual.getTranslatePort());
+                }));
     IntStream.of(1, 2)
-        .forEach(
-            i -> {
-              Virtual virtual =
-                  c.getVirtuals()
-                      .get(String.format("/Common/virtual_ip_forward_two_incompatible%d", i));
-              // ip-forward first
-              assertTrue(virtual.getIpForward());
-              assertThat(virtual.getPool(), nullValue());
-              assertFalse(virtual.getReject());
-            });
+        .forEach(i -> {
+          Virtual virtual =
+              c.getVirtuals()
+                  .get(String.format("/Common/virtual_ip_forward_two_incompatible%d", i));
+          // ip-forward first
+          assertTrue(virtual.getIpForward());
+          assertThat(virtual.getPool(), nullValue());
+          assertFalse(virtual.getReject());
+        });
     IntStream.of(1, 2)
-        .forEach(
-            i -> {
-              Virtual virtual =
-                  c.getVirtuals().get(String.format("/Common/virtual_pool_two_incompatible%d", i));
-              // pool first
-              assertFalse(virtual.getIpForward());
-              assertThat(virtual.getPool(), notNullValue());
-              assertFalse(virtual.getReject());
-            });
+        .forEach(i -> {
+          Virtual virtual =
+              c.getVirtuals().get(String.format("/Common/virtual_pool_two_incompatible%d", i));
+          // pool first
+          assertFalse(virtual.getIpForward());
+          assertThat(virtual.getPool(), notNullValue());
+          assertFalse(virtual.getReject());
+        });
     IntStream.of(1, 2)
-        .forEach(
-            i -> {
-              Virtual virtual =
-                  c.getVirtuals()
-                      .get(String.format("/Common/virtual_reject_two_incompatible%d", i));
-              // reject first
-              assertFalse(virtual.getIpForward());
-              assertThat(virtual.getPool(), nullValue());
-              assertTrue(virtual.getReject());
-            });
+        .forEach(i -> {
+          Virtual virtual =
+              c.getVirtuals().get(String.format("/Common/virtual_reject_two_incompatible%d", i));
+          // reject first
+          assertFalse(virtual.getIpForward());
+          assertThat(virtual.getPool(), nullValue());
+          assertTrue(virtual.getReject());
+        });
   }
 
   @Test

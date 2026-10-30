@@ -201,11 +201,11 @@ public final class InferRoles {
       _tokens = tokenizeName(chosenNode);
       _regex =
           _tokens.stream()
-              .map((p) -> p.getToken().tokenToRegex(p.getString()))
+              .map(p -> p.getToken().tokenToRegex(p.getString()))
               .collect(Collectors.toList());
       Pattern p = Pattern.compile(String.join("", _regex));
       _matchingNodes =
-          nodes.stream().filter((node) -> p.matcher(node).matches()).collect(Collectors.toList());
+          nodes.stream().filter(node -> p.matcher(node).matches()).collect(Collectors.toList());
       // keep this regex if it matches a sufficient fraction of node names; otherwise try again
       if ((double) _matchingNodes.size() / nodes.size() >= REGEX_THRESHOLD) {
         return true;
@@ -282,7 +282,7 @@ public final class InferRoles {
 
   private static List<TokenizedString> tokenizeName(String name) {
     List<PreTokenizedString> pretokens = pretokenizeName(name);
-    if (pretokens.stream().anyMatch((p) -> p.getToken() == PreToken.DELIMITER)) {
+    if (pretokens.stream().anyMatch(p -> p.getToken() == PreToken.DELIMITER)) {
       return preTokensToDelimitedTokens(pretokens);
     } else {
       return preTokensToUndelimitedTokens(pretokens);
@@ -431,13 +431,12 @@ public final class InferRoles {
     // invert the map from roles to nodes, to create a map from nodes to roles
     SortedMap<String, SortedSet<String>> nodeRolesMap = new TreeMap<>();
 
-    roleNodesMap.forEach(
-        (role, nodes) -> {
-          for (String node : nodes) {
-            SortedSet<String> nodeRoles = nodeRolesMap.computeIfAbsent(node, k -> new TreeSet<>());
-            nodeRoles.add(role);
-          }
-        });
+    roleNodesMap.forEach((role, nodes) -> {
+      for (String node : nodes) {
+        SortedSet<String> nodeRoles = nodeRolesMap.computeIfAbsent(node, k -> new TreeSet<>());
+        nodeRoles.add(role);
+      }
+    });
 
     return nodeRolesMap;
   }

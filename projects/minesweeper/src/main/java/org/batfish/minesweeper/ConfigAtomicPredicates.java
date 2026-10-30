@@ -183,13 +183,12 @@ public final class ConfigAtomicPredicates {
       RoutingPolicy policy, Configuration configuration) {
     Set<CommunityVar> comms = new HashSet<>();
     List<Statement> stmts = policy.getStatements();
-    stmts.forEach(
-        stmt ->
-            comms.addAll(
-                stmt.accept(
-                    new RoutePolicyStatementVarCollector(),
-                    new Tuple<>(
-                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
+    stmts.forEach(stmt ->
+        comms.addAll(
+            stmt.accept(
+                new RoutePolicyStatementVarCollector(),
+                new Tuple<>(
+                    new HashSet<>(Collections.singleton(policy.getName())), configuration))));
     return comms;
   }
 

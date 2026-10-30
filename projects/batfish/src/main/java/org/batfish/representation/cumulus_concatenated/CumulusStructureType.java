@@ -58,10 +58,9 @@ public enum CumulusStructureType implements StructureType {
           Arrays.stream(CumulusStructureType.values())
               .filter(cType -> cType.name().equals(frrType.name()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new NoSuchElementException(
-                          "No CumulusStructureType exists for FrrStructureType " + frrType));
+              .orElseThrow(() ->
+                  new NoSuchElementException(
+                      "No CumulusStructureType exists for FrrStructureType " + frrType));
       map.put(frrType, matchingCumulusType);
     }
     return map.build();

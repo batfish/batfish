@@ -21,7 +21,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.15.0",
     "com.google.errorprone:error_prone_annotations:2.51.0",
-    "com.google.googlejavaformat:google-java-format:1.37.0:all-deps",
+    "com.google.googlejavaformat:google-java-format:2.0.0:all-deps",
     "com.google.guava:guava",
     "com.google.guava:guava-testlib",
     "com.google.re2j:re2j:1.8",

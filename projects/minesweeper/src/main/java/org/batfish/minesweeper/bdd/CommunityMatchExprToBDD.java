@@ -169,14 +169,13 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitOpaqueExtendedCommunities(
       OpaqueExtendedCommunities opaqueExtendedCommunities, Arg arg) {
     return matchingCommunityVarsToBDD(
-        _isExtendedCommunityLiteral.and(
-            c -> {
-              assert c.getLiteralValue() != null;
-              ExtendedCommunity ec = (ExtendedCommunity) c.getLiteralValue();
-              return ec.isOpaque()
-                  && ec.isTransitive() == opaqueExtendedCommunities.getIsTransitive()
-                  && ec.getSubtype() == opaqueExtendedCommunities.getSubtype();
-            }),
+        _isExtendedCommunityLiteral.and(c -> {
+          assert c.getLiteralValue() != null;
+          ExtendedCommunity ec = (ExtendedCommunity) c.getLiteralValue();
+          return ec.isOpaque()
+              && ec.isTransitive() == opaqueExtendedCommunities.getIsTransitive()
+              && ec.getSubtype() == opaqueExtendedCommunities.getSubtype();
+        }),
         arg);
   }
 
@@ -184,11 +183,10 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Arg arg) {
     return matchingCommunityVarsToBDD(
-        _isExtendedCommunityLiteral.and(
-            c -> {
-              assert c.getLiteralValue() != null;
-              return ((ExtendedCommunity) c.getLiteralValue()).isRouteTarget();
-            }),
+        _isExtendedCommunityLiteral.and(c -> {
+          assert c.getLiteralValue() != null;
+          return ((ExtendedCommunity) c.getLiteralValue()).isRouteTarget();
+        }),
         arg);
   }
 
@@ -196,11 +194,10 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Arg arg) {
     return matchingCommunityVarsToBDD(
-        _isExtendedCommunityLiteral.and(
-            c -> {
-              assert c.getLiteralValue() != null;
-              return ((ExtendedCommunity) c.getLiteralValue()).isRouteOrigin();
-            }),
+        _isExtendedCommunityLiteral.and(c -> {
+          assert c.getLiteralValue() != null;
+          return ((ExtendedCommunity) c.getLiteralValue()).isRouteOrigin();
+        }),
         arg);
   }
 
@@ -234,11 +231,10 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Arg arg) {
     return matchingCommunityVarsToBDD(
-        _isExtendedCommunityLiteral.and(
-            c -> {
-              assert c.getLiteralValue() != null;
-              return ((ExtendedCommunity) c.getLiteralValue()).isVpnDistinguisher();
-            }),
+        _isExtendedCommunityLiteral.and(c -> {
+          assert c.getLiteralValue() != null;
+          return ((ExtendedCommunity) c.getLiteralValue()).isVpnDistinguisher();
+        }),
         arg);
   }
 

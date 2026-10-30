@@ -96,10 +96,9 @@ public class ReferenceLibrary {
   public @Nonnull ReferenceLibrary mergeReferenceBooks(Collection<ReferenceBook> newBooks) {
     List<ReferenceBook> booksToKeep =
         _books.stream()
-            .filter(
-                originalBook ->
-                    !newBooks.stream()
-                        .anyMatch(newBook -> newBook.getName().equals(originalBook.getName())))
+            .filter(originalBook ->
+                !newBooks.stream()
+                    .anyMatch(newBook -> newBook.getName().equals(originalBook.getName())))
             .collect(Collectors.toList());
 
     booksToKeep.addAll(newBooks);

@@ -270,16 +270,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
       assertThat(originateIfaceEdges, not(anEmptyMap()));
       assertThat(originateVrfEdges, not(anEmptyMap()));
 
-      originateIfaceEdges.forEach(
-          (originateIface, postInVrf) -> {
-            assertThat(ifaceRootsEdges, hasEntry(equalTo(originateIface), hasKey(postInVrf)));
-            assertThat(vrfRootsEdges, not(hasKey(equalTo(originateIface))));
-          });
-      originateVrfEdges.forEach(
-          (originateVrf, postInVrf) -> {
-            assertThat(vrfRootsEdges, hasEntry(equalTo(originateVrf), hasKey(postInVrf)));
-            assertThat(ifaceRootsEdges, not(hasKey(equalTo(originateVrf))));
-          });
+      originateIfaceEdges.forEach((originateIface, postInVrf) -> {
+        assertThat(ifaceRootsEdges, hasEntry(equalTo(originateIface), hasKey(postInVrf)));
+        assertThat(vrfRootsEdges, not(hasKey(equalTo(originateIface))));
+      });
+      originateVrfEdges.forEach((originateVrf, postInVrf) -> {
+        assertThat(vrfRootsEdges, hasEntry(equalTo(originateVrf), hasKey(postInVrf)));
+        assertThat(ifaceRootsEdges, not(hasKey(equalTo(originateVrf))));
+      });
     }
   }
 
@@ -351,32 +349,26 @@ public final class BDDReachabilityAnalysisFactoryTest {
       assertTrue(
           "Edges at which a forbiddenTransitNode would become transited should be removed.",
           edges.stream()
-              .noneMatch(
-                  edge ->
-                      edge.getPreState() instanceof PreOutEdgePostNat
-                          && edge.getPostState() instanceof PreInInterface
-                          && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)));
+              .noneMatch(edge ->
+                  edge.getPreState() instanceof PreOutEdgePostNat
+                      && edge.getPostState() instanceof PreInInterface
+                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)));
       assertTrue(
           "Edges at which a non-forbiddenTransitNodes become transited should not be removed.",
           edges.stream()
-              .anyMatch(
-                  edge ->
-                      edge.getPreState() instanceof PreOutEdgePostNat
-                          && edge.getPostState() instanceof PreInInterface
-                          && ((PreOutEdgePostNat) edge.getPreState())
-                              .getSrcNode()
-                              .equals(otherNode)));
+              .anyMatch(edge ->
+                  edge.getPreState() instanceof PreOutEdgePostNat
+                      && edge.getPostState() instanceof PreInInterface
+                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(otherNode)));
     }
   }
 
   private @Nonnull Set<Edge> getEdges(Map<StateExpr, Map<StateExpr, Transition>> edgeMap) {
     return edgeMap.entrySet().stream()
-        .flatMap(
-            srcEntry ->
-                srcEntry.getValue().entrySet().stream()
-                    .map(
-                        tgtEntry ->
-                            new Edge(srcEntry.getKey(), tgtEntry.getKey(), tgtEntry.getValue())))
+        .flatMap(srcEntry ->
+            srcEntry.getValue().entrySet().stream()
+                .map(tgtEntry ->
+                    new Edge(srcEntry.getKey(), tgtEntry.getKey(), tgtEntry.getValue())))
         .collect(Collectors.toSet());
   }
 
@@ -405,81 +397,75 @@ public final class BDDReachabilityAnalysisFactoryTest {
       // all edges into the query state require transit nodes transited bit to be set.
       edges.stream()
           .filter(edge -> edge.getPostState() == Query.INSTANCE)
-          .forEach(
-              edge -> {
-                assertFalse(
-                    "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseForward(_one).andSat(notTransited));
-                assertFalse(
-                    "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseBackward(_one).andSat(notTransited));
-              });
+          .forEach(edge -> {
+            assertFalse(
+                "Edge into query state must require requiredTransitNodes bit to be one",
+                edge.traverseForward(_one).andSat(notTransited));
+            assertFalse(
+                "Edge into query state must require requiredTransitNodes bit to be one",
+                edge.traverseBackward(_one).andSat(notTransited));
+          });
 
       // all edges from originate states initialize the transit nodes bit to zero
       edges.stream()
-          .filter(
-              edge ->
-                  edge.getPreState() instanceof OriginateVrf
-                      || edge.getPreState() instanceof OriginateInterfaceLink)
-          .forEach(
-              edge -> {
-                StateExpr preState = edge.getPreState();
-                String hostname = null;
-                if (preState instanceof OriginateVrf) {
-                  hostname = ((OriginateVrf) preState).getHostname();
-                } else {
-                  hostname = ((OriginateInterfaceLink) preState).getHostname();
-                }
-                assertFalse(
-                    "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge.traverseForward(_one).andSat(transited));
-                assertFalse(
-                    "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge.traverseBackward(
-                            factory.getBDDSourceManagers().get(hostname).isValidValue())
-                        .andSat(transited));
-              });
+          .filter(edge ->
+              edge.getPreState() instanceof OriginateVrf
+                  || edge.getPreState() instanceof OriginateInterfaceLink)
+          .forEach(edge -> {
+            StateExpr preState = edge.getPreState();
+            String hostname = null;
+            if (preState instanceof OriginateVrf) {
+              hostname = ((OriginateVrf) preState).getHostname();
+            } else {
+              hostname = ((OriginateInterfaceLink) preState).getHostname();
+            }
+            assertFalse(
+                "Edge out of originate state must require requiredTransitNodes bit to be zero",
+                edge.traverseForward(_one).andSat(transited));
+            assertFalse(
+                "Edge out of originate state must require requiredTransitNodes bit to be zero",
+                edge.traverseBackward(factory.getBDDSourceManagers().get(hostname).isValidValue())
+                    .andSat(transited));
+          });
 
       edges.stream()
-          .filter(
-              edge ->
-                  edge.getPreState() instanceof PreOutEdgePostNat
-                      && edge.getPostState() instanceof PreInInterface)
-          .forEach(
-              edge -> {
-                String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
-                String peername = ((PreInInterface) edge.getPostState()).getHostname();
-                BDD validSrc = factory.getBDDSourceManagers().get(hostname).isValidValue();
-                BDD peerValidSrc = factory.getBDDSourceManagers().get(peername).isValidValue();
-                if (hostname.equals(node)) {
-                  assertFalse(
-                      "Forward Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + "requiredTransitNode must set the requiredTransitNodes bit",
-                      edge.traverseForward(validSrc).andSat(notTransited));
-                  BDD backwardOne = edge.traverseBackward(peerValidSrc);
-                  assertFalse(
-                      "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + " requiredTransitNode must not constrain the bit after exit",
-                      backwardOne.testsVars(requiredTransitNodesBDD));
-                } else {
-                  assertFalse(
-                      "Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseForward(transited.and(validSrc)).andSat(notTransited));
-                  assertFalse(
-                      "Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseForward(notTransited.and(validSrc)).andSat(transited));
-                  assertFalse(
-                      "Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseBackward(transited.and(peerValidSrc)).andSat(notTransited));
-                  assertFalse(
-                      "Edge from PreOutEdgePostNat to PreInInterface for a "
-                          + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseBackward(notTransited.and(peerValidSrc)).andSat(transited));
-                }
-              });
+          .filter(edge ->
+              edge.getPreState() instanceof PreOutEdgePostNat
+                  && edge.getPostState() instanceof PreInInterface)
+          .forEach(edge -> {
+            String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
+            String peername = ((PreInInterface) edge.getPostState()).getHostname();
+            BDD validSrc = factory.getBDDSourceManagers().get(hostname).isValidValue();
+            BDD peerValidSrc = factory.getBDDSourceManagers().get(peername).isValidValue();
+            if (hostname.equals(node)) {
+              assertFalse(
+                  "Forward Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + "requiredTransitNode must set the requiredTransitNodes bit",
+                  edge.traverseForward(validSrc).andSat(notTransited));
+              BDD backwardOne = edge.traverseBackward(peerValidSrc);
+              assertFalse(
+                  "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + " requiredTransitNode must not constrain the bit after exit",
+                  backwardOne.testsVars(requiredTransitNodesBDD));
+            } else {
+              assertFalse(
+                  "Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
+                  edge.traverseForward(transited.and(validSrc)).andSat(notTransited));
+              assertFalse(
+                  "Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
+                  edge.traverseForward(notTransited.and(validSrc)).andSat(transited));
+              assertFalse(
+                  "Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
+                  edge.traverseBackward(transited.and(peerValidSrc)).andSat(notTransited));
+              assertFalse(
+                  "Edge from PreOutEdgePostNat to PreInInterface for a "
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
+                  edge.traverseBackward(notTransited.and(peerValidSrc)).andSat(transited));
+            }
+          });
     }
   }
 
@@ -2278,10 +2264,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
         Iterables.getOnlyElement(
                 factory
                     .generateRules_PreInInterface_PacketPolicy()
-                    .filter(
-                        e ->
-                            e.getPreState().equals(preInInterface)
-                                && e.getPostState().equals(startState))
+                    .filter(e ->
+                        e.getPreState().equals(preInInterface)
+                            && e.getPostState().equals(startState))
                     .collect(ImmutableList.toImmutableList()))
             .getTransition();
 

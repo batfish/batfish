@@ -66,17 +66,15 @@ public final class VxlanTopologyUtils {
    */
   @VisibleForTesting
   static void addLayer2VniEdges(MutableGraph<VxlanNode> graph, Map<VrfId, Layer2Vni> vrfs) {
-    vrfs.forEach(
-        (vrfTail, vrfTailSettings) ->
-            vrfs.forEach(
-                (vrfHead, vrfHeadSettings) -> {
-                  // Generate all VRF combinations without repetition
-                  if (vrfTail.equals(vrfHead)) {
-                    return;
-                  }
-                  assert vrfTailSettings.getVni() == vrfHeadSettings.getVni();
-                  addLayer2VniEdge(graph, vrfTail, vrfTailSettings, vrfHead, vrfHeadSettings);
-                }));
+    vrfs.forEach((vrfTail, vrfTailSettings) ->
+        vrfs.forEach((vrfHead, vrfHeadSettings) -> {
+          // Generate all VRF combinations without repetition
+          if (vrfTail.equals(vrfHead)) {
+            return;
+          }
+          assert vrfTailSettings.getVni() == vrfHeadSettings.getVni();
+          addLayer2VniEdge(graph, vrfTail, vrfTailSettings, vrfHead, vrfHeadSettings);
+        }));
   }
 
   /**
@@ -104,17 +102,15 @@ public final class VxlanTopologyUtils {
    */
   @VisibleForTesting
   static void addLayer3VniEdges(MutableGraph<VxlanNode> graph, Map<VrfId, Layer3Vni> vrfs) {
-    vrfs.forEach(
-        (vrfTail, vrfTailSettings) ->
-            vrfs.forEach(
-                (vrfHead, vrfHeadSettings) -> {
-                  // Generate all VRF combinations without repetition
-                  if (vrfTail.equals(vrfHead)) {
-                    return;
-                  }
-                  assert vrfTailSettings.getVni() == vrfHeadSettings.getVni();
-                  addLayer3VniEdge(graph, vrfTail, vrfTailSettings, vrfHead, vrfHeadSettings);
-                }));
+    vrfs.forEach((vrfTail, vrfTailSettings) ->
+        vrfs.forEach((vrfHead, vrfHeadSettings) -> {
+          // Generate all VRF combinations without repetition
+          if (vrfTail.equals(vrfHead)) {
+            return;
+          }
+          assert vrfTailSettings.getVni() == vrfHeadSettings.getVni();
+          addLayer3VniEdge(graph, vrfTail, vrfTailSettings, vrfHead, vrfHeadSettings);
+        }));
   }
 
   /** Build a {@link VxlanNode} for the given {@link Layer2Vni} and {@link VrfId}. */
@@ -351,13 +347,12 @@ public final class VxlanTopologyUtils {
         .get(flow)
         .getTraces()
         .map(TraceAndReverseFlow::getTrace)
-        .anyMatch(
-            trace -> {
-              List<Hop> hops = trace.getHops();
-              return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(receiver)
-                  && trace.getDisposition() == FlowDisposition.ACCEPTED;
-            });
+        .anyMatch(trace -> {
+          List<Hop> hops = trace.getHops();
+          return !hops.isEmpty()
+              && hops.get(hops.size() - 1).getNode().getName().equals(receiver)
+              && trace.getDisposition() == FlowDisposition.ACCEPTED;
+        });
   }
 
   // TODO: does this value matter?
@@ -368,24 +363,23 @@ public final class VxlanTopologyUtils {
   public static void addTenantVniInterfaces(Configuration c) {
     for (Vrf vrf : c.getVrfs().values()) {
       vrf.getLayer3Vnis()
-          .forEach(
-              (vni, l3vni) -> {
-                if (l3vni.getSourceAddress() == null) {
-                  // defective layer-3 VNI, so don't generate an interface
-                  return;
-                }
-                // TODO: support sessions
-                Interface.builder()
-                    .setName(generatedTenantVniInterfaceName(vni))
-                    .setOwner(c)
-                    .setVrf(vrf)
-                    .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())
-                    .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
-                    .setProxyArp(false)
-                    .setType(TUNNEL)
-                    .setSwitchportMode(SwitchportMode.NONE)
-                    .build();
-              });
+          .forEach((vni, l3vni) -> {
+            if (l3vni.getSourceAddress() == null) {
+              // defective layer-3 VNI, so don't generate an interface
+              return;
+            }
+            // TODO: support sessions
+            Interface.builder()
+                .setName(generatedTenantVniInterfaceName(vni))
+                .setOwner(c)
+                .setVrf(vrf)
+                .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())
+                .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
+                .setProxyArp(false)
+                .setType(TUNNEL)
+                .setSwitchportMode(SwitchportMode.NONE)
+                .build();
+          });
     }
   }
 
@@ -394,28 +388,27 @@ public final class VxlanTopologyUtils {
     ImmutableSet.Builder<Edge> edgesBuilder = ImmutableSet.builder();
     vxlanTopology
         .getLayer3VniEdges()
-        .forEach(
-            endpointPair -> {
-              VxlanNode node1 = endpointPair.nodeU();
-              VxlanNode node2 = endpointPair.nodeV();
-              String node1Name = node1.getHostname();
-              String node2Name = node2.getHostname();
-              int vni1 = node1.getVni();
-              int vni2 = node2.getVni();
-              String iface1Name = generatedTenantVniInterfaceName(vni1);
-              String iface2Name = generatedTenantVniInterfaceName(vni2);
-              Configuration c1 = configurations.get(node1Name);
-              Configuration c2 = configurations.get(node2Name);
-              assert c1 != null;
-              assert c2 != null;
-              if (!(c1.getAllInterfaces().containsKey(iface1Name)
-                  && c2.getAllInterfaces().containsKey(iface2Name))) {
-                // VNI was defective, so no interface was generated.
-                return;
-              }
-              edgesBuilder.add(Edge.of(node1Name, iface1Name, node2Name, iface2Name));
-              edgesBuilder.add(Edge.of(node2Name, iface2Name, node1Name, iface1Name));
-            });
+        .forEach(endpointPair -> {
+          VxlanNode node1 = endpointPair.nodeU();
+          VxlanNode node2 = endpointPair.nodeV();
+          String node1Name = node1.getHostname();
+          String node2Name = node2.getHostname();
+          int vni1 = node1.getVni();
+          int vni2 = node2.getVni();
+          String iface1Name = generatedTenantVniInterfaceName(vni1);
+          String iface2Name = generatedTenantVniInterfaceName(vni2);
+          Configuration c1 = configurations.get(node1Name);
+          Configuration c2 = configurations.get(node2Name);
+          assert c1 != null;
+          assert c2 != null;
+          if (!(c1.getAllInterfaces().containsKey(iface1Name)
+              && c2.getAllInterfaces().containsKey(iface2Name))) {
+            // VNI was defective, so no interface was generated.
+            return;
+          }
+          edgesBuilder.add(Edge.of(node1Name, iface1Name, node2Name, iface2Name));
+          edgesBuilder.add(Edge.of(node2Name, iface2Name, node1Name, iface1Name));
+        });
     return edgesBuilder.build();
   }
 

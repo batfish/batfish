@@ -44,14 +44,13 @@ public class NodePropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .addAll(
             propertySpecifier.getMatchingProperties().stream()
-                .map(
-                    prop ->
-                        new ColumnMetadata(
-                            getColumnName(prop),
-                            NodePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
-                            NodePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
-                            false,
-                            true))
+                .map(prop ->
+                    new ColumnMetadata(
+                        getColumnName(prop),
+                        NodePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                        NodePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
+                        false,
+                        true))
                 .collect(Collectors.toList()))
         .build();
   }

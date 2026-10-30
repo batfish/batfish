@@ -4236,9 +4236,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentVrf = ctx.vrf.getText();
     }
     _currentOspfProcess =
-        currentVrf()
-            .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName));
+        currentVrf().getOspfProcesses().computeIfAbsent(procName, pName -> new OspfProcess(pName));
   }
 
   @Override
@@ -5144,14 +5142,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIfip_address_address_eos(Ifip_address_address_eosContext ctx) {
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
-    _currentInterfaces.forEach(
-        i -> {
-          if (ctx.SECONDARY() != null) {
-            i.getSecondaryAddresses().add(addr);
-          } else {
-            i.setAddress(addr);
-          }
-        });
+    _currentInterfaces.forEach(i -> {
+      if (ctx.SECONDARY() != null) {
+        i.getSecondaryAddresses().add(addr);
+      } else {
+        i.setAddress(addr);
+      }
+    });
   }
 
   @Override
@@ -5169,14 +5166,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitIfip_address_virtual_eos(Ifip_address_virtual_eosContext ctx) {
     // TODO: this should be handled differently, since virtual is present.
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
-    _currentInterfaces.forEach(
-        i -> {
-          if (ctx.SECONDARY() != null) {
-            i.getSecondaryAddresses().add(addr);
-          } else {
-            i.setAddress(addr);
-          }
-        });
+    _currentInterfaces.forEach(i -> {
+      if (ctx.SECONDARY() != null) {
+        i.getSecondaryAddresses().add(addr);
+      } else {
+        i.setAddress(addr);
+      }
+    });
   }
 
   @Override
@@ -5493,11 +5489,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_no_switchport_switchport_eos(If_no_switchport_switchport_eosContext ctx) {
-    _currentInterfaces.forEach(
-        i -> {
-          i.setSwitchport(false);
-          i.setSwitchportMode(SwitchportMode.NONE);
-        });
+    _currentInterfaces.forEach(i -> {
+      i.setSwitchport(false);
+      i.setSwitchportMode(SwitchportMode.NONE);
+    });
   }
 
   @Override
@@ -5813,13 +5808,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   /** Returns the {@link VrrpGroup}s for {@code _currentVrrpGroupNum}, creating them if needed. */
   private @Nonnull List<VrrpGroup> currentVrrpGroups() {
     return _currentInterfaces.stream()
-        .map(
-            iface ->
-                _configuration
-                    .getVrrpGroups()
-                    .computeIfAbsent(iface.getName(), n -> new VrrpInterface())
-                    .getVrrpGroups()
-                    .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new))
+        .map(iface ->
+            _configuration
+                .getVrrpGroups()
+                .computeIfAbsent(iface.getName(), n -> new VrrpInterface())
+                .getVrrpGroups()
+                .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -7183,38 +7177,35 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private void extractSetCommunityListAdditive(Rmsc_community_listContext ctx, List<String> names) {
     _currentRouteMapClause.clearNonAdditiveSetCommunity();
     _currentRouteMapClause.setSetCommunityList(new RouteMapSetCommunityList(names, true));
-    names.forEach(
-        name ->
-            _configuration.referenceStructure(
-                COMMUNITY_LIST,
-                name,
-                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE,
-                ctx.getStart().getLine()));
+    names.forEach(name ->
+        _configuration.referenceStructure(
+            COMMUNITY_LIST,
+            name,
+            ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE,
+            ctx.getStart().getLine()));
   }
 
   private void extractSetCommunityListDelete(Rmsc_community_listContext ctx, List<String> names) {
     _currentRouteMapClause.clearNonAdditiveSetCommunity();
     _currentRouteMapClause.setSetCommunityDelete(null);
     _currentRouteMapClause.setSetCommunityListDelete(new RouteMapSetCommunityListDelete(names));
-    names.forEach(
-        name ->
-            _configuration.referenceStructure(
-                COMMUNITY_LIST,
-                name,
-                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE,
-                ctx.getStart().getLine()));
+    names.forEach(name ->
+        _configuration.referenceStructure(
+            COMMUNITY_LIST,
+            name,
+            ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE,
+            ctx.getStart().getLine()));
   }
 
   private void extractSetCommunityList(Rmsc_community_listContext ctx, List<String> names) {
     _currentRouteMapClause.clearSetCommunity();
     _currentRouteMapClause.setSetCommunityList(new RouteMapSetCommunityList(names, false));
-    names.forEach(
-        name ->
-            _configuration.referenceStructure(
-                COMMUNITY_LIST,
-                name,
-                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST,
-                ctx.getStart().getLine()));
+    names.forEach(name ->
+        _configuration.referenceStructure(
+            COMMUNITY_LIST,
+            name,
+            ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST,
+            ctx.getStart().getLine()));
   }
 
   private static @Nonnull String toString(Community_list_nameContext ctx) {

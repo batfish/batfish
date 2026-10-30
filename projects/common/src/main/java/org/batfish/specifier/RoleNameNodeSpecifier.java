@@ -40,23 +40,16 @@ public final class RoleNameNodeSpecifier implements NodeSpecifier {
   public Set<String> resolve(SpecifierContext ctxt) {
     NodeRoleDimension nodeRoleDimension =
         ctxt.getNodeRoleDimension(_roleDimension)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        "Role dimension '" + _roleDimension + "' not found"));
+            .orElseThrow(() ->
+                new NoSuchElementException("Role dimension '" + _roleDimension + "' not found"));
     SortedMap<String, SortedSet<String>> roleNodesMap =
         nodeRoleDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
     return roleNodesMap.entrySet().stream()
         .filter(e -> e.getKey().equalsIgnoreCase(_roleName))
         .findAny()
         .map(Entry::getValue)
-        .orElseThrow(
-            () ->
-                new NoSuchElementException(
-                    "Role name '"
-                        + _roleName
-                        + "' not found in dimension '"
-                        + _roleDimension
-                        + "'"));
+        .orElseThrow(() ->
+            new NoSuchElementException(
+                "Role name '" + _roleName + "' not found in dimension '" + _roleDimension + "'"));
   }
 }

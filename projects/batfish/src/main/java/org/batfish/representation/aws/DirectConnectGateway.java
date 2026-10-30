@@ -253,17 +253,16 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     initBgp(cfgNode);
 
     // Per-association: install allowed-prefix fallback statics and a downstream-export filter.
-    associations.forEach(
-        assoc -> {
-          installAllowedPrefixFallbackStatics(cfgNode, assoc.getAllowedPrefixes());
-          String policyName =
-              assoc.getAssociatedGateway().getType()
-                      == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
-                          .VIRTUAL_PRIVATE_GATEWAY
-                  ? vgwExportPolicyName(assoc.getId())
-                  : tgwExportPolicyName(assoc.getId());
-          buildAllowedPrefixExportPolicy(cfgNode, policyName, assoc.getAllowedPrefixes());
-        });
+    associations.forEach(assoc -> {
+      installAllowedPrefixFallbackStatics(cfgNode, assoc.getAllowedPrefixes());
+      String policyName =
+          assoc.getAssociatedGateway().getType()
+                  == DirectConnectGatewayAssociation.AssociatedGateway.GatewayType
+                      .VIRTUAL_PRIVATE_GATEWAY
+              ? vgwExportPolicyName(assoc.getId())
+              : tgwExportPolicyName(assoc.getId());
+      buildAllowedPrefixExportPolicy(cfgNode, policyName, assoc.getAllowedPrefixes());
+    });
 
     // VIF export policy: advertise the originated allowed-prefix statics to on-prem.
     buildVifExportPolicy(cfgNode);
@@ -302,17 +301,16 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
   private static void installAllowedPrefixFallbackStatics(
       Configuration cfgNode, List<Prefix> prefixes) {
     Vrf defaultVrf = cfgNode.getDefaultVrf();
-    prefixes.forEach(
-        p ->
-            defaultVrf
-                .getStaticRoutes()
-                .add(
-                    StaticRoute.builder()
-                        .setNetwork(p)
-                        .setNextHop(NextHopDiscard.instance())
-                        .setAdministrativeCost(ALLOWED_PREFIX_FALLBACK_ADMIN)
-                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                        .build()));
+    prefixes.forEach(p ->
+        defaultVrf
+            .getStaticRoutes()
+            .add(
+                StaticRoute.builder()
+                    .setNetwork(p)
+                    .setNextHop(NextHopDiscard.instance())
+                    .setAdministrativeCost(ALLOWED_PREFIX_FALLBACK_ADMIN)
+                    .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                    .build()));
   }
 
   /**
@@ -330,10 +328,8 @@ final class DirectConnectGateway implements AwsVpcEntity, Serializable {
     Vrf defaultVrf = dxgwCfg.getDefaultVrf();
     association
         .getAllowedPrefixes()
-        .forEach(
-            p ->
-                Utils.addStaticRoute(
-                    defaultVrf, Utils.toStaticRoute(p, nextHopInterface, nextHopIp)));
+        .forEach(p ->
+            Utils.addStaticRoute(defaultVrf, Utils.toStaticRoute(p, nextHopInterface, nextHopIp)));
   }
 
   /** Build the policy that exports the allowed-prefix statics toward on-prem. */

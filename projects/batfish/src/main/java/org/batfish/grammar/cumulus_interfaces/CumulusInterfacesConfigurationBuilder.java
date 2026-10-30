@@ -222,11 +222,9 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void exitI_address_virtual(I_address_virtualContext ctx) {
     List<Interface_addressContext> v4 = ctx.interface_address();
-    v4.forEach(
-        address ->
-            _currentIface.setAddressVirtual(
-                MacAddress.parse(ctx.MAC_ADDRESS().getText()),
-                toConcreteInterfaceAddress(address)));
+    v4.forEach(address ->
+        _currentIface.setAddressVirtual(
+            MacAddress.parse(ctx.MAC_ADDRESS().getText()), toConcreteInterfaceAddress(address)));
     if (ctx.v6 != null) {
       // ignore v6
     }
@@ -254,13 +252,12 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void exitI_bond_slaves(I_bond_slavesContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
-    interfaceNameCtxs.forEach(
-        ifaceNameCtx ->
-            _config.referenceStructure(
-                CumulusStructureType.INTERFACE,
-                ifaceNameCtx.getText(),
-                CumulusStructureUsage.BOND_SLAVE,
-                ifaceNameCtx.getStart().getLine()));
+    interfaceNameCtxs.forEach(ifaceNameCtx ->
+        _config.referenceStructure(
+            CumulusStructureType.INTERFACE,
+            ifaceNameCtx.getText(),
+            CumulusStructureUsage.BOND_SLAVE,
+            ifaceNameCtx.getStart().getLine()));
     _currentIface.setBondSlaves(
         interfaceNameCtxs.stream().map(RuleContext::getText).collect(Collectors.toSet()));
   }
@@ -273,13 +270,12 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void exitI_bridge_ports(I_bridge_portsContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
-    interfaceNameCtxs.forEach(
-        ifaceNameCtx ->
-            _config.referenceStructure(
-                CumulusStructureType.ABSTRACT_INTERFACE,
-                ifaceNameCtx.getText(),
-                CumulusStructureUsage.BRIDGE_PORT,
-                ifaceNameCtx.getStart().getLine()));
+    interfaceNameCtxs.forEach(ifaceNameCtx ->
+        _config.referenceStructure(
+            CumulusStructureType.ABSTRACT_INTERFACE,
+            ifaceNameCtx.getText(),
+            CumulusStructureUsage.BRIDGE_PORT,
+            ifaceNameCtx.getStart().getLine()));
     _currentIface.setBridgePorts(
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)

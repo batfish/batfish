@@ -215,39 +215,31 @@ public final class PrefixTracer implements Serializable {
   /** Structure: prefix -&gt; action -&gt; set of hostnames */
   public Map<Prefix, Map<String, Set<String>>> summarize() {
     Map<Prefix, Map<String, Set<String>>> result = new HashMap<>();
-    _sent.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(SENT, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
+    _sent.forEach((prefix, neighbors) ->
+        neighbors.forEach(neighbor ->
+            result
+                .computeIfAbsent(prefix, p -> new HashMap<>())
+                .computeIfAbsent(SENT, a -> new HashSet<>())
+                .add(neighbor.getHostname())));
 
-    _filteredOnExport.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(FILTERED_OUT, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-    _filteredOnImport.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(FILTERED_IN, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-    _installed.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(RECEIVED, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
+    _filteredOnExport.forEach((prefix, neighbors) ->
+        neighbors.forEach(neighbor ->
+            result
+                .computeIfAbsent(prefix, p -> new HashMap<>())
+                .computeIfAbsent(FILTERED_OUT, a -> new HashSet<>())
+                .add(neighbor.getHostname())));
+    _filteredOnImport.forEach((prefix, neighbors) ->
+        neighbors.forEach(neighbor ->
+            result
+                .computeIfAbsent(prefix, p -> new HashMap<>())
+                .computeIfAbsent(FILTERED_IN, a -> new HashSet<>())
+                .add(neighbor.getHostname())));
+    _installed.forEach((prefix, neighbors) ->
+        neighbors.forEach(neighbor ->
+            result
+                .computeIfAbsent(prefix, p -> new HashMap<>())
+                .computeIfAbsent(RECEIVED, a -> new HashSet<>())
+                .add(neighbor.getHostname())));
     return result;
   }
 

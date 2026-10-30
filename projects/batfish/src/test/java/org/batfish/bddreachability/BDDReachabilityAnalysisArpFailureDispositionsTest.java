@@ -137,19 +137,16 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                 throw new RuntimeException(e);
               }
             });
-    dispositionBDDs.forEach(
-        (disposition1, bdd1) ->
-            dispositionBDDs.forEach(
-                (disposition2, bdd2) -> {
-                  if (disposition1 == disposition2) {
-                    return;
-                  }
-                  assertFalse(
-                      String.format(
-                          "dispositions %s and %s should not intersect",
-                          disposition1, disposition2),
-                      bdd1.andSat(bdd2));
-                }));
+    dispositionBDDs.forEach((disposition1, bdd1) ->
+        dispositionBDDs.forEach((disposition2, bdd2) -> {
+          if (disposition1 == disposition2) {
+            return;
+          }
+          assertFalse(
+              String.format(
+                  "dispositions %s and %s should not intersect", disposition1, disposition2),
+              bdd1.andSat(bdd2));
+        }));
   }
 
   private void setup_dstInSubnet_dstOwned() {

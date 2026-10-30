@@ -138,13 +138,12 @@ public final class Preprocess {
       logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
       logger.resetTimer();
       configurationData.entrySet().parallelStream()
-          .forEach(
-              e -> {
-                Path inputFile = e.getKey();
-                String fileText = e.getValue();
-                Path outputFile = outputConfigDir.resolve(inputFile.getFileName());
-                processFile(settings, inputFile, fileText, outputFile, logger);
-              });
+          .forEach(e -> {
+            Path inputFile = e.getKey();
+            String fileText = e.getValue();
+            Path outputFile = outputConfigDir.resolve(inputFile.getFileName());
+            processFile(settings, inputFile, fileText, outputFile, logger);
+          });
     }
   }
 

@@ -84,10 +84,9 @@ public final class FortiosBgpConversions {
     // Either no update-source is configured or the configured update-source is inactive.
     // Infer an interface based on iface address.
     return c.getActiveInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface.getConcreteAddress() != null
-                    && iface.getConcreteAddress().getPrefix().containsIp(neighbor.getIp()))
+        .filter(iface ->
+            iface.getConcreteAddress() != null
+                && iface.getConcreteAddress().getPrefix().containsIp(neighbor.getIp()))
         .findFirst();
   }
 
@@ -161,20 +160,18 @@ public final class FortiosBgpConversions {
     bgpProcess
         .getNetworks()
         .values()
-        .forEach(
-            network -> {
-              assert network.getPrefix() != null; // guaranteed by extraction
-              PrefixSpace exportSpace =
-                  new PrefixSpace(PrefixRange.fromPrefix(network.getPrefix()));
-              List<BooleanExpr> exportNetworkConditions =
-                  ImmutableList.of(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                      MATCH_NOT_BGP_OR_AGGREGATE,
-                      REDIST_WITH_ENVIRONMENT_ORIGIN_TYPE_IGP);
-              originatedPrefixSpaces.add(exportSpace);
-              exportDisjuncts.add(new Conjunction(exportNetworkConditions));
-            });
+        .forEach(network -> {
+          assert network.getPrefix() != null; // guaranteed by extraction
+          PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(network.getPrefix()));
+          List<BooleanExpr> exportNetworkConditions =
+              ImmutableList.of(
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
+                  MATCH_NOT_BGP_OR_AGGREGATE,
+                  REDIST_WITH_ENVIRONMENT_ORIGIN_TYPE_IGP);
+          originatedPrefixSpaces.add(exportSpace);
+          exportDisjuncts.add(new Conjunction(exportNetworkConditions));
+        });
 
     // Build common export policy (it will be added to the configuration on build())
     RoutingPolicy.builder()
@@ -307,33 +304,31 @@ public final class FortiosBgpConversions {
     String rmName = routeMap.getName();
     List<Statement> statements =
         routeMap.getRules().values().stream()
-            .map(
-                rule -> {
-                  String listName = rule.getMatchIpAddress();
-                  Statement action =
-                      rule.getActionEffective() == RouteMapRule.Action.PERMIT
-                          ? Statements.ReturnTrue.toStaticStatement()
-                          : Statements.ReturnFalse.toStaticStatement();
-                  Statement statement;
-                  if (listName != null) {
-                    if (!c.getRouteFilterLists().containsKey(listName)) {
-                      w.redFlagf(
-                          "Ignoring rule %s in route-map %s: List %s does not exist or was not"
-                              + " converted",
-                          rule.getNumber(), rmName, listName);
-                      return null;
-                    }
-                    BooleanExpr guard =
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new NamedPrefixSet(listName));
-                    statement = new If(guard, ImmutableList.of(action));
-                  } else {
-                    // Rule matches unconditionally. TODO Confirm behavior
-                    statement = new If(BooleanExprs.TRUE, ImmutableList.of(action));
-                  }
-                  statement.setComment(String.format("Match rule %s", rule.getNumber()));
-                  return statement;
-                })
+            .map(rule -> {
+              String listName = rule.getMatchIpAddress();
+              Statement action =
+                  rule.getActionEffective() == RouteMapRule.Action.PERMIT
+                      ? Statements.ReturnTrue.toStaticStatement()
+                      : Statements.ReturnFalse.toStaticStatement();
+              Statement statement;
+              if (listName != null) {
+                if (!c.getRouteFilterLists().containsKey(listName)) {
+                  w.redFlagf(
+                      "Ignoring rule %s in route-map %s: List %s does not exist or was not"
+                          + " converted",
+                      rule.getNumber(), rmName, listName);
+                  return null;
+                }
+                BooleanExpr guard =
+                    new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(listName));
+                statement = new If(guard, ImmutableList.of(action));
+              } else {
+                // Rule matches unconditionally. TODO Confirm behavior
+                statement = new If(BooleanExprs.TRUE, ImmutableList.of(action));
+              }
+              statement.setComment(String.format("Match rule %s", rule.getNumber()));
+              return statement;
+            })
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
     RoutingPolicy.builder()

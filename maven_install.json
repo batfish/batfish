@@ -21,7 +21,7 @@
     "com.google.code.findbugs:jsr305": 495355163,
     "com.google.code.gson:gson": 266105453,
     "com.google.errorprone:error_prone_annotations": -885127816,
-    "com.google.googlejavaformat:google-java-format": -302611545,
+    "com.google.googlejavaformat:google-java-format": 140272054,
     "com.google.guava:guava": 1943808618,
     "com.google.guava:guava-bom": 1511137836,
     "com.google.guava:guava-testlib": 279911981,
@@ -115,8 +115,8 @@
     "com.google.code.gson:gson:jar:sources": 755669897,
     "com.google.errorprone:error_prone_annotations": 295418660,
     "com.google.errorprone:error_prone_annotations:jar:sources": -751507593,
-    "com.google.googlejavaformat:google-java-format:jar:all-deps": 476656658,
-    "com.google.googlejavaformat:google-java-format:jar:sources": 2122047025,
+    "com.google.googlejavaformat:google-java-format:jar:all-deps": -15893441,
+    "com.google.googlejavaformat:google-java-format:jar:sources": -534068925,
     "com.google.guava:failureaccess": 1715931538,
     "com.google.guava:failureaccess:jar:sources": 1303858893,
     "com.google.guava:guava": -221578555,
@@ -485,10 +485,10 @@
     },
     "com.google.googlejavaformat:google-java-format": {
       "shasums": {
-        "all-deps": "834b2a0c38cb774953322a84b5ca3f2f40dd3156650b3cd44d3b744345962f7a",
-        "sources": "80fe8e64fde9ed05dc265ca10c489fba5ee5572da7271705fa8b32945e486325"
+        "all-deps": "c78feb48c549fa7114b7ea11db3b456808f7b371ffe84e6643a44dd2f9588639",
+        "sources": "85ad72cd919e66199902e762b9d129a41e9fc129b99a39fb5a14c3008d67b818"
       },
-      "version": "1.37.0"
+      "version": "2.0.0"
     },
     "com.google.guava:failureaccess": {
       "shasums": {
@@ -1706,6 +1706,7 @@
       "com.google.googlejavaformat.java",
       "com.google.googlejavaformat.java.filer",
       "com.google.googlejavaformat.java.javadoc",
+      "com.google.googlejavaformat.layout",
       "com.google.j2objc.annotations",
       "com.google.thirdparty.publicsuffix",
       "org.commonmark",

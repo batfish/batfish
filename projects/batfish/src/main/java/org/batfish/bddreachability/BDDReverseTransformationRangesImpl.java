@@ -243,13 +243,12 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
   private static Multimap<NodeInterfacePair, StateExpr> computeOutgoingTransformationRangeStates(
       Set<StateExpr> states) {
     ImmutableMultimap.Builder<NodeInterfacePair, StateExpr> builder = ImmutableMultimap.builder();
-    states.forEach(
-        state -> {
-          NodeInterfacePair outIface = state.accept(PreOutgoingTransformationNodeVisitor.INSTANCE);
-          if (outIface != null) {
-            builder.put(outIface, state);
-          }
-        });
+    states.forEach(state -> {
+      NodeInterfacePair outIface = state.accept(PreOutgoingTransformationNodeVisitor.INSTANCE);
+      if (outIface != null) {
+        builder.put(outIface, state);
+      }
+    });
     return builder.build();
   }
 }

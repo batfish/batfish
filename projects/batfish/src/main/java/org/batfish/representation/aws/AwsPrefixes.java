@@ -135,24 +135,21 @@ public class AwsPrefixes {
   static Set<Prefix> getAwsServicesPrefixes(List<AwsPrefix> allPrefixes) {
     Set<Prefix> exclusivelyEc2Prefixes =
         allPrefixes.stream()
-            .filter(
-                prefix ->
-                    // is an EC2 prefix and is not listed for any service other than AMAZON
-                    prefix.getServiceName().equals(SERVICE_EC2)
-                        && allPrefixes.stream()
-                            .noneMatch(
-                                otherPrefix ->
-                                    otherPrefix.getPrefix().equals(prefix.getPrefix())
-                                        && !otherPrefix.getServiceName().equals(SERVICE_AMAZON)
-                                        && !otherPrefix.getServiceName().equals(SERVICE_EC2)))
+            .filter(prefix ->
+                // is an EC2 prefix and is not listed for any service other than AMAZON
+                prefix.getServiceName().equals(SERVICE_EC2)
+                    && allPrefixes.stream()
+                        .noneMatch(otherPrefix ->
+                            otherPrefix.getPrefix().equals(prefix.getPrefix())
+                                && !otherPrefix.getServiceName().equals(SERVICE_AMAZON)
+                                && !otherPrefix.getServiceName().equals(SERVICE_EC2)))
             .map(AwsPrefix::getPrefix)
             .collect(ImmutableSet.toImmutableSet());
 
     return allPrefixes.stream()
-        .filter(
-            prefix ->
-                prefix.getServiceName().equals(SERVICE_AMAZON)
-                    && !exclusivelyEc2Prefixes.contains(prefix.getPrefix()))
+        .filter(prefix ->
+            prefix.getServiceName().equals(SERVICE_AMAZON)
+                && !exclusivelyEc2Prefixes.contains(prefix.getPrefix()))
         .map(AwsPrefix::getPrefix)
         .collect(ImmutableSet.toImmutableSet());
   }

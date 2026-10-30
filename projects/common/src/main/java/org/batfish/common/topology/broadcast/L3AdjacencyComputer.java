@@ -213,20 +213,19 @@ public class L3AdjacencyComputer {
     ImmutableMap.Builder<String, L2VNIHub> ret = ImmutableMap.builder();
     groups
         .asMap()
-        .forEach(
-            (id, nodes) -> {
-              L2VNIHub hub = new L2VNIHub("Hub for " + id);
-              L2VNI[] vnis = new L2VNI[nodes.size()];
-              int i = 0;
-              for (VxlanNode node : nodes) {
-                L2VNI vni = l2vnis.get(node);
-                assert vni != null;
-                vnis[i] = vni;
-                ++i;
-              }
-              Edges.connectToL2VNIHub(hub, vnis);
-              ret.put(hub.getName(), hub);
-            });
+        .forEach((id, nodes) -> {
+          L2VNIHub hub = new L2VNIHub("Hub for " + id);
+          L2VNI[] vnis = new L2VNI[nodes.size()];
+          int i = 0;
+          for (VxlanNode node : nodes) {
+            L2VNI vni = l2vnis.get(node);
+            assert vni != null;
+            vnis[i] = vni;
+            ++i;
+          }
+          Edges.connectToL2VNIHub(hub, vnis);
+          ret.put(hub.getName(), hub);
+        });
     return ret.build();
   }
 
@@ -438,19 +437,18 @@ public class L3AdjacencyComputer {
       UnionFind<NodeInterfacePair> clusters = new UnionFind<>(physicalInterfacesMentionedInL1);
       layer1Topology
           .edgeStream()
-          .forEach(
-              edge -> {
-                NodeInterfacePair i1 =
-                    NodeInterfacePair.of(
-                        edge.getNode1().getHostname(), edge.getNode1().getInterfaceName());
-                NodeInterfacePair i2 =
-                    NodeInterfacePair.of(
-                        edge.getNode2().getHostname(), edge.getNode2().getInterfaceName());
-                if (physicalInterfaces.containsKey(i1) && physicalInterfaces.containsKey(i2)) {
-                  // Only apply L1 edges where both interfaces exist.
-                  clusters.union(i1, i2);
-                }
-              });
+          .forEach(edge -> {
+            NodeInterfacePair i1 =
+                NodeInterfacePair.of(
+                    edge.getNode1().getHostname(), edge.getNode1().getInterfaceName());
+            NodeInterfacePair i2 =
+                NodeInterfacePair.of(
+                    edge.getNode2().getHostname(), edge.getNode2().getInterfaceName());
+            if (physicalInterfaces.containsKey(i1) && physicalInterfaces.containsKey(i2)) {
+              // Only apply L1 edges where both interfaces exist.
+              clusters.union(i1, i2);
+            }
+          });
       // Build up the set of interfaces attached to each hub. Note that since we are only looking
       // at interfaces that exist in this snapshot, and we only applied edges that exist in this
       // snapshot, we guarantee both the representative NodeInterfacePair and the elements in the
@@ -464,41 +462,38 @@ public class L3AdjacencyComputer {
       // Create one EthernetHub for each group.
       groups
           .asMap()
-          .forEach(
-              (id, nodes) -> {
-                EthernetHub hub = new EthernetHub("Hub for " + id);
-                PhysicalInterface[] interfaces = new PhysicalInterface[nodes.size()];
-                int i = 0;
-                for (NodeInterfacePair node : nodes) {
-                  PhysicalInterface pi = physicalInterfaces.get(node);
-                  assert pi != null;
-                  interfaces[i] = pi;
-                  ++i;
-                }
-                Edges.connectToHub(hub, interfaces);
-                ret.put(hub.getId(), hub);
-              });
+          .forEach((id, nodes) -> {
+            EthernetHub hub = new EthernetHub("Hub for " + id);
+            PhysicalInterface[] interfaces = new PhysicalInterface[nodes.size()];
+            int i = 0;
+            for (NodeInterfacePair node : nodes) {
+              PhysicalInterface pi = physicalInterfaces.get(node);
+              assert pi != null;
+              interfaces[i] = pi;
+              ++i;
+            }
+            Edges.connectToHub(hub, interfaces);
+            ret.put(hub.getId(), hub);
+          });
     }
 
     // Log if at least one L2 interface is mentioned in L1 and at least one L2 interface is attached
     // to global hub.
     Set<NodeInterfacePair> l2AttachedToGlobalHub =
         interfacesAttachedToGlobalHub.stream()
-            .filter(
-                nip ->
-                    Optional.ofNullable(configs.get(nip.getHostname()))
-                        .map(c -> c.getAllInterfaces().get(nip.getInterface()))
-                        .map(Interface::getSwitchport)
-                        .orElse(false))
+            .filter(nip ->
+                Optional.ofNullable(configs.get(nip.getHostname()))
+                    .map(c -> c.getAllInterfaces().get(nip.getInterface()))
+                    .map(Interface::getSwitchport)
+                    .orElse(false))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
     Set<NodeInterfacePair> l2MentionedInL1 =
         physicalInterfacesMentionedInL1.stream()
-            .filter(
-                nip ->
-                    Optional.ofNullable(configs.get(nip.getHostname()))
-                        .map(c -> c.getAllInterfaces().get(nip.getInterface()))
-                        .map(Interface::getSwitchport)
-                        .orElse(false))
+            .filter(nip ->
+                Optional.ofNullable(configs.get(nip.getHostname()))
+                    .map(c -> c.getAllInterfaces().get(nip.getInterface()))
+                    .map(Interface::getSwitchport)
+                    .orElse(false))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
     if (!l2AttachedToGlobalHub.isEmpty() && !l2MentionedInL1.isEmpty()) {
       LOGGER.warn(

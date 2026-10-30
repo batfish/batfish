@@ -906,10 +906,8 @@ public class CumulusConcatenatedGrammarTest {
     // should get two copies of this warning
     assertThat(
         pvcae.getWarnings().get(filename).getParseWarnings().stream()
-            .filter(
-                w ->
-                    w.getComment()
-                        .equals("local-as is supported only in 'no-prepend replace-as' mode"))
+            .filter(w ->
+                w.getComment().equals("local-as is supported only in 'no-prepend replace-as' mode"))
             .count(),
         equalTo(2L));
   }

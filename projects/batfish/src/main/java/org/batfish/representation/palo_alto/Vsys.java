@@ -183,15 +183,13 @@ public final class Vsys implements Serializable {
     SortedSet<String> servers = new TreeSet<>();
     _syslogServerGroups
         .values()
-        .forEach(
-            g ->
-                g.values()
-                    .forEach(
-                        s -> {
-                          if (s.getAddress() != null) {
-                            servers.add(s.getAddress());
-                          }
-                        }));
+        .forEach(g ->
+            g.values()
+                .forEach(s -> {
+                  if (s.getAddress() != null) {
+                    servers.add(s.getAddress());
+                  }
+                }));
     return servers;
   }
 

@@ -116,14 +116,13 @@ public final class Utils {
         cfgNode.getHostname());
     List<AddressGroup> publicIpAddressGroups =
         networkInterfaces.stream()
-            .map(
-                iface ->
-                    new AddressGroup(
-                        iface.getPrivateIpAddresses().stream()
-                            .filter(privIp -> privIp.getPublicIp() != null)
-                            .map(privIp -> privIp.getPublicIp().toString())
-                            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())),
-                        publicIpAddressGroupName(iface)))
+            .map(iface ->
+                new AddressGroup(
+                    iface.getPrivateIpAddresses().stream()
+                        .filter(privIp -> privIp.getPublicIp() != null)
+                        .map(privIp -> privIp.getPublicIp().toString())
+                        .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())),
+                    publicIpAddressGroupName(iface)))
             .filter(ag -> !ag.getAddresses().isEmpty())
             .collect(ImmutableList.toImmutableList());
     if (!publicIpAddressGroups.isEmpty()) {
@@ -367,15 +366,14 @@ public final class Utils {
             Utils.getInterfaceLinkLocalIp(gatewayCfg, Utils.interfaceNameToRemote(vpcCfg))));
 
     vpc.getCidrBlockAssociations()
-        .forEach(
-            prefix ->
-                addStaticRoute(
-                    gatewayCfg,
-                    toStaticRoute(
-                        prefix,
-                        Utils.interfaceNameToRemote(vpcCfg),
-                        Utils.getInterfaceLinkLocalIp(
-                            vpcCfg, Utils.interfaceNameToRemote(gatewayCfg)))));
+        .forEach(prefix ->
+            addStaticRoute(
+                gatewayCfg,
+                toStaticRoute(
+                    prefix,
+                    Utils.interfaceNameToRemote(vpcCfg),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(gatewayCfg)))));
 
     return gatewayCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg));
   }
@@ -483,14 +481,13 @@ public final class Utils {
         ifaceAddresses.stream()
             .filter(addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
             .findFirst()
-            .orElseGet(
-                () -> {
-                  warnings.redFlagf(
-                      "Primary address not found for interface '%s'. Using lowest address as"
-                          + " primary",
-                      netInterface.getId());
-                  return ifaceAddresses.stream().min(naturalOrder()).orElse(null);
-                });
+            .orElseGet(() -> {
+              warnings.redFlagf(
+                  "Primary address not found for interface '%s'. Using lowest address as"
+                      + " primary",
+                  netInterface.getId());
+              return ifaceAddresses.stream().min(naturalOrder()).orElse(null);
+            });
 
     Interface iface =
         Utils.newInterface(

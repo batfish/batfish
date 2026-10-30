@@ -82,7 +82,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
           .put(
               NEIGHBORS,
               new PropertyDescriptor<>(
-                  (process) ->
+                  process ->
                       Iterables.concat(
                           process.getActiveNeighbors().keySet(),
                           process.getPassiveNeighbors().keySet(),

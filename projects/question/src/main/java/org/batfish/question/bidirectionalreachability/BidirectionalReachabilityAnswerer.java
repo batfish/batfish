@@ -81,19 +81,16 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
 
     Set<Flow> flows =
         answerBdds.entrySet().stream()
-            .map(
-                entry -> {
-                  Location startLocation = entry.getKey();
-                  BDD locationBdd = entry.getValue();
-                  return bddPacket
-                      .getFlow(locationBdd)
-                      .map(
-                          builder -> {
-                            setStartLocation(
-                                _batfish.loadConfigurations(snapshot), builder, startLocation);
-                            return builder.build();
-                          });
-                })
+            .map(entry -> {
+              Location startLocation = entry.getKey();
+              BDD locationBdd = entry.getValue();
+              return bddPacket
+                  .getFlow(locationBdd)
+                  .map(builder -> {
+                    setStartLocation(_batfish.loadConfigurations(snapshot), builder, startLocation);
+                    return builder.build();
+                  });
+            })
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toSet());
@@ -115,42 +112,39 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
       case SUCCESS ->
           // prefer success only
           successBdds.entrySet().stream()
-              .map(
-                  entry -> {
-                    Location loc = entry.getKey();
-                    BDD success = entry.getValue();
-                    BDD fail = failureBdds.get(loc);
-                    BDD successOnly = fail == null ? success : success.diff(fail);
-                    return Maps.immutableEntry(loc, successOnly.isZero() ? success : successOnly);
-                  })
+              .map(entry -> {
+                Location loc = entry.getKey();
+                BDD success = entry.getValue();
+                BDD fail = failureBdds.get(loc);
+                BDD successOnly = fail == null ? success : success.diff(fail);
+                return Maps.immutableEntry(loc, successOnly.isZero() ? success : successOnly);
+              })
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
       case FAILURE ->
           // prefer failure only
           failureBdds.entrySet().stream()
-              .map(
-                  entry -> {
-                    Location loc = entry.getKey();
-                    BDD fail = entry.getValue();
-                    BDD success = successBdds.get(loc);
-                    BDD failOnly = success == null ? fail : fail.diff(success);
-                    return Maps.immutableEntry(loc, failOnly.isZero() ? fail : failOnly);
-                  })
+              .map(entry -> {
+                Location loc = entry.getKey();
+                BDD fail = entry.getValue();
+                BDD success = successBdds.get(loc);
+                BDD failOnly = success == null ? fail : fail.diff(success);
+                return Maps.immutableEntry(loc, failOnly.isZero() ? fail : failOnly);
+              })
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
       case MULTIPATH_INCONSISTENT ->
           successBdds.entrySet().stream()
-              .flatMap(
-                  entry -> {
-                    Location loc = entry.getKey();
-                    BDD success = entry.getValue();
-                    BDD fail = failureBdds.get(loc);
-                    if (fail == null) {
-                      return Stream.of();
-                    }
-                    BDD multipath = success.and(fail);
-                    return multipath.isZero()
-                        ? Stream.of()
-                        : Stream.of(Maps.immutableEntry(loc, multipath));
-                  })
+              .flatMap(entry -> {
+                Location loc = entry.getKey();
+                BDD success = entry.getValue();
+                BDD fail = failureBdds.get(loc);
+                if (fail == null) {
+                  return Stream.of();
+                }
+                BDD multipath = success.and(fail);
+                return multipath.isZero()
+                    ? Stream.of()
+                    : Stream.of(Maps.immutableEntry(loc, multipath));
+              })
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     };
   }

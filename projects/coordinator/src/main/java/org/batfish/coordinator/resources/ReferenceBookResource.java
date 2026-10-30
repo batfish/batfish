@@ -62,12 +62,11 @@ public class ReferenceBookResource {
           Main.getWorkMgr()
               .getReferenceLibrary(_network)
               .getReferenceBook(_bookName)
-              .orElseThrow(
-                  () ->
-                      new NotFoundException(
-                          String.format(
-                              "Reference book '%s' not found in container '%s'",
-                              _bookName, _network))));
+              .orElseThrow(() ->
+                  new NotFoundException(
+                      String.format(
+                          "Reference book '%s' not found in container '%s'",
+                          _bookName, _network))));
     } catch (IOException e) {
       throw new InternalServerErrorException("Reference library data is corrupted");
     }

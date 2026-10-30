@@ -505,16 +505,15 @@ public class CumulusConcatenatedConfigurationTest {
     c.getVrfs().put("vrf0", new Vrf("vrf0"));
     c.getVrfs().put("vrf1", new Vrf("vrf1"));
     ImmutableSet.of(iface1, iface2, iface3)
-        .forEach(
-            iface ->
-                c.getAllInterfaces()
-                    .put(
-                        iface.getName(),
-                        org.batfish.datamodel.TestInterface.builder()
-                            .setName(iface.getName())
-                            .setOwner(c)
-                            .setType(InterfaceType.PHYSICAL)
-                            .build()));
+        .forEach(iface ->
+            c.getAllInterfaces()
+                .put(
+                    iface.getName(),
+                    org.batfish.datamodel.TestInterface.builder()
+                        .setName(iface.getName())
+                        .setOwner(c)
+                        .setType(InterfaceType.PHYSICAL)
+                        .build()));
     c.getAllInterfaces().get(iface3.getName()).adminDown();
 
     vsConfig.initPostUpRoutes(c);

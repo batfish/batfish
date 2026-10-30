@@ -603,18 +603,16 @@ public final class Region implements Serializable {
             // the region. we keep the original list in that case.
             .filter(plist -> !currentBook.getAddressGroup(plist.getPrefixListName()).isPresent())
             .filter(plist -> !plist.getCidrs().isEmpty())
-            .map(
-                plist -> {
-                  Prefix cidr = plist.getCidrs().get(0);
-                  // get a *.1 address (looks better than a *.0 address)
-                  Ip representativeIp =
-                      cidr.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
-                          ? cidr.getStartIp()
-                          : Ip.create(cidr.getStartIp().asLong() + 1);
-                  return new AddressGroup(
-                      ImmutableSortedSet.of(representativeIp.toString()),
-                      plist.getPrefixListName());
-                })
+            .map(plist -> {
+              Prefix cidr = plist.getCidrs().get(0);
+              // get a *.1 address (looks better than a *.0 address)
+              Ip representativeIp =
+                  cidr.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
+                      ? cidr.getStartIp()
+                      : Ip.create(cidr.getStartIp().asLong() + 1);
+              return new AddressGroup(
+                  ImmutableSortedSet.of(representativeIp.toString()), plist.getPrefixListName());
+            })
             .collect(ImmutableList.toImmutableList());
 
     if (!addressGroups.isEmpty()) { // no change needed if no new address groups were produced
@@ -840,11 +838,10 @@ public final class Region implements Serializable {
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
       elasticsearchDomain
           .toConfigurationNodes(awsConfiguration, this, warnings)
-          .forEach(
-              cfgNode -> {
-                cfgNode.setDeviceType(DeviceType.HOST);
-                awsConfiguration.addNode(cfgNode);
-              });
+          .forEach(cfgNode -> {
+            cfgNode.setDeviceType(DeviceType.HOST);
+            awsConfiguration.addNode(cfgNode);
+          });
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
@@ -941,17 +938,16 @@ public final class Region implements Serializable {
   private void applyApplicationSecurityGroups(ConvertedConfiguration cfg) {
     for (ElasticsearchDomain esd : _elasticsearchDomains.values()) {
       IntStream.range(0, esd.getInstanceCount())
-          .forEach(
-              instanceNum -> {
-                Configuration c =
-                    cfg.getNode(getNodeName(instanceNum, esd.getId(), esd.getVpcEndpoint()));
-                if (c == null) {
-                  return;
-                }
-                for (Interface i : c.getAllInterfaces().values()) {
-                  applyAclsToInterfaceBasedOnSecurityGroups(esd.getSecurityGroups(), c, i);
-                }
-              });
+          .forEach(instanceNum -> {
+            Configuration c =
+                cfg.getNode(getNodeName(instanceNum, esd.getId(), esd.getVpcEndpoint()));
+            if (c == null) {
+              return;
+            }
+            for (Interface i : c.getAllInterfaces().values()) {
+              applyAclsToInterfaceBasedOnSecurityGroups(esd.getSecurityGroups(), c, i);
+            }
+          });
     }
     for (RdsInstance rds : _rdsInstances.values()) {
       Configuration c = cfg.getNode(rds.getId());
@@ -1062,16 +1058,15 @@ public final class Region implements Serializable {
   private void updateSubnetAllocatedIps() {
     _networkInterfaces
         .values()
-        .forEach(
-            networkInterface ->
-                _subnets
-                    .get(networkInterface.getSubnetId())
-                    .getAllocatedIps()
-                    .addAll(
-                        networkInterface.getPrivateIpAddresses().stream()
-                            .map(PrivateIpAddress::getPrivateIp)
-                            .map(Ip::asLong)
-                            .collect(Collectors.toSet())));
+        .forEach(networkInterface ->
+            _subnets
+                .get(networkInterface.getSubnetId())
+                .getAllocatedIps()
+                .addAll(
+                    networkInterface.getPrivateIpAddresses().stream()
+                        .map(PrivateIpAddress::getPrivateIp)
+                        .map(Ip::asLong)
+                        .collect(Collectors.toSet())));
   }
 
   /**
@@ -1197,10 +1192,9 @@ public final class Region implements Serializable {
   /** Returns the {@link TransitGateway} that owns the provided route table */
   Optional<TransitGateway> findTransitGateway(String routeTableId) {
     return _transitGateways.values().stream()
-        .filter(
-            tgw ->
-                _transitGatewayRouteTables.values().stream()
-                    .anyMatch(tgwRt -> tgwRt.getId().equals(routeTableId)))
+        .filter(tgw ->
+            _transitGatewayRouteTables.values().stream()
+                .anyMatch(tgwRt -> tgwRt.getId().equals(routeTableId)))
         .findFirst();
   }
 
@@ -1255,10 +1249,9 @@ public final class Region implements Serializable {
     // First we look for the custom route table associated to the subnet.
     Optional<RouteTable> customSubnetTable =
         vpcTables.stream()
-            .filter(
-                rt ->
-                    rt.getAssociations().stream()
-                        .anyMatch(assoc -> Objects.equals(assoc.getSubnetId(), subnetId)))
+            .filter(rt ->
+                rt.getAssociations().stream()
+                    .anyMatch(assoc -> Objects.equals(assoc.getSubnetId(), subnetId)))
             .findFirst();
 
     if (customSubnetTable.isPresent()) {

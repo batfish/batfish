@@ -248,10 +248,9 @@ public final class FortiosPolicyConversions {
       String filename,
       Warnings w) {
     return policies.values().stream()
-        .map(
-            p ->
-                convertPolicy(p, convertedServices, addrgrpMembers, namedIpSpaces, filename, w)
-                    .map(line -> Maps.immutableEntry(p.getNumber(), line)))
+        .map(p ->
+            convertPolicy(p, convertedServices, addrgrpMembers, namedIpSpaces, filename, w)
+                .map(line -> Maps.immutableEntry(p.getNumber(), line)))
         .filter(Optional::isPresent)
         .collect(ImmutableMap.toImmutableMap(e -> e.get().getKey(), e -> e.get().getValue()));
   }
@@ -309,19 +308,16 @@ public final class FortiosPolicyConversions {
     // Match src addresses, dst addresses, and services
     List<AclLineMatchExpr> srcAddrExprs =
         Sets.intersection(srcAddrs, namedIpSpaces).stream()
-            .map(
-                addr ->
-                    AclLineMatchExprs.matchSrc(
-                        new IpSpaceReference(addr), "Matched source address"))
+            .map(addr ->
+                AclLineMatchExprs.matchSrc(new IpSpaceReference(addr), "Matched source address"))
             .collect(ImmutableList.toImmutableList());
 
     List<AclLineMatchExpr> dstAddrExprs =
         Sets.intersection(dstAddrs, namedIpSpaces).stream()
-            .map(
-                addr -> {
-                  return AclLineMatchExprs.matchDst(
-                      new IpSpaceReference(addr), TraceElement.of("Matched destination address"));
-                })
+            .map(addr -> {
+              return AclLineMatchExprs.matchDst(
+                  new IpSpaceReference(addr), TraceElement.of("Matched destination address"));
+            })
             .collect(ImmutableList.toImmutableList());
 
     List<AclLineMatchExpr> svcExprs =

@@ -43,18 +43,17 @@ public class BDDMultipathInconsistency {
         "Queries must have the same IngressLocations");
 
     return disposition1FlowBdds.entrySet().stream()
-        .flatMap(
-            entry -> {
-              IngressLocation loc = entry.getKey();
-              BDD query1Bdd = entry.getValue();
-              BDD query2Bdd = disposition2FlowBdds.get(loc);
+        .flatMap(entry -> {
+          IngressLocation loc = entry.getKey();
+          BDD query1Bdd = entry.getValue();
+          BDD query2Bdd = disposition2FlowBdds.get(loc);
 
-              BDD intersection = query1Bdd.and(query2Bdd);
+          BDD intersection = query1Bdd.and(query2Bdd);
 
-              return intersection.isZero()
-                  ? Stream.empty()
-                  : Stream.of(new MultipathInconsistency(loc, intersection));
-            });
+          return intersection.isZero()
+              ? Stream.empty()
+              : Stream.of(new MultipathInconsistency(loc, intersection));
+        });
   }
 
   @VisibleForTesting
@@ -62,10 +61,9 @@ public class BDDMultipathInconsistency {
     Flow.Builder fb =
         bddPacket
             .getFlow(violation.getBDD())
-            .orElseGet(
-                () -> {
-                  throw new BatfishException("MultipathConsistencyViolation with UNSAT predicate");
-                });
+            .orElseGet(() -> {
+              throw new BatfishException("MultipathConsistencyViolation with UNSAT predicate");
+            });
 
     IngressLocation ingressLocation = violation.getIngressLocation();
     if (ingressLocation.isIngressVrf()) {

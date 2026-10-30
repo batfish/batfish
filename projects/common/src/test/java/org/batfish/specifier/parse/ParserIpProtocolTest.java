@@ -43,10 +43,9 @@ public class ParserIpProtocolTest {
         Stream.concat(
                 Arrays.stream(IpProtocol.values())
                     .map(Object::toString)
-                    .map(
-                        val ->
-                            new ParsedAutoCompleteSuggestion(
-                                val, query.length(), Type.IP_PROTOCOL_NAME)),
+                    .map(val ->
+                        new ParsedAutoCompleteSuggestion(
+                            val, query.length(), Type.IP_PROTOCOL_NAME)),
                 ImmutableSet.of(
                     new ParsedAutoCompleteSuggestion("!", query.length(), Type.IP_PROTOCOL_NOT))
                     .stream())

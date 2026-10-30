@@ -102,20 +102,19 @@ public final class UnzipUtility {
       }
       entries.parallelStream()
           .filter(entry -> !entry.isDirectory())
-          .forEach(
-              entry -> {
-                try {
-                  Path outputPath = outputPath(entry, destDirectory);
-                  // Make sure parent directories exist, in case the zip does not contain dir
-                  // entries
-                  createParentDirectories(outputPath);
-                  try (InputStream in = zip.getInputStream(entry)) {
-                    extractFile(entry, in, outputPath);
-                  }
-                } catch (IOException e) {
-                  throw new UncheckedIOException(e);
-                }
-              });
+          .forEach(entry -> {
+            try {
+              Path outputPath = outputPath(entry, destDirectory);
+              // Make sure parent directories exist, in case the zip does not contain dir
+              // entries
+              createParentDirectories(outputPath);
+              try (InputStream in = zip.getInputStream(entry)) {
+                extractFile(entry, in, outputPath);
+              }
+            } catch (IOException e) {
+              throw new UncheckedIOException(e);
+            }
+          });
     } catch (UncheckedIOException e) {
       throw e.getCause();
     }

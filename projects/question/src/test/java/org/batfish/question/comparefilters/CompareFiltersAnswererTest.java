@@ -120,13 +120,12 @@ public final class CompareFiltersAnswererTest {
     // bdds should have one more element than actions, representing the default denied packets
     assert bdds.size() == actions.size() + 1;
     return IntStream.range(0, bdds.size())
-        .mapToObj(
-            i -> {
-              LineAction action = i == actions.size() ? DENY : actions.get(i);
-              return action == PERMIT
-                  ? new PermitAndDenyBdds(bdds.get(i), _zero)
-                  : new PermitAndDenyBdds(_zero, bdds.get(i));
-            })
+        .mapToObj(i -> {
+          LineAction action = i == actions.size() ? DENY : actions.get(i);
+          return action == PERMIT
+              ? new PermitAndDenyBdds(bdds.get(i), _zero)
+              : new PermitAndDenyBdds(_zero, bdds.get(i));
+        })
         .collect(ImmutableList.toImmutableList());
   }
 }

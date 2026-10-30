@@ -230,11 +230,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitS_health_monitor(A10Parser.S_health_monitorContext ctx) {
     toString(ctx, ctx.health_check_name())
-        .ifPresent(
-            name -> {
-              _c.defineStructure(HEALTH_MONITOR, name, ctx);
-              _c.createHealthMonitorIfAbsent(name);
-            });
+        .ifPresent(name -> {
+          _c.defineStructure(HEALTH_MONITOR, name, ctx);
+          _c.createHealthMonitorIfAbsent(name);
+        });
   }
 
   @Override
@@ -245,29 +244,27 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitS_access_list(A10Parser.S_access_listContext ctx) {
     toInteger(ctx, ctx.access_list_number())
-        .ifPresent(
-            accessListNum -> {
-              if (accessListNum < 100) {
-                // TODO support standard access lists
-                todo(ctx);
-                return;
-              }
-              // Will not clash with named access lists; they can't start with a digit
-              String aclName = String.valueOf(accessListNum);
-              _c.defineStructure(A10StructureType.ACCESS_LIST, aclName, ctx);
-              _c.getOrCreateAccessList(aclName).addRule(toAclRule(ctx.sal_rule_definition()));
-            });
+        .ifPresent(accessListNum -> {
+          if (accessListNum < 100) {
+            // TODO support standard access lists
+            todo(ctx);
+            return;
+          }
+          // Will not clash with named access lists; they can't start with a digit
+          String aclName = String.valueOf(accessListNum);
+          _c.defineStructure(A10StructureType.ACCESS_LIST, aclName, ctx);
+          _c.getOrCreateAccessList(aclName).addRule(toAclRule(ctx.sal_rule_definition()));
+        });
   }
 
   @Override
   public void enterSi_access_list(A10Parser.Si_access_listContext ctx) {
     _currentAccessList =
         toString(ctx, ctx.access_list_name())
-            .map(
-                n -> {
-                  _c.defineStructure(A10StructureType.ACCESS_LIST, n, ctx);
-                  return _c.getOrCreateAccessList(n);
-                })
+            .map(n -> {
+              _c.defineStructure(A10StructureType.ACCESS_LIST, n, ctx);
+              return _c.getOrCreateAccessList(n);
+            })
             .orElseGet(() -> new AccessList(ctx.access_list_name().getText())); // dummy
   }
 
@@ -402,16 +399,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
     Optional<Integer> num = toInteger(ctx, ctx.num);
-    num.ifPresent(
-        n -> {
-          _currentInterface =
-              _c.getInterfacesEthernet()
-                  .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n));
-          String ifaceName = getInterfaceName(_currentInterface);
-          _c.defineStructure(INTERFACE, ifaceName, ctx);
-          _c.referenceStructure(
-              INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
-        });
+    num.ifPresent(n -> {
+      _currentInterface =
+          _c.getInterfacesEthernet()
+              .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n));
+      String ifaceName = getInterfaceName(_currentInterface);
+      _c.defineStructure(INTERFACE, ifaceName, ctx);
+      _c.referenceStructure(
+          INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
+    });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.ETHERNET, -1); // dummy
     }
@@ -425,16 +421,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSid_loopback(A10Parser.Sid_loopbackContext ctx) {
     Optional<Integer> num = toInteger(ctx, ctx.num);
-    num.ifPresent(
-        n -> {
-          _currentInterface =
-              _c.getInterfacesLoopback()
-                  .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n));
-          String ifaceName = getInterfaceName(_currentInterface);
-          _c.defineStructure(INTERFACE, ifaceName, ctx);
-          _c.referenceStructure(
-              INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
-        });
+    num.ifPresent(n -> {
+      _currentInterface =
+          _c.getInterfacesLoopback()
+              .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n));
+      String ifaceName = getInterfaceName(_currentInterface);
+      _c.defineStructure(INTERFACE, ifaceName, ctx);
+      _c.referenceStructure(
+          INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
+    });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.LOOPBACK, -1); // dummy
     }
@@ -448,10 +443,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSid_trunk(A10Parser.Sid_trunkContext ctx) {
     Optional<Integer> num = toInteger(ctx, ctx.num);
-    num.ifPresent(
-        n ->
-            _currentInterface =
-                _c.getInterfacesTrunk().computeIfAbsent(n, number -> new TrunkInterface(n, null)));
+    num.ifPresent(n ->
+        _currentInterface =
+            _c.getInterfacesTrunk().computeIfAbsent(n, number -> new TrunkInterface(n, null)));
     _c.defineStructure(INTERFACE, getInterfaceName(_currentInterface), ctx);
     if (!num.isPresent()) {
       _currentInterface = new TrunkInterface(-1, null); // dummy
@@ -576,15 +570,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void enterSidl_trunk(A10Parser.Sidl_trunkContext ctx) {
     TrunkGroup.Type type = TrunkGroup.Type.LACP;
     toInteger(ctx, ctx.num)
-        .ifPresent(
-            n -> {
-              Optional<String> maybeInvalidReason = isTrunkValidForCurrentIface(n, type);
-              if (maybeInvalidReason.isPresent()) {
-                warn(ctx, maybeInvalidReason.get());
-              } else {
-                setCurrentTrunkGroupAndReferences(n, type, ctx);
-              }
-            });
+        .ifPresent(n -> {
+          Optional<String> maybeInvalidReason = isTrunkValidForCurrentIface(n, type);
+          if (maybeInvalidReason.isPresent()) {
+            warn(ctx, maybeInvalidReason.get());
+          } else {
+            setCurrentTrunkGroupAndReferences(n, type, ctx);
+          }
+        });
 
     if (_currentTrunkGroup == null) {
       _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
@@ -620,11 +613,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     Optional<StaticRoute> maybeStaticRoute = toStaticRoute(ctx.static_route_definition());
-    maybeStaticRoute.ifPresent(
-        sr ->
-            _c.getStaticRoutes()
-                .computeIfAbsent(maybePrefix.get(), p -> new StaticRouteManager())
-                .add(sr));
+    maybeStaticRoute.ifPresent(sr ->
+        _c.getStaticRoutes()
+            .computeIfAbsent(maybePrefix.get(), p -> new StaticRouteManager())
+            .add(sr));
   }
 
   @Override
@@ -636,16 +628,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     Optional<StaticRoute> maybeStaticRoute = toStaticRoute(ctx.static_route_definition());
-    maybeStaticRoute.ifPresent(
-        sr -> {
-          StaticRouteManager srm = _c.getStaticRoutes().get(maybePrefix.get());
-          if (srm == null) {
-            warn(ctx, String.format("No routes exist for prefix %s", maybePrefix.get()));
-            return;
-          }
-          Optional<String> maybeInvalidReason = srm.delete(sr);
-          maybeInvalidReason.ifPresent(reason -> warn(ctx, reason));
-        });
+    maybeStaticRoute.ifPresent(sr -> {
+      StaticRouteManager srm = _c.getStaticRoutes().get(maybePrefix.get());
+      if (srm == null) {
+        warn(ctx, String.format("No routes exist for prefix %s", maybePrefix.get()));
+        return;
+      }
+      Optional<String> maybeInvalidReason = srm.delete(sr);
+      maybeInvalidReason.ifPresent(reason -> warn(ctx, reason));
+    });
   }
 
   private Optional<StaticRoute> toStaticRoute(A10Parser.Static_route_definitionContext ctx) {
@@ -717,19 +708,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_TAGGED_INTERFACE)
-        .ifPresent(
-            refs -> {
-              refs.forEach(
-                  ref -> {
-                    if (ref.getType() == Type.ETHERNET) {
-                      // Ethernet interfaces may not show up elsewhere if members of a vlan
-                      _c.getInterfacesEthernet()
-                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
-                    }
-                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
-                  });
-              _currentVlan.addTagged(refs);
-            });
+        .ifPresent(refs -> {
+          refs.forEach(ref -> {
+            if (ref.getType() == Type.ETHERNET) {
+              // Ethernet interfaces may not show up elsewhere if members of a vlan
+              _c.getInterfacesEthernet()
+                  .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+            }
+            _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+          });
+          _currentVlan.addTagged(refs);
+        });
   }
 
   @Override
@@ -737,19 +726,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_UNTAGGED_INTERFACE)
-        .ifPresent(
-            refs -> {
-              refs.forEach(
-                  ref -> {
-                    if (ref.getType() == Type.ETHERNET) {
-                      // Ethernet interfaces may not show up elsewhere if members of a vlan
-                      _c.getInterfacesEthernet()
-                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
-                    }
-                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
-                  });
-              _currentVlan.addUntagged(refs);
-            });
+        .ifPresent(refs -> {
+          refs.forEach(ref -> {
+            if (ref.getType() == Type.ETHERNET) {
+              // Ethernet interfaces may not show up elsewhere if members of a vlan
+              _c.getInterfacesEthernet()
+                  .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+            }
+            _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+          });
+          _currentVlan.addUntagged(refs);
+        });
   }
 
   /**
@@ -910,11 +897,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentNatPoolValid = true;
     _currentNatPool =
         createNatPool(ctx, name, start, end, netmask)
-            .orElseGet(
-                () -> {
-                  _currentNatPoolValid = false;
-                  return new NatPool(ctx.nat_pool_name().getText(), start, end, netmask); // dummy
-                });
+            .orElseGet(() -> {
+              _currentNatPoolValid = false;
+              return new NatPool(ctx.nat_pool_name().getText(), start, end, netmask); // dummy
+            });
   }
 
   @Override
@@ -1000,20 +986,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     _currentTrunk =
         maybeNum
-            .map(
-                n -> {
-                  TrunkInterface trunkInterface =
-                      _c.getInterfacesTrunk()
-                          .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.LACP));
-                  String trunkName = getInterfaceName(trunkInterface);
-                  _c.defineStructure(INTERFACE, trunkName, ctx);
-                  _c.referenceStructure(
-                      INTERFACE,
-                      trunkName,
-                      A10StructureUsage.INTERFACE_SELF_REF,
-                      ctx.start.getLine());
-                  return trunkInterface;
-                })
+            .map(n -> {
+              TrunkInterface trunkInterface =
+                  _c.getInterfacesTrunk()
+                      .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.LACP));
+              String trunkName = getInterfaceName(trunkInterface);
+              _c.defineStructure(INTERFACE, trunkName, ctx);
+              _c.referenceStructure(
+                  INTERFACE, trunkName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
+              return trunkInterface;
+            })
             .orElseGet(() -> new TrunkInterface(-1, TrunkGroup.Type.LACP)); // dummy
   }
 
@@ -1290,20 +1272,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssgd_health_check(A10Parser.Sssgd_health_checkContext ctx) {
     toString(ctx, ctx.health_check_name())
-        .ifPresent(
-            name -> {
-              if (!_c.getHealthMonitors().containsKey(name)) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot reference non-existent health monitor %s for service-group %s",
-                        name, _currentServiceGroup.getName()));
-                return;
-              }
-              _c.referenceStructure(
-                  HEALTH_MONITOR, name, SERVICE_GROUP_HEALTH_CHECK, ctx.start.getLine());
-              _currentServiceGroup.setHealthCheck(name);
-            });
+        .ifPresent(name -> {
+          if (!_c.getHealthMonitors().containsKey(name)) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot reference non-existent health monitor %s for service-group %s",
+                    name, _currentServiceGroup.getName()));
+            return;
+          }
+          _c.referenceStructure(
+              HEALTH_MONITOR, name, SERVICE_GROUP_HEALTH_CHECK, ctx.start.getLine());
+          _currentServiceGroup.setHealthCheck(name);
+        });
   }
 
   @Override
@@ -1459,21 +1440,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     _currentTrunk =
         maybeNum
-            .map(
-                n -> {
-                  TrunkInterface trunkInterface =
-                      _c.getInterfacesTrunk()
-                          .computeIfAbsent(
-                              n, num -> new TrunkInterface(num, TrunkGroup.Type.STATIC));
-                  String trunkName = getInterfaceName(trunkInterface);
-                  _c.defineStructure(INTERFACE, trunkName, ctx);
-                  _c.referenceStructure(
-                      INTERFACE,
-                      trunkName,
-                      A10StructureUsage.INTERFACE_SELF_REF,
-                      ctx.start.getLine());
-                  return trunkInterface;
-                })
+            .map(n -> {
+              TrunkInterface trunkInterface =
+                  _c.getInterfacesTrunk()
+                      .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.STATIC));
+              String trunkName = getInterfaceName(trunkInterface);
+              _c.defineStructure(INTERFACE, trunkName, ctx);
+              _c.referenceStructure(
+                  INTERFACE, trunkName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
+              return trunkInterface;
+            })
             .orElseGet(() -> new TrunkInterface(-1, TrunkGroup.Type.STATIC)); // dummy
   }
 
@@ -1545,9 +1521,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitVrrpaf_gateway(Vrrpaf_gatewayContext ctx) {
     toInteger(ctx, ctx.weight)
-        .ifPresent(
-            weight ->
-                _currentVrrpAFailOverPolicyTemplate.addOrReplaceGateway(toIp(ctx.gwip), weight));
+        .ifPresent(weight ->
+            _currentVrrpAFailOverPolicyTemplate.addOrReplaceGateway(toIp(ctx.gwip), weight));
   }
 
   private @Nonnull Optional<Integer> toInteger(
@@ -1786,20 +1761,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitStd_ethernet(A10Parser.Std_ethernetContext ctx) {
     int line = ctx.start.getLine();
     Optional<List<InterfaceReference>> maybeIfaces = toInterfaces(ctx);
-    maybeIfaces.ifPresent(
-        ifaces -> {
-          ifaces.forEach(
-              iface -> {
-                assert iface.getType() == Type.ETHERNET;
-                // Interfaces may not show up elsewhere if members of a trunk
-                _c.getInterfacesEthernet()
-                    .computeIfAbsent(iface.getNumber(), n -> new Interface(Type.ETHERNET, n));
-                _c.defineStructure(INTERFACE, getInterfaceName(iface), ctx);
-                _c.referenceStructure(
-                    INTERFACE, getInterfaceName(iface), A10StructureUsage.TRUNK_INTERFACE, line);
-                _currentTrunk.getMembers().add(iface);
-              });
-        });
+    maybeIfaces.ifPresent(ifaces -> {
+      ifaces.forEach(iface -> {
+        assert iface.getType() == Type.ETHERNET;
+        // Interfaces may not show up elsewhere if members of a trunk
+        _c.getInterfacesEthernet()
+            .computeIfAbsent(iface.getNumber(), n -> new Interface(Type.ETHERNET, n));
+        _c.defineStructure(INTERFACE, getInterfaceName(iface), ctx);
+        _c.referenceStructure(
+            INTERFACE, getInterfaceName(iface), A10StructureUsage.TRUNK_INTERFACE, line);
+        _currentTrunk.getMembers().add(iface);
+      });
+    });
   }
 
   @Override
@@ -1912,19 +1885,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssd_health_check(A10Parser.Sssd_health_checkContext ctx) {
     toString(ctx, ctx.health_check_name())
-        .ifPresent(
-            name -> {
-              if (!_c.getHealthMonitors().containsKey(name)) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot reference non-existent health monitor %s for server %s",
-                        name, _currentServer.getName()));
-                return;
-              }
-              _c.referenceStructure(HEALTH_MONITOR, name, SERVER_HEALTH_CHECK, ctx.start.getLine());
-              _currentServer.setHealthCheck(name);
-            });
+        .ifPresent(name -> {
+          if (!_c.getHealthMonitors().containsKey(name)) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot reference non-existent health monitor %s for server %s",
+                    name, _currentServer.getName()));
+            return;
+          }
+          _c.referenceStructure(HEALTH_MONITOR, name, SERVER_HEALTH_CHECK, ctx.start.getLine());
+          _currentServer.setHealthCheck(name);
+        });
   }
 
   @Override
@@ -2003,21 +1975,20 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssdpd_health_check(A10Parser.Sssdpd_health_checkContext ctx) {
     toString(ctx, ctx.health_check_name())
-        .ifPresent(
-            name -> {
-              if (!_c.getHealthMonitors().containsKey(name)) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot reference non-existent health monitor %s for server port %d in"
-                            + " server %s",
-                        name, _currentServerPort.getNumber(), _currentServer.getName()));
-                return;
-              }
-              _c.referenceStructure(
-                  HEALTH_MONITOR, name, SERVER_PORT_HEALTH_CHECK, ctx.start.getLine());
-              _currentServerPort.setHealthCheck(name);
-            });
+        .ifPresent(name -> {
+          if (!_c.getHealthMonitors().containsKey(name)) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot reference non-existent health monitor %s for server port %d in"
+                        + " server %s",
+                    name, _currentServerPort.getNumber(), _currentServer.getName()));
+            return;
+          }
+          _c.referenceStructure(
+              HEALTH_MONITOR, name, SERVER_PORT_HEALTH_CHECK, ctx.start.getLine());
+          _currentServerPort.setHealthCheck(name);
+        });
   }
 
   @Override
@@ -2214,12 +2185,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return _currentVirtualServer.getPorts().values().stream()
         .map(VirtualServerPort::getSourceNat)
         .filter(Objects::nonNull)
-        .map(
-            name -> {
-              NatPool pool = _c.getNatPools().get(name);
-              assert pool != null; // sanity check, undefined refs are not allowed
-              return pool;
-            })
+        .map(name -> {
+          NatPool pool = _c.getNatPools().get(name);
+          assert pool != null; // sanity check, undefined refs are not allowed
+          return pool;
+        })
         .map(pool -> Optional.ofNullable(pool.getVrid()).orElse(DEFAULT_VRID))
         .findAny();
   }
@@ -2227,35 +2197,31 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSsvs_vrid(A10Parser.Ssvs_vridContext ctx) {
     toInteger(ctx, ctx.non_default_vrid())
-        .ifPresent(
-            vrid -> {
-              assert vrid != DEFAULT_VRID;
+        .ifPresent(vrid -> {
+          assert vrid != DEFAULT_VRID;
 
-              Optional<Integer> natPoolVrid = getNatPoolVrid();
-              if (natPoolVrid.isPresent() && !natPoolVrid.get().equals(vrid)) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot assign virtual-server to vrid %d, it contains a NAT pool in vrid"
-                            + " %d",
-                        vrid, natPoolVrid.get()));
-                return;
-              }
+          Optional<Integer> natPoolVrid = getNatPoolVrid();
+          if (natPoolVrid.isPresent() && !natPoolVrid.get().equals(vrid)) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot assign virtual-server to vrid %d, it contains a NAT pool in vrid"
+                        + " %d",
+                    vrid, natPoolVrid.get()));
+            return;
+          }
 
-              if (_c.getVrrpA() == null || !_c.getVrrpA().getVrids().containsKey(vrid)) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot assign virtual-server to undefined non-default vrid: %d", vrid));
-                return;
-              }
-              _c.referenceStructure(
-                  VRRP_A_VRID,
-                  Integer.toString(vrid),
-                  VIRTUAL_SERVER_VRID,
-                  ctx.getStart().getLine());
-              _currentVirtualServer.setVrid(vrid);
-            });
+          if (_c.getVrrpA() == null || !_c.getVrrpA().getVrids().containsKey(vrid)) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot assign virtual-server to undefined non-default vrid: %d", vrid));
+            return;
+          }
+          _c.referenceStructure(
+              VRRP_A_VRID, Integer.toString(vrid), VIRTUAL_SERVER_VRID, ctx.getStart().getLine());
+          _currentVirtualServer.setVrid(vrid);
+        });
   }
 
   @Override
@@ -2289,23 +2255,22 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSsvspd_access_list(A10Parser.Ssvspd_access_listContext ctx) {
     toString(ctx, ctx.access_list_name())
-        .ifPresent(
-            n -> {
-              if (!_c.getAccessLists().containsKey(n)) {
-                warn(ctx, String.format("Cannot reference non-existent ip access-list '%s'", n));
-                return;
-              }
-              if (_c.getAccessLists().get(n).getRules().isEmpty()) {
-                warn(ctx, String.format("Cannot reference empty ip access-list '%s'", n));
-                return;
-              }
-              _c.referenceStructure(
-                  A10StructureType.ACCESS_LIST,
-                  n,
-                  A10StructureUsage.VIRTUAL_SERVER_ACCESS_LIST,
-                  ctx.start.getLine());
-              _currentVirtualServerPort.setAccessList(n);
-            });
+        .ifPresent(n -> {
+          if (!_c.getAccessLists().containsKey(n)) {
+            warn(ctx, String.format("Cannot reference non-existent ip access-list '%s'", n));
+            return;
+          }
+          if (_c.getAccessLists().get(n).getRules().isEmpty()) {
+            warn(ctx, String.format("Cannot reference empty ip access-list '%s'", n));
+            return;
+          }
+          _c.referenceStructure(
+              A10StructureType.ACCESS_LIST,
+              n,
+              A10StructureUsage.VIRTUAL_SERVER_ACCESS_LIST,
+              ctx.start.getLine());
+          _currentVirtualServerPort.setAccessList(n);
+        });
   }
 
   private @Nonnull Optional<String> toString(
@@ -2358,60 +2323,58 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSsvspd_service_group(A10Parser.Ssvspd_service_groupContext ctx) {
     toString(ctx, ctx.service_group_name())
-        .ifPresent(
-            sgName -> {
-              ServiceGroup sg = _c.getServiceGroups().get(sgName);
-              if (sg == null) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot add non-existent service-group to virtual-server %s",
-                        _currentVirtualServer.getName()));
-                return;
-              }
-              if (!arePortTypesCompatible(sg.getType(), _currentVirtualServerPort.getType())) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Service-group port type %s is not compatible with virtual-server port type"
-                            + " %s",
-                        sg.getType(), _currentVirtualServerPort.getType()));
-                return;
-              }
-              _currentVirtualServerPort.setServiceGroup(sgName);
-              _c.referenceStructure(
-                  SERVICE_GROUP, sgName, VIRTUAL_SERVER_SERVICE_GROUP, ctx.start.getLine());
-            });
+        .ifPresent(sgName -> {
+          ServiceGroup sg = _c.getServiceGroups().get(sgName);
+          if (sg == null) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot add non-existent service-group to virtual-server %s",
+                    _currentVirtualServer.getName()));
+            return;
+          }
+          if (!arePortTypesCompatible(sg.getType(), _currentVirtualServerPort.getType())) {
+            warn(
+                ctx,
+                String.format(
+                    "Service-group port type %s is not compatible with virtual-server port type"
+                        + " %s",
+                    sg.getType(), _currentVirtualServerPort.getType()));
+            return;
+          }
+          _currentVirtualServerPort.setServiceGroup(sgName);
+          _c.referenceStructure(
+              SERVICE_GROUP, sgName, VIRTUAL_SERVER_SERVICE_GROUP, ctx.start.getLine());
+        });
   }
 
   @Override
   public void exitSsvspd_source_nat(A10Parser.Ssvspd_source_natContext ctx) {
     toString(ctx, ctx.nat_pool_name())
-        .ifPresent(
-            poolName -> {
-              NatPool pool = _c.getNatPools().get(poolName);
-              if (pool == null) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot add non-existent nat pool to virtual-server %s",
-                        _currentVirtualServer.getName()));
-                return;
-              }
-              int poolVrid = firstNonNull(pool.getVrid(), DEFAULT_VRID);
-              int serverVrid = firstNonNull(_currentVirtualServer.getVrid(), DEFAULT_VRID);
-              if (poolVrid != serverVrid) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Cannot assign a NAT pool in vrid %d, the virtual-server is in vrid %d",
-                        poolVrid, serverVrid));
-                return;
-              }
-              _currentVirtualServerPort.setSourceNat(poolName);
-              _c.referenceStructure(
-                  NAT_POOL, poolName, VIRTUAL_SERVER_SOURCE_NAT_POOL, ctx.start.getLine());
-            });
+        .ifPresent(poolName -> {
+          NatPool pool = _c.getNatPools().get(poolName);
+          if (pool == null) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot add non-existent nat pool to virtual-server %s",
+                    _currentVirtualServer.getName()));
+            return;
+          }
+          int poolVrid = firstNonNull(pool.getVrid(), DEFAULT_VRID);
+          int serverVrid = firstNonNull(_currentVirtualServer.getVrid(), DEFAULT_VRID);
+          if (poolVrid != serverVrid) {
+            warn(
+                ctx,
+                String.format(
+                    "Cannot assign a NAT pool in vrid %d, the virtual-server is in vrid %d",
+                    poolVrid, serverVrid));
+            return;
+          }
+          _currentVirtualServerPort.setSourceNat(poolName);
+          _c.referenceStructure(
+              NAT_POOL, poolName, VIRTUAL_SERVER_SOURCE_NAT_POOL, ctx.start.getLine());
+        });
   }
 
   @Override
@@ -2486,12 +2449,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       ParserRuleContext messageCtx, A10Parser.Vlan_ifaces_rangeContext ctx) {
     Interface.Type type = toInterfaceType(ctx);
     return toSubRange(messageCtx, ctx)
-        .map(
-            subRange ->
-                subRange
-                    .asStream()
-                    .mapToObj(i -> new InterfaceReference(type, i))
-                    .collect(ImmutableList.toImmutableList()));
+        .map(subRange ->
+            subRange
+                .asStream()
+                .mapToObj(i -> new InterfaceReference(type, i))
+                .collect(ImmutableList.toImmutableList()));
   }
 
   /**
@@ -2514,16 +2476,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     return Optional.of(
         references.stream()
-            .flatMap(
-                maybeRef -> {
-                  // Guaranteed above
-                  assert maybeRef.isPresent();
-                  List<InterfaceReference> refs = maybeRef.get();
-                  refs.forEach(
-                      iface ->
-                          _c.referenceStructure(INTERFACE, getInterfaceName(iface), usage, line));
-                  return refs.stream();
-                })
+            .flatMap(maybeRef -> {
+              // Guaranteed above
+              assert maybeRef.isPresent();
+              List<InterfaceReference> refs = maybeRef.get();
+              refs.forEach(
+                  iface -> _c.referenceStructure(INTERFACE, getInterfaceName(iface), usage, line));
+              return refs.stream();
+            })
             .collect(ImmutableList.toImmutableList()));
   }
 
@@ -2802,19 +2762,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private static @Nonnull String toString(WordContext ctx) {
     return ctx.word_content().children.stream()
-        .map(
-            child -> {
-              if (child instanceof A10Parser.Double_quoted_stringContext) {
-                return toString(((A10Parser.Double_quoted_stringContext) child).text);
-              } else if (child instanceof A10Parser.Single_quoted_stringContext) {
-                return toString(((A10Parser.Single_quoted_stringContext) child).text);
-              } else {
-                assert child instanceof TerminalNode;
-                int type = ((TerminalNode) child).getSymbol().getType();
-                assert type == WORD;
-                return child.getText();
-              }
-            })
+        .map(child -> {
+          if (child instanceof A10Parser.Double_quoted_stringContext) {
+            return toString(((A10Parser.Double_quoted_stringContext) child).text);
+          } else if (child instanceof A10Parser.Single_quoted_stringContext) {
+            return toString(((A10Parser.Single_quoted_stringContext) child).text);
+          } else {
+            assert child instanceof TerminalNode;
+            int type = ((TerminalNode) child).getSymbol().getType();
+            assert type == WORD;
+            return child.getText();
+          }
+        })
         .collect(Collectors.joining(""));
   }
 

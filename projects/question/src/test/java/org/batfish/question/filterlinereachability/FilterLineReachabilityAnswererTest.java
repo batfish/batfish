@@ -284,10 +284,8 @@ public class FilterLineReachabilityAnswererTest {
 
     Set<AclLineMatchExpr> matchExprs =
         aclSpecs.stream()
-            .map(
-                spec ->
-                    ((ExprAclLine) spec.acl.getSanitizedAcl().getLines().get(0))
-                        .getMatchCondition())
+            .map(spec ->
+                ((ExprAclLine) spec.acl.getSanitizedAcl().getLines().get(0)).getMatchCondition())
             .collect(Collectors.toSet());
     assertThat(
         matchExprs,
@@ -886,13 +884,12 @@ public class FilterLineReachabilityAnswererTest {
   private List<PermitAndDenyBdds> toPermitAndDenyBdds(List<BDD> bdds, List<LineAction> actions) {
     assert bdds.size() == actions.size();
     return IntStream.range(0, bdds.size())
-        .mapToObj(
-            i -> {
-              LineAction action = actions.get(i);
-              return action == PERMIT
-                  ? new PermitAndDenyBdds(bdds.get(i), _zero)
-                  : new PermitAndDenyBdds(_zero, bdds.get(i));
-            })
+        .mapToObj(i -> {
+          LineAction action = actions.get(i);
+          return action == PERMIT
+              ? new PermitAndDenyBdds(bdds.get(i), _zero)
+              : new PermitAndDenyBdds(_zero, bdds.get(i));
+        })
         .collect(ImmutableList.toImmutableList());
   }
 }

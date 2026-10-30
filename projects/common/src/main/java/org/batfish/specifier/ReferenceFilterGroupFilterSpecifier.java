@@ -45,21 +45,19 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
             .orElseThrow(
                 () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
             .getFilterGroup(_filterGroupName)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        "FilterGroup '"
-                            + _filterGroupName
-                            + "' not found in ReferenceBook '"
-                            + _bookName
-                            + "'"));
+            .orElseThrow(() ->
+                new NoSuchElementException(
+                    "FilterGroup '"
+                        + _filterGroupName
+                        + "' not found in ReferenceBook '"
+                        + _bookName
+                        + "'"));
 
     return filterGroup.getFilters().stream()
-        .flatMap(
-            f ->
-                SpecifierFactories.getFilterSpecifierOrDefault(f, NoFiltersFilterSpecifier.INSTANCE)
-                    .resolve(node, ctxt)
-                    .stream())
+        .flatMap(f ->
+            SpecifierFactories.getFilterSpecifierOrDefault(f, NoFiltersFilterSpecifier.INSTANCE)
+                .resolve(node, ctxt)
+                .stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 }

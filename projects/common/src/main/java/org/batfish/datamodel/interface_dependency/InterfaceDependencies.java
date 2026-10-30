@@ -157,29 +157,24 @@ public class InterfaceDependencies {
                  * needs a neighbor
                  */
                 if (iface.getDependencies().stream()
-                    .anyMatch(
-                        dep ->
-                            dep.getType() == AGGREGATE
-                                && getL1Neighbor(allIfaces.get(dep.getInterfaceName())) != null)) {
-                  _logger.warn(
-                      () -> {
-                        ImmutableMap<String, NodeInterfacePair> depToNeighbor =
-                            iface.getDependencies().stream()
-                                .filter(
-                                    dep ->
-                                        dep.getType() == AGGREGATE
-                                            && getL1Neighbor(allIfaces.get(dep.getInterfaceName()))
-                                                != null)
-                                .collect(
-                                    ImmutableMap.toImmutableMap(
-                                        Interface.Dependency::getInterfaceName,
-                                        dep ->
-                                            getL1Neighbor(allIfaces.get(dep.getInterfaceName()))));
-                        return String.format(
-                            "Deactivating %s interface %s with no neighbor. "
-                                + "Some of its members do have neighbors: %s",
-                            iface.getInterfaceType(), ifaceId, depToNeighbor);
-                      });
+                    .anyMatch(dep ->
+                        dep.getType() == AGGREGATE
+                            && getL1Neighbor(allIfaces.get(dep.getInterfaceName())) != null)) {
+                  _logger.warn(() -> {
+                    ImmutableMap<String, NodeInterfacePair> depToNeighbor =
+                        iface.getDependencies().stream()
+                            .filter(dep ->
+                                dep.getType() == AGGREGATE
+                                    && getL1Neighbor(allIfaces.get(dep.getInterfaceName())) != null)
+                            .collect(
+                                ImmutableMap.toImmutableMap(
+                                    Interface.Dependency::getInterfaceName,
+                                    dep -> getL1Neighbor(allIfaces.get(dep.getInterfaceName()))));
+                    return String.format(
+                        "Deactivating %s interface %s with no neighbor. "
+                            + "Some of its members do have neighbors: %s",
+                        iface.getInterfaceType(), ifaceId, depToNeighbor);
+                  });
                   _interfacesToDeactivate.put(ifaceId, LACP_FAILURE);
                   break;
                 }
@@ -237,11 +232,8 @@ public class InterfaceDependencies {
       case REDUNDANT:
         // the logical L1 contains physical nodes and AGGREGATED/REDUNDANT nodes. filter them out.
         return _layer1Topologies.getLogicalL1().adjacentNodes(layer1Node).stream()
-            .filter(
-                node ->
-                    getInterfaceType(node)
-                        .map(type -> type == iface.getInterfaceType())
-                        .orElse(false))
+            .filter(node ->
+                getInterfaceType(node).map(type -> type == iface.getInterfaceType()).orElse(false))
             .collect(ImmutableSet.toImmutableSet());
       default:
         return ImmutableSet.of();

@@ -130,21 +130,18 @@ public final class AutoCompleteUtils {
                 // then rank within the same type
                 .thenComparing(AutocompleteSuggestion::getRank)
                 // then by (inverse of) common prefix length
-                .thenComparing(
-                    s ->
-                        -1
-                            * StringUtils.getCommonPrefix(
-                                    query.toLowerCase(),
-                                    (query.substring(0, s.getInsertionIndex()) + s.getText()))
-                                .toLowerCase()
-                                .length())
+                .thenComparing(s ->
+                    -1
+                        * StringUtils.getCommonPrefix(
+                                query.toLowerCase(),
+                                (query.substring(0, s.getInsertionIndex()) + s.getText()))
+                            .toLowerCase()
+                            .length())
                 // then by edit distance
-                .thenComparing(
-                    s ->
-                        distance.apply(
-                            query.toLowerCase(),
-                            (query.substring(0, s.getInsertionIndex()) + s.getText())
-                                .toLowerCase())))
+                .thenComparing(s ->
+                    distance.apply(
+                        query.toLowerCase(),
+                        (query.substring(0, s.getInsertionIndex()) + s.getText()).toLowerCase())))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -218,11 +215,10 @@ public final class AutoCompleteUtils {
             checkReferenceLibrary(referenceLibrary, network);
             ImmutableSet<String> groups =
                 referenceLibrary.getReferenceBooks().stream()
-                    .map(
-                        b ->
-                            b.getAddressGroups().stream()
-                                .map(ag -> ag.getName())
-                                .collect(ImmutableSet.toImmutableSet()))
+                    .map(b ->
+                        b.getAddressGroups().stream()
+                            .map(ag -> ag.getName())
+                            .collect(ImmutableSet.toImmutableSet()))
                     .flatMap(Collection::stream)
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, groups);
@@ -877,12 +873,9 @@ public final class AutoCompleteUtils {
     String testQuery = query == null ? "" : query.toLowerCase();
 
     return stringsWithDescriptions.entrySet().stream()
-        .filter(
-            s ->
-                s.getKey().toLowerCase().contains(testQuery)
-                    || s.getValue()
-                        .map(hint -> hint.toLowerCase().contains(testQuery))
-                        .orElse(false))
+        .filter(s ->
+            s.getKey().toLowerCase().contains(testQuery)
+                || s.getValue().map(hint -> hint.toLowerCase().contains(testQuery)).orElse(false))
         .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null), rank))
         .collect(ImmutableList.toImmutableList());
   }
@@ -910,11 +903,10 @@ public final class AutoCompleteUtils {
     Map<Ip, IpCompletionMetadata> ipMatches =
         ips.getOverlappingEntries(allIps)
             .filter(e -> e.getKey().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH)
-            .filter(
-                e -> {
-                  String ipStr = e.getKey().getStartIp().toString();
-                  return Arrays.stream(subQueries).allMatch(ipStr::contains);
-                })
+            .filter(e -> {
+              String ipStr = e.getKey().getStartIp().toString();
+              return Arrays.stream(subQueries).allMatch(ipStr::contains);
+            })
             .collect(
                 ImmutableMap.toImmutableMap(
                     e -> e.getKey().getStartIp(),
@@ -925,20 +917,18 @@ public final class AutoCompleteUtils {
     // find relevance matches
     List<AutocompleteSuggestion> relevanceMatches =
         ips.getOverlappingEntries(allIps)
-            .filter(
-                e ->
-                    e.getKey().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
-                        && !ipMatches.containsKey(e.getKey().getStartIp()))
-            .map(
-                e -> {
-                  Ip ip = e.getKey().getStartIp();
-                  return new SimpleEntry<>(
-                      ip,
-                      e.getValue().stream()
-                          .flatMap(metadata -> metadata.getRelevances().stream())
-                          .filter(r -> r.matches(subQueries, ip))
-                          .collect(ImmutableList.toImmutableList()));
-                })
+            .filter(e ->
+                e.getKey().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
+                    && !ipMatches.containsKey(e.getKey().getStartIp()))
+            .map(e -> {
+              Ip ip = e.getKey().getStartIp();
+              return new SimpleEntry<>(
+                  ip,
+                  e.getValue().stream()
+                      .flatMap(metadata -> metadata.getRelevances().stream())
+                      .filter(r -> r.matches(subQueries, ip))
+                      .collect(ImmutableList.toImmutableList()));
+            })
             .filter(e -> !e.getValue().isEmpty())
             .map(e -> toAutocompleteSuggestion(e.getKey(), e.getValue()))
             .collect(ImmutableList.toImmutableList());
@@ -946,9 +936,8 @@ public final class AutoCompleteUtils {
     return new ImmutableList.Builder<AutocompleteSuggestion>()
         .addAll(
             ipMatches.entrySet().stream()
-                .map(
-                    entry ->
-                        toAutocompleteSuggestion(entry.getKey(), entry.getValue().getRelevances()))
+                .map(entry ->
+                    toAutocompleteSuggestion(entry.getKey(), entry.getValue().getRelevances()))
                 .collect(ImmutableList.toImmutableList()))
         .addAll(relevanceMatches)
         .build();

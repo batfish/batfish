@@ -89,28 +89,26 @@ public class OspfAreaConfigurationAnswerer extends Answerer {
       Map<String, ColumnMetadata> columnMetadata) {
 
     Multiset<Row> rows = HashMultiset.create();
-    nodes.forEach(
-        nodeName -> {
-          configurations
-              .get(nodeName)
-              .getVrfs()
-              .values()
-              .forEach(
-                  vrf -> {
-                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                      for (OspfArea area : ospfProcess.getAreas().values()) {
-                        rows.add(
-                            getRow(
-                                configurations.get(nodeName),
-                                nodeName,
-                                vrf.getName(),
-                                ospfProcess.getProcessId(),
-                                area,
-                                columnMetadata));
-                      }
-                    }
-                  });
-        });
+    nodes.forEach(nodeName -> {
+      configurations
+          .get(nodeName)
+          .getVrfs()
+          .values()
+          .forEach(vrf -> {
+            for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+              for (OspfArea area : ospfProcess.getAreas().values()) {
+                rows.add(
+                    getRow(
+                        configurations.get(nodeName),
+                        nodeName,
+                        vrf.getName(),
+                        ospfProcess.getProcessId(),
+                        area,
+                        columnMetadata));
+              }
+            }
+          });
+    });
     return rows;
   }
 

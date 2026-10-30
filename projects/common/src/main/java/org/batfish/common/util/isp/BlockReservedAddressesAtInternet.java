@@ -82,17 +82,16 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
   private static final List<AclLine> LINES =
       Stream.concat(
               BLOCKED_ADDRESS.entrySet().stream()
-                  .map(
-                      e ->
-                          ExprAclLine.rejecting(
-                              TraceElement.of(
-                                  String.format(
-                                      "Matched reserved IP address space %s (%s)",
-                                      e.getKey(), e.getValue())),
-                              new MatchHeaderSpace(
-                                  HeaderSpace.builder()
-                                      .setSrcOrDstIps(Prefix.parse(e.getKey()).toIpSpace())
-                                      .build()))),
+                  .map(e ->
+                      ExprAclLine.rejecting(
+                          TraceElement.of(
+                              String.format(
+                                  "Matched reserved IP address space %s (%s)",
+                                  e.getKey(), e.getValue())),
+                          new MatchHeaderSpace(
+                              HeaderSpace.builder()
+                                  .setSrcOrDstIps(Prefix.parse(e.getKey()).toIpSpace())
+                                  .build()))),
               Stream.of(
                   ExprAclLine.accepting(
                       TraceElement.of("Permitted traffic using no reserved IP addresses"),

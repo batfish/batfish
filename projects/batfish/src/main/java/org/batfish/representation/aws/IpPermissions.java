@@ -397,19 +397,18 @@ public final class IpPermissions implements Serializable {
     }
     ImmutableList.Builder<AclLineMatchExpr> aclLineExprs = ImmutableList.builder();
     _ipRanges.stream()
-        .map(
-            ipRange ->
-                and(
-                    ImmutableList.<AclLineMatchExpr>builder()
-                        .addAll(protocolAndPortExprs)
-                        .add(
-                            exprForSrcOrDstIps(
-                                ipRange.getPrefix().toIpSpace(),
-                                ipRange.getPrefix().toString(),
-                                ingress,
-                                AddressType.CIDR_IP))
-                        .build(),
-                    getTraceElementForRule(ipRange.getDescription())))
+        .map(ipRange ->
+            and(
+                ImmutableList.<AclLineMatchExpr>builder()
+                    .addAll(protocolAndPortExprs)
+                    .add(
+                        exprForSrcOrDstIps(
+                            ipRange.getPrefix().toIpSpace(),
+                            ipRange.getPrefix().toString(),
+                            ingress,
+                            AddressType.CIDR_IP))
+                    .build(),
+                getTraceElementForRule(ipRange.getDescription())))
         .forEach(aclLineExprs::add);
 
     aclLineExprs.addAll(userIdGroupsToAclLineExprs(region, protocolAndPortExprs, ingress));
@@ -427,15 +426,11 @@ public final class IpPermissions implements Serializable {
   private List<AclLineMatchExpr> userIdGroupsToAclLineExprs(
       Region region, List<AclLineMatchExpr> protocolAndPortExprs, boolean ingress) {
     return _userIdGroupPairs.stream()
-        .map(
-            uIdGr ->
-                Optional.ofNullable(region.getSecurityGroups().get(uIdGr.getGroupId()))
-                    .map(
-                        sg ->
-                            createAclLineExprForSg(
-                                protocolAndPortExprs,
-                                toMatchExpr(sg, ingress),
-                                uIdGr.getDescription())))
+        .map(uIdGr ->
+            Optional.ofNullable(region.getSecurityGroups().get(uIdGr.getGroupId()))
+                .map(sg ->
+                    createAclLineExprForSg(
+                        protocolAndPortExprs, toMatchExpr(sg, ingress), uIdGr.getDescription())))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableList.toImmutableList());
@@ -479,19 +474,18 @@ public final class IpPermissions implements Serializable {
       List<AclLineMatchExpr> protocolAndPortExprs,
       boolean ingress) {
     return prefixLists.entrySet().stream()
-        .map(
-            entry ->
-                and(
-                    ImmutableList.<AclLineMatchExpr>builder()
-                        .addAll(protocolAndPortExprs)
-                        .add(
-                            exprForSrcOrDstIps(
-                                entry.getValue(),
-                                entry.getKey().getId(),
-                                ingress,
-                                AddressType.PREFIX_LIST))
-                        .build(),
-                    getTraceElementForRule(null)))
+        .map(entry ->
+            and(
+                ImmutableList.<AclLineMatchExpr>builder()
+                    .addAll(protocolAndPortExprs)
+                    .add(
+                        exprForSrcOrDstIps(
+                            entry.getValue(),
+                            entry.getKey().getId(),
+                            ingress,
+                            AddressType.PREFIX_LIST))
+                    .build(),
+                getTraceElementForRule(null)))
         .collect(ImmutableList.toImmutableList());
   }
 

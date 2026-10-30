@@ -53,31 +53,30 @@ public class CheckpointManagementParser {
     Map<String, Map<String, Map<String, String>>> domainFileMap = new HashMap<>();
     // server -> domain -> -> package -> filename -> file contents
     Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap = new HashMap<>();
-    cpManagementData.forEach(
-        (filePath, fileContent) -> {
-          String[] parts = filePath.split("/");
-          if (parts.length == 4) {
-            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/foo.json
-            String serverName = parts[1];
-            String domainName = parts[2];
-            String fileName = parts[3];
-            domainFileMap
-                .computeIfAbsent(serverName, n -> new HashMap<>())
-                .computeIfAbsent(domainName, n -> new HashMap<>())
-                .put(fileName, fileContent);
-          } else if (parts.length == 5) {
-            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/PACKAGE_NAME/foo.json
-            String serverName = parts[1];
-            String domainName = parts[2];
-            String packageName = parts[3];
-            String fileName = parts[4];
-            packageFileMap
-                .computeIfAbsent(serverName, n -> new HashMap<>())
-                .computeIfAbsent(domainName, n -> new HashMap<>())
-                .computeIfAbsent(packageName, n -> new HashMap<>())
-                .put(fileName, fileContent);
-          }
-        });
+    cpManagementData.forEach((filePath, fileContent) -> {
+      String[] parts = filePath.split("/");
+      if (parts.length == 4) {
+        // checkpoint_management/SERVER_NAME/DOMAIN_NAME/foo.json
+        String serverName = parts[1];
+        String domainName = parts[2];
+        String fileName = parts[3];
+        domainFileMap
+            .computeIfAbsent(serverName, n -> new HashMap<>())
+            .computeIfAbsent(domainName, n -> new HashMap<>())
+            .put(fileName, fileContent);
+      } else if (parts.length == 5) {
+        // checkpoint_management/SERVER_NAME/DOMAIN_NAME/PACKAGE_NAME/foo.json
+        String serverName = parts[1];
+        String domainName = parts[2];
+        String packageName = parts[3];
+        String fileName = parts[4];
+        packageFileMap
+            .computeIfAbsent(serverName, n -> new HashMap<>())
+            .computeIfAbsent(domainName, n -> new HashMap<>())
+            .computeIfAbsent(packageName, n -> new HashMap<>())
+            .put(fileName, fileContent);
+      }
+    });
     return new CheckpointManagementConfiguration(
         buildServersMap(domainFileMap, packageFileMap, pvcae));
   }
@@ -397,38 +396,34 @@ public class CheckpointManagementParser {
 
     Map<Entry<String, String>, ManagementDomain> domainByServerDomain =
         domainFileMap.entrySet().stream()
-            .flatMap(
-                domainsByServerEntry -> {
-                  String serverName = domainsByServerEntry.getKey();
-                  return domainsByServerEntry.getValue().keySet().stream()
-                      .map(domainName -> immutableEntry(serverName, domainName));
-                })
+            .flatMap(domainsByServerEntry -> {
+              String serverName = domainsByServerEntry.getKey();
+              return domainsByServerEntry.getValue().keySet().stream()
+                  .map(domainName -> immutableEntry(serverName, domainName));
+            })
             .parallel() // stream of entries of <serverName, domainName>
-            .map(
-                serverDomain ->
-                    immutableEntry(
-                        serverDomain,
-                        buildManagementDomain(
-                            serverDomain.getKey(),
-                            serverDomain.getValue(),
-                            domainFileMap,
-                            packageFileMap,
-                            pvcae)))
+            .map(serverDomain ->
+                immutableEntry(
+                    serverDomain,
+                    buildManagementDomain(
+                        serverDomain.getKey(),
+                        serverDomain.getValue(),
+                        domainFileMap,
+                        packageFileMap,
+                        pvcae)))
             .filter(domainByServerDomainEntry -> domainByServerDomainEntry.getValue() != null)
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     Map<String, ImmutableMap.Builder<String, ManagementDomain>> domainsByServer = new HashMap<>();
-    domainByServerDomain.forEach(
-        (domainsByServerDomainEntry, managementDomain) -> {
-          String serverName = domainsByServerDomainEntry.getKey();
-          String domainName = domainsByServerDomainEntry.getValue();
-          domainsByServer
-              .computeIfAbsent(serverName, n -> ImmutableMap.builder())
-              .put(domainName, managementDomain);
-        });
+    domainByServerDomain.forEach((domainsByServerDomainEntry, managementDomain) -> {
+      String serverName = domainsByServerDomainEntry.getKey();
+      String domainName = domainsByServerDomainEntry.getValue();
+      domainsByServer
+          .computeIfAbsent(serverName, n -> ImmutableMap.builder())
+          .put(domainName, managementDomain);
+    });
     ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
-    domainsByServer.forEach(
-        (serverName, domainByName) ->
-            serversMap.put(serverName, new ManagementServer(domainByName.build(), serverName)));
+    domainsByServer.forEach((serverName, domainByName) ->
+        serversMap.put(serverName, new ManagementServer(domainByName.build(), serverName)));
     return serversMap.build();
   }
 

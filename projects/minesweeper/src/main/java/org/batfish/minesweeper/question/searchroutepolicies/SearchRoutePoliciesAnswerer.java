@@ -584,19 +584,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         new ConfigAtomicPredicates(
             ImmutableList.of(new SimpleImmutableEntry<>(config, policies)),
             _communityRegexes.stream()
-                .flatMap(
-                    rc -> {
-                      String regex = rc.getRegex();
-                      return switch (rc.getRegexType()) {
-                        case REGEX -> ImmutableList.of(CommunityVar.from(regex)).stream();
-                        case STRUCTURE_NAME ->
-                            config
-                                .getCommunityMatchExprs()
-                                .get(regex)
-                                .accept(new CommunityMatchExprVarCollector(), config)
-                                .stream();
-                      };
-                    })
+                .flatMap(rc -> {
+                  String regex = rc.getRegex();
+                  return switch (rc.getRegexType()) {
+                    case REGEX -> ImmutableList.of(CommunityVar.from(regex)).stream();
+                    case STRUCTURE_NAME ->
+                        config
+                            .getCommunityMatchExprs()
+                            .get(regex)
+                            .accept(new CommunityMatchExprVarCollector(), config)
+                            .stream();
+                  };
+                })
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes.stream()
                 .map(RegexConstraint::getRegex)
@@ -621,15 +620,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .filter(rc -> rc.getRegexType() == RegexConstraint.RegexType.STRUCTURE_NAME)
             .map(RegexConstraint::getRegex)
             .collect(ImmutableSet.toImmutableSet());
-    nodes.forEach(
-        node ->
-            communityMatchExprNames.forEach(
-                cme ->
-                    checkArgument(
-                        context.getConfigs().get(node).getCommunityMatchExprs().containsKey(cme),
-                        "Node %s has no CommunityMatchExpr named %s",
-                        node,
-                        cme)));
+    nodes.forEach(node ->
+        communityMatchExprNames.forEach(cme ->
+            checkArgument(
+                context.getConfigs().get(node).getCommunityMatchExprs().containsKey(cme),
+                "Node %s has no CommunityMatchExpr named %s",
+                node,
+                cme)));
   }
 
   @Override
@@ -639,10 +636,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     validateCommunityConstraints(_nodeSpecifier.resolve(context), context);
     List<Row> rows =
         nodes.stream()
-            .flatMap(
-                node ->
-                    searchPoliciesForNode(
-                        context.getConfigs().get(node), _policySpecifier.resolve(node, context)))
+            .flatMap(node ->
+                searchPoliciesForNode(
+                    context.getConfigs().get(node), _policySpecifier.resolve(node, context)))
             .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());

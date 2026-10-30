@@ -96,11 +96,10 @@ public final class BDDReachabilityUtils {
         new PriorityQueue<>(Comparator.comparingInt(st -> visitCounts.getOrDefault(st, 0)));
 
     // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
-    reachableSets.forEach(
-        (key, value) -> {
-          dirtyInputs.put(key, value.id());
-          dirtyStates.add(key);
-        });
+    reachableSets.forEach((key, value) -> {
+      dirtyInputs.put(key, value.id());
+      dirtyStates.add(key);
+    });
     reachableSets.clear();
 
     while (!dirtyStates.isEmpty()) {
@@ -149,24 +148,22 @@ public final class BDDReachabilityUtils {
       }
 
       // Forward the learned BDDs along each outgoing edge.
-      dirtyStateEdges.forEach(
-          (neighbor, edge) -> {
-            long priorBDDs = factory.numOutstandingBDDs();
-            BDD result = traverse.apply(edge, learned);
-            long newBDDs = factory.numOutstandingBDDs();
-            assert newBDDs - priorBDDs == 1
-                : "Leak of size " + (newBDDs - priorBDDs - 1) + ": " + edge;
-            if (!result.isZero()) {
-              // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
-              // the dirtyStates queue, add it.
-              if (!dirtyInputs.containsKey(neighbor)) {
-                dirtyStates.add(neighbor);
-              }
-              dirtyInputs.put(neighbor, result);
-            } else {
-              result.free();
-            }
-          });
+      dirtyStateEdges.forEach((neighbor, edge) -> {
+        long priorBDDs = factory.numOutstandingBDDs();
+        BDD result = traverse.apply(edge, learned);
+        long newBDDs = factory.numOutstandingBDDs();
+        assert newBDDs - priorBDDs == 1 : "Leak of size " + (newBDDs - priorBDDs - 1) + ": " + edge;
+        if (!result.isZero()) {
+          // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
+          // the dirtyStates queue, add it.
+          if (!dirtyInputs.containsKey(neighbor)) {
+            dirtyStates.add(neighbor);
+          }
+          dirtyInputs.put(neighbor, result);
+        } else {
+          result.free();
+        }
+      });
       learned.free();
     }
   }
@@ -261,22 +258,21 @@ public final class BDDReachabilityUtils {
 
   public static Set<Flow> constructFlows(BDDPacket pkt, Map<IngressLocation, BDD> reachableBdds) {
     return reachableBdds.entrySet().stream()
-        .flatMap(
-            entry -> {
-              IngressLocation loc = entry.getKey();
-              BDD headerSpace = entry.getValue();
-              Optional<Builder> optionalFlow = pkt.getFlow(headerSpace);
-              if (optionalFlow.isEmpty()) {
-                return Stream.of();
-              }
-              Flow.Builder flow = optionalFlow.get();
-              flow.setIngressNode(loc.getNode());
-              switch (loc.getType()) {
-                case INTERFACE_LINK -> flow.setIngressInterface(loc.getInterface());
-                case VRF -> flow.setIngressVrf(loc.getVrf());
-              }
-              return Stream.of(flow.build());
-            })
+        .flatMap(entry -> {
+          IngressLocation loc = entry.getKey();
+          BDD headerSpace = entry.getValue();
+          Optional<Builder> optionalFlow = pkt.getFlow(headerSpace);
+          if (optionalFlow.isEmpty()) {
+            return Stream.of();
+          }
+          Flow.Builder flow = optionalFlow.get();
+          flow.setIngressNode(loc.getNode());
+          switch (loc.getType()) {
+            case INTERFACE_LINK -> flow.setIngressInterface(loc.getInterface());
+            case VRF -> flow.setIngressVrf(loc.getVrf());
+          }
+          return Stream.of(flow.build());
+        })
         .collect(ImmutableSet.toImmutableSet());
   }
 

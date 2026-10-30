@@ -232,14 +232,13 @@ public final class CommunityMatchExprEvaluator
   private static final LoadingCache<RegexCacheKey, Boolean> REGEX_MATCH_CACHE =
       Caffeine.newBuilder()
           .maximumSize(1 << 20) // 1M instances that are each using maybe 40 bytes
-          .build(
-              k ->
-                  PatternProvider.fromString(k._regex.getRegex())
-                      .matcher(
-                          k._regex
-                              .getCommunityRendering()
-                              .accept(CommunityToRegexInputString.instance(), k._community))
-                      .find());
+          .build(k ->
+              PatternProvider.fromString(k._regex.getRegex())
+                  .matcher(
+                      k._regex
+                          .getCommunityRendering()
+                          .accept(CommunityToRegexInputString.instance(), k._community))
+                  .find());
 
   @VisibleForTesting
   static final class RegexCacheKey {

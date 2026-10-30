@@ -72,10 +72,9 @@ public enum SonicStructureType implements StructureType {
           Arrays.stream(SonicStructureType.values())
               .filter(cType -> cType.name().equals(frrType.name()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new NoSuchElementException(
-                          "No SonicStructureType exists for FrrStructureType " + frrType));
+              .orElseThrow(() ->
+                  new NoSuchElementException(
+                      "No SonicStructureType exists for FrrStructureType " + frrType));
       map.put(frrType, matchingSonicType);
     }
     return map.build();
