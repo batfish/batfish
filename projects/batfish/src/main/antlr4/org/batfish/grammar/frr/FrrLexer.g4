@@ -946,6 +946,16 @@ M_Expanded_WS
 
 mode M_Expanded2;
 
+M_Expanded2_SEQ
+:
+  'seq' -> type ( SEQ )
+;
+
+M_Expanded2_UINT32
+:
+  F_Uint32 -> type ( UINT32 )
+;
+
 M_Expanded2_DENY
 :
   'deny' -> type ( DENY ), mode(M_Expanded3)
@@ -1171,6 +1181,11 @@ M_AccessList_PERMIT
    'permit' -> type(PERMIT)
 ;
 
+M_AccessList_SEQ
+:
+   'seq' -> type(SEQ), pushMode(M_AccessListSeq)
+;
+
 M_AsPathAccessList_REGEX
 :
    F_Regex -> type(REGEX)
@@ -1187,6 +1202,18 @@ M_AccessList_NEWLINE
 ;
 
 M_AccessList_WS
+:
+   F_Whitespace+ -> channel (HIDDEN)
+;
+
+mode M_AccessListSeq;
+
+M_AccessListSeq_UINT32
+:
+   F_Uint32 -> type(UINT32), popMode
+;
+
+M_AccessListSeq_WS
 :
    F_Whitespace+ -> channel (HIDDEN)
 ;

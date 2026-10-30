@@ -47,11 +47,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -300,6 +303,15 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
+
+  /** Entries of each community-list or as-path access-list, by FRR sequence number. */
+  private final Map<String, NavigableMap<Long, BgpAsPathAccessListLine>> _bgpAsPathAccessListSeqs =
+      new HashMap<>();
+
+  private final Map<String, NavigableMap<Long, BgpCommunityListExpandedLine>>
+      _bgpCommunityListExpandedSeqs = new HashMap<>();
+  private final Map<String, NavigableMap<Long, BgpCommunityListStandardLine>>
+      _bgpCommunityListStandardSeqs = new HashMap<>();
   private @Nullable Ipv6PrefixList _currentIpv6PrefixList;
   private @Nullable BgpIpv4UnicastAddressFamily _currentBgpIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
@@ -1826,9 +1838,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     BgpCommunityListExpanded communityListExpanded = (BgpCommunityListExpanded) communityList;
-    communityListExpanded
-        .getLines()
-        .add(new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
+    addLineInSeqOrder(
+        communityListExpanded.getLines(),
+        _bgpCommunityListExpandedSeqs.computeIfAbsent(name, n -> new TreeMap<>()),
+        ctx.seq,
+        new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _vc.defineStructure(BGP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
@@ -1854,9 +1868,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     BgpCommunityListStandard communityListStandard = (BgpCommunityListStandard) communityList;
-    communityListStandard
-        .getLines()
-        .add(new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+    addLineInSeqOrder(
+        communityListStandard.getLines(),
+        _bgpCommunityListStandardSeqs.computeIfAbsent(name, n -> new TreeMap<>()),
+        ctx.seq,
+        new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
     _vc.defineStructure(BGP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -1938,9 +1954,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String name = ctx.name.getText();
     LineAction action = toLineAction(ctx.action);
     String regex = ctx.as_path_regex.getText();
-    _frr.getBgpAsPathAccessLists()
-        .computeIfAbsent(name, BgpAsPathAccessList::new)
-        .addLine(new BgpAsPathAccessListLine(action, regex));
+    addLineInSeqOrder(
+        _frr.getBgpAsPathAccessLists().computeIfAbsent(name, BgpAsPathAccessList::new).getLines(),
+        _bgpAsPathAccessListSeqs.computeIfAbsent(name, n -> new TreeMap<>()),
+        ctx.seq,
+        new BgpAsPathAccessListLine(action, regex));
     _vc.defineStructure(BGP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
@@ -2016,6 +2034,22 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
     Ipv6PrefixListLine pll = new Ipv6PrefixListLine(action, num, prefix, range);
     _currentIpv6PrefixList.getLines().put(num, pll);
+  }
+
+  /**
+   * Adds {@code line} to {@code lines} the way FRR orders community-list and as-path access-list
+   * entries: by sequence number, with an omitted number taking the next multiple of 5 after the
+   * highest one, and a repeated number replacing the earlier entry.
+   */
+  private <T> void addLineInSeqOrder(
+      List<T> lines, NavigableMap<Long, T> linesBySeq, @Nullable Uint32Context seqCtx, T line) {
+    long seq =
+        seqCtx != null
+            ? toLong(seqCtx)
+            : nextMultipleOfFive(linesBySeq.isEmpty() ? null : linesBySeq.lastKey());
+    linesBySeq.put(seq, line);
+    lines.clear();
+    lines.addAll(linesBySeq.values());
   }
 
   @VisibleForTesting
